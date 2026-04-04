@@ -1,0 +1,6 @@
+[submodule "BIDS-SQL"]
+	path = BIDS-SQL
+	url = https://github.com/paul88/BIDS-SQL.git
+[submodule "crawlers/crawlers/openneuro-crawler"]
+	path = crawlers/crawlers/openneuro-crawler
+	url = https://github.com/paul188/openneuro-crawler.git
