@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "bids-eye-backend"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    # Install bids-sql first: pip install -e ../BIDS-SQL
+    "bids-sql",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]

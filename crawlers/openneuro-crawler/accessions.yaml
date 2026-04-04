@@ -1,0 +1,6 @@
+# OpenNeuro accession IDs to crawl.
+# One per line. Override at runtime with the OPENNEURO_ACCESSIONS env var.
+accessions:
+  - ds000001
+  - ds000002
+  - ds000003

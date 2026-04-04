@@ -1,0 +1,108 @@
+## BIDS-Eye — full-stack docker compose
+## Usage:
+##   docker compose up --build          # start everything
+##   docker compose up --build backend  # rebuild only the backend
+##
+## Required env file: .env  (copy from .env.example)
+
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: bids_postgres
+    env_file: .env
+    environment:
+      POSTGRES_DB:       ${METADATA_DB_NAME}
+      POSTGRES_USER:     ${METADATA_DB_USER}
+      POSTGRES_PASSWORD: ${METADATA_DB_PASSWORD}
+    volumes:
+      - postgres-bids-data:/var/lib/postgresql/data
+    ports:
+      - '${METADATA_DB_PORT:-5432}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${METADATA_DB_USER} -d ${METADATA_DB_NAME}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bids-net
+
+  # ── FastAPI backend ────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: bids_backend
+    env_file: .env
+    environment:
+      METADATA_DB_HOST: postgres
+      METADATA_DB_PORT: 5432
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bids-net
+    restart: unless-stopped
+
+  # ── Vue 3 frontend (nginx) ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: bids_frontend
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+    networks:
+      - bids-net
+    restart: unless-stopped
+
+  # ── OpenNeuro background crawler ──────────────────────────────────────────────
+  # Runs continuously but is rate-limited (one dataset at a time, 30 s between).
+  # Resource limits keep it from hogging CPU/RAM.
+  crawler:
+    build:
+      context: .
+      dockerfile: crawlers/openneuro-crawler-backup/Dockerfile
+    container_name: bids_crawler
+    env_file: .env
+    environment:
+      METADATA_DB_HOST: postgres
+      METADATA_DB_PORT: 5432
+      # Comma-separated list overrides accessions.yaml
+      OPENNEURO_ACCESSIONS: ${OPENNEURO_ACCESSIONS:-}
+      CRAWL_INTERVAL_HOURS: ${CRAWL_INTERVAL_HOURS:-1}
+      CRAWL_DELAY_SECONDS:  ${CRAWL_DELAY_SECONDS:-30}
+    volumes:
+      # Persist mirror cache across restarts to avoid re-downloading metadata
+      - openneuro-mirror:/root/.bids-sql/openneuro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bids-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 512M
+
+  # ── BIDS Validator sidecar (on-demand) ────────────────────────────────────────
+  bids-validator:
+    image: bids/validator
+    container_name: bids_validator
+    networks:
+      - bids-net
+
+networks:
+  bids-net:
+    driver: bridge
+
+volumes:
+  postgres-bids-data:
+  openneuro-mirror:
