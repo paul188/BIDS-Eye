@@ -1,0 +1,2167 @@
+{
+  "summary": {
+    "input_rows": 2808,
+    "exact_duplicate_count": 173,
+    "dedup_rows": 2635,
+    "near_dup_candidate_count": 86
+  },
+  "exact_duplicates": [
+    {
+      "dropped_row_id": 26,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 31,
+      "kept_row_id": 17,
+      "question": "Find datasets funded by CI241/1-1."
+    },
+    {
+      "dropped_row_id": 72,
+      "kept_row_id": 17,
+      "question": "Find datasets funded by CI241/1-1."
+    },
+    {
+      "dropped_row_id": 99,
+      "kept_row_id": 69,
+      "question": "List datasets authored by Kevin King."
+    },
+    {
+      "dropped_row_id": 135,
+      "kept_row_id": 48,
+      "question": "Find datasets funded by ERC-StG-2018-803370."
+    },
+    {
+      "dropped_row_id": 310,
+      "kept_row_id": 271,
+      "question": "List datasets containing both anatomical MRI and diffusion MRI data."
+    },
+    {
+      "dropped_row_id": 428,
+      "kept_row_id": 167,
+      "question": "Datasets that do not have a DOI."
+    },
+    {
+      "dropped_row_id": 435,
+      "kept_row_id": 285,
+      "question": "Show datasets that include both anatomical MRI and field map data."
+    },
+    {
+      "dropped_row_id": 452,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 466,
+      "kept_row_id": 128,
+      "question": "Are there any datasets that contain PET data?"
+    },
+    {
+      "dropped_row_id": 475,
+      "kept_row_id": 442,
+      "question": "Datasets funded by GRANT #2."
+    },
+    {
+      "dropped_row_id": 499,
+      "kept_row_id": 396,
+      "question": "List datasets funded by GRANT #2."
+    },
+    {
+      "dropped_row_id": 538,
+      "kept_row_id": 357,
+      "question": "Identify datasets that contain no functional MRI data."
+    },
+    {
+      "dropped_row_id": 559,
+      "kept_row_id": 393,
+      "question": "Search for datasets mentioning 'valence' in their name or description."
+    },
+    {
+      "dropped_row_id": 567,
+      "kept_row_id": 128,
+      "question": "Are there any datasets that contain PET data?"
+    },
+    {
+      "dropped_row_id": 636,
+      "kept_row_id": 194,
+      "question": "Find datasets funded by GRANT #1."
+    },
+    {
+      "dropped_row_id": 637,
+      "kept_row_id": 136,
+      "question": "Find datasets that do not have a DOI."
+    },
+    {
+      "dropped_row_id": 686,
+      "kept_row_id": 402,
+      "question": "Find datasets containing reactive task fMRI data."
+    },
+    {
+      "dropped_row_id": 692,
+      "kept_row_id": 459,
+      "question": "Show datasets with PD license."
+    },
+    {
+      "dropped_row_id": 813,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 838,
+      "kept_row_id": 128,
+      "question": "Are there any datasets that contain PET data?"
+    },
+    {
+      "dropped_row_id": 853,
+      "kept_row_id": 409,
+      "question": "Top 5 datasets with at least 2 sessions."
+    },
+    {
+      "dropped_row_id": 868,
+      "kept_row_id": 219,
+      "question": "Find datasets containing both anatomical MRI and diffusion MRI."
+    },
+    {
+      "dropped_row_id": 882,
+      "kept_row_id": 128,
+      "question": "Are there any datasets that contain PET data?"
+    },
+    {
+      "dropped_row_id": 905,
+      "kept_row_id": 451,
+      "question": "List the top 10 datasets ordered by the number of unique sessions."
+    },
+    {
+      "dropped_row_id": 933,
+      "kept_row_id": 681,
+      "question": "Show datasets authored by Tyler M. Moore."
+    },
+    {
+      "dropped_row_id": 936,
+      "kept_row_id": 847,
+      "question": "Find datasets funded by the Army Research Laboratory (W911NF-10-0-0002)."
+    },
+    {
+      "dropped_row_id": 942,
+      "kept_row_id": 61,
+      "question": "Find datasets containing both anatomical and functional MRI data."
+    },
+    {
+      "dropped_row_id": 985,
+      "kept_row_id": 73,
+      "question": "Search for datasets mentioning 'task' in the description."
+    },
+    {
+      "dropped_row_id": 992,
+      "kept_row_id": 61,
+      "question": "Find datasets containing both anatomical and functional MRI data."
+    },
+    {
+      "dropped_row_id": 1024,
+      "kept_row_id": 948,
+      "question": "Datasets without a DOI."
+    },
+    {
+      "dropped_row_id": 1045,
+      "kept_row_id": 194,
+      "question": "Find datasets funded by GRANT #1."
+    },
+    {
+      "dropped_row_id": 1054,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 1080,
+      "kept_row_id": 15,
+      "question": "Find datasets authored by Joanes Grandjean"
+    },
+    {
+      "dropped_row_id": 1087,
+      "kept_row_id": 915,
+      "question": "Find datasets containing multisensory integration tasks."
+    },
+    {
+      "dropped_row_id": 1115,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 1149,
+      "kept_row_id": 79,
+      "question": "Are there any datasets that contain 'attention' in the description?"
+    },
+    {
+      "dropped_row_id": 1174,
+      "kept_row_id": 219,
+      "question": "Find datasets containing both anatomical MRI and diffusion MRI."
+    },
+    {
+      "dropped_row_id": 1190,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 1203,
+      "kept_row_id": 490,
+      "question": "Identify datasets that contain no anatomical MRI data."
+    },
+    {
+      "dropped_row_id": 1211,
+      "kept_row_id": 103,
+      "question": "List datasets that lack a DOI."
+    },
+    {
+      "dropped_row_id": 1225,
+      "kept_row_id": 819,
+      "question": "Find datasets funded by DARPA RAM: N66001-14-2-4032."
+    },
+    {
+      "dropped_row_id": 1238,
+      "kept_row_id": 819,
+      "question": "Find datasets funded by DARPA RAM: N66001-14-2-4032."
+    },
+    {
+      "dropped_row_id": 1255,
+      "kept_row_id": 357,
+      "question": "Identify datasets that contain no functional MRI data."
+    },
+    {
+      "dropped_row_id": 1283,
+      "kept_row_id": 1009,
+      "question": "Find datasets that have a DOI."
+    },
+    {
+      "dropped_row_id": 1293,
+      "kept_row_id": 508,
+      "question": "Find datasets containing both anatomical MRI and functional MRI data."
+    },
+    {
+      "dropped_row_id": 1314,
+      "kept_row_id": 194,
+      "question": "Find datasets funded by GRANT #1."
+    },
+    {
+      "dropped_row_id": 1328,
+      "kept_row_id": 847,
+      "question": "Find datasets funded by the Army Research Laboratory (W911NF-10-0-0002)."
+    },
+    {
+      "dropped_row_id": 1335,
+      "kept_row_id": 490,
+      "question": "Identify datasets that contain no anatomical MRI data."
+    },
+    {
+      "dropped_row_id": 1350,
+      "kept_row_id": 491,
+      "question": "Which datasets contain both anatomical MRI and diffusion MRI data?"
+    },
+    {
+      "dropped_row_id": 1372,
+      "kept_row_id": 1326,
+      "question": "Find datasets authored by Ruben C. Gur."
+    },
+    {
+      "dropped_row_id": 1407,
+      "kept_row_id": 843,
+      "question": "Find datasets authored by Raquel E. Gur."
+    },
+    {
+      "dropped_row_id": 1436,
+      "kept_row_id": 352,
+      "question": "List datasets that do not have a DOI."
+    },
+    {
+      "dropped_row_id": 1444,
+      "kept_row_id": 508,
+      "question": "Find datasets containing both anatomical MRI and functional MRI data."
+    },
+    {
+      "dropped_row_id": 1468,
+      "kept_row_id": 681,
+      "question": "Show datasets authored by Tyler M. Moore."
+    },
+    {
+      "dropped_row_id": 1497,
+      "kept_row_id": 914,
+      "question": "Find datasets authored by David R. Roalf."
+    },
+    {
+      "dropped_row_id": 1520,
+      "kept_row_id": 949,
+      "question": "Search for datasets mentioning 'respective' in their name or description."
+    },
+    {
+      "dropped_row_id": 1560,
+      "kept_row_id": 204,
+      "question": "Are there any datasets that contain PET imaging?"
+    },
+    {
+      "dropped_row_id": 1573,
+      "kept_row_id": 23,
+      "question": "Find datasets containing both anatomical MRI and diffusion MRI data."
+    },
+    {
+      "dropped_row_id": 1578,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 1581,
+      "kept_row_id": 572,
+      "question": "Find datasets funded by the Canada First Research Excellence Fund BrainsCAN grant."
+    },
+    {
+      "dropped_row_id": 1643,
+      "kept_row_id": 1185,
+      "question": "Find datasets containing the contrast change detection task."
+    },
+    {
+      "dropped_row_id": 1654,
+      "kept_row_id": 1279,
+      "question": "Find datasets authored by Matt Cieslak."
+    },
+    {
+      "dropped_row_id": 1657,
+      "kept_row_id": 863,
+      "question": "Find datasets that have no functional MRI datatypes."
+    },
+    {
+      "dropped_row_id": 1665,
+      "kept_row_id": 70,
+      "question": "Find datasets with Creative Commons Attribution 4.0 International Public License."
+    },
+    {
+      "dropped_row_id": 1668,
+      "kept_row_id": 1435,
+      "question": "Show datasets funded by Western University internal funds for Jody Culham."
+    },
+    {
+      "dropped_row_id": 1674,
+      "kept_row_id": 1366,
+      "question": "Find datasets containing both anatomical MRI and EEG data."
+    },
+    {
+      "dropped_row_id": 1679,
+      "kept_row_id": 1417,
+      "question": "Find datasets contributed by Kosha Ruparel."
+    },
+    {
+      "dropped_row_id": 1686,
+      "kept_row_id": 793,
+      "question": "List datasets that have no fMRI data."
+    },
+    {
+      "dropped_row_id": 1688,
+      "kept_row_id": 508,
+      "question": "Find datasets containing both anatomical MRI and functional MRI data."
+    },
+    {
+      "dropped_row_id": 1715,
+      "kept_row_id": 684,
+      "question": "Find datasets funded by GRANT #2."
+    },
+    {
+      "dropped_row_id": 1716,
+      "kept_row_id": 397,
+      "question": "Are there any datasets supported by GRANT #2?"
+    },
+    {
+      "dropped_row_id": 1717,
+      "kept_row_id": 136,
+      "question": "Find datasets that do not have a DOI."
+    },
+    {
+      "dropped_row_id": 1725,
+      "kept_row_id": 128,
+      "question": "Are there any datasets that contain PET data?"
+    },
+    {
+      "dropped_row_id": 1732,
+      "kept_row_id": 967,
+      "question": "Find datasets funded by CI241/3-1."
+    },
+    {
+      "dropped_row_id": 1738,
+      "kept_row_id": 175,
+      "question": "Which datasets include both anatomical MRI and field map data?"
+    },
+    {
+      "dropped_row_id": 1748,
+      "kept_row_id": 572,
+      "question": "Find datasets funded by the Canada First Research Excellence Fund 'BrainsCAN' grant."
+    },
+    {
+      "dropped_row_id": 1758,
+      "kept_row_id": 29,
+      "question": "Find datasets authored by Taylor Salo."
+    },
+    {
+      "dropped_row_id": 1792,
+      "kept_row_id": 449,
+      "question": "Identify datasets that contain no PET data."
+    },
+    {
+      "dropped_row_id": 1822,
+      "kept_row_id": 440,
+      "question": "Datasets authored by Michael Milham."
+    },
+    {
+      "dropped_row_id": 1836,
+      "kept_row_id": 175,
+      "question": "Which datasets include both anatomical MRI and field map data?"
+    },
+    {
+      "dropped_row_id": 1845,
+      "kept_row_id": 1008,
+      "question": "Find datasets with Creative Commons Attribution 4.0 International (CC-BY 4.0) license."
+    },
+    {
+      "dropped_row_id": 1852,
+      "kept_row_id": 339,
+      "question": "Which datasets have no anatomical MRI data?"
+    },
+    {
+      "dropped_row_id": 1853,
+      "kept_row_id": 219,
+      "question": "Find datasets containing both anatomical MRI and diffusion MRI."
+    },
+    {
+      "dropped_row_id": 1872,
+      "kept_row_id": 662,
+      "question": "Show datasets containing both anatomical MRI and intracranial EEG data."
+    },
+    {
+      "dropped_row_id": 1878,
+      "kept_row_id": 69,
+      "question": "List datasets authored by Kevin King."
+    },
+    {
+      "dropped_row_id": 1885,
+      "kept_row_id": 1398,
+      "question": "Identify datasets that possess no intracranial EEG data."
+    },
+    {
+      "dropped_row_id": 1892,
+      "kept_row_id": 1746,
+      "question": "Find datasets licensed under 'Creative Commons Attribution 4.0 International Public License'."
+    },
+    {
+      "dropped_row_id": 1898,
+      "kept_row_id": 825,
+      "question": "Find datasets containing both anatomical MRI and field map data."
+    },
+    {
+      "dropped_row_id": 1903,
+      "kept_row_id": 85,
+      "question": "Find datasets licensed under Creative Commons CC0 1.0."
+    },
+    {
+      "dropped_row_id": 1909,
+      "kept_row_id": 542,
+      "question": "Search for datasets with 'brain' in the description."
+    },
+    {
+      "dropped_row_id": 1939,
+      "kept_row_id": 1159,
+      "question": "Datasets that have no functional MRI data."
+    },
+    {
+      "dropped_row_id": 1949,
+      "kept_row_id": 783,
+      "question": "Find datasets authored by Kevin King."
+    },
+    {
+      "dropped_row_id": 1978,
+      "kept_row_id": 246,
+      "question": "List datasets licensed under PDDL."
+    },
+    {
+      "dropped_row_id": 1998,
+      "kept_row_id": 1800,
+      "question": "Datasets funded by NIH/NIMH R01MH125934."
+    },
+    {
+      "dropped_row_id": 2017,
+      "kept_row_id": 691,
+      "question": "Find datasets authored by Damien A. Fair."
+    },
+    {
+      "dropped_row_id": 2020,
+      "kept_row_id": 946,
+      "question": "Find datasets with Creative Commons BY-SA 4.0 license."
+    },
+    {
+      "dropped_row_id": 2026,
+      "kept_row_id": 702,
+      "question": "Which datasets lack any participant data recorded?"
+    },
+    {
+      "dropped_row_id": 2027,
+      "kept_row_id": 1658,
+      "question": "Show datasets containing both anatomical MRI and field map data."
+    },
+    {
+      "dropped_row_id": 2053,
+      "kept_row_id": 184,
+      "question": "Find datasets containing ERNPsychometrics task data."
+    },
+    {
+      "dropped_row_id": 2055,
+      "kept_row_id": 525,
+      "question": "Which datasets contain no functional MRI data?"
+    },
+    {
+      "dropped_row_id": 2060,
+      "kept_row_id": 634,
+      "question": "Get datasets authored by James F Cavanagh."
+    },
+    {
+      "dropped_row_id": 2064,
+      "kept_row_id": 1763,
+      "question": "Find datasets containing biofieldtherapy tasks with anatomical MRI data."
+    },
+    {
+      "dropped_row_id": 2068,
+      "kept_row_id": 108,
+      "question": "List datasets that include both anatomical and diffusion MRI data."
+    },
+    {
+      "dropped_row_id": 2087,
+      "kept_row_id": 1525,
+      "question": "Find datasets that have no fMRI data."
+    },
+    {
+      "dropped_row_id": 2091,
+      "kept_row_id": 1699,
+      "question": "List datasets authored by Kosha Ruparel."
+    },
+    {
+      "dropped_row_id": 2097,
+      "kept_row_id": 1226,
+      "question": "Search for datasets mentioning 'folder' in their name or description."
+    },
+    {
+      "dropped_row_id": 2102,
+      "kept_row_id": 888,
+      "question": "List datasets that contain no functional MRI data."
+    },
+    {
+      "dropped_row_id": 2106,
+      "kept_row_id": 389,
+      "question": "Are there any datasets that have participants with a specific diagnosis?"
+    },
+    {
+      "dropped_row_id": 2129,
+      "kept_row_id": 508,
+      "question": "Find datasets containing both anatomical MRI and functional MRI data."
+    },
+    {
+      "dropped_row_id": 2135,
+      "kept_row_id": 684,
+      "question": "Find datasets funded by 'GRANT #2'."
+    },
+    {
+      "dropped_row_id": 2152,
+      "kept_row_id": 1846,
+      "question": "Search for datasets funded by 'CI241/3-1'."
+    },
+    {
+      "dropped_row_id": 2165,
+      "kept_row_id": 318,
+      "question": "Show datasets authored by James F Cavanagh."
+    },
+    {
+      "dropped_row_id": 2188,
+      "kept_row_id": 299,
+      "question": "Which datasets include both anatomical MRI and diffusion MRI data?"
+    },
+    {
+      "dropped_row_id": 2214,
+      "kept_row_id": 2133,
+      "question": "List datasets authored by Damien A. Fair."
+    },
+    {
+      "dropped_row_id": 2215,
+      "kept_row_id": 1106,
+      "question": "Find datasets with PPDL license."
+    },
+    {
+      "dropped_row_id": 2217,
+      "kept_row_id": 684,
+      "question": "Find datasets funded by GRANT #2."
+    },
+    {
+      "dropped_row_id": 2219,
+      "kept_row_id": 653,
+      "question": "Find datasets with 'fmri' in their name."
+    },
+    {
+      "dropped_row_id": 2230,
+      "kept_row_id": 1890,
+      "question": "Find datasets authored by Tony Johnson."
+    },
+    {
+      "dropped_row_id": 2251,
+      "kept_row_id": 128,
+      "question": "Are there any datasets that contain PET data?"
+    },
+    {
+      "dropped_row_id": 2263,
+      "kept_row_id": 1887,
+      "question": "Are there any datasets that contain fMRI data?"
+    },
+    {
+      "dropped_row_id": 2286,
+      "kept_row_id": 23,
+      "question": "Find datasets containing both anatomical MRI and diffusion MRI data."
+    },
+    {
+      "dropped_row_id": 2291,
+      "kept_row_id": 48,
+      "question": "Find datasets funded by ERC-StG-2018-803370."
+    },
+    {
+      "dropped_row_id": 2307,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 2311,
+      "kept_row_id": 1861,
+      "question": "List datasets licensed under Creative Commons CC0 1.0."
+    },
+    {
+      "dropped_row_id": 2316,
+      "kept_row_id": 888,
+      "question": "List datasets that contain no functional MRI data."
+    },
+    {
+      "dropped_row_id": 2321,
+      "kept_row_id": 670,
+      "question": "Datasets funded by ERC-StG-2018-803370."
+    },
+    {
+      "dropped_row_id": 2324,
+      "kept_row_id": 386,
+      "question": "Find datasets that do not contain any functional MRI data."
+    },
+    {
+      "dropped_row_id": 2325,
+      "kept_row_id": 577,
+      "question": "Identify datasets containing both anatomical MRI and intracranial EEG data."
+    },
+    {
+      "dropped_row_id": 2327,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 2350,
+      "kept_row_id": 2039,
+      "question": "Show me datasets authored by Tyler M. Moore."
+    },
+    {
+      "dropped_row_id": 2359,
+      "kept_row_id": 2104,
+      "question": "Find datasets that feature both anatomical MRI and EEG modalities."
+    },
+    {
+      "dropped_row_id": 2376,
+      "kept_row_id": 373,
+      "question": "Identify datasets that contain both anatomical MRI and EEG data."
+    },
+    {
+      "dropped_row_id": 2403,
+      "kept_row_id": 318,
+      "question": "Show datasets authored by James F Cavanagh."
+    },
+    {
+      "dropped_row_id": 2412,
+      "kept_row_id": 224,
+      "question": "Show datasets authored by Raquel E. Gur."
+    },
+    {
+      "dropped_row_id": 2420,
+      "kept_row_id": 94,
+      "question": "Are there any datasets that contain PET scans?"
+    },
+    {
+      "dropped_row_id": 2425,
+      "kept_row_id": 947,
+      "question": "Datasets funded by GRANT #1."
+    },
+    {
+      "dropped_row_id": 2433,
+      "kept_row_id": 48,
+      "question": "Find datasets funded by ERC-StG-2018-803370."
+    },
+    {
+      "dropped_row_id": 2443,
+      "kept_row_id": 164,
+      "question": "Show datasets contributed by John A. Detre."
+    },
+    {
+      "dropped_row_id": 2444,
+      "kept_row_id": 1043,
+      "question": "Find datasets with the Creative Commons BY-SA 4.0 International license."
+    },
+    {
+      "dropped_row_id": 2465,
+      "kept_row_id": 1439,
+      "question": "Find datasets containing the MORALDILEMMA task."
+    },
+    {
+      "dropped_row_id": 2468,
+      "kept_row_id": 1349,
+      "question": "Find datasets that do not contain any anatomical MRI data."
+    },
+    {
+      "dropped_row_id": 2473,
+      "kept_row_id": 1435,
+      "question": "Show datasets funded by Western University internal funds for Jody Culham."
+    },
+    {
+      "dropped_row_id": 2498,
+      "kept_row_id": 1793,
+      "question": "Retrieve datasets that include both anatomical MRI and field map data."
+    },
+    {
+      "dropped_row_id": 2500,
+      "kept_row_id": 388,
+      "question": "List the 5 most recent datasets ordered by name."
+    },
+    {
+      "dropped_row_id": 2502,
+      "kept_row_id": 764,
+      "question": "Find datasets containing EEG data."
+    },
+    {
+      "dropped_row_id": 2509,
+      "kept_row_id": 872,
+      "question": "Find datasets released under the CCO license."
+    },
+    {
+      "dropped_row_id": 2522,
+      "kept_row_id": 998,
+      "question": "Find datasets contributed by Michael Milham."
+    },
+    {
+      "dropped_row_id": 2525,
+      "kept_row_id": 396,
+      "question": "List datasets funded by 'GRANT #2'."
+    },
+    {
+      "dropped_row_id": 2530,
+      "kept_row_id": 2516,
+      "question": "Show datasets containing both anatomical MRI and EEG data."
+    },
+    {
+      "dropped_row_id": 2532,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 2537,
+      "kept_row_id": 946,
+      "question": "Find datasets with Creative Commons BY-SA 4.0 license."
+    },
+    {
+      "dropped_row_id": 2546,
+      "kept_row_id": 1091,
+      "question": "Are there any datasets that exist in the database?"
+    },
+    {
+      "dropped_row_id": 2553,
+      "kept_row_id": 102,
+      "question": "Find datasets funded by CI241/7-1."
+    },
+    {
+      "dropped_row_id": 2558,
+      "kept_row_id": 449,
+      "question": "Identify datasets that contain no PET data."
+    },
+    {
+      "dropped_row_id": 2572,
+      "kept_row_id": 548,
+      "question": "List all datasets that contain no functional MRI data."
+    },
+    {
+      "dropped_row_id": 2576,
+      "kept_row_id": 1279,
+      "question": "Find datasets authored by Matt Cieslak."
+    },
+    {
+      "dropped_row_id": 2594,
+      "kept_row_id": 2133,
+      "question": "List datasets authored by Damien A. Fair."
+    },
+    {
+      "dropped_row_id": 2605,
+      "kept_row_id": 1485,
+      "question": "Search for datasets funded by CI241/1-1."
+    },
+    {
+      "dropped_row_id": 2617,
+      "kept_row_id": 1540,
+      "question": "List datasets authored by David R. Roalf."
+    },
+    {
+      "dropped_row_id": 2619,
+      "kept_row_id": 179,
+      "question": "Find datasets funded by NIH/NIMH R01MH125934 for BIDS data preparation."
+    },
+    {
+      "dropped_row_id": 2630,
+      "kept_row_id": 2149,
+      "question": "Find datasets authored by James F Cavanagh."
+    },
+    {
+      "dropped_row_id": 2685,
+      "kept_row_id": 1942,
+      "question": "Show datasets with at least 4 longitudinal sessions."
+    },
+    {
+      "dropped_row_id": 2690,
+      "kept_row_id": 1860,
+      "question": "Show datasets contributed by Joanes Grandjean."
+    },
+    {
+      "dropped_row_id": 2701,
+      "kept_row_id": 1366,
+      "question": "Find datasets containing both anatomical MRI and EEG data."
+    },
+    {
+      "dropped_row_id": 2703,
+      "kept_row_id": 1538,
+      "question": "Show the first 10 datasets ordered by name."
+    },
+    {
+      "dropped_row_id": 2704,
+      "kept_row_id": 12,
+      "question": "Are there any datasets that contain EEG data?"
+    },
+    {
+      "dropped_row_id": 2710,
+      "kept_row_id": 352,
+      "question": "List datasets that do not have a DOI."
+    },
+    {
+      "dropped_row_id": 2721,
+      "kept_row_id": 48,
+      "question": "Find datasets funded by ERC-StG-2018-803370."
+    },
+    {
+      "dropped_row_id": 2723,
+      "kept_row_id": 1565,
+      "question": "Search for datasets with 'related' in the description."
+    },
+    {
+      "dropped_row_id": 2752,
+      "kept_row_id": 1007,
+      "question": "Find datasets authored by Stephen Gordon."
+    },
+    {
+      "dropped_row_id": 2767,
+      "kept_row_id": 1236,
+      "question": "Find datasets released under the Creative Commons BY-SA 4.0 International License."
+    },
+    {
+      "dropped_row_id": 2781,
+      "kept_row_id": 2353,
+      "question": "Find datasets with funding labeled as 'TODO'."
+    }
+  ],
+  "near_dup_candidates": [
+    {
+      "row_ids": [
+        812,
+        863
+      ],
+      "questions": [
+        "Find datasets that have no functional MRI datatype.",
+        "Find datasets that have no functional MRI datatypes."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT CASE WHEN o.datatype = 'func' THEN o.id END) = 0",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9901,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2306,
+        2542
+      ],
+      "questions": [
+        "Find the top 5 datasets with the highest number of subjects that have at least 2 sessions.",
+        "Find the top 5 datasets with the highest number of subjects that have at least 3 sessions."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.session IS NOT NULL GROUP BY bo.dataset_id HAVING COUNT(DISTINCT bo.session) >= 2) GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.session IS NOT NULL GROUP BY bo.dataset_id HAVING COUNT(DISTINCT bo.session) >= 3) GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "seq_ratio": 0.9888,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        389,
+        2470
+      ],
+      "questions": [
+        "Are there any datasets that have participants with a specific diagnosis?",
+        "Are there any datasets that have participants with specific diagnosis?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IS NOT NULL) GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IS NOT NULL) GROUP BY d.id",
+      "seq_ratio": 0.9857,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        34,
+        1678
+      ],
+      "questions": [
+        "Search for datasets mentioning 'fluid' in their name or description.",
+        "Search for datasets mentioning 'fluid' in the name or description."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%fluid%' OR d.description_text ILIKE '%fluid%' GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%fluid%' OR d.description_text ILIKE '%fluid%' GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9844,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        380,
+        1124
+      ],
+      "questions": [
+        "Search for datasets mentioning 'brain' in the name or description.",
+        "Search for datasets mentioning 'brain' in their name or description."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%brain%' OR d.description_text ILIKE '%brain%' GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%brain%' OR d.description_text ILIKE '%brain%' GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9844,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        168,
+        2269
+      ],
+      "questions": [
+        "Search for datasets mentioning 'participants' in the description.",
+        "Search for datasets mentioning 'participants' in their description."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%participants%' GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%participants%' GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9841,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1985,
+        2204
+      ],
+      "questions": [
+        "Which datasets have at least 2 sessions per subject? List the top 5 by subject count.",
+        "Which datasets have at least 2 sessions per subject? List the top 10 by subject count."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id GROUP BY o2.dataset_id HAVING COUNT(DISTINCT o2.session) >= 2) GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 2 ORDER BY subject_count DESC LIMIT 10",
+      "seq_ratio": 0.982,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1638,
+        2122
+      ],
+      "questions": [
+        "Find all datasets released under the PDDL license.",
+        "Find all datasets released under the PPDL license."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%PDDL%' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%PPDL%' GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9796,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2287,
+        2531
+      ],
+      "questions": [
+        "Get the top 5 datasets with at least 4 sessions.",
+        "Get the top 5 datasets with at least 2 sessions."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 ORDER BY subject_count DESC LIMIT 5",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 2 ORDER BY subject_count DESC LIMIT 5",
+      "seq_ratio": 0.9787,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        409,
+        889
+      ],
+      "questions": [
+        "Top 5 datasets with at least 2 sessions.",
+        "Top 5 datasets with at least 4 sessions."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 2 ORDER BY subject_count DESC LIMIT 5",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id GROUP BY bo.dataset_id HAVING COUNT(DISTINCT bo.session) >= 4) GROUP BY d.id LIMIT 5",
+      "seq_ratio": 0.9744,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        173,
+        646
+      ],
+      "questions": [
+        "Are there any datasets that contain no anatomical MRI data?",
+        "Are there any datasets that contain anatomical MRI data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') GROUP BY d.id",
+      "seq_ratio": 0.9735,
+      "token_jaccard": 0.8,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        241,
+        464
+      ],
+      "questions": [
+        "Retrieve datasets that include both anatomical MRI and functional MRI data.",
+        "Retrieve datasets that include both anatomical and functional MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9722,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        126,
+        1739
+      ],
+      "questions": [
+        "List the top 50 datasets with at least two distinct sessions.",
+        "List the top 50 datasets with at least 3 distinct sessions."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 2 ORDER BY subject_count DESC LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3 ORDER BY subject_count DESC LIMIT 50",
+      "seq_ratio": 0.9661,
+      "token_jaccard": 0.8333,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1160,
+        1428
+      ],
+      "questions": [
+        "Retrieve datasets that contain both anatomical MRI and intracranial EEG data.",
+        "Retrieve datasets that contain both anatomical MRI and intracranial EEG."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'ieeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'ieeg') GROUP BY d.id",
+      "seq_ratio": 0.966,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        600,
+        1123
+      ],
+      "questions": [
+        "Find datasets funded by the Healthy Brain Network donor site.",
+        "Find datasets funded by the Healthy Brain Network donors."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'See https://childmind.org/science/global-open-science/healthy-brain-network/#donors' = ANY(d.funding) GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'See https://childmind.org/science/global-open-science/healthy-brain-network/#donors' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9655,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        39,
+        2409
+      ],
+      "questions": [
+        "Find datasets that feature both anatomical MRI and diffusion MRI.",
+        "Find datasets that feature both anatomical MRI and diffusion MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9624,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        271,
+        2202
+      ],
+      "questions": [
+        "List datasets containing both anatomical MRI and diffusion MRI data.",
+        "List datasets containing both anatomical MRI and diffusion MRI."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9612,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2013,
+        2658
+      ],
+      "questions": [
+        "Find datasets that do not list a Manufacturer in their objects.",
+        "Find datasets that do not list a manufacturer in their object files."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.extension = 'Manufacturer') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.extension = '.json') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9612,
+      "token_jaccard": 0.4,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        8,
+        434
+      ],
+      "questions": [
+        "Find datasets containing both anatomical MRI and field maps.",
+        "Find datasets containing both anatomical MRI and field map files."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9593,
+      "token_jaccard": 0.625,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        144,
+        1493
+      ],
+      "questions": [
+        "Identify datasets that include both anatomical MRI and EEG data.",
+        "Identify datasets that include both anatomical MRI and EEG."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9587,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        12,
+        128
+      ],
+      "questions": [
+        "Are there any datasets that contain EEG data?",
+        "Are there any datasets that contain PET data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id",
+      "seq_ratio": 0.9545,
+      "token_jaccard": 0.5,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2010,
+        2516
+      ],
+      "questions": [
+        "Show datasets containing both anatomical MRI and EEG.",
+        "Show datasets containing both anatomical MRI and EEG data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9541,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        826,
+        1706
+      ],
+      "questions": [
+        "List datasets that include both anatomical MRI and field maps.",
+        "List datasets that include both anatomical MRI and field map data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9524,
+      "token_jaccard": 0.7143,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1559,
+        1835
+      ],
+      "questions": [
+        "Identify datasets that contain no functional MRI data at all.",
+        "Identify datasets that contain no functional imaging data at all."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'func') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) = 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0",
+      "seq_ratio": 0.9516,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        8,
+        825
+      ],
+      "questions": [
+        "Find datasets containing both anatomical MRI and field maps.",
+        "Find datasets containing both anatomical MRI and field map data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9508,
+      "token_jaccard": 0.7143,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        716,
+        975
+      ],
+      "questions": [
+        "List datasets containing both anatomical and functional MRI data.",
+        "List datasets containing both anatomical and functional MRI scans."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9457,
+      "token_jaccard": 0.8333,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        107,
+        1835
+      ],
+      "questions": [
+        "Identify datasets that contain no functional imaging data.",
+        "Identify datasets that contain no functional imaging data at all."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0",
+      "seq_ratio": 0.9421,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        259,
+        2684
+      ],
+      "questions": [
+        "Retrieve the top 5 datasets that have at least 4 sessions per subject.",
+        "Retrieve the top 5 datasets that have at least 4 distinct sessions per subject."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 ORDER BY subject_count DESC LIMIT 5",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT session) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.session IS NOT NULL) >= 4 GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "seq_ratio": 0.9388,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        357,
+        1559
+      ],
+      "questions": [
+        "Identify datasets that contain no functional MRI data",
+        "Identify datasets that contain no functional MRI data at all."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'func') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) = 0 LIMIT 50",
+      "seq_ratio": 0.9381,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        5,
+        339
+      ],
+      "questions": [
+        "Which datasets have no anatomical MRI?",
+        "Which datasets have no anatomical MRI data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT CASE WHEN o.datatype = 'anat' THEN o.id END) = 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "seq_ratio": 0.9367,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        600,
+        1265
+      ],
+      "questions": [
+        "Find datasets funded by the Healthy Brain Network donor site.",
+        "Find datasets funded by the Healthy Brain Network donor initiative."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'See https://childmind.org/science/global-open-science/healthy-brain-network/#donors' = ANY(d.funding) GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'See https://childmind.org/science/global-open-science/healthy-brain-network/#donors' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9365,
+      "token_jaccard": 0.7143,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        464,
+        1003
+      ],
+      "questions": [
+        "Retrieve datasets that include both anatomical and functional MRI data.",
+        "Retrieve datasets that include both anatomical and functional MRI files."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9362,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        23,
+        508
+      ],
+      "questions": [
+        "Find datasets containing both anatomical MRI and diffusion MRI data.",
+        "Find datasets containing both anatomical MRI and functional MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9333,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1971,
+        2581
+      ],
+      "questions": [
+        "Show datasets containing both anatomical MRI and diffusion MRI data.",
+        "Show datasets containing both anatomical MRI and functional MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'dwi') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'func') GROUP BY d.id",
+      "seq_ratio": 0.9333,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2123,
+        2445
+      ],
+      "questions": [
+        "Search for datasets mentioning 'fmri' in their description.",
+        "Search for datasets mentioning 'fmri' in their name or description."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%fmri%' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%fmri%' OR d.description_text ILIKE '%fmri%' GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "seq_ratio": 0.9333,
+      "token_jaccard": 0.8,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        108,
+        2744
+      ],
+      "questions": [
+        "List datasets that include both anatomical and diffusion MRI data.",
+        "List datasets that include both anatomical MRI and diffusion MRI."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9302,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1414,
+        2036
+      ],
+      "questions": [
+        "Find datasets that include both anatomical MRI and diffusion MRI.",
+        "Find datasets that include both anatomical and diffusion MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'dwi') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9302,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        937,
+        1002
+      ],
+      "questions": [
+        "List all datasets that contain resting-state timeseries data.",
+        "List all datasets that contain resting-state fMRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting-state' AND bo.suffix = 'timeseries data') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting-state' AND bo.suffix = 'bold') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9298,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        434,
+        825
+      ],
+      "questions": [
+        "Find datasets containing both anatomical MRI and field map files.",
+        "Find datasets containing both anatomical MRI and field map data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9291,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        393,
+        767
+      ],
+      "questions": [
+        "Search for datasets mentioning 'valence' in their name or description.",
+        "Search for datasets mentioning 'valence' in their descriptions."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%valence%' OR d.description_text ILIKE '%valence%' GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%valence%' GROUP BY d.id",
+      "seq_ratio": 0.9291,
+      "token_jaccard": 0.5,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        107,
+        357
+      ],
+      "questions": [
+        "Identify datasets that contain no functional imaging data.",
+        "Identify datasets that contain no functional MRI data"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') LIMIT 50",
+      "seq_ratio": 0.9273,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        771,
+        1002
+      ],
+      "questions": [
+        "List all datasets that contain resting-state task data.",
+        "List all datasets that contain resting-state fMRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task ILIKE '%resting-state%') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting-state' AND bo.suffix = 'bold') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9259,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        5,
+        1478
+      ],
+      "questions": [
+        "Which datasets have no anatomical MRI?",
+        "Which datasets have no anatomical MRI files?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT CASE WHEN o.datatype = 'anat' THEN o.id END) = 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') LIMIT 50",
+      "seq_ratio": 0.925,
+      "token_jaccard": 0.75,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        218,
+        954
+      ],
+      "questions": [
+        "List datasets that do not contain any PET data.",
+        "List datasets that do not contain any fMRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) = 0",
+      "seq_ratio": 0.9247,
+      "token_jaccard": 0.5,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        703,
+        1615
+      ],
+      "questions": [
+        "Show the top 5 datasets with at least 4 imaging sessions per subject.",
+        "Show the top 5 datasets with at least 2 sessions per subject."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 ORDER BY subject_count DESC LIMIT 5",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.session) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.session IS NOT NULL) >= 2 GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "seq_ratio": 0.9219,
+      "token_jaccard": 0.8333,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1066,
+        2182
+      ],
+      "questions": [
+        "Find datasets containing PET data with FFERN task",
+        "Find datasets containing PET data with test run tasks."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet' AND bo.task = 'FFERN') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet' AND bo.task = 'test run') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9216,
+      "token_jaccard": 0.2857,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        12,
+        1887
+      ],
+      "questions": [
+        "Are there any datasets that contain EEG data?",
+        "Are there any datasets that contain fMRI data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9213,
+      "token_jaccard": 0.5,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        94,
+        128
+      ],
+      "questions": [
+        "Are there any datasets that contain PET scans?",
+        "Are there any datasets that contain PET data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'pet') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id",
+      "seq_ratio": 0.9213,
+      "token_jaccard": 0.75,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        128,
+        1887
+      ],
+      "questions": [
+        "Are there any datasets that contain PET data?",
+        "Are there any datasets that contain fMRI data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9213,
+      "token_jaccard": 0.5,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1294,
+        1956
+      ],
+      "questions": [
+        "Which datasets contain longitudinal data with at least 3 distinct sessions?",
+        "Which datasets contain longitudinal data with at least 2 sessions?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3 ORDER BY subject_count DESC LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.session) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.session IS NOT NULL) >= 2 GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "seq_ratio": 0.9209,
+      "token_jaccard": 0.8,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        124,
+        187
+      ],
+      "questions": [
+        "Identify datasets that include both anatomical and functional MRI data.",
+        "Identify datasets that include both anatomical MRI and functional MRI modalities."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'func') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.92,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1379,
+        2482
+      ],
+      "questions": [
+        "Find datasets that do not contain 'InstitutionName' in their object metadata.",
+        "Find datasets that do not contain 'AcquisitionTime' in their object metadata."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.extension IS NULL OR bo.extension NOT LIKE '%InstitutionName%')) GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.extension = '.json' AND bo.datatype ILIKE '%AcquisitionTime%') GROUP BY d.id",
+      "seq_ratio": 0.9189,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        487,
+        534
+      ],
+      "questions": [
+        "Find datasets that include motion capture data for the 'rew' task.",
+        "Find datasets that include motion capture data for the MORALDILEMMA task."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'motion capture' AND bo.task = 'rew') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'motion capture' AND bo.task = 'MORALDILEMMA') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9185,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        276,
+        1226
+      ],
+      "questions": [
+        "Search for datasets mentioning 'folder' in the description.",
+        "Search for datasets mentioning 'folder' in their name or description."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%folder%' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%folder%' OR d.description_text ILIKE '%folder%' GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 0 LIMIT 50",
+      "seq_ratio": 0.918,
+      "token_jaccard": 0.8,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        395,
+        1313
+      ],
+      "questions": [
+        "Find datasets with the Creative Commons Attribution 4.0 International Public License.",
+        "Find datasets with the 'Creative Commons Attribution 4.0 International (CC-BY 4.0)' license."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'Creative Commons Attribution 4.0 International Public License' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'Creative Commons Attribution 4.0 International (CC-BY 4.0)' GROUP BY d.id",
+      "seq_ratio": 0.9176,
+      "token_jaccard": 0.75,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        416,
+        837
+      ],
+      "questions": [
+        "Find datasets with at least 4 sessions per subject.",
+        "Find datasets with at least 4 distinct sessions per subject."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.session) FROM bids_objects bo WHERE bo.dataset_id = d.id) >= 4 GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+      "seq_ratio": 0.9174,
+      "token_jaccard": 0.8,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        825,
+        1366
+      ],
+      "questions": [
+        "Find datasets containing both anatomical MRI and field map data.",
+        "Find datasets containing both anatomical MRI and EEG data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9167,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1658,
+        2516
+      ],
+      "questions": [
+        "Show datasets containing both anatomical MRI and field map data.",
+        "Show datasets containing both anatomical MRI and EEG data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9167,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1243,
+        1319
+      ],
+      "questions": [
+        "Retrieve datasets that contain both anatomical and functional MRI datatypes.",
+        "Retrieve datasets that contain both anatomical MRI and functional MRI modalities."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id",
+      "seq_ratio": 0.9161,
+      "token_jaccard": 0.75,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        422,
+        527
+      ],
+      "questions": [
+        "Top 50 datasets with at least 2 sessions, ordered by subject count.",
+        "Top 50 datasets with at least 2 sessions per subject, ordered by subject count."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id GROUP BY bo.dataset_id HAVING COUNT(DISTINCT bo.session) >= 2) GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.id IN (SELECT dataset_id FROM bids_objects GROUP BY dataset_id, subject HAVING COUNT(DISTINCT session) >= 2) GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+      "seq_ratio": 0.9155,
+      "token_jaccard": 0.875,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        526,
+        1630
+      ],
+      "questions": [
+        "Find datasets that include both anatomical and functional MRI modalities.",
+        "Find datasets that include both anatomical MRI and functional MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9155,
+      "token_jaccard": 0.8333,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1033,
+        2036
+      ],
+      "questions": [
+        "Find datasets that include both anatomical MRI and diffusion MRI modalities.",
+        "Find datasets that include both anatomical and diffusion MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'dwi') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9143,
+      "token_jaccard": 0.8333,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        70,
+        1008
+      ],
+      "questions": [
+        "Find datasets with Creative Commons Attribution 4.0 International Public License.",
+        "Find datasets with Creative Commons Attribution 4.0 International (CC-BY 4.0) license."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'Creative Commons Attribution 4.0 International Public License' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'Creative Commons Attribution 4.0 International (CC-BY 4.0)' GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9136,
+      "token_jaccard": 0.75,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        94,
+        204
+      ],
+      "questions": [
+        "Are there any datasets that contain PET scans?",
+        "Are there any datasets that contain PET imaging?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'pet') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.913,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        771,
+        937
+      ],
+      "questions": [
+        "List all datasets that contain resting-state task data.",
+        "List all datasets that contain resting-state timeseries data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task ILIKE '%resting-state%') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting-state' AND bo.suffix = 'timeseries data') GROUP BY d.id",
+      "seq_ratio": 0.9123,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1110,
+        2726
+      ],
+      "questions": [
+        "Find datasets with at least 25 female patients diagnosed with schizophrenia.",
+        "Find datasets with at least 25 participants diagnosed with schizophrenia."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'schizophrenia' AND p.sex = 'female') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 25 LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'schizophrenia') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 25 LIMIT 50",
+      "seq_ratio": 0.9116,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        526,
+        1033
+      ],
+      "questions": [
+        "Find datasets that include both anatomical and functional MRI modalities.",
+        "Find datasets that include both anatomical MRI and diffusion MRI modalities."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'dwi') GROUP BY d.id",
+      "seq_ratio": 0.9116,
+      "token_jaccard": 0.7143,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        78,
+        300
+      ],
+      "questions": [
+        "Top 50 datasets with at least 2 sessions per subject.",
+        "Top 50 datasets with at least 4 imaging sessions per subject."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.id IN (SELECT dataset_id FROM bids_objects WHERE session IS NOT NULL GROUP BY dataset_id, subject HAVING COUNT(DISTINCT session) >= 2) GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 ORDER BY subject_count DESC LIMIT 50",
+      "seq_ratio": 0.9107,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        184,
+        672
+      ],
+      "questions": [
+        "Find datasets containing ERNPsychometrics task data.",
+        "Find datasets containing ERNPsychometrics task data using EEG."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'ERNPsychometrics') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'ERNPsychometrics' AND bo.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9107,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        359,
+        2397
+      ],
+      "questions": [
+        "Top 10 datasets with at least 2 sessions per subject",
+        "Top 10 datasets with at least 4 imaging sessions per subject."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.session IS NOT NULL GROUP BY bo.dataset_id HAVING COUNT(DISTINCT bo.session) >= 2) GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.id IN (SELECT dataset_id FROM bids_objects GROUP BY dataset_id, subject HAVING COUNT(DISTINCT session) >= 4) GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+      "seq_ratio": 0.9107,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        241,
+        1003
+      ],
+      "questions": [
+        "Retrieve datasets that include both anatomical MRI and functional MRI data.",
+        "Retrieve datasets that include both anatomical and functional MRI files."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9103,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        241,
+        1793
+      ],
+      "questions": [
+        "Retrieve datasets that include both anatomical MRI and functional MRI data.",
+        "Retrieve datasets that include both anatomical MRI and field map data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9091,
+      "token_jaccard": 0.625,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        899,
+        2197
+      ],
+      "questions": [
+        "Find datasets with the Creative Commons CC0 1.0 license.",
+        "Find datasets with the Creative Commons BY-SA 4.0 license."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'Creative Commons CC0 1.0' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%Creative Commons BY-SA 4.0%' GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9091,
+      "token_jaccard": 0.4286,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1511,
+        2125
+      ],
+      "questions": [
+        "Find datasets that include working memory tasks and fMRI data.",
+        "Find datasets that include working memory tasks and anatomical MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task ILIKE '%working memory%' AND bo.suffix = 'bold') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task ILIKE '%working memory%') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9091,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        674,
+        1160
+      ],
+      "questions": [
+        "Retrieve datasets that contain both anatomical MRI and EEG data.",
+        "Retrieve datasets that contain both anatomical MRI and intracranial EEG data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'ieeg') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9065,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2235,
+        2363
+      ],
+      "questions": [
+        "Are there any datasets that contain specific task-based fMRI?",
+        "Are there any datasets that contain specific task-based imaging data?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IS NOT NULL) GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9062,
+      "token_jaccard": 0.7143,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1016,
+        1856
+      ],
+      "questions": [
+        "Are there any datasets that contain 'polar' tasks?",
+        "Are there any datasets that contain N-back tasks?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'polar') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task ILIKE '%n-back%') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9053,
+      "token_jaccard": 0.6,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        729,
+        954
+      ],
+      "questions": [
+        "List datasets that do not contain any functional MRI data.",
+        "List datasets that do not contain any fMRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func')",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) = 0",
+      "seq_ratio": 0.9038,
+      "token_jaccard": 0.4,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1630,
+        2036
+      ],
+      "questions": [
+        "Find datasets that include both anatomical MRI and functional MRI data.",
+        "Find datasets that include both anatomical and diffusion MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'dwi') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9037,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1123,
+        1980
+      ],
+      "questions": [
+        "Find datasets funded by the Healthy Brain Network donors.",
+        "Find datasets funded by the Healthy Brain Network project."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'See https://childmind.org/science/global-open-science/healthy-brain-network/#donors' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'See https://childmind.org/science/global-open-science/healthy-brain-network/#donors' = ANY(d.funding) GROUP BY d.id",
+      "seq_ratio": 0.9027,
+      "token_jaccard": 0.6667,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        128,
+        204
+      ],
+      "questions": [
+        "Are there any datasets that contain PET data?",
+        "Are there any datasets that contain PET imaging?"
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9011,
+      "token_jaccard": 0.75,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        508,
+        825
+      ],
+      "questions": [
+        "Find datasets containing both anatomical MRI and functional MRI data.",
+        "Find datasets containing both anatomical MRI and field map data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.9008,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        1658,
+        2581
+      ],
+      "questions": [
+        "Show datasets containing both anatomical MRI and field map data.",
+        "Show datasets containing both anatomical MRI and functional MRI data."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'fmap') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'func') GROUP BY d.id",
+      "seq_ratio": 0.9008,
+      "token_jaccard": 0.5714,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        553,
+        2429
+      ],
+      "questions": [
+        "Find datasets that do not have any objects with ProtocolName defined.",
+        "Find datasets that do not have any objects defined with ProtocolName."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.id IS NOT NULL) GROUP BY d.id",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.extension IS NOT NULL)) GROUP BY d.id LIMIT 50",
+      "seq_ratio": 0.8824,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        2279,
+        2336
+      ],
+      "questions": [
+        "Search for datasets mentioning 'folders' in their description or name.",
+        "Search for datasets mentioning 'folders' in their name or description."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%folders%' OR d.description_text ILIKE '%folders%' GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%folders%' OR d.description_text ILIKE '%folders%' GROUP BY d.id",
+      "seq_ratio": 0.8806,
+      "token_jaccard": 1.0,
+      "verdict": "near_dup_different_sql"
+    },
+    {
+      "row_ids": [
+        674,
+        1428
+      ],
+      "questions": [
+        "Retrieve datasets that contain both anatomical MRI and EEG data.",
+        "Retrieve datasets that contain both anatomical MRI and intracranial EEG."
+      ],
+      "sql_a": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects b1 WHERE b1.dataset_id = d.id AND b1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects b2 WHERE b2.dataset_id = d.id AND b2.datatype = 'eeg') GROUP BY d.id LIMIT 50",
+      "sql_b": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'ieeg') GROUP BY d.id",
+      "seq_ratio": 0.8657,
+      "token_jaccard": 0.8571,
+      "verdict": "near_dup_different_sql"
+    }
+  ]
+}

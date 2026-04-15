@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # In production the crawler runs as its own Docker service.
     crawler_scheduler = None
     if os.getenv("RUN_CRAWLER_IN_PROCESS", "false").lower() == "true":
-        _crawler_path = Path(__file__).resolve().parents[1] / "crawlers" / "openneuro-crawler-backup"
+        _crawler_path = Path(__file__).resolve().parents[1] / "crawlers" / "openneuro-crawler"
         if str(_crawler_path) not in sys.path:
             sys.path.insert(0, str(_crawler_path))
         try:

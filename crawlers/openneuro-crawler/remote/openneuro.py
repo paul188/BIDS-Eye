@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from uuid import uuid4
 
@@ -36,8 +37,13 @@ from db.models import BIDSDataset, BIDSObject
 
 log = logging.getLogger(__name__)
 
+
+class DatasetAccessDeniedError(Exception):
+    """Raised when the dataset's core metadata is inaccessible on S3."""
+
+
 OPENNEURO_BUCKET = "openneuro.org"
-_CACHE_DIR = Path.home() / ".bids-sql" / "openneuro"
+_CACHE_DIR = Path(os.environ.get("BIDS_SQL_CACHE", Path.home() / ".bids-sql")) / "openneuro"
 
 # Extensions whose content we actually download (metadata only)
 _METADATA_EXTENSIONS = frozenset({".json", ".tsv"})
@@ -92,6 +98,13 @@ def _build_mirror(
         if not rel:
             continue
 
+        # Skip macOS resource fork files (._filename) — they are binary AppleDouble
+        # metadata, never valid JSON, and pybids will choke trying to parse them.
+        basename = rel.split("/")[-1]
+        if basename.startswith("._"):
+            skipped += 1
+            continue
+
         dest = mirror_dir / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -103,15 +116,88 @@ def _build_mirror(
             ext = Path(low).suffix
 
         if dest.exists():
-            skipped += 1
-            continue
+            # Re-try dataset_description.json if it's a 0-byte stub from a
+            # previous failed/restricted crawl — it needs real content
+            if rel == "dataset_description.json" and dest.stat().st_size == 0:
+                pass  # fall through and re-download
+            elif ext == ".json":
+                # Validate cached JSON — re-download if corrupt (e.g. written
+                # before JSON validation was added, or has invalid escapes)
+                import json as _json
+                try:
+                    _json.loads(dest.read_bytes())
+                    skipped += 1
+                    continue
+                except Exception:
+                    dest.unlink()  # corrupt — fall through to re-download
+            else:
+                skipped += 1
+                continue
 
         if ext in _METADATA_EXTENSIONS:
             try:
-                dest.write_bytes(_fetch_bytes(client, key))
+                raw = _fetch_bytes(client, key)
+                if ext == ".json":
+                    # Ensure clean UTF-8: fix latin-1 encoding and strip UTF-8 BOM
+                    try:
+                        raw.decode("utf-8")
+                    except UnicodeDecodeError:
+                        raw = raw.decode("latin-1").encode("utf-8")
+                    raw = raw.lstrip(b"\xef\xbb\xbf")  # strip UTF-8 BOM if present
+                    # Validate JSON — stub out malformed files so pybids doesn't crash
+                    import json as _json
+                    try:
+                        _json.loads(raw)
+                    except _json.JSONDecodeError as je:
+                        # Try a sequence of repairs before giving up.
+                        import re as _re
+                        text = raw.decode("utf-8", errors="replace")
+                        # Normalise Windows line endings so \n patterns work reliably
+                        repaired = text.replace("\r\n", "\n").replace("\r", "\n")
+
+                        # Repair 1: trailing commas before } or ]
+                        repaired = _re.sub(r",(\s*[}\]])", r"\1", repaired)
+
+                        # Repair 2: missing commas between properties
+                        # (closing } immediately followed by whitespace then a new key)
+                        repaired = _re.sub(r"(\})([ \t]*\n[ \t]*)(\"|')", r"\1,\2\3", repaired)
+
+                        # Repair 3: invalid backslash escapes (e.g. \' or \p)
+                        # JSON only allows: \" \\ \/ \b \f \n \r \t \uXXXX
+                        _VALID_ESCAPES = set('"\\\/bfnrtu')
+                        def _fix_escapes(m):
+                            ch = m.group(1)
+                            return '\\' + ch if ch in _VALID_ESCAPES else ch
+                        repaired = _re.sub(r'\\(.)', _fix_escapes, repaired)
+
+                        # Repair 4: raw control characters (ASCII 0x00-0x1F except
+                        # tab/newline) embedded inside string values crash the parser
+                        repaired = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', repaired)
+
+                        # Repair 5: single-quoted keys → double-quoted
+                        # Only replace when the key is at the start of a JSON property
+                        # position (preceded by { or , and optional whitespace)
+                        repaired = _re.sub(r"(?<=[{,])\s*'([^']+)'\s*:", r' "\1":', repaired)
+
+                        try:
+                            _json.loads(repaired)
+                            log.warning("  [mirror] Repaired JSON in %s (%s)", key, je)
+                            raw = repaired.encode("utf-8")
+                        except _json.JSONDecodeError:
+                            log.warning("  [mirror] Malformed JSON in %s (%s) — stubbing", key, je)
+                            raw = b"{}"
+                dest.write_bytes(raw)
                 downloaded += 1
             except Exception as exc:
+                is_access_denied = "AccessDenied" in str(exc)
                 log.warning("  [mirror] Failed to download %s: %s", key, exc)
+                # Any AccessDenied means the dataset is restricted — bail immediately
+                # and let the GraphQL fallback handle it rather than wasting time
+                # trying to download hundreds more files.
+                if is_access_denied:
+                    raise DatasetAccessDeniedError(
+                        f"{accession_id}: access denied on {rel}"
+                    )
                 dest.touch()   # stub so pybids still sees the file
                 stubbed += 1
         else:
@@ -144,6 +230,22 @@ async def _stamp_dataset(
             )
             return None
 
+        # Extract first-class fields from description JSON (already stored by indexer)
+        desc = dataset.description or {}
+        raw_authors = desc.get("Authors")
+        authors    = raw_authors if isinstance(raw_authors, list) else ([raw_authors] if raw_authors else None)
+        raw_refs   = desc.get("ReferencesAndLinks")
+        paper_references = raw_refs if isinstance(raw_refs, list) else ([raw_refs] if raw_refs else None)
+        raw_fund   = desc.get("Funding")
+        funding    = raw_fund if isinstance(raw_fund, list) else ([raw_fund] if raw_fund else None)
+        description_text = desc.get("Description") or None
+        if description_text:
+            description_text = description_text.strip() or None
+
+        # Strip promoted fields from the JSON blob — they live in dedicated columns now
+        _PROMOTED = {"Authors", "License", "DatasetDOI", "ReferencesAndLinks", "Funding", "Description"}
+        clean_desc = {k: v for k, v in desc.items() if k not in _PROMOTED}
+
         await session.execute(
             update(BIDSDataset)
             .where(BIDSDataset.id == dataset.id)
@@ -151,6 +253,13 @@ async def _stamp_dataset(
                 source_type="openneuro",
                 accession_id=accession_id,
                 remote_url=remote_url,
+                authors=authors,
+                license=desc.get("License") or None,
+                doi=desc.get("DatasetDOI") or None,
+                paper_references=paper_references,
+                funding=funding,
+                description_text=description_text,
+                description=clean_desc,
             )
         )
         await session.commit()
@@ -212,7 +321,16 @@ async def index_openneuro(
         shutil.rmtree(mirror_dir)
 
     mirror_dir.mkdir(exist_ok=True)
-    _build_mirror(client, accession_id, all_objects, mirror_dir)
+    try:
+        _build_mirror(client, accession_id, all_objects, mirror_dir)
+    except DatasetAccessDeniedError:
+        log.warning(
+            "  Dataset %s is restricted (S3 access denied). "
+            "Falling back to GraphQL ingestion.", accession_id
+        )
+        from remote.graphql import index_via_graphql
+        await index_via_graphql(accession_id)
+        return
 
     # ── Step 3: run standard indexing pipeline ────────────────────────────────
     # Import here to keep the module importable without bids-sql installed.

@@ -88,10 +88,23 @@ async def _crawl_one(accession_id: str, delay_seconds: int) -> None:
             from remote.openneuro import index_openneuro
             await index_openneuro(accession_id)
             crawler_state["indexed_count"] += 1
-            log.info("[crawler] Finished %s", accession_id)
+            print(
+                f"[DONE] {accession_id} | "
+                f"indexed={crawler_state['indexed_count']} "
+                f"errors={crawler_state['error_count']} | "
+                f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}",
+                flush=True,
+            )
         except Exception as exc:
             crawler_state["error_count"] += 1
             crawler_state["last_error"] = f"{accession_id}: {exc}"
+            print(
+                f"[FAIL] {accession_id} | {exc} | "
+                f"indexed={crawler_state['indexed_count']} "
+                f"errors={crawler_state['error_count']} | "
+                f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}",
+                flush=True,
+            )
             log.error("[crawler] Error indexing %s: %s", accession_id, exc, exc_info=True)
         finally:
             crawler_state["current_accession"] = None
@@ -114,7 +127,7 @@ async def run_crawl_cycle() -> None:
     if not accessions:
         return
 
-    delay = int(os.getenv("CRAWL_DELAY_SECONDS", "30"))
+    delay = float(os.getenv("CRAWL_DELAY_SECONDS", "30"))
     crawler_state["running"] = True
     crawler_state["queue"] = list(accessions)
     crawler_state["last_run_started"] = datetime.now(timezone.utc).isoformat()

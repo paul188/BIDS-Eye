@@ -1,0 +1,79 @@
+# ── Secrets & environment ──────────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.Python
+pip-wheel-metadata/
+site-packages/
+
+# ── Node / frontend ───────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ── PostgreSQL data ───────────────────────────────────────────────────────────
+# The postgres_data/ directory contains a live DB — never commit it
+postgres_data/
+
+# ── Model weights ─────────────────────────────────────────────────────────────
+scripts/model_weights/
+*.safetensors
+*.bin
+*.pt
+*.pth
+adapter_config.json
+adapter_model.*
+
+# ── Jupyter / notebooks ───────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Logs & temp files ─────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+*.orig
+
+# ── Generated indexes (large, rebuilt from DB) ────────────────────────────────
+LLM_preprocessor/metadata_index.json
+RAG/name_index.json
+
+# ── Training artefacts ────────────────────────────────────────────────────────
+synthetic_data/results/
+synthetic_data/reports/
+synthetic_data/training.generated.jsonl
+synthetic_data/training.needs_repair.jsonl
+synthetic_data/*.yaml.bak
+synthetic_data/value_mappings\ copy*.yaml
+synthetic_data/unmapped_db_values.yaml.bak
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.docker/
+
+# ── Modal ─────────────────────────────────────────────────────────────────────
+.modal/

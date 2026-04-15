@@ -1,0 +1,68 @@
+version: "3.9"
+
+# ── Development compose ────────────────────────────────────────────────────────
+# Uses the existing postgres_data/ directory so no data setup is required.
+# Backend hot-reloads on code changes; frontend runs Vite dev server.
+#
+# Usage:
+#   cp .env.example .env           # fill in GEMINI_API_KEY
+#   docker compose -f docker-compose.dev.yml up
+
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB:       ${METADATA_DB_NAME:-bids_sql}
+      POSTGRES_USER:     ${METADATA_DB_USER:-user}
+      POSTGRES_PASSWORD: ${METADATA_DB_PASSWORD:-password}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # exposed in dev for direct DB access (pgAdmin, psql …)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${METADATA_DB_USER:-user} -d ${METADATA_DB_NAME:-bids_sql}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Backend (FastAPI / uvicorn) ───────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      METADATA_DB_HOST:     db
+      METADATA_DB_PORT:     5432
+      METADATA_DB_NAME:     ${METADATA_DB_NAME:-bids_sql}
+      METADATA_DB_USER:     ${METADATA_DB_USER:-user}
+      METADATA_DB_PASSWORD: ${METADATA_DB_PASSWORD:-password}
+      IN_PRODUCTION:        "false"
+      GEMINI_API_KEY:       ${GEMINI_API_KEY:-}
+    volumes:
+      # Hot-reload: mount source directories so changes are reflected immediately
+      - ./backend:/app/backend
+      - ./BIDS-SQL:/app/BIDS-SQL
+      - ./LLM_preprocessor:/app/LLM_preprocessor
+      - ./RAG:/app/RAG
+      - ./synthetic_data_generation_and_train:/app/synthetic_data_generation_and_train
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Frontend (Vite dev server) ────────────────────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules   # anonymous volume keeps node_modules inside the container
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"

@@ -10,8 +10,6 @@ resulting SQL against the BIDS database, and returns matching datasets.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
@@ -19,11 +17,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "Text-To-SQL"))
-
 from deps import get_db
-from placeholder import text_to_sql
 from schemas import DatasetSchema, ParticipantSchema, QueryRequest, QueryResponse
+from services.text_to_sql import text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
 

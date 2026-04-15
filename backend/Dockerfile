@@ -2,14 +2,15 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install BIDS-SQL (editable) then the backend itself
-COPY BIDS-SQL/ /app/BIDS-SQL/
-COPY backend/   /app/backend/
-COPY Text-To-SQL/ /app/Text-To-SQL/
+# Copy packages in dependency order
+COPY BIDS-SQL/                         /app/BIDS-SQL/
+COPY backend/                          /app/backend/
+COPY LLM_preprocessor/                 /app/LLM_preprocessor/
+COPY RAG/                              /app/RAG/
+COPY synthetic_data_generation_and_train/ /app/synthetic_data_generation_and_train/
 
 RUN pip install --no-cache-dir -e /app/BIDS-SQL && \
-    pip install --no-cache-dir -e /app/backend && \
-    pip install --no-cache-dir "modal>=0.64"
+    pip install --no-cache-dir -e /app/backend
 
 WORKDIR /app/backend
 

@@ -1,0 +1,2461 @@
+[
+  {
+    "question": "List datasets that include attention in their title.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%attention%' GROUP BY d.id LIMIT 50",
+    "pattern": "name_search",
+    "family": "description_search",
+    "source_file": "result_045.txt",
+    "query_plan": {
+      "query_family": "description_search",
+      "natural_language_summary": "List datasets that include 'attention' in their title.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": "attention",
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets that include 'attention' in their title."
+  },
+  {
+    "question": "Show me datasets with more than 20 male participants diagnosed with depression.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.diagnosis = 'depression' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 20 ORDER BY subject_count DESC LIMIT 50",
+    "pattern": "participant_diagnosis_filter",
+    "family": "participant_filter",
+    "source_file": "result_011.txt",
+    "query_plan": {
+      "query_family": "participant_filter",
+      "natural_language_summary": "Find datasets containing more than 20 male participants diagnosed with depression.",
+      "groups": [
+        {
+          "group_name": "male_depression_group",
+          "diagnosis_terms": [
+            "depression"
+          ],
+          "task_terms": [],
+          "sex": [
+            "male"
+          ],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": 21,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 3,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "diagnosis",
+          "terms": [
+            "depression"
+          ],
+          "n_results": 3
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets containing more than 20 male participants diagnosed with depression."
+  },
+  {
+    "question": "Which datasets are missing any electrophysiology recordings?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'electrophysiology') GROUP BY d.id",
+    "pattern": "negation_filter",
+    "family": "absence_query",
+    "source_file": "result_113.txt",
+    "query_plan": {
+      "query_family": "absence_query",
+      "natural_language_summary": "Find datasets that do not contain any electrophysiology recordings (such as EEG, MEG, or iEEG).",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "electrophysiology",
+            "eeg",
+            "meg",
+            "ieeg"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 5,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "electrophysiology",
+            "eeg",
+            "meg",
+            "ieeg"
+          ],
+          "n_results": 5
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that do not contain any electrophysiology recordings (such as EEG, MEG, or iEEG)."
+  },
+  {
+    "question": "Find datasets supported by the CI241/3-1 grant.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'CI241/3-1' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+    "pattern": "funding_lookup",
+    "family": "funding_query",
+    "source_file": "result_101.txt",
+    "query_plan": {
+      "query_family": "funding_query",
+      "natural_language_summary": "Find datasets supported by the CI241/3-1 grant.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [
+        "CI241/3-1"
+      ],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets supported by the CI241/3-1 grant."
+  },
+  {
+    "question": "Show me the top 10 datasets ranked by the number of participants.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+    "pattern": "top_n_datasets",
+    "family": "aggregate_query",
+    "source_file": "result_092.txt",
+    "query_plan": {
+      "query_family": "ranking_query",
+      "natural_language_summary": "Show the top 10 datasets ranked by the total number of participants in descending order.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": 10,
+      "order_by": "subject_count",
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show the top 10 datasets ranked by the total number of participants in descending order."
+  },
+  {
+    "question": "Find datasets that do not have any recordings of the contrast change detection task.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'contrastChangeDetection') GROUP BY d.id",
+    "pattern": "negated_task_search",
+    "family": "comparison_query",
+    "source_file": "result_057.txt",
+    "query_plan": {
+      "query_family": "absence_query",
+      "natural_language_summary": "Find datasets that do not have any recordings of the contrast change detection task.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "contrast change detection task"
+          ],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 2
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "task",
+          "terms": [
+            "contrast change detection task"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that do not have any recordings of the contrast change detection task."
+  },
+  {
+    "question": "Which datasets contain at least 10 female participants with Parkinson's disease who are ambidextrous or mixed-handed?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'female' AND p.diagnosis = 'parkinsons_disease' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 10",
+    "pattern": "participant_group_having",
+    "family": "participant_filter",
+    "source_file": "result_042.txt",
+    "query_plan": {
+      "query_family": "participant_filter",
+      "natural_language_summary": "Find datasets with at least 10 female participants diagnosed with Parkinson's disease who are ambidextrous or mixed-handed.",
+      "groups": [
+        {
+          "group_name": "parkinsons_female_ambidextrous",
+          "diagnosis_terms": [
+            "Parkinson's disease"
+          ],
+          "task_terms": [],
+          "sex": [
+            "female"
+          ],
+          "handedness": [
+            "ambidextrous",
+            "mixed-handed"
+          ],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": 10,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 2,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "diagnosis",
+          "terms": [
+            "Parkinson's disease"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets with at least 10 female participants diagnosed with Parkinson's disease who are ambidextrous or mixed-handed."
+  },
+  {
+    "question": "Find PET datasets that include MEG data and the szMonitoring task.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'MEG') AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'szMonitoring') GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+    "pattern": "multimodal_task_filter",
+    "family": "scan_filter",
+    "source_file": "result_228.txt",
+    "query_plan": {
+      "query_family": "multimodal_query",
+      "natural_language_summary": "Find datasets that contain PET data, MEG data, and the 'szMonitoring' task.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "PET"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 1,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [
+            "MEG"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 1,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "szMonitoring"
+          ],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 1
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "PET",
+            "MEG"
+          ],
+          "n_results": 1
+        },
+        {
+          "field": "task",
+          "terms": [
+            "szMonitoring"
+          ],
+          "n_results": 1
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that contain PET data, MEG data, and the 'szMonitoring' task."
+  },
+  {
+    "question": "Are there any datasets where the same subject underwent both magnetoencephalography and magnetic resonance spectroscopy?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'magnetoencephalography' AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject = o1.subject AND o2.datatype = 'magnetic_resonance_spectroscopy')) GROUP BY d.id",
+    "pattern": "double_exists_subject_level",
+    "family": "subject_multimodal_query",
+    "source_file": "result_036.txt",
+    "query_plan": {
+      "query_family": "subject_multimodal",
+      "natural_language_summary": "Find datasets where the same subject underwent both magnetoencephalography (MEG) and magnetic resonance spectroscopy (MRS).",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "magnetoencephalography"
+          ],
+          "suffix_terms": [
+            "meg"
+          ],
+          "task_terms": [],
+          "required": true,
+          "same_subject": true,
+          "n_datatype_codes": 1,
+          "n_suffix_codes": 1,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [
+            "magnetic resonance spectroscopy"
+          ],
+          "suffix_terms": [
+            "mrs"
+          ],
+          "task_terms": [],
+          "required": true,
+          "same_subject": true,
+          "n_datatype_codes": 1,
+          "n_suffix_codes": 1,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "magnetoencephalography",
+            "magnetic resonance spectroscopy"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "meg",
+            "mrs"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets where the same subject underwent both magnetoencephalography (MEG) and magnetic resonance spectroscopy (MRS)."
+  },
+  {
+    "question": "Find all datasets where the base image resolution is greater than 43.64",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BaseResolution')::float > 43.64) GROUP BY d.id LIMIT 50",
+    "pattern": "numeric_sidecar_filter",
+    "family": "json_numeric_query",
+    "source_file": "result_176.txt",
+    "query_plan": {
+      "query_family": "json_numeric_query",
+      "natural_language_summary": "Find datasets where the base image resolution is greater than 43.64.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [
+        {
+          "json_field": "BaseResolution",
+          "operator": ">",
+          "value": 43.64
+        }
+      ],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets where the base image resolution is greater than 43.64."
+  },
+  {
+    "question": "Find datasets related to behaviors in their name or description.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%behaviors%' OR d.description_text ILIKE '%behaviors%' GROUP BY d.id LIMIT 50",
+    "pattern": "description_search",
+    "family": "description_search",
+    "source_file": "result_014.txt",
+    "query_plan": {
+      "query_family": "description_search",
+      "natural_language_summary": "Find datasets containing the term 'behaviors' in their name or description.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": "behaviors",
+      "description_search": "behaviors",
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets containing the term 'behaviors' in their name or description."
+  },
+  {
+    "question": "Show me datasets that have longitudinal data with at least 3 sessions.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+    "pattern": "aggregate_session_count",
+    "family": "session_query",
+    "source_file": "result_013.txt",
+    "query_plan": {
+      "query_family": "session_query",
+      "natural_language_summary": "Show datasets that have longitudinal data with at least 3 sessions.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": 3,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show datasets that have longitudinal data with at least 3 sessions."
+  },
+  {
+    "question": "List all datasets that do not contain any anatomical MRI data",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anat') GROUP BY d.id LIMIT 50",
+    "pattern": "absence_of_datatype",
+    "family": "absence_query",
+    "source_file": "result_038.txt",
+    "query_plan": {
+      "query_family": "absence_query",
+      "natural_language_summary": "List datasets that do not contain any anatomical MRI data.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "anatomical"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "anatomical"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets that do not contain any anatomical MRI data."
+  },
+  {
+    "question": "Find datasets containing at least 26 subjects that performed the RingRest task during a functional MRI scan.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold' AND bo.task = 'RingRest') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 26 LIMIT 50",
+    "pattern": "subject_count_threshold",
+    "family": "comparison_query",
+    "source_file": "result_090.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Find datasets with at least 26 subjects who performed the RingRest task during a functional MRI scan.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [
+            "RingRest"
+          ],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": 26,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 1
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "functional MRI"
+          ],
+          "suffix_terms": [],
+          "task_terms": [
+            "RingRest"
+          ],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 1,
+          "n_suffix_codes": 0,
+          "n_task_codes": 1
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "task",
+          "terms": [
+            "RingRest"
+          ],
+          "n_results": 1
+        },
+        {
+          "field": "datatype",
+          "terms": [
+            "functional MRI"
+          ],
+          "n_results": 1
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets with at least 26 subjects who performed the RingRest task during a functional MRI scan."
+  },
+  {
+    "question": "Which datasets contain either perfusion ASL data or video game and video tasks?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.datatype = 'perfusion_asl' OR bo.task = 'video_game_and_video')) GROUP BY d.id",
+    "pattern": "exists_binary_or",
+    "family": "subject_multimodal_query",
+    "source_file": "result_096.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Find datasets that contain either perfusion ASL data or tasks related to video games and videos.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "perfusion ASL",
+            "asl"
+          ],
+          "suffix_terms": [
+            "asl"
+          ],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 1,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "video game",
+            "video"
+          ],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 3
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "perfusion ASL",
+            "asl"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "asl"
+          ],
+          "n_results": 1
+        },
+        {
+          "field": "task",
+          "terms": [
+            "video game",
+            "video"
+          ],
+          "n_results": 3
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that contain either perfusion ASL data or tasks related to video games and videos."
+  },
+  {
+    "question": "Find datasets that have a TR value greater than 2.0 seconds and indicate a specific participant group in their extra metadata.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'RepetitionTime')::float > 2.0) AND EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'group' IS NOT NULL) GROUP BY d.id ORDER BY d.name LIMIT 50",
+    "pattern": "metadata_numeric_filter",
+    "family": "metadata_query",
+    "source_file": "result_210.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Find datasets with a RepetitionTime greater than 2.0 seconds and a 'group' field in the participant metadata.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {
+            "group": "exists"
+          },
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [
+        {
+          "json_field": "RepetitionTime",
+          "operator": ">",
+          "value": 2.0
+        }
+      ],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets with a RepetitionTime greater than 2.0 seconds and a 'group' field in the participant metadata."
+  },
+  {
+    "question": "List datasets where the device model is known and participant tobacco use is documented.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturersModelName' IS NOT NULL) AND EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'smoking' IS NOT NULL) GROUP BY d.id LIMIT 50",
+    "pattern": "json_metadata_check",
+    "family": "json_query",
+    "source_file": "result_011.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "List datasets where the device model is specified in the scan metadata and participant tobacco use is documented.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {
+            "tobacco_use": "exists"
+          },
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [
+        {
+          "json_field": "ManufacturerModelName",
+          "operator": "exists",
+          "value": null
+        }
+      ],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets where the device model is specified in the scan metadata and participant tobacco use is documented."
+  },
+  {
+    "question": "Which datasets have a bandwidth per pixel phase encode value less than 45.19?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BandwidthPerPixelPhaseEncode')::float < 45.19) GROUP BY d.id",
+    "pattern": "json_numeric_filter",
+    "family": "json_numeric_query",
+    "source_file": "result_234.txt",
+    "query_plan": {
+      "query_family": "json_numeric_query",
+      "natural_language_summary": "Find datasets containing scans where the BandwidthPerPixelPhaseEncode metadata value is less than 45.19.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [
+        {
+          "json_field": "BandwidthPerPixelPhaseEncode",
+          "operator": "<",
+          "value": 45.19
+        }
+      ],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets containing scans where the BandwidthPerPixelPhaseEncode metadata value is less than 45.19."
+  },
+  {
+    "question": "Which datasets were collected at the University of Pennsylvania, and how many unique participants are included for each?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'InstitutionName' ILIKE '%University of Pennsylvania%') GROUP BY d.id",
+    "pattern": "json_query",
+    "family": "json_query",
+    "source_file": "result_082.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Find datasets associated with the University of Pennsylvania and return the count of unique participants for each.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": "University of Pennsylvania",
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets associated with the University of Pennsylvania and return the count of unique participants for each."
+  },
+  {
+    "question": "Show me datasets that are not funded by the NIH/NIMH R01MH125934 for BIDS data preparation grant.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT ('NIH/NIMH R01MH125934 for BIDS data preparation' = ANY(d.funding)) GROUP BY d.id",
+    "pattern": "funding_exclude",
+    "family": "funding_query",
+    "source_file": "result_175.txt",
+    "query_plan": {
+      "query_family": "funding_query",
+      "natural_language_summary": "Show datasets that are not funded by the NIH/NIMH R01MH125934 grant.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [
+        "NIH/NIMH R01MH125934"
+      ],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show datasets that are not funded by the NIH/NIMH R01MH125934 grant."
+  },
+  {
+    "question": "Which datasets lack motion capture data and exclude the bao task?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'motion_capture') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'bao') GROUP BY d.id",
+    "pattern": "negation_filter",
+    "family": "combined_filter",
+    "source_file": "result_091.txt",
+    "query_plan": {
+      "query_family": "absence_query",
+      "natural_language_summary": "Find datasets that do not contain motion capture data and do not include the bao task.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "motion capture"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "bao"
+          ],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 1
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "motion capture"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "task",
+          "terms": [
+            "bao"
+          ],
+          "n_results": 1
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that do not contain motion capture data and do not include the bao task."
+  },
+  {
+    "question": "Which datasets include only a single scanning session per participant?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.id NOT IN (SELECT o2.dataset_id FROM bids_objects o2 WHERE o2.session IS NOT NULL GROUP BY o2.dataset_id, o2.subject HAVING COUNT(DISTINCT o2.session) > 1) GROUP BY d.id",
+    "pattern": "session_query",
+    "family": "session_query",
+    "source_file": "result_187.txt",
+    "query_plan": {
+      "query_family": "session_query",
+      "natural_language_summary": "Find datasets where participants have exactly one scanning session.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": 1,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets where participants have exactly one scanning session."
+  },
+  {
+    "question": "List datasets featuring working memory paradigms collected via EEG.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg' AND bo.task = 'working_memory_general') GROUP BY d.id LIMIT 50",
+    "pattern": "task_datatype_filter",
+    "family": "scan_filter",
+    "source_file": "result_114.txt",
+    "query_plan": {
+      "query_family": "scan_filter",
+      "natural_language_summary": "List datasets featuring working memory paradigms collected via EEG.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [],
+          "suffix_terms": [
+            "EEG"
+          ],
+          "task_terms": [
+            "working memory"
+          ],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 1,
+          "n_task_codes": 3
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "task",
+          "terms": [
+            "working memory"
+          ],
+          "n_results": 3
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "EEG"
+          ],
+          "n_results": 1
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets featuring working memory paradigms collected via EEG."
+  },
+  {
+    "question": "List datasets that have a DOI registered.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_datasets bd WHERE bd.id = d.id AND bd.doi IS NOT NULL) GROUP BY d.id",
+    "pattern": "doi_presence",
+    "family": "doi_query",
+    "source_file": "result_003.txt",
+    "query_plan": {
+      "query_family": "doi_query",
+      "natural_language_summary": "List datasets that have a DOI registered.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": true,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets that have a DOI registered."
+  },
+  {
+    "question": "Which datasets lack any behavioural data?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'beh') GROUP BY d.id",
+    "pattern": "absence_filter",
+    "family": "aggregate_query",
+    "source_file": "result_065.txt",
+    "query_plan": {
+      "query_family": "absence_query",
+      "natural_language_summary": "Find datasets that do not contain any behavioral data files.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "behavioural",
+            "beh"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "behavioural",
+            "beh"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that do not contain any behavioral data files."
+  },
+  {
+    "question": "List datasets containing images with a base resolution exceeding 43.64",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BaseResolution')::float > 43.64) GROUP BY d.id LIMIT 50",
+    "pattern": "numeric_sidecar_filter",
+    "family": "json_numeric_query",
+    "source_file": "result_176.txt",
+    "query_plan": {
+      "query_family": "json_numeric_query",
+      "natural_language_summary": "List datasets containing images where the 'BaseResolution' metadata field exceeds 43.64.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [
+        {
+          "json_field": "BaseResolution",
+          "operator": ">",
+          "value": 43.64
+        }
+      ],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets containing images where the 'BaseResolution' metadata field exceeds 43.64."
+  },
+  {
+    "question": "List datasets where participants have longitudinal data spanning 4 or more sessions.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 ORDER BY d.name LIMIT 50",
+    "pattern": "longitudinal_filter",
+    "family": "session_query",
+    "source_file": "result_140.txt",
+    "query_plan": {
+      "query_family": "session_query",
+      "natural_language_summary": "List datasets where participants have longitudinal data spanning 4 or more sessions.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": 4,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List datasets where participants have longitudinal data spanning 4 or more sessions."
+  },
+  {
+    "question": "Which datasets contain both anatomical and functional MRI data?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id",
+    "pattern": "multimodal_check",
+    "family": "multimodal_query",
+    "source_file": "result_064.txt",
+    "query_plan": {
+      "query_family": "multimodal_query",
+      "natural_language_summary": "Find datasets that contain both anatomical and functional MRI data.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "anatomical"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [
+            "functional"
+          ],
+          "suffix_terms": [],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 0,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "anatomical",
+            "functional"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that contain both anatomical and functional MRI data."
+  },
+  {
+    "question": "Which datasets contain subjects who have undergone diffusion MRI scans or participated in a Passive task?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.datatype = 'diffusion_mri' OR bo.task = 'Passive')) GROUP BY d.id",
+    "pattern": "subject_multimodal_query_exists",
+    "family": "subject_multimodal_query",
+    "source_file": "result_088.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Identify datasets that contain either diffusion MRI scans (dwi) or scans associated with a passive task.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "diffusion MRI",
+            "dwi"
+          ],
+          "suffix_terms": [
+            "dwi"
+          ],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 1,
+          "n_suffix_codes": 1,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "Passive"
+          ],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 3
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "diffusion MRI",
+            "dwi"
+          ],
+          "n_results": 1
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "dwi"
+          ],
+          "n_results": 1
+        },
+        {
+          "field": "task",
+          "terms": [
+            "Passive"
+          ],
+          "n_results": 3
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Identify datasets that contain either diffusion MRI scans (dwi) or scans associated with a passive task."
+  },
+  {
+    "question": "Which datasets have participants with a body mass index value greater than 30?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND (p.extra->>'bmi')::float > 30) GROUP BY d.id",
+    "pattern": "json_numeric_participant",
+    "family": "json_query",
+    "source_file": "result_139.txt",
+    "query_plan": {
+      "query_family": "participant_filter",
+      "natural_language_summary": "Find datasets with participants whose body mass index (BMI) is greater than 30.",
+      "groups": [
+        {
+          "group_name": "high_bmi_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {
+            "bmi": ">30"
+          },
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets with participants whose body mass index (BMI) is greater than 30."
+  },
+  {
+    "question": "Find datasets with at least 15 male participants who are ambidextrous or mixed-handed and have a diagnosis of Dyslexia",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male' AND p.handedness = 'ambidextrous / mixed-handed' AND p.diagnosis = 'Dyslexia') GROUP BY d.id HAVING COUNT(DISTINCT (SELECT p.participant_id FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male' AND p.handedness = 'ambidextrous / mixed-handed' AND p.diagnosis = 'Dyslexia')) >= 15 LIMIT 50",
+    "pattern": "participant_filter_threshold",
+    "family": "comparison_query",
+    "source_file": "result_038.txt",
+    "query_plan": {
+      "query_family": "participant_filter",
+      "natural_language_summary": "Find datasets with at least 15 male participants who are ambidextrous or mixed-handed and have a diagnosis of Dyslexia",
+      "groups": [
+        {
+          "group_name": "dyslexia_males",
+          "diagnosis_terms": [
+            "Dyslexia"
+          ],
+          "task_terms": [],
+          "sex": [
+            "male"
+          ],
+          "handedness": [
+            "ambidextrous",
+            "mixed"
+          ],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": 15,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 1,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "diagnosis",
+          "terms": [
+            "Dyslexia"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets with at least 15 male participants who are ambidextrous or mixed-handed and have a diagnosis of Dyslexia"
+  },
+  {
+    "question": "Which datasets are licensed with the ODC Public Domain Dedication and License v1.0 associated with Ian Ballard?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license LIKE '%http://www.opendatacommons.org/licenses/pddl/1.0/.%Ian Ballard%' GROUP BY d.id",
+    "pattern": "license_match",
+    "family": "license_query",
+    "source_file": "result_157.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Find datasets authored by Ian Ballard that are licensed under the ODC Public Domain Dedication and License v1.0.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [
+        "Ian Ballard"
+      ],
+      "name_search": null,
+      "description_search": null,
+      "license_search": "ODC Public Domain Dedication and License v1.0",
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets authored by Ian Ballard that are licensed under the ODC Public Domain Dedication and License v1.0."
+  },
+  {
+    "question": "Which datasets were funded by DARPA RAM: N66001-14-2-4032?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'DARPA RAM: N66001-14-2-4032' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+    "pattern": "funding_query",
+    "family": "funding_query",
+    "source_file": "result_040.txt",
+    "query_plan": {
+      "query_family": "funding_query",
+      "natural_language_summary": "Find datasets funded by DARPA RAM: N66001-14-2-4032.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [
+        "DARPA RAM: N66001-14-2-4032"
+      ],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets funded by DARPA RAM: N66001-14-2-4032."
+  },
+  {
+    "question": "Show me datasets that have at least 3 distinct sessions.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+    "pattern": "longitudinal_session_check",
+    "family": "session_query",
+    "source_file": "result_148.txt",
+    "query_plan": {
+      "query_family": "session_query",
+      "natural_language_summary": "Show datasets that have at least 3 distinct sessions.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": 3,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show datasets that have at least 3 distinct sessions."
+  },
+  {
+    "question": "List the top 10 datasets ranked by participant count.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+    "pattern": "top_n_datasets",
+    "family": "ranking_query",
+    "source_file": "result_142.txt",
+    "query_plan": {
+      "query_family": "ranking_query",
+      "natural_language_summary": "List the top 10 datasets ranked by participant count.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": 10,
+      "order_by": "subject_count",
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List the top 10 datasets ranked by participant count."
+  },
+  {
+    "question": "Find all datasets containing participants diagnosed with depression spectrum disorders.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'depression_spectrum') GROUP BY d.id",
+    "pattern": "exists",
+    "family": "concept_query",
+    "source_file": "result_108.txt",
+    "query_plan": {
+      "query_family": "concept_query",
+      "natural_language_summary": "Find datasets containing participants diagnosed with depression spectrum disorders.",
+      "groups": [
+        {
+          "group_name": "depression_group",
+          "diagnosis_terms": [
+            "depression spectrum disorders"
+          ],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 5,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "diagnosis",
+          "terms": [
+            "depression spectrum disorders"
+          ],
+          "n_results": 5
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets containing participants diagnosed with depression spectrum disorders."
+  },
+  {
+    "question": "Retrieve datasets that have no fMRI data at all.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id ORDER BY d.name LIMIT 50",
+    "pattern": "no_fmri_data",
+    "family": "absence_query",
+    "source_file": "result_018.txt",
+    "query_plan": {
+      "query_family": "absence_query",
+      "natural_language_summary": "Retrieve datasets that do not contain any fMRI data.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "fMRI",
+            "functional MRI"
+          ],
+          "suffix_terms": [
+            "bold"
+          ],
+          "task_terms": [],
+          "required": false,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 1,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "fMRI",
+            "functional MRI"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "bold"
+          ],
+          "n_results": 1
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Retrieve datasets that do not contain any fMRI data."
+  },
+  {
+    "question": "Find datasets that include either seizure task data or anatomical MRI scans",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.task = 'seizure') OR EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri') GROUP BY d.id LIMIT 50",
+    "pattern": "multimodal_coverage",
+    "family": "subject_multimodal_query",
+    "source_file": "result_191.txt",
+    "query_plan": {
+      "query_family": "scan_filter",
+      "natural_language_summary": "Find datasets that include either seizure-related task data or anatomical MRI scans (such as T1w or T2w).",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "seizure"
+          ],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 3
+        },
+        {
+          "datatype_terms": [
+            "anatomical",
+            "anat"
+          ],
+          "suffix_terms": [
+            "T1w",
+            "T2w"
+          ],
+          "task_terms": [],
+          "required": true,
+          "same_subject": false,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 2,
+          "n_task_codes": 0
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "task",
+          "terms": [
+            "seizure"
+          ],
+          "n_results": 3
+        },
+        {
+          "field": "datatype",
+          "terms": [
+            "anatomical",
+            "anat"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "T1w",
+            "T2w"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets that include either seizure-related task data or anatomical MRI scans (such as T1w or T2w)."
+  },
+  {
+    "question": "Show me all datasets where the MRI manufacturer is listed as Siemens and participants have a smoking history.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE o.other_entities->>'Manufacturer' = 'Siemens' AND p.extra->>'smoking' = 'yes' GROUP BY d.id",
+    "pattern": "metadata_and_participant_extra",
+    "family": "json_query",
+    "source_file": "result_224.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Datasets featuring Siemens MRI scans and participants with a recorded smoking history.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {
+            "smoking_history": "yes"
+          },
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [
+        {
+          "json_field": "Manufacturer",
+          "operator": "=",
+          "value": "Siemens"
+        }
+      ],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Datasets featuring Siemens MRI scans and participants with a recorded smoking history."
+  },
+  {
+    "question": "Show me datasets where the average participant age is greater than 20 years.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 20",
+    "pattern": "age_mean_threshold",
+    "family": "age_query",
+    "source_file": "result_051.txt",
+    "query_plan": {
+      "query_family": "aggregate_query",
+      "natural_language_summary": "Show datasets where the average participant age is greater than 20 years.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show datasets where the average participant age is greater than 20 years."
+  },
+  {
+    "question": "Find datasets where the same subject has both magnetic resonance spectroscopy data and performed the video game and video task.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'magnetic_resonance_spectroscopy' AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject = o1.subject AND o2.task = 'video_game_and_video')) GROUP BY d.id",
+    "pattern": "subject_multimodal",
+    "family": "subject_multimodal_query",
+    "source_file": "result_157.txt",
+    "query_plan": {
+      "query_family": "subject_multimodal",
+      "natural_language_summary": "Find datasets where the same subject has magnetic resonance spectroscopy data and has performed both the video game and video tasks.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [
+        {
+          "datatype_terms": [
+            "magnetic resonance spectroscopy"
+          ],
+          "suffix_terms": [
+            "mrs"
+          ],
+          "task_terms": [],
+          "required": true,
+          "same_subject": true,
+          "n_datatype_codes": 2,
+          "n_suffix_codes": 2,
+          "n_task_codes": 0
+        },
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "video game"
+          ],
+          "required": true,
+          "same_subject": true,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 2
+        },
+        {
+          "datatype_terms": [],
+          "suffix_terms": [],
+          "task_terms": [
+            "video"
+          ],
+          "required": true,
+          "same_subject": true,
+          "n_datatype_codes": 0,
+          "n_suffix_codes": 0,
+          "n_task_codes": 2
+        }
+      ],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "datatype",
+          "terms": [
+            "magnetic resonance spectroscopy"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "suffix",
+          "terms": [
+            "mrs"
+          ],
+          "n_results": 2
+        },
+        {
+          "field": "task",
+          "terms": [
+            "video game",
+            "video"
+          ],
+          "n_results": 2
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets where the same subject has magnetic resonance spectroscopy data and has performed both the video game and video tasks."
+  },
+  {
+    "question": "Identify datasets where female participants outnumber male participants by at least 5 subjects.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'female') >= COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'male') + 5 LIMIT 50",
+    "pattern": "demographic_ratio_filter",
+    "family": "comparison_query",
+    "source_file": "result_033.txt",
+    "query_plan": {
+      "query_family": "comparison_query",
+      "natural_language_summary": "Identify datasets where the number of female participants is at least 5 greater than the number of male participants.",
+      "groups": [
+        {
+          "group_name": "female_group",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [
+            "female"
+          ],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        },
+        {
+          "group_name": "male_group",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [
+            "male"
+          ],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": "female_count >= male_count + 5",
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Identify datasets where the number of female participants is at least 5 greater than the number of male participants."
+  },
+  {
+    "question": "List all datasets that do not have a registered DOI.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NULL GROUP BY d.id LIMIT 50",
+    "pattern": "doi_query",
+    "family": "doi_query",
+    "source_file": "result_231.txt",
+    "query_plan": {
+      "query_family": "doi_query",
+      "natural_language_summary": "List all datasets that do not have a registered DOI.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": false,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List all datasets that do not have a registered DOI."
+  },
+  {
+    "question": "Which 5 datasets mention attention in their name or description but have no associated files?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%attention%' OR d.description_text ILIKE '%attention%') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id) GROUP BY d.id LIMIT 5",
+    "pattern": "search_and_empty",
+    "family": "description_search",
+    "source_file": "result_120.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Find 5 datasets that mention 'attention' in their name or description but have no associated files in the bids_objects table.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": "attention",
+      "description_search": "attention",
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": 5,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find 5 datasets that mention 'attention' in their name or description but have no associated files in the bids_objects table."
+  },
+  {
+    "question": "Show the top 25 datasets involving male, ambidextrous participants categorized as healthy control task variants.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'healthy_control_task_variant' AND p.sex = 'male' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 25 LIMIT 50",
+    "pattern": "participant_group_filter",
+    "family": "participant_filter",
+    "source_file": "result_149.txt",
+    "query_plan": {
+      "query_family": "combined_filter",
+      "natural_language_summary": "Show the top 25 datasets featuring male, ambidextrous participants who are healthy controls.",
+      "groups": [
+        {
+          "group_name": "healthy_ambidextrous_males",
+          "diagnosis_terms": [
+            "healthy control"
+          ],
+          "task_terms": [],
+          "sex": [
+            "male"
+          ],
+          "handedness": [
+            "ambidextrous"
+          ],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 3,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": 25,
+      "order_by": "subject_count",
+      "order_direction": "DESC",
+      "rag_requests": [
+        {
+          "field": "diagnosis",
+          "terms": [
+            "healthy control"
+          ],
+          "n_results": 3
+        }
+      ]
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show the top 25 datasets featuring male, ambidextrous participants who are healthy controls."
+  },
+  {
+    "question": "Which datasets include longitudinal data with at least 4 sessions?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 LIMIT 50",
+    "pattern": "session_query",
+    "family": "session_query",
+    "source_file": "result_240.txt",
+    "query_plan": {
+      "query_family": "session_query",
+      "natural_language_summary": "Find datasets with longitudinal data where subjects have at least 4 sessions.",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": 4,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets with longitudinal data where subjects have at least 4 sessions."
+  },
+  {
+    "question": "Find datasets authored by Joanes Grandjean.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Joanes Grandjean' = ANY(d.authors) GROUP BY d.id",
+    "pattern": "author_filter",
+    "family": "author_query",
+    "source_file": "result_079.txt",
+    "query_plan": {
+      "query_family": "author_query",
+      "natural_language_summary": "Find datasets authored by Joanes Grandjean.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [
+        "Joanes Grandjean"
+      ],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets authored by Joanes Grandjean."
+  },
+  {
+    "question": "Which studies have collected longitudinal data with 4 or more visits for their participants?",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4 LIMIT 50",
+    "pattern": "longitudinal_check",
+    "family": "session_query",
+    "source_file": "result_029.txt",
+    "query_plan": {
+      "query_family": "session_query",
+      "natural_language_summary": "Find datasets where participants have 4 or more sessions (longitudinal visits).",
+      "groups": [
+        {
+          "group_name": "all_participants",
+          "diagnosis_terms": [],
+          "task_terms": [],
+          "sex": [],
+          "handedness": [],
+          "age_min": null,
+          "age_max": null,
+          "min_subjects": null,
+          "extra_participant_fields": {},
+          "expected_diagnosis_codes": 0,
+          "expected_task_codes": 0
+        }
+      ],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": null,
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": 4,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Find datasets where participants have 4 or more sessions (longitudinal visits)."
+  },
+  {
+    "question": "Show me datasets that have a CC0 license agreement.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'CC0' OR d.license = 'Creative Commons CC0 1.0' GROUP BY d.id",
+    "pattern": "license_filter",
+    "family": "license_query",
+    "source_file": "result_019.txt",
+    "query_plan": {
+      "query_family": "license_query",
+      "natural_language_summary": "Show datasets that have a CC0 license agreement.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": "CC0",
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "Show datasets that have a CC0 license agreement."
+  },
+  {
+    "question": "List all datasets provided under a CCO license.",
+    "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%CCO%' GROUP BY d.id",
+    "pattern": "license_query",
+    "family": "license_query",
+    "source_file": "result_094.txt",
+    "query_plan": {
+      "query_family": "license_query",
+      "natural_language_summary": "List all datasets provided under a CC0 license.",
+      "groups": [],
+      "group_operator": "AND",
+      "scan_requirements": [],
+      "author_names": [],
+      "name_search": null,
+      "description_search": null,
+      "license_search": "CC0",
+      "doi_required": null,
+      "funding_terms": [],
+      "metadata_filters": [],
+      "min_sessions": null,
+      "count_comparison": null,
+      "result_limit": null,
+      "order_by": null,
+      "order_direction": "DESC",
+      "rag_requests": []
+    },
+    "rag_resolved": {},
+    "augmented_question": "List all datasets provided under a CC0 license."
+  }
+]
