@@ -38,6 +38,8 @@ services:
     environment:
       METADATA_DB_HOST: postgres
       METADATA_DB_PORT: 5432
+      MODAL_TOKEN_ID: ${MODAL_TOKEN_ID}
+      MODAL_TOKEN_SECRET: ${MODAL_TOKEN_SECRET}
     ports:
       - '8000:8000'
     depends_on:

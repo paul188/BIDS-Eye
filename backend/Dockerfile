@@ -8,7 +8,8 @@ COPY backend/   /app/backend/
 COPY Text-To-SQL/ /app/Text-To-SQL/
 
 RUN pip install --no-cache-dir -e /app/BIDS-SQL && \
-    pip install --no-cache-dir -e /app/backend
+    pip install --no-cache-dir -e /app/backend && \
+    pip install --no-cache-dir "modal>=0.64"
 
 WORKDIR /app/backend
 

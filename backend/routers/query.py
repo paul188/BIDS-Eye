@@ -58,7 +58,7 @@ async def query_datasets(
     The question is translated to SQL via the Text-To-SQL layer.
     Currently uses a placeholder that returns all datasets.
     """
-    translation = text_to_sql(body.question)
+    translation = await text_to_sql(body.question)
 
     rows = await session.execute(
         text(translation.sql), translation.params
