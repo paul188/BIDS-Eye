@@ -1,148 +1,197 @@
+import hashlib
+import json
+import re as _re
+from collections import defaultdict
+from functools import lru_cache
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
-from typing import Any, Dict, List, Tuple, Optional
+
+try:
+    import numpy as _np
+    _NUMPY_OK = True
+except ImportError:
+    _NUMPY_OK = False
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers
+# Internal helpers (unchanged from tree version)
 # ---------------------------------------------------------------------------
 
-def _collect_leaf_codes(data: Any) -> List[str]:
-    """Recursively collect all standard_codes from leaf nodes under a dict.
+def _extract_synonyms(raw: Any) -> List[Tuple[str, float]]:
+    """Parse a synonyms entry into (term, weight) pairs.
 
-    A node is a *leaf* if it contains a 'standard_code' key.  Group nodes
-    (no 'standard_code') are traversed to collect their children.
+    Accepts both the legacy plain-string format and the weighted dict format:
+      "rsfMRI"                       → ("rsfMRI", 1.0)
+      {"term": "CPT", "weight": 0.8} → ("CPT", 0.8)
     """
-    codes: List[str] = []
-    if not isinstance(data, dict):
-        return codes
-
-    # If this specific level has a standard_code, collect it
-    if "standard_code" in data:
-        codes.append(data["standard_code"])
-        # DO NOT return here! We must keep checking for children below this node.
-
-    # Reserved keys that are metadata, not children
-    reserved_keys = {"label", "description", "standard_code", "synonyms", "codes", "dataset_codes"}
-
-    for key, value in data.items():
-        if key not in reserved_keys and isinstance(value, dict):
-            codes.extend(_collect_leaf_codes(value))
-
-    # Deduplicate before returning
-    return list(dict.fromkeys(codes))
+    if not raw:
+        return []
+    if isinstance(raw, str):
+        raw = [raw]
+    result: List[Tuple[str, float]] = []
+    for s in raw:
+        if isinstance(s, str):
+            term = s.strip()
+            if term:
+                result.append((term, 1.0))
+        elif isinstance(s, dict) and "term" in s:
+            term = str(s["term"]).strip()
+            weight = float(s.get("weight", 1.0))
+            if term:
+                result.append((term, max(0.0, min(1.0, weight))))
+    return result
 
 
-def _parse_node(
+# ---------------------------------------------------------------------------
+# Flat SKOS parser — two-pass algorithm
+# ---------------------------------------------------------------------------
+
+# Fields that are concept metadata, not child concepts
+_CONCEPT_META = frozenset({
+    "label", "standard_code", "is_group", "broader", "description",
+    "synonyms", "codes", "extra_codes", "dataset_codes", "count",
+})
+
+
+def _parse_flat(
     category: str,
-    data: dict,
-    path: List[str],
+    concepts: Dict[str, dict],
     leaf_db: Dict[str, Dict[str, str]],
     display_db: Dict[str, Dict[str, str]],
     group_db: Dict[str, Dict[str, List[str]]],
     group_display_db: Dict[str, Dict[str, List[str]]],
     hierarchy_db: Dict[str, Dict],
+    weight_db: Dict[str, Dict[str, float]],
 ) -> None:
-    """Walk one level of the YAML tree, registering leaves and groups.
+    """Populate all six lookup dicts from a flat SKOS category dict.
 
-    Two parallel lookup surfaces per layer:
+    Pass 1 — Register leaf concepts (standard_code present):
+        Builds leaf_db, display_db, weight_db, hierarchy_db.
 
-    leaf_db / group_db
-        All surface forms — used for *exact* matching.
-        Includes codes, standard_code, and underscore-style keys so that
-        programmatic or copy-pasted values are found precisely.
-
-    display_db / group_display_db
-        Human-readable forms only (label + synonyms) — used for *fuzzy* matching.
-        Keeps the fuzzy search space clean; no underscore identifiers pollute it.
-        Nodes with neither label nor synonyms are absent from these dicts
-        (the audit script flags them so they can be filled in).
+    Pass 2 — Build group lookups:
+        Derives a children map from 'broader' back-links, then DFS-aggregates
+        all descendant standard_codes for each group/dual node.
+        Builds group_db and group_display_db.
     """
-    reserved_keys = {"label", "description", "standard_code", "synonyms", "codes", "dataset_codes"}
 
-    for key, value in data.items():
-        if not isinstance(value, dict):
+    # ── Pass 1: leaf concepts ─────────────────────────────────────────────────
+    for key, value in concepts.items():
+        std_code = value.get("standard_code")
+        if not std_code:
+            continue  # pure group — handled in pass 2
+
+        label     = value.get("label", "")
+        syn_pairs = _extract_synonyms(value.get("synonyms"))
+        syn_terms = [t for t, _ in syn_pairs]
+
+        # leaf_db: all surface forms → standard_code (for exact match)
+        all_terms: set = set()
+        if label:
+            all_terms.add(label.lower())
+        all_terms.add(std_code.lower())
+        for syn in syn_terms:
+            all_terms.add(syn.lower())
+        for code in value.get("codes") or []:
+            all_terms.add(str(code).lower())
+        for dc in value.get("dataset_codes") or []:
+            if isinstance(dc, dict) and "raw" in dc:
+                all_terms.add(str(dc["raw"]).lower())
+        for term in all_terms:
+            if term:
+                leaf_db[category][term] = std_code
+
+        # display_db + weight_db: label (w=1.0) + each synonym with its weight
+        if label:
+            t = label.lower()
+            display_db[category][t] = std_code
+            weight_db[category][t] = 1.0
+        for syn_term, syn_weight in syn_pairs:
+            t = syn_term.lower()
+            if t:
+                display_db[category][t] = std_code
+                weight_db[category][t] = syn_weight
+
+        # hierarchy_db: ancestor chain (std_codes only — group nodes are transparent)
+        hierarchy_db[std_code] = {
+            "path": _ancestor_codes(key, concepts),
+            "label": label or key,
+            "description": value.get("description", ""),
+        }
+
+    # ── Pass 2: group lookups ─────────────────────────────────────────────────
+    # Build children map: concept_key → [direct child keys]
+    children: Dict[str, List[str]] = defaultdict(list)
+    for key, value in concepts.items():
+        for parent_key in value.get("broader") or []:
+            children[parent_key].append(key)
+
+    # Memoised DFS: collect all descendant standard_codes under a concept
+    # Must be defined inside the function to close over `concepts` and `children`
+    _cache: Dict[str, List[str]] = {}
+
+    def _all_codes(key: str) -> List[str]:
+        if key in _cache:
+            return _cache[key]
+        v = concepts.get(key, {})
+        codes: List[str] = []
+        if "standard_code" in v:
+            codes.append(v["standard_code"])
+        for child_key in children.get(key, []):
+            codes.extend(_all_codes(child_key))
+        result = list(dict.fromkeys(codes))
+        _cache[key] = result
+        return result
+
+    for key, value in concepts.items():
+        # Only register group entries for concepts that ARE parents (have children)
+        if not children.get(key):
+            continue  # pure leaf with no children — no group entry needed
+
+        leaf_codes = _all_codes(key)
+        if not leaf_codes:
             continue
 
-        current_path = path + [key]
-        
-        # Safely extract labels and synonyms
-        label: str = value.get("label", "")
-        raw_syns = value.get("synonyms", [])
-        if isinstance(raw_syns, str):
-            raw_syns = [raw_syns]  # Fix common YAML typo where users forget the bullet dash
-        synonyms: List[str] = [str(s).strip() for s in raw_syns if s]
+        label     = value.get("label", "")
+        syn_pairs = _extract_synonyms(value.get("synonyms"))
+        syn_terms = [t for t, _ in syn_pairs]
 
-        # Identify if this node has sub-dictionaries (children)
-        children = {k: v for k, v in value.items() if k not in reserved_keys and isinstance(v, dict)}
+        # group_db: key + label + synonyms → for exact group lookup
+        for term in [key] + ([label] if label else []) + syn_terms:
+            t = str(term).lower()
+            if t:
+                existing = group_db[category].get(t, [])
+                group_db[category][t] = list(dict.fromkeys(existing + leaf_codes))
 
-        # ── 1. Leaf node behavior ──────────────────────────────────────────────────
-        # Process leaf behavior if standard_code exists (regardless of whether it has children)
-        if "standard_code" in value:
-            std_code = value["standard_code"]
+        # group_display_db: label + synonyms only → for fuzzy group lookup
+        for term in ([label] if label else []) + syn_terms:
+            t = str(term).lower()
+            if t:
+                existing = group_display_db[category].get(t, [])
+                group_display_db[category][t] = list(dict.fromkeys(existing + leaf_codes))
 
-            hierarchy_db[std_code] = {
-                "path": current_path,
-                "label": label or key,
-                "description": value.get("description", ""),
-            }
 
-            # leaf_db: all surface forms for exact lookup
-            all_terms: set = set()
-            if label:
-                all_terms.add(label.lower())
-            all_terms.add(std_code.lower())
-            for syn in synonyms:
-                all_terms.add(syn.lower())
-            for code in value.get("codes", []):
-                all_terms.add(str(code).lower())
-            for dc in value.get("dataset_codes", []):
-                if isinstance(dc, dict) and "raw" in dc:
-                    all_terms.add(str(dc["raw"]).lower())
-            
-            for term in all_terms:
-                if term:
-                    leaf_db[category][term] = std_code
+def _ancestor_codes(key: str, concepts: Dict[str, dict]) -> List[str]:
+    """Return the list of ancestor concept keys that have standard_codes.
 
-            # display_db: label + synonyms only, for fuzzy lookup
-            for term in ([label] if label else []) + synonyms:
-                t = term.lower()
-                if t:
-                    display_db[category][t] = std_code
-
-        # ── 2. Group node behavior ─────────────────────────────────────────────────
-        # Process group behavior if it has children (regardless of whether it has a standard_code)
-        if children:
-            leaf_codes = []
-            if "standard_code" in value:
-                leaf_codes.append(value["standard_code"])
-            leaf_codes.extend(_collect_leaf_codes(children))
-            
-            # Deduplicate
-            leaf_codes = list(dict.fromkeys(leaf_codes))
-
-            if leaf_codes:
-                # group_db: key name + label + synonyms, for exact lookup
-                for term in [key] + ([label] if label else []) + synonyms:
-                    t = str(term).lower()
-                    if t:
-                        existing = group_db[category].get(t, [])
-                        group_db[category][t] = list(dict.fromkeys(existing + leaf_codes))
-
-                # group_display_db: label + synonyms only, for fuzzy lookup
-                # (Added label here! Previously only synonyms were searchable in groups)
-                for term in ([label] if label else []) + synonyms:
-                    t = str(term).lower()
-                    if t:
-                        existing = group_display_db[category].get(t, [])
-                        group_display_db[category][t] = list(dict.fromkeys(existing + leaf_codes))
-
-            # Recurse into children
-            _parse_node(
-                category, children, current_path,
-                leaf_db, display_db, group_db, group_display_db, hierarchy_db,
-            )
+    Group nodes (no standard_code) are transparent — traversed but not listed.
+    The node's own key is always first (self-referential path for pruning logic).
+    Used by retriever._prune_redundant_parents.
+    """
+    path: List[str] = [key]
+    visited: set = {key}
+    queue = list(concepts.get(key, {}).get("broader") or [])
+    while queue:
+        parent_key = queue.pop(0)
+        if parent_key in visited:
+            continue
+        visited.add(parent_key)
+        parent = concepts.get(parent_key, {})
+        if "standard_code" in parent:
+            path.append(parent_key)
+        queue.extend(parent.get("broader") or [])
+    return path
 
 
 # ---------------------------------------------------------------------------
@@ -161,57 +210,61 @@ def build_knowledge_base(yaml_path: str) -> Tuple[
     Dict[str, Dict[str, List[str]]],
     Dict[str, Dict[str, List[str]]],
     Dict[str, Dict],
+    Dict[str, Dict[str, float]],
 ]:
-    """Parse the value-mappings YAML into five complementary lookup structures.
+    """Parse the flat SKOS value_mappings.yaml into six lookup structures.
 
     Returns
     -------
     leaf_db : {category: {surface_form_lower: standard_code}}
-        Full exact-match lookup for leaf nodes.
+        Exact-match lookup for leaf concepts.
         Covers label, standard_code, synonyms, codes, and dataset_codes.
 
     display_db : {category: {human_readable_lower: standard_code}}
-        Fuzzy-match lookup for leaf nodes.
-        Contains *only* label + synonyms — no underscore identifiers.
-        Nodes with neither label nor synonyms are absent (see audit_yaml.py).
+        Fuzzy-match lookup for leaf concepts (label + synonyms only).
 
     group_db : {category: {term_lower: [standard_code, ...]}}
-        Full exact-match lookup for group nodes.
-        Keys are the YAML group key name + all group synonyms.
+        Exact-match lookup for group/dual concepts (all surface forms).
 
     group_display_db : {category: {synonym_lower: [standard_code, ...]}}
-        Fuzzy-match lookup for group nodes.
-        Contains *only* group synonyms — no underscore key names.
+        Fuzzy-match lookup for group/dual concepts (label + synonyms only).
 
     hierarchy_db : {standard_code: {path, label, description}}
-        Ancestry path and metadata for every leaf node.
+        Ancestor chain and metadata for every leaf concept.
+        'path' contains the concept's own key plus any ancestor keys that
+        have standard_codes — used by retriever._prune_redundant_parents.
+
+    weight_db : {category: {term_lower: float}}
+        Match-confidence weight for every term in display_db.
+        Labels → 1.0. Plain-string synonyms → 1.0.
+        Weighted-dict synonyms → their declared weight.
     """
     with open(yaml_path, "r") as fh:
         schema = yaml.safe_load(fh)
 
-    leaf_db: Dict[str, Dict[str, str]] = {cat: {} for cat in _CATEGORIES}
-    display_db: Dict[str, Dict[str, str]] = {cat: {} for cat in _CATEGORIES}
-    group_db: Dict[str, Dict[str, List[str]]] = {cat: {} for cat in _CATEGORIES}
-    group_display_db: Dict[str, Dict[str, List[str]]] = {cat: {} for cat in _CATEGORIES}
-    hierarchy_db: Dict[str, Dict] = {}
+    leaf_db:         Dict[str, Dict[str, str]]        = {cat: {} for cat in _CATEGORIES}
+    display_db:      Dict[str, Dict[str, str]]        = {cat: {} for cat in _CATEGORIES}
+    group_db:        Dict[str, Dict[str, List[str]]]  = {cat: {} for cat in _CATEGORIES}
+    group_display_db:Dict[str, Dict[str, List[str]]]  = {cat: {} for cat in _CATEGORIES}
+    hierarchy_db:    Dict[str, Dict]                  = {}
+    weight_db:       Dict[str, Dict[str, float]]      = {cat: {} for cat in _CATEGORIES}
 
     for cat in _CATEGORIES:
-        if cat in schema:
-            _parse_node(
-                cat, schema[cat], [],
-                leaf_db, display_db, group_db, group_display_db, hierarchy_db,
-            )
+        if cat not in schema:
+            continue
+        cat_data = schema[cat]
+        if not isinstance(cat_data, dict):
+            continue
+        _parse_flat(
+            cat, cat_data,
+            leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db,
+        )
 
-    return leaf_db, display_db, group_db, group_display_db, hierarchy_db
+    return leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db
 
 
 def get_group_summary(group_db: Dict[str, Dict[str, List[str]]]) -> Dict[str, List[str]]:
-    """Return a flat map of {category: [group_synonyms]} for use in LLM prompts.
-
-    Provides the LLM with awareness of which broad/group-level terms exist so
-    it can extract them when the user's query is at a category level rather
-    than a specific diagnosis/task.
-    """
+    """Return a flat map of {category: [group_synonyms]} for use in LLM prompts."""
     summary: Dict[str, List[str]] = {}
     for cat, groups in group_db.items():
         if groups:
@@ -219,10 +272,105 @@ def get_group_summary(group_db: Dict[str, Dict[str, List[str]]]) -> Dict[str, Li
     return summary
 
 
+# EmbeddingIndex: {category: (terms, float32_embeddings, code_lists)}
+EmbeddingIndex = Dict[str, Tuple[List[str], Any, List[List[str]]]]
+
+
+def build_embedding_index(
+    model_name: str,
+    yaml_path: str,
+    cache_dir: Optional[str] = None,
+) -> Optional[EmbeddingIndex]:
+    """Build or load from cache a per-category L2-normalised embedding index.
+
+    Covers all human-readable terms from display_db and group_display_db.
+    Cache is keyed on YAML content hash + model name — auto-invalidates when
+    value_mappings.yaml changes.
+
+    Returns None if sentence_transformers or numpy are unavailable.
+    """
+    if not _NUMPY_OK:
+        return None
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ImportError:
+        return None
+
+    import numpy as np
+
+    yaml_hash  = hashlib.md5(Path(yaml_path).read_bytes()).hexdigest()[:12]
+    model_slug = _re.sub(r"[^a-zA-Z0-9]", "_", model_name)
+    cache_base = Path(cache_dir) if cache_dir else Path(yaml_path).parent
+    meta_path  = cache_base / f"embed_{model_slug}_{yaml_hash}.json"
+    embs_path  = cache_base / f"embed_{model_slug}_{yaml_hash}.npz"
+
+    # ── Load from cache if valid ───────────────────────────────────────────────
+    if meta_path.exists() and embs_path.exists():
+        try:
+            with open(meta_path, "r", encoding="utf-8") as fh:
+                meta = json.load(fh)
+            npz = np.load(str(embs_path))
+            index: EmbeddingIndex = {}
+            for cat, cat_meta in meta.items():
+                if cat in npz:
+                    index[cat] = (cat_meta["terms"], npz[cat], cat_meta["codes"])
+            if index:
+                return index
+        except Exception:
+            pass
+
+    # ── Build per-category (term, code_list) pairs ────────────────────────────
+    # Re-parse so we have access to display_db and group_display_db
+    _, display_db_, _, group_display_db_, _, _ = build_knowledge_base(yaml_path)
+
+    cat_entries: Dict[str, List[Tuple[str, List[str]]]] = {}
+    for cat in _CATEGORIES:
+        seen: set = set()
+        entries: List[Tuple[str, List[str]]] = []
+        for term, code in display_db_.get(cat, {}).items():
+            if term not in seen:
+                entries.append((term, [code]))
+                seen.add(term)
+        for term, codes in group_display_db_.get(cat, {}).items():
+            if term not in seen:
+                entries.append((term, list(codes)))
+                seen.add(term)
+        if entries:
+            cat_entries[cat] = entries
+
+    if not cat_entries:
+        return None
+
+    # ── Encode ────────────────────────────────────────────────────────────────
+    model = SentenceTransformer(model_name)
+    index = {}
+    meta_out: Dict[str, dict] = {}
+    embs_out: Dict[str, Any]  = {}
+
+    for cat, entries in cat_entries.items():
+        terms      = [t for t, _ in entries]
+        code_lists = [c for _, c in entries]
+        embs       = model.encode(terms, normalize_embeddings=True, show_progress_bar=False)
+        embs32     = np.array(embs, dtype=np.float32)
+        index[cat]    = (terms, embs32, code_lists)
+        meta_out[cat] = {"terms": terms, "codes": code_lists}
+        embs_out[cat] = embs32
+
+    # ── Persist cache ─────────────────────────────────────────────────────────
+    try:
+        cache_base.mkdir(parents=True, exist_ok=True)
+        with open(meta_path, "w", encoding="utf-8") as fh:
+            json.dump(meta_out, fh)
+        np.savez(str(embs_path), **embs_out)
+    except Exception:
+        pass
+
+    return index
+
+
 # ---------------------------------------------------------------------------
 # Module-level initialisation (used by downstream modules)
 # ---------------------------------------------------------------------------
 
-# Use an absolute path so this module is importable from any working directory.
 _YAML_PATH = str(Path(__file__).parent / "value_mappings.yaml")
-leaf_db, display_db, group_db, group_display_db, hierarchy_db = build_knowledge_base(_YAML_PATH)
+leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db = build_knowledge_base(_YAML_PATH)

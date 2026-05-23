@@ -164,6 +164,108 @@ def _apply_pagination(sql: str, limit: Optional[int], offset: Optional[int]) -> 
     return sql
 
 
+# ── SQL normalisation ──────────────────────────────────────────────────────────
+# These are the columns the backend reads from every result row.
+# Critical (accessed via r["col"], raise KeyError if absent): id, name, dataset_type, source_type
+# Optional (accessed via r.get("col")): the rest
+_REQUIRED_SELECT: List[tuple] = [
+    ("d.id",                                       r"\bd\.id\b"),
+    ("d.name",                                     r"\bd\.name\b"),
+    ("d.accession_id",                             r"\bd\.accession_id\b"),
+    ("d.bids_version",                             r"\bd\.bids_version\b"),
+    ("d.dataset_type",                             r"\bd\.dataset_type\b"),
+    ("d.source_type",                              r"\bd\.source_type\b"),
+    ("d.remote_url",                               r"\bd\.remote_url\b"),
+    ("d.validation_status",                        r"\bd\.validation_status\b"),
+    ("COUNT(DISTINCT o.subject) AS subject_count", r"COUNT\s*\(\s*DISTINCT\s+o\d*\.subject\s*\)"),
+]
+
+_MANDATORY_COLS_SQL = (
+    "d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
+    "       d.source_type, d.remote_url, d.validation_status,\n"
+    "       COUNT(DISTINCT o.subject) AS subject_count"
+)
+
+
+def _outer_select_span(sql: str):
+    """Return (cols_start, from_start) character indices for the outermost SELECT clause.
+
+    cols_start is just after 'SELECT [DISTINCT]'.
+    from_start is where the top-level FROM keyword begins.
+    Returns (None, None) if the structure can't be found.
+    """
+    m = re.match(r"\s*SELECT\s+(?:DISTINCT\s+)?", sql, re.IGNORECASE)
+    if not m:
+        return None, None
+    cols_start = m.end()
+    depth = 0
+    i = cols_start
+    while i < len(sql) - 3:
+        c = sql[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+        elif depth == 0:
+            word = sql[i:i + 4].upper()
+            if word == "FROM" and (i == 0 or not sql[i - 1].isalnum() and sql[i - 1] != "_"):
+                return cols_start, i
+        i += 1
+    return cols_start, None
+
+
+def normalize_sql(sql: str) -> str:
+    """Apply deterministic post-generation fixes before execution.
+
+    1. Fix COUNT without DISTINCT on subject columns.
+    2. Expand bare SELECT * → mandatory column list.
+    3. Inject any missing mandatory SELECT columns (skips CTEs — too complex to patch safely).
+    4. Inject GROUP BY d.id when the clause is completely absent.
+    """
+    # 1. COUNT(o.subject) → COUNT(DISTINCT o.subject)  (handles o, o2, o3, …)
+    sql = re.sub(
+        r"\bCOUNT\s*\(\s*(?!DISTINCT\s)(o\d*\.subject)\s*\)",
+        r"COUNT(DISTINCT \1)",
+        sql,
+        flags=re.IGNORECASE,
+    )
+
+    # 2. SELECT * → full mandatory column list
+    if re.match(r"\s*SELECT\s+(?:DISTINCT\s+)?\*\s+FROM\b", sql, re.IGNORECASE):
+        sql = re.sub(
+            r"(SELECT\s+(?:DISTINCT\s+)?)\*",
+            r"\g<1>" + _MANDATORY_COLS_SQL,
+            sql,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        return sql  # GROUP BY check below still runs on the rewritten SQL in step 4
+
+    # 3. Inject missing mandatory columns (skip CTEs — parsing them safely is fragile)
+    if not re.match(r"\s*WITH\b", sql, re.IGNORECASE):
+        cols_start, from_start = _outer_select_span(sql)
+        if cols_start is not None and from_start is not None:
+            cols_clause = sql[cols_start:from_start]
+            missing = [
+                col for col, pattern in _REQUIRED_SELECT
+                if not re.search(pattern, cols_clause, re.IGNORECASE)
+            ]
+            if missing:
+                prefix = ", ".join(missing) + ",\n       "
+                sql = sql[:cols_start] + prefix + sql[cols_start:]
+
+    # 4. Inject GROUP BY d.id if entirely absent
+    if not re.search(r"\bGROUP\s+BY\b", sql, re.IGNORECASE):
+        tail = re.search(r"\b(?:ORDER\s+BY|LIMIT|OFFSET)\b", sql, re.IGNORECASE)
+        if tail:
+            insert_at = tail.start()
+            sql = sql[:insert_at].rstrip() + "\nGROUP BY d.id\n" + sql[insert_at:]
+        else:
+            sql = sql.rstrip("; \n") + "\nGROUP BY d.id"
+
+    return sql
+
+
 # ── Few-shot selection ─────────────────────────────────────────────────────────
 
 def _pick_examples(
@@ -375,10 +477,29 @@ class TextToSQLModel:
             "- Always: GROUP BY d.id\n"
             "- If [Resolved DB filters] are provided in the question, copy each EXISTS subquery "
             "VERBATIM into the WHERE clause — do not change column names, operators, or values\n"
-            "- Use ILIKE '%%term%%' for case-insensitive text search\n"
+            "- Use ILIKE '%term%' for case-insensitive text search\n"
             "- Do NOT add LIMIT unless the question explicitly asks for 'top N' results\n"
             "- For any file or participant filter NOT already covered by [Resolved DB filters], "
-            "use an EXISTS (...) subquery\n"
+            "use an EXISTS (...) subquery in the WHERE clause\n"
+            "- For threshold filters on aggregated counts (e.g. 'more than 5 subjects', "
+            "'at least 100 participants'), use a HAVING clause — not WHERE:\n"
+            "  WRONG: WHERE COUNT(DISTINCT o.subject) > 5\n"
+            "  RIGHT: HAVING COUNT(DISTINCT o.subject) > 5\n"
+            "- For participant-count thresholds broken down by a criterion (e.g. 'more male "
+            "than female participants'), use correlated subqueries in HAVING:\n"
+            "  HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id "
+            "AND p.sex = 'M') > "
+            "(SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id "
+            "AND p.sex = 'F')\n"
+            "- NEVER JOIN bids_participants directly alongside bids_objects — "
+            "this creates a cross-product. Always use EXISTS for participant filters:\n"
+            "  WRONG: LEFT JOIN bids_participants p ON p.dataset_id = d.id\n"
+            "  RIGHT: EXISTS (SELECT 1 FROM bids_participants p2 "
+            "WHERE p2.dataset_id = d.id AND p2.diagnosis = '...')\n"
+            "- NEVER use COUNT(o.subject): always COUNT(DISTINCT o.subject) AS subject_count\n"
+            "- In EXISTS subqueries, always correlate the subquery table back to the outer "
+            "query using dataset_id = d.id "
+            "(e.g. WHERE p2.dataset_id = d.id or WHERE o2.dataset_id = d.id)\n"
         )
 
         examples_block = _format_examples(examples)
@@ -563,7 +684,7 @@ class TextToSQLModel:
         prompt = self._build_prompt(augmented_question, examples)
         raw = self._infer(prompt, max_new_tokens=max_new_tokens)
         sql = _apply_pagination(
-            self._expand_sql(_extract_sql(raw)),
+            normalize_sql(self._expand_sql(_extract_sql(raw))),
             limit,
             offset,
         )
@@ -609,7 +730,7 @@ class TextToSQLModel:
         """
         prompt = self._build_prompt(question, examples=[])
         raw = self._infer(prompt, max_new_tokens=max_new_tokens)
-        sql = _apply_pagination(self._expand_sql(_extract_sql(raw)), limit, offset)
+        sql = _apply_pagination(normalize_sql(self._expand_sql(_extract_sql(raw))), limit, offset)
         return {
             "sql":                sql,
             "augmented_question": question,

@@ -99,7 +99,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
         f"PostgreSQL error:\n{db_error}"
     )
 
-    _MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"]
+    _MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
     client = genai.Client(api_key=api_key)
     for model in _MODELS:
         try:
@@ -138,7 +138,11 @@ def _gemini_sql_generation(augmented_question: str, api_key: str) -> str:
         "- Always include: GROUP BY d.id\n"
         "- If [Resolved DB filters] are in the question, copy each EXISTS subquery VERBATIM "
         "into the WHERE clause.\n"
-        "- Use ILIKE '%%term%%' for text search.\n"
+        "- Use ILIKE ONLY for bids_datasets.name or bids_datasets.description_text "
+        "(when the question asks for a keyword/title search). "
+        "NEVER use ILIKE on bids_participants.diagnosis, bids_objects.task, "
+        "bids_objects.datatype, or bids_objects.suffix — these store canonical codes, not text. "
+        "If a term appears in [VOCABULARY MISS], omit that filter entirely.\n"
         "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
         "- Return ONLY the SQL — no explanation, no markdown fences.\n"
     )
@@ -156,22 +160,31 @@ def _gemini_sql_generation(augmented_question: str, api_key: str) -> str:
         [SQL]
     """)
 
-    _MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"]
+    import time
+    _MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
     client = genai.Client(api_key=api_key)
     for model in _MODELS:
-        try:
-            resp = client.models.generate_content(
-                model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.0),
-            )
-            sql = _extract_sql(resp.text.strip())
-            log.info("Gemini SQL generation succeeded with model %s", model)
-            return sql
-        except Exception as exc:
-            log.warning("Gemini model %s failed for SQL generation: %s", model, exc)
+        for attempt in range(1, 5):
+            try:
+                resp = client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(temperature=0.0),
+                )
+                sql = _extract_sql(resp.text.strip())
+                log.info("Gemini SQL generation succeeded with model %s", model)
+                return sql
+            except Exception as exc:
+                err_str = str(exc)
+                is_503 = "503" in err_str or "UNAVAILABLE" in err_str
+                if is_503 and attempt < 4:
+                    log.warning("Gemini model %s got 503, retrying (attempt %d)...", model, attempt)
+                    time.sleep(2 ** attempt)
+                else:
+                    log.warning("Gemini model %s failed for SQL generation: %s", model, exc)
+                    break
 
-    return _FALLBACK_SQL
+    raise RuntimeError("All Gemini models failed for SQL generation")
 
 
 # ── Full Modal pipeline (stages 1–4) ──────────────────────────────────────────
@@ -225,14 +238,9 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
             log.warning("Could not load RAG name index: %s", exc)
 
     # Stages 1 + 2
-    try:
-        augmented_plan = run_pipeline(question, retriever=retriever, api_key=api_key)
-        augmented_question = augmented_plan.augmented_question
-        explanation = augmented_plan.plan.natural_language_summary
-    except Exception as exc:
-        log.warning("Preprocessing/RAG failed: %s — falling back to raw question", exc)
-        augmented_question = question
-        explanation = f"Preprocessing failed: {exc}"
+    augmented_plan = run_pipeline(question, retriever=retriever, api_key=api_key)
+    augmented_question = augmented_plan.augmented_question
+    explanation = augmented_plan.plan.natural_language_summary
 
     # Stage 3: Gemini SQL generation (local stand-in for SQLCoder+LoRA)
     sql = _gemini_sql_generation(augmented_question, api_key)

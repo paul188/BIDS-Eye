@@ -1,26 +1,20 @@
 """audit_yaml.py
 
-Find every node in value_mappings.yaml — whether a group or a leaf — that has
-neither a 'label' nor a 'synonyms' entry.  These nodes are invisible to the
+Find every concept in the flat SKOS value_mappings.yaml that has neither a
+'label' nor a 'synonyms' entry.  These concepts are invisible to the
 fuzzy-matching layer of the RAG and should be enriched.
 
 Usage:
     python audit_yaml.py [path/to/value_mappings.yaml]
 
 Output:
-    A table listing each missing node, its YAML path, and whether it is a
-    leaf (has standard_code) or a group node.
+    A table listing each missing concept, its category, key, and type
+    (leaf = has standard_code; group = is_group: true).
 """
 
 import sys
 import yaml
-from typing import Any, List, Tuple
-
-# Keys that are metadata fields *within* a node, not child node identifiers.
-_METADATA_KEYS = {
-    "label", "standard_code", "description",
-    "synonyms", "codes", "extra_codes", "dataset_codes",
-}
+from typing import Dict, List, Tuple
 
 _CATEGORIES = [
     "diagnosis", "task", "suffix", "handedness", "sex",
@@ -28,78 +22,80 @@ _CATEGORIES = [
 ]
 
 
-def _audit(
-    data: Any,
-    path: List[str],
-    results: List[Tuple[str, str, str]],  # (dot_path, node_type, reason)
-) -> None:
-    """Recursively walk the YAML, collecting nodes that lack label and synonyms."""
-    if not isinstance(data, dict):
-        return
-
-    for key, value in data.items():
-        if key in _METADATA_KEYS:
-            continue
-        if not isinstance(value, dict):
-            continue
-
-        current_path = path + [key]
-        dot_path = " > ".join(current_path)
-
-        has_label = bool(value.get("label", ""))
-        has_synonyms = bool(value.get("synonyms"))
-
-        if not has_label and not has_synonyms:
-            node_type = "leaf" if "standard_code" in value else "group"
-            missing = []
-            if not has_label:
-                missing.append("label")
-            if not has_synonyms:
-                missing.append("synonyms")
-            results.append((dot_path, node_type, ", ".join(missing)))
-
-        # Recurse regardless — children of a passing node may still be missing
-        _audit(value, current_path, results)
-
-
-def audit(yaml_path: str) -> List[Tuple[str, str, str]]:
+def audit(yaml_path: str) -> List[Tuple[str, str, str, str]]:
+    """Return list of (category, key, node_type, missing_fields) tuples."""
     with open(yaml_path, "r") as fh:
         schema = yaml.safe_load(fh)
 
-    results: List[Tuple[str, str, str]] = []
+    results: List[Tuple[str, str, str, str]] = []
+
     for cat in _CATEGORIES:
-        if cat in schema:
-            _audit(schema[cat], [cat], results)
+        cat_data = schema.get(cat)
+        if not isinstance(cat_data, dict):
+            continue
+
+        for key, value in cat_data.items():
+            if not isinstance(value, dict):
+                continue
+
+            has_label    = bool(value.get("label", ""))
+            has_synonyms = bool(value.get("synonyms"))
+
+            if not has_label and not has_synonyms:
+                node_type = "group" if value.get("is_group") else "leaf"
+                missing: List[str] = []
+                if not has_label:
+                    missing.append("label")
+                if not has_synonyms:
+                    missing.append("synonyms")
+                results.append((cat, key, node_type, ", ".join(missing)))
 
     return results
 
 
-def _print_report(results: List[Tuple[str, str, str]]) -> None:
+def get_stats(yaml_path: str) -> Dict[str, int]:
+    """Return concept count statistics per category."""
+    with open(yaml_path, "r") as fh:
+        schema = yaml.safe_load(fh)
+
+    stats: Dict[str, int] = {}
+    total = 0
+    for cat in _CATEGORIES:
+        cat_data = schema.get(cat)
+        if isinstance(cat_data, dict):
+            n = sum(1 for v in cat_data.values() if isinstance(v, dict))
+            stats[cat] = n
+            total += n
+    stats["total"] = total
+    return stats
+
+
+def _print_report(results: List[Tuple[str, str, str, str]]) -> None:
     if not results:
-        print("All nodes have at least a label or synonyms.")
+        print("All concepts have at least a label or synonyms.")
         return
 
-    # Column widths
-    path_w = max(len(r[0]) for r in results)
-    type_w = max(len(r[1]) for r in results)
+    cat_w  = max(len(r[0]) for r in results)
+    key_w  = max(len(r[1]) for r in results)
+    type_w = max(len(r[2]) for r in results)
 
-    header = f"{'PATH':<{path_w}}  {'TYPE':<{type_w}}  MISSING"
+    header = f"{'CATEGORY':<{cat_w}}  {'KEY':<{key_w}}  {'TYPE':<{type_w}}  MISSING"
     print(header)
     print("-" * len(header))
 
-    # Group by category for readability
     current_cat = None
-    for dot_path, node_type, missing in sorted(results):
-        cat = dot_path.split(" > ")[0]
+    for cat, key, node_type, missing in sorted(results):
         if cat != current_cat:
             print()
             current_cat = cat
-        print(f"{dot_path:<{path_w}}  {node_type:<{type_w}}  {missing}")
+        print(f"{cat:<{cat_w}}  {key:<{key_w}}  {node_type:<{type_w}}  {missing}")
 
-    print(f"\nTotal: {len(results)} node(s) missing label and/or synonyms.")
+    print(f"\nTotal: {len(results)} concept(s) missing label and/or synonyms.")
 
 
 if __name__ == "__main__":
     path = sys.argv[1] if len(sys.argv) > 1 else "value_mappings.yaml"
+    stats = get_stats(path)
+    print(f"Concept counts: {stats}\n")
     results = audit(path)
     _print_report(results)

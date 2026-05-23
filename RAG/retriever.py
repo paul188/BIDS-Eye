@@ -3,12 +3,23 @@ RAG/retriever.py
 ----------------
 Unified metadata retriever for the LLM_preprocessor pipeline.
 
-Two resolution strategies matched to field type:
+Three resolution strategies in priority order:
 
-  Semantic fields  (diagnosis / task / suffix / datatype / sex / handedness)
-      → yaml_to_llamaindex knowledge base + RapidFuzz WRatio
-        Handles synonyms, group expansion, and hierarchy pruning.
-        "mood disorders" expands to all child diagnosis codes.
+  1. Exact match  (all YAML fields)
+       leaf_db / group_db exact string lookup.
+       Catches programmatic values, accession codes, standard_codes.
+
+  2. Fuzzy match  (YAML fields — primary path)
+       RapidFuzz WRatio ≥ 80 over display labels + synonyms.
+       Weight-adjusted threshold for low-confidence synonyms.
+
+  3. Embedding fallback  (YAML fields — miss path)
+       Two-tier biomedical embedding search when fuzzy match scores < 80.
+       Tier 1: BioLORD-2023-C (cosine ≥ 0.75) — SNOMED-CT / MedDRA SOTA
+       Tier 2: SapBERT         (cosine ≥ 0.65) — UMLS 4M+ entity linking
+       Models are downloaded on first use and cached by sentence-transformers.
+       Embeddings of the YAML KB are pre-computed and cached as .npz files.
+       Falls back gracefully if sentence-transformers / numpy are not installed.
 
   Name fields  (author / funding)
       → Flat DB-sourced list (name_index.json) + RapidFuzz token_set_ratio
@@ -30,6 +41,9 @@ Build the name index with:
 Requires:
     pip install rapidfuzz
 
+Optional (for embedding fallback):
+    pip install sentence-transformers numpy
+
 Interface:
     retriever = MetadataRetriever("RAG/name_index.json")
     # Scan terms — multi-field lookup (preferred for modality/task queries):
@@ -44,12 +58,15 @@ Interface:
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 from rapidfuzz import fuzz as _fuzz
 from rapidfuzz import process as _process
+
+log = logging.getLogger(__name__)
 
 # Ensure RAG/ is on sys.path so yaml_to_llamaindex is importable regardless
 # of which directory this module is imported from.
@@ -63,6 +80,8 @@ from yaml_to_llamaindex import (
     group_db,
     group_display_db,
     hierarchy_db,
+    weight_db,
+    build_embedding_index,
 )
 
 # ── Constants ──────────────────────────────────────────────────────────────────
@@ -87,6 +106,111 @@ _SEMANTIC_THRESHOLD = 80
 
 # token_set_ratio threshold for name fields — looser to handle abbreviations
 _NAME_THRESHOLD = 60
+
+# Maximum extra points added to the fuzzy threshold for a weight-0.0 synonym.
+# A synonym with weight w requires a fuzzy score of at least:
+#   _SEMANTIC_THRESHOLD + (1.0 - w) * _WEIGHT_BOOST
+# Examples (SEMANTIC_THRESHOLD=80, WEIGHT_BOOST=15):
+#   w=1.0 → threshold 80   (no penalty — fully trusted synonym)
+#   w=0.7 → threshold 84.5 (mild penalty)
+#   w=0.5 → threshold 87.5 (moderate penalty)
+#   w=0.2 → threshold 92   (steep penalty — near-exact match required)
+_WEIGHT_BOOST = 8
+
+# Tier-1 embedding model: biomedical ontology SOTA (SNOMED-CT / MedDRA)
+_BIOLORD_MODEL = "FremyCompany/BioLORD-2023-C"
+_BIOLORD_THRESHOLD = 0.75
+
+# Tier-2 embedding model: UMLS 4M+ concept entity linking
+_SAPBERT_MODEL = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
+_SAPBERT_THRESHOLD = 0.65
+
+# Path to value_mappings.yaml — used as cache key for embedding indices
+_YAML_PATH = str(_THIS_DIR / "value_mappings.yaml")
+
+
+# ── Embedding fallback — lazy initialisation ────────────────────────────────────
+# Loaded on first miss so startup is not penalised when fuzzy matching suffices.
+
+_emb_indices: Dict[str, Optional[Any]] = {}  # model_name → EmbeddingIndex or None
+_emb_models: Dict[str, Any] = {}             # model_name → SentenceTransformer or None
+
+
+def _load_embedding_tier(model_name: str) -> Optional[Any]:
+    """Lazy-load the embedding index and the SentenceTransformer for *model_name*.
+
+    Returns the EmbeddingIndex on success, None if sentence-transformers /
+    numpy are not installed or the index cannot be built.  Result is cached
+    so each model is loaded at most once per process.
+    """
+    if model_name in _emb_indices:
+        return _emb_indices[model_name]
+
+    try:
+        import numpy  # noqa: F401 — probe before heavy work
+        from sentence_transformers import SentenceTransformer
+    except ImportError:
+        _emb_indices[model_name] = None
+        return None
+
+    try:
+        index = build_embedding_index(model_name, _YAML_PATH)
+        if index is not None:
+            _emb_models[model_name] = SentenceTransformer(model_name)
+        _emb_indices[model_name] = index
+        return index
+    except Exception as exc:
+        log.warning("Embedding index load failed for %s: %s", model_name, exc)
+        _emb_indices[model_name] = None
+        return None
+
+
+def _embedding_fallback(field: str, term: str) -> List[str]:
+    """Two-tier biomedical embedding search for *term* in *field*.
+
+    Called when RapidFuzz WRatio misses (score < threshold).
+    Tier 1: BioLORD-2023-C, cosine ≥ 0.75 — returns on first hit.
+    Tier 2: SapBERT,         cosine ≥ 0.65 — reached only if tier 1 misses.
+    Returns [] if both tiers miss or if sentence-transformers is not installed.
+    """
+    try:
+        import numpy as np
+    except ImportError:
+        return []
+
+    term_lower = term.lower().strip()
+
+    for model_name, threshold in (
+        (_BIOLORD_MODEL, _BIOLORD_THRESHOLD),
+        (_SAPBERT_MODEL, _SAPBERT_THRESHOLD),
+    ):
+        index = _load_embedding_tier(model_name)
+        if index is None:
+            continue
+
+        cat_data = index.get(field)
+        if not cat_data:
+            continue
+
+        emb_model = _emb_models.get(model_name)
+        if emb_model is None:
+            continue
+
+        terms_list, embs, code_lists = cat_data
+        query_emb = emb_model.encode(
+            [term_lower], normalize_embeddings=True, show_progress_bar=False
+        )[0]
+        scores = np.dot(embs, query_emb)
+        best_idx = int(np.argmax(scores))
+
+        if float(scores[best_idx]) >= threshold:
+            log.debug(
+                "Embedding fallback (%s) resolved '%s' → %s (score %.3f)",
+                model_name.split("/")[-1], term, code_lists[best_idx], scores[best_idx],
+            )
+            return code_lists[best_idx]
+
+    return []
 
 
 # ── YAML-field resolution helpers ──────────────────────────────────────────────
@@ -156,13 +280,20 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
         term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=3
     )
     if not results or results[0][1] < _SEMANTIC_THRESHOLD:
-        return []
+        return _embedding_fallback(field, term)
 
     # Prefer the more specific (longer) label when top scores are tied
     best_label, best_score = results[0][0], results[0][1]
     for label, score, _ in results[1:]:
         if score >= best_score and len(label) > len(best_label):
             best_label, best_score = label, score
+
+    # Weight-adjusted threshold: low-confidence synonyms need a higher fuzzy
+    # score to be accepted. Labels and plain-string synonyms default to 1.0.
+    weight = weight_db.get(field, {}).get(best_label, 1.0)
+    effective_threshold = _SEMANTIC_THRESHOLD + (1.0 - weight) * _WEIGHT_BOOST
+    if best_score < effective_threshold:
+        return _embedding_fallback(field, term)
 
     return all_targets[best_label]
 

@@ -400,17 +400,8 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
 # Model cascade — pinned version IDs required; unpinned aliases like
 # "gemini-2.0-flash" have been deprecated for newer API accounts.
 _MODEL_CASCADE = [
-    # Das aktuelle Flaggschiff für Geschwindigkeit & Intelligenz (GA-Status)
-    ("gemini-3.1-pro",         "Primary",    2, [30, 60]),
-    
-    # Der hocheffiziente Allrounder (stabil und kostengünstig)
-    ("gemini-3.1-flash",       "Fallback 1", 2, [30, 60]),
-    
-    # Die Ultra-Leichtgewicht-Variante für einfache Aufgaben/Massendaten
-    ("gemini-3.1-flash-lite",  "Fallback 2", 3, [60, 120, 240]),
-    
-    # Optional: Spezialmodell für komplexe Logik (Reasoning-Fokus)
-    ("gemini-3-deep-think",    "Fallback 3", 5, [120, 240, 480]),
+    ("gemini-2.5-flash", "Primary",    4, [2, 4, 8, 16]),
+    ("gemini-2.5-pro",   "Fallback 1", 4, [2, 4, 8, 16]),
 ]
 
 
@@ -553,17 +544,22 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
 def augment_with_rag(
     plan: QueryPlan,
     rag_results: Dict[str, Dict[str, List[str]]],
+    unresolved_terms: Optional[Dict[str, List[str]]] = None,
 ) -> AugmentedQueryPlan:
     """
     Combine a QueryPlan with RAG results to produce an AugmentedQueryPlan.
 
     Parameters
     ----------
-    plan        : output of preprocess_query()
-    rag_results : {field: {term: [canonical_code, ...]}}
-                  e.g. {"diagnosis": {"schizophrenia": ["schizophrenia_spectrum"]},
-                         "datatype":  {"fMRI": ["func"]},
-                         "suffix":    {"fMRI": ["bold"]}}
+    plan             : output of preprocess_query()
+    rag_results      : {field: {term: [canonical_code, ...]}}
+                       e.g. {"diagnosis": {"schizophrenia": ["schizophrenia_spectrum"]},
+                              "datatype":  {"fMRI": ["func"]},
+                              "suffix":    {"fMRI": ["bold"]}}
+    unresolved_terms : {field: [term, ...]} for terms that RAG could not map.
+                       These are surfaced as an anti-ILIKE warning in the augmented
+                       question so the SQL model does not fall back to broken text
+                       searches on canonical-code columns.
 
     Returns
     -------
@@ -582,7 +578,7 @@ def augment_with_rag(
     aug = AugmentedQueryPlan(
         plan=plan,
         resolved=resolved,
-        augmented_question=_build_augmented_question(plan, resolved),
+        augmented_question=_build_augmented_question(plan, resolved, unresolved_terms or {}),
     )
     return aug
 
@@ -590,6 +586,7 @@ def augment_with_rag(
 def _build_augmented_question(
     plan: QueryPlan,
     resolved: List[ResolvedTerms],
+    unresolved_terms: Optional[Dict[str, List[str]]] = None,
 ) -> str:
     """
     Inject resolved canonical codes into the natural-language summary.
@@ -597,7 +594,7 @@ def _build_augmented_question(
     Scan-related fields (datatype / suffix / task) are grouped by the source
     user term and emitted as pre-built EXISTS subqueries so the SQL model can
     copy them verbatim.  All three fields that matched the same user term
-    (e.g. "fMRI" → datatype=functional_mri AND suffix=mri_functional) are
+    (e.g. "fMRI" → datatype=functional_mri AND suffix=fmri_bold) are
     combined with AND inside a single EXISTS.
 
     Non-scan fields (diagnosis, author, funding) are listed as code names.
@@ -611,6 +608,7 @@ def _build_augmented_question(
     # Group scan codes by source term: term → {RAGField: [codes]}
     scan_by_term: Dict[str, Dict[RAGField, List[str]]] = {}
     non_scan_lines: List[str] = []
+    context_lines: List[str] = []
 
     label_map = {
         RAGField.DIAGNOSIS: "diagnosis codes",
@@ -623,12 +621,18 @@ def _build_augmented_question(
             for term, codes in r.term_to_codes.items():
                 if codes:
                     scan_by_term.setdefault(term, {})[r.field] = codes
+        elif r.field == RAGField.DIAGNOSIS:
+            if r.all_codes:
+                vals = ", ".join(f"'{c}'" for c in r.all_codes)
+                exists_sql = (
+                    f"EXISTS (SELECT 1 FROM bids_participants p2 "
+                    f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
+                )
+                context_lines.append(f'  diagnosis: {exists_sql}')
         else:
             if r.all_codes:
                 label = label_map.get(r.field, r.field.value)
                 non_scan_lines.append(f"  {label}: {', '.join(r.all_codes)}")
-
-    context_lines: List[str] = []
 
     # Build one EXISTS hint per source term, combining all matched fields with AND
     for term, field_codes in scan_by_term.items():
@@ -652,6 +656,21 @@ def _build_augmented_question(
             context_lines.append(f'  scan "{term}": {exists_sql}')
 
     context_lines.extend(non_scan_lines)
+
+    # Warn about terms that RAG could not map — prevent SQL model from generating
+    # broken ILIKE queries on canonical-code columns (diagnosis, task, datatype, suffix).
+    if unresolved_terms:
+        missing_parts = []
+        for field, terms in unresolved_terms.items():
+            missing_parts.append(f"{field}: {', '.join(repr(t) for t in terms)}")
+        context_lines.append(
+            "[VOCABULARY MISS — these terms are not in the known concept vocabulary: "
+            + "; ".join(missing_parts)
+            + ". Do NOT use ILIKE or string matching for these terms in "
+            "bids_participants.diagnosis or bids_objects.task/datatype/suffix — "
+            "those columns store canonical codes, not free text. "
+            "Omit filters for these unknown terms entirely.]"
+        )
 
     if not context_lines:
         return plan.natural_language_summary
@@ -737,7 +756,24 @@ def run_pipeline(
             if term_map:
                 rag_results[req.field.value] = term_map
 
-    return augment_with_rag(plan, rag_results)
+    # Collect terms that were requested but returned no codes — surface as warnings
+    # so the SQL model does not fall back to ILIKE on canonical-code columns.
+    unresolved: Dict[str, List[str]] = {}
+    for req in rag_requests:
+        if req.field == RAGField.SCAN:
+            resolved_scan = set()
+            for sf in ("datatype", "suffix", "task"):
+                resolved_scan.update(rag_results.get(sf, {}).keys())
+            missed = [t for t in req.terms if t not in resolved_scan]
+            if missed:
+                unresolved["scan"] = missed
+        else:
+            resolved_terms = set(rag_results.get(req.field.value, {}).keys())
+            missed = [t for t in req.terms if t not in resolved_terms]
+            if missed:
+                unresolved[req.field.value] = missed
+
+    return augment_with_rag(plan, rag_results, unresolved_terms=unresolved)
 
 
 # ---------------------------------------------------------------------------
