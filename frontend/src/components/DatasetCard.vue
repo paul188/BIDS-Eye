@@ -55,7 +55,7 @@ function diagnosisList(d: Dataset): string[] {
       <span
         v-for="dx in diagnosisList(dataset)"
         :key="dx"
-        class="text-xs px-2 py-0.5 rounded-full bg-surface border border-border text-muted"
+        class="text-xs px-2 py-0.5 rounded-full bg-panel border border-border text-white/80"
       >
         {{ dx }}
       </span>

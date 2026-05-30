@@ -28,7 +28,7 @@ const showSql = ref(false)
       </button>
       <pre
         v-if="showSql"
-        class="mt-2 text-xs bg-surface border border-border rounded-lg p-3 overflow-x-auto text-muted font-mono whitespace-pre-wrap"
+        class="mt-2 text-xs bg-surface border border-border rounded-lg p-3 overflow-x-auto text-green-300 font-mono whitespace-pre-wrap"
       >{{ sql }}</pre>
     </div>
   </div>

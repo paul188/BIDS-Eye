@@ -1,0 +1,177 @@
+{"term": "schizophrenia", "field": "diagnosis", "expected_codes": ["schizophrenia"], "variant_type": "formal"}
+{"term": "schizophrenic", "field": "diagnosis", "expected_codes": ["schizophrenia"], "variant_type": "informal"}
+{"term": "SCZ", "field": "diagnosis", "expected_codes": ["schizophrenia"], "variant_type": "abbreviation"}
+{"term": "paranoid schizophrenia", "field": "diagnosis", "expected_codes": ["schizophrenia"], "variant_type": "compound"}
+{"term": "first episode psychosis", "field": "diagnosis", "expected_codes": ["schizophrenia"], "variant_type": "informal"}
+{"term": "ADHD", "field": "diagnosis", "expected_codes": ["adhd"], "variant_type": "abbreviation"}
+{"term": "attention deficit hyperactivity disorder", "field": "diagnosis", "expected_codes": ["adhd"], "variant_type": "formal"}
+{"term": "attention deficit disorder", "field": "diagnosis", "expected_codes": ["adhd"], "variant_type": "informal"}
+{"term": "ADD", "field": "diagnosis", "expected_codes": ["adhd"], "variant_type": "abbreviation"}
+{"term": "hyperactivity disorder", "field": "diagnosis", "expected_codes": ["adhd"], "variant_type": "informal"}
+{"term": "autism", "field": "diagnosis", "expected_codes": ["autism_spectrum_disorder"], "variant_type": "informal"}
+{"term": "autism spectrum disorder", "field": "diagnosis", "expected_codes": ["autism_spectrum_disorder"], "variant_type": "formal"}
+{"term": "ASD", "field": "diagnosis", "expected_codes": ["autism_spectrum_disorder"], "variant_type": "abbreviation"}
+{"term": "autistic", "field": "diagnosis", "expected_codes": ["autism_spectrum_disorder"], "variant_type": "informal"}
+{"term": "Asperger", "field": "diagnosis", "expected_codes": ["autism_spectrum_disorder"], "variant_type": "informal"}
+{"term": "depression", "field": "diagnosis", "expected_codes": ["depression", "major_depressive_disorder"], "variant_type": "informal"}
+{"term": "major depressive disorder", "field": "diagnosis", "expected_codes": ["major_depressive_disorder"], "variant_type": "formal"}
+{"term": "MDD", "field": "diagnosis", "expected_codes": ["major_depressive_disorder"], "variant_type": "abbreviation"}
+{"term": "depressed", "field": "diagnosis", "expected_codes": ["depression", "major_depressive_disorder"], "variant_type": "informal"}
+{"term": "unipolar depression", "field": "diagnosis", "expected_codes": ["unipolar_depression", "depression"], "variant_type": "formal"}
+{"term": "anxiety", "field": "diagnosis", "expected_codes": ["anxiety_disorder"], "variant_type": "informal"}
+{"term": "anxiety disorder", "field": "diagnosis", "expected_codes": ["anxiety_disorder"], "variant_type": "formal"}
+{"term": "anxious", "field": "diagnosis", "expected_codes": ["anxiety_disorder"], "variant_type": "informal"}
+{"term": "PTSD", "field": "diagnosis", "expected_codes": ["post_traumatic_stress_disorder"], "variant_type": "abbreviation"}
+{"term": "post traumatic stress disorder", "field": "diagnosis", "expected_codes": ["post_traumatic_stress_disorder"], "variant_type": "formal"}
+{"term": "trauma", "field": "diagnosis", "expected_codes": ["post_traumatic_stress_disorder"], "variant_type": "informal"}
+{"term": "OCD", "field": "diagnosis", "expected_codes": ["obsessive_compulsive_disorder"], "variant_type": "abbreviation"}
+{"term": "obsessive compulsive disorder", "field": "diagnosis", "expected_codes": ["obsessive_compulsive_disorder"], "variant_type": "formal"}
+{"term": "obsessive compulsive", "field": "diagnosis", "expected_codes": ["obsessive_compulsive_disorder"], "variant_type": "informal"}
+{"term": "panic disorder", "field": "diagnosis", "expected_codes": ["panic_disorder"], "variant_type": "formal"}
+{"term": "panic attacks", "field": "diagnosis", "expected_codes": ["panic_disorder"], "variant_type": "informal"}
+{"term": "epilepsy", "field": "diagnosis", "expected_codes": ["epilepsy"], "variant_type": "formal"}
+{"term": "seizure disorder", "field": "diagnosis", "expected_codes": ["epilepsy"], "variant_type": "informal"}
+{"term": "epileptic", "field": "diagnosis", "expected_codes": ["epilepsy"], "variant_type": "informal"}
+{"term": "Parkinson's disease", "field": "diagnosis", "expected_codes": ["parkinsons_disease"], "variant_type": "formal"}
+{"term": "Parkinson", "field": "diagnosis", "expected_codes": ["parkinsons_disease"], "variant_type": "informal"}
+{"term": "PD", "field": "diagnosis", "expected_codes": ["parkinsons_disease"], "variant_type": "abbreviation"}
+{"term": "Alzheimer's disease", "field": "diagnosis", "expected_codes": ["alzheimers_disease"], "variant_type": "formal"}
+{"term": "Alzheimer", "field": "diagnosis", "expected_codes": ["alzheimers_disease"], "variant_type": "informal"}
+{"term": "dementia", "field": "diagnosis", "expected_codes": ["alzheimers_disease", "mild_cognitive_impairment"], "variant_type": "informal"}
+{"term": "bipolar disorder", "field": "diagnosis", "expected_codes": ["bipolar_disorder"], "variant_type": "formal"}
+{"term": "bipolar", "field": "diagnosis", "expected_codes": ["bipolar_disorder"], "variant_type": "informal"}
+{"term": "manic depression", "field": "diagnosis", "expected_codes": ["bipolar_disorder"], "variant_type": "informal"}
+{"term": "dyslexia", "field": "diagnosis", "expected_codes": ["dyslexia"], "variant_type": "formal"}
+{"term": "reading disorder", "field": "diagnosis", "expected_codes": ["dyslexia"], "variant_type": "informal"}
+{"term": "healthy controls", "field": "diagnosis", "expected_codes": ["healthy_control"], "variant_type": "informal"}
+{"term": "healthy volunteers", "field": "diagnosis", "expected_codes": ["healthy_control", "healthy_volunteer"], "variant_type": "informal"}
+{"term": "control group", "field": "diagnosis", "expected_codes": ["healthy_control"], "variant_type": "informal"}
+{"term": "fibromyalgia", "field": "diagnosis", "expected_codes": ["fibromyalgia"], "variant_type": "formal"}
+{"term": "multiple sclerosis", "field": "diagnosis", "expected_codes": ["multiple_sclerosis"], "variant_type": "formal"}
+{"term": "MS", "field": "diagnosis", "expected_codes": ["multiple_sclerosis"], "variant_type": "abbreviation"}
+{"term": "traumatic brain injury", "field": "diagnosis", "expected_codes": ["traumatic_brain_injury"], "variant_type": "formal"}
+{"term": "TBI", "field": "diagnosis", "expected_codes": ["traumatic_brain_injury"], "variant_type": "abbreviation"}
+{"term": "stroke", "field": "diagnosis", "expected_codes": ["stroke"], "variant_type": "formal"}
+{"term": "BPD", "field": "diagnosis", "expected_codes": ["borderline_personality_disorder"], "variant_type": "abbreviation"}
+{"term": "borderline personality", "field": "diagnosis", "expected_codes": ["borderline_personality_disorder"], "variant_type": "informal"}
+{"term": "anorexia", "field": "diagnosis", "expected_codes": ["eating_disorder"], "variant_type": "informal"}
+{"term": "eating disorder", "field": "diagnosis", "expected_codes": ["eating_disorder"], "variant_type": "formal"}
+{"term": "psychosomatic", "field": "diagnosis", "expected_codes": ["somatoform_disorder"], "variant_type": "informal"}
+{"term": "resting state", "field": "task", "expected_codes": ["resting_state"], "variant_type": "formal"}
+{"term": "resting-state fMRI", "field": "task", "expected_codes": ["resting_state"], "variant_type": "compound"}
+{"term": "resting state EEG", "field": "task", "expected_codes": ["resting_state"], "variant_type": "compound"}
+{"term": "rest", "field": "task", "expected_codes": ["resting_state"], "variant_type": "informal"}
+{"term": "spontaneous activity", "field": "task", "expected_codes": ["resting_state"], "variant_type": "informal"}
+{"term": "n-back", "field": "task", "expected_codes": ["n_back_working_memory"], "variant_type": "formal"}
+{"term": "nback", "field": "task", "expected_codes": ["n_back_working_memory"], "variant_type": "informal"}
+{"term": "2-back", "field": "task", "expected_codes": ["n_back_working_memory"], "variant_type": "compound"}
+{"term": "n back task", "field": "task", "expected_codes": ["n_back_working_memory"], "variant_type": "formal"}
+{"term": "working memory", "field": "task", "expected_codes": ["working_memory_general", "n_back_working_memory"], "variant_type": "formal"}
+{"term": "WM task", "field": "task", "expected_codes": ["working_memory_general"], "variant_type": "abbreviation"}
+{"term": "verbal working memory", "field": "task", "expected_codes": ["working_memory_general"], "variant_type": "compound"}
+{"term": "attention", "field": "task", "expected_codes": ["attention_and_executive_control"], "variant_type": "informal"}
+{"term": "attention task", "field": "task", "expected_codes": ["attention_and_executive_control"], "variant_type": "formal"}
+{"term": "sustained attention", "field": "task", "expected_codes": ["attention_and_executive_control", "sustained_attention_gradcpt"], "variant_type": "formal"}
+{"term": "attentional control", "field": "task", "expected_codes": ["attention_and_executive_control"], "variant_type": "formal"}
+{"term": "vigilance task", "field": "task", "expected_codes": ["attention_and_executive_control", "sustained_attention_gradcpt"], "variant_type": "informal"}
+{"term": "face perception", "field": "task", "expected_codes": ["face_perception"], "variant_type": "formal"}
+{"term": "viewing faces", "field": "task", "expected_codes": ["face_perception"], "variant_type": "informal"}
+{"term": "face processing", "field": "task", "expected_codes": ["face_perception"], "variant_type": "informal"}
+{"term": "face task", "field": "task", "expected_codes": ["face_perception", "emotional_face_perception"], "variant_type": "informal"}
+{"term": "emotional faces", "field": "task", "expected_codes": ["emotional_face_perception", "hariri_emotional_face_task"], "variant_type": "informal"}
+{"term": "Hariri faces task", "field": "task", "expected_codes": ["hariri_emotional_face_task"], "variant_type": "formal"}
+{"term": "finger tapping", "field": "task", "expected_codes": ["finger_tapping_task"], "variant_type": "formal"}
+{"term": "finger tapping task", "field": "task", "expected_codes": ["finger_tapping_task"], "variant_type": "formal"}
+{"term": "motor task", "field": "task", "expected_codes": ["finger_tapping_task", "motor_imagery_general"], "variant_type": "informal"}
+{"term": "motor imagery", "field": "task", "expected_codes": ["motor_imagery_general"], "variant_type": "formal"}
+{"term": "go no go", "field": "task", "expected_codes": ["go_no_go_a", "go_no_go_b"], "variant_type": "formal"}
+{"term": "go/no-go task", "field": "task", "expected_codes": ["go_no_go_a", "go_no_go_b"], "variant_type": "formal"}
+{"term": "inhibition task", "field": "task", "expected_codes": ["go_no_go_a", "stop_signal_task"], "variant_type": "informal"}
+{"term": "stop signal task", "field": "task", "expected_codes": ["stop_signal_task"], "variant_type": "formal"}
+{"term": "response inhibition", "field": "task", "expected_codes": ["stop_signal_task", "go_no_go_a"], "variant_type": "informal"}
+{"term": "flanker task", "field": "task", "expected_codes": ["flanker_task_ern", "flanker_task_condition_a"], "variant_type": "formal"}
+{"term": "Eriksen flanker", "field": "task", "expected_codes": ["flanker_task_ern", "flanker_task_condition_a"], "variant_type": "formal"}
+{"term": "movie watching", "field": "task", "expected_codes": ["movie_viewing"], "variant_type": "informal"}
+{"term": "movie viewing", "field": "task", "expected_codes": ["movie_viewing"], "variant_type": "formal"}
+{"term": "naturalistic viewing", "field": "task", "expected_codes": ["movie_viewing"], "variant_type": "informal"}
+{"term": "video game", "field": "task", "expected_codes": ["video_game_and_video"], "variant_type": "informal"}
+{"term": "music listening", "field": "task", "expected_codes": ["music_listening"], "variant_type": "formal"}
+{"term": "reward learning", "field": "task", "expected_codes": ["monetary_incentive_delay_task", "probabilistic_classification_learning"], "variant_type": "informal"}
+{"term": "monetary incentive delay", "field": "task", "expected_codes": ["monetary_incentive_delay_task"], "variant_type": "formal"}
+{"term": "MID task", "field": "task", "expected_codes": ["monetary_incentive_delay_task"], "variant_type": "abbreviation"}
+{"term": "gambling task", "field": "task", "expected_codes": ["hcp_gambling_task", "monetary_gambling_task", "effort_based_gambling_task"], "variant_type": "formal"}
+{"term": "language task", "field": "task", "expected_codes": ["language_production", "hcp_language_task"], "variant_type": "informal"}
+{"term": "reading", "field": "task", "expected_codes": ["word_reading_semantic", "word_reading_phonological"], "variant_type": "informal"}
+{"term": "theory of mind", "field": "task", "expected_codes": ["theory_of_mind"], "variant_type": "formal"}
+{"term": "ToM", "field": "task", "expected_codes": ["theory_of_mind"], "variant_type": "abbreviation"}
+{"term": "mentalizing", "field": "task", "expected_codes": ["theory_of_mind"], "variant_type": "informal"}
+{"term": "spatial attention", "field": "task", "expected_codes": ["spatial_attention"], "variant_type": "formal"}
+{"term": "fMRI", "field": "datatype", "expected_codes": ["functional_mri"], "variant_type": "abbreviation"}
+{"term": "functional MRI", "field": "datatype", "expected_codes": ["functional_mri"], "variant_type": "formal"}
+{"term": "functional magnetic resonance imaging", "field": "datatype", "expected_codes": ["functional_mri"], "variant_type": "formal"}
+{"term": "BOLD", "field": "datatype", "expected_codes": ["functional_mri"], "variant_type": "abbreviation"}
+{"term": "EEG", "field": "datatype", "expected_codes": ["electroencephalography"], "variant_type": "abbreviation"}
+{"term": "electroencephalography", "field": "datatype", "expected_codes": ["electroencephalography"], "variant_type": "formal"}
+{"term": "electroencephalogram", "field": "datatype", "expected_codes": ["electroencephalography"], "variant_type": "formal"}
+{"term": "MEG", "field": "datatype", "expected_codes": ["magnetoencephalography"], "variant_type": "abbreviation"}
+{"term": "magnetoencephalography", "field": "datatype", "expected_codes": ["magnetoencephalography"], "variant_type": "formal"}
+{"term": "DTI", "field": "datatype", "expected_codes": ["diffusion_mri"], "variant_type": "abbreviation"}
+{"term": "diffusion MRI", "field": "datatype", "expected_codes": ["diffusion_mri"], "variant_type": "formal"}
+{"term": "diffusion tensor imaging", "field": "datatype", "expected_codes": ["diffusion_mri"], "variant_type": "formal"}
+{"term": "DWI", "field": "datatype", "expected_codes": ["diffusion_mri"], "variant_type": "abbreviation"}
+{"term": "structural MRI", "field": "datatype", "expected_codes": ["anatomical_mri"], "variant_type": "informal"}
+{"term": "T1", "field": "datatype", "expected_codes": ["anatomical_mri"], "variant_type": "abbreviation"}
+{"term": "T1w", "field": "datatype", "expected_codes": ["anatomical_mri"], "variant_type": "abbreviation"}
+{"term": "anatomical MRI", "field": "datatype", "expected_codes": ["anatomical_mri"], "variant_type": "formal"}
+{"term": "PET", "field": "datatype", "expected_codes": ["perfusion_asl"], "variant_type": "abbreviation"}
+{"term": "ASL", "field": "datatype", "expected_codes": ["perfusion_asl"], "variant_type": "abbreviation"}
+{"term": "arterial spin labeling", "field": "datatype", "expected_codes": ["perfusion_asl"], "variant_type": "formal"}
+{"term": "MRS", "field": "datatype", "expected_codes": ["magnetic_resonance_spectroscopy"], "variant_type": "abbreviation"}
+{"term": "spectroscopy", "field": "datatype", "expected_codes": ["magnetic_resonance_spectroscopy"], "variant_type": "informal"}
+{"term": "magnetic resonance spectroscopy", "field": "datatype", "expected_codes": ["magnetic_resonance_spectroscopy"], "variant_type": "formal"}
+{"term": "iEEG", "field": "datatype", "expected_codes": ["intracranial_eeg"], "variant_type": "abbreviation"}
+{"term": "intracranial EEG", "field": "datatype", "expected_codes": ["intracranial_eeg"], "variant_type": "formal"}
+{"term": "fNIRS", "field": "datatype", "expected_codes": ["fnirs"], "variant_type": "abbreviation"}
+{"term": "functional near infrared spectroscopy", "field": "datatype", "expected_codes": ["fnirs"], "variant_type": "formal"}
+{"term": "near infrared spectroscopy", "field": "datatype", "expected_codes": ["fnirs"], "variant_type": "informal"}
+{"term": "BOLD signal", "field": "suffix", "expected_codes": ["fmri_bold"], "variant_type": "informal"}
+{"term": "bold", "field": "suffix", "expected_codes": ["fmri_bold"], "variant_type": "abbreviation"}
+{"term": "fMRI file", "field": "suffix", "expected_codes": ["fmri_bold"], "variant_type": "compound"}
+{"term": "EEG data", "field": "suffix", "expected_codes": ["eeg"], "variant_type": "informal"}
+{"term": "eeg suffix", "field": "suffix", "expected_codes": ["eeg"], "variant_type": "formal"}
+{"term": "MEG recording", "field": "suffix", "expected_codes": ["meg"], "variant_type": "informal"}
+{"term": "DWI file", "field": "suffix", "expected_codes": ["diffusion_mri_dwi"], "variant_type": "compound"}
+{"term": "diffusion weighted", "field": "suffix", "expected_codes": ["diffusion_mri_dwi"], "variant_type": "informal"}
+{"term": "FLAIR", "field": "suffix", "expected_codes": ["flair_mri"], "variant_type": "abbreviation"}
+{"term": "fluid attenuated inversion recovery", "field": "suffix", "expected_codes": ["flair_mri"], "variant_type": "formal"}
+{"term": "iEEG recording", "field": "suffix", "expected_codes": ["intracranial_eeg"], "variant_type": "informal"}
+{"term": "fNIRS data", "field": "suffix", "expected_codes": ["fnirs"], "variant_type": "informal"}
+{"term": "OpenNeuro", "field": "name", "expected_codes": ["openneuro"], "variant_type": "formal"}
+{"term": "NIH", "field": "name", "expected_codes": ["nih"], "variant_type": "abbreviation"}
+{"term": "National Institutes of Health", "field": "name", "expected_codes": ["nih"], "variant_type": "formal"}
+{"term": "Wellcome Trust", "field": "name", "expected_codes": ["wellcome_trust"], "variant_type": "formal"}
+{"term": "NIMH", "field": "name", "expected_codes": ["nimh"], "variant_type": "abbreviation"}
+{"term": "resting-state eyes open", "field": "task", "expected_codes": ["resting_state_eyes_open", "resting_state"], "variant_type": "compound"}
+{"term": "eyes closed rest", "field": "task", "expected_codes": ["resting_state_eyes_closed", "resting_state"], "variant_type": "informal"}
+{"term": "task switching", "field": "task", "expected_codes": ["cued_task_switching"], "variant_type": "formal"}
+{"term": "dual n-back", "field": "task", "expected_codes": ["n_back_working_memory"], "variant_type": "compound"}
+{"term": "pain task", "field": "task", "expected_codes": ["heat_pain_regulation_and_rating"], "variant_type": "informal"}
+{"term": "heat pain", "field": "task", "expected_codes": ["heat_pain_regulation_and_rating"], "variant_type": "formal"}
+{"term": "Stroop", "field": "task", "expected_codes": ["attention_and_executive_control"], "variant_type": "informal"}
+{"term": "cognitive control", "field": "task", "expected_codes": ["attention_and_executive_control"], "variant_type": "informal"}
+{"term": "executive function", "field": "task", "expected_codes": ["attention_and_executive_control"], "variant_type": "informal"}
+{"term": "visual short term memory", "field": "task", "expected_codes": ["visual_short_term_memory", "visual_working_memory_general"], "variant_type": "formal"}
+{"term": "emotion regulation", "field": "task", "expected_codes": ["emotion_processing_regulation"], "variant_type": "informal"}
+{"term": "emotion processing", "field": "task", "expected_codes": ["emotion_processing_regulation"], "variant_type": "formal"}
+{"term": "mild cognitive impairment", "field": "diagnosis", "expected_codes": ["mild_cognitive_impairment"], "variant_type": "formal"}
+{"term": "MCI", "field": "diagnosis", "expected_codes": ["mild_cognitive_impairment"], "variant_type": "abbreviation"}
+{"term": "de novo Parkinson", "field": "diagnosis", "expected_codes": ["de_novo_parkinsons", "parkinsons_disease"], "variant_type": "compound"}
+{"term": "brain tumor", "field": "diagnosis", "expected_codes": ["brain_tumor"], "variant_type": "formal"}
+{"term": "glioma", "field": "diagnosis", "expected_codes": ["grade_2_glioma", "grade_3_glioma", "grade_4_glioma"], "variant_type": "informal"}
+{"term": "amyotrophic lateral sclerosis", "field": "diagnosis", "expected_codes": ["als_general"], "variant_type": "formal"}
+{"term": "ALS", "field": "diagnosis", "expected_codes": ["als_general"], "variant_type": "abbreviation"}
+{"term": "diabetes", "field": "diagnosis", "expected_codes": ["type_1_diabetes"], "variant_type": "informal"}
+{"term": "type 1 diabetes", "field": "diagnosis", "expected_codes": ["type_1_diabetes"], "variant_type": "formal"}
+{"term": "visual working memory", "field": "task", "expected_codes": ["visual_working_memory_general", "visual_short_term_memory"], "variant_type": "formal"}
+{"term": "probabilistic learning", "field": "task", "expected_codes": ["probabilistic_classification_learning"], "variant_type": "informal"}
+{"term": "empathy task", "field": "task", "expected_codes": ["empathy_theory_of_mind_task", "theory_of_mind"], "variant_type": "informal"}

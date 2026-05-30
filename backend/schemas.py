@@ -50,8 +50,8 @@ class TextToSQLResult(BaseModel):
     """Output contract for the Text-To-SQL translation layer."""
     sql: str
     params: Dict[str, Any] = {}
-    # Optional human-readable explanation of what the SQL does
     explanation: Optional[str] = None
+    self_corrected: bool = False
 
 
 class QueryRequest(BaseModel):

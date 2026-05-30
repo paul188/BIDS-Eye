@@ -8,6 +8,7 @@ COPY backend/                          /app/backend/
 COPY LLM_preprocessor/                 /app/LLM_preprocessor/
 COPY RAG/                              /app/RAG/
 COPY synthetic_data_generation_and_train/ /app/synthetic_data_generation_and_train/
+COPY modal_app/few_shot_examples.json  /app/backend/few_shot_examples.json
 
 RUN pip install --no-cache-dir -e /app/BIDS-SQL && \
     pip install --no-cache-dir -e /app/backend

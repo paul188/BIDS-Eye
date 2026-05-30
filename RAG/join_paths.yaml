@@ -1,0 +1,212 @@
+# RAG/join_paths.yaml
+# -------------------------------------------------------------------
+# Single source of truth for how BIDS fields map to database tables,
+# how they combine in EXISTS subqueries, and what combinations signal
+# a contradiction in a user query.
+#
+# Used by RAG/join_registry.py, which is imported by:
+#   - RAG/retriever.py              (db_verify_codes — replaces _FIELD_TO_DB_COL)
+#   - LLM_preprocessor/preprocess.py  (_build_augmented_question)
+# -------------------------------------------------------------------
+
+# ── Field definitions ────────────────────────────────────────────────────────
+# Each entry defines how a semantic field maps to the database.
+#
+# table         : PostgreSQL table name
+#                   bids_datasets / bids_objects / bids_participants
+# column        : column name within that table
+# value_type    : "canonical_code"  → stored as a normalised code (e.g. 'func', 'bold')
+#                 "exact_string"    → stored exactly as entered (e.g. 'Karl Friston')
+#                 "numeric"         → stored as a number (e.g. age FLOAT)
+#                 "array"           → stored as a PostgreSQL TEXT[] (e.g. authors, funding)
+# multi_value   : how to combine multiple values in a WHERE clause
+#                 "IN"              → col IN ('val1', 'val2')
+#                 "OR_equality"     → col = 'val1' OR col = 'val2'
+#                 "array_overlap"   → col && ARRAY['val1', 'val2']  (PostgreSQL TEXT[] overlap)
+# exists_alias  : alias used inside a correlated EXISTS subquery (o2, p2)
+#                 "none" → the column lives on bids_datasets itself; no EXISTS needed
+# rag_backed    : true if the RAG layer resolves user terms to canonical codes
+#                 false if values are passed verbatim to the SQL LLM
+
+fields:
+
+  diagnosis:
+    table: bids_participants
+    column: diagnosis
+    value_type: canonical_code
+    multi_value: IN
+    exists_alias: p2
+    rag_backed: true
+    description: >
+      Normalised clinical diagnosis code (e.g. 'schizophrenia', 'healthy_control').
+      Resolved by RAG from value_mappings.yaml diagnosis section.
+
+  task:
+    table: bids_objects
+    column: task
+    value_type: canonical_code
+    multi_value: IN
+    exists_alias: o2
+    rag_backed: true
+    description: >
+      Normalised task code (e.g. 'resting_state', 'nback').
+      Resolved by RAG from value_mappings.yaml task section.
+
+  datatype:
+    table: bids_objects
+    column: datatype
+    value_type: canonical_code
+    multi_value: IN
+    exists_alias: o2
+    rag_backed: true
+    description: >
+      BIDS datatype folder name (e.g. 'func', 'anat', 'eeg', 'meg', 'dwi').
+      Resolved by RAG from value_mappings.yaml datatype section.
+
+  suffix:
+    table: bids_objects
+    column: suffix
+    value_type: canonical_code
+    multi_value: IN
+    exists_alias: o2
+    rag_backed: true
+    description: >
+      BIDS file suffix (e.g. 'bold', 'T1w', 'dwi', 'eeg', 'meg').
+      Resolved by RAG from value_mappings.yaml suffix section.
+
+  sex:
+    table: bids_participants
+    column: sex
+    value_type: exact_string
+    multi_value: IN
+    exists_alias: p2
+    rag_backed: false
+    description: >
+      Participant sex string as stored in participants.tsv ('M', 'F', 'male', 'female').
+      Passed verbatim — no RAG resolution.
+
+  handedness:
+    table: bids_participants
+    column: handedness
+    value_type: exact_string
+    multi_value: IN
+    exists_alias: p2
+    rag_backed: false
+    description: >
+      Participant handedness string ('R', 'L', 'right', 'left', 'ambidextrous').
+      Passed verbatim — no RAG resolution.
+
+  age:
+    table: bids_participants
+    column: age
+    value_type: numeric
+    multi_value: OR_equality
+    exists_alias: p2
+    rag_backed: false
+    description: >
+      Participant age (FLOAT). Filtered with range operators (>=, <=), not equality.
+      The SQL LLM writes the BETWEEN / >= / <= predicate directly.
+
+  author:
+    table: bids_datasets
+    column: authors
+    value_type: array
+    multi_value: array_overlap
+    exists_alias: none
+    rag_backed: true
+    sql_pattern: "'{val}' = ANY(d.authors)"
+    description: >
+      Dataset author names stored as TEXT[]. Resolved by RAG via name_index.json fuzzy match.
+      The SQL predicate uses ANY(d.authors) — no EXISTS subquery needed.
+
+  funding:
+    table: bids_datasets
+    column: funding
+    value_type: array
+    multi_value: array_overlap
+    exists_alias: none
+    rag_backed: true
+    sql_pattern: "'{val}' = ANY(d.funding)"
+    description: >
+      Funding source strings stored as TEXT[]. Resolved by RAG via name_index.json fuzzy match.
+      The SQL predicate uses ANY(d.funding) — no EXISTS subquery needed.
+
+
+# ── Combination rules ────────────────────────────────────────────────────────
+# Defines which fields may share a single EXISTS subquery vs. must be in
+# separate EXISTS clauses.
+#
+# group_name  : human-readable label
+# fields      : fields that can be combined in one EXISTS (they live in the same table)
+# combine_op  : "OR"  — use OR between predicates from different fields for the same user term
+#               "AND" — use AND between predicates
+# rationale   : plain-English explanation
+
+combination_rules:
+
+  - group_name: modality_in_objects
+    fields: [datatype, suffix]
+    combine_op: OR
+    rationale: >
+      A single user term like "fMRI" maps to both datatype ('func') and suffix ('bold').
+      A BIDS file may have one annotation missing, so OR is correct: a file qualifies if
+      its folder is 'func' OR its suffix is 'bold'. Both refer to the same bids_objects
+      row, so they share one EXISTS clause.
+
+  - group_name: task_in_objects
+    fields: [task]
+    combine_op: OR
+    rationale: >
+      Task always gets its own EXISTS clause, even when the same user term also produces
+      datatype/suffix hits. "Resting state fMRI" emits both a modality EXISTS and a task
+      EXISTS so both constraints must be satisfied simultaneously (AND logic between them).
+
+  - group_name: participant_properties
+    fields: [diagnosis, sex, handedness, age]
+    combine_op: AND
+    rationale: >
+      All participant properties live in bids_participants. Multiple participant filters
+      (e.g. sex=F AND diagnosis=schizophrenia) can be combined in one EXISTS with AND —
+      they describe the same participant row.
+
+  - group_name: dataset_array_fields
+    fields: [author, funding]
+    combine_op: AND
+    rationale: >
+      Author and funding live on bids_datasets as TEXT[] columns. No EXISTS needed —
+      use ANY() predicates directly in the outer WHERE clause.
+
+
+# ── Contradiction rules ──────────────────────────────────────────────────────
+# This section is for situations where a single EXISTS clause would contain
+# mutually exclusive conditions and therefore always return zero rows.
+#
+# Cross-modality combinations like "EEG and fMRI" or "EEG and T1w" are NOT
+# contradictions — the pipeline generates a separate EXISTS clause per user
+# term, so "EEG and T1w" correctly finds multimodal datasets that contain
+# files of BOTH types (two EXISTS clauses joined by AND).
+#
+# Only list rules here if the SAME EXISTS clause would be self-contradictory.
+#
+# severity     : "soft" — unusual; emit a clarification note in the prompt
+# trigger      : {field: [codes]} — codes that activate this rule
+# incompatible : {field: [codes]} — codes that conflict with the trigger
+#                Use ["*"] as a wildcard meaning "any non-empty list of codes"
+# message      : clarification note emitted in the augmented question
+
+contradictions:
+
+  - id: ieeg_eeg_suffix
+    severity: soft
+    description: >
+      iEEG and scalp-EEG/MEG suffixes together are unusual but technically
+      possible in multimodal datasets. This is a clarification note only.
+    trigger:
+      datatype: [ieeg]
+    incompatible:
+      suffix: [eeg, meg]
+    message: >
+      Note: your query combines iEEG (intracranial) and scalp-EEG/MEG suffixes.
+      This will find datasets that contain files of BOTH types (two separate
+      EXISTS clauses). If you meant to query for iEEG data only, remove the
+      EEG/MEG suffix filter.

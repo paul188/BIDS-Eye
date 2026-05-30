@@ -44,11 +44,23 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import textwrap
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
+
+# Make RAG/ importable from this module regardless of working directory.
+_RAG_DIR = str(Path(__file__).parent.parent / "RAG")
+if _RAG_DIR not in sys.path:
+    sys.path.insert(0, _RAG_DIR)
+
+from join_registry import (
+    build_join_context_block as _build_join_context_block,
+    check_contradictions as _check_contradictions,
+)
 
 # ---------------------------------------------------------------------------
 # Schema
@@ -360,6 +372,10 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     ── Participant terms ───────────────────────────────────────────────────────
     Put diagnosis / condition strings in ParticipantGroup.diagnosis_terms.
     These are resolved by the RAG layer (e.g. "depression" → canonical code).
+    IMPORTANT: Do NOT put generic demographic words such as "patients",
+    "participants", "subjects", "people", "individuals", "volunteers",
+    "adults", "children", "healthy" into diagnosis_terms — these are not
+    diagnoses.  Only extract actual medical or psychiatric condition labels.
 
     ── Dataset-level terms ─────────────────────────────────────────────────────
     Put author names in author_names; funding agencies in funding_terms.
@@ -520,9 +536,19 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
         all_scan_terms.extend(sr.scan_terms)
     _merge(RAGField.SCAN, all_scan_terms)
 
-    # Participant groups
+    # Participant groups — strip generic demographic words before RAG resolution
+    # so that "patients" / "participants" never resolves to unknown_diagnosis
+    _GENERIC_WORDS = {
+        "patients", "patient", "participants", "participant",
+        "subjects", "subject", "people", "person",
+        "individuals", "individual", "volunteers", "volunteer",
+        "adults", "adult", "children", "child",
+        "healthy", "normal",
+    }
     for grp in plan.groups:
-        _merge(RAGField.DIAGNOSIS, grp.diagnosis_terms)
+        real_diagnoses = [t for t in grp.diagnosis_terms
+                          if t.lower().strip() not in _GENERIC_WORDS]
+        _merge(RAGField.DIAGNOSIS, real_diagnoses)
         _merge(RAGField.TASK,      grp.task_terms)
 
     # Dataset-level text fields
@@ -545,6 +571,7 @@ def augment_with_rag(
     plan: QueryPlan,
     rag_results: Dict[str, Dict[str, List[str]]],
     unresolved_terms: Optional[Dict[str, List[str]]] = None,
+    db_miss_terms: Optional[Dict[str, List[str]]] = None,
 ) -> AugmentedQueryPlan:
     """
     Combine a QueryPlan with RAG results to produce an AugmentedQueryPlan.
@@ -560,6 +587,10 @@ def augment_with_rag(
                        These are surfaced as an anti-ILIKE warning in the augmented
                        question so the SQL model does not fall back to broken text
                        searches on canonical-code columns.
+    db_miss_terms    : {field: [code, ...]} for codes that resolved in the YAML
+                       vocabulary but have zero rows in the live database.  These
+                       are emitted as a DB_MISS warning so the SQL model omits
+                       those filters rather than generating always-false EXISTS.
 
     Returns
     -------
@@ -578,7 +609,9 @@ def augment_with_rag(
     aug = AugmentedQueryPlan(
         plan=plan,
         resolved=resolved,
-        augmented_question=_build_augmented_question(plan, resolved, unresolved_terms or {}),
+        augmented_question=_build_augmented_question(
+            plan, resolved, unresolved_terms or {}, db_miss_terms or {}
+        ),
     )
     return aug
 
@@ -587,6 +620,7 @@ def _build_augmented_question(
     plan: QueryPlan,
     resolved: List[ResolvedTerms],
     unresolved_terms: Optional[Dict[str, List[str]]] = None,
+    db_miss_terms: Optional[Dict[str, List[str]]] = None,
 ) -> str:
     """
     Inject resolved canonical codes into the natural-language summary.
@@ -634,28 +668,107 @@ def _build_augmented_question(
                 label = label_map.get(r.field, r.field.value)
                 non_scan_lines.append(f"  {label}: {', '.join(r.all_codes)}")
 
-    # Build one EXISTS hint per source term, combining all matched fields with AND
+    # Contradiction detection: build flat {field_name: [codes]} from all resolved data.
+    _flat: Dict[str, List[str]] = {}
+    for _term_field_codes in scan_by_term.values():
+        for _rag_field, _codes in _term_field_codes.items():
+            _flat.setdefault(_rag_field.value, []).extend(_codes)
+    for _r in resolved:
+        if _r.field == RAGField.DIAGNOSIS and _r.all_codes:
+            _flat.setdefault(_r.field.value, []).extend(_r.all_codes)
+
+    _contradictions = _check_contradictions(_flat)
+    if _contradictions:
+        _hard = [w.message for w in _contradictions if w.severity == "hard"]
+        _soft = [w.message for w in _contradictions if w.severity == "soft"]
+        _parts: List[str] = []
+        if _hard:
+            _parts.append("HARD CONTRADICTION — " + " | ".join(_hard))
+        if _soft:
+            _parts.append("WARNING — " + " | ".join(_soft))
+        context_lines.append("[Query note: " + " ".join(_parts) + "]")
+
+    # Build EXISTS hints per source term.
+    # Modality (datatype + suffix) uses OR — a file qualifies if it matches
+    # the modality by EITHER its folder (datatype) OR its file suffix.
+    # Task gets a separate EXISTS so compound terms like "resting state fMRI"
+    # correctly emit both a modality filter and a task filter.
     for term, field_codes in scan_by_term.items():
-        conditions: List[str] = []
+        modality_conds: List[str] = []   # datatype + suffix codes
+        task_conds: List[str] = []       # task codes
+
         for field in _FIELD_ORDER:
             if field not in field_codes:
                 continue
             codes = field_codes[field]
-            col   = field.value  # "datatype", "suffix", or "task"
+            col   = field.value
             if len(codes) == 1:
-                conditions.append(f"o2.{col} = '{codes[0]}'")
+                cond = f"o2.{col} = '{codes[0]}'"
             else:
                 vals = ", ".join(f"'{c}'" for c in codes)
-                conditions.append(f"o2.{col} IN ({vals})")
-        if conditions:
-            where_part = " AND ".join(conditions)
-            exists_sql = (
-                f"EXISTS (SELECT 1 FROM bids_objects o2 "
-                f"WHERE o2.dataset_id = d.id AND {where_part})"
+                cond = f"o2.{col} IN ({vals})"
+            if field == RAGField.TASK:
+                task_conds.append(cond)
+            else:
+                modality_conds.append(cond)
+
+        # If a term resolves to BOTH modality codes AND task codes, combine
+        # everything into one OR EXISTS — matching any of the codes increases
+        # confidence that the term is present, so OR is correct within a term.
+        # Example: "attention" → (suffix='att' OR task IN (attention_tasks))
+        #
+        # If the term resolved to ONLY modality codes (e.g. "fMRI", "EEG"),
+        # emit a single modality EXISTS with OR between datatype and suffix.
+        # If the term resolved to ONLY task codes (e.g. "resting state",
+        # "working memory"), emit a separate task EXISTS.
+        all_conds = modality_conds + task_conds
+        if modality_conds and task_conds:
+            # Single OR EXISTS across all fields for this term
+            or_part = " OR ".join(all_conds)
+            if len(all_conds) > 1:
+                or_part = f"({or_part})"
+            context_lines.append(
+                f'  scan "{term}": '
+                f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {or_part})"
             )
-            context_lines.append(f'  scan "{term}": {exists_sql}')
+        else:
+            # Modality EXISTS: OR between datatype and suffix so partially-annotated
+            # files still match (e.g. file has suffix=fmri_bold but no explicit datatype).
+            if modality_conds:
+                or_part = " OR ".join(modality_conds)
+                if len(modality_conds) > 1:
+                    or_part = f"({or_part})"
+                context_lines.append(
+                    f'  scan "{term}": '
+                    f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {or_part})"
+                )
+
+            # Task EXISTS: separate from modality so both constraints apply independently.
+            # e.g. "resting state fMRI" → fMRI modality EXISTS AND resting_state task EXISTS
+            if task_conds:
+                where_part = " OR ".join(task_conds)
+                if len(task_conds) > 1:
+                    where_part = f"({where_part})"
+                context_lines.append(
+                    f'  scan "{term}": '
+                    f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {where_part})"
+                )
 
     context_lines.extend(non_scan_lines)
+
+    # Emit min_subjects as a HAVING hint using the total subject count.
+    # "at least N participants with X" → HAVING COUNT(DISTINCT o.subject) >= N
+    # (subject_count in SELECT is computed over all subjects, not just diagnosed ones —
+    #  which matches what users see in the UI and expect as "dataset size").
+    min_subjects_values = [
+        g.min_subjects for g in plan.groups if g.min_subjects is not None
+    ]
+    if min_subjects_values:
+        n = max(min_subjects_values)
+        context_lines.append(
+            f"  subject count: HAVING COUNT(DISTINCT o.subject) >= {n}"
+            " [apply this HAVING clause on the outer query, not in a subquery]"
+        )
 
     # Warn about terms that RAG could not map — prevent SQL model from generating
     # broken ILIKE queries on canonical-code columns (diagnosis, task, datatype, suffix).
@@ -663,13 +776,47 @@ def _build_augmented_question(
         missing_parts = []
         for field, terms in unresolved_terms.items():
             missing_parts.append(f"{field}: {', '.join(repr(t) for t in terms)}")
+        # Build ILIKE keyword suggestions — use longest word from each term
+        ilike_suggestions = []
+        for field, terms in unresolved_terms.items():
+            for term in terms:
+                # Pick the longest individual word as the most distinctive keyword
+                words = [w for w in term.split() if len(w) >= 4]
+                kw = max(words, key=len) if words else term
+                ilike_suggestions.append(
+                    f"(d.name ILIKE '%{kw}%' OR d.description_text ILIKE '%{kw}%')"
+                )
+        ilike_hint = ""
+        if ilike_suggestions:
+            ilike_hint = (
+                " For free-text search use: "
+                + " AND ".join(ilike_suggestions)
+            )
         context_lines.append(
             "[VOCABULARY MISS — these terms are not in the known concept vocabulary: "
             + "; ".join(missing_parts)
-            + ". Do NOT use ILIKE or string matching for these terms in "
-            "bids_participants.diagnosis or bids_objects.task/datatype/suffix — "
-            "those columns store canonical codes, not free text. "
-            "Omit filters for these unknown terms entirely.]"
+            + ". Do NOT filter bids_participants.diagnosis or bids_objects.task/datatype/suffix "
+            "for these terms — those columns store canonical codes, not free text."
+            + ilike_hint + "]"
+        )
+
+    # Warn about codes that resolved in the vocabulary but have zero DB rows.
+    # The SQL model must omit these from EXISTS filters (they always return empty).
+    if db_miss_terms:
+        miss_parts = []
+        for field, codes in db_miss_terms.items():
+            unique_codes = list(dict.fromkeys(codes))  # deduplicate
+            miss_parts.append(
+                f"{field}: {', '.join(repr(c) for c in unique_codes)}"
+            )
+        context_lines.append(
+            "[DB MISS — resolved codes with zero rows in the database: "
+            + "; ".join(miss_parts)
+            + ". These terms resolve in the vocabulary but have no patient/scan data yet. "
+            "Omit these codes from EXISTS filters entirely — do not include them in "
+            "IN (...) lists or = comparisons. If a broader parent code is available "
+            "(e.g. 'anxiety_disorder' when children like 'panic_disorder' are missing), "
+            "use the parent code instead.]"
         )
 
     if not context_lines:
@@ -678,7 +825,8 @@ def _build_augmented_question(
     header = (
         "[Resolved DB filters — copy each EXISTS subquery verbatim into the SQL WHERE clause]"
     )
-    context = header + "\n" + "\n".join(context_lines)
+    join_block = _build_join_context_block()
+    context = join_block + "\n\n" + header + "\n" + "\n".join(context_lines)
     return f"{context}\n\n{plan.natural_language_summary}"
 
 
@@ -756,6 +904,24 @@ def run_pipeline(
             if term_map:
                 rag_results[req.field.value] = term_map
 
+    # Optional DB back-check: remove codes that have zero rows in the live DB
+    # and surface them as DB_MISS warnings so the SQL model omits those filters.
+    db_miss_terms: Dict[str, List[str]] = {}
+    if retriever is not None and hasattr(retriever, "db_verify_codes"):
+        for field in list(rag_results.keys()):
+            term_map = rag_results[field]
+            new_term_map: Dict[str, List[str]] = {}
+            for term, codes in term_map.items():
+                live, miss = retriever.db_verify_codes(field, codes)
+                if miss:
+                    db_miss_terms.setdefault(field, []).extend(miss)
+                if live:
+                    new_term_map[term] = live
+                elif not live and codes:
+                    # All codes for this term are DB misses — term is unresolvable
+                    db_miss_terms.setdefault(field, []).extend(codes)
+            rag_results[field] = new_term_map
+
     # Collect terms that were requested but returned no codes — surface as warnings
     # so the SQL model does not fall back to ILIKE on canonical-code columns.
     unresolved: Dict[str, List[str]] = {}
@@ -773,7 +939,9 @@ def run_pipeline(
             if missed:
                 unresolved[req.field.value] = missed
 
-    return augment_with_rag(plan, rag_results, unresolved_terms=unresolved)
+    return augment_with_rag(
+        plan, rag_results, unresolved_terms=unresolved, db_miss_terms=db_miss_terms
+    )
 
 
 # ---------------------------------------------------------------------------

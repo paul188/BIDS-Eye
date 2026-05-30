@@ -77,3 +77,5 @@ synthetic_data/unmapped_db_values.yaml.bak
 
 # ── Modal ─────────────────────────────────────────────────────────────────────
 .modal/
+RAG/embed_*.npz
+RAG/embed_*.json

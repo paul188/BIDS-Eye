@@ -17,7 +17,7 @@ services:
       POSTGRES_USER:     ${METADATA_DB_USER}
       POSTGRES_PASSWORD: ${METADATA_DB_PASSWORD}
     volumes:
-      - postgres-bids-data:/var/lib/postgresql/data
+      - /home/paul_johannssen/Desktop/postgres_data:/var/lib/postgresql/data
     ports:
       - '${METADATA_DB_PORT:-5432}:5432'
     healthcheck:
@@ -56,7 +56,7 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: bids_frontend
     ports:
-      - '80:80'
+      - '3000:80'
     depends_on:
       - backend
     networks:
@@ -69,7 +69,7 @@ services:
   crawler:
     build:
       context: .
-      dockerfile: crawlers/openneuro-crawler-backup/Dockerfile
+      dockerfile: crawlers/openneuro-crawler/Dockerfile
     container_name: bids_crawler
     env_file: .env
     environment:

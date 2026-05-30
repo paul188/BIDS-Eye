@@ -49,6 +49,13 @@ from typing import Any, Dict, List, Optional
 
 import modal
 
+# Read deploy-time tuning knobs from the environment (set in .env before deploying).
+# MODAL_MIN_CONTAINERS=1  → keep one container always warm (no cold starts, ~$1/hr for A10G)
+# MODAL_MAX_NEW_TOKENS    → token budget for SQLCoder; 300 is plenty for SQL, 512 is the safe max
+_MIN_CONTAINERS  = int(os.getenv("MODAL_MIN_CONTAINERS",  "0"))
+_MAX_NEW_TOKENS  = int(os.getenv("MODAL_MAX_NEW_TOKENS",  "512"))
+_SCALEDOWN_SECS  = int(os.getenv("MODAL_SCALEDOWN_SECS",  "300"))
+
 # ── Volumes & paths ────────────────────────────────────────────────────────────
 adapters_volume = modal.Volume.from_name("bids-eye-weights",  create_if_missing=True)
 metadata_volume = modal.Volume.from_name("bids-eye-metadata", create_if_missing=True)
@@ -99,7 +106,9 @@ image = (
     .add_local_file("synthetic_data/sql_expander.py",                   "/app/sql_expander.py")
     .add_local_file("synthetic_data/value_mappings.py",                 "/app/value_mappings.py")
     .add_local_file("RAG/value_mappings.yaml",                    "/app/value_mappings.yaml")
+    .add_local_file("RAG/join_paths.yaml",                        "/app/join_paths.yaml")
     .add_local_file("RAG/yaml_to_llamaindex.py",                  "/app/yaml_to_llamaindex.py")
+    .add_local_file("RAG/join_registry.py",                       "/app/join_registry.py")
     .add_local_file("RAG/retriever.py",                           "/app/retriever.py")
     .add_local_file("LLM_preprocessor/preprocess.py",             "/app/preprocess.py")
     .add_local_file("modal_app/few_shot_examples.json",           "/app/few_shot_examples.json")
@@ -214,14 +223,59 @@ def _outer_select_span(sql: str):
     return cols_start, None
 
 
+_BAD_OUTER_FILTER = re.compile(
+    r'(?:AND\s+)?o\d*\.(task|datatype|suffix)\s*=\s*\'[^\']*\'',
+    re.IGNORECASE,
+)
+
+
+def _strip_outer_scan_filters(sql: str) -> str:
+    """Remove o.task/datatype/suffix equality filters from the outer SELECT query.
+
+    These columns store canonical codes and must only be filtered inside EXISTS
+    subqueries.  A direct `WHERE o.task = 'made_up_code'` always returns 0 rows.
+    """
+    out: list[str] = []
+    depth = 0
+    pos = 0
+    while pos < len(sql):
+        ch = sql[pos]
+        if ch == '(':
+            depth += 1
+            out.append(ch)
+            pos += 1
+        elif ch == ')':
+            depth -= 1
+            out.append(ch)
+            pos += 1
+        elif depth == 0:
+            m = _BAD_OUTER_FILTER.match(sql, pos)
+            if m:
+                print(f"[bids-eye] Stripped bad outer scan filter: {m.group(0).strip()}")
+                pos = m.end()
+            else:
+                out.append(ch)
+                pos += 1
+        else:
+            out.append(ch)
+            pos += 1
+    result = ''.join(out)
+    result = re.sub(r'\bWHERE\s+(GROUP|ORDER|HAVING|LIMIT)\b', r'\1', result, flags=re.IGNORECASE)
+    return result
+
+
 def normalize_sql(sql: str) -> str:
     """Apply deterministic post-generation fixes before execution.
 
+    0. Strip any direct outer-query filters on canonical-code columns.
     1. Fix COUNT without DISTINCT on subject columns.
     2. Expand bare SELECT * → mandatory column list.
     3. Inject any missing mandatory SELECT columns (skips CTEs — too complex to patch safely).
     4. Inject GROUP BY d.id when the clause is completely absent.
     """
+    # 0. Strip hallucinated outer o.task/datatype/suffix filters
+    sql = _strip_outer_scan_filters(sql)
+
     # 1. COUNT(o.subject) → COUNT(DISTINCT o.subject)  (handles o, o2, o3, …)
     sql = re.sub(
         r"\bCOUNT\s*\(\s*(?!DISTINCT\s)(o\d*\.subject)\s*\)",
@@ -359,7 +413,7 @@ def _correct_sql_with_gemini(
 
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
-        model="gemini-2.5-flash-preview-04-17",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(temperature=0.1),
     )
@@ -378,7 +432,8 @@ def _correct_sql_with_gemini(
     },
     secrets=[modal.Secret.from_name("bids-eye-gemini")],
     timeout=600,
-    scaledown_window=300,
+    scaledown_window=_SCALEDOWN_SECS,
+    min_containers=_MIN_CONTAINERS,
 )
 class TextToSQLModel:
     """
@@ -470,6 +525,10 @@ class TextToSQLModel:
           ### Answer     ← model fills from here
         """
         instructions = (
+            "- CRITICAL — VOCABULARY MISS terms: If [VOCABULARY MISS] appears in the question, "
+            "those terms have NO canonical code. Use ONLY the ILIKE clause shown in that block "
+            "(copy it verbatim into WHERE). NEVER set o.task, o.datatype, o.suffix, or "
+            "p.diagnosis equal to a VOCABULARY MISS term — those columns hold canonical codes only.\n"
             "- Only use tables and columns present in the schema below.\n"
             "- Always SELECT: d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, "
             "d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count\n"
@@ -611,7 +670,7 @@ class TextToSQLModel:
         self,
         question: str,
         db_url: Optional[str] = None,
-        max_new_tokens: int = 512,
+        max_new_tokens: int = _MAX_NEW_TOKENS,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         n_examples: int = 5,
@@ -717,7 +776,7 @@ class TextToSQLModel:
     def generate(
         self,
         question: str,
-        max_new_tokens: int = 512,
+        max_new_tokens: int = _MAX_NEW_TOKENS,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ) -> dict:

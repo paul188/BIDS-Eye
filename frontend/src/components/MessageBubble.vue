@@ -26,7 +26,7 @@ defineProps<{ message: Message }>()
       <!-- Error -->
       <div
         v-else-if="message.error"
-        class="bg-red-900/30 border border-red-700/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-red-300"
+        class="bg-red-900/30 border border-red-700/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-red-200"
       >
         {{ message.content }}
       </div>

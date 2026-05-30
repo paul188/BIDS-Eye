@@ -83,6 +83,7 @@ from yaml_to_llamaindex import (
     weight_db,
     build_embedding_index,
 )
+from join_registry import field_to_db_col as _field_to_db_col
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,39 @@ _NAME_FIELD_KEY = {
 
 # WRatio threshold for YAML fields — keeps false positives low on short tokens
 _SEMANTIC_THRESHOLD = 80
+
+# Terms that are pure modality abbreviations or generic imaging phrases.
+# For these, the task field is skipped in retrieve_scan_terms to prevent
+# spurious task hits (e.g. "fMRI" → bold_acquisition_general, "DTI" → dual_task).
+# Generic imaging terms also skip the suffix field because suffix fuzzy-matches
+# produce impossibly specific filters (e.g. "brain imaging" → t1w, pet).
+_PURE_MODALITY_TERMS = {
+    # Abbreviations
+    "fmri", "mri", "meg", "eeg", "dti", "dwi", "ieeg", "ecog",
+    "fnirs", "nirs", "pet", "asl", "mrs", "bold", "mr", "ct",
+    "bld", "t1", "t2", "t1w", "t2w",
+    # Short phrases with modality abbreviation
+    "fmri scan", "fmri data", "eeg data", "meg data",
+    "eeg recording", "meg recording", "mri scan", "mri data",
+    "bold fmri", "bold signal", "bold response", "bold mri",
+    # Full names
+    "functional mri", "functional magnetic resonance imaging",
+    "diffusion tensor imaging", "diffusion weighted imaging",
+    "diffusion mri", "diffusion weighted mri",
+    "electroencephalography", "magnetoencephalography",
+    "intracranial eeg", "intracranial electroencephalography",
+    "functional near-infrared spectroscopy",
+    "positron emission tomography",
+    "arterial spin labeling", "arterial spin labelling",
+    "structural mri", "anatomical mri", "structural magnetic resonance imaging",
+    "t1 weighted", "t1-weighted", "t2 weighted", "t2-weighted",
+}
+_GENERIC_IMAGING_TERMS = {
+    "brain imaging", "brain scan", "brain scans", "neuroimaging",
+    "neuroimaging data", "brain study", "brain studies", "imaging study",
+    "imaging data", "brain recording", "brain recordings", "brain imaging data",
+    "brain images", "brain image",
+}
 
 # token_set_ratio threshold for name fields — looser to handle abbreviations
 _NAME_THRESHOLD = 60
@@ -258,26 +292,38 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
     term_lower = term.lower().strip()
     candidates = _plural_variants(term_lower)
 
-    # 1. Exact match (leaf first, then group)
+    # 1. Exact match — prefer group (all descendants) over single leaf code
+    # so "working memory" returns every working-memory task code, not just
+    # working_memory_general alone.
     for t in candidates:
-        if t in cat_leaves:
-            return [cat_leaves[t]]
         if t in cat_groups:
             return cat_groups[t]
+        if t in cat_leaves:
+            return [cat_leaves[t]]
 
     # 2. Pooled fuzzy match over display labels + group synonyms
+    # Exclude keys shorter than 3 chars from the fuzzy pool — short abbreviations
+    # like "ng" or "dre" would spuriously match unrelated user queries via
+    # partial substring scoring (WRatio uses partial_ratio internally).
+    # They are still found by the exact-match step above.
+    _MIN_FUZZY_KEY_LEN = 3
     all_targets: Dict[str, List[str]] = {}
     for k, v in cat_display.items():
-        all_targets[k] = [v]
+        if len(k) >= _MIN_FUZZY_KEY_LEN:
+            all_targets[k] = [v]
     for k, v in cat_group_display.items():
-        if k not in all_targets:            # leaf wins if both have the same label
+        if len(k) >= _MIN_FUZZY_KEY_LEN:
+            # Group wins for dual nodes — returning all descendant codes means
+            # "working memory" finds every dataset tagged with any working-memory
+            # task, not just those using the working_memory_general code itself.
             all_targets[k] = v
 
     if not all_targets:
         return []
 
+    # Increase limit so low-weight best matches can be supplemented by siblings
     results = _process.extract(
-        term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=3
+        term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=20
     )
     if not results or results[0][1] < _SEMANTIC_THRESHOLD:
         return _embedding_fallback(field, term)
@@ -295,6 +341,46 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
     if best_score < effective_threshold:
         return _embedding_fallback(field, term)
 
+    # When the best match is a low-confidence synonym (weight < 0.5), the
+    # matched key is generic (e.g. "motor task" → somatomotor_task, weight 0.1).
+    # Strip descriptor adjectives from the user term and re-run fuzzy matching
+    # on the core concept — "complex motor task" → "motor task" scores 95+
+    # against all "X motor task" labels, not just the synonym key itself.
+    if weight < 0.5:
+        _DESCRIPTORS = {
+            "complex", "simple", "basic", "advanced", "various", "different",
+            "specific", "typical", "standard", "common", "regular",
+            "experiment", "experiments", "paradigm", "paradigms",
+            "study", "studies", "data", "trial", "trials",
+        }
+        words = term_lower.split()
+        core_words = [w for w in words if w not in _DESCRIPTORS]
+        core_term = " ".join(core_words) if core_words else term_lower
+        if core_term != term_lower:
+            core_results = _process.extract(
+                core_term, all_targets.keys(), scorer=_fuzz.WRatio, limit=20
+            )
+        else:
+            core_results = results  # nothing stripped; use original results
+
+        collected: list[str] = []
+        seen: set[str] = set()
+        _MIN_COLLECT_LEN = max(len(core_term) // 2, 5)
+        for label, score, _ in core_results:
+            if score < _SEMANTIC_THRESHOLD:
+                break
+            if len(label) < _MIN_COLLECT_LEN:
+                continue
+            w = weight_db.get(field, {}).get(label, 1.0)
+            eff = _SEMANTIC_THRESHOLD + (1.0 - w) * _WEIGHT_BOOST
+            if score >= eff:
+                for code in all_targets[label]:
+                    if code not in seen:
+                        seen.add(code)
+                        collected.append(code)
+        if collected:
+            return collected
+
     return all_targets[best_label]
 
 
@@ -308,9 +394,12 @@ class MetadataRetriever:
     ----------
     name_index_path : path to the JSON file produced by build_name_index.py
                       (contains {"authors": [...], "funding_sources": [...]})
+    db_url : optional PostgreSQL connection URL.  When set, db_verify_codes()
+             cross-checks resolved codes against the live database and flags
+             any that map to zero rows (DB_MISS).
     """
 
-    def __init__(self, name_index_path: str | Path):
+    def __init__(self, name_index_path: str | Path, db_url: Optional[str] = None):
         path = Path(name_index_path)
         if not path.exists():
             raise FileNotFoundError(
@@ -320,6 +409,53 @@ class MetadataRetriever:
             )
         with open(path, encoding="utf-8") as fh:
             self._names: Dict[str, List[str]] = json.load(fh)
+        self._db_url: Optional[str] = db_url
+
+    # ------------------------------------------------------------------
+    def db_verify_codes(
+        self,
+        field: str,
+        codes: List[str],
+    ) -> tuple[List[str], List[str]]:
+        """Return (live_codes, db_miss_codes) for *codes* in *field*.
+
+        live_codes     : codes that have ≥ 1 row in the DB column.
+        db_miss_codes  : codes that resolved in the YAML vocabulary but have
+                         zero rows in the live database.  These should NOT be
+                         used in EXISTS filters — they will always return empty.
+
+        Returns (codes, []) unchanged when db_url was not provided at init or
+        when psycopg2 is not installed.
+        """
+        if not self._db_url or not codes:
+            return codes, []
+        if _field_to_db_col(field) is None:
+            return codes, []
+
+        table, col = _field_to_db_col(field)
+        try:
+            import psycopg2  # type: ignore
+        except ImportError:
+            log.debug("psycopg2 not installed — skipping DB back-check")
+            return codes, []
+
+        try:
+            with psycopg2.connect(self._db_url) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        f"SELECT DISTINCT {col} FROM {table} WHERE {col} = ANY(%s)",
+                        (codes,),
+                    )
+                    live_set = {row[0] for row in cur.fetchall()}
+        except Exception as exc:
+            log.warning("DB back-check failed for field=%s: %s", field, exc)
+            return codes, []
+
+        live = [c for c in codes if c in live_set]
+        miss = [c for c in codes if c not in live_set]
+        if miss:
+            log.debug("DB_MISS for field=%s: %s", field, miss)
+        return live, miss
 
     # ------------------------------------------------------------------
     def retrieve_scan_terms(
@@ -350,8 +486,20 @@ class MetadataRetriever:
         for field in _SCAN_FIELDS:
             term_map: Dict[str, List[str]] = {}
             for term in terms:
+                term_lower = term.lower().strip()
+                # Skip task field for pure modality abbreviations and generic
+                # imaging terms — fuzzy matching produces spurious task hits
+                # (e.g. "fMRI" → bold_acquisition_general, "DTI" → dual_task).
+                if field == "task" and term_lower in (
+                    _PURE_MODALITY_TERMS | _GENERIC_IMAGING_TERMS
+                ):
+                    continue
+                # Skip suffix field for generic imaging terms — suffix fuzzy
+                # matching produces over-specific filters (e.g. "brain imaging"
+                # → t1_weighted_mri) that make queries unnecessarily restrictive.
+                if field == "suffix" and term_lower in _GENERIC_IMAGING_TERMS:
+                    continue
                 codes = _resolve_yaml_term(field, term)
-                codes = _prune_redundant_parents(codes)
                 if codes:
                     term_map[term] = codes
             if term_map:
@@ -376,7 +524,6 @@ class MetadataRetriever:
         """
         if field in _YAML_FIELDS:
             codes = _resolve_yaml_term(field, term)
-            codes = _prune_redundant_parents(codes)
             return codes[:n_results]
 
         if field in _NAME_FIELDS:

@@ -9,5 +9,5 @@ html, body, #app {
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #3b3b52; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #5a5a7a; }
+::-webkit-scrollbar-thumb { background: #3a3d5c; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #5a5d7f; }

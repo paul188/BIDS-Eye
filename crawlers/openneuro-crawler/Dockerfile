@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 COPY BIDS-SQL/  /app/BIDS-SQL/
-COPY crawlers/openneuro-crawler-backup/ /app/crawler/
+COPY crawlers/openneuro-crawler/ /app/crawler/
 
 RUN pip install --no-cache-dir -e /app/BIDS-SQL && \
     pip install --no-cache-dir -e /app/crawler

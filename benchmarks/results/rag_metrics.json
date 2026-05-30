@@ -1,0 +1,3095 @@
+{
+  "summary": {
+    "datatype": {
+      "n": 28,
+      "p_at_1": 0.964,
+      "recall_at_3": 0.964,
+      "pass_rate": 0.964,
+      "exact_pct": 0.714,
+      "fuzzy_pct": 0.286,
+      "embed_pct": 0.0,
+      "unresolved_pct": 0.0
+    },
+    "diagnosis": {
+      "n": 68,
+      "p_at_1": 0.926,
+      "recall_at_3": 0.971,
+      "pass_rate": 0.971,
+      "exact_pct": 0.824,
+      "fuzzy_pct": 0.176,
+      "embed_pct": 0.0,
+      "unresolved_pct": 0.0
+    },
+    "name": {
+      "n": 5,
+      "p_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "pass_rate": 0.0,
+      "exact_pct": 0.0,
+      "fuzzy_pct": 0.0,
+      "embed_pct": 0.0,
+      "unresolved_pct": 1.0
+    },
+    "suffix": {
+      "n": 12,
+      "p_at_1": 0.917,
+      "recall_at_3": 0.917,
+      "pass_rate": 0.917,
+      "exact_pct": 0.25,
+      "fuzzy_pct": 0.75,
+      "embed_pct": 0.0,
+      "unresolved_pct": 0.0
+    },
+    "task": {
+      "n": 64,
+      "p_at_1": 0.891,
+      "recall_at_3": 0.891,
+      "pass_rate": 0.891,
+      "exact_pct": 0.844,
+      "fuzzy_pct": 0.156,
+      "embed_pct": 0.0,
+      "unresolved_pct": 0.0
+    },
+    "overall": {
+      "n": 177,
+      "p_at_1": 0.893,
+      "recall_at_3": 0.91,
+      "pass_rate": 0.91,
+      "exact_pct": 0.751,
+      "fuzzy_pct": 0.22,
+      "embed_pct": 0.0,
+      "unresolved_pct": 0.028
+    }
+  },
+  "variant_breakdown": {
+    "abbreviation": {
+      "n": 33,
+      "p_at_1": 0.848,
+      "pass_rate": 0.879
+    },
+    "compound": {
+      "n": 10,
+      "p_at_1": 1.0,
+      "pass_rate": 1.0
+    },
+    "formal": {
+      "n": 68,
+      "p_at_1": 0.926,
+      "pass_rate": 0.941
+    },
+    "informal": {
+      "n": 66,
+      "p_at_1": 0.864,
+      "pass_rate": 0.879
+    }
+  },
+  "calibration": {
+    "0.0\u20130.5": {
+      "n": 143,
+      "p_at_1": 0.902,
+      "pass_rate": 0.923
+    },
+    "0.9\u20131.0": {
+      "n": 29,
+      "p_at_1": 1.0,
+      "pass_rate": 1.0
+    },
+    "_unmatched_in_yaml": {
+      "n": 5
+    }
+  },
+  "per_entry": [
+    {
+      "term": "schizophrenia",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "schizophrenia"
+      ],
+      "returned_codes": [
+        "schizophrenia",
+        "schizophrenia_with_avh",
+        "schizophrenia_without_avh"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "schizophrenic",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "schizophrenia"
+      ],
+      "returned_codes": [
+        "schizophrenia",
+        "schizophrenia_with_avh",
+        "schizophrenia_without_avh"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "SCZ",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "schizophrenia"
+      ],
+      "returned_codes": [
+        "schizophrenia",
+        "schizophrenia_with_avh",
+        "schizophrenia_without_avh"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "paranoid schizophrenia",
+      "field": "diagnosis",
+      "variant_type": "compound",
+      "expected_codes": [
+        "schizophrenia"
+      ],
+      "returned_codes": [
+        "schizophrenia",
+        "schizophrenia_with_avh",
+        "schizophrenia_without_avh"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "first episode psychosis",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "schizophrenia"
+      ],
+      "returned_codes": [
+        "schizophrenia",
+        "schizophrenia_with_avh",
+        "schizophrenia_without_avh"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 10.3
+    },
+    {
+      "term": "ADHD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "adhd"
+      ],
+      "returned_codes": [
+        "adhd"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "attention deficit hyperactivity disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "adhd"
+      ],
+      "returned_codes": [
+        "adhd"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "attention deficit disorder",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "adhd"
+      ],
+      "returned_codes": [
+        "adhd"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 11827.0
+    },
+    {
+      "term": "ADD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "adhd"
+      ],
+      "returned_codes": [
+        "adhd"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 33.3
+    },
+    {
+      "term": "hyperactivity disorder",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "adhd"
+      ],
+      "returned_codes": [
+        "adhd"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 14.2
+    },
+    {
+      "term": "autism",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "returned_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 16.6
+    },
+    {
+      "term": "autism spectrum disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "returned_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "ASD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "returned_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "autistic",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "returned_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Asperger",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "returned_codes": [
+        "autism_spectrum_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "depression",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "depression",
+        "major_depressive_disorder"
+      ],
+      "returned_codes": [
+        "depression",
+        "major_depressive_disorder",
+        "unipolar_depression"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "major depressive disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "major_depressive_disorder"
+      ],
+      "returned_codes": [
+        "depression",
+        "major_depressive_disorder",
+        "unipolar_depression"
+      ],
+      "pass": true,
+      "top1_hit": false,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "MDD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "major_depressive_disorder"
+      ],
+      "returned_codes": [
+        "depression",
+        "major_depressive_disorder",
+        "unipolar_depression"
+      ],
+      "pass": true,
+      "top1_hit": false,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "depressed",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "depression",
+        "major_depressive_disorder"
+      ],
+      "returned_codes": [
+        "major_depressive_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 15.8
+    },
+    {
+      "term": "unipolar depression",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "unipolar_depression",
+        "depression"
+      ],
+      "returned_codes": [
+        "depression",
+        "major_depressive_disorder",
+        "unipolar_depression"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "anxiety",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "anxiety_disorder"
+      ],
+      "returned_codes": [
+        "anxiety_disorder",
+        "post_traumatic_stress_disorder",
+        "obsessive_compulsive_disorder",
+        "panic_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "anxiety disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "anxiety_disorder"
+      ],
+      "returned_codes": [
+        "anxiety_disorder",
+        "post_traumatic_stress_disorder",
+        "obsessive_compulsive_disorder",
+        "panic_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "anxious",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "anxiety_disorder"
+      ],
+      "returned_codes": [
+        "anxiety_disorder",
+        "post_traumatic_stress_disorder",
+        "obsessive_compulsive_disorder",
+        "panic_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "PTSD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "post_traumatic_stress_disorder"
+      ],
+      "returned_codes": [
+        "post_traumatic_stress_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "post traumatic stress disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "post_traumatic_stress_disorder"
+      ],
+      "returned_codes": [
+        "post_traumatic_stress_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 18.4
+    },
+    {
+      "term": "trauma",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "post_traumatic_stress_disorder"
+      ],
+      "returned_codes": [
+        "post_traumatic_stress_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 9.6
+    },
+    {
+      "term": "OCD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "obsessive_compulsive_disorder"
+      ],
+      "returned_codes": [
+        "obsessive_compulsive_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "obsessive compulsive disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "obsessive_compulsive_disorder"
+      ],
+      "returned_codes": [
+        "obsessive_compulsive_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 10.9
+    },
+    {
+      "term": "obsessive compulsive",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "obsessive_compulsive_disorder"
+      ],
+      "returned_codes": [
+        "obsessive_compulsive_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "panic disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "panic_disorder"
+      ],
+      "returned_codes": [
+        "panic_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "panic attacks",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "panic_disorder"
+      ],
+      "returned_codes": [
+        "panic_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "epilepsy",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "epilepsy"
+      ],
+      "returned_codes": [
+        "epilepsy",
+        "watanabe_syndrome",
+        "west_syndrome_history",
+        "hhe_syndrome",
+        "mild_malformation_cortical_development"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "seizure disorder",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "epilepsy"
+      ],
+      "returned_codes": [
+        "epilepsy",
+        "watanabe_syndrome",
+        "west_syndrome_history",
+        "hhe_syndrome",
+        "mild_malformation_cortical_development"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "epileptic",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "epilepsy"
+      ],
+      "returned_codes": [
+        "epilepsy",
+        "watanabe_syndrome",
+        "west_syndrome_history",
+        "hhe_syndrome",
+        "mild_malformation_cortical_development"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Parkinson's disease",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "parkinsons_disease"
+      ],
+      "returned_codes": [
+        "parkinsons_disease",
+        "parkinsons_disease_mci",
+        "de_novo_parkinsons"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Parkinson",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "parkinsons_disease"
+      ],
+      "returned_codes": [
+        "parkinsons_disease",
+        "parkinsons_disease_mci",
+        "de_novo_parkinsons"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "PD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "parkinsons_disease"
+      ],
+      "returned_codes": [
+        "parkinsons_disease",
+        "parkinsons_disease_mci",
+        "de_novo_parkinsons"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Alzheimer's disease",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "alzheimers_disease"
+      ],
+      "returned_codes": [
+        "alzheimers_disease"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Alzheimer",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "alzheimers_disease"
+      ],
+      "returned_codes": [
+        "alzheimers_disease"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "dementia",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "mild_cognitive_impairment",
+        "alzheimers_disease"
+      ],
+      "returned_codes": [
+        "alzheimers_disease",
+        "mild_cognitive_impairment"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "bipolar disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "bipolar_disorder"
+      ],
+      "returned_codes": [
+        "bipolar_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "bipolar",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "bipolar_disorder"
+      ],
+      "returned_codes": [
+        "bipolar_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "manic depression",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "bipolar_disorder"
+      ],
+      "returned_codes": [
+        "bipolar_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "dyslexia",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "dyslexia"
+      ],
+      "returned_codes": [
+        "dyslexia"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "reading disorder",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "dyslexia"
+      ],
+      "returned_codes": [
+        "dyslexia"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "healthy controls",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "healthy_control"
+      ],
+      "returned_codes": [
+        "healthy_control",
+        "healthy_volunteer",
+        "typically_developing",
+        "healthy_control_task_variant",
+        "healthy_control_expert"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "healthy volunteers",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "healthy_control",
+        "healthy_volunteer"
+      ],
+      "returned_codes": [
+        "healthy_volunteer"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "control group",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "healthy_control"
+      ],
+      "returned_codes": [
+        "healthy_control",
+        "healthy_volunteer",
+        "typically_developing",
+        "healthy_control_task_variant",
+        "healthy_control_expert"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "fibromyalgia",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "fibromyalgia"
+      ],
+      "returned_codes": [
+        "fibromyalgia"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "multiple sclerosis",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "multiple_sclerosis"
+      ],
+      "returned_codes": [
+        "multiple_sclerosis"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "MS",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "multiple_sclerosis"
+      ],
+      "returned_codes": [
+        "multiple_sclerosis"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "traumatic brain injury",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "traumatic_brain_injury"
+      ],
+      "returned_codes": [
+        "traumatic_brain_injury",
+        "brain_contusion"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "TBI",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "traumatic_brain_injury"
+      ],
+      "returned_codes": [
+        "traumatic_brain_injury"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "stroke",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "stroke"
+      ],
+      "returned_codes": [
+        "stroke",
+        "cortical_cerebral_infarction",
+        "perinatal_stroke",
+        "postnatal_stroke"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "BPD",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "borderline_personality_disorder"
+      ],
+      "returned_codes": [
+        "borderline_personality_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "borderline personality",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "borderline_personality_disorder"
+      ],
+      "returned_codes": [
+        "borderline_personality_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "anorexia",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "eating_disorder"
+      ],
+      "returned_codes": [
+        "eating_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "eating disorder",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "eating_disorder"
+      ],
+      "returned_codes": [
+        "eating_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "psychosomatic",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "somatoform_disorder"
+      ],
+      "returned_codes": [
+        "somatoform_disorder"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "resting state",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state",
+        "interictal_state_recording",
+        "interictal_state_recording_sleep",
+        "interictal_state_recording_awake",
+        "awake_state_monitoring"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "resting-state fMRI",
+      "field": "task",
+      "variant_type": "compound",
+      "expected_codes": [
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state",
+        "interictal_state_recording",
+        "interictal_state_recording_sleep",
+        "interictal_state_recording_awake",
+        "awake_state_monitoring"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "resting state EEG",
+      "field": "task",
+      "variant_type": "compound",
+      "expected_codes": [
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state",
+        "interictal_state_recording",
+        "interictal_state_recording_sleep",
+        "interictal_state_recording_awake",
+        "awake_state_monitoring"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 94.8
+    },
+    {
+      "term": "rest",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "spontaneous activity",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state",
+        "interictal_state_recording",
+        "interictal_state_recording_sleep",
+        "interictal_state_recording_awake",
+        "awake_state_monitoring"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "n-back",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "n_back_working_memory"
+      ],
+      "returned_codes": [
+        "n_back_working_memory",
+        "one_back",
+        "environmental_sounds_n_back",
+        "environmental_sounds_n_back_laughing_female"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "nback",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "n_back_working_memory"
+      ],
+      "returned_codes": [
+        "n_back_working_memory",
+        "one_back",
+        "environmental_sounds_n_back",
+        "environmental_sounds_n_back_laughing_female"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "2-back",
+      "field": "task",
+      "variant_type": "compound",
+      "expected_codes": [
+        "n_back_working_memory"
+      ],
+      "returned_codes": [
+        "n_back_working_memory",
+        "one_back",
+        "environmental_sounds_n_back",
+        "environmental_sounds_n_back_laughing_female"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 105.9
+    },
+    {
+      "term": "n back task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "n_back_working_memory"
+      ],
+      "returned_codes": [
+        "n_back_working_memory",
+        "one_back",
+        "environmental_sounds_n_back",
+        "environmental_sounds_n_back_laughing_female"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "working memory",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "working_memory_general",
+        "n_back_working_memory"
+      ],
+      "returned_codes": [
+        "working_memory_general",
+        "memory_updating",
+        "delayed_comparison",
+        "delayed_match_to_sample",
+        "color_change_detection"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "WM task",
+      "field": "task",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "working_memory_general"
+      ],
+      "returned_codes": [
+        "working_memory_general",
+        "memory_updating",
+        "delayed_comparison",
+        "delayed_match_to_sample",
+        "color_change_detection"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "verbal working memory",
+      "field": "task",
+      "variant_type": "compound",
+      "expected_codes": [
+        "working_memory_general"
+      ],
+      "returned_codes": [
+        "working_memory_general",
+        "memory_updating",
+        "delayed_comparison",
+        "delayed_match_to_sample",
+        "color_change_detection"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 83.6
+    },
+    {
+      "term": "attention",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "attention_and_executive_control"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control",
+        "letter_comparison",
+        "letter_set",
+        "dual_task_weather_prediction",
+        "dual_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "attention task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "attention_and_executive_control"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control",
+        "letter_comparison",
+        "letter_set",
+        "dual_task_weather_prediction",
+        "dual_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "sustained attention",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "attention_and_executive_control",
+        "sustained_attention_gradcpt"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control",
+        "letter_comparison",
+        "letter_set",
+        "dual_task_weather_prediction",
+        "dual_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "attentional control",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "attention_and_executive_control"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control",
+        "letter_comparison",
+        "letter_set",
+        "dual_task_weather_prediction",
+        "dual_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "vigilance task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "attention_and_executive_control",
+        "sustained_attention_gradcpt"
+      ],
+      "returned_codes": [
+        "sustained_attention_gradcpt"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "face perception",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "face_perception"
+      ],
+      "returned_codes": [
+        "face_perception"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "viewing faces",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "face_perception"
+      ],
+      "returned_codes": [
+        "face_perception"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "face processing",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "face_perception"
+      ],
+      "returned_codes": [
+        "face_perception"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "face task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "face_perception",
+        "emotional_face_perception"
+      ],
+      "returned_codes": [
+        "face_memory_task"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "fuzzy",
+      "latency_ms": 103.1
+    },
+    {
+      "term": "emotional faces",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "hariri_emotional_face_task",
+        "emotional_face_perception"
+      ],
+      "returned_codes": [
+        "emotional_face_perception"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Hariri faces task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "hariri_emotional_face_task"
+      ],
+      "returned_codes": [
+        "hariri_emotional_face_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "finger tapping",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "finger_tapping_task"
+      ],
+      "returned_codes": [
+        "finger_tapping_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "finger tapping task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "finger_tapping_task"
+      ],
+      "returned_codes": [
+        "finger_tapping_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "motor task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "finger_tapping_task",
+        "motor_imagery_general"
+      ],
+      "returned_codes": [
+        "somatomotor_task"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "motor imagery",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "motor_imagery_general"
+      ],
+      "returned_codes": [
+        "motor_imagery_general"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "go no go",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "go_no_go_b",
+        "go_no_go_a"
+      ],
+      "returned_codes": [
+        "go_no_go_a"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "go/no-go task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "go_no_go_b",
+        "go_no_go_a"
+      ],
+      "returned_codes": [
+        "go_no_go_a"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "inhibition task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "go_no_go_a",
+        "stop_signal_task"
+      ],
+      "returned_codes": [
+        "stop_signal_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "stop signal task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "stop_signal_task"
+      ],
+      "returned_codes": [
+        "stop_signal_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "response inhibition",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "go_no_go_a",
+        "stop_signal_task"
+      ],
+      "returned_codes": [
+        "stop_signal_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "flanker task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "flanker_task_ern",
+        "flanker_task_condition_a"
+      ],
+      "returned_codes": [
+        "flanker_task_ern"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 122.5
+    },
+    {
+      "term": "Eriksen flanker",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "flanker_task_ern",
+        "flanker_task_condition_a"
+      ],
+      "returned_codes": [
+        "flanker_task_condition_a"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 124.7
+    },
+    {
+      "term": "movie watching",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "movie_viewing"
+      ],
+      "returned_codes": [
+        "movie_viewing"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "movie viewing",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "movie_viewing"
+      ],
+      "returned_codes": [
+        "movie_viewing"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "naturalistic viewing",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "movie_viewing"
+      ],
+      "returned_codes": [
+        "movie_viewing"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "video game",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "video_game_and_video"
+      ],
+      "returned_codes": [
+        "video_game_and_video"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 122.0
+    },
+    {
+      "term": "music listening",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "music_listening"
+      ],
+      "returned_codes": [
+        "music_listening"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "reward learning",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "probabilistic_classification_learning",
+        "monetary_incentive_delay_task"
+      ],
+      "returned_codes": [
+        "reinforcement_learning"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "monetary incentive delay",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "monetary_incentive_delay_task"
+      ],
+      "returned_codes": [
+        "monetary_incentive_delay_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "MID task",
+      "field": "task",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "monetary_incentive_delay_task"
+      ],
+      "returned_codes": [
+        "monetary_incentive_delay_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "gambling task",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "hcp_gambling_task",
+        "monetary_gambling_task",
+        "effort_based_gambling_task"
+      ],
+      "returned_codes": [
+        "hcp_gambling_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "language task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "hcp_language_task",
+        "language_production"
+      ],
+      "returned_codes": [
+        "rdr_language_task"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "fuzzy",
+      "latency_ms": 311.0
+    },
+    {
+      "term": "reading",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "word_reading_semantic",
+        "word_reading_phonological"
+      ],
+      "returned_codes": [
+        "general_reading_task"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "theory of mind",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "theory_of_mind"
+      ],
+      "returned_codes": [
+        "theory_of_mind"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "ToM",
+      "field": "task",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "theory_of_mind"
+      ],
+      "returned_codes": [
+        "theory_of_mind"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "mentalizing",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "theory_of_mind"
+      ],
+      "returned_codes": [
+        "theory_of_mind"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "spatial attention",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "spatial_attention"
+      ],
+      "returned_codes": [
+        "spatial_attention"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "fMRI",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "functional_mri"
+      ],
+      "returned_codes": [
+        "functional_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.9
+    },
+    {
+      "term": "functional MRI",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "functional_mri"
+      ],
+      "returned_codes": [
+        "functional_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "functional magnetic resonance imaging",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "functional_mri"
+      ],
+      "returned_codes": [
+        "functional_mri",
+        "anatomical_mri",
+        "diffusion_mri",
+        "field_maps",
+        "perfusion_asl"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 1.6
+    },
+    {
+      "term": "BOLD",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "functional_mri"
+      ],
+      "returned_codes": [
+        "functional_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.9
+    },
+    {
+      "term": "EEG",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "electroencephalography"
+      ],
+      "returned_codes": [
+        "electroencephalography"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "electroencephalography",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "electroencephalography"
+      ],
+      "returned_codes": [
+        "electroencephalography"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "electroencephalogram",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "electroencephalography"
+      ],
+      "returned_codes": [
+        "electroencephalography"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "MEG",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "magnetoencephalography"
+      ],
+      "returned_codes": [
+        "magnetoencephalography"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "magnetoencephalography",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "magnetoencephalography"
+      ],
+      "returned_codes": [
+        "magnetoencephalography"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "DTI",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "diffusion_mri"
+      ],
+      "returned_codes": [
+        "diffusion_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "diffusion MRI",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "diffusion_mri"
+      ],
+      "returned_codes": [
+        "diffusion_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "diffusion tensor imaging",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "diffusion_mri"
+      ],
+      "returned_codes": [
+        "diffusion_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "DWI",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "diffusion_mri"
+      ],
+      "returned_codes": [
+        "diffusion_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "structural MRI",
+      "field": "datatype",
+      "variant_type": "informal",
+      "expected_codes": [
+        "anatomical_mri"
+      ],
+      "returned_codes": [
+        "anatomical_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "T1",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "anatomical_mri"
+      ],
+      "returned_codes": [
+        "anatomical_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 1.3
+    },
+    {
+      "term": "T1w",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "anatomical_mri"
+      ],
+      "returned_codes": [
+        "anatomical_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "anatomical MRI",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "anatomical_mri"
+      ],
+      "returned_codes": [
+        "anatomical_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "PET",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "perfusion_asl"
+      ],
+      "returned_codes": [
+        "positron_emission_tomography"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "ASL",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "perfusion_asl"
+      ],
+      "returned_codes": [
+        "perfusion_asl"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "arterial spin labeling",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "perfusion_asl"
+      ],
+      "returned_codes": [
+        "perfusion_asl"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 1.2
+    },
+    {
+      "term": "MRS",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "magnetic_resonance_spectroscopy"
+      ],
+      "returned_codes": [
+        "magnetic_resonance_spectroscopy"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "spectroscopy",
+      "field": "datatype",
+      "variant_type": "informal",
+      "expected_codes": [
+        "magnetic_resonance_spectroscopy"
+      ],
+      "returned_codes": [
+        "magnetic_resonance_spectroscopy"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 1.0
+    },
+    {
+      "term": "magnetic resonance spectroscopy",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "magnetic_resonance_spectroscopy"
+      ],
+      "returned_codes": [
+        "magnetic_resonance_spectroscopy"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 1.6
+    },
+    {
+      "term": "iEEG",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "intracranial_eeg"
+      ],
+      "returned_codes": [
+        "intracranial_eeg"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "intracranial EEG",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "intracranial_eeg"
+      ],
+      "returned_codes": [
+        "intracranial_eeg"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "fNIRS",
+      "field": "datatype",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "fnirs"
+      ],
+      "returned_codes": [
+        "fnirs"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "functional near infrared spectroscopy",
+      "field": "datatype",
+      "variant_type": "formal",
+      "expected_codes": [
+        "fnirs"
+      ],
+      "returned_codes": [
+        "fnirs"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 1.9
+    },
+    {
+      "term": "near infrared spectroscopy",
+      "field": "datatype",
+      "variant_type": "informal",
+      "expected_codes": [
+        "fnirs"
+      ],
+      "returned_codes": [
+        "fnirs"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 1.4
+    },
+    {
+      "term": "BOLD signal",
+      "field": "suffix",
+      "variant_type": "informal",
+      "expected_codes": [
+        "fmri_bold"
+      ],
+      "returned_codes": [
+        "fmri_bold"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 5.5
+    },
+    {
+      "term": "bold",
+      "field": "suffix",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "fmri_bold"
+      ],
+      "returned_codes": [
+        "fmri_bold"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "fMRI file",
+      "field": "suffix",
+      "variant_type": "compound",
+      "expected_codes": [
+        "fmri_bold"
+      ],
+      "returned_codes": [
+        "fmri_bold"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 5.7
+    },
+    {
+      "term": "EEG data",
+      "field": "suffix",
+      "variant_type": "informal",
+      "expected_codes": [
+        "eeg"
+      ],
+      "returned_codes": [
+        "eeg"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 5.1
+    },
+    {
+      "term": "eeg suffix",
+      "field": "suffix",
+      "variant_type": "formal",
+      "expected_codes": [
+        "eeg"
+      ],
+      "returned_codes": [
+        "eeg"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 5.4
+    },
+    {
+      "term": "MEG recording",
+      "field": "suffix",
+      "variant_type": "informal",
+      "expected_codes": [
+        "meg"
+      ],
+      "returned_codes": [
+        "meg"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "DWI file",
+      "field": "suffix",
+      "variant_type": "compound",
+      "expected_codes": [
+        "diffusion_mri_dwi"
+      ],
+      "returned_codes": [
+        "diffusion_mri_dwi"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 5.6
+    },
+    {
+      "term": "diffusion weighted",
+      "field": "suffix",
+      "variant_type": "informal",
+      "expected_codes": [
+        "diffusion_mri_dwi"
+      ],
+      "returned_codes": [
+        "diffusion_mri_dwi"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 4.9
+    },
+    {
+      "term": "FLAIR",
+      "field": "suffix",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "flair_mri"
+      ],
+      "returned_codes": [
+        "flair_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "fluid attenuated inversion recovery",
+      "field": "suffix",
+      "variant_type": "formal",
+      "expected_codes": [
+        "flair_mri"
+      ],
+      "returned_codes": [
+        "flair_mri"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 8.7
+    },
+    {
+      "term": "iEEG recording",
+      "field": "suffix",
+      "variant_type": "informal",
+      "expected_codes": [
+        "intracranial_eeg"
+      ],
+      "returned_codes": [
+        "eeg"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "fuzzy",
+      "latency_ms": 6.3
+    },
+    {
+      "term": "fNIRS data",
+      "field": "suffix",
+      "variant_type": "informal",
+      "expected_codes": [
+        "fnirs"
+      ],
+      "returned_codes": [
+        "fnirs"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 6.0
+    },
+    {
+      "term": "OpenNeuro",
+      "field": "name",
+      "variant_type": "formal",
+      "expected_codes": [
+        "openneuro"
+      ],
+      "returned_codes": [],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "unresolved",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "NIH",
+      "field": "name",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "nih"
+      ],
+      "returned_codes": [],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "unresolved",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "National Institutes of Health",
+      "field": "name",
+      "variant_type": "formal",
+      "expected_codes": [
+        "nih"
+      ],
+      "returned_codes": [],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "unresolved",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Wellcome Trust",
+      "field": "name",
+      "variant_type": "formal",
+      "expected_codes": [
+        "wellcome_trust"
+      ],
+      "returned_codes": [],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "unresolved",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "NIMH",
+      "field": "name",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "nimh"
+      ],
+      "returned_codes": [],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "unresolved",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "resting-state eyes open",
+      "field": "task",
+      "variant_type": "compound",
+      "expected_codes": [
+        "resting_state_eyes_open",
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state_eyes_open"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 84.4
+    },
+    {
+      "term": "eyes closed rest",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "resting_state_eyes_closed",
+        "resting_state"
+      ],
+      "returned_codes": [
+        "resting_state_eyes_closed"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "task switching",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "cued_task_switching"
+      ],
+      "returned_codes": [
+        "cued_task_switching"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 101.6
+    },
+    {
+      "term": "dual n-back",
+      "field": "task",
+      "variant_type": "compound",
+      "expected_codes": [
+        "n_back_working_memory"
+      ],
+      "returned_codes": [
+        "n_back_working_memory",
+        "one_back",
+        "environmental_sounds_n_back",
+        "environmental_sounds_n_back_laughing_female"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "pain task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "heat_pain_regulation_and_rating"
+      ],
+      "returned_codes": [
+        "pain_perception_general"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "heat pain",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "heat_pain_regulation_and_rating"
+      ],
+      "returned_codes": [
+        "heat_pain_regulation_and_rating"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "Stroop",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "attention_and_executive_control"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "cognitive control",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "attention_and_executive_control"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control",
+        "letter_comparison",
+        "letter_set",
+        "dual_task_weather_prediction",
+        "dual_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "executive function",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "attention_and_executive_control"
+      ],
+      "returned_codes": [
+        "attention_and_executive_control",
+        "letter_comparison",
+        "letter_set",
+        "dual_task_weather_prediction",
+        "dual_task"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "visual short term memory",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "visual_working_memory_general",
+        "visual_short_term_memory"
+      ],
+      "returned_codes": [
+        "visual_working_memory_general"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "emotion regulation",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "emotion_processing_regulation"
+      ],
+      "returned_codes": [
+        "emotion_processing_regulation"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "emotion processing",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "emotion_processing_regulation"
+      ],
+      "returned_codes": [
+        "emotion_processing_regulation"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "mild cognitive impairment",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "mild_cognitive_impairment"
+      ],
+      "returned_codes": [
+        "mild_cognitive_impairment"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "MCI",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "mild_cognitive_impairment"
+      ],
+      "returned_codes": [
+        "mild_cognitive_impairment"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "de novo Parkinson",
+      "field": "diagnosis",
+      "variant_type": "compound",
+      "expected_codes": [
+        "de_novo_parkinsons",
+        "parkinsons_disease"
+      ],
+      "returned_codes": [
+        "de_novo_parkinsons"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 8.6
+    },
+    {
+      "term": "brain tumor",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "brain_tumor"
+      ],
+      "returned_codes": [
+        "brain_tumor",
+        "low_grade_brain_tumor",
+        "astrocytoma",
+        "grade_2_glioma",
+        "grade_3_glioma"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "glioma",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "grade_3_glioma",
+        "grade_2_glioma",
+        "grade_4_glioma"
+      ],
+      "returned_codes": [
+        "astrocytoma",
+        "grade_2_glioma",
+        "grade_3_glioma",
+        "grade_4_glioma",
+        "glioma_with_structural_anomalies"
+      ],
+      "pass": true,
+      "top1_hit": false,
+      "recall_at_3": true,
+      "resolution_path": "fuzzy",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "amyotrophic lateral sclerosis",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "als_general"
+      ],
+      "returned_codes": [
+        "als_upper_limb_dominant"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "ALS",
+      "field": "diagnosis",
+      "variant_type": "abbreviation",
+      "expected_codes": [
+        "als_general"
+      ],
+      "returned_codes": [
+        "als_upper_limb_dominant"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "diabetes",
+      "field": "diagnosis",
+      "variant_type": "informal",
+      "expected_codes": [
+        "type_1_diabetes"
+      ],
+      "returned_codes": [
+        "type_1_diabetes"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "type 1 diabetes",
+      "field": "diagnosis",
+      "variant_type": "formal",
+      "expected_codes": [
+        "type_1_diabetes"
+      ],
+      "returned_codes": [
+        "type_1_diabetes"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "visual working memory",
+      "field": "task",
+      "variant_type": "formal",
+      "expected_codes": [
+        "visual_working_memory_general",
+        "visual_short_term_memory"
+      ],
+      "returned_codes": [
+        "visual_working_memory_general"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "probabilistic learning",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "probabilistic_classification_learning"
+      ],
+      "returned_codes": [
+        "probabilistic_classification_learning"
+      ],
+      "pass": true,
+      "top1_hit": true,
+      "recall_at_3": true,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    },
+    {
+      "term": "empathy task",
+      "field": "task",
+      "variant_type": "informal",
+      "expected_codes": [
+        "empathy_theory_of_mind_task",
+        "theory_of_mind"
+      ],
+      "returned_codes": [
+        "empathy_task"
+      ],
+      "pass": false,
+      "top1_hit": false,
+      "recall_at_3": false,
+      "resolution_path": "exact",
+      "latency_ms": 0.0
+    }
+  ],
+  "failed": [],
+  "n_entries": 177,
+  "n_evaluated": 177
+}

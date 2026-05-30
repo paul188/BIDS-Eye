@@ -4,14 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: '#1e1e2e',
-        panel:   '#27273a',
-        border:  '#3b3b52',
+        surface: '#0f1117',
+        panel:   '#1c1f2e',
+        border:  '#3a3d5c',
         accent:  '#7c6af7',
         'accent-hover': '#6b5be6',
-        muted:   '#8b8ba7',
-        'user-bubble':  '#2d2d45',
-        'ai-bubble':    '#232336',
+        muted:   '#b0b2cc',
+        'user-bubble':  '#1b3354',
+        'ai-bubble':    '#1c1f2e',
       },
     },
   },

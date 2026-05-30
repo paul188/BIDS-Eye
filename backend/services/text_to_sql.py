@@ -24,15 +24,103 @@ Set environment variables in .env (see .env.example).
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import re
 import sys
 import textwrap
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional
 
 log = logging.getLogger(__name__)
+
+# ── Few-shot pool (loaded once at import time) ────────────────────────────────
+_FEW_SHOT_POOL: Dict[str, List[dict]] = {}
+_FEW_SHOT_PATH = Path(__file__).parent.parent / "few_shot_examples.json"
+if _FEW_SHOT_PATH.exists():
+    try:
+        with open(_FEW_SHOT_PATH) as _f:
+            _FEW_SHOT_POOL = json.load(_f)
+        log.info("Loaded %d few-shot families from %s",
+                 len(_FEW_SHOT_POOL), _FEW_SHOT_PATH)
+    except Exception as _e:
+        log.warning("Could not load few_shot_examples.json: %s", _e)
+
+_FAMILY_ALIASES: Dict[str, str] = {
+    "subject_multimodal": "subject_multimodal_query",
+    "metadata_query":     "json_query",
+    "json_numeric_query": "json_numeric_query",
+}
+_FALLBACK_FAMILIES = ["combined_filter", "concept_query", "scan_filter"]
+
+
+def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
+                   n: int = 8, seed: str = "") -> List[dict]:
+    """Select the N most relevant examples using keyword search across ALL families.
+
+    Strategy:
+    1. Score every example in the pool by keyword overlap with `seed` (the question).
+    2. Break ties by preferring the matched query family, then fallback families.
+    3. Return the top-N, deduplicated by question text.
+
+    This lets the LLM see examples from across all 20 families rather than
+    being limited to a single family — a 'fullsearch' over the example pool.
+    """
+    if not pool or not seed:
+        return []
+
+    # Build a flat list of all examples tagged with their family
+    all_examples: List[tuple] = []
+    family_key = _FAMILY_ALIASES.get(query_family, query_family)
+    for fam, examples in pool.items():
+        for ex in examples:
+            all_examples.append((fam, ex))
+
+    # Keyword overlap score: content words from the question
+    _STOPWORDS = {
+        "a","an","the","and","or","in","of","to","for","with","that","this",
+        "is","are","do","does","me","my","i","all","any","no","not","from",
+        "by","be","at","on","as","it","its","have","has","had","give","show",
+        "find","list","which","what","how","get","tell","want","give","please",
+        "can","could","would","datasets","dataset","data","participants",
+    }
+    seed_words = {w for w in seed.lower().split() if w not in _STOPWORDS and len(w) > 2}
+
+    family_priority = {family_key: 2}
+    for fb in _FALLBACK_FAMILIES:
+        family_priority.setdefault(fb, 1)
+
+    def score(item: tuple) -> tuple:
+        fam, ex = item
+        ex_words = {w for w in ex["question"].lower().split() if w not in _STOPWORDS and len(w) > 2}
+        overlap = len(seed_words & ex_words)
+        prio = family_priority.get(fam, 0)
+        return (overlap, prio)
+
+    ranked = sorted(all_examples, key=score, reverse=True)
+
+    # Deduplicate by question and pick top-n
+    seen_questions: set = set()
+    picked: List[dict] = []
+    for _, ex in ranked:
+        q = ex["question"]
+        if q not in seen_questions:
+            seen_questions.add(q)
+            picked.append(ex)
+        if len(picked) >= n:
+            break
+    return picked
+
+
+def _format_examples(examples: List[dict]) -> str:
+    if not examples:
+        return ""
+    lines = ["### Examples", "Here are similar queries and their correct SQL:\n"]
+    for ex in examples:
+        lines.append(f"[QUESTION]{ex['question']}[/QUESTION]")
+        lines.append(f"[SQL]\n{ex['sql'].strip()}\n[/SQL]\n")
+    return "\n".join(lines)
 
 # ── Project-root modules on sys.path ──────────────────────────────────────────
 # Works both locally (BIDS-Eye/) and inside Docker (/app/)
@@ -117,10 +205,11 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
 
 # ── Stage 3 local fallback: Gemini SQL generation ─────────────────────────────
 
-def _gemini_sql_generation(augmented_question: str, api_key: str) -> str:
+def _gemini_sql_generation(augmented_question: str, api_key: str,
+                           examples_block: str = "") -> str:
     """
-    Local replacement for SQLCoder + LoRA when Modal is not available.
-    Uses Gemini to generate SQL from the augmented question + schema.
+    Primary SQL generation using Gemini with few-shot examples.
+    Previously a fallback; now the main pipeline.
     """
     try:
         from google import genai
@@ -131,28 +220,47 @@ def _gemini_sql_generation(augmented_question: str, api_key: str) -> str:
         return _FALLBACK_SQL
 
     instructions = (
+        "- CRITICAL — VOCABULARY MISS terms: If [VOCABULARY MISS] appears in the question, "
+        "those terms have NO canonical code. Use ONLY the ILIKE clause shown in that block "
+        "(copy it verbatim into WHERE). NEVER set o.task, o.datatype, o.suffix, or "
+        "p.diagnosis equal to a VOCABULARY MISS term — those columns hold canonical codes only.\n"
         "- Only use tables and columns present in the schema.\n"
         "- Always SELECT: d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, "
         "d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count\n"
         "- Always include: LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
         "- Always include: GROUP BY d.id\n"
         "- If [Resolved DB filters] are in the question, copy each EXISTS subquery VERBATIM "
-        "into the WHERE clause.\n"
+        "into the WHERE clause (AND them together). 'scan X:' and 'scan task X:' for the same "
+        "term are two separate EXISTS — keep both. "
+        "If a 'subject count: HAVING ...' line is present, add that "
+        "HAVING clause to the outer query (after GROUP BY d.id).\n"
         "- Use ILIKE ONLY for bids_datasets.name or bids_datasets.description_text "
         "(when the question asks for a keyword/title search). "
         "NEVER use ILIKE on bids_participants.diagnosis, bids_objects.task, "
         "bids_objects.datatype, or bids_objects.suffix — these store canonical codes, not text. "
-        "If a term appears in [VOCABULARY MISS], omit that filter entirely.\n"
+        "If a term appears in [VOCABULARY MISS], the hint in that block shows the correct ILIKE "
+        "to use — copy it verbatim. "
+        "When generating ILIKE for free-text search: use the single most distinctive keyword "
+        "(e.g. for 'drinking alcohol' use '%alcohol%', not '%drinking alcohol%'); "
+        "never match on multi-word noun phrases when a single word suffices.\n"
         "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
+        "- CRITICAL — participant diagnosis filters: ONLY add a bids_participants "
+        "diagnosis filter if a diagnosis EXISTS block is present in [Resolved DB filters]. "
+        "The words 'patients', 'participants', 'subjects', 'people', 'individuals' in the "
+        "question refer to study participants in general — they are NOT a diagnosis constraint. "
+        "NEVER generate `p.diagnosis != 'healthy_volunteer'` or any diagnosis filter "
+        "based solely on the word 'patients' or similar generic words.\n"
         "- Return ONLY the SQL — no explanation, no markdown fences.\n"
     )
+
+    examples_section = f"\n{examples_block}\n" if examples_block else ""
 
     prompt = textwrap.dedent(f"""\
         ### Task
         Generate a SQL query to answer [QUESTION]{augmented_question}[/QUESTION]
 
         ### Instructions
-        {instructions}
+        {instructions}{examples_section}
         ### Database Schema
         {SCHEMA_DDL}
 
@@ -187,6 +295,90 @@ def _gemini_sql_generation(augmented_question: str, api_key: str) -> str:
     raise RuntimeError("All Gemini models failed for SQL generation")
 
 
+# ── SQL safety: replace bad outer scan filters with VOCABULARY MISS ILIKE ───────
+
+_BAD_OUTER_FILTER = re.compile(
+    r'(?:AND\s+)?o\d*\.(task|datatype|suffix)\s*=\s*\'[^\']*\'',
+    re.IGNORECASE,
+)
+# Extracts the ILIKE suggestion the preprocessor already computed for each miss
+_VOCAB_MISS_ILIKE_RE = re.compile(
+    r'For free-text search use:\s*(.+?)(?=\s*\])',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _strip_outer_scan_filters(sql: str) -> tuple[str, bool]:
+    """Remove o.task/datatype/suffix equality filters from the outer SELECT query.
+
+    Returns (cleaned_sql, any_stripped).
+    """
+    out: list[str] = []
+    depth = 0
+    pos = 0
+    stripped_any = False
+    while pos < len(sql):
+        ch = sql[pos]
+        if ch == '(':
+            depth += 1
+            out.append(ch)
+            pos += 1
+        elif ch == ')':
+            depth -= 1
+            out.append(ch)
+            pos += 1
+        elif depth == 0:
+            m = _BAD_OUTER_FILTER.match(sql, pos)
+            if m:
+                log.warning("Stripped bad outer scan filter: %s", m.group(0).strip())
+                pos = m.end()
+                stripped_any = True
+            else:
+                out.append(ch)
+                pos += 1
+        else:
+            out.append(ch)
+            pos += 1
+    result = ''.join(out)
+    # Clean up an empty WHERE clause
+    result = re.sub(r'\bWHERE\s+(GROUP|ORDER|HAVING|LIMIT)\b', r'\1', result, flags=re.IGNORECASE)
+    return result, stripped_any
+
+
+def _fix_vocab_miss_sql(sql: str, augmented_question: str) -> str:
+    """Strip hallucinated outer scan filters and replace with the VOCABULARY MISS
+    ILIKE suggestion the preprocessor already computed.
+
+    If the LLM writes `WHERE o.task = 'complex_motor_task'` instead of following
+    the [VOCABULARY MISS] hint, this function:
+      1. Removes the bad filter.
+      2. Injects the ILIKE on d.name / d.description_text from the VOCABULARY MISS
+         block — so the query still narrows results rather than returning everything.
+    """
+    # Step 1: strip any bad outer o.task/datatype/suffix = '...' filters
+    cleaned, _ = _strip_outer_scan_filters(sql)
+
+    # Step 2: extract VOCABULARY MISS ILIKE suggestions from the augmented question
+    ilike_parts = [m.group(1).strip() for m in _VOCAB_MISS_ILIKE_RE.finditer(augmented_question)]
+    if not ilike_parts:
+        return cleaned  # No VOCABULARY MISS in this query — nothing to inject
+
+    # Step 3: if the SQL already has an ILIKE the LLM wrote it correctly — leave it
+    if re.search(r'\bILIKE\b', cleaned, re.IGNORECASE):
+        return cleaned
+
+    # Step 4: inject unconditionally — the LLM produced no filter at all for these terms
+    combined = ' AND '.join(f'({p})' for p in ilike_parts)
+    log.info("Injecting VOCABULARY MISS ILIKE (LLM produced no filter): %s", combined)
+
+    if re.search(r'\bWHERE\b', cleaned, re.IGNORECASE):
+        cleaned = re.sub(r'\bWHERE\b', f'WHERE {combined} AND', cleaned, count=1, flags=re.IGNORECASE)
+    else:
+        cleaned = re.sub(r'\bGROUP\s+BY\b', f'WHERE {combined}\nGROUP BY', cleaned, count=1, flags=re.IGNORECASE)
+
+    return cleaned
+
+
 # ── Full Modal pipeline (stages 1–4) ──────────────────────────────────────────
 
 def _run_via_modal(question: str) -> TextToSQLResult:
@@ -199,11 +391,17 @@ def _run_via_modal(question: str) -> TextToSQLResult:
     except ImportError:
         raise RuntimeError("modal package not installed — cannot use Modal pipeline")
 
-    Model = modal.Cls.from_name("bids-eye", "TextToSQLModel")
+    try:
+        Model = modal.Cls.from_name("bids-eye", "TextToSQLModel")
+    except Exception as exc:
+        raise RuntimeError(f"Modal app 'bids-eye' not found or not deployed: {exc}") from exc
+
     model = Model()
     result = model.run.remote(question)
 
-    sql = result.get("sql") or _FALLBACK_SQL
+    raw_sql = result.get("sql") or _FALLBACK_SQL
+    augmented = result.get("augmented_question", question)
+    sql = _fix_vocab_miss_sql(raw_sql, augmented)
     explanation = result.get("query_plan", {}) and str(result["query_plan"])
     error = result.get("error")
     if error:
@@ -228,22 +426,34 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         log.warning("Pipeline modules not importable (%s) — using fallback SQL", exc)
         return TextToSQLResult(sql=_FALLBACK_SQL, explanation=str(exc))
 
-    # Stage 2 retriever (author / funding name resolution)
+    # Stage 2 retriever (author / funding name resolution + optional DB back-check)
     name_index_path = _ROOT / "RAG" / "name_index.json"
     retriever: Optional[MetadataRetriever] = None
     if name_index_path.exists():
         try:
-            retriever = MetadataRetriever(str(name_index_path))
+            retriever = MetadataRetriever(
+                str(name_index_path),
+                db_url=os.getenv("DATABASE_URL"),
+            )
         except Exception as exc:
             log.warning("Could not load RAG name index: %s", exc)
 
     # Stages 1 + 2
     augmented_plan = run_pipeline(question, retriever=retriever, api_key=api_key)
     augmented_question = augmented_plan.augmented_question
+    query_family = augmented_plan.plan.query_family.value
     explanation = augmented_plan.plan.natural_language_summary
 
-    # Stage 3: Gemini SQL generation (local stand-in for SQLCoder+LoRA)
-    sql = _gemini_sql_generation(augmented_question, api_key)
+    # Stage 3: Gemini SQL generation with few-shot examples
+    examples = _pick_examples(_FEW_SHOT_POOL, query_family, n=5, seed=question)
+    examples_block = _format_examples(examples)
+    if examples:
+        log.info("Injecting %d few-shot examples for family '%s'", len(examples), query_family)
+
+    sql = _fix_vocab_miss_sql(
+        _gemini_sql_generation(augmented_question, api_key, examples_block),
+        augmented_question,
+    )
 
     return TextToSQLResult(sql=sql, explanation=explanation)
 
@@ -264,11 +474,20 @@ async def text_to_sql(question: str) -> TextToSQLResult:
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
     if has_modal:
-        log.info("Using Modal pipeline (SQLCoder + LoRA)")
-        return await asyncio.to_thread(_run_via_modal, question)
+        modal_timeout = int(os.getenv("MODAL_REQUEST_TIMEOUT", "120"))
+        log.info("Using Modal pipeline (SQLCoder + LoRA), timeout=%ds", modal_timeout)
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_run_via_modal, question),
+                timeout=modal_timeout,
+            )
+        except asyncio.TimeoutError:
+            log.warning("Modal timed out after %ds — falling back to local Gemini", modal_timeout)
+        except Exception as exc:
+            log.warning("Modal failed (%s) — falling back to local Gemini", exc)
 
     if api_key:
-        log.info("Using local Gemini pipeline (no Modal credentials found)")
+        log.info("Using local Gemini pipeline")
         return await asyncio.to_thread(_run_local, question, api_key)
 
     log.warning("No GEMINI_API_KEY or Modal credentials set — returning all datasets")

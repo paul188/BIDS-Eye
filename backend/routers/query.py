@@ -10,6 +10,8 @@ resulting SQL against the BIDS database, and returns matching datasets.
 
 from __future__ import annotations
 
+import asyncio
+import os
 from typing import Annotated
 from uuid import UUID
 
@@ -19,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from deps import get_db
 from schemas import DatasetSchema, ParticipantSchema, QueryRequest, QueryResponse
-from services.text_to_sql import text_to_sql
+from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -56,9 +58,29 @@ async def query_datasets(
     """
     translation = await text_to_sql(body.question)
 
-    rows = await session.execute(
-        text(translation.sql), translation.params
-    )
+    try:
+        rows = await session.execute(text(translation.sql), translation.params)
+    except Exception as exc:
+        # Roll back the aborted transaction before any retry — without this,
+        # every subsequent execute on the same session fails with
+        # InFailedSQLTransactionError.
+        await session.rollback()
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or ""
+        if api_key:
+            corrected_sql = await asyncio.to_thread(
+                _correct_sql_with_gemini,
+                translation.sql, str(exc), body.question, api_key,
+            )
+            if corrected_sql != translation.sql:
+                translation = translation.model_copy(
+                    update={"sql": corrected_sql, "self_corrected": True}
+                )
+                rows = await session.execute(text(translation.sql), translation.params)
+            else:
+                raise
+        else:
+            raise
+
     raw = rows.mappings().all()
 
     dataset_ids = [UUID(str(r["id"])) for r in raw]
