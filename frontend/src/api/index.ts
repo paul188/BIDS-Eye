@@ -45,18 +45,30 @@ export interface CrawlerStatus {
 
 const BASE = '/api'
 
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('bids_eye_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+function handleUnauthorized() {
+  localStorage.removeItem('bids_eye_token')
+  window.location.reload()
+}
+
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   })
+  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`)
+  const res = await fetch(`${BASE}${path}`, { headers: authHeaders() })
+  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }

@@ -559,6 +559,17 @@ class TextToSQLModel:
             "- In EXISTS subqueries, always correlate the subquery table back to the outer "
             "query using dataset_id = d.id "
             "(e.g. WHERE p2.dataset_id = d.id or WHERE o2.dataset_id = d.id)\n"
+            "- CRITICAL — disease/condition completeness: bids_participants.diagnosis is sparsely "
+            "populated — most datasets about a disease have no structured diagnosis rows. "
+            "For ANY disease or medical condition filter, ALWAYS combine the diagnosis EXISTS block "
+            "with a name/description fallback using OR, wrapped in parentheses: "
+            "(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+            "AND p2.diagnosis IN ('...')) OR d.name ILIKE '%<term>%' OR d.description_text ILIKE '%<term>%'). "
+            "Derive <term> from the condition codes: strip trailing '_disease', '_disorder', '_syndrome'; "
+            "use the root word (e.g. 'parkinsons_disease' → 'parkinson', "
+            "'alzheimers_disease' → 'alzheimer', 'autism_spectrum_disorder' → 'autism', "
+            "'epilepsy' → 'epilepsy', 'schizophrenia' → 'schizophrenia'). "
+            "NEVER emit a bare diagnosis EXISTS without this OR fallback.\n"
         )
 
         examples_block = _format_examples(examples)

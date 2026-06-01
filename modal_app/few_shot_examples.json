@@ -285,7 +285,7 @@
     },
     {
       "question": "Show me MRI datasets about Alzheimer's disease with at least 30 subjects",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'T1w') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'T1w') AND (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') OR d.name ILIKE '%alzheimer%' OR d.description_text ILIKE '%alzheimer%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
       "pattern": "alzheimers_mri_large"
     },
     {
@@ -982,13 +982,17 @@
     },
     {
       "question": "Find datasets with bipolar disorder patients",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'bipolar_disorder') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'bipolar_disorder') OR d.name ILIKE '%bipolar%' OR d.description_text ILIKE '%bipolar%') GROUP BY d.id",
       "pattern": "bipolar_dx"
     },
     {
       "question": "Show me datasets with participants who have epilepsy",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('epilepsy','focal_cortical_dysplasia','genetic_epilepsy','complex_epilepsy_lgs_west_syndrome_history')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('epilepsy','focal_cortical_dysplasia','genetic_epilepsy','complex_epilepsy_lgs_west_syndrome_history')) OR d.name ILIKE '%epilepsy%' OR d.description_text ILIKE '%epilepsy%') GROUP BY d.id",
       "pattern": "epilepsy_dx"
+    },
+    {
+      "question": "Give me datasets about Parkinson's disease with more than 40 participants",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('parkinsons_disease','parkinsons_disease_mci','de_novo_parkinsons')) OR d.name ILIKE '%parkinson%' OR d.description_text ILIKE '%parkinson%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 40"
     }
   ],
   "ranking_query": [

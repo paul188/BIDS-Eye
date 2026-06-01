@@ -3,6 +3,19 @@ import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from './stores/chat'
 import MessageBubble from './components/MessageBubble.vue'
 import CrawlerStatusDot from './components/CrawlerStatusDot.vue'
+import LoginView from './components/LoginView.vue'
+
+const isLoggedIn = ref(!!localStorage.getItem('bids_eye_token'))
+
+function onLoggedIn(token: string) {
+  localStorage.setItem('bids_eye_token', token)
+  isLoggedIn.value = true
+}
+
+function logout() {
+  localStorage.removeItem('bids_eye_token')
+  isLoggedIn.value = false
+}
 
 const store = useChatStore()
 const input = ref('')
@@ -10,7 +23,7 @@ const messagesEnd = ref<HTMLElement | null>(null)
 const textarea = ref<HTMLTextAreaElement | null>(null)
 
 const SUGGESTIONS = [
-  'Give me all BIDS datasets from 3T MRI scanners with at least 50 subjects',
+  'Datasets with at least 40 Parkinson\'s patients',
   'Show datasets with Alzheimer\'s disease participants',
   'List all resting-state fMRI datasets',
   'Find datasets with both structural and functional MRI',
@@ -66,7 +79,9 @@ onUnmounted(() => clearInterval(crawlerInterval))
 </script>
 
 <template>
-  <div class="flex h-full overflow-hidden">
+  <LoginView v-if="!isLoggedIn" @logged-in="onLoggedIn" />
+
+  <div v-else class="flex h-full overflow-hidden">
 
     <!-- ── Sidebar ─────────────────────────────────────────────────── -->
     <aside class="hidden md:flex flex-col w-64 bg-panel border-r border-border flex-shrink-0">
@@ -118,8 +133,14 @@ onUnmounted(() => clearInterval(crawlerInterval))
         </div>
       </div>
 
-      <!-- Crawler status -->
+      <!-- Logout + crawler status -->
       <div class="border-t border-border">
+        <button
+          class="w-full text-left px-4 py-2 text-xs text-muted hover:text-red-400 transition-colors"
+          @click="logout"
+        >
+          Sign out
+        </button>
         <CrawlerStatusDot :status="store.crawlerStatus" />
       </div>
     </aside>

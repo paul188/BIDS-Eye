@@ -9,8 +9,10 @@ Startup:
     should run it; in Docker the crawler runs as a separate service).
 
 Routes:
-  POST /api/query          — natural-language dataset search
-  GET  /api/crawler/status — crawler background service state
+  POST /api/auth/login     — password login, returns JWT
+  POST /api/auth/logout    — stateless logout
+  POST /api/query          — natural-language dataset search (requires JWT)
+  GET  /api/crawler/status — crawler background service state (requires JWT)
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # ── Make BIDS-SQL importable ──────────────────────────────────────────────────
@@ -76,20 +78,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_frontend_url = os.getenv("FRONTEND_URL", "*")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten in production
+    allow_origins=[_frontend_url] if _frontend_url != "*" else ["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 
-from routers.query import router as query_router    # noqa: E402
-from routers.crawler import router as crawler_router  # noqa: E402
+from routers.auth import require_auth, router as auth_router      # noqa: E402
+from routers.query import router as query_router                   # noqa: E402
+from routers.crawler import router as crawler_router               # noqa: E402
 
-app.include_router(query_router, prefix="/api")
-app.include_router(crawler_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(query_router,   prefix="/api", dependencies=[Depends(require_auth)])
+app.include_router(crawler_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 
 @app.get("/health")

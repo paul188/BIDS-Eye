@@ -250,6 +250,17 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "question refer to study participants in general — they are NOT a diagnosis constraint. "
         "NEVER generate `p.diagnosis != 'healthy_volunteer'` or any diagnosis filter "
         "based solely on the word 'patients' or similar generic words.\n"
+        "- CRITICAL — disease/condition completeness: bids_participants.diagnosis is sparsely "
+        "populated — most datasets about a disease have no structured diagnosis rows. "
+        "For ANY disease or medical condition filter, ALWAYS combine the diagnosis EXISTS block "
+        "with a name/description fallback using OR, wrapped in parentheses: "
+        "(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+        "AND p2.diagnosis IN ('...')) OR d.name ILIKE '%<term>%' OR d.description_text ILIKE '%<term>%'). "
+        "Derive <term> from the condition codes: strip trailing '_disease', '_disorder', '_syndrome'; "
+        "use the root word (e.g. 'parkinsons_disease' → 'parkinson', "
+        "'alzheimers_disease' → 'alzheimer', 'autism_spectrum_disorder' → 'autism', "
+        "'epilepsy' → 'epilepsy', 'schizophrenia' → 'schizophrenia'). "
+        "NEVER emit a bare diagnosis EXISTS without this OR fallback.\n"
         "- Return ONLY the SQL — no explanation, no markdown fences.\n"
     )
 

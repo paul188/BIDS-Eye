@@ -64,9 +64,11 @@ services:
     restart: unless-stopped
 
   # ── OpenNeuro background crawler ──────────────────────────────────────────────
-  # Runs continuously but is rate-limited (one dataset at a time, 30 s between).
+  # Disabled by default. Start explicitly with:
+  #   docker compose --profile crawl up
   # Resource limits keep it from hogging CPU/RAM.
   crawler:
+    profiles: [crawl]
     build:
       context: .
       dockerfile: crawlers/openneuro-crawler/Dockerfile
