@@ -81,7 +81,7 @@ if ! check_venv "$VENV_PRIMARY" "primary venv"; then
         echo "[env]   $VENV_PRIMARY"
         echo "[env]   $VENV_FALLBACK"
         echo "[env] Recreate / update the venv first, for example:"
-        echo "[env]   sbatch training/create_train_venv.sh"
+        echo "[env]   create the preprocessing venv before submitting this job"
         exit 1
     fi
 fi
@@ -102,7 +102,7 @@ if missing:
         "[env] ERROR: active venv is missing required packages: "
         f"{names}\n"
         "[env] Recreate / update the venv first, for example:\n"
-        "[env]   sbatch training/create_train_venv.sh"
+        "[env]   create the preprocessing venv before submitting this job"
     )
 PY
 

@@ -4,7 +4,6 @@ training_data_generation/constants.py
 Single source of truth for schema, prompts, and examples used across:
   - sample_diverse_prompts.py  (embedded in every Gemini prompt)
   - collect_with_gemini.py     (Gemini system instruction)
-  - training/train.py          (SQLCoder training format)
   - modal_app/app.py           (SQLCoder inference format)
 
 SCHEMA_DDL    — CREATE TABLE statements fed into the SQLCoder ### Database Schema block.
@@ -45,10 +44,13 @@ CREATE TABLE bids_objects (
     task            TEXT,         -- normalized standard_code, e.g. 'resting_state', 'nback'
                                   -- Use concept keys for groups: 'resting_state', 'working_memory', etc.
     run             TEXT,
-    suffix          TEXT,         -- e.g. 'bold' (fMRI), 'T1w' (structural), 'dwi' (diffusion),
-                                  --      'eeg', 'meg', 'ieeg', 'pet'
-    datatype        TEXT,         -- e.g. 'func', 'anat', 'dwi', 'fmap', 'eeg', 'meg',
-                                  --      'ieeg', 'beh', 'pet', 'perf', 'nirs'
+    suffix          TEXT,         -- normalized code, e.g. 'fmri_bold' (fMRI), 't1_weighted_mri' (T1w),
+                                  --      't2_weighted_mri' (T2w), 'diffusion_mri_dwi', 'eeg', 'meg',
+                                  --      'intracranial_eeg', 'pet'
+    datatype        TEXT,         -- normalized code, e.g. 'functional_mri', 'anatomical_mri',
+                                  --      'diffusion_mri', 'field_maps', 'electroencephalography',
+                                  --      'magnetoencephalography', 'intracranial_eeg', 'behavioural_data',
+                                  --      'positron_emission_tomography', 'perfusion_asl', 'fnirs'
     extension       TEXT,         -- file format ONLY: '.nii.gz', '.json', '.tsv', '.eeg', etc.
                                   -- NEVER contains metadata field names
     other_entities  JSONB         -- sidecar metadata + secondary BIDS entities
@@ -106,8 +108,8 @@ bids_datasets  (d): id UUID PK, name, accession_id, bids_version, dataset_type, 
 bids_objects   (o): id UUID PK, dataset_id FK, subject, subject_index, session, task, run, suffix, datatype, extension (file format only: '.nii.gz' etc.), other_entities JSONB (sidecar metadata + secondary entities, e.g. AcquisitionTime, RepetitionTime, acq, echo)
 bids_participants(p): id UUID PK, dataset_id FK, participant_id, age FLOAT, sex, handedness, diagnosis (clinical only), extra JSONB (non-standard columns, e.g. concern_dieting, bmi, group)
 
-suffix values : bold=fMRI  T1w/T2w=structural  dwi=diffusion  eeg=EEG  meg=MEG  ieeg=iEEG  pet=PET
-datatype values: func  anat  dwi  fmap  eeg  meg  ieeg  beh  pet  perf  nirs
+suffix values : fmri_bold=fMRI  t1_weighted_mri/t2_weighted_mri=structural  diffusion_mri_dwi=diffusion  eeg=EEG  meg=MEG  intracranial_eeg=iEEG  pet=PET
+datatype values: functional_mri  anatomical_mri  diffusion_mri  field_maps  electroencephalography  magnetoencephalography  intracranial_eeg  behavioural_data  positron_emission_tomography  perfusion_asl  fnirs
 
 Your SQL MUST always SELECT:
   d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,
