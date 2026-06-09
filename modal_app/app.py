@@ -102,9 +102,9 @@ image = (
         f"\""
     )
     # Local source files — added last so changes don't invalidate the model cache layer
-    .add_local_file("synthetic_data_generation_and_train/constants.py", "/app/constants.py")
-    .add_local_file("synthetic_data/sql_expander.py",                   "/app/sql_expander.py")
-    .add_local_file("synthetic_data/value_mappings.py",                 "/app/value_mappings.py")
+    .add_local_file("backend/constants.py",                           "/app/constants.py")
+    .add_local_file("sql_expander.py",                                "/app/sql_expander.py")
+    .add_local_file("value_mappings.py",                              "/app/value_mappings.py")
     .add_local_file("RAG/value_mappings.yaml",                    "/app/value_mappings.yaml")
     .add_local_file("RAG/join_paths.yaml",                        "/app/join_paths.yaml")
     .add_local_file("RAG/yaml_to_llamaindex.py",                  "/app/yaml_to_llamaindex.py")

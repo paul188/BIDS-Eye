@@ -104,6 +104,7 @@ The repository is split into two main application layers:
 - [`backend/`](./backend/) contains the FastAPI app and query service.
 - [`frontend/`](./frontend/) contains the Vue search interface.
 - [`BIDS-SQL/`](./BIDS-SQL/) contains the reusable indexing and database layer.
+- [`backend/constants.py`](./backend/constants.py), [`value_mappings.py`](./value_mappings.py), and [`sql_expander.py`](./sql_expander.py) provide the shared SQL prompt and post-processing helpers.
 
 One straightforward local setup is:
 
@@ -127,6 +128,7 @@ If you prefer Docker, use the repository's compose setup instead of running the 
 ```text
 backend/                     FastAPI app, auth, query routing, crawler status
   services/text_to_sql.py    Natural-language to SQL translation pipeline
+  constants.py               Shared schema + prompt constants
   routers/                   Query, auth, and crawler endpoints
 frontend/                    Vue 3 dataset search UI
   src/                       Chat interface, dataset cards, and state management
@@ -134,7 +136,8 @@ BIDS-SQL/                    Shared indexing and database layer
   input_pipeline.py          BIDS dataset discovery and ingestion
   db/                        ORM models and database helpers
 crawlers/openneuro-crawler/  OpenNeuro/DataLad indexing utilities
-synthetic_data/              Helper material and guidelines for generated data
+value_mappings.py            YAML-backed code/label lookup tables
+sql_expander.py              SQL post-processor for concept-key expansion
 ```
 
 ## API Surface

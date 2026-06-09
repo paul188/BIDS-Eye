@@ -48,7 +48,6 @@ services:
       - ./BIDS-SQL:/app/BIDS-SQL
       - ./LLM_preprocessor:/app/LLM_preprocessor
       - ./RAG:/app/RAG
-      - ./synthetic_data_generation_and_train:/app/synthetic_data_generation_and_train
     ports:
       - "8000:8000"
     depends_on:

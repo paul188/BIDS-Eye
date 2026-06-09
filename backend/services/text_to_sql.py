@@ -126,9 +126,9 @@ def _format_examples(examples: List[dict]) -> str:
 # Works both locally (BIDS-Eye/) and inside Docker (/app/)
 _ROOT = Path(__file__).resolve().parents[2]
 for _mod_dir in (
+    _ROOT / "backend",
     _ROOT / "LLM_preprocessor",
     _ROOT / "RAG",
-    _ROOT / "synthetic_data_generation_and_train",
 ):
     if _mod_dir.exists() and str(_mod_dir) not in sys.path:
         sys.path.insert(0, str(_mod_dir))
@@ -220,53 +220,67 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         return _FALLBACK_SQL
 
     instructions = (
-        "- CRITICAL — VOCABULARY MISS terms: If [VOCABULARY MISS] appears in the question, "
-        "those terms have NO canonical code. Use ONLY the ILIKE clause shown in that block "
-        "(copy it verbatim into WHERE). NEVER set o.task, o.datatype, o.suffix, or "
-        "p.diagnosis equal to a VOCABULARY MISS term — those columns hold canonical codes only.\n"
-        "- Only use tables and columns present in the schema.\n"
+        "## CRITICAL rules — violations produce wrong results\n"
+        "1. suffix and datatype hold normalized codes, NOT raw BIDS values. "
+        "Use ONLY these values — "
+        "datatype: 'anatomical_mri' (structural MRI / T1w / T2w), 'functional_mri' (fMRI / BOLD), "
+        "'diffusion_mri' (DWI), 'electroencephalography' (EEG), 'magnetoencephalography' (MEG), "
+        "'intracranial_eeg' (iEEG/SEEG), 'behavioural_data', "
+        "'positron_emission_tomography' (PET), 'field_maps', 'perfusion_asl', 'fnirs'. "
+        "suffix: 'fmri_bold', 't1_weighted_mri', 't2_weighted_mri', 'diffusion_mri_dwi', "
+        "'eeg', 'meg', 'intracranial_eeg', 'pet'. "
+        "Never use raw BIDS values such as 'T1w', 'T2w', 'bold', 'dwi', 'anat', 'func', "
+        "'eeg'/'meg' as datatype, 'beh', 'ieeg', 'fmap', 'perf', 'nirs'. "
+        "Filter modality by datatype ONLY — do NOT combine a datatype filter "
+        "with a suffix IN list for the same modality "
+        "(e.g. structural MRI → just `datatype = 'anatomical_mri'`, never add suffix ORs).\n"
+        "2. Disease/condition completeness: bids_participants.diagnosis is sparsely populated "
+        "— most datasets about a disease have no structured diagnosis rows. "
+        "For ANY disease filter, ALWAYS combine the EXISTS block with a name/description fallback: "
+        "(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+        "AND p2.diagnosis IN ('...')) OR d.name ILIKE '%<term>%' OR d.description_text ILIKE '%<term>%'). "
+        "Derive <term> by stripping trailing '_disease', '_disorder', '_syndrome' from the code "
+        "(e.g. 'parkinsons_disease' → 'parkinson', 'alzheimers_disease' → 'alzheimer', "
+        "'autism_spectrum_disorder' → 'autism'). "
+        "Never emit a bare diagnosis EXISTS without this OR fallback.\n"
+        "3. Participant diagnosis: only add a diagnosis filter if one is explicitly present in "
+        "[Resolved DB filters]. Words like 'patients', 'participants', 'subjects' refer to "
+        "study participants in general — NOT a diagnosis constraint. "
+        "Never generate `p.diagnosis != 'healthy_volunteer'` based only on those words.\n"
+        "4. VOCABULARY MISS: If [VOCABULARY MISS] appears, those terms have no canonical code. "
+        "Use ONLY the ILIKE clause shown in that block (copy it verbatim). "
+        "Never assign a VOCABULARY MISS term to o.task, o.datatype, o.suffix, or p.diagnosis.\n"
+        "## Important rules\n"
+        "- [Resolved DB filters]: copy each EXISTS subquery VERBATIM into WHERE (AND them together). "
+        "'scan X:' and 'scan task X:' for the same term are two separate EXISTS — keep both. "
+        "If a 'subject count: HAVING ...' line is present, add that HAVING clause after GROUP BY d.id.\n"
+        "- ILIKE: use only on bids_datasets.name or bids_datasets.description_text "
+        "(for keyword/title searches). Never on diagnosis, task, datatype, or suffix "
+        "(they hold canonical codes). Use the single most distinctive keyword "
+        "(e.g. for 'drinking alcohol' use '%alcohol%', not '%drinking alcohol%') — "
+        "never multi-word phrases when a single word suffices.\n"
+        "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
+        "## Required query structure\n"
+        "- Only use tables/columns present in the schema.\n"
         "- Always SELECT: d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, "
         "d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count\n"
         "- Always include: LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
         "- Always include: GROUP BY d.id\n"
-        "- If [Resolved DB filters] are in the question, copy each EXISTS subquery VERBATIM "
-        "into the WHERE clause (AND them together). 'scan X:' and 'scan task X:' for the same "
-        "term are two separate EXISTS — keep both. "
-        "If a 'subject count: HAVING ...' line is present, add that "
-        "HAVING clause to the outer query (after GROUP BY d.id).\n"
-        "- Use ILIKE ONLY for bids_datasets.name or bids_datasets.description_text "
-        "(when the question asks for a keyword/title search). "
-        "NEVER use ILIKE on bids_participants.diagnosis, bids_objects.task, "
-        "bids_objects.datatype, or bids_objects.suffix — these store canonical codes, not text. "
-        "If a term appears in [VOCABULARY MISS], the hint in that block shows the correct ILIKE "
-        "to use — copy it verbatim. "
-        "When generating ILIKE for free-text search: use the single most distinctive keyword "
-        "(e.g. for 'drinking alcohol' use '%alcohol%', not '%drinking alcohol%'); "
-        "never match on multi-word noun phrases when a single word suffices.\n"
-        "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
-        "- CRITICAL — participant diagnosis filters: ONLY add a bids_participants "
-        "diagnosis filter if a diagnosis EXISTS block is present in [Resolved DB filters]. "
-        "The words 'patients', 'participants', 'subjects', 'people', 'individuals' in the "
-        "question refer to study participants in general — they are NOT a diagnosis constraint. "
-        "NEVER generate `p.diagnosis != 'healthy_volunteer'` or any diagnosis filter "
-        "based solely on the word 'patients' or similar generic words.\n"
-        "- CRITICAL — disease/condition completeness: bids_participants.diagnosis is sparsely "
-        "populated — most datasets about a disease have no structured diagnosis rows. "
-        "For ANY disease or medical condition filter, ALWAYS combine the diagnosis EXISTS block "
-        "with a name/description fallback using OR, wrapped in parentheses: "
-        "(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
-        "AND p2.diagnosis IN ('...')) OR d.name ILIKE '%<term>%' OR d.description_text ILIKE '%<term>%'). "
-        "Derive <term> from the condition codes: strip trailing '_disease', '_disorder', '_syndrome'; "
-        "use the root word (e.g. 'parkinsons_disease' → 'parkinson', "
-        "'alzheimers_disease' → 'alzheimer', 'autism_spectrum_disorder' → 'autism', "
-        "'epilepsy' → 'epilepsy', 'schizophrenia' → 'schizophrenia'). "
-        "NEVER emit a bare diagnosis EXISTS without this OR fallback.\n"
         "- Return ONLY the SQL — no explanation, no markdown fences.\n"
     )
 
     examples_section = f"\n{examples_block}\n" if examples_block else ""
 
     prompt = textwrap.dedent(f"""\
+        ### Role
+        You are an expert in neuroimaging research and the BIDS (Brain Imaging Data Structure) format.
+        You generate precise PostgreSQL queries against a neuroimaging dataset catalog.
+        Modality reference: fMRI → functional_mri, structural MRI / T1w / T2w → anatomical_mri,
+        EEG → electroencephalography, MEG → magnetoencephalography, DWI → diffusion_mri,
+        PET → positron_emission_tomography, iEEG / SEEG → intracranial_eeg.
+        Clinical note: participant diagnoses (Alzheimer's, Parkinson's, epilepsy, schizophrenia, etc.)
+        are sparsely recorded in structured rows — most datasets only mention them in name or description text.
+
         ### Task
         Generate a SQL query to answer [QUESTION]{augmented_question}[/QUESTION]
 
