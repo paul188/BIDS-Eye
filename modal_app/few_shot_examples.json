@@ -2,22 +2,22 @@
   "absence_query": [
     {
       "question": "Which datasets have no anatomical MRI data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'T1w') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = \'anatomical_mri\') GROUP BY d.id",
       "pattern": "absence_filter"
     },
     {
       "question": "Which datasets do not contain any behavioral data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'beh') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id",
       "pattern": "absence_query"
     },
     {
       "question": "List all datasets that do not contain any electroencephalography data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electroencephalography') GROUP BY d.id",
       "pattern": "absence_datatype"
     },
     {
       "question": "Show me datasets that do not contain any behavioral data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'beh') GROUP BY d.id LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id LIMIT 50",
       "pattern": "absence_of_datatype"
     },
     {
@@ -37,17 +37,17 @@
     },
     {
       "question": "Retrieve datasets that have no fMRI data at all.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id ORDER BY d.name LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = \'functional_mri\') GROUP BY d.id ORDER BY d.name LIMIT 50",
       "pattern": "no_fmri_data"
     },
     {
       "question": "Find datasets that do not contain any magnetoencephalography data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'meg') GROUP BY d.id ORDER BY d.name LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'magnetoencephalography') GROUP BY d.id ORDER BY d.name LIMIT 50",
       "pattern": "exclude_modality"
     },
     {
       "question": "Are there any datasets that do not contain any behavioral data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'beh') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id",
       "pattern": "absence_filter"
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "question": "Show me fMRI datasets with no task data, only resting state",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'bold') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IS NOT NULL AND bo.task NOT IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = \'functional_mri\') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IS NOT NULL AND bo.task NOT IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) GROUP BY d.id",
       "pattern": "only_resting_fmri"
     }
   ],
@@ -146,22 +146,22 @@
     },
     {
       "question": "Identify datasets that contain PET data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'positron_emission_tomography') GROUP BY d.id",
       "pattern": "datatype_check"
     },
     {
       "question": "Which datasets contain no EEG data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electroencephalography') GROUP BY d.id",
       "pattern": "not_exists"
     },
     {
       "question": "List all datasets that contain no behavioural data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'beh') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id",
       "pattern": "datatype_negation"
     },
     {
       "question": "List all datasets that do not contain any functional MRI data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'func') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') GROUP BY d.id",
       "pattern": "modality_absence"
     }
   ],
@@ -255,12 +255,12 @@
     },
     {
       "question": "Identify datasets with at least 5 female participants who are ambidextrous or mixed-handed and have performed the FFERN task as part of an electroencephalography study.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE o.datatype = 'eeg' AND o.task = 'FFERN' AND p.sex = 'female' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE o.datatype = 'electroencephalography' AND o.task = 'FFERN' AND p.sex = 'female' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5",
       "pattern": "participant_dataset_filter"
     },
     {
       "question": "Which datasets lack intracranial EEG data and do not contain any participants diagnosed with misinfo?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'ieeg') AND NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'misinfo') GROUP BY d.id LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'intracranial_eeg') AND NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'misinfo') GROUP BY d.id LIMIT 50",
       "pattern": "negated_filter"
     },
     {
@@ -270,12 +270,12 @@
     },
     {
       "question": "Find fMRI datasets with social cognition tasks and at least 20 participants",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('social_task_general','theory_of_mind','hcp_social_task','social_interaction_dyads')) GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 20",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('social_task_general','theory_of_mind','hcp_social_task','social_interaction_dyads')) GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 20",
       "pattern": "fmri_social_large"
     },
     {
       "question": "Give me EEG datasets studying emotion in healthy adults",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'eeg') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('emotion_general','emotional_face_perception','emotion_matching_task','hariri_emotional_face_task')) AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('emotion_general','emotional_face_perception','emotion_matching_task','hariri_emotional_face_task')) AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
       "pattern": "eeg_emotion_healthy"
     },
     {
@@ -285,12 +285,12 @@
     },
     {
       "question": "Show me MRI datasets about Alzheimer's disease with at least 30 subjects",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'T1w') AND (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') OR d.name ILIKE '%alzheimer%' OR d.description_text ILIKE '%alzheimer%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = \'anatomical_mri\') AND (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') OR d.name ILIKE '%alzheimer%' OR d.description_text ILIKE '%alzheimer%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
       "pattern": "alzheimers_mri_large"
     },
     {
       "question": "Find EEG datasets with autism patients doing oddball or attention tasks",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'autism_spectrum_disorder') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'eeg') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('auditory_oddball','auditory_oddball_button_response','go_nogo','stop_signal')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'autism_spectrum_disorder') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('auditory_oddball','auditory_oddball_button_response','go_nogo','stop_signal')) GROUP BY d.id",
       "pattern": "asd_eeg_oddball"
     },
     {
@@ -312,7 +312,7 @@
     },
     {
       "question": "List datasets that do not contain any bold fMRI data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = \'functional_mri\') GROUP BY d.id",
       "pattern": "missing_modality"
     },
     {
@@ -322,7 +322,7 @@
     },
     {
       "question": "List the top 50 datasets with the most subjects, excluding any that contain motion capture data using the UnevenTerrain task.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'beh' AND bo.task = 'UnevenTerrain') GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data' AND bo.task = 'UnevenTerrain') GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
       "pattern": "ranking_filter"
     },
     {
@@ -875,57 +875,62 @@
     },
     {
       "question": "Are there any datasets that include both anatomical and functional MRI data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
       "pattern": "exists_multimodal"
     },
     {
       "question": "List all datasets that contain both anatomical MRI and functional MRI data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
       "pattern": "multimodal_anat_func"
     },
     {
       "question": "Which datasets contain both anatomical and functional MRI data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
       "pattern": "multimodal_check"
     },
     {
       "question": "List datasets that include intracranial EEG data and functional MRI scans.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'ieeg') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'intracranial_eeg') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
       "pattern": "multimodal_query"
     },
     {
       "question": "Show datasets that include both anatomical and functional MRI data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'func') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'functional_mri') GROUP BY d.id",
       "pattern": "multimodal_exists"
     },
     {
       "question": "Find datasets containing both anatomical MRI and magnetoencephalography data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'meg') GROUP BY d.id LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'magnetoencephalography') GROUP BY d.id LIMIT 50",
       "pattern": "multimodal_join"
     },
     {
       "question": "Identify datasets that contain both anatomical MRI and functional MRI data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anat') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') GROUP BY d.id LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id LIMIT 50",
       "pattern": "multimodal_existence"
     },
     {
       "question": "Find datasets that have both EEG and MRI data",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'eeg') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'anat') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'anatomical_mri') GROUP BY d.id",
       "pattern": "eeg_and_mri"
     },
     {
+      "question": "Which datasets contain EEG recordings combined with fMRI data during cognitive tasks?",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_objects o4 WHERE o4.dataset_id = d.id AND o4.task IS NOT NULL AND o4.task NOT IN ('resting_state', 'resting_state_eyes_open', 'resting_state_eyes_closed', 'resting_state_technical', 'resting_state_post_intervention', 'resting_state_pre_intervention', 'sleep_state')) GROUP BY d.id",
+      "pattern": "eeg_fmri_cognitive_task"
+    },
+    {
       "question": "Show me datasets that contain both structural and functional MRI",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'T1w') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.suffix = 'bold') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = \'anatomical_mri\') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = \'functional_mri\') GROUP BY d.id",
       "pattern": "anat_and_func"
     },
     {
       "question": "Find datasets with MEG and MRI data collected from the same participants",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'meg') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'anat') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'magnetoencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'anatomical_mri') GROUP BY d.id",
       "pattern": "meg_and_mri"
     },
     {
       "question": "List datasets with both diffusion MRI and functional MRI",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'dwi') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.suffix = 'bold') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = \'diffusion_mri\') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = \'functional_mri\') GROUP BY d.id",
       "pattern": "dwi_and_fmri"
     }
   ],
@@ -1055,7 +1060,7 @@
     },
     {
       "question": "Find datasets that contain PET data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'positron_emission_tomography') GROUP BY d.id",
       "pattern": "scan_filter"
     },
     {
@@ -1065,12 +1070,12 @@
     },
     {
       "question": "Which datasets do not contain any PET data?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'pet') GROUP BY d.id LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'positron_emission_tomography') GROUP BY d.id LIMIT 50",
       "pattern": "negation"
     },
     {
       "question": "Which datasets include EEG recordings of seizure activity?",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'ieeg' AND bo.task = 'seizure') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'intracranial_eeg' AND bo.task = 'seizure') GROUP BY d.id",
       "pattern": "exists_filter"
     },
     {
@@ -1080,7 +1085,7 @@
     },
     {
       "question": "Show me datasets that feature auditory stimuli tasks within bold fMRI scans.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'auditorystimuli' AND bo.suffix = 'bold') GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'auditorystimuli' AND bo.datatype = \'functional_mri\') GROUP BY d.id",
       "pattern": "filtered_aggregate"
     },
     {
@@ -1095,17 +1100,17 @@
     },
     {
       "question": "Find datasets containing intracranial EEG data with reactive tasks.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'ieeg' AND bo.task = 'reactive') GROUP BY d.id LIMIT 50",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'intracranial_eeg' AND bo.task = 'reactive') GROUP BY d.id LIMIT 50",
       "pattern": "datatype_task_filter"
     },
     {
       "question": "Find EEG datasets with auditory oddball paradigms",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'eeg') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('auditory_oddball','auditory_oddball_button_response','three_stimulus_auditory_oddball','roving_oddball_task')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('auditory_oddball','auditory_oddball_button_response','three_stimulus_auditory_oddball','roving_oddball_task')) GROUP BY d.id",
       "pattern": "eeg_oddball"
     },
     {
       "question": "Show me fMRI datasets with n-back working memory tasks",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'func') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('n_back_working_memory','environmental_sounds_n_back','one_back','quick_four_back_working_memory')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('n_back_working_memory','environmental_sounds_n_back','one_back','quick_four_back_working_memory')) GROUP BY d.id",
       "pattern": "fmri_nback"
     },
     {
@@ -1115,7 +1120,7 @@
     },
     {
       "question": "Find MEG datasets with language or speech tasks",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'meg') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('speech_perception_general','narrative_listening','auditory_language_localizer','language_comprehension_l1')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'magnetoencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('speech_perception_general','narrative_listening','auditory_language_localizer','language_comprehension_l1')) GROUP BY d.id",
       "pattern": "meg_language"
     },
     {
@@ -1209,7 +1214,7 @@
   "subject_multimodal_query": [
     {
       "question": "Find datasets containing at least one subject who performed a rat task or has functional MRI data.",
-      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND (o1.task = 'rat' OR o1.datatype = 'func')) GROUP BY d.id",
+      "sql": "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND (o1.task = 'rat' OR o1.datatype = 'functional_mri')) GROUP BY d.id",
       "pattern": "subject_multimodal_check"
     },
     {

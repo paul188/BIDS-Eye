@@ -46,7 +46,12 @@ _DEFAULT_GEMINI_CASCADE = [
     "gemini-2.5-flash-lite",
     "gemini-2.0-flash",
 ]
-_DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6"
+# Haiku is the fallback model on purpose: this tier only fires when Gemini is
+# down, and it runs for BOTH the intent and SQL-generation stages, so speed
+# matters more than peak quality. Sonnet took ~30s on the large SQL prompt and
+# blew past Cloudflare's ~100s request limit; Haiku answers the same prompt in a
+# few seconds. Override with ANTHROPIC_FALLBACK_MODEL if you want Sonnet/Opus.
+_DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
 
 
 class LLMAllFailedError(RuntimeError):
@@ -85,7 +90,9 @@ def _build_cascade() -> List[_Tier]:
     if os.getenv("ANTHROPIC_API_KEY"):
         model = os.getenv("ANTHROPIC_FALLBACK_MODEL", _DEFAULT_ANTHROPIC_MODEL)
         accepts_temp = not model.startswith(_NO_TEMPERATURE_PREFIXES)
-        tiers.append(_Tier("anthropic", model, accepts_temp, 2, [2]))
+        # Single attempt: the SDK call already has its own timeout; a retry here
+        # would only add latency. If it fails, the caller degrades gracefully.
+        tiers.append(_Tier("anthropic", model, accepts_temp, 1, []))
     return tiers
 
 
@@ -106,14 +113,21 @@ def _call_gemini(model, prompt, system, temperature, api_key) -> str:
         system_instruction=system or None,
         temperature=temperature,
     )
-    client = genai.Client(api_key=api_key)
+    # Per-call timeout (ms) so a hanging/slow Gemini call can't blow the wall-clock
+    # budget — during a 503 storm a single call can otherwise stall ~30s.
+    timeout_ms = int(float(os.getenv("GEMINI_CALL_TIMEOUT_SECONDS", "12")) * 1000)
+    client = genai.Client(api_key=api_key,
+                          http_options=types.HttpOptions(timeout=timeout_ms))
     resp = client.models.generate_content(model=model, contents=prompt, config=cfg)
     return (resp.text or "").strip()
 
 
 def _call_anthropic(model, prompt, system, temperature, accepts_temperature, max_tokens) -> str:
     import anthropic
-    client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
+    # Bound the fallback call: it runs for both pipeline stages, so a slow Claude
+    # response must not push the request past Cloudflare's ~100s limit.
+    timeout_s = float(os.getenv("ANTHROPIC_CALL_TIMEOUT_SECONDS", "20"))
+    client = anthropic.Anthropic(timeout=timeout_s, max_retries=0)  # reads ANTHROPIC_API_KEY from env
     kwargs = dict(
         model=model,
         max_tokens=max_tokens,
@@ -163,7 +177,7 @@ def llm_generate(
     # Wall-clock budget for the Gemini tiers. Once exceeded, skip any remaining
     # Gemini models and go straight to the cross-provider (Claude) fallback, so a
     # Gemini-overload storm can't drag a single stage toward Cloudflare's limit.
-    gemini_budget = float(os.getenv("GEMINI_BUDGET_SECONDS", "25"))
+    gemini_budget = float(os.getenv("GEMINI_BUDGET_SECONDS", "12"))
     t0 = time.monotonic()
 
     for tier in _build_cascade():
