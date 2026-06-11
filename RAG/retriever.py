@@ -199,13 +199,15 @@ def _load_embedding_tier(model_name: str) -> Optional[Any]:
         return None
 
 
-def _embedding_fallback(field: str, term: str) -> List[str]:
-    """Two-tier biomedical embedding search for *term* in *field*.
+def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]:
+    """Scored variant of _embedding_fallback.
 
+    Two-tier biomedical embedding search for *term* in *field*.
     Called when RapidFuzz WRatio misses (score < threshold).
     Tier 1: BioLORD-2023-C, cosine ≥ 0.75 — returns on first hit.
     Tier 2: SapBERT,         cosine ≥ 0.65 — reached only if tier 1 misses.
-    Returns [] if both tiers miss or if sentence-transformers is not installed.
+    Returns [(code, cosine_score), ...] for the best hit, or [] if both tiers
+    miss or sentence-transformers is not installed.
     """
     try:
         import numpy as np
@@ -238,13 +240,19 @@ def _embedding_fallback(field: str, term: str) -> List[str]:
         best_idx = int(np.argmax(scores))
 
         if float(scores[best_idx]) >= threshold:
+            score = float(scores[best_idx])
             log.debug(
                 "Embedding fallback (%s) resolved '%s' → %s (score %.3f)",
-                model_name.split("/")[-1], term, code_lists[best_idx], scores[best_idx],
+                model_name.split("/")[-1], term, code_lists[best_idx], score,
             )
-            return code_lists[best_idx]
+            return [(code, score) for code in code_lists[best_idx]]
 
     return []
+
+
+def _embedding_fallback(field: str, term: str) -> List[str]:
+    """Two-tier biomedical embedding search (codes only — thin wrapper)."""
+    return [code for code, _ in _embedding_fallback_scored(field, term)]
 
 
 # ── YAML-field resolution helpers ──────────────────────────────────────────────
@@ -282,8 +290,15 @@ def _prune_redundant_parents(codes: List[str]) -> List[str]:
     return [c for c in codes if c not in to_remove]
 
 
-def _resolve_yaml_term(field: str, term: str) -> List[str]:
-    """Resolve one term against the YAML knowledge base for *field*."""
+def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
+    """Resolve one term against the YAML KB, returning (code, score) pairs.
+
+    Score is normalised to 0.0–1.0 so it can be used directly for relevance
+    ranking: exact match → 1.0, fuzzy WRatio → score/100, embedding fallback →
+    cosine similarity. Codes that share one matched label inherit that label's
+    score. This is the single source of truth; ``_resolve_yaml_term`` is a thin
+    codes-only wrapper over it.
+    """
     cat_leaves        = leaf_db.get(field, {})
     cat_display       = display_db.get(field, {})
     cat_groups        = group_db.get(field, {})
@@ -297,9 +312,9 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
     # working_memory_general alone.
     for t in candidates:
         if t in cat_groups:
-            return cat_groups[t]
+            return [(c, 1.0) for c in cat_groups[t]]
         if t in cat_leaves:
-            return [cat_leaves[t]]
+            return [(cat_leaves[t], 1.0)]
 
     # 2. Pooled fuzzy match over display labels + group synonyms
     # Exclude keys shorter than 3 chars from the fuzzy pool — short abbreviations
@@ -326,7 +341,7 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
         term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=20
     )
     if not results or results[0][1] < _SEMANTIC_THRESHOLD:
-        return _embedding_fallback(field, term)
+        return _embedding_fallback_scored(field, term)
 
     # Prefer the more specific (longer) label when top scores are tied
     best_label, best_score = results[0][0], results[0][1]
@@ -339,7 +354,7 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
     weight = weight_db.get(field, {}).get(best_label, 1.0)
     effective_threshold = _SEMANTIC_THRESHOLD + (1.0 - weight) * _WEIGHT_BOOST
     if best_score < effective_threshold:
-        return _embedding_fallback(field, term)
+        return _embedding_fallback_scored(field, term)
 
     # When the best match is a low-confidence synonym (weight < 0.5), the
     # matched key is generic (e.g. "motor task" → somatomotor_task, weight 0.1).
@@ -363,7 +378,7 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
         else:
             core_results = results  # nothing stripped; use original results
 
-        collected: list[str] = []
+        collected: list[tuple[str, float]] = []
         seen: set[str] = set()
         _MIN_COLLECT_LEN = max(len(core_term) // 2, 5)
         for label, score, _ in core_results:
@@ -377,11 +392,16 @@ def _resolve_yaml_term(field: str, term: str) -> List[str]:
                 for code in all_targets[label]:
                     if code not in seen:
                         seen.add(code)
-                        collected.append(code)
+                        collected.append((code, score / 100.0))
         if collected:
             return collected
 
-    return all_targets[best_label]
+    return [(c, best_score / 100.0) for c in all_targets[best_label]]
+
+
+def _resolve_yaml_term(field: str, term: str) -> List[str]:
+    """Resolve one term against the YAML knowledge base for *field* (codes only)."""
+    return [code for code, _ in _resolve_yaml_term_scored(field, term)]
 
 
 # ── Main retriever class ───────────────────────────────────────────────────────
@@ -560,4 +580,67 @@ class MetadataRetriever:
             codes = self.retrieve_for_field(field, term, n_results_per_term)
             if codes:
                 result[term] = codes
+        return result
+
+    # ------------------------------------------------------------------
+    # Scored variants — surface the RAG match score for relevance ranking.
+    # Mirror the methods above but return (code, score) pairs (score 0.0–1.0).
+    # ------------------------------------------------------------------
+    def retrieve_scan_terms_scored(
+        self,
+        terms: List[str],
+    ) -> Dict[str, Dict[str, List[tuple[str, float]]]]:
+        """Scored variant of retrieve_scan_terms.
+
+        Returns {field: {term: [(code, score), ...]}}.
+        """
+        result: Dict[str, Dict[str, List[tuple[str, float]]]] = {}
+        for field in _SCAN_FIELDS:
+            term_map: Dict[str, List[tuple[str, float]]] = {}
+            for term in terms:
+                term_lower = term.lower().strip()
+                if field == "task" and term_lower in (
+                    _PURE_MODALITY_TERMS | _GENERIC_IMAGING_TERMS
+                ):
+                    continue
+                if field == "suffix" and term_lower in _GENERIC_IMAGING_TERMS:
+                    continue
+                scored = _resolve_yaml_term_scored(field, term)
+                if scored:
+                    term_map[term] = scored
+            if term_map:
+                result[field] = term_map
+        return result
+
+    def retrieve_for_field_multi_scored(
+        self,
+        field: str,
+        terms: List[str],
+        n_results_per_term: int = 20,
+    ) -> Dict[str, List[tuple[str, float]]]:
+        """Scored variant of retrieve_for_field_multi.
+
+        Returns {term: [(code, score), ...]} — terms with no match are omitted.
+        """
+        result: Dict[str, List[tuple[str, float]]] = {}
+        for term in terms:
+            if field in _YAML_FIELDS:
+                scored = _resolve_yaml_term_scored(field, term)[:n_results_per_term]
+            elif field in _NAME_FIELDS:
+                candidates = self._names.get(_NAME_FIELD_KEY[field], [])
+                if candidates:
+                    matches = _process.extract(
+                        term,
+                        candidates,
+                        scorer=_fuzz.token_set_ratio,
+                        limit=n_results_per_term,
+                        score_cutoff=_NAME_THRESHOLD,
+                    )
+                    scored = [(r[0], r[1] / 100.0) for r in matches]
+                else:
+                    scored = []
+            else:
+                scored = []
+            if scored:
+                result[term] = scored
         return result

@@ -60,6 +60,7 @@ if _RAG_DIR not in sys.path:
 from join_registry import (
     build_join_context_block as _build_join_context_block,
     check_contradictions as _check_contradictions,
+    field_to_db_col as _field_to_db_col,
 )
 
 # ---------------------------------------------------------------------------
@@ -317,6 +318,19 @@ class ResolvedTerms(BaseModel):
         return result
 
 
+class ScoredFilter(BaseModel):
+    """A resolved canonical code with its RAG match score (0.0–1.0).
+
+    Used downstream to rank result datasets by how well they match the query:
+    text_to_sql injects these as a `matched_codes` CTE so each dataset gets a
+    relevance_score. Only fields that map to a DB column (diagnosis, task,
+    datatype, suffix) are included — see _build_scored_filters().
+    """
+    field: str
+    code: str
+    score: float
+
+
 class AugmentedQueryPlan(BaseModel):
     """
     QueryPlan + resolved canonical codes from the RAG layer.
@@ -324,6 +338,7 @@ class AugmentedQueryPlan(BaseModel):
     """
     plan: QueryPlan
     resolved: List[ResolvedTerms] = Field(default_factory=list)
+    scored_filters: List[ScoredFilter] = Field(default_factory=list)
     augmented_question: str = Field(
         description="The original question with canonical DB values injected as context"
     )
@@ -532,11 +547,49 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
     return list(requests.values())
 
 
+# Fields whose codes can be scored per-dataset (they map to a queryable DB
+# column via field_to_db_col). author/funding live on bids_datasets as arrays
+# (exists_alias 'none') and are excluded from relevance scoring.
+_SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
+
+
+def _build_scored_filters(
+    rag_results: Dict[str, Dict[str, List[str]]],
+    scores: Dict[str, Dict[str, float]],
+) -> List[ScoredFilter]:
+    """Flatten RAG results + scores into per-(field, code) ScoredFilters.
+
+    Codes are taken from rag_results (already DB-pruned, so DB-miss codes are
+    excluded automatically). Only fields that map to a DB column are kept.
+    Returns [] when no scores were captured (e.g. an older retriever without the
+    *_scored methods) so downstream ranking degrades gracefully.
+    """
+    if not scores:
+        return []
+    out: List[ScoredFilter] = []
+    seen: set[tuple[str, str]] = set()
+    for field, term_map in rag_results.items():
+        if field not in _SCORABLE_FIELDS or _field_to_db_col(field) is None:
+            continue
+        field_scores = scores.get(field, {})
+        for codes in term_map.values():
+            for code in codes:
+                if (field, code) in seen:
+                    continue
+                seen.add((field, code))
+                out.append(
+                    ScoredFilter(field=field, code=code,
+                                 score=field_scores.get(code, 1.0))
+                )
+    return out
+
+
 def augment_with_rag(
     plan: QueryPlan,
     rag_results: Dict[str, Dict[str, List[str]]],
     unresolved_terms: Optional[Dict[str, List[str]]] = None,
     db_miss_terms: Optional[Dict[str, List[str]]] = None,
+    scores: Optional[Dict[str, Dict[str, float]]] = None,
 ) -> AugmentedQueryPlan:
     """
     Combine a QueryPlan with RAG results to produce an AugmentedQueryPlan.
@@ -574,6 +627,7 @@ def augment_with_rag(
     aug = AugmentedQueryPlan(
         plan=plan,
         resolved=resolved,
+        scored_filters=_build_scored_filters(rag_results, scores or {}),
         augmented_question=_build_augmented_question(
             plan, resolved, unresolved_terms or {}, db_miss_terms or {}
         ),
@@ -825,10 +879,26 @@ def run_pipeline(
 
     rag_requests = build_rag_requests(plan)
     rag_results: Dict[str, Dict[str, List[str]]] = {}
+    # {field: {code: best_score}} — captured when the retriever exposes the
+    # *_scored methods; drives relevance ranking downstream.
+    rag_scores: Dict[str, Dict[str, float]] = {}
+
+    def _record_scores(field: str, pairs: List[tuple]) -> None:
+        cur = rag_scores.setdefault(field, {})
+        for code, score in pairs:
+            if score > cur.get(code, 0.0):
+                cur[code] = score
 
     for req in rag_requests:
         if req.field == RAGField.SCAN:
             # Multi-field lookup: datatype + suffix + task in one pass
+            if hasattr(retriever, "retrieve_scan_terms_scored"):
+                scan_scored = retriever.retrieve_scan_terms_scored(req.terms)
+                for field, term_map in scan_scored.items():
+                    for term, pairs in term_map.items():
+                        rag_results.setdefault(field, {})[term] = [c for c, _ in pairs]
+                        _record_scores(field, pairs)
+                continue
             if hasattr(retriever, "retrieve_scan_terms"):
                 scan_resolved = retriever.retrieve_scan_terms(req.terms)
             else:
@@ -854,6 +924,17 @@ def run_pipeline(
 
         else:
             # Single-field lookup
+            if hasattr(retriever, "retrieve_for_field_multi_scored"):
+                scored_map = retriever.retrieve_for_field_multi_scored(
+                    req.field.value, req.terms
+                )
+                term_map = {}
+                for term, pairs in scored_map.items():
+                    term_map[term] = [c for c, _ in pairs]
+                    _record_scores(req.field.value, pairs)
+                if term_map:
+                    rag_results[req.field.value] = term_map
+                continue
             if hasattr(retriever, "retrieve_for_field_multi"):
                 term_map = retriever.retrieve_for_field_multi(
                     req.field.value, req.terms
@@ -905,7 +986,8 @@ def run_pipeline(
                 unresolved[req.field.value] = missed
 
     return augment_with_rag(
-        plan, rag_results, unresolved_terms=unresolved, db_miss_terms=db_miss_terms
+        plan, rag_results, unresolved_terms=unresolved,
+        db_miss_terms=db_miss_terms, scores=rag_scores,
     )
 
 

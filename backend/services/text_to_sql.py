@@ -135,6 +135,7 @@ for _mod_dir in (
 
 from schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
+from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 
 # ── Fallback SQL: return a bounded sample of datasets when SQL generation is
 # unavailable (no API key, or every LLM tier failed). The LIMIT is essential:
@@ -376,6 +377,73 @@ def _fix_vocab_miss_sql(sql: str, augmented_question: str) -> str:
     return cleaned
 
 
+# ── Relevance ranking: inject a scored-codes CTE around the LLM SQL ────────────
+
+# Canonical codes only contain these characters; guard against inlining anything
+# unexpected into the VALUES list (same inlining pattern the preprocessor uses).
+_CODE_RE = re.compile(r'^[A-Za-z0-9_]+$')
+# Fields whose codes map to a queryable DB column (see RAG/join_paths.yaml).
+_SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
+
+
+def _inject_relevance_cte(sql: str, scored_filters: list) -> str:
+    """Wrap the LLM SQL so each dataset gets a relevance_score and rows sort by it.
+
+    Builds a ``matched_codes (field, code, score)`` VALUES CTE from the
+    RAG-resolved codes + their match scores, treats the LLM SQL as an opaque
+    derived table exposing ``id`` and ``subject_count``, computes a per-dataset
+    score via correlated EXISTS against each field's table/column, and orders by
+    it. A dataset that only matched via a name/description ILIKE fallback (no
+    structured code) scores 0 and sinks below datasets that truly contain the
+    cohort/modality. Returns *sql* unchanged when there is nothing to score.
+    """
+    if not scored_filters:
+        return sql
+
+    rows: list[str] = []
+    field_cols: dict[str, tuple[str, str]] = {}
+    for f in scored_filters:
+        field = getattr(f, "field", None)
+        code = getattr(f, "code", None)
+        score = getattr(f, "score", None)
+        if field not in _SCORABLE_FIELDS or not code or score is None:
+            continue
+        if not _CODE_RE.match(code):
+            continue
+        col_info = _field_to_db_col(field)
+        if col_info is None:
+            continue
+        field_cols[field] = col_info
+        rows.append(f"('{field}', '{code}', {float(score):.4f})")
+
+    if not rows:
+        return sql
+
+    values_block = ",\n    ".join(rows)
+
+    exists_clauses = [
+        f"(mc.field = '{field}' AND EXISTS (SELECT 1 FROM {table} mt "
+        f"WHERE mt.dataset_id = base.id AND mt.{col} = mc.code))"
+        for field, (table, col) in field_cols.items()
+    ]
+    where_expr = "\n           OR ".join(exists_clauses)
+
+    base_sql = sql.strip().rstrip(";").strip()
+
+    return (
+        "WITH matched_codes (field, code, score) AS (\n"
+        f"  VALUES\n    {values_block}\n"
+        ")\n"
+        "SELECT base.*,\n"
+        "  COALESCE((\n"
+        "    SELECT SUM(mc.score) FROM matched_codes mc\n"
+        f"    WHERE {where_expr}\n"
+        "  ), 0) AS relevance_score\n"
+        f"FROM (\n{base_sql}\n) AS base\n"
+        "ORDER BY relevance_score DESC, base.subject_count DESC NULLS LAST"
+    )
+
+
 # ── Full Modal pipeline (stages 1–4) ──────────────────────────────────────────
 
 def _run_via_modal(question: str) -> TextToSQLResult:
@@ -452,6 +520,13 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         augmented_question,
     )
 
+    # Relevance ranking: append a scored-codes CTE so results sort by how well
+    # each dataset matches the query. Skip for explicit top-N / user-ordered
+    # queries so we don't override the order the user asked for.
+    plan = augmented_plan.plan
+    if plan.result_limit is None and plan.order_by is None:
+        sql = _inject_relevance_cte(sql, augmented_plan.scored_filters)
+
     return TextToSQLResult(sql=sql, explanation=explanation)
 
 
@@ -485,15 +560,29 @@ async def text_to_sql(question: str) -> TextToSQLResult:
 
     if api_key:
         log.info("Using local Gemini pipeline")
+        # Hard wall-clock deadline for the whole LLM pipeline (intent + RAG + SQL
+        # generation). Cloudflare drops the request at ~100s; if the LLMs are
+        # pathologically slow (Gemini 503 storm + slow fallback) we must return
+        # *something* fast rather than let the browser see a NetworkError.
+        deadline = float(os.getenv("PIPELINE_DEADLINE_SECONDS", "80"))
         try:
-            return await asyncio.to_thread(_run_local, question, api_key)
+            return await asyncio.wait_for(
+                asyncio.to_thread(_run_local, question, api_key),
+                timeout=deadline,
+            )
         except LLMAllFailedError as exc:
             # Every LLM tier (all Gemini models + the Claude fallback) is down.
             # Degrade gracefully instead of 500ing the request.
-            log.warning("All LLM providers failed (%s) — returning all datasets", exc)
+            log.warning("All LLM providers failed (%s) — returning a sample of datasets", exc)
             return TextToSQLResult(
                 sql=_FALLBACK_SQL,
                 explanation="All LLM providers are currently unavailable — showing a sample of datasets. Please try again shortly.",
+            )
+        except asyncio.TimeoutError:
+            log.warning("LLM pipeline exceeded %.0fs deadline — returning a sample of datasets", deadline)
+            return TextToSQLResult(
+                sql=_FALLBACK_SQL,
+                explanation="That query is taking too long right now — showing a sample of datasets. Please try again or narrow your query.",
             )
 
     log.warning("No GEMINI_API_KEY or Modal credentials set — returning all datasets")
