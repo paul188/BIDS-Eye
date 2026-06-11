@@ -10,6 +10,12 @@ export interface Message {
   sql: string | null
   loading?: boolean
   error?: boolean
+  // Pagination state for this result block
+  queryId?: string | null
+  total?: number
+  page?: number
+  pageSize?: number
+  pageLoading?: boolean
 }
 
 export interface Conversation {
@@ -128,6 +134,10 @@ export const useChatStore = defineStore('chat', () => {
           datasets: response.datasets,
           sql: response.translation?.sql ?? null,
           loading: false,
+          queryId: response.query_id,
+          total: response.total,
+          page: response.page,
+          pageSize: response.page_size,
         }
       }
     } catch (err) {
@@ -148,6 +158,33 @@ export const useChatStore = defineStore('chat', () => {
     _save()
   }
 
+  async function loadPage(messageId: number, page: number) {
+    // Find the message across all conversations (the result block being paged)
+    let msg: Message | undefined
+    for (const c of conversations.value) {
+      msg = c.messages.find(m => m.id === messageId)
+      if (msg) break
+    }
+    if (!msg || !msg.queryId || msg.pageLoading) return
+    if (page === msg.page) return
+
+    msg.pageLoading = true
+    try {
+      const response = await api.queryPage(msg.queryId, page, msg.pageSize ?? 20)
+      msg.datasets = response.datasets
+      msg.page = response.page
+      msg.total = response.total
+      msg.pageSize = response.page_size
+    } catch (err) {
+      // Expired query (410) or transient failure — keep the current page and
+      // tell the user to re-run. Non-fatal: don't clobber existing results.
+      msg.content = `Could not load page ${page}: ${err instanceof Error ? err.message : String(err)}. Try running the search again.`
+    } finally {
+      msg.pageLoading = false
+      _save()
+    }
+  }
+
   async function refreshCrawlerStatus() {
     try {
       crawlerStatus.value = await api.crawlerStatus()
@@ -164,6 +201,7 @@ export const useChatStore = defineStore('chat', () => {
     currentMessages,
     crawlerStatus,
     sendQuestion,
+    loadPage,
     refreshCrawlerStatus,
     newConversation,
     switchConversation,

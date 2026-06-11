@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import type { Message } from '../stores/chat'
+import { useChatStore } from '../stores/chat'
 import DatasetList from './DatasetList.vue'
 
-defineProps<{ message: Message }>()
+const props = defineProps<{ message: Message }>()
+const store = useChatStore()
+
+function onPageChange(page: number) {
+  store.loadPage(props.message.id, page)
+}
 </script>
 
 <template>
@@ -43,6 +49,11 @@ defineProps<{ message: Message }>()
           v-if="message.datasets.length || message.sql"
           :datasets="message.datasets"
           :sql="message.sql"
+          :total="message.total"
+          :page="message.page"
+          :page-size="message.pageSize"
+          :loading="message.pageLoading"
+          @page-change="onPageChange"
         />
       </template>
     </div>
