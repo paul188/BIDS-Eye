@@ -83,6 +83,19 @@ async def query_datasets(
 
     raw = rows.mappings().all()
 
+    # Bound the response. Broad queries can match >1000 datasets and tens of
+    # thousands of participants; the full eager-loaded payload (10-15 MB, 30 s+)
+    # gets dropped by Cloudflare's ~100 s origin timeout, surfacing in the browser
+    # as "NetworkError when attempting to fetch resource". Cap both the dataset
+    # count and the participants per dataset. subject_count stays exact (it comes
+    # from the SQL COUNT), and the UI only uses participants for the distinct
+    # diagnosis tags, so a capped list renders the same for all but mega-datasets.
+    _MAX_DATASETS = 200
+    _MAX_PARTICIPANTS_PER_DATASET = 50
+
+    total = len(raw)
+    raw = raw[:_MAX_DATASETS]
+
     dataset_ids = [UUID(str(r["id"])) for r in raw]
     participants_map = await _participants_for(session, dataset_ids)
 
@@ -97,13 +110,18 @@ async def query_datasets(
             remote_url=r.get("remote_url"),
             validation_status=r.get("validation_status"),
             subject_count=r.get("subject_count"),
-            participants=participants_map.get(UUID(str(r["id"])), []),
+            participants=participants_map.get(UUID(str(r["id"])), [])[:_MAX_PARTICIPANTS_PER_DATASET],
         )
         for r in raw
     ]
 
+    if total > len(datasets):
+        message = f"Found {total} dataset(s); showing the first {len(datasets)}. Refine your query to narrow the results."
+    else:
+        message = f"Found {total} dataset(s) matching your query."
+
     return QueryResponse(
-        message=f"Found {len(datasets)} dataset(s) matching your query.",
+        message=message,
         translation=translation,
         datasets=datasets,
     )
