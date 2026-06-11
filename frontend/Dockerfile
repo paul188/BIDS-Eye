@@ -4,6 +4,8 @@ WORKDIR /app
 COPY frontend/package.json ./
 RUN npm install
 COPY frontend/ .
+ARG VITE_CRAWLER_ENABLED=false
+ENV VITE_CRAWLER_ENABLED=${VITE_CRAWLER_ENABLED}
 RUN npm run build
 
 ## Stage 2: serve with nginx

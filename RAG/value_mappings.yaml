@@ -3600,21 +3600,10 @@ diagnosis:
     codes:
     - csm
     - cervical_spondylotic_myelopathy
-  als_spectrum:
-    is_group: true
-    broader:
-    - spinal_neuromuscular
-    synonyms:
-    - als
-    - amyotrophic lateral sclerosis
-    - motor neuron disease
-    - lou gehrig's disease
-    - charcot disease
   amyotrophic_lateral_sclerosis:
     label: Amyotrophic Lateral Sclerosis (Classic)
     broader:
-    - als_spectrum
-    - neurodegenerative
+    - motor_neuron_disease_general
     synonyms:
     - ALS
     - amyotrophic lateral sclerosis
@@ -3648,14 +3637,35 @@ diagnosis:
       weight: 0.1
     - term: spinal onset amyotrophic lateral sclerosis
       weight: 0.1
+    - Amyotrophic Lateral Sclerosis (als)
+    - term: ALS/MND
+      weight: 0.32
+    - term: sALS
+      weight: 0.1
+    - term: fALS
+      weight: 0.1
+    - term: Sporadic ALS
+      weight: 0.1
+    - term: Familial ALS
+      weight: 0.1
+    - term: Classic ALS
+      weight: 0.1
+    - term: Classical ALS
+      weight: 0.1
+    - term: Amyotrophic lateral schlerosis
+      weight: 0.1
     codes:
     - cd
+    - amyotrophic_lateral_sclerosis
     is_group: true
+    standard_code: als_general
+    description: A general diagnosis of Amyotrophic Lateral Sclerosis without further
+      specification of subtype.
   als_upper_limb_dominant:
     label: Upper-Limb dominant Amyotrophic Lateral Sclerosis
     standard_code: als_upper_limb_dominant
     broader:
-    - als_spectrum
+    - amyotrophic_lateral_sclerosis
     - neurodegenerative
     synonyms:
     - term: upper limb predominant als
@@ -4015,51 +4025,13 @@ diagnosis:
     codes:
     - pmo
     - prosopometamorphopsia
-  als_general:
-    label: Amyotrophic Lateral Sclerosis (als)
-    standard_code: als_general
-    broader:
-    - neurological
-    - neurodegenerative
-    description: A general diagnosis of Amyotrophic Lateral Sclerosis without further
-      specification of subtype.
-    synonyms:
-    - term: Amyotrophic lateral sclerosis
-      weight: 0.9
-    - term: Motor neurone disease
-      weight: 0.32
-    - term: ALS/MND
-      weight: 0.32
-    - term: Lou Gehrig disease
-      weight: 0.1
-    - term: Charcot's disease
-      weight: 0.1
-    - term: Charcot disease
-      weight: 0.1
-    - term: sALS
-      weight: 0.1
-    - term: fALS
-      weight: 0.1
-    - term: Sporadic ALS
-      weight: 0.1
-    - term: Familial ALS
-      weight: 0.1
-    - term: Classic ALS
-      weight: 0.1
-    - term: Classical ALS
-      weight: 0.1
-    - term: Amyotropic lateral sclerosis
-      weight: 0.1
-    - term: Amyotrophic lateral schlerosis
-      weight: 0.1
-    codes:
-    - amyotrophic_lateral_sclerosis
   motor_neuron_disease_general:
     label: Motor Neuron Disease
     standard_code: motor_neuron_disease_general
     broader:
     - neurological
     - neurodegenerative
+    - spinal_neuromuscular
     description: A progressive neurodegenerative disease that affects motor neurons,
       leading to muscle weakness and atrophy.
     synonyms:
@@ -4099,6 +4071,7 @@ diagnosis:
     - raw: case
       datasets:
       - ds005874
+    is_group: true
   perinatal_thalamic_bleeding_hippocampal_sclerosis:
     label: Perinatal thalamic bleeding with hippocampal atrophy/sclerosis
     standard_code: perinatal_thalamic_bleeding_hippocampal_sclerosis
@@ -10566,7 +10539,8 @@ task:
   memory:
     label: Memory
     is_group: true
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - Information retention
     - storage
@@ -13392,12 +13366,40 @@ task:
       weight: 0.1
     - term: retreival
       weight: 0.1
+    - Memory task (general)
+    - term: memory tasks
+      weight: 0.38
+    - term: memory paradigm
+      weight: 0.1
+    - term: memory test
+      weight: 0.1
+    - term: memory testing
+      weight: 0.1
+    - term: memory-task
+      weight: 0.1
+    - term: memory battery
+      weight: 0.1
+    - term: memory evaluation
+      weight: 0.1
+    - term: encoding task
+      weight: 0.1
+    - term: retention task
+      weight: 0.1
+    - term: memory encoding task
+      weight: 0.1
+    - term: memory retrieval task
+      weight: 0.1
+    - term: declarative memory task
+      weight: 0.1
+    - term: memory performance task
+      weight: 0.1
     codes:
     - retrieval
     - memory_recall
     - Recall
     - Retrieve
     - recall
+    - MEM
   paired_associates_memory_retrieval_cnp:
     label: Paired-Associates Memory Retrieval (CNP)
     standard_code: paired_associates_memory_retrieval_cnp
@@ -14788,44 +14790,6 @@ task:
     - raw: wk3recap
       datasets:
       - ds003233
-  memory_task_general:
-    label: Memory task (general)
-    standard_code: memory_task_general
-    broader:
-    - memory_retrieval_general
-    description: A general task involving various aspects of memory, such as encoding,
-      retrieval, or recognition.
-    synonyms:
-    - term: memory tasks
-      weight: 0.38
-    - term: memory paradigm
-      weight: 0.1
-    - term: memory test
-      weight: 0.1
-    - term: memory testing
-      weight: 0.1
-    - term: memory-task
-      weight: 0.1
-    - term: memory battery
-      weight: 0.1
-    - term: memory evaluation
-      weight: 0.1
-    - term: encoding task
-      weight: 0.1
-    - term: retrieval task
-      weight: 0.1
-    - term: retention task
-      weight: 0.1
-    - term: memory encoding task
-      weight: 0.1
-    - term: memory retrieval task
-      weight: 0.1
-    - term: declarative memory task
-      weight: 0.1
-    - term: memory performance task
-      weight: 0.1
-    codes:
-    - MEM
   semantic_memory:
     label: Semantic memory
     standard_code: semantic_memory
@@ -15115,6 +15079,54 @@ task:
     - matching-to-sample
     - discrimination
     - item familiarity
+    - General Recognition Task
+    - term: Continuous recognition task
+      weight: 0.1
+    - term: Continuous recognition paradigm
+      weight: 0.1
+    - term: Delayed recognition task
+      weight: 0.1
+    - term: Delayed recognition paradigm
+      weight: 0.1
+    - term: Old-new recognition task
+      weight: 0.1
+    - term: Old/new recognition task
+      weight: 0.1
+    - term: Old new recognition task
+      weight: 0.1
+    - term: Remember-know task
+      weight: 0.1
+    - term: Remember/know task
+      weight: 0.1
+    - term: Remember-know paradigm
+      weight: 0.1
+    - term: RK task
+      weight: 0.1
+    - term: RK paradigm
+      weight: 0.1
+    - term: Two-alternative forced-choice recognition
+      weight: 0.1
+    - term: 2-AFC recognition
+      weight: 0.1
+    - term: Yes-no recognition task
+      weight: 0.1
+    - term: Yes no recognition task
+      weight: 0.1
+    - term: Visual recognition task
+      weight: 0.1
+    - term: Picture recognition task
+      weight: 0.1
+    - term: Memory recognition task
+      weight: 0.1
+    - term: Memory recognition paradigm
+      weight: 0.1
+    codes:
+    - recog
+    dataset_codes:
+    - raw: recognition
+      datasets:
+      - ds004590
+    standard_code: recognition_task_general
   search_superiority_recollection_familiarity_test:
     label: Search Superiority Recollection Familiarity (Test)
     standard_code: search_superiority_recollection_familiarity_test
@@ -15163,60 +15175,6 @@ task:
     - raw: SearchSupRecFamTest
       datasets:
       - ds005189
-  recognition_task_general:
-    label: General Recognition Task
-    standard_code: recognition_task_general
-    broader:
-    - recognition
-    description: Participants perform a task requiring the identification of previously
-      encountered or known stimuli.
-    synonyms:
-    - term: Continuous recognition task
-      weight: 0.1
-    - term: Continuous recognition paradigm
-      weight: 0.1
-    - term: Delayed recognition task
-      weight: 0.1
-    - term: Delayed recognition paradigm
-      weight: 0.1
-    - term: Old-new recognition task
-      weight: 0.1
-    - term: Old/new recognition task
-      weight: 0.1
-    - term: Old new recognition task
-      weight: 0.1
-    - term: Remember-know task
-      weight: 0.1
-    - term: Remember/know task
-      weight: 0.1
-    - term: Remember-know paradigm
-      weight: 0.1
-    - term: RK task
-      weight: 0.1
-    - term: RK paradigm
-      weight: 0.1
-    - term: Two-alternative forced-choice recognition
-      weight: 0.1
-    - term: 2-AFC recognition
-      weight: 0.1
-    - term: Yes-no recognition task
-      weight: 0.1
-    - term: Yes no recognition task
-      weight: 0.1
-    - term: Visual recognition task
-      weight: 0.1
-    - term: Picture recognition task
-      weight: 0.1
-    - term: Memory recognition task
-      weight: 0.1
-    - term: Memory recognition paradigm
-      weight: 0.1
-    codes:
-    - recog
-    dataset_codes:
-    - raw: recognition
-      datasets:
-      - ds004590
   face_memory_task:
     label: Face Memory Task
     standard_code: face_memory_task
@@ -15833,6 +15791,46 @@ task:
     - relational encoding
     - link-based recall
     - co-occurrence memory
+    - General learning task
+    - term: acquisition task
+      weight: 0.1
+    - term: associative learning task
+      weight: 0.1
+    - term: category learning task
+      weight: 0.1
+    - term: contingency learning task
+      weight: 0.1
+    - term: feedback-based learning
+      weight: 0.1
+    - term: implicit learning task
+      weight: 0.1
+    - term: incidental learning task
+      weight: 0.1
+    - term: learning paradigm
+      weight: 0.1
+    - term: memory acquisition
+      weight: 0.1
+    - term: probabilistic learning task
+      weight: 0.1
+    - term: rule learning task
+      weight: 0.1
+    - term: sequence learning task
+      weight: 0.1
+    - term: serial reaction time task
+      weight: 0.1
+    - term: skill acquisition task
+      weight: 0.1
+    - term: skill learning
+      weight: 0.1
+    - term: SRT task
+      weight: 0.1
+    - term: SRTT
+      weight: 0.1
+    - term: trial-and-error learning
+      weight: 0.1
+    codes:
+    - learn
+    standard_code: learning_task_general
   offline_processing_associative_learning:
     label: Offline processing in associative learning
     standard_code: offline_processing_associative_learning
@@ -16384,52 +16382,6 @@ task:
       weight: 0.1
     codes:
     - deterministicclassification
-  learning_task_general:
-    label: General learning task
-    standard_code: learning_task_general
-    broader:
-    - associative
-    description: A task designed to investigate various forms of learning, including
-      incidental, statistical, or associative learning.
-    synonyms:
-    - term: acquisition task
-      weight: 0.1
-    - term: associative learning task
-      weight: 0.1
-    - term: category learning task
-      weight: 0.1
-    - term: contingency learning task
-      weight: 0.1
-    - term: feedback-based learning
-      weight: 0.1
-    - term: implicit learning task
-      weight: 0.1
-    - term: incidental learning task
-      weight: 0.1
-    - term: learning paradigm
-      weight: 0.1
-    - term: memory acquisition
-      weight: 0.1
-    - term: probabilistic learning task
-      weight: 0.1
-    - term: rule learning task
-      weight: 0.1
-    - term: sequence learning task
-      weight: 0.1
-    - term: serial reaction time task
-      weight: 0.1
-    - term: skill acquisition task
-      weight: 0.1
-    - term: skill learning
-      weight: 0.1
-    - term: SRT task
-      weight: 0.1
-    - term: SRTT
-      weight: 0.1
-    - term: trial-and-error learning
-      weight: 0.1
-    codes:
-    - learn
   learning_block_scantrain:
     label: Learning block (ScanTrain)
     standard_code: learning_block_scantrain
@@ -17806,6 +17758,42 @@ task:
     - mental mapping
     - place-cell activation
     - allocentric/egocentric orientation
+    - Spatial memory
+    - term: spatial working memory
+      weight: 0.32
+    - term: allocentric memory
+      weight: 0.1
+    - term: cognitive map
+      weight: 0.1
+    - term: cognitive mapping
+      weight: 0.1
+    - term: egocentric memory
+      weight: 0.1
+    - term: environmental memory
+      weight: 0.1
+    - term: location memory
+      weight: 0.1
+    - term: maze learning
+      weight: 0.1
+    - term: navigational memory
+      weight: 0.1
+    - term: object location memory
+      weight: 0.1
+    - term: place memory
+      weight: 0.1
+    - term: spatial recall
+      weight: 0.1
+    - term: spatial recognition
+      weight: 0.1
+    - term: SWM
+      weight: 0.1
+    - term: visuo-spatial memory
+      weight: 0.1
+    - term: visuospatial memory
+      weight: 0.1
+    codes:
+    - SpatialMemory
+    standard_code: spatial_memory
   navigation_learning:
     label: Navigation Learning
     standard_code: navigation_learning
@@ -18284,48 +18272,6 @@ task:
       datasets:
       - ds000217
     is_group: true
-  spatial_memory:
-    label: Spatial memory
-    standard_code: spatial_memory
-    broader:
-    - spatial_memory_group
-    description: A task designed to assess the encoding, storage, or retrieval of
-      information about spatial locations or relationships.
-    synonyms:
-    - term: spatial working memory
-      weight: 0.32
-    - term: allocentric memory
-      weight: 0.1
-    - term: cognitive map
-      weight: 0.1
-    - term: cognitive mapping
-      weight: 0.1
-    - term: egocentric memory
-      weight: 0.1
-    - term: environmental memory
-      weight: 0.1
-    - term: location memory
-      weight: 0.1
-    - term: maze learning
-      weight: 0.1
-    - term: navigational memory
-      weight: 0.1
-    - term: object location memory
-      weight: 0.1
-    - term: place memory
-      weight: 0.1
-    - term: spatial recall
-      weight: 0.1
-    - term: spatial recognition
-      weight: 0.1
-    - term: SWM
-      weight: 0.1
-    - term: visuo-spatial memory
-      weight: 0.1
-    - term: visuospatial memory
-      weight: 0.1
-    codes:
-    - SpatialMemory
   spatial_navigation_task:
     label: Spatial navigation task
     standard_code: spatial_navigation_task
@@ -18390,10 +18336,38 @@ task:
     - raw: spanav
       datasets:
       - ds003437
+  cognitive_tasks:
+    label: cognitive tasks
+    standard_code: cognitive_tasks
+    broader: []
+    description: An umbrella category for tasks that engage higher-order cognitive
+      processes such as attention, working memory, executive function, decision-making,
+      learning, social cognition, and reasoning. Contrasts with passive resting-state
+      and sleep recordings.
+    synonyms:
+    - term: cognitive task
+      weight: 1.0
+    - term: cognitive tasks
+      weight: 1.0
+    - term: cognitive paradigm
+      weight: 0.9
+    - term: cognitive paradigms
+      weight: 0.9
+    - term: active task
+      weight: 0.8
+    - term: active tasks
+      weight: 0.8
+    - term: higher-order cognitive task
+      weight: 0.9
+    - term: higher cognitive function
+      weight: 0.8
+    - term: cognitive neuroscience task
+      weight: 0.8
   attention_and_executive_control:
     label: attention and executive control
     standard_code: attention_and_executive_control
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - term: sustained attention task
       weight: 0.9
@@ -37801,6 +37775,44 @@ task:
     - auditory/visual stimuli
     - sensory modality
     - stimulus detection
+    - Perception (general)
+    - term: percept
+      weight: 0.9
+    - term: sensory processing
+      weight: 0.1
+    - term: perceptual decision-making
+      weight: 0.1
+    - term: sensory detection
+      weight: 0.1
+    - term: stimulus processing
+      weight: 0.1
+    - term: perceptual identification
+      weight: 0.1
+    - term: sensory awareness
+      weight: 0.1
+    - term: stimulus recognition
+      weight: 0.1
+    - term: perceptual recognition
+      weight: 0.1
+    - term: sensory identification
+      weight: 0.1
+    - term: perceptual categorization
+      weight: 0.1
+    - term: stimulus awareness
+      weight: 0.1
+    - term: perceptual representation
+      weight: 0.1
+    - term: sensory representation
+      weight: 0.1
+    - term: basic sensory processing
+      weight: 0.1
+    - term: perceiving
+      weight: 0.1
+    - term: perceptual evaluation
+      weight: 0.1
+    codes:
+    - perception
+    standard_code: perception_general
   animate_stimuli_perception:
     label: Animate Stimuli Perception
     standard_code: animate_stimuli_perception
@@ -37987,50 +37999,6 @@ task:
       datasets:
       - ds005407
       - ds005408
-  perception_general:
-    label: Perception (general)
-    standard_code: perception_general
-    broader:
-    - sensory_and_perception
-    description: A broad category encompassing various forms of sensory processing,
-      interpretation, and awareness of stimuli.
-    synonyms:
-    - term: percept
-      weight: 0.9
-    - term: sensory processing
-      weight: 0.1
-    - term: perceptual decision-making
-      weight: 0.1
-    - term: sensory detection
-      weight: 0.1
-    - term: stimulus processing
-      weight: 0.1
-    - term: perceptual identification
-      weight: 0.1
-    - term: sensory awareness
-      weight: 0.1
-    - term: stimulus recognition
-      weight: 0.1
-    - term: perceptual recognition
-      weight: 0.1
-    - term: sensory identification
-      weight: 0.1
-    - term: perceptual categorization
-      weight: 0.1
-    - term: stimulus awareness
-      weight: 0.1
-    - term: perceptual representation
-      weight: 0.1
-    - term: sensory representation
-      weight: 0.1
-    - term: basic sensory processing
-      weight: 0.1
-    - term: perceiving
-      weight: 0.1
-    - term: perceptual evaluation
-      weight: 0.1
-    codes:
-    - perception
   perception_artificial_image:
     label: Perception of artificial images
     standard_code: perception_artificial_image
@@ -47763,49 +47731,6 @@ task:
       weight: 0.1
     codes:
     - HcpSocial
-  social_task_general:
-    label: Social Task (general)
-    standard_code: social_task_general
-    broader:
-    - social_emotional_reward
-    - social_cognition
-    description: A general category for tasks involving social cognition, interaction,
-      or processing of social stimuli.
-    synonyms:
-    - term: social cognitive task
-      weight: 0.1
-    - term: social cognition paradigm
-      weight: 0.1
-    - term: theory of mind task
-      weight: 0.1
-    - term: ToM task
-      weight: 0.1
-    - term: mentalizing task
-      weight: 0.1
-    - term: mentalisation task
-      weight: 0.1
-    - term: social perception task
-      weight: 0.1
-    - term: social evaluation task
-      weight: 0.1
-    - term: social decision-making task
-      weight: 0.1
-    - term: social decision making task
-      weight: 0.1
-    - term: social interaction task
-      weight: 0.1
-    - term: interpersonal paradigm
-      weight: 0.1
-    - term: social behavior task
-      weight: 0.1
-    - term: social behaviour task
-      weight: 0.1
-    - term: social neuroscience paradigm
-      weight: 0.1
-    - term: social exchange task
-      weight: 0.1
-    codes:
-    - social
   moral_judgment_harm_n400:
     label: Moral judgment of harm (N400)
     standard_code: moral_judgment_harm_n400
@@ -50172,56 +50097,6 @@ task:
     codes:
     - Cyberball
     - cyberball
-  theory_of_mind:
-    label: Theory of Mind
-    standard_code: theory_of_mind
-    broader:
-    - social_emotional_reward
-    - social_cognition
-    - theory_of_mind_group
-    description: Tasks designed to assess an individual's ability to attribute mental
-      states—beliefs, intents, desires, emotions, knowledge—to oneself and others.
-    synonyms:
-    - term: ToM
-      weight: 0.5
-    - term: mind-reading
-      weight: 0.27
-    - term: mentalizing
-      weight: 0.1
-    - term: mentalising
-      weight: 0.1
-    - term: mindreading
-      weight: 0.1
-    - term: mind reading
-      weight: 0.1
-    - term: perspective taking
-      weight: 0.1
-    - term: perspective-taking
-      weight: 0.1
-    - term: social inference
-      weight: 0.1
-    - term: mental state attribution
-      weight: 0.1
-    - term: attribution of mental states
-      weight: 0.1
-    - term: mental state reasoning
-      weight: 0.1
-    - term: mental state understanding
-      weight: 0.1
-    - term: false belief task
-      weight: 0.1
-    - term: Sally-Anne task
-      weight: 0.1
-    - term: intentional stance
-      weight: 0.1
-    - term: RMET
-      weight: 0.1
-    codes:
-    - TOM
-    - TheoryOfMind
-    - mentalstates
-    - theoryofmindwithmanualresponse
-    - tom
   theory_of_mind_false_belief:
     label: Theory of Mind (false belief)
     standard_code: theory_of_mind_false_belief
@@ -61322,7 +61197,8 @@ task:
   social_cognition:
     label: Social cognition
     is_group: true
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - social cognition
     - social neuroscience
@@ -61344,10 +61220,47 @@ task:
     - social task
     - social reinforcement
     - social comparison
+    - Social Task (general)
+    - term: social cognitive task
+      weight: 0.1
+    - term: social cognition paradigm
+      weight: 0.1
+    - term: theory of mind task
+      weight: 0.1
+    - term: ToM task
+      weight: 0.1
+    - term: mentalizing task
+      weight: 0.1
+    - term: mentalisation task
+      weight: 0.1
+    - term: social perception task
+      weight: 0.1
+    - term: social evaluation task
+      weight: 0.1
+    - term: social decision-making task
+      weight: 0.1
+    - term: social decision making task
+      weight: 0.1
+    - term: social interaction task
+      weight: 0.1
+    - term: interpersonal paradigm
+      weight: 0.1
+    - term: social behavior task
+      weight: 0.1
+    - term: social behaviour task
+      weight: 0.1
+    - term: social neuroscience paradigm
+      weight: 0.1
+    - term: social exchange task
+      weight: 0.1
+    codes:
+    - social
+    standard_code: social_task_general
   theory_of_mind_group:
     label: Theory of mind
     is_group: true
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - theory of mind
     - mentalizing
@@ -61356,6 +61269,39 @@ task:
     - mind reading
     - perspective taking
     - belief attribution
+    - term: ToM
+      weight: 0.5
+    - term: mind-reading
+      weight: 0.27
+    - term: mentalising
+      weight: 0.1
+    - term: mindreading
+      weight: 0.1
+    - term: perspective-taking
+      weight: 0.1
+    - term: social inference
+      weight: 0.1
+    - term: attribution of mental states
+      weight: 0.1
+    - term: mental state reasoning
+      weight: 0.1
+    - term: mental state understanding
+      weight: 0.1
+    - term: false belief task
+      weight: 0.1
+    - term: Sally-Anne task
+      weight: 0.1
+    - term: intentional stance
+      weight: 0.1
+    - term: RMET
+      weight: 0.1
+    codes:
+    - TOM
+    - TheoryOfMind
+    - mentalstates
+    - theoryofmindwithmanualresponse
+    - tom
+    standard_code: theory_of_mind
   face_emotion_processing:
     label: Face and emotion processing
     is_group: true
@@ -61375,7 +61321,8 @@ task:
   economic_games:
     label: Economic and trust games
     is_group: true
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - trust game
     - ultimatum game
@@ -61389,7 +61336,8 @@ task:
   moral_cognition:
     label: Moral cognition
     is_group: true
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - moral judgment
     - moral dilemma
@@ -61401,7 +61349,8 @@ task:
   gambling_risk:
     label: Gambling and risk-taking
     is_group: true
-    broader: []
+    broader:
+    - cognitive_tasks
     synonyms:
     - gambling
     - gambling task
@@ -63293,6 +63242,19 @@ suffix:
       weight: 0.1
     - term: spin-echo field map
       weight: 0.1
+    - field map
+    - term: B0 field map
+      weight: 0.1
+    - term: magnetic field map
+      weight: 0.1
+    - term: unwarping map
+      weight: 0.1
+    - term: distortion correction map
+      weight: 0.1
+    codes:
+    - fieldmap
+    standard_code: field_map_general
+    label: field map
   phase_difference_field_map:
     label: phase-difference field map
     standard_code: phase_difference_field_map
@@ -63479,44 +63441,6 @@ suffix:
       weight: 0.1
     codes:
     - magnitude
-  field_map_general:
-    label: field map
-    standard_code: field_map_general
-    broader:
-    - field_maps
-    codes:
-    - fieldmap
-    synonyms:
-    - term: fieldmap
-      weight: 0.1
-    - term: field-map
-      weight: 0.1
-    - term: fmap
-      weight: 0.1
-    - term: fmaps
-      weight: 0.1
-    - term: fieldmaps
-      weight: 0.1
-    - term: B0 map
-      weight: 0.1
-    - term: B0-map
-      weight: 0.1
-    - term: B0 fieldmap
-      weight: 0.1
-    - term: B0 field map
-      weight: 0.1
-    - term: B0 inhomogeneity map
-      weight: 0.1
-    - term: magnetic field map
-      weight: 0.1
-    - term: phase difference map
-      weight: 0.1
-    - term: phasediff
-      weight: 0.1
-    - term: unwarping map
-      weight: 0.1
-    - term: distortion correction map
-      weight: 0.1
   epi_field_map:
     label: EPI field map
     standard_code: epi_field_map

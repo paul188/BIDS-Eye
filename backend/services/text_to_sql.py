@@ -134,8 +134,13 @@ for _mod_dir in (
         sys.path.insert(0, str(_mod_dir))
 
 from schemas import TextToSQLResult  # noqa: E402
+from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 
-# ── Fallback SQL: return all datasets when no API key is configured ────────────
+# ── Fallback SQL: return a bounded sample of datasets when SQL generation is
+# unavailable (no API key, or every LLM tier failed). The LIMIT is essential:
+# an unbounded all-datasets response (1700+ datasets + every participant) is huge
+# and slow, and gets dropped by Cloudflare's ~100s origin timeout / the browser,
+# surfacing as "NetworkError when attempting to fetch resource". Keep it small.
 _FALLBACK_SQL = (
     "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
     "       d.source_type, d.remote_url, d.validation_status,\n"
@@ -143,7 +148,8 @@ _FALLBACK_SQL = (
     "FROM bids_datasets d\n"
     "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
     "GROUP BY d.id\n"
-    "ORDER BY d.name"
+    "ORDER BY d.name\n"
+    "LIMIT 200"
 )
 
 _SQL_FENCE = re.compile(r"```(?:sql)?\s*(.*?)(?:```|$)", re.DOTALL | re.IGNORECASE)
@@ -171,8 +177,6 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     Returns the corrected SQL, or the original if correction fails.
     """
     try:
-        from google import genai
-        from google.genai import types
         from constants import SCHEMA_DDL
     except ImportError as exc:
         log.warning("Gemini correction unavailable: %s", exc)
@@ -187,20 +191,12 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
         f"PostgreSQL error:\n{db_error}"
     )
 
-    _MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
-    client = genai.Client(api_key=api_key)
-    for model in _MODELS:
-        try:
-            resp = client.models.generate_content(
-                model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.1),
-            )
-            corrected = _extract_sql(resp.text.strip())
-            return corrected if corrected != _FALLBACK_SQL else sql
-        except Exception as exc:
-            log.warning("Gemini model %s failed during SQL correction: %s", model, exc)
-    return sql
+    try:
+        corrected = _extract_sql(llm_generate(prompt, temperature=0.1, api_key=api_key))
+        return corrected if corrected != _FALLBACK_SQL else sql
+    except LLMAllFailedError as exc:
+        log.warning("All LLM tiers failed during SQL correction: %s", exc)
+        return sql
 
 
 # ── Stage 3 local fallback: Gemini SQL generation ─────────────────────────────
@@ -212,8 +208,6 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     Previously a fallback; now the main pipeline.
     """
     try:
-        from google import genai
-        from google.genai import types
         from constants import SCHEMA_DDL
     except ImportError as exc:
         log.warning("Gemini SQL generation unavailable: %s", exc)
@@ -293,31 +287,9 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         [SQL]
     """)
 
-    import time
-    _MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
-    client = genai.Client(api_key=api_key)
-    for model in _MODELS:
-        for attempt in range(1, 5):
-            try:
-                resp = client.models.generate_content(
-                    model=model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(temperature=0.0),
-                )
-                sql = _extract_sql(resp.text.strip())
-                log.info("Gemini SQL generation succeeded with model %s", model)
-                return sql
-            except Exception as exc:
-                err_str = str(exc)
-                is_503 = "503" in err_str or "UNAVAILABLE" in err_str
-                if is_503 and attempt < 4:
-                    log.warning("Gemini model %s got 503, retrying (attempt %d)...", model, attempt)
-                    time.sleep(2 ** attempt)
-                else:
-                    log.warning("Gemini model %s failed for SQL generation: %s", model, exc)
-                    break
-
-    raise RuntimeError("All Gemini models failed for SQL generation")
+    # Cascade + retries + cross-provider fallback handled by llm_client; raises
+    # LLMAllFailedError if every tier fails (caught upstream for graceful degrade).
+    return _extract_sql(llm_generate(prompt, temperature=0.0, api_key=api_key))
 
 
 # ── SQL safety: replace bad outer scan filters with VOCABULARY MISS ILIKE ───────
@@ -513,10 +485,19 @@ async def text_to_sql(question: str) -> TextToSQLResult:
 
     if api_key:
         log.info("Using local Gemini pipeline")
-        return await asyncio.to_thread(_run_local, question, api_key)
+        try:
+            return await asyncio.to_thread(_run_local, question, api_key)
+        except LLMAllFailedError as exc:
+            # Every LLM tier (all Gemini models + the Claude fallback) is down.
+            # Degrade gracefully instead of 500ing the request.
+            log.warning("All LLM providers failed (%s) — returning all datasets", exc)
+            return TextToSQLResult(
+                sql=_FALLBACK_SQL,
+                explanation="All LLM providers are currently unavailable — showing a sample of datasets. Please try again shortly.",
+            )
 
     log.warning("No GEMINI_API_KEY or Modal credentials set — returning all datasets")
     return TextToSQLResult(
         sql=_FALLBACK_SQL,
-        explanation="No API credentials configured — returning all datasets.",
+        explanation="No API credentials configured — showing a sample of datasets.",
     )

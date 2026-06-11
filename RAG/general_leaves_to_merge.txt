@@ -1,0 +1,258 @@
+================================================================================
+GENERAL-ONLY LEAVES TO FOLD INTO THEIR BROADER TERM
+Audit of RAG/value_mappings.yaml  —  AUDIT ONLY, the YAML was NOT edited.
+================================================================================
+
+PURPOSE
+  Mark every leaf that only represents the GENERAL category of its `broader`
+  term (adds no specificity) and should therefore be dissolved INTO that broader
+  group, migrating its synonyms up. This lets umbrella queries ("memory tasks",
+  "perception", "field map") resolve to the group and expand to all member codes
+  instead of collapsing onto a near-empty leaf.
+
+CRITERION (strict redundancy)
+  MARK leaf L iff L has a `broader` B AND L denotes the general/unspecified form
+  of B's OWN concept with no new distinguishing subtype noun (only generic
+  qualifiers: "general", "task", "unspecified", "various aspects of"). L ≈ B.
+  EXCLUDE when L names a narrower subtype (visual/auditory/working/spatial/verbal/
+  object/food/pain/walking/mandarin/optogenetic/meditation/...), or is a specific
+  clinical entity even if broadly worded, or has no `broader`.
+
+METHOD
+  PyYAML pass over all sections → prefilter (name endswith `_general` OR
+  label/desc says general/unspecified/NOS) = 70 candidates (63 task / 6 dx / 1
+  suffix) → careful per-leaf review → reverse spot-check for catch-alls the
+  prefilter missed (found 2) → verified every fold-into target exists as a group.
+
+LEGEND   ⚠ broader-mismatch = the concept-correct group is NOT in the leaf's
+         current `broader` list (folding requires re-parenting, not just merging).
+
+================================================================================
+## MARK (strict)  — 11 leaves
+================================================================================
+
+[task] memory_retrieval_general
+  fold into : memory  (group)
+  reason    : General memory-retrieval node directly under `memory`; synonyms are
+              broad (recollection, free recall, recognition memory) — no subtype
+              beyond the memory category itself.
+  synonyms  : prospective remembering(0.38); recollection(0.32); episodic retrieval(0.1);
+              episodic memory retrieval(0.1); semantic retrieval(0.1); retrieval task(0.1);
+              memory recall(0.1); free recall(0.1); recognition memory(0.1);
+              old-new recognition(0.1); remember-know paradigm(0.1); memory reactivation(0.1);
+              neural reinstatement(0.1); pattern completion(0.1); ecphory(0.1);
+              memory search(0.1); retrieval phase(0.1); memory access(0.1); retreival(0.1)
+
+[task] memory_task_general                              ⚠ broader-mismatch
+  fold into : memory  (group)   [current broader = memory_retrieval_general (leaf)]
+  reason    : Pure umbrella — desc "a general task involving various aspects of
+              memory, such as encoding, retrieval, or recognition." Carries the
+              key user phrase "memory tasks". Concept == the `memory` category, but
+              it is parented under a sibling leaf rather than the group.
+  synonyms  : memory tasks(0.38); memory paradigm(0.1); memory test(0.1); memory testing(0.1);
+              memory-task(0.1); memory battery(0.1); memory evaluation(0.1); encoding task(0.1);
+              retrieval task(0.1); retention task(0.1); memory encoding task(0.1);
+              memory retrieval task(0.1); declarative memory task(0.1); memory performance task(0.1)
+
+[task] recognition_task_general
+  fold into : recognition  (group)
+  reason    : Label "General Recognition Task" == the `recognition` group; all
+              synonyms are generic recognition paradigms (old/new, RK, 2-AFC).
+  synonyms  : Continuous recognition task(0.1); Continuous recognition paradigm(0.1);
+              Delayed recognition task(0.1); Delayed recognition paradigm(0.1);
+              Old-new recognition task(0.1); Old/new recognition task(0.1);
+              Old new recognition task(0.1); Remember-know task(0.1); Remember/know task(0.1);
+              Remember-know paradigm(0.1); RK task(0.1); RK paradigm(0.1);
+              Two-alternative forced-choice recognition(0.1); 2-AFC recognition(0.1);
+              Yes-no recognition task(0.1); Yes no recognition task(0.1);
+              Visual recognition task(0.1); Picture recognition task(0.1);
+              Memory recognition task(0.1); Memory recognition paradigm(0.1)
+
+[task] learning_task_general
+  fold into : associative  (group)
+  reason    : Label "General learning task" — covers incidental/statistical/
+              associative/sequence learning, i.e. equal-or-broader than its
+              `associative` parent. (Ideally a dedicated `learning` group; absent
+              that, `associative` is the closest existing group.)
+  synonyms  : acquisition task(0.1); associative learning task(0.1); category learning task(0.1);
+              contingency learning task(0.1); feedback-based learning(0.1); implicit learning task(0.1);
+              incidental learning task(0.1); learning paradigm(0.1); memory acquisition(0.1);
+              probabilistic learning task(0.1); rule learning task(0.1); sequence learning task(0.1);
+              serial reaction time task(0.1); skill acquisition task(0.1); skill learning(0.1);
+              SRT task(0.1); SRTT(0.1); trial-and-error learning(0.1)
+
+[task] perception_general
+  fold into : sensory_and_perception  (group)
+  reason    : Label "Perception (general)", desc "A broad category encompassing
+              various forms of sensory processing, interpretation, and awareness
+              of stimuli" == the `sensory_and_perception` group.
+  synonyms  : percept(0.9); sensory processing(0.1); perceptual decision-making(0.1);
+              sensory detection(0.1); stimulus processing(0.1); perceptual identification(0.1);
+              sensory awareness(0.1); stimulus recognition(0.1); perceptual recognition(0.1);
+              sensory identification(0.1); perceptual categorization(0.1); stimulus awareness(0.1);
+              perceptual representation(0.1); sensory representation(0.1); basic sensory processing(0.1);
+              perceiving(0.1); perceptual evaluation(0.1)
+
+[task] social_task_general
+  fold into : social_cognition  (group)   [also broader of social_emotional_reward]
+  reason    : Label "Social Task (general)", desc "A general category for tasks
+              involving social cognition" == the `social_cognition` category;
+              generic ToM/mentalizing/social-perception synonyms.
+  synonyms  : social cognitive task(0.1); social cognition paradigm(0.1); theory of mind task(0.1);
+              ToM task(0.1); mentalizing task(0.1); mentalisation task(0.1); social perception task(0.1);
+              social evaluation task(0.1); social decision-making task(0.1); social decision making task(0.1);
+              social interaction task(0.1); interpersonal paradigm(0.1); social behavior task(0.1);
+              social behaviour task(0.1); social neuroscience paradigm(0.1); social exchange task(0.1)
+
+[task] spatial_memory                         (missed by _general prefilter)
+  fold into : spatial_memory_group  (group)
+  reason    : Leaf is the lexical twin of its parent group `spatial_memory_group`
+              (both label "Spatial memory"); the general spatial-memory node
+              duplicates the category.
+  synonyms  : spatial working memory(0.32); allocentric memory(0.1); cognitive map(0.1);
+              cognitive mapping(0.1); egocentric memory(0.1); environmental memory(0.1);
+              location memory(0.1); maze learning(0.1); navigational memory(0.1);
+              object location memory(0.1); place memory(0.1); spatial recall(0.1);
+              spatial recognition(0.1); SWM(0.1); visuo-spatial memory(0.1); visuospatial memory(0.1)
+
+[task] theory_of_mind                         (missed by _general prefilter)
+  fold into : theory_of_mind_group  (group)   [also broader of social_cognition, social_emotional_reward]
+  reason    : Leaf is the lexical twin of its parent group `theory_of_mind_group`
+              (both label "Theory of Mind"); duplicates the category.
+  synonyms  : ToM(0.5); mind-reading(0.27); mentalizing(0.1); mentalising(0.1); mindreading(0.1);
+              mind reading(0.1); perspective taking(0.1); perspective-taking(0.1); social inference(0.1);
+              mental state attribution(0.1); attribution of mental states(0.1); mental state reasoning(0.1);
+              mental state understanding(0.1); false belief task(0.1); Sally-Anne task(0.1);
+              intentional stance(0.1); RMET(0.1)
+
+[diagnosis] als_general                                 ⚠ broader-mismatch
+  fold into : als_spectrum  (group)   [current broader = neurological, neurodegenerative]
+  reason    : "A general diagnosis of ALS without further specification of subtype"
+              — duplicates the ALS category. Its broaders are the huge neurological/
+              neurodegenerative groups; the concept-correct parent is `als_spectrum`.
+  synonyms  : Amyotrophic lateral sclerosis(0.9); Motor neurone disease(0.32); ALS/MND(0.32);
+              Lou Gehrig disease(0.1); Charcot's disease(0.1); Charcot disease(0.1); sALS(0.1);
+              fALS(0.1); Sporadic ALS(0.1); Familial ALS(0.1); Classic ALS(0.1); Classical ALS(0.1);
+              Amyotropic lateral sclerosis(0.1); Amyotrophic lateral schlerosis(0.1)
+
+[diagnosis] motor_neuron_disease_general                ⚠ broader-mismatch
+  fold into : als_spectrum  (group)   [current broader = neurological, neurodegenerative]
+  reason    : General MND node; MND ≡ ALS here (synonyms ALS/MND/Amyotrophic lateral
+              sclerosis at weight 1.0). Duplicates `als_spectrum` AND overlaps
+              als_general — the two should collapse into one category node.
+  synonyms  : ALS(1.0); MND(1.0); Amyotrophic lateral sclerosis(1.0); ALS spectrum disorder(0.1);
+              ALS/MND(0.1); Charcot disease(0.1); Charcot's disease(0.1); Lou Gehrig disease(0.1);
+              Lou Gehrig's disease(0.1); MND/ALS(0.1); Motor neuron degeneration(0.1);
+              Motor neuron disorder(0.1); Motor neuronopathy(0.1); Motor neurone disease(0.1);
+              Progressive motor neuropathy(0.1); Upper and lower motor neuron disease(0.1)
+
+[suffix] field_map_general
+  fold into : field_maps  (group)
+  reason    : Label "field map" == the `field_maps` group; pure modality catch-all.
+  synonyms  : fieldmap(0.1); field-map(0.1); fmap(0.1); fmaps(0.1); fieldmaps(0.1); B0 map(0.1);
+              B0-map(0.1); B0 fieldmap(0.1); B0 field map(0.1); B0 inhomogeneity map(0.1);
+              magnetic field map(0.1); phase difference map(0.1); phasediff(0.1); unwarping map(0.1);
+              distortion correction map(0.1)
+
+================================================================================
+## BORDERLINE (needs your call)  — 8 leaves
+   General-ish, but either the group spans more than the leaf, or several
+   competing "general" siblings exist. Decide whether to fold or keep.
+================================================================================
+
+[task] motor_task_general            -> motor_somasensory (group)
+   General motor task, but the group also spans somatosensory; competes with
+   somatomotor_task & sensorimotor_task_general (3 overlapping general nodes).
+   syn(16): motor paradigm; movement paradigm; motor execution task; motor control task;
+            sensorimotor task; motor localiser; ...
+
+[task] somatomotor_task              -> motor_somasensory (group)
+   "Somatomotor task" ≈ the group concept (somatomotor = sensorimotor); overlaps
+   motor_task_general.
+   syn(19): sensory-motor task; somatosensory-motor task; somatomotor paradigm;
+            motor execution task; movement task; motor mapping task; ...
+
+[task] sensorimotor_task_general     -> motor_somasensory (group)
+   General sensorimotor integration; overlaps the two above.
+   syn(18): sensory-motor task; sensorimotor paradigm; visuomotor task;
+            sensorimotor synchronization task; finger-tapping task; ...
+
+[task] sensory_stimulation_general   -> sensory_and_perception (group)
+   "Sensory stimulation" (a method) vs the perception category; perception_general
+   is the cleaner twin for that group.
+   syn(17): sensory stimulation; sensory task; sensory paradigm; sensory mapping;
+            sensory localizer; perceptual task; ...
+
+[task] emotion_general               -> (no clean "emotion" group)
+   General emotion processing, but broaders are social_emotional_reward /
+   social_cognition / face_emotion_processing — emotion is a facet, not the whole
+   parent. Folding would need a new `emotion` group.
+   syn(18): emotional arousal; general emotion processing; emotional processing;
+            emotion task; affective task; emotion induction; ...
+
+[task] general_stimulation           -> physiological_neurostimulation (group)
+   "Application of sensory/electrical/other stimulation" ≈ the neurostimulation
+   group, but broader than just neurostim.
+   syn(17): elicitation task; evoked response task; exogenous stimulation;
+            external stimulation; stimulation paradigm; stimulus presentation; ...
+
+[task] baseline_general_task         -> calibration_baseline (group)
+   General baseline/control ≈ the baseline half of `calibration_baseline`; competes
+   with control_condition_general.
+   syn(21): baseline condition; control task; reference condition; null task;
+            low-level baseline; fixation baseline; ...
+
+[task] control_condition_general     -> calibration_baseline (group)
+   General control condition; overlaps baseline_general_task.
+   syn(21): control task; baseline condition; reference condition; active control;
+            placebo condition; sham control; ...
+
+================================================================================
+## EXCLUDED  — 51 candidates (not redundant with their broader)
+================================================================================
+Reason buckets (representative examples):
+
+  • Specific clinical entity, broadly worded (diagnosis):
+      depression, stroke, brain_tumor, astrocytoma
+
+  • Names a narrower SUBTYPE — "_general" only means "unspecified variant of that
+    subtype", still more specific than the broader:
+      working_memory_general, visual_working_memory_general, item_memory_general,
+      semantic_memory, object_recognition_general, visual_memory_general,
+      paired_associates_learning_general, motor_imagery_general, walking_task_general,
+      visual_motor_task_general, left_hand_task, semantic_processing_general,
+      language_localizer, verb_generation_general, word_processing_general,
+      word_reading_general, mandarin_listening_general, general_reading_task,
+      speech_perception_general, auditory_perception_general, visual_stimulation_general,
+      auditory_general, auditory_task_ibc_variant, mental_imagery_general,
+      adaptation_general, audiovisual_general, discrimination_task_general,
+      general_motion_task, object_task_general, pain_perception_general,
+      passive_general_task, decision_task_general, food_processing_general,
+      general_rating_task, meditation_general, optogenetic_stimulation_general,
+      general_anesthesia_state, practice_phase_general, functional_localizer_general,
+      baseline_post_general, baseline_pre_general, archi_general_localizer,
+      retinotopy_wedge_general, neurofeedback_general, deduction_task, test_phase_general,
+      thinking_task_general (broader = `other`, a junk-drawer group, not a real concept)
+
+  • No `broader` (top-level umbrella, nothing to fold into):
+      cognitive_tasks
+
+================================================================================
+## SIDE-NOTE (not a merge candidate, but flagged)
+================================================================================
+  [task] bold_acquisition_general — carries synonyms "functional MRI", "fMRI",
+  "functional magnetic resonance imaging". An "fMRI" query could mis-route to this
+  technical/baseline task code instead of the datatype `functional_mri`. Worth a
+  separate look during the resolver fix, independent of this merge audit.
+
+================================================================================
+## SUMMARY
+================================================================================
+  Candidates reviewed : 72  (70 prefiltered + 2 reverse-check finds)
+  MARK (strict)       : 11   (task 8, diagnosis 2, suffix 1)
+  BORDERLINE          : 8    (task 8)
+  EXCLUDED            : 52   (task 48, diagnosis 4)
+  SIDE-NOTE only      : 1    (bold_acquisition_general — flagged, not a merge target)
+                        ----  11 + 8 + 52 + 1 = 72 ✓
+  broader-mismatch    : 3    (memory_task_general, als_general, motor_neuron_disease_general)
+  All fold-into targets verified to exist as `is_group` nodes in the YAML.

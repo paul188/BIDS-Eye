@@ -31,6 +31,12 @@ frontend/.vite/
 # The postgres_data/ directory contains a live DB — never commit it
 postgres_data/
 
+# ── TLS / certbot runtime (Let's Encrypt certs & keys) ────────────────────────
+certbot/
+
+# ── Database dumps (data, not source) ─────────────────────────────────────────
+*.dump
+
 # ── Model weights ─────────────────────────────────────────────────────────────
 scripts/model_weights/
 *.safetensors

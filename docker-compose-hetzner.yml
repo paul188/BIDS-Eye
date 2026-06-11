@@ -1,0 +1,101 @@
+# BIDS-Eye — Hetzner production deployment
+#
+# Prerequisites on the Hetzner VPS:
+#   1. Get SSL cert (first time only, before starting nginx):
+#        docker run --rm -p 80:80 -v $(pwd)/certbot/conf:/etc/letsencrypt \
+#          -v $(pwd)/certbot/www:/var/www/certbot certbot/certbot certonly \
+#          --standalone -d YOUR_DOMAIN --agree-tos -m YOUR_EMAIL
+#
+#   2. Edit nginx/bids-eye.conf — replace YOUR_DOMAIN with your actual domain.
+#
+#   3. Fill in .env (copy from .env.example), including AUTH_PASSWORD,
+#      JWT_SECRET, FRONTEND_URL, and METADATA_DB_HOST=postgres.
+#
+#   4. Start everything:
+#        docker compose -f docker-compose-hetzner.yml up -d
+
+services:
+
+  # ── Reverse proxy + SSL ────────────────────────────────────────────────────
+  nginx:
+    image: nginx:stable-alpine
+    container_name: bids_nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - bids-net
+
+  # ── SSL certificate renewal (runs certbot renew every 12 h) ───────────────
+  certbot:
+    image: certbot/certbot
+    container_name: bids_certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot:rw
+      - ./certbot/conf:/etc/letsencrypt:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - bids-net
+
+  # ── Vue 3 frontend (nginx, static build) ──────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_CRAWLER_ENABLED: ${CRAWLER_ENABLED:-false}
+    container_name: bids_frontend
+    restart: unless-stopped
+    networks:
+      - bids-net
+
+  # ── FastAPI backend ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: bids_backend
+    env_file: .env
+    environment:
+      METADATA_DB_HOST: postgres
+      METADATA_DB_PORT: 5432
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bids-net
+
+  # ── PostgreSQL (not exposed externally) ───────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: bids_postgres
+    env_file: .env
+    environment:
+      POSTGRES_DB:       ${METADATA_DB_NAME}
+      POSTGRES_USER:     ${METADATA_DB_USER}
+      POSTGRES_PASSWORD: ${METADATA_DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${METADATA_DB_USER} -d ${METADATA_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bids-net
+
+networks:
+  bids-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

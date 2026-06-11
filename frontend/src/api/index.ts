@@ -52,7 +52,7 @@ function authHeaders(): Record<string, string> {
 
 function handleUnauthorized() {
   localStorage.removeItem('bids_eye_token')
-  window.location.reload()
+  window.dispatchEvent(new CustomEvent('bids-unauthorized'))
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
