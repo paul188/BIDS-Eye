@@ -52,16 +52,34 @@ class TextToSQLResult(BaseModel):
     params: Dict[str, Any] = {}
     explanation: Optional[str] = None
     self_corrected: bool = False
+    # Ranking inputs, applied in postprocessing (not baked into `sql`) so the
+    # base SELECT can be cached and reused across pages.
+    scored_filters: List[Dict[str, Any]] = []
+    apply_relevance: bool = False
 
 
 class QueryRequest(BaseModel):
     question: str
 
 
+class QueryPageRequest(BaseModel):
+    """Fetch a different page of an already-translated query, reusing the cached
+    base SQL (no new LLM call)."""
+    query_id: str
+    page: int = 1
+    page_size: int = 20
+
+
 class QueryResponse(BaseModel):
     message: str
     translation: Optional[TextToSQLResult] = None  # exposed for debugging
     datasets: List[DatasetSchema]
+    # Pagination metadata (shared by the initial /query and /query/page replies).
+    query_id: Optional[str] = None
+    total: int = 0
+    page: int = 1
+    page_size: int = 20
+    has_more: bool = False
 
 
 class CrawlerStatusResponse(BaseModel):

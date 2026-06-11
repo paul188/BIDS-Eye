@@ -386,6 +386,14 @@ _CODE_RE = re.compile(r'^[A-Za-z0-9_]+$')
 _SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
 
 
+def _filter_attr(f, key: str):
+    """Read ``key`` from a scored filter that may be a ScoredFilter object or a
+    plain dict (the serialized form stored in the query cache for pagination)."""
+    if isinstance(f, dict):
+        return f.get(key)
+    return getattr(f, key, None)
+
+
 def _inject_relevance_cte(sql: str, scored_filters: list) -> str:
     """Wrap the LLM SQL so each dataset gets a relevance_score and rows sort by it.
 
@@ -396,6 +404,9 @@ def _inject_relevance_cte(sql: str, scored_filters: list) -> str:
     it. A dataset that only matched via a name/description ILIKE fallback (no
     structured code) scores 0 and sinks below datasets that truly contain the
     cohort/modality. Returns *sql* unchanged when there is nothing to score.
+
+    ``scored_filters`` entries may be ScoredFilter objects or plain
+    ``{field, code, score}`` dicts (the cached/serialized form).
     """
     if not scored_filters:
         return sql
@@ -403,9 +414,9 @@ def _inject_relevance_cte(sql: str, scored_filters: list) -> str:
     rows: list[str] = []
     field_cols: dict[str, tuple[str, str]] = {}
     for f in scored_filters:
-        field = getattr(f, "field", None)
-        code = getattr(f, "code", None)
-        score = getattr(f, "score", None)
+        field = _filter_attr(f, "field")
+        code = _filter_attr(f, "code")
+        score = _filter_attr(f, "score")
         if field not in _SCORABLE_FIELDS or not code or score is None:
             continue
         if not _CODE_RE.match(code):
@@ -444,6 +455,46 @@ def _inject_relevance_cte(sql: str, scored_filters: list) -> str:
     )
 
 
+# ── Postprocessing: pagination + ordering applied to a stored base SQL ─────────
+# These wrap the once-generated LLM SQL so it can be reused across pages. The
+# relevance ordering/weighting (_inject_relevance_cte) is applied here — in the
+# *same step* as LIMIT/OFFSET — rather than baked into the cached SQL, so every
+# page reuses one base SELECT and only the wrapper changes.
+
+
+def build_count_sql(base_sql: str) -> str:
+    """Total dataset count for a base SQL. The base groups by d.id, so counting
+    its rows yields the number of matching datasets. Ordering/relevance is
+    irrelevant to the count, so we wrap the bare base."""
+    base = base_sql.strip().rstrip(";").strip()
+    return f"SELECT COUNT(*) FROM (\n{base}\n) AS count_result"
+
+
+def build_page_sql(
+    base_sql: str,
+    scored_filters: list,
+    apply_relevance: bool,
+    limit: int,
+    offset: int,
+) -> tuple[str, dict]:
+    """Build the SQL for one page of results.
+
+    Applies relevance ordering/weighting (when enabled) and pagination in a
+    single postprocessing step. Returns ``(sql, extra_params)``; the params use
+    reserved ``_limit``/``_offset`` names so they never collide with the LLM
+    SQL's own bind parameters. Wrapping the ordered query in an outer subquery
+    keeps this correct whether the inner SQL is a plain SELECT, a CTE-bearing
+    relevance query, or carries its own top-N LIMIT.
+    """
+    ordered = _inject_relevance_cte(base_sql, scored_filters) if apply_relevance else base_sql
+    ordered = ordered.strip().rstrip(";").strip()
+    sql = (
+        f"SELECT * FROM (\n{ordered}\n) AS page_result\n"
+        "LIMIT :_limit OFFSET :_offset"
+    )
+    return sql, {"_limit": limit, "_offset": offset}
+
+
 # ── Full Modal pipeline (stages 1–4) ──────────────────────────────────────────
 
 def _run_via_modal(question: str) -> TextToSQLResult:
@@ -472,7 +523,14 @@ def _run_via_modal(question: str) -> TextToSQLResult:
     if error:
         log.warning("Modal pipeline returned error: %s", error)
 
-    return TextToSQLResult(sql=sql, explanation=explanation or None)
+    # Modal returns an already-ordered SELECT (SQLCoder handles ranking); we do
+    # not re-apply the relevance CTE in postprocessing for this path.
+    return TextToSQLResult(
+        sql=sql,
+        explanation=explanation or None,
+        scored_filters=[],
+        apply_relevance=False,
+    )
 
 
 # ── Local pipeline (stages 1–2 + Gemini SQL as stage 3) ───────────────────────
@@ -520,14 +578,24 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         augmented_question,
     )
 
-    # Relevance ranking: append a scored-codes CTE so results sort by how well
-    # each dataset matches the query. Skip for explicit top-N / user-ordered
+    # Relevance ranking is applied in postprocessing (build_page_sql), not baked
+    # into the SQL here — so the base SELECT can be cached and reused across pages
+    # while ORDER BY relevance_score + LIMIT/OFFSET are re-applied per page. We
+    # still decide *whether* to rank: skip for explicit top-N / user-ordered
     # queries so we don't override the order the user asked for.
     plan = augmented_plan.plan
-    if plan.result_limit is None and plan.order_by is None:
-        sql = _inject_relevance_cte(sql, augmented_plan.scored_filters)
+    apply_relevance = plan.result_limit is None and plan.order_by is None
+    scored_filters = [
+        {"field": f.field, "code": f.code, "score": f.score}
+        for f in augmented_plan.scored_filters
+    ]
 
-    return TextToSQLResult(sql=sql, explanation=explanation)
+    return TextToSQLResult(
+        sql=sql,
+        explanation=explanation,
+        scored_filters=scored_filters,
+        apply_relevance=apply_relevance,
+    )
 
 
 # ── Public entry point ─────────────────────────────────────────────────────────

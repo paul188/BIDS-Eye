@@ -30,6 +30,11 @@ export interface QueryResponse {
   message: string
   translation: TextToSQLResult | null
   datasets: Dataset[]
+  query_id: string | null
+  total: number
+  page: number
+  page_size: number
+  has_more: boolean
 }
 
 export interface CrawlerStatus {
@@ -76,6 +81,9 @@ async function get<T>(path: string): Promise<T> {
 export const api = {
   query: (question: string) =>
     post<QueryResponse>('/query', { question }),
+
+  queryPage: (queryId: string, page: number, pageSize: number) =>
+    post<QueryResponse>('/query/page', { query_id: queryId, page, page_size: pageSize }),
 
   crawlerStatus: () =>
     get<CrawlerStatus>('/crawler/status'),
