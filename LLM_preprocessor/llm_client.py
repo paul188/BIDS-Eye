@@ -71,11 +71,15 @@ def _build_cascade() -> List[_Tier]:
 
     tiers: List[_Tier] = []
     for i, m in enumerate(gem_models):
-        # primary two tiers get an extra retry; the rest fail over faster
+        # Fail over fast: the Gemini models share Google capacity, so when one
+        # 503s the others usually do too — burning many retries just delays the
+        # Claude fallback and risks Cloudflare's ~100 s request limit (the call
+        # runs once for intent extraction AND once for SQL generation). Keep
+        # retries minimal; the wall-clock budget in llm_generate is the backstop.
         if i < 2:
-            tiers.append(_Tier("gemini", m, True, 3, [2, 4]))
+            tiers.append(_Tier("gemini", m, True, 2, [2]))   # primary: 1 retry
         else:
-            tiers.append(_Tier("gemini", m, True, 2, [2]))
+            tiers.append(_Tier("gemini", m, True, 1, []))    # secondary: single shot
 
     # cross-provider last resort — only if a key is configured
     if os.getenv("ANTHROPIC_API_KEY"):
@@ -156,7 +160,18 @@ def llm_generate(
     gem_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     failures: List[str] = []
 
+    # Wall-clock budget for the Gemini tiers. Once exceeded, skip any remaining
+    # Gemini models and go straight to the cross-provider (Claude) fallback, so a
+    # Gemini-overload storm can't drag a single stage toward Cloudflare's limit.
+    gemini_budget = float(os.getenv("GEMINI_BUDGET_SECONDS", "25"))
+    t0 = time.monotonic()
+
     for tier in _build_cascade():
+        if tier.provider == "gemini" and (time.monotonic() - t0) > gemini_budget:
+            failures.append(f"gemini/{tier.model}: skipped (Gemini time budget exceeded)")
+            log.warning("llm_generate: skipping gemini/%s — budget exhausted, failing over",
+                        tier.model)
+            continue
         for attempt in range(1, tier.max_attempts + 1):
             try:
                 if tier.provider == "gemini":
