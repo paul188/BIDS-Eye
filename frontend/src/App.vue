@@ -5,16 +5,23 @@ import MessageBubble from './components/MessageBubble.vue'
 import CrawlerStatusDot from './components/CrawlerStatusDot.vue'
 import LoginView from './components/LoginView.vue'
 
+const CRAWLER_ENABLED = import.meta.env.VITE_CRAWLER_ENABLED === 'true'
+
 const isLoggedIn = ref(!!localStorage.getItem('bids_eye_token'))
 
 function onLoggedIn(token: string) {
   localStorage.setItem('bids_eye_token', token)
   isLoggedIn.value = true
+  if (CRAWLER_ENABLED) {
+    store.refreshCrawlerStatus()
+    crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
+  }
 }
 
 function logout() {
   localStorage.removeItem('bids_eye_token')
   isLoggedIn.value = false
+  clearInterval(crawlerInterval)
 }
 
 const store = useChatStore()
@@ -69,11 +76,17 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString()
 }
 
-// Poll crawler status every 15 s
+// Poll crawler status every 15 s — only while logged in and crawler is enabled
 let crawlerInterval: ReturnType<typeof setInterval>
 onMounted(() => {
-  store.refreshCrawlerStatus()
-  crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
+  if (CRAWLER_ENABLED && isLoggedIn.value) {
+    store.refreshCrawlerStatus()
+    crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
+  }
+  window.addEventListener('bids-unauthorized', () => {
+    isLoggedIn.value = false
+    clearInterval(crawlerInterval)
+  })
 })
 onUnmounted(() => clearInterval(crawlerInterval))
 </script>
@@ -141,7 +154,7 @@ onUnmounted(() => clearInterval(crawlerInterval))
         >
           Sign out
         </button>
-        <CrawlerStatusDot :status="store.crawlerStatus" />
+        <CrawlerStatusDot v-if="CRAWLER_ENABLED" :status="store.crawlerStatus" />
       </div>
     </aside>
 
@@ -151,7 +164,7 @@ onUnmounted(() => clearInterval(crawlerInterval))
       <!-- Mobile header -->
       <div class="md:hidden px-4 py-3 border-b border-border flex items-center justify-between">
         <h1 class="font-bold text-white">🧠 BIDS-Eye</h1>
-        <CrawlerStatusDot :status="store.crawlerStatus" />
+        <CrawlerStatusDot v-if="CRAWLER_ENABLED" :status="store.crawlerStatus" />
       </div>
 
       <!-- Messages -->

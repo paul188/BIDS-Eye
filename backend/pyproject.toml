@@ -12,8 +12,9 @@ dependencies = [
     "fastapi>=0.111",
     "uvicorn[standard]>=0.29",
     "pydantic>=2.0",
-    # Text-to-SQL pipeline (Gemini + RAG)
+    # Text-to-SQL pipeline (Gemini + RAG; Anthropic = cross-provider fallback tier)
     "google-genai>=0.8.0",
+    "anthropic>=0.40",
     "rapidfuzz>=3.0.0",
     "pyyaml>=6.0",
     "modal>=0.67",

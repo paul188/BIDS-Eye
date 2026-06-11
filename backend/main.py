@@ -32,6 +32,7 @@ _BIDS_SQL = Path(__file__).resolve().parents[1] / "BIDS-SQL"
 if str(_BIDS_SQL) not in sys.path:
     sys.path.insert(0, str(_BIDS_SQL))
 
+import db.models  # noqa: E402, F401 — registers models with Base.metadata before create_all
 from db.db import create_all_tables  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -91,11 +92,13 @@ app.add_middleware(
 
 from routers.auth import require_auth, router as auth_router      # noqa: E402
 from routers.query import router as query_router                   # noqa: E402
-from routers.crawler import router as crawler_router               # noqa: E402
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(query_router,   prefix="/api", dependencies=[Depends(require_auth)])
-app.include_router(crawler_router, prefix="/api", dependencies=[Depends(require_auth)])
+app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])
+
+if os.getenv("CRAWLER_ENABLED", "false").lower() == "true":
+    from routers.crawler import router as crawler_router           # noqa: E402
+    app.include_router(crawler_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 
 @app.get("/health")

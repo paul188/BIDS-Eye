@@ -413,49 +413,14 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
 """)
 
 
-# Model cascade — pinned version IDs required; unpinned aliases like
-# "gemini-2.0-flash" have been deprecated for newer API accounts.
-_MODEL_CASCADE = [
-    ("gemini-2.5-flash", "Primary",    4, [2, 4, 8, 16]),
-    ("gemini-2.5-pro",   "Fallback 1", 4, [2, 4, 8, 16]),
-]
-
-
 def _call_gemini(prompt: str, api_key: str) -> str:
-    """Call Gemini with the model cascade; return raw text response."""
-    import time
+    """Run the intent-extraction prompt through the shared LLM cascade.
 
-    try:
-        from google import genai
-        from google.genai import types
-    except ImportError as exc:
-        raise SystemExit("Missing dependency: pip install google-genai") from exc
-
-    client = genai.Client(api_key=api_key)
-    failures: list[str] = []
-
-    for model, role, max_attempts, waits in _MODEL_CASCADE:
-        for attempt in range(1, max_attempts + 1):
-            try:
-                response = client.models.generate_content(
-                    model=model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=_SYSTEM_PROMPT,
-                        temperature=0.1,
-                    ),
-                )
-                return response.text.strip()
-            except Exception as exc:
-                err_str = str(exc)
-                if attempt < max_attempts:
-                    time.sleep(waits[attempt - 1])
-                else:
-                    failures.append(f"{model} ({role}): {err_str}")
-    raise RuntimeError(
-        f"All {len(failures)} model(s) in cascade failed:\n"
-        + "\n".join(f"  • {f}" for f in failures)
-    )
+    Cascade + retries + cross-provider fallback live in llm_client.llm_generate;
+    raises llm_client.LLMAllFailedError if every tier fails.
+    """
+    from llm_client import llm_generate
+    return llm_generate(prompt, system=_SYSTEM_PROMPT, temperature=0.1, api_key=api_key)
 
 
 def preprocess_query(
