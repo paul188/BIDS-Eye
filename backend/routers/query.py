@@ -116,6 +116,8 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
             source_type=r["source_type"],
             remote_url=r.get("remote_url"),
             validation_status=r.get("validation_status"),
+            authors=r.get("authors"),
+            description_text=r.get("description_text"),
             subject_count=r.get("subject_count"),
             participants=participants_map.get(UUID(str(r["id"])), [])[
                 :_MAX_PARTICIPANTS_PER_DATASET

@@ -9,7 +9,7 @@ defineProps<{ status: CrawlerStatus | null }>()
     <!-- Status dot -->
     <span
       class="w-2 h-2 rounded-full flex-shrink-0"
-      :class="status?.running ? 'bg-green-400 animate-pulse' : 'bg-border'"
+      :class="status?.running ? 'bg-green-500 animate-pulse' : 'bg-[#dadce0]'"
     />
     <span v-if="status?.running">
       Crawling

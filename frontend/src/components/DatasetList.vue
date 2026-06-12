@@ -33,10 +33,10 @@ function go(page: number) {
 
 <template>
   <div class="flex flex-col gap-3">
-    <!-- Dataset grid -->
+    <!-- Dataset list (single column — one result after the next) -->
     <div
       v-if="datasets.length"
-      class="grid grid-cols-1 sm:grid-cols-2 gap-3"
+      class="flex flex-col gap-3"
       :class="{ 'opacity-50 pointer-events-none': loading }"
     >
       <DatasetCard v-for="ds in datasets" :key="ds.id" :dataset="ds" />
@@ -53,14 +53,14 @@ function go(page: number) {
       </span>
       <div class="flex items-center gap-2">
         <button
-          class="px-3 py-1 rounded-lg border border-border hover:text-accent hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          class="px-3 py-1 rounded-full border border-border hover:text-accent hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           :disabled="loading || currentPage <= 1"
           @click="go(currentPage - 1)"
         >
           ‹ Prev
         </button>
         <button
-          class="px-3 py-1 rounded-lg border border-border hover:text-accent hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          class="px-3 py-1 rounded-full border border-border hover:text-accent hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           :disabled="loading || currentPage >= pageCount"
           @click="go(currentPage + 1)"
         >
@@ -79,7 +79,7 @@ function go(page: number) {
       </button>
       <pre
         v-if="showSql"
-        class="mt-2 text-xs bg-surface border border-border rounded-lg p-3 overflow-x-auto text-green-300 font-mono whitespace-pre-wrap"
+        class="mt-2 text-xs bg-panel-soft border border-border rounded-lg p-3 overflow-x-auto text-[#0b5394] font-mono whitespace-pre-wrap"
       >{{ sql }}</pre>
     </div>
   </div>

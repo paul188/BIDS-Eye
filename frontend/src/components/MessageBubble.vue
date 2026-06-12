@@ -13,17 +13,17 @@ function onPageChange(page: number) {
 
 <template>
   <!-- User message -->
-  <div v-if="message.role === 'user'" class="flex justify-end">
-    <div class="max-w-[80%] bg-user-bubble rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
+  <div v-if="message.role === 'user'" data-role="user" class="flex justify-end scroll-mt-4">
+    <div class="max-w-[80%] bg-user-bubble rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-ink">
       {{ message.content }}
     </div>
   </div>
 
   <!-- Assistant message -->
-  <div v-else class="flex justify-start">
-    <div class="max-w-[95%] flex flex-col gap-3">
+  <div v-else data-role="assistant" class="flex justify-start">
+    <div class="max-w-full w-full flex flex-col gap-3">
       <!-- Loading animation -->
-      <div v-if="message.loading" class="flex items-center gap-2 text-muted text-sm px-1">
+      <div v-if="message.loading" class="flex items-center gap-2 text-muted-soft text-sm px-1">
         <span class="animate-pulse">●</span>
         <span class="animate-pulse delay-150">●</span>
         <span class="animate-pulse delay-300">●</span>
@@ -32,7 +32,7 @@ function onPageChange(page: number) {
       <!-- Error -->
       <div
         v-else-if="message.error"
-        class="bg-red-900/30 border border-red-700/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-red-200"
+        class="bg-red-50 border border-red-200 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-red-700"
       >
         {{ message.content }}
       </div>
@@ -41,7 +41,7 @@ function onPageChange(page: number) {
       <template v-else>
         <div
           v-if="message.content"
-          class="bg-ai-bubble rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-white"
+          class="px-1 py-1 text-sm text-ink"
         >
           {{ message.content }}
         </div>

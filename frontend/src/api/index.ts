@@ -16,6 +16,8 @@ export interface Dataset {
   source_type: string
   remote_url: string | null
   validation_status: string | null
+  authors: string[] | null
+  description_text: string | null
   subject_count: number | null
   participants: Participant[]
 }

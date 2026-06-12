@@ -186,12 +186,15 @@ _REQUIRED_SELECT: List[tuple] = [
     ("d.source_type",                              r"\bd\.source_type\b"),
     ("d.remote_url",                               r"\bd\.remote_url\b"),
     ("d.validation_status",                        r"\bd\.validation_status\b"),
+    ("d.authors",                                  r"\bd\.authors\b"),
+    ("d.description_text",                          r"\bd\.description_text\b"),
     ("COUNT(DISTINCT o.subject) AS subject_count", r"COUNT\s*\(\s*DISTINCT\s+o\d*\.subject\s*\)"),
 ]
 
 _MANDATORY_COLS_SQL = (
     "d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
     "       d.source_type, d.remote_url, d.validation_status,\n"
+    "       d.authors, d.description_text,\n"
     "       COUNT(DISTINCT o.subject) AS subject_count"
 )
 
