@@ -1,0 +1,1266 @@
+{
+  "absence_query": [
+    {
+      "question": "Which datasets have no anatomical MRI data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'anatomical_mri') GROUP BY d.id",
+      "pattern": "absence_filter"
+    },
+    {
+      "question": "Which datasets do not contain any behavioral data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id",
+      "pattern": "absence_query"
+    },
+    {
+      "question": "List all datasets that do not contain any electroencephalography data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electroencephalography') GROUP BY d.id",
+      "pattern": "absence_datatype"
+    },
+    {
+      "question": "Show me datasets that do not contain any behavioral data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id LIMIT 50",
+      "pattern": "absence_of_datatype"
+    },
+    {
+      "question": "List all datasets that do not contain any recorded electrophysiology data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electrophysiology') GROUP BY d.id",
+      "pattern": "absence_check"
+    },
+    {
+      "question": "Find datasets that do not contain any resting-state task data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting_state') GROUP BY d.id LIMIT 50",
+      "pattern": "absence_of_task"
+    },
+    {
+      "question": "List all datasets that do not contain any electrophysiology data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electrophysiology') GROUP BY d.id LIMIT 50",
+      "pattern": "modality_absence"
+    },
+    {
+      "question": "Retrieve datasets that have no fMRI data at all.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') GROUP BY d.id ORDER BY d.name LIMIT 50",
+      "pattern": "no_fmri_data"
+    },
+    {
+      "question": "Find datasets that do not contain any magnetoencephalography data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'magnetoencephalography') GROUP BY d.id ORDER BY d.name LIMIT 50",
+      "pattern": "exclude_modality"
+    },
+    {
+      "question": "Are there any datasets that do not contain any behavioral data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id",
+      "pattern": "absence_filter"
+    },
+    {
+      "question": "Find datasets that have no resting state data at all",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) GROUP BY d.id",
+      "pattern": "absence_resting_state"
+    },
+    {
+      "question": "Show me fMRI datasets with no task data, only resting state",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IS NOT NULL AND bo.task NOT IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) GROUP BY d.id",
+      "pattern": "only_resting_fmri"
+    }
+  ],
+  "age_query": [
+    {
+      "question": "Show me datasets where the average participant age is greater than 20 years.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 20",
+      "pattern": "age_mean_threshold"
+    },
+    {
+      "question": "Show me studies where the average participant age is older than 30 years.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 30",
+      "pattern": "age_query"
+    },
+    {
+      "question": "Are there any studies where the average age of the participants is greater than 50 years old?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 50",
+      "pattern": "age_threshold"
+    },
+    {
+      "question": "What datasets contain participants with an average age above 32?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 32",
+      "pattern": "age_threshold_group_by"
+    },
+    {
+      "question": "What is the maximum age of participants recorded in each dataset?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id",
+      "pattern": "max_age_per_dataset"
+    },
+    {
+      "question": "Show me datasets where the average age of participants is greater than 20 years.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 20",
+      "pattern": "mean_age_filter"
+    },
+    {
+      "question": "Show me the minimum participant age for each dataset.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id",
+      "pattern": "min_age_per_dataset"
+    },
+    {
+      "question": "What is the average age of participants in each dataset?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id",
+      "pattern": "avg_age_per_dataset"
+    },
+    {
+      "question": "What is the average age of participants for each dataset?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id",
+      "pattern": "average_age_by_dataset"
+    },
+    {
+      "question": "What is the average age of participants across all datasets?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id",
+      "pattern": "average_participant_age"
+    }
+  ],
+  "aggregate_query": [
+    {
+      "question": "Count how many unique subjects are in each dataset that has a DOI.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NOT NULL GROUP BY d.id",
+      "pattern": "doi_aggregate"
+    },
+    {
+      "question": "Which are the top 5 datasets with the highest number of subjects?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "top_n_datasets"
+    },
+    {
+      "question": "Which datasets have the largest number of subjects?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+      "pattern": "join_distinct"
+    },
+    {
+      "question": "Give me the datasets where the number of unique participants exceeds 20.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 20 LIMIT 50",
+      "pattern": "aggregate_query"
+    },
+    {
+      "question": "Which datasets have an average subject age greater than 40?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 40",
+      "pattern": "age_aggregate"
+    },
+    {
+      "question": "Find datasets where the average age of participants is greater than 40.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING AVG(p.age) > 40",
+      "pattern": "avg_age_filter"
+    },
+    {
+      "question": "Identify datasets that contain PET data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'positron_emission_tomography') GROUP BY d.id",
+      "pattern": "datatype_check"
+    },
+    {
+      "question": "Which datasets contain no EEG data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electroencephalography') GROUP BY d.id",
+      "pattern": "not_exists"
+    },
+    {
+      "question": "List all datasets that contain no behavioural data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data') GROUP BY d.id",
+      "pattern": "datatype_negation"
+    },
+    {
+      "question": "List all datasets that do not contain any functional MRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "modality_absence"
+    }
+  ],
+  "author_query": [
+    {
+      "question": "Which datasets include contributions from Eishi Asano?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Eishi Asano' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_lookup"
+    },
+    {
+      "question": "List all datasets where Kahini Mehta is listed as an author.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Kahini Mehta' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_filter"
+    },
+    {
+      "question": "Find datasets authored by Raquel E. Gur.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Raquel E. Gur' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_check"
+    },
+    {
+      "question": "Find datasets authored by James R. Booth",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'James R. Booth' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_search"
+    },
+    {
+      "question": "List datasets authored by Arnaud Delorme.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Arnaud Delorme' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_match"
+    },
+    {
+      "question": "Which datasets have Joanes Grandjean listed as an author?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Joanes Grandjean' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_query"
+    },
+    {
+      "question": "List all datasets that were not authored by Arnaud Delorme.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT ('Arnaud Delorme' = ANY(d.authors)) GROUP BY d.id",
+      "pattern": "author_exclusion"
+    },
+    {
+      "question": "Show me datasets authored by Joanes Grandjean.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Joanes Grandjean' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_lookup"
+    },
+    {
+      "question": "Show all datasets that have contributions from Kosha Ruparel.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'Kosha Ruparel' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_filter"
+    },
+    {
+      "question": "Retrieve datasets that list David R. Roalf as an author.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'David R. Roalf' = ANY(d.authors) GROUP BY d.id",
+      "pattern": "author_search"
+    }
+  ],
+  "combined_filter": [
+    {
+      "question": "Find datasets with MEG data that include the surroundSupp task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'MEG' AND bo.task = 'surroundSupp') GROUP BY d.id",
+      "pattern": "meg_surround_supp"
+    },
+    {
+      "question": "Find datasets with at least 25 healthy volunteer participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'healthy_volunteer' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 25",
+      "pattern": "healthy_volunteer_count"
+    },
+    {
+      "question": "Show datasets with more than 20 female participants diagnosed with autism spectrum disorder.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'autism_spectrum_disorder' AND p.sex = 'female' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 20 LIMIT 50",
+      "pattern": "participant_count_threshold"
+    },
+    {
+      "question": "Retrieve datasets that include participants with autism spectrum disorder who are male and identify as ambidextrous or mixed-handed.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'autism_spectrum_disorder' AND p.sex = 'male' AND p.handedness = 'ambidextrous / mixed-handed') GROUP BY d.id",
+      "pattern": "combined_participant_filter"
+    },
+    {
+      "question": "Find datasets with more than 25 participants that do not have any EEG data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'EEG') GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 25",
+      "pattern": "combined_filter"
+    },
+    {
+      "question": "Find datasets that do not contain any MEG data and have no behavioural tasks related to szMonitoring.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'MEG') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'szMonitoring') GROUP BY d.id",
+      "pattern": "exclusion_filter"
+    },
+    {
+      "question": "Which datasets lack motion capture data and exclude the bao task?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'motion_capture') AND NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'bao') GROUP BY d.id",
+      "pattern": "negation_filter"
+    },
+    {
+      "question": "Identify datasets with at least 5 female participants who are ambidextrous or mixed-handed and have performed the FFERN task as part of an electroencephalography study.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE o.datatype = 'electroencephalography' AND o.task = 'FFERN' AND p.sex = 'female' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5",
+      "pattern": "participant_dataset_filter"
+    },
+    {
+      "question": "Which datasets lack intracranial EEG data and do not contain any participants diagnosed with misinfo?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'intracranial_eeg') AND NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'misinfo') GROUP BY d.id LIMIT 50",
+      "pattern": "negated_filter"
+    },
+    {
+      "question": "List datasets featuring biofieldtherapy tasks and female participants diagnosed with Dyslexia",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'biofieldtherapy') AND EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female' AND p.diagnosis = 'Dyslexia') GROUP BY d.id LIMIT 50",
+      "pattern": "join_distinct"
+    },
+    {
+      "question": "Find fMRI datasets with social cognition tasks and at least 20 participants",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('social_task_general','theory_of_mind','hcp_social_task','social_interaction_dyads')) GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 20",
+      "pattern": "fmri_social_large"
+    },
+    {
+      "question": "Give me EEG datasets studying emotion in healthy adults",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('emotion_general','emotional_face_perception','emotion_matching_task','hariri_emotional_face_task')) AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "eeg_emotion_healthy"
+    },
+    {
+      "question": "Find resting state fMRI datasets with more than 50 subjects",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 50",
+      "pattern": "resting_large_cohort"
+    },
+    {
+      "question": "Show me MRI datasets about Alzheimer's disease with at least 30 subjects",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri') AND (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') OR d.name ILIKE '%alzheimer%' OR d.description_text ILIKE '%alzheimer%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
+      "pattern": "alzheimers_mri_large"
+    },
+    {
+      "question": "Find EEG datasets with autism patients doing oddball or attention tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'autism_spectrum_disorder') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('auditory_oddball','auditory_oddball_button_response','go_nogo','stop_signal')) GROUP BY d.id",
+      "pattern": "asd_eeg_oddball"
+    },
+    {
+      "question": "List fMRI datasets with theory of mind tasks and healthy adult participants",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('theory_of_mind','theory_of_mind_false_belief','theory_of_mind_localizer')) AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "fmri_tom_healthy"
+    },
+    {
+      "question": "Find datasets with working memory tasks in patients with schizophrenia",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('schizophrenia','schizophrenia_with_avh','schizophrenia_without_avh')) AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('n_back_working_memory','spatial_location_delay_working_memory')) GROUP BY d.id",
+      "pattern": "schizophrenia_wm"
+    }
+  ],
+  "comparison_query": [
+    {
+      "question": "Show me datasets that lack any EEG data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'EEG') GROUP BY d.id",
+      "pattern": "negated_suffix_search"
+    },
+    {
+      "question": "List datasets that do not contain any bold fMRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "missing_modality"
+    },
+    {
+      "question": "Which datasets include at least 15 subjects performing the Multisensory Detection Task?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'MultisensoryDetectionTask') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 15",
+      "pattern": "dataset_threshold_task"
+    },
+    {
+      "question": "List the top 50 datasets with the most subjects, excluding any that contain motion capture data using the UnevenTerrain task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'behavioural_data' AND bo.task = 'UnevenTerrain') GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+      "pattern": "ranking_filter"
+    },
+    {
+      "question": "Which datasets have at least 5 male participants who are ambidextrous or mixed-handed?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5",
+      "pattern": "participant_attribute_count"
+    },
+    {
+      "question": "Find datasets where the number of male participants is strictly greater than the number of female participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'male') > COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'female')",
+      "pattern": "demographic_ratio_comparison"
+    },
+    {
+      "question": "Which datasets have more female participants than male participants?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'female') > COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'male')",
+      "pattern": "group_by_having_sex_ratio"
+    },
+    {
+      "question": "Which datasets have more female than male participants?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'female') > COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'male') LIMIT 50",
+      "pattern": "sex_comparison"
+    },
+    {
+      "question": "Which datasets have more female than male participants?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'female') > COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'male') LIMIT 50",
+      "pattern": "sex_ratio_check"
+    },
+    {
+      "question": "Identify datasets where female participants outnumber male participants by at least 5 subjects.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'female') >= COUNT(DISTINCT p.participant_id) FILTER (WHERE p.sex = 'male') + 5 LIMIT 50",
+      "pattern": "demographic_ratio_filter"
+    },
+    {
+      "question": "Find datasets with more female than male participants",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING (SELECT COUNT(*) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'F') > (SELECT COUNT(*) FROM bids_participants p3 WHERE p3.dataset_id = d.id AND p3.sex = 'M')",
+      "pattern": "more_female"
+    },
+    {
+      "question": "Show me datasets where patients with schizophrenia outnumber healthy controls",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(*) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('schizophrenia','schizophrenia_with_avh','schizophrenia_without_avh')) > (SELECT COUNT(*) FROM bids_participants p3 WHERE p3.dataset_id = d.id AND p3.diagnosis = 'healthy_control')",
+      "pattern": "patient_outnumber_control"
+    }
+  ],
+  "concept_query": [
+    {
+      "question": "Show all datasets containing PET or ASL imaging data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'pet_asl') GROUP BY d.id",
+      "pattern": "pet_asl_modalities"
+    },
+    {
+      "question": "Find datasets containing PET or ASL data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'pet_asl') GROUP BY d.id",
+      "pattern": "concept_filter"
+    },
+    {
+      "question": "Find datasets containing naturalistic tasks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'naturalistic') GROUP BY d.id",
+      "pattern": "concept_task"
+    },
+    {
+      "question": "List all datasets that contain naturalistic task data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'naturalistic') GROUP BY d.id",
+      "pattern": "concept_query"
+    },
+    {
+      "question": "Find all datasets that contain field map images.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'field_maps') GROUP BY d.id",
+      "pattern": "concept_key_suffix"
+    },
+    {
+      "question": "Which datasets provide resting-state neuroimaging data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting_state') GROUP BY d.id",
+      "pattern": "concept_task_query"
+    },
+    {
+      "question": "Show me all datasets that include MRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'mri') GROUP BY d.id LIMIT 50",
+      "pattern": "concept_search"
+    },
+    {
+      "question": "Show all datasets containing participants diagnosed with a psychiatric condition.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IN ('schizophrenia', 'schizophrenia_with_avh', 'schizophrenia_without_avh', 'depression', 'major_depressive_disorder', 'bipolar_disorder', 'anxiety_disorder', 'post_traumatic_stress_disorder', 'obsessive_compulsive_disorder', 'panic_disorder')) GROUP BY d.id",
+      "pattern": "concept_key_filter"
+    },
+    {
+      "question": "Show me datasets that include MRS spectroscopy data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'mrs_spectroscopy') GROUP BY d.id",
+      "pattern": "concept_suffix"
+    },
+    {
+      "question": "List all datasets that include field map data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'field_maps') GROUP BY d.id LIMIT 50",
+      "pattern": "concept_field_map_exists"
+    },
+    {
+      "question": "Find all datasets related to social interactions and social cognition",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('social_task_general','theory_of_mind','face_perception','empathy_task','trust_game','social_observation','hcp_social_task','social_interaction_dyads','social_memory_cuing','emotion_general')) GROUP BY d.id",
+      "pattern": "concept_social"
+    },
+    {
+      "question": "Show me all resting state fMRI datasets",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed','resting_state_pre_intervention','resting_state_post_intervention')) GROUP BY d.id",
+      "pattern": "concept_resting_state"
+    },
+    {
+      "question": "I am looking for datasets on auditory processing and speech perception",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('auditory_general','speech_perception_general','auditory_localizer','auditory_oddball','narrative_listening','auditory_word_processing','passive_listening_natural_speech')) GROUP BY d.id",
+      "pattern": "concept_auditory"
+    },
+    {
+      "question": "Give me all working memory datasets",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('n_back_working_memory','spatial_location_delay_working_memory','audiovisual_working_memory','passive_accessible_working_memory','perception_and_working_memory')) GROUP BY d.id",
+      "pattern": "concept_working_memory"
+    },
+    {
+      "question": "Find datasets related to pain and nociception",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%pain%' OR d.description_text ILIKE '%pain%') GROUP BY d.id",
+      "pattern": "concept_ilike_pain"
+    },
+    {
+      "question": "List all datasets about language comprehension and processing",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('language_comprehension_l1','language_comprehension_ln','hcp_language_task','auditory_language_localizer','language_localizer_english','semantic_listening')) GROUP BY d.id",
+      "pattern": "concept_language"
+    },
+    {
+      "question": "Find all datasets studying attention and cognitive control",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('attention_and_executive_control','selective_attention','divided_attention','sustained_attention','go_nogo','stop_signal')) GROUP BY d.id",
+      "pattern": "concept_attention"
+    },
+    {
+      "question": "Give me all datasets related to gambling tasks or risk perception",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('balloon_analog_risk_task','casino_gambling_task','delay_discounting_task','effort_based_gambling_task','hcp_gambling_task','mixed_gambles_task','monetary_gambling_task','monetary_incentive_delay_task','numerical_risk_task','risky_decision_making','skewed_gambling_task','shared_reward_task','reward_processing')) GROUP BY d.id",
+      "pattern": "concept_gambling_risk"
+    },
+    {
+      "question": "Give me only datasets which stem from studies with patients with psychiatric problems",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('schizophrenia', 'schizophrenia_with_avh', 'schizophrenia_without_avh', 'depression', 'major_depressive_disorder', 'unipolar_depression', 'bipolar_disorder', 'anxiety_disorder', 'post_traumatic_stress_disorder', 'obsessive_compulsive_disorder', 'panic_disorder')) GROUP BY d.id",
+      "pattern": "concept_psychiatric"
+    },
+    {
+      "question": "Give me all datasets with tasks of neuromodulation",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('deep_brain_stimulation_high_frequency', 'deep_brain_stimulation_low_frequency', 'deep_brain_stimulation_variable_frequency', 'transcranial_magnetic_stimulation', 'tms_training_block_1', 'tms_training_block_2', 'tms_training_block_3', 'tms_training_block_4', 'tms_training_block_5', 'tms_training_block_6', 'tms_eeg_stimulation_variant1', 'tms_eeg_stimulation_variant2', 'resting_state_tms_eeg', 'heat_focused_ultrasound_stimulation', 'direct_cortical_stimulation', 'electrical_stimulation', 'cortico_cortical_paired_associative_stimulation', 'fmri_neurofeedback', 'neurofeedback_general', 'auditory_neurofeedback', 'visual_neurofeedback', 'emotion_neurofeedback', 'motor_imagery_neurofeedback_1d', 'motor_imagery_neurofeedback_2d', 'eeg_motor_imagery_neurofeedback', 'real_time_eeg_alpha_neurofeedback', 'neurofeedback_block_1', 'neurofeedback_block_2', 'neurofeedback_block_3', 'free_recall_open_loop_stimulation', 'free_recall_closed_loop_stimulation', 'paired_associates_learning_open_loop_stimulation', 'neuromodulation_task', 'neuromodulation_condition_2')) GROUP BY d.id",
+      "pattern": "concept_neuromodulation"
+    },
+    {
+      "question": "Return datasets connected to sleep",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('sleep_state', 'slow_wave_sleep', 'emotional_arousal_tmr', 'interictal_state_recording_sleep', 'comfort_assessment_sleep_monitoring', 'sleepiness_state')) GROUP BY d.id",
+      "pattern": "concept_sleep"
+    }
+  ],
+  "description_search": [
+    {
+      "question": "List all datasets containing the word task in their title.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%task%' GROUP BY d.id",
+      "pattern": "name_search"
+    },
+    {
+      "question": "Show me datasets that have the word performed in their name.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%performed%' GROUP BY d.id",
+      "pattern": "dataset_name_search"
+    },
+    {
+      "question": "Show datasets with modafinil in their name.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%modafinil%' GROUP BY d.id",
+      "pattern": "description_search"
+    },
+    {
+      "question": "List datasets that do not mention cognitive in their name.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT d.name ILIKE '%cognitive%' GROUP BY d.id",
+      "pattern": "name_exclusion"
+    },
+    {
+      "question": "Retrieve datasets that contain the word participants in their description.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%participants%' GROUP BY d.id",
+      "pattern": "text_search"
+    },
+    {
+      "question": "Find datasets that mention the insula in their description",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%insula%' GROUP BY d.id LIMIT 50",
+      "pattern": "exists"
+    },
+    {
+      "question": "Search for datasets that mention cognitive in their description text.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%cognitive%' GROUP BY d.id LIMIT 50",
+      "pattern": "description_text_search"
+    },
+    {
+      "question": "List all datasets that lack any mention of control in their project description.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text NOT ILIKE '%control%' GROUP BY d.id LIMIT 50",
+      "pattern": "negation_search"
+    },
+    {
+      "question": "Identify datasets that describe research involving fluid dynamics or related brain activity.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%fluid%' OR d.description_text ILIKE '%fluid%' GROUP BY d.id",
+      "pattern": "description_keyword_search"
+    },
+    {
+      "question": "Search for datasets containing the term within in either the name or the description.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%within%' OR d.description_text ILIKE '%within%' GROUP BY d.id",
+      "pattern": "text_search_within"
+    },
+    {
+      "question": "Find datasets that mention 7 Tesla MRI scanners in their description",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.description_text ILIKE '%7 Tesla%' OR d.description_text ILIKE '%7T%' OR d.name ILIKE '%7T%') GROUP BY d.id",
+      "pattern": "description_7t"
+    },
+    {
+      "question": "Show me datasets related to consciousness or anaesthesia",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%consciousness%' OR d.description_text ILIKE '%consciousness%' OR d.name ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anesthesia%') GROUP BY d.id",
+      "pattern": "description_consciousness"
+    },
+    {
+      "question": "Find datasets about sleep or sleep deprivation",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%sleep%' OR d.description_text ILIKE '%sleep deprivation%' OR d.description_text ILIKE '%polysomnography%') GROUP BY d.id",
+      "pattern": "description_sleep"
+    },
+    {
+      "question": "Find datasets studying reward or reinforcement learning",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%reward%' OR d.description_text ILIKE '%reinforcement learning%' OR d.description_text ILIKE '%reward processing%') GROUP BY d.id",
+      "pattern": "description_reward"
+    }
+  ],
+  "doi_query": [
+    {
+      "question": "List all datasets that do not have a digital object identifier assigned.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NULL GROUP BY d.id",
+      "pattern": "doi_null"
+    },
+    {
+      "question": "Which datasets are missing a DOI reference?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NULL GROUP BY d.id",
+      "pattern": "missing_doi"
+    },
+    {
+      "question": "List all datasets that do not have an associated digital object identifier.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NULL GROUP BY d.id",
+      "pattern": "no_doi"
+    },
+    {
+      "question": "Find all datasets that do not have any DOI associated with them.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NULL GROUP BY d.id",
+      "pattern": "doi_missing_filter"
+    },
+    {
+      "question": "List all datasets that do not have an associated digital object identifier.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NULL GROUP BY d.id",
+      "pattern": "doi_missing"
+    },
+    {
+      "question": "List all datasets that have a DOI assigned.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NOT NULL GROUP BY d.id",
+      "pattern": "doi_presence"
+    },
+    {
+      "question": "Show me all datasets that have a registered DOI.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NOT NULL GROUP BY d.id",
+      "pattern": "doi_exists"
+    },
+    {
+      "question": "List all datasets that have a DOI assigned.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NOT NULL GROUP BY d.id",
+      "pattern": "doi_exists_query"
+    },
+    {
+      "question": "List all datasets that are associated with a DOI.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NOT NULL GROUP BY d.id",
+      "pattern": "doi_query"
+    },
+    {
+      "question": "List the datasets that have a DOI registered.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.doi IS NOT NULL GROUP BY d.id ORDER BY d.name LIMIT 50",
+      "pattern": "datasets_with_doi"
+    }
+  ],
+  "funding_query": [
+    {
+      "question": "Which datasets have N/A listed as their funding source?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'N/A' = ANY(d.funding) GROUP BY d.id",
+      "pattern": "funding_filter"
+    },
+    {
+      "question": "List all datasets that were supported by the funding source GRANT #2.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'GRANT #2' = ANY(d.funding) GROUP BY d.id",
+      "pattern": "funding_lookup"
+    },
+    {
+      "question": "Show all datasets funded by CI241/3-1.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'CI241/3-1' = ANY(d.funding) GROUP BY d.id",
+      "pattern": "funding_query"
+    },
+    {
+      "question": "Which datasets have not received funding from the CI241/3-1 grant?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT ('CI241/3-1' = ANY(d.funding)) GROUP BY d.id",
+      "pattern": "funding_exclusion"
+    },
+    {
+      "question": "Show me datasets funded by GRANT #1",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'GRANT #1' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+      "pattern": "funding_search"
+    },
+    {
+      "question": "Identify datasets funded by the grant CI241/3-1.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'CI241/3-1' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+      "pattern": "funding_check"
+    },
+    {
+      "question": "Which datasets received funding from ARC DP200101787 (TAC)?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'ARC DP200101787 (TAC)' = ANY(d.funding) GROUP BY d.id",
+      "pattern": "funding_source"
+    },
+    {
+      "question": "Show me datasets that are not funded by the NIH/NIMH R01MH125934 for BIDS data preparation grant.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT ('NIH/NIMH R01MH125934 for BIDS data preparation' = ANY(d.funding)) GROUP BY d.id",
+      "pattern": "funding_exclude"
+    },
+    {
+      "question": "Show me datasets funded by NIH/NIMH R01MH125934 for BIDS data preparation.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'NIH/NIMH R01MH125934 for BIDS data preparation' = ANY(d.funding) GROUP BY d.id LIMIT 50",
+      "pattern": "funding_source_filter"
+    },
+    {
+      "question": "Find datasets that report N/A as a funding source.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE 'N/A' = ANY(d.funding) GROUP BY d.id",
+      "pattern": "funding_filter"
+    }
+  ],
+  "json_numeric_query": [
+    {
+      "question": "Show datasets where the imaging frequency recorded in the sidecar metadata is less than or equal to 101.24.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (o.other_entities->>'ImagingFrequency')::float <= 101.24 GROUP BY d.id",
+      "pattern": "json_numeric_query"
+    },
+    {
+      "question": "Show me datasets where the bandwidth per pixel phase encode is at least 37.91.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING MAX((o.other_entities->>'BandwidthPerPixelPhaseEncode')::float) >= 37.91 LIMIT 50",
+      "pattern": "json_numeric_filter"
+    },
+    {
+      "question": "Find datasets where the reference transmit amplifier (TxRefAmp) value is less than 275.39.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'TxRefAmp')::float < 275.39) GROUP BY d.id",
+      "pattern": "json_numeric_threshold"
+    },
+    {
+      "question": "Which datasets have a base resolution lower than 56.7?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BaseResolution')::float < 56.7) GROUP BY d.id",
+      "pattern": "low_resolution_check"
+    },
+    {
+      "question": "Show datasets where the base resolution is greater than 84.06.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BaseResolution')::float > 84.06) GROUP BY d.id",
+      "pattern": "numeric_json_filter"
+    },
+    {
+      "question": "Show me datasets where the base image resolution is 41.65 or lower.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BaseResolution')::float <= 41.65) GROUP BY d.id",
+      "pattern": "json_resolution"
+    },
+    {
+      "question": "Find datasets where the imaging frequency is greater than 103.8.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'ImagingFrequency')::float > 103.8) GROUP BY d.id",
+      "pattern": "numeric_json_threshold"
+    },
+    {
+      "question": "Find all datasets where the base image resolution is greater than 43.64",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BaseResolution')::float > 43.64) GROUP BY d.id LIMIT 50",
+      "pattern": "numeric_sidecar_filter"
+    },
+    {
+      "question": "Which datasets have an imaging frequency lower than 183.67?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'ImagingFrequency')::float < 183.67) GROUP BY d.id LIMIT 50",
+      "pattern": "imaging_frequency_threshold"
+    },
+    {
+      "question": "Identify datasets where the phase encode bandwidth per pixel is 28.56 or less.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'BandwidthPerPixelPhaseEncode')::float <= 28.56) GROUP BY d.id",
+      "pattern": "bandwidth_filter"
+    }
+  ],
+  "json_query": [
+    {
+      "question": "Identify datasets where the average echo time is greater than 30 milliseconds",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING AVG((o.other_entities->>'EchoTime')::float) > 30",
+      "pattern": "json_numeric_avg"
+    },
+    {
+      "question": "Which studies include participants with ancestry information recorded?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.extra->>'ethnicity' IS NOT NULL GROUP BY d.id",
+      "pattern": "json_attribute_filter"
+    },
+    {
+      "question": "Show me datasets that contain participant ancestry information in the extra metadata fields.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra ? 'ethnicity') GROUP BY d.id",
+      "pattern": "json_query"
+    },
+    {
+      "question": "Which datasets have participants with a body mass index value greater than 30?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND (p.extra->>'bmi')::float > 30) GROUP BY d.id",
+      "pattern": "json_numeric_participant"
+    },
+    {
+      "question": "Find datasets where the study group is explicitly labeled in the participant metadata.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'group' IS NOT NULL) GROUP BY d.id",
+      "pattern": "filter_by_extra_field"
+    },
+    {
+      "question": "Which datasets have no recorded information for the RF flip angle in their sidecar metadata?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities ? 'FlipAngle') GROUP BY d.id",
+      "pattern": "metadata_missing"
+    },
+    {
+      "question": "Search for datasets where the cognitive score is recorded for participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'iq' IS NOT NULL) GROUP BY d.id LIMIT 50",
+      "pattern": "json_field_existence"
+    },
+    {
+      "question": "Which datasets include participants with an intelligence score greater than 110?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND (p.extra->>'iq')::float > 110) GROUP BY d.id LIMIT 50",
+      "pattern": "json_numeric_filter"
+    },
+    {
+      "question": "Show me datasets that do not contain any information about participant alcohol history.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'alcohol_use' IS NOT NULL) GROUP BY d.id",
+      "pattern": "not_exists_participant_extra"
+    },
+    {
+      "question": "List all datasets that contain information about the ethnic background of participants",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'ethnicity' IS NOT NULL) GROUP BY d.id LIMIT 50",
+      "pattern": "join_distinct"
+    }
+  ],
+  "license_query": [
+    {
+      "question": "Find datasets with a CCO license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'CCO' GROUP BY d.id",
+      "pattern": "license_query"
+    },
+    {
+      "question": "Find datasets that have published their data under a CC0 license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'CC0' GROUP BY d.id",
+      "pattern": "license_filter"
+    },
+    {
+      "question": "Which datasets are released under the PDDL license?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%PDDL%' GROUP BY d.id",
+      "pattern": "license_match"
+    },
+    {
+      "question": "Find datasets that do not use the specific OpenfMRI Public Domain Dedication license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT (d.license ILIKE '%Public Domain Dedication and License%v1.0%OpenfMRI%') GROUP BY d.id",
+      "pattern": "license_exclusion"
+    },
+    {
+      "question": "Which datasets are NOT licensed under CC-BY-SA 4.0?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_datasets d2 WHERE d2.id = d.id AND d2.license = 'CC-BY-SA 4.0') GROUP BY d.id LIMIT 50",
+      "pattern": "license_negation"
+    },
+    {
+      "question": "List all datasets that utilize the PPDL license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license = 'PPDL' GROUP BY d.id",
+      "pattern": "license_query"
+    },
+    {
+      "question": "Show me datasets that are released under a CC0 license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%CC0%' GROUP BY d.id",
+      "pattern": "license_filter"
+    },
+    {
+      "question": "Show me all datasets that use the Creative Commons Attribution-NonCommercial 4.0 International license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%Attribution-NonCommercial 4.0 International%' GROUP BY d.id",
+      "pattern": "license_match"
+    },
+    {
+      "question": "List datasets that are licensed under PDDL.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%PDDL%' GROUP BY d.id",
+      "pattern": "license_query"
+    },
+    {
+      "question": "Find datasets released under the CCO license.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.license ILIKE '%CCO%' GROUP BY d.id",
+      "pattern": "license_filter"
+    }
+  ],
+  "metadata_query": [
+    {
+      "question": "List all datasets that include information about the participant's education level in the metadata.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.extra->>'education_years' IS NOT NULL GROUP BY d.id",
+      "pattern": "metadata_query"
+    },
+    {
+      "question": "Which datasets include participants who reported concerns about their eating habits?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.extra->>'concern_dieting' IS NOT NULL GROUP BY d.id",
+      "pattern": "participant_metadata_filter"
+    },
+    {
+      "question": "Find all datasets that include information about alcohol use in the participant records.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra ? 'alcohol_use') GROUP BY d.id",
+      "pattern": "metadata_query_alcohol"
+    },
+    {
+      "question": "List datasets that record a specific cohort group for participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'group' IS NOT NULL) GROUP BY d.id",
+      "pattern": "metadata_exists"
+    },
+    {
+      "question": "Identify datasets where participants have recorded tobacco use information.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'smoking' IS NOT NULL) GROUP BY d.id",
+      "pattern": "extra_field_check"
+    },
+    {
+      "question": "List datasets that lack slice acquisition times in their metadata.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities ? 'SliceTiming') GROUP BY d.id LIMIT 50",
+      "pattern": "metadata_missing_check"
+    },
+    {
+      "question": "Show me datasets that do not specify the subject position in the metadata.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'PatientPosition' IS NOT NULL) GROUP BY d.id",
+      "pattern": "metadata_missing_query"
+    },
+    {
+      "question": "Show datasets where the scan time is explicitly recorded in the sidecar metadata.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'AcquisitionTime' IS NOT NULL) GROUP BY d.id LIMIT 50",
+      "pattern": "metadata_field_check"
+    },
+    {
+      "question": "Which datasets do not have slice onset times recorded in their metadata?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'SliceTiming' IS NOT NULL) GROUP BY d.id LIMIT 50",
+      "pattern": "not_exists"
+    },
+    {
+      "question": "Show datasets where the MRI manufacturer is specified and participants have a recorded full scale iq.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' IS NOT NULL) AND p.extra->>'iq' IS NOT NULL GROUP BY d.id",
+      "pattern": "metadata_iq_filter"
+    }
+  ],
+  "multimodal_query": [
+    {
+      "question": "Find datasets that do not contain any anatomical MRI or field map data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype IN ('anat', 'fmap')) GROUP BY d.id",
+      "pattern": "multimodal_not_exists"
+    },
+    {
+      "question": "Which datasets are missing both anatomical MRI and functional MRI data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype IN ('anat', 'func')) GROUP BY d.id",
+      "pattern": "missing_modalities"
+    },
+    {
+      "question": "Identify datasets that do not contain any anatomical MRI or field map data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype IN ('anatomical_mri', 'field_maps')) GROUP BY d.id",
+      "pattern": "not_exists"
+    },
+    {
+      "question": "Are there any datasets that include both anatomical and functional MRI data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "exists_multimodal"
+    },
+    {
+      "question": "List all datasets that contain both anatomical MRI and functional MRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "multimodal_anat_func"
+    },
+    {
+      "question": "Which datasets contain both anatomical and functional MRI data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "multimodal_check"
+    },
+    {
+      "question": "List datasets that include intracranial EEG data and functional MRI scans.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'intracranial_eeg') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "multimodal_query"
+    },
+    {
+      "question": "Show datasets that include both anatomical and functional MRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo1 WHERE bo1.dataset_id = d.id AND bo1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "multimodal_exists"
+    },
+    {
+      "question": "Find datasets containing both anatomical MRI and magnetoencephalography data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'magnetoencephalography') GROUP BY d.id LIMIT 50",
+      "pattern": "multimodal_join"
+    },
+    {
+      "question": "Identify datasets that contain both anatomical MRI and functional MRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') GROUP BY d.id LIMIT 50",
+      "pattern": "multimodal_existence"
+    },
+    {
+      "question": "Find datasets that have both EEG and MRI data",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'anatomical_mri') GROUP BY d.id",
+      "pattern": "eeg_and_mri"
+    },
+    {
+      "question": "Which datasets contain EEG recordings combined with fMRI data during cognitive tasks?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_objects o4 WHERE o4.dataset_id = d.id AND o4.task IS NOT NULL AND o4.task NOT IN ('resting_state', 'resting_state_eyes_open', 'resting_state_eyes_closed', 'resting_state_technical', 'resting_state_post_intervention', 'resting_state_pre_intervention', 'sleep_state')) GROUP BY d.id",
+      "pattern": "eeg_fmri_cognitive_task"
+    },
+    {
+      "question": "Show me datasets that contain both structural and functional MRI",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "anat_and_func"
+    },
+    {
+      "question": "Find datasets with MEG and MRI data collected from the same participants",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'magnetoencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'anatomical_mri') GROUP BY d.id",
+      "pattern": "meg_and_mri"
+    },
+    {
+      "question": "List datasets with both diffusion MRI and functional MRI",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'diffusion_mri') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "dwi_and_fmri"
+    }
+  ],
+  "participant_filter": [
+    {
+      "question": "List all datasets that have fewer than 25 participants total.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.subject) < 25 LIMIT 50",
+      "pattern": "aggregate_threshold"
+    },
+    {
+      "question": "Show me datasets that do not contain any female participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female') GROUP BY d.id LIMIT 50",
+      "pattern": "participant_not_exists"
+    },
+    {
+      "question": "Show me datasets that do not contain any healthy volunteers",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'healthy_volunteer') GROUP BY d.id",
+      "pattern": "participant_exclusion"
+    },
+    {
+      "question": "Which datasets have at least 15 male participants with smh diagnosis?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.diagnosis = 'smh' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 15",
+      "pattern": "participant_filter_sex_diagnosis"
+    },
+    {
+      "question": "Show datasets that have at least 15 male participants diagnosed with fibromyalgia.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'fibromyalgia' AND p.sex = 'male' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 15",
+      "pattern": "participant_threshold"
+    },
+    {
+      "question": "Find datasets that do not have any male participants with a diagnosis of major depressive disorder.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male' AND p.diagnosis = 'major_depressive_disorder') GROUP BY d.id LIMIT 50",
+      "pattern": "participant_filter"
+    },
+    {
+      "question": "List datasets containing more than 25 male participants diagnosed with prosopagnosia.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.diagnosis = 'prosopagnosia' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 25 LIMIT 50",
+      "pattern": "clinical_participant_count"
+    },
+    {
+      "question": "Find datasets with more than 10 male participants who are ambidextrous or mixed-handed.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 10",
+      "pattern": "participant_filter_count"
+    },
+    {
+      "question": "Show me datasets that include data from female participants with autism spectrum disorder, provided there are at least 5 such participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'autism_spectrum_disorder' AND p.sex = 'female' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5 LIMIT 50",
+      "pattern": "participant_count"
+    },
+    {
+      "question": "Find datasets with at least 5 female participants who are ambidextrous or mixed-handed.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'female' AND p.handedness = 'ambidextrous / mixed-handed' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5 LIMIT 50",
+      "pattern": "participant_attribute_count"
+    },
+    {
+      "question": "Find datasets with bipolar disorder patients",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'bipolar_disorder') OR d.name ILIKE '%bipolar%' OR d.description_text ILIKE '%bipolar%') GROUP BY d.id",
+      "pattern": "bipolar_dx"
+    },
+    {
+      "question": "Show me datasets with participants who have epilepsy",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('epilepsy','focal_cortical_dysplasia','genetic_epilepsy','complex_epilepsy_lgs_west_syndrome_history')) OR d.name ILIKE '%epilepsy%' OR d.description_text ILIKE '%epilepsy%') GROUP BY d.id",
+      "pattern": "epilepsy_dx"
+    },
+    {
+      "question": "Give me datasets about Parkinson's disease with more than 40 participants",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('parkinsons_disease','parkinsons_disease_mci','de_novo_parkinsons')) OR d.name ILIKE '%parkinson%' OR d.description_text ILIKE '%parkinson%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 40"
+    }
+  ],
+  "ranking_query": [
+    {
+      "question": "Show the top 5 datasets by subject count.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "ranking_query"
+    },
+    {
+      "question": "List the top 5 datasets with the highest number of subjects.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "top_n_datasets"
+    },
+    {
+      "question": "List the top 5 datasets with the highest number of subjects.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "top_datasets_by_subject_count"
+    },
+    {
+      "question": "List the top 5 datasets by subject count.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "top_datasets"
+    },
+    {
+      "question": "Show the top 5 datasets with the highest number of subjects.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "ranking_limit"
+    },
+    {
+      "question": "Which 5 datasets have the highest number of subjects?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "top_n_by_subject_count"
+    },
+    {
+      "question": "Show the top 5 datasets with the highest number of subjects.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 5",
+      "pattern": "ranking"
+    },
+    {
+      "question": "Which are the 10 datasets with the highest number of subjects?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+      "pattern": "top_datasets_subject_count"
+    },
+    {
+      "question": "Show the top 10 datasets with the most subjects.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+      "pattern": "top_subjects"
+    },
+    {
+      "question": "Which 10 datasets have the highest number of participants?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY subject_count DESC LIMIT 10",
+      "pattern": "ranking_top_subjects"
+    }
+  ],
+  "scan_filter": [
+    {
+      "question": "List all datasets that contain bao task data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'bao') GROUP BY d.id",
+      "pattern": "task_filter"
+    },
+    {
+      "question": "Find datasets that contain PET data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'positron_emission_tomography') GROUP BY d.id",
+      "pattern": "scan_filter"
+    },
+    {
+      "question": "Show me all datasets that do not contain seizure monitoring tasks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'seizure') GROUP BY d.id",
+      "pattern": "task_exclusion"
+    },
+    {
+      "question": "Which datasets do not contain any PET data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'positron_emission_tomography') GROUP BY d.id LIMIT 50",
+      "pattern": "negation"
+    },
+    {
+      "question": "Which datasets include EEG recordings of seizure activity?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'intracranial_eeg' AND bo.task = 'seizure') GROUP BY d.id",
+      "pattern": "exists_filter"
+    },
+    {
+      "question": "Find datasets containing perfusion ASL data that includes the DiscountFix task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'perf' AND bo.task = 'DiscountFix') GROUP BY d.id",
+      "pattern": "datatype_task_exists"
+    },
+    {
+      "question": "Show me datasets that feature auditory stimuli tasks within bold fMRI scans.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'auditorystimuli' AND bo.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "filtered_aggregate"
+    },
+    {
+      "question": "Find datasets that feature video game and video tasks using MEG imaging.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'video_game_and_video' AND bo.suffix = 'meg') GROUP BY d.id",
+      "pattern": "scan_task_suffix_query"
+    },
+    {
+      "question": "Find datasets that do not contain any MEG data for the seizure monitoring task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'meg' AND bo.task = 'seizure') GROUP BY d.id LIMIT 50",
+      "pattern": "negated_scan_filter"
+    },
+    {
+      "question": "Find datasets containing intracranial EEG data with reactive tasks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'intracranial_eeg' AND bo.task = 'reactive') GROUP BY d.id LIMIT 50",
+      "pattern": "datatype_task_filter"
+    },
+    {
+      "question": "Find EEG datasets with auditory oddball paradigms",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('auditory_oddball','auditory_oddball_button_response','three_stimulus_auditory_oddball','roving_oddball_task')) GROUP BY d.id",
+      "pattern": "eeg_oddball"
+    },
+    {
+      "question": "Show me fMRI datasets with n-back working memory tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('n_back_working_memory','environmental_sounds_n_back','one_back','quick_four_back_working_memory')) GROUP BY d.id",
+      "pattern": "fmri_nback"
+    },
+    {
+      "question": "List all datasets that include theory of mind tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('theory_of_mind','theory_of_mind_false_belief','theory_of_mind_localizer','theory_of_mind_localizer_variant2','theory_of_mind_pain_scenarios','empathy_theory_of_mind_task')) GROUP BY d.id",
+      "pattern": "tom_tasks"
+    },
+    {
+      "question": "Find MEG datasets with language or speech tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'magnetoencephalography') AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task IN ('speech_perception_general','narrative_listening','auditory_language_localizer','language_comprehension_l1')) GROUP BY d.id",
+      "pattern": "meg_language"
+    },
+    {
+      "question": "Show me datasets with face perception or emotion processing tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('face_perception','face_recognition','emotional_face_perception','hariri_emotional_face_task','hcp_emotion_task','emotion_matching_task','emotion_general')) GROUP BY d.id",
+      "pattern": "face_emotion_tasks"
+    },
+    {
+      "question": "Find datasets with resting state fMRI and at least one other task",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) AND EXISTS (SELECT 1 FROM bids_objects o3 WHERE o3.dataset_id = d.id AND o3.task NOT IN ('resting_state','resting_state_eyes_open','resting_state_eyes_closed')) GROUP BY d.id",
+      "pattern": "resting_plus_task"
+    },
+    {
+      "question": "List all 7T fMRI datasets",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%7T%' OR d.description_text ILIKE '%7 Tesla%' OR d.description_text ILIKE '%7T%') GROUP BY d.id",
+      "pattern": "7t_scanner"
+    },
+    {
+      "question": "Find datasets with motor tasks such as finger tapping or hand movement",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('finger_tapping_task','hand_motor_task','hcp_motor_task','motor_task_general','motor_task_ball_left_hand','motor_task_ball_right_hand')) GROUP BY d.id",
+      "pattern": "motor_tasks"
+    },
+    {
+      "question": "Find all datasets with gambling or risk-taking tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('balloon_analog_risk_task','casino_gambling_task','delay_discounting_task','effort_based_gambling_task','hcp_gambling_task','mixed_gambles_task','monetary_gambling_task','monetary_incentive_delay_task','numerical_risk_task','risky_decision_making','skewed_gambling_task','shared_reward_task','reward_processing')) GROUP BY d.id",
+      "pattern": "gambling_risk_tasks"
+    },
+    {
+      "question": "Show me datasets with monetary reward and incentive tasks such as the MID task",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('monetary_incentive_delay_task','monetary_incentive_delay_localizer','mid','shared_reward_task')) GROUP BY d.id",
+      "pattern": "monetary_incentive"
+    },
+    {
+      "question": "Find datasets with delay discounting or intertemporal choice tasks",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.task IN ('delay_discounting_task','delay_discounting_bidding','social_intertemporal_choice_task')) GROUP BY d.id",
+      "pattern": "delay_discounting"
+    }
+  ],
+  "session_query": [
+    {
+      "question": "Which datasets have fewer than 4 distinct sessions recorded?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) < 4",
+      "pattern": "session_count_filter"
+    },
+    {
+      "question": "Which datasets have longitudinal data spanning at least 4 sessions?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 4",
+      "pattern": "longitudinal_check"
+    },
+    {
+      "question": "Show datasets that provide longitudinal data with at least three scanning sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+      "pattern": "longitudinal_sessions"
+    },
+    {
+      "question": "List all datasets that include longitudinal data with at least 3 sessions per subject.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+      "pattern": "session_query"
+    },
+    {
+      "question": "Show me datasets that have at least 3 distinct sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+      "pattern": "longitudinal_session_check"
+    },
+    {
+      "question": "Find datasets containing at least 3 distinct scan sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+      "pattern": "session_count"
+    },
+    {
+      "question": "Show me datasets that have longitudinal data with at least 3 sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3",
+      "pattern": "aggregate_session_count"
+    },
+    {
+      "question": "Show me datasets that have fewer than 2 longitudinal sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) < 2 LIMIT 50",
+      "pattern": "longitudinal_filter"
+    },
+    {
+      "question": "Show me datasets that contain at least 3 longitudinal sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 3 LIMIT 50",
+      "pattern": "longitudinal_count"
+    },
+    {
+      "question": "Find the top 50 datasets with at least 2 distinct sessions of data collection.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.session) >= 2 ORDER BY subject_count DESC LIMIT 50",
+      "pattern": "longitudinal_session_count"
+    }
+  ],
+  "subject_multimodal_query": [
+    {
+      "question": "Find datasets containing at least one subject who performed a rat task or has functional MRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND (o1.task = 'rat' OR o1.datatype = 'functional_mri')) GROUP BY d.id",
+      "pattern": "subject_multimodal_check"
+    },
+    {
+      "question": "Which datasets include at least one participant with diffusion MRI or EEG data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.datatype = 'diffusion_mri' OR bo.suffix = 'EEG')) GROUP BY d.id",
+      "pattern": "multimodal_search"
+    },
+    {
+      "question": "Which datasets contain subjects who have either intracranial EEG or functional MRI data?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype IN ('intracranial_eeg', 'functional_mri')) GROUP BY d.id",
+      "pattern": "multimodal_query"
+    },
+    {
+      "question": "Identify datasets where participants have either diffusion MRI data or performed a Passive task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.datatype = 'diffusion_mri' OR bo.task = 'Passive')) GROUP BY d.id",
+      "pattern": "subject_multimodal_query_exists"
+    },
+    {
+      "question": "Retrieve datasets where subjects have performed either rat tasks or resting state eyes closed tasks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.task IN ('rat', 'resting_state_eyes_closed')) GROUP BY d.id LIMIT 50",
+      "pattern": "multimodal_subject_task"
+    },
+    {
+      "question": "Show me datasets that contain either diffusion MRI data or magnetic resonance spectroscopy files.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype IN ('diffusion_mri', 'magnetic_resonance_spectroscopy')) GROUP BY d.id",
+      "pattern": "multimodal_existence"
+    },
+    {
+      "question": "Which datasets contain either perfusion ASL data or video game and video tasks?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.datatype = 'perfusion_asl' OR bo.task = 'video_game_and_video')) GROUP BY d.id",
+      "pattern": "exists_binary_or"
+    },
+    {
+      "question": "Find datasets containing subjects who have performed either a main task or a resting-state task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.subject IS NOT NULL AND (o1.task = 'main' OR o1.task = 'resting_state')) GROUP BY d.id",
+      "pattern": "subject_multimodal_query"
+    },
+    {
+      "question": "Find datasets containing at least one subject who performed either the n-back working memory task or the main task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.subject IS NOT NULL AND (o1.task = 'n_back_working_memory' OR o1.task = 'main')) GROUP BY d.id",
+      "pattern": "subject_task_exists"
+    },
+    {
+      "question": "Find datasets that include either seizure task data or anatomical MRI scans",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o1 WHERE o1.dataset_id = d.id AND o1.task = 'seizure') OR EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri') GROUP BY d.id LIMIT 50",
+      "pattern": "multimodal_coverage"
+    }
+  ]
+}

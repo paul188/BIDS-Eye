@@ -3,20 +3,16 @@ services/text_to_sql.py
 -----------------------
 Text-to-SQL service for BIDS-Eye.
 
-Full production pipeline (requires Modal deployment + GPU):
+Pipeline:
   1. Gemini preprocessing  → structured QueryPlan (intent extraction)
   2. RAG resolution        → canonical DB codes (diagnoses, tasks, scan types)
-  3. SQLCoder + LoRA       → PostgreSQL SELECT from augmented question + schema
+  3. Gemini SQL generation → PostgreSQL SELECT from augmented question + schema
+                             + few-shot examples
   4. Gemini error corrector → fixes any SQL that fails at runtime
 
-Local development fallback (no GPU / no Modal):
-  Steps 1–2 run locally. Step 3 is replaced by Gemini SQL generation.
-  Step 4 (error correction) is still used on failed queries.
-
 Which mode is used:
-  - If MODAL_TOKEN_ID and MODAL_TOKEN_SECRET are set → full pipeline via Modal
-  - Otherwise                                        → local Gemini fallback
-  - If GEMINI_API_KEY is also absent                 → returns all datasets
+  - If GEMINI_API_KEY is set → the pipeline above runs
+  - If it is absent          → returns a bounded sample of datasets
 
 Set environment variables in .env (see .env.example).
 """
@@ -188,8 +184,7 @@ def _outer_select_span(sql: str):
 
     ``cols_start`` is just after 'SELECT [DISTINCT]'; ``from_start`` is where the
     top-level FROM keyword begins. Returns (None, None) if the structure can't be
-    found. Ported from modal_app/app.py so the local pipeline shares the same
-    projection-injection logic.
+    found.
     """
     m = re.match(r"\s*SELECT\s+(?:DISTINCT\s+)?", sql, re.IGNORECASE)
     if not m:
@@ -219,7 +214,7 @@ def _apply_projection(sql: str) -> str:
     real columns here, in postprocessing, before the SQL is cached/wrapped.
 
       1. Placeholder present  → replace ``{{COLS}}`` with ``_PROJECTION``.
-      2. No placeholder (LLM ignored it, Modal/fallback path) → replace the outer
+      2. No placeholder (LLM ignored it, or the fallback SQL) → replace the outer
          projection with ``_PROJECTION`` to guarantee the exact columns.
       3. Query begins with ``WITH`` (CTE) → leave untouched (rewriting the outer
          projection of a CTE-bearing query is too fragile).
@@ -563,52 +558,14 @@ def build_page_sql(
     return sql, {"_limit": limit, "_offset": offset}
 
 
-# ── Full Modal pipeline (stages 1–4) ──────────────────────────────────────────
-
-def _run_via_modal(question: str) -> TextToSQLResult:
-    """
-    Full pipeline via Modal: SQLCoder + LoRA inference with Gemini correction.
-    Requires MODAL_TOKEN_ID and MODAL_TOKEN_SECRET to be set.
-    """
-    try:
-        import modal
-    except ImportError:
-        raise RuntimeError("modal package not installed — cannot use Modal pipeline")
-
-    try:
-        Model = modal.Cls.from_name("bids-eye", "TextToSQLModel")
-    except Exception as exc:
-        raise RuntimeError(f"Modal app 'bids-eye' not found or not deployed: {exc}") from exc
-
-    model = Model()
-    result = model.run.remote(question)
-
-    raw_sql = result.get("sql") or _FALLBACK_SQL
-    augmented = result.get("augmented_question", question)
-    sql = _apply_projection(_fix_vocab_miss_sql(raw_sql, augmented))
-    explanation = result.get("query_plan", {}) and str(result["query_plan"])
-    error = result.get("error")
-    if error:
-        log.warning("Modal pipeline returned error: %s", error)
-
-    # Modal returns an already-ordered SELECT (SQLCoder handles ranking); we do
-    # not re-apply the relevance CTE in postprocessing for this path.
-    return TextToSQLResult(
-        sql=sql,
-        explanation=explanation or None,
-        scored_filters=[],
-        apply_relevance=False,
-    )
-
-
-# ── Local pipeline (stages 1–2 + Gemini SQL as stage 3) ───────────────────────
+# ── Pipeline (stages 1–2 + Gemini SQL as stage 3) ─────────────────────────────
 
 def _run_local(question: str, api_key: str) -> TextToSQLResult:
     """
-    Local fallback pipeline:
+    Translation pipeline:
       Stage 1: Gemini preprocessing  → QueryPlan
       Stage 2: RAG resolution        → augmented question with DB codes
-      Stage 3: Gemini SQL generation → SELECT statement (replaces SQLCoder+LoRA)
+      Stage 3: Gemini SQL generation → SELECT statement (+ few-shot examples)
     """
     try:
         from preprocess import run_pipeline
@@ -672,32 +629,16 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
 
 async def text_to_sql(question: str) -> TextToSQLResult:
     """
-    Translate a natural-language question into a PostgreSQL SELECT statement.
-
-    Chooses the appropriate backend automatically:
-      - Modal (full SQLCoder+LoRA pipeline) when Modal credentials are set
-      - Local Gemini fallback otherwise
+    Translate a natural-language question into a PostgreSQL SELECT statement via
+    the Gemini pipeline. Falls back to a bounded sample of datasets when no
+    GEMINI_API_KEY is configured or every LLM tier is unavailable.
 
     Always runs in a thread pool to avoid blocking the FastAPI event loop.
     """
-    has_modal = bool(os.getenv("MODAL_TOKEN_ID") and os.getenv("MODAL_TOKEN_SECRET"))
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
-    if has_modal:
-        modal_timeout = int(os.getenv("MODAL_REQUEST_TIMEOUT", "120"))
-        log.info("Using Modal pipeline (SQLCoder + LoRA), timeout=%ds", modal_timeout)
-        try:
-            return await asyncio.wait_for(
-                asyncio.to_thread(_run_via_modal, question),
-                timeout=modal_timeout,
-            )
-        except asyncio.TimeoutError:
-            log.warning("Modal timed out after %ds — falling back to local Gemini", modal_timeout)
-        except Exception as exc:
-            log.warning("Modal failed (%s) — falling back to local Gemini", exc)
-
     if api_key:
-        log.info("Using local Gemini pipeline")
+        log.info("Using Gemini pipeline")
         # Hard wall-clock deadline for the whole LLM pipeline (intent + RAG + SQL
         # generation). Cloudflare drops the request at ~100s; if the LLMs are
         # pathologically slow (Gemini 503 storm + slow fallback) we must return
@@ -723,7 +664,7 @@ async def text_to_sql(question: str) -> TextToSQLResult:
                 explanation="That query is taking too long right now — showing a sample of datasets. Please try again or narrow your query.",
             )
 
-    log.warning("No GEMINI_API_KEY or Modal credentials set — returning all datasets")
+    log.warning("No GEMINI_API_KEY set — returning a sample of datasets")
     return TextToSQLResult(
         sql=_FALLBACK_SQL,
         explanation="No API credentials configured — showing a sample of datasets.",
