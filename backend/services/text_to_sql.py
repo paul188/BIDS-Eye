@@ -6,9 +6,11 @@ Text-to-SQL service for BIDS-Eye.
 Pipeline:
   1. Gemini preprocessing  → structured QueryPlan (intent extraction)
   2. RAG resolution        → canonical DB codes (diagnoses, tasks, scan types)
-  3. Gemini SQL generation → PostgreSQL SELECT from augmented question + schema
-                             + few-shot examples
-  4. Gemini error corrector → fixes any SQL that fails at runtime
+ 3. Gemini SQL generation → raw PostgreSQL SELECT from augmented question +
+                             schema + few-shot examples
+  4. SQL rewrite service    → projection normalization, filter cleanup, and
+                             VOCABULARY MISS fallback predicates
+  5. Gemini error corrector → fixes any SQL that fails at runtime
 
 Which mode is used:
   - If GEMINI_API_KEY is set → the pipeline above runs
@@ -23,7 +25,6 @@ import asyncio
 import json
 import logging
 import os
-import re
 import sys
 import textwrap
 from pathlib import Path
@@ -131,104 +132,9 @@ for _mod_dir in (
 
 from schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
-from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
-
-# ── Canonical SELECT projection ────────────────────────────────────────────────
-# Single source of truth for the columns every dataset query must return. The LLM
-# never writes these — it emits the `{{COLS}}` placeholder and `_apply_projection`
-# substitutes this list in postprocessing (the projection is identical for every
-# query; only the filters vary). Safe under GROUP BY d.id since d.id is the PK.
-_PLACEHOLDER = "{{COLS}}"
-_PROJECTION = (
-    "d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-    "       d.source_type, d.remote_url, d.validation_status,\n"
-    "       d.authors, d.description_text,\n"
-    "       COUNT(DISTINCT o.subject) AS subject_count"
-)
-
-# ── Fallback SQL: return a bounded sample of datasets when SQL generation is
-# unavailable (no API key, or every LLM tier failed). The LIMIT is essential:
-# an unbounded all-datasets response (1700+ datasets + every participant) is huge
-# and slow, and gets dropped by Cloudflare's ~100s origin timeout / the browser,
-# surfacing as "NetworkError when attempting to fetch resource". Keep it small.
-_FALLBACK_SQL = (
-    f"SELECT {_PROJECTION}\n"
-    "FROM bids_datasets d\n"
-    "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-    "GROUP BY d.id\n"
-    "ORDER BY d.name\n"
-    "LIMIT 200"
-)
-
-_SQL_FENCE = re.compile(r"```(?:sql)?\s*(.*?)(?:```|$)", re.DOTALL | re.IGNORECASE)
-
-
-# ── SQL helpers ────────────────────────────────────────────────────────────────
-
-def _extract_sql(raw: str) -> str:
-    """Pull the first SELECT statement out of an LLM response."""
-    m = re.search(r"\[SQL\]\s*(.*?)(?:\[/SQL\]|$)", raw, re.DOTALL | re.IGNORECASE)
-    if m and re.match(r"(?i)select\b", m.group(1).strip()):
-        return m.group(1).strip()
-    m = _SQL_FENCE.search(raw)
-    if m and re.match(r"(?i)select\b", m.group(1).strip()):
-        return m.group(1).strip()
-    stripped = raw.strip()
-    if re.match(r"(?i)select\b", stripped):
-        return stripped.split("\n\n")[0].strip()
-    return _FALLBACK_SQL
-
-
-def _outer_select_span(sql: str):
-    """Return (cols_start, from_start) char indices for the outermost SELECT clause.
-
-    ``cols_start`` is just after 'SELECT [DISTINCT]'; ``from_start`` is where the
-    top-level FROM keyword begins. Returns (None, None) if the structure can't be
-    found.
-    """
-    m = re.match(r"\s*SELECT\s+(?:DISTINCT\s+)?", sql, re.IGNORECASE)
-    if not m:
-        return None, None
-    cols_start = m.end()
-    depth = 0
-    i = cols_start
-    while i < len(sql) - 3:
-        c = sql[i]
-        if c == "(":
-            depth += 1
-        elif c == ")":
-            depth -= 1
-        elif depth == 0:
-            word = sql[i:i + 4].upper()
-            if word == "FROM" and (i == 0 or (not sql[i - 1].isalnum() and sql[i - 1] != "_")):
-                return cols_start, i
-        i += 1
-    return cols_start, None
-
-
-def _apply_projection(sql: str) -> str:
-    """Substitute the canonical SELECT projection into a generated query.
-
-    Every dataset query returns the identical column list (``_PROJECTION``); only
-    the filters vary. So the LLM emits a ``{{COLS}}`` placeholder and we inject the
-    real columns here, in postprocessing, before the SQL is cached/wrapped.
-
-      1. Placeholder present  → replace ``{{COLS}}`` with ``_PROJECTION``.
-      2. No placeholder (LLM ignored it, or the fallback SQL) → replace the outer
-         projection with ``_PROJECTION`` to guarantee the exact columns.
-      3. Query begins with ``WITH`` (CTE) → leave untouched (rewriting the outer
-         projection of a CTE-bearing query is too fragile).
-    """
-    if _PLACEHOLDER in sql:
-        return sql.replace(_PLACEHOLDER, _PROJECTION)
-
-    if re.match(r"\s*WITH\b", sql, re.IGNORECASE):
-        return sql
-
-    cols_start, from_start = _outer_select_span(sql)
-    if cols_start is None or from_start is None:
-        return sql
-    return sql[:cols_start] + _PROJECTION + "\n" + sql[from_start:]
+from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
+from services.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
+from services.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 
 
 def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: str) -> str:
@@ -356,208 +262,6 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     return _extract_sql(llm_generate(prompt, temperature=0.0, api_key=api_key))
 
 
-# ── SQL safety: replace bad outer scan filters with VOCABULARY MISS ILIKE ───────
-
-_BAD_OUTER_FILTER = re.compile(
-    r'(?:AND\s+)?o\d*\.(task|datatype|suffix)\s*=\s*\'[^\']*\'',
-    re.IGNORECASE,
-)
-# Extracts the ILIKE suggestion the preprocessor already computed for each miss
-_VOCAB_MISS_ILIKE_RE = re.compile(
-    r'For free-text search use:\s*(.+?)(?=\s*\])',
-    re.IGNORECASE | re.DOTALL,
-)
-
-
-def _strip_outer_scan_filters(sql: str) -> tuple[str, bool]:
-    """Remove o.task/datatype/suffix equality filters from the outer SELECT query.
-
-    Returns (cleaned_sql, any_stripped).
-    """
-    out: list[str] = []
-    depth = 0
-    pos = 0
-    stripped_any = False
-    while pos < len(sql):
-        ch = sql[pos]
-        if ch == '(':
-            depth += 1
-            out.append(ch)
-            pos += 1
-        elif ch == ')':
-            depth -= 1
-            out.append(ch)
-            pos += 1
-        elif depth == 0:
-            m = _BAD_OUTER_FILTER.match(sql, pos)
-            if m:
-                log.warning("Stripped bad outer scan filter: %s", m.group(0).strip())
-                pos = m.end()
-                stripped_any = True
-            else:
-                out.append(ch)
-                pos += 1
-        else:
-            out.append(ch)
-            pos += 1
-    result = ''.join(out)
-    # Clean up an empty WHERE clause
-    result = re.sub(r'\bWHERE\s+(GROUP|ORDER|HAVING|LIMIT)\b', r'\1', result, flags=re.IGNORECASE)
-    return result, stripped_any
-
-
-def _fix_vocab_miss_sql(sql: str, augmented_question: str) -> str:
-    """Strip hallucinated outer scan filters and replace with the VOCABULARY MISS
-    ILIKE suggestion the preprocessor already computed.
-
-    If the LLM writes `WHERE o.task = 'complex_motor_task'` instead of following
-    the [VOCABULARY MISS] hint, this function:
-      1. Removes the bad filter.
-      2. Injects the ILIKE on d.name / d.description_text from the VOCABULARY MISS
-         block — so the query still narrows results rather than returning everything.
-    """
-    # Step 1: strip any bad outer o.task/datatype/suffix = '...' filters
-    cleaned, _ = _strip_outer_scan_filters(sql)
-
-    # Step 2: extract VOCABULARY MISS ILIKE suggestions from the augmented question
-    ilike_parts = [m.group(1).strip() for m in _VOCAB_MISS_ILIKE_RE.finditer(augmented_question)]
-    if not ilike_parts:
-        return cleaned  # No VOCABULARY MISS in this query — nothing to inject
-
-    # Step 3: if the SQL already has an ILIKE the LLM wrote it correctly — leave it
-    if re.search(r'\bILIKE\b', cleaned, re.IGNORECASE):
-        return cleaned
-
-    # Step 4: inject unconditionally — the LLM produced no filter at all for these terms
-    combined = ' AND '.join(f'({p})' for p in ilike_parts)
-    log.info("Injecting VOCABULARY MISS ILIKE (LLM produced no filter): %s", combined)
-
-    if re.search(r'\bWHERE\b', cleaned, re.IGNORECASE):
-        cleaned = re.sub(r'\bWHERE\b', f'WHERE {combined} AND', cleaned, count=1, flags=re.IGNORECASE)
-    else:
-        cleaned = re.sub(r'\bGROUP\s+BY\b', f'WHERE {combined}\nGROUP BY', cleaned, count=1, flags=re.IGNORECASE)
-
-    return cleaned
-
-
-# ── Relevance ranking: inject a scored-codes CTE around the LLM SQL ────────────
-
-# Canonical codes only contain these characters; guard against inlining anything
-# unexpected into the VALUES list (same inlining pattern the preprocessor uses).
-_CODE_RE = re.compile(r'^[A-Za-z0-9_]+$')
-# Fields whose codes map to a queryable DB column (see RAG/join_paths.yaml).
-_SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
-
-
-def _filter_attr(f, key: str):
-    """Read ``key`` from a scored filter that may be a ScoredFilter object or a
-    plain dict (the serialized form stored in the query cache for pagination)."""
-    if isinstance(f, dict):
-        return f.get(key)
-    return getattr(f, key, None)
-
-
-def _inject_relevance_cte(sql: str, scored_filters: list) -> str:
-    """Wrap the LLM SQL so each dataset gets a relevance_score and rows sort by it.
-
-    Builds a ``matched_codes (field, code, score)`` VALUES CTE from the
-    RAG-resolved codes + their match scores, treats the LLM SQL as an opaque
-    derived table exposing ``id`` and ``subject_count``, computes a per-dataset
-    score via correlated EXISTS against each field's table/column, and orders by
-    it. A dataset that only matched via a name/description ILIKE fallback (no
-    structured code) scores 0 and sinks below datasets that truly contain the
-    cohort/modality. Returns *sql* unchanged when there is nothing to score.
-
-    ``scored_filters`` entries may be ScoredFilter objects or plain
-    ``{field, code, score}`` dicts (the cached/serialized form).
-    """
-    if not scored_filters:
-        return sql
-
-    rows: list[str] = []
-    field_cols: dict[str, tuple[str, str]] = {}
-    for f in scored_filters:
-        field = _filter_attr(f, "field")
-        code = _filter_attr(f, "code")
-        score = _filter_attr(f, "score")
-        if field not in _SCORABLE_FIELDS or not code or score is None:
-            continue
-        if not _CODE_RE.match(code):
-            continue
-        col_info = _field_to_db_col(field)
-        if col_info is None:
-            continue
-        field_cols[field] = col_info
-        rows.append(f"('{field}', '{code}', {float(score):.4f})")
-
-    if not rows:
-        return sql
-
-    values_block = ",\n    ".join(rows)
-
-    exists_clauses = [
-        f"(mc.field = '{field}' AND EXISTS (SELECT 1 FROM {table} mt "
-        f"WHERE mt.dataset_id = base.id AND mt.{col} = mc.code))"
-        for field, (table, col) in field_cols.items()
-    ]
-    where_expr = "\n           OR ".join(exists_clauses)
-
-    base_sql = sql.strip().rstrip(";").strip()
-
-    return (
-        "WITH matched_codes (field, code, score) AS (\n"
-        f"  VALUES\n    {values_block}\n"
-        ")\n"
-        "SELECT base.*,\n"
-        "  COALESCE((\n"
-        "    SELECT SUM(mc.score) FROM matched_codes mc\n"
-        f"    WHERE {where_expr}\n"
-        "  ), 0) AS relevance_score\n"
-        f"FROM (\n{base_sql}\n) AS base\n"
-        "ORDER BY relevance_score DESC, base.subject_count DESC NULLS LAST"
-    )
-
-
-# ── Postprocessing: pagination + ordering applied to a stored base SQL ─────────
-# These wrap the once-generated LLM SQL so it can be reused across pages. The
-# relevance ordering/weighting (_inject_relevance_cte) is applied here — in the
-# *same step* as LIMIT/OFFSET — rather than baked into the cached SQL, so every
-# page reuses one base SELECT and only the wrapper changes.
-
-
-def build_count_sql(base_sql: str) -> str:
-    """Total dataset count for a base SQL. The base groups by d.id, so counting
-    its rows yields the number of matching datasets. Ordering/relevance is
-    irrelevant to the count, so we wrap the bare base."""
-    base = base_sql.strip().rstrip(";").strip()
-    return f"SELECT COUNT(*) FROM (\n{base}\n) AS count_result"
-
-
-def build_page_sql(
-    base_sql: str,
-    scored_filters: list,
-    apply_relevance: bool,
-    limit: int,
-    offset: int,
-) -> tuple[str, dict]:
-    """Build the SQL for one page of results.
-
-    Applies relevance ordering/weighting (when enabled) and pagination in a
-    single postprocessing step. Returns ``(sql, extra_params)``; the params use
-    reserved ``_limit``/``_offset`` names so they never collide with the LLM
-    SQL's own bind parameters. Wrapping the ordered query in an outer subquery
-    keeps this correct whether the inner SQL is a plain SELECT, a CTE-bearing
-    relevance query, or carries its own top-N LIMIT.
-    """
-    ordered = _inject_relevance_cte(base_sql, scored_filters) if apply_relevance else base_sql
-    ordered = ordered.strip().rstrip(";").strip()
-    sql = (
-        f"SELECT * FROM (\n{ordered}\n) AS page_result\n"
-        "LIMIT :_limit OFFSET :_offset"
-    )
-    return sql, {"_limit": limit, "_offset": offset}
-
-
 # ── Pipeline (stages 1–2 + Gemini SQL as stage 3) ─────────────────────────────
 
 def _run_local(question: str, api_key: str) -> TextToSQLResult:
@@ -598,18 +302,18 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     if examples:
         log.info("Injecting %d few-shot examples for family '%s'", len(examples), query_family)
 
-    sql = _apply_projection(
-        _fix_vocab_miss_sql(
-            _gemini_sql_generation(augmented_question, api_key, examples_block),
-            augmented_question,
-        )
+    # Keep LLM generation and SQL rewriting separate: the model emits raw SQL,
+    # then the rewrite service handles projection normalization, scan-filter
+    # cleanup, and VOCABULARY MISS fallbacks.
+    rewritten = _rewrite_generated_sql(
+        _gemini_sql_generation(augmented_question, api_key, examples_block),
+        augmented_question,
     )
 
-    # Relevance ranking is applied in postprocessing (build_page_sql), not baked
-    # into the SQL here — so the base SELECT can be cached and reused across pages
-    # while ORDER BY relevance_score + LIMIT/OFFSET are re-applied per page. We
-    # still decide *whether* to rank: skip for explicit top-N / user-ordered
-    # queries so we don't override the order the user asked for.
+    # Relevance ranking is applied later by services.sql_rewriter.build_page_sql
+    # so the cached base SELECT can be reused across pages without rebaking the
+    # order clause. We still decide *whether* to rank: skip for explicit top-N
+    # / user-ordered queries so we don't override the order the user asked for.
     plan = augmented_plan.plan
     apply_relevance = plan.result_limit is None and plan.order_by is None
     scored_filters = [
@@ -618,10 +322,11 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     ]
 
     return TextToSQLResult(
-        sql=sql,
+        sql=rewritten.sql,
         explanation=explanation,
         scored_filters=scored_filters,
         apply_relevance=apply_relevance,
+        params=rewritten.params,
     )
 
 

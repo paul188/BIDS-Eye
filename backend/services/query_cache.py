@@ -7,7 +7,7 @@ The Text-To-SQL pipeline (Gemini intent + RAG + SQL generation) is expensive and
 non-deterministic, so we run it once per question and cache the resulting base
 SELECT plus its ranking inputs. Pagination then reuses the cached SQL — only the
 relevance ordering + LIMIT/OFFSET are re-applied per page (see
-``services.text_to_sql.build_page_sql``). The client never sends SQL back; it
+``services.sql_rewriter.build_page_sql``). The client never sends SQL back; it
 sends a ``query_id``, so the only SQL ever executed is server-generated.
 
 This is a process-local dict with TTL + LRU eviction. It is correct because the
@@ -39,6 +39,7 @@ class CachedQuery:
     apply_relevance: bool
     explanation: Optional[str] = None
     self_corrected: bool = False
+    total: Optional[int] = None
     created_at: float = field(default_factory=time.monotonic)
 
 

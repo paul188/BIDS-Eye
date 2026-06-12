@@ -62148,6 +62148,7 @@ suffix:
       weight: 0.1
     codes:
     - GRE
+    - FLASH
   mr_venography:
     label: MR Venography
     standard_code: mr_venography
