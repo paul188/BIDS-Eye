@@ -384,6 +384,58 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "has both anat and func data"  → two ScanRequirements:
                                          [{scan_terms: ["anat"]}, {scan_terms: ["func"]}]
 
+    ── Compound scan requirements (conjunction splitting) ──────────────────────
+    When the query uses conjunctions like "and", "combined with", "together with",
+    "as well as", or phrasing like "combine X and Y tasks" to join two DISTINCT
+    task or modality types, split them into SEPARATE ScanRequirements — one per
+    concept. Do NOT bundle different task types into a single scan_terms list.
+    A modality shared by both (e.g. "fMRI") should appear in each requirement.
+
+    Examples:
+      "combine motor and cognitive tasks"
+          → [{scan_terms: ["motor"]}, {scan_terms: ["cognitive"]}]
+      "fMRI with both resting state and n-back"
+          → [{scan_terms: ["fMRI", "resting state"]}, {scan_terms: ["fMRI", "n-back"]}]
+      "EEG and fMRI" (two modalities, multimodal intent)
+          → [{scan_terms: ["EEG"]}, {scan_terms: ["fMRI"]}]
+
+    Contrast — do NOT split when terms describe the same scan:
+      "resting state fMRI"           → single ScanRequirement: ["resting state", "fMRI"]
+      "bold T1w"                     → single ScanRequirement: ["bold", "T1w"]
+
+    ── Qualitative / adjectival modifiers → description_search ─────────────────
+    Some words describe a *property* of tasks or data rather than naming a
+    specific task type or modality. These have no DB code and must NOT go into
+    scan_terms — the RAG layer cannot resolve them and they will block results.
+    Instead, place the single most distinctive keyword in description_search so
+    the pipeline runs a free-text search over dataset description fields.
+
+    Route a word/phrase to description_search when it is:
+      • A difficulty or complexity adjective: "complex", "simple", "basic",
+        "advanced", "demanding", "high-load", "challenging", "easy"
+      • A paradigm-style label not tied to a specific task code: "longitudinal",
+        "clinical", "ecological", "naturalistic" (when not used as a task name)
+      • A population qualifier: "pediatric", "geriatric", "bilingual", "elderly"
+      • Any other descriptor that tells you *how* or *what kind* rather than
+        *which specific task or modality* is present
+
+    Leave description_search null when every content word maps to a known field
+    (scan modality, diagnosis, author, etc.).
+
+    Examples:
+      "complex motor and cognitive tasks"
+          → scan_requirements: [{scan_terms:["motor"]},{scan_terms:["cognitive"]}]
+            description_search: "complex"
+      "demanding attention tasks"
+          → scan_requirements: [{scan_terms:["attention"]}]
+            description_search: "demanding"
+      "pediatric resting state fMRI"
+          → scan_requirements: [{scan_terms:["resting state","fMRI"]}]
+            description_search: "pediatric"
+      "fMRI datasets with n-back"
+          → scan_requirements: [{scan_terms:["fMRI","n-back"]}]
+            description_search: null   ← no qualitative modifier
+
     ── Participant terms ───────────────────────────────────────────────────────
     Put diagnosis / condition strings in ParticipantGroup.diagnosis_terms.
     These are resolved by the RAG layer (e.g. "depression" → canonical code).
@@ -402,6 +454,25 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
 
     ── rag_requests ────────────────────────────────────────────────────────────
     Leave rag_requests as an empty list [].  It is auto-derived from the plan.
+
+    ── Scanner hardware metadata ────────────────────────────────────────────────
+    Queries about MRI scanner hardware go into metadata_filters (MetadataFilter),
+    NOT into scan_terms.  Use these exact BIDS sidecar key names:
+      Manufacturer           → string, use operator "=" (the SQL layer uses ILIKE)
+                               Values: 'Siemens', 'Philips', 'GE', 'Bruker', 'Canon'
+      ManufacturerModelName  → string, use operator "="
+                               Values: 'Prisma', 'Prisma_fit', 'Skyra', 'Trio',
+                                       'Achieva', 'Ingenia', 'MAGNETOM Vida', etc.
+      MagneticFieldStrength  → numeric Tesla, use >, <, >=, <=, = operators
+                               Common values: 1.5, 3.0, 7.0
+      SoftwareVersions       → string, use operator "=" or "exists"
+
+    Examples:
+      "3 Tesla datasets"         → metadata_filters: [{"json_field": "MagneticFieldStrength", "operator": "=", "value": 3.0}]
+      "above 3T"                 → metadata_filters: [{"json_field": "MagneticFieldStrength", "operator": ">", "value": 3.0}]
+      "Siemens scanners"         → metadata_filters: [{"json_field": "Manufacturer", "operator": "=", "value": "Siemens"}]
+      "Prisma scanner"           → metadata_filters: [{"json_field": "ManufacturerModelName", "operator": "=", "value": "Prisma"}]
+      "has software version info"→ metadata_filters: [{"json_field": "SoftwareVersions", "operator": "exists"}]
 
     ── query_family guidelines ─────────────────────────────────────────────────
       concept_query        — asks for datasets containing a concept (diagnosis/modality)
@@ -652,7 +723,7 @@ def _build_augmented_question(
 
     Non-scan fields (diagnosis, author, funding) are listed as code names.
     """
-    if not resolved:
+    if not resolved and not plan.description_search and not plan.name_search:
         return plan.natural_language_summary
 
     _SCAN_FIELDS = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
@@ -774,6 +845,18 @@ def _build_augmented_question(
                 )
 
     context_lines.extend(non_scan_lines)
+
+    # Inject free-text ILIKE hints for qualitative/adjectival terms that the
+    # preprocessing LLM routed to description_search / name_search because they
+    # can't be resolved to a DB code (e.g. "complex", "pediatric", "demanding").
+    if plan.description_search:
+        context_lines.append(
+            f"  description text: d.description_text ILIKE '%{plan.description_search}%'"
+        )
+    if plan.name_search:
+        context_lines.append(
+            f"  dataset name: d.name ILIKE '%{plan.name_search}%'"
+        )
 
     # Emit min_subjects as a HAVING hint using the total subject count.
     # "at least N participants with X" → HAVING COUNT(DISTINCT o.subject) >= N

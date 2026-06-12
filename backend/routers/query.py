@@ -32,7 +32,7 @@ from schemas import (
     QueryResponse,
 )
 from services.query_cache import CachedQuery, query_cache
-from services.sql_rewriter import build_count_sql, build_page_sql
+from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
 from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
@@ -88,14 +88,27 @@ async def _count_with_base_correction(
             _correct_sql_with_gemini, cached.base_sql, str(exc), question, api_key
         )
         if corrected == cached.base_sql:
-            raise
+            cached.base_sql = _FALLBACK_SQL
+            cached.params = {}
+            cached.self_corrected = True
+            query_cache.update(query_id, cached)
+            result = await session.execute(text(build_count_sql(_FALLBACK_SQL)))
+            return int(result.scalar() or 0)
         cached.base_sql = corrected
         cached.self_corrected = True
         query_cache.update(query_id, cached)
-        result = await session.execute(
-            text(build_count_sql(cached.base_sql)), cached.params
-        )
-        return int(result.scalar() or 0)
+        try:
+            result = await session.execute(
+                text(build_count_sql(cached.base_sql)), cached.params
+            )
+            return int(result.scalar() or 0)
+        except Exception:
+            await session.rollback()
+            cached.base_sql = _FALLBACK_SQL
+            cached.params = {}
+            query_cache.update(query_id, cached)
+            result = await session.execute(text(build_count_sql(_FALLBACK_SQL)))
+            return int(result.scalar() or 0)
 
 
 async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[DatasetSchema]:
@@ -113,6 +126,7 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
             remote_url=r.get("remote_url"),
             validation_status=r.get("validation_status"),
             authors=r.get("authors"),
+            institutions=r.get("institutions"),
             description_text=r.get("description_text"),
             subject_count=r.get("subject_count"),
             participants=participants_map.get(UUID(str(r["id"])), [])[

@@ -35,6 +35,7 @@ class DatasetSchema(BaseModel):
     remote_url: Optional[str] = None
     validation_status: Optional[str] = None
     authors: Optional[List[str]] = None
+    institutions: Optional[List[str]] = None
     description_text: Optional[str] = None
     # Computed fields (not direct ORM columns)
     subject_count: Optional[int] = None

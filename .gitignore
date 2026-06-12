@@ -37,6 +37,9 @@ certbot/
 # ── Database dumps (data, not source) ─────────────────────────────────────────
 *.dump
 
+# ── Few-shot intermediate artifacts ───────────────────────────────────────────
+backend/few_shot_examples.fixed.json
+
 # ── Model weights ─────────────────────────────────────────────────────────────
 scripts/model_weights/
 *.safetensors

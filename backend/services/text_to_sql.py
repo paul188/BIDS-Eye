@@ -25,6 +25,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import sys
 import textwrap
 from pathlib import Path
@@ -52,36 +53,66 @@ _FAMILY_ALIASES: Dict[str, str] = {
 _FALLBACK_FAMILIES = ["combined_filter", "concept_query", "scan_filter"]
 
 
+_STOPWORDS = {
+    "a","an","the","and","or","in","of","to","for","with","that","this",
+    "is","are","do","does","me","my","i","all","any","no","not","from",
+    "by","be","at","on","as","it","its","have","has","had","give","show",
+    "find","list","which","what","how","get","tell","want","give","please",
+    "can","could","would","datasets","dataset","data","participants",
+}
+
+
+def _extract_resolved_codes(augmented_question: str) -> Dict[str, List[str]]:
+    """Parse resolved ontology codes from the augmented question string.
+
+    Extracts canonical DB codes from lines like:
+      o2.datatype = 'functional_mri'
+      o2.task IN ('resting_state', 'n_back')
+      p.diagnosis IN ('autism_spectrum_disorder')
+    Returns a dict with keys 'datatype', 'task', 'diagnosis', 'suffix'.
+    """
+    codes: Dict[str, List[str]] = {"datatype": [], "task": [], "diagnosis": [], "suffix": []}
+    for field in codes:
+        for m in re.finditer(rf"\.{field}\s*=\s*'([^']+)'", augmented_question):
+            v = m.group(1)
+            if v not in codes[field]:
+                codes[field].append(v)
+        for m in re.finditer(rf"\.{field}\s+IN\s*\(([^)]+)\)", augmented_question, re.IGNORECASE):
+            for v in re.findall(r"'([^']+)'", m.group(1)):
+                if v not in codes[field]:
+                    codes[field].append(v)
+    return codes
+
+
 def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
-                   n: int = 8, seed: str = "") -> List[dict]:
-    """Select the N most relevant examples using keyword search across ALL families.
+                   n: int = 8, seed: str = "",
+                   resolved_codes: Optional[Dict[str, List[str]]] = None) -> List[dict]:
+    """Select the N most relevant few-shot examples from the pool.
 
-    Strategy:
-    1. Score every example in the pool by keyword overlap with `seed` (the question).
-    2. Break ties by preferring the matched query family, then fallback families.
-    3. Return the top-N, deduplicated by question text.
-
-    This lets the LLM see examples from across all 20 families rather than
-    being limited to a single family — a 'fullsearch' over the example pool.
+    Scoring is a 3-tuple (code_overlap, keyword_overlap, family_priority):
+    - code_overlap: # of resolved ontology codes (datatype/task/diagnosis/suffix) that
+      appear in the example's meta tags. This is the primary signal when the RAG
+      pipeline has resolved codes; when it hasn't, it contributes 0 and the
+      selector degrades gracefully to keyword + family priority.
+    - keyword_overlap: content-word overlap between the user question and the
+      example question.
+    - family_priority: +2 for the matched query family, +1 for fallback families.
     """
     if not pool or not seed:
         return []
 
-    # Build a flat list of all examples tagged with their family
-    all_examples: List[tuple] = []
     family_key = _FAMILY_ALIASES.get(query_family, query_family)
+
+    all_examples: List[tuple] = []
     for fam, examples in pool.items():
         for ex in examples:
             all_examples.append((fam, ex))
 
-    # Keyword overlap score: content words from the question
-    _STOPWORDS = {
-        "a","an","the","and","or","in","of","to","for","with","that","this",
-        "is","are","do","does","me","my","i","all","any","no","not","from",
-        "by","be","at","on","as","it","its","have","has","had","give","show",
-        "find","list","which","what","how","get","tell","want","give","please",
-        "can","could","would","datasets","dataset","data","participants",
-    }
+    resolved_set: set = set()
+    if resolved_codes:
+        for field in ("datatype", "task", "diagnosis", "suffix"):
+            resolved_set.update(resolved_codes.get(field, []))
+
     seed_words = {w for w in seed.lower().split() if w not in _STOPWORDS and len(w) > 2}
 
     family_priority = {family_key: 2}
@@ -90,14 +121,19 @@ def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
 
     def score(item: tuple) -> tuple:
         fam, ex = item
-        ex_words = {w for w in ex["question"].lower().split() if w not in _STOPWORDS and len(w) > 2}
-        overlap = len(seed_words & ex_words)
+        meta = ex.get("meta", {})
+        ex_codes: set = set()
+        for field in ("datatype", "task", "diagnosis", "suffix"):
+            ex_codes.update(meta.get(field, []))
+        code_overlap = len(resolved_set & ex_codes)
+        ex_words = {w for w in ex["question"].lower().split()
+                    if w not in _STOPWORDS and len(w) > 2}
+        keyword_overlap = len(seed_words & ex_words)
         prio = family_priority.get(fam, 0)
-        return (overlap, prio)
+        return (code_overlap, keyword_overlap, prio)
 
     ranked = sorted(all_examples, key=score, reverse=True)
 
-    # Deduplicate by question and pick top-n
     seen_questions: set = set()
     picked: List[dict] = []
     for _, ex in ranked:
@@ -158,7 +194,8 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     )
 
     try:
-        corrected = _extract_sql(llm_generate(prompt, temperature=0.1, api_key=api_key))
+        raw = llm_generate(prompt, temperature=0.1, api_key=api_key)
+        corrected = _rewrite_generated_sql(raw, question).sql
         return corrected if corrected != _FALLBACK_SQL else sql
     except LLMAllFailedError as exc:
         log.warning("All LLM tiers failed during SQL correction: %s", exc)
@@ -297,10 +334,14 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     explanation = augmented_plan.plan.natural_language_summary
 
     # Stage 3: Gemini SQL generation with few-shot examples
-    examples = _pick_examples(_FEW_SHOT_POOL, query_family, n=5, seed=question)
+    resolved_codes = _extract_resolved_codes(augmented_question)
+    examples = _pick_examples(_FEW_SHOT_POOL, query_family, n=5, seed=question,
+                              resolved_codes=resolved_codes)
     examples_block = _format_examples(examples)
     if examples:
-        log.info("Injecting %d few-shot examples for family '%s'", len(examples), query_family)
+        log.info("Injecting %d few-shot examples for family '%s' (resolved codes: %s)",
+                 len(examples), query_family,
+                 {k: v for k, v in resolved_codes.items() if v})
 
     # Keep LLM generation and SQL rewriting separate: the model emits raw SQL,
     # then the rewrite service handles projection normalization, scan-filter
