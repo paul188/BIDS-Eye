@@ -1,8 +1,8 @@
 """
 Shared SQL prompt/schema constants for BIDS-Eye.
 
-This module is used by the backend text-to-SQL pipeline and by the Modal
-inference image. It intentionally stays small and dependency-free.
+This module is used by the backend text-to-SQL pipeline. It intentionally
+stays small and dependency-free.
 """
 
 from __future__ import annotations

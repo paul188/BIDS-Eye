@@ -21,7 +21,7 @@ Flow:
       │  returns AugmentedQueryPlan with canonical codes filled in
       │
       ▼
-  SQL generation LLM (SQLCoder via modal_app/app.py)
+  SQL generation LLM (Gemini, in backend/services/text_to_sql.py)
 
 The LLM's job is STRUCTURAL ONLY:
   - Identify which terms are scan-related (put in ScanRequirement.scan_terms)
