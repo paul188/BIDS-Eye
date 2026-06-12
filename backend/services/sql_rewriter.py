@@ -49,7 +49,7 @@ _PLACEHOLDER = "{{COLS}}"
 DEFAULT_DATASET_PROJECTION = (
     "d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
     "       d.source_type, d.remote_url, d.validation_status,\n"
-    "       d.authors, d.description_text,\n"
+    "       d.authors, d.institutions, d.description_text,\n"
     "       COUNT(DISTINCT o.subject) AS subject_count"
 )
 _FALLBACK_SQL = (
@@ -74,6 +74,50 @@ _VOCAB_MISS_ILIKE_RE = re.compile(
 _LITERAL_QUOTE_RE = re.compile(r"'(%[^']*%)'")
 _CODE_RE = re.compile(r"^[A-Za-z0-9_]+$")
 _SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
+
+# Task ILIKE concept expansion: maps vague category terms to canonical task codes.
+# "cognitive" is not a BIDS task name — all experimental tasks are cognitive, so we
+# remove the filter. "naturalistic" is a paradigm category covering movie/video/narrative
+# tasks whose BIDS identifiers don't contain the word "naturalistic".
+_TASK_ILIKE_CONCEPT_RE = re.compile(
+    r"(o\d*)\.task\s+ILIKE\s+'%(\w+)%'",
+    re.IGNORECASE,
+)
+_NATURALISTIC_TASKS = (
+    "naturalistic_passive_viewing", "naturalistic_object_category_perception",
+    "naturalistic_animal_behavior_viewing", "naturalistic_dialogue_monologue_long",
+    "naturalistic_dialogue_monologue_short", "naturalistic_kandinsky_viewing",
+    "naturalistic_point_of_view_viewing", "naturalistic_rorschach_viewing",
+    "naturalistic_seti_viewing", "naturalistic_tunnel_viewing",
+    "movie_viewing", "movie_viewing_raiders", "movie_viewing_variant_1",
+    "movie_viewing_variant_2", "movie_viewing_variant_007", "movie_viewing_variant_008",
+    "movie_viewing_variant_009", "budapest_movie_viewing_1r",
+    "budapest_movie_viewing_3r", "budapest_movie_viewing_5r",
+    "silent_movie_viewing", "laluna_movie_viewing", "partly_cloudy_movie_viewing",
+    "rest_film_viewing", "film_recall", "movie_memory",
+    "narrative_listening", "video_game_and_video",
+    "buck_natural_language_listening", "sloth_natural_language_listening",
+    "passive_listening_natural_speech", "diotic_natural_speech_cortical_attention",
+    "diotic_natural_speech_subcortical_attention",
+    "attention_natural_image_reconstruction",
+    "attention_natural_image_reconstruction_training",
+    "perception_natural_image_test",
+)
+# Terms that map to a task IN list
+_TASK_CONCEPT_EXPANSIONS: dict[str, tuple[str, ...]] = {
+    "naturalistic": _NATURALISTIC_TASKS,
+}
+# Terms that are vague category labels — remove the task filter entirely (return TRUE)
+_TASK_CONCEPT_DROP = {"cognitive", "social", "emotional", "linguistic", "sensory"}
+
+# bids_participants correlated count in WHERE → rewrite to HAVING on bids_objects subjects.
+# bids_participants is sparsely populated; o.subject is the reliable count source.
+_PARTICIPANTS_COUNT_WHERE_RE = re.compile(
+    r"AND\s*\(\s*SELECT\s+COUNT\s*\(\s*DISTINCT\s+\w+\.participant_id\s*\)\s+"
+    r"FROM\s+bids_participants\s+\w+\s+WHERE\s+\w+\.dataset_id\s*=\s*d\.id\s*\)\s*"
+    r"(>=|>|<=|<|=)\s*(\d+)",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 @dataclass(slots=True)
@@ -137,6 +181,8 @@ class SqlRewriteService:
         sql = self.extract_sql(raw_sql)
         sql = self._rewrite_projection(sql)
         sql = self._strip_outer_scan_filters(sql)
+        sql = self._rewrite_task_ilike_concepts(sql)
+        sql = self._rewrite_participant_count_to_having(sql)
         sql, params = self._inject_vocab_miss(sql, augmented_question)
         return RewriteResult(sql=sql, params=params)
 
@@ -366,6 +412,70 @@ class SqlRewriteService:
         if column not in {"task", "datatype", "suffix"}:
             return False
         return isinstance(right, exp.Literal)
+
+    def _rewrite_task_ilike_concepts(self, sql: str) -> str:
+        """Replace vague `task ILIKE '%term%'` patterns with precise task IN lists.
+
+        The LLM violates its own instructions and emits task ILIKE when it can't
+        find a canonical code. "naturalistic" is a paradigm category covering many
+        movie/video/narrative task identifiers that don't contain the word itself.
+        "cognitive" is not a BIDS task name at all — every experimental task is
+        cognitive, so we drop the filter (replaced with TRUE inside EXISTS).
+        """
+        def _expand(m: re.Match) -> str:
+            alias = m.group(1)
+            term = m.group(2).lower()
+            if term in _TASK_CONCEPT_EXPANSIONS:
+                tasks_sql = ", ".join(
+                    f"'{t}'" for t in _TASK_CONCEPT_EXPANSIONS[term]
+                )
+                log.info("Expanded task ILIKE '%%%s%%' to IN list (%d tasks)", term, len(_TASK_CONCEPT_EXPANSIONS[term]))
+                return f"{alias}.task IN ({tasks_sql})"
+            if term in _TASK_CONCEPT_DROP:
+                log.info("Dropped vague task ILIKE '%%%s%%' (not a BIDS task code)", term)
+                return "TRUE"
+            return m.group(0)
+
+        return _TASK_ILIKE_CONCEPT_RE.sub(_expand, sql)
+
+    def _rewrite_participant_count_to_having(self, sql: str) -> str:
+        """Move correlated bids_participants COUNT from WHERE to HAVING on o.subject.
+
+        bids_participants is sparsely populated — many datasets have rows in
+        bids_objects but zero rows in bids_participants. The reliable subject
+        count is COUNT(DISTINCT o.subject) which is already joined in the query.
+        """
+        m = _PARTICIPANTS_COUNT_WHERE_RE.search(sql)
+        if not m:
+            return sql
+        op = m.group(1)
+        n = m.group(2)
+        log.info(
+            "Rewrote bids_participants COUNT subquery to HAVING COUNT(DISTINCT o.subject) %s %s",
+            op, n,
+        )
+        # Remove the subquery from WHERE
+        sql = sql[: m.start()] + sql[m.end() :]
+        having_clause = f"HAVING COUNT(DISTINCT o.subject) {op} {n}"
+        if re.search(r"\bHAVING\b", sql, re.IGNORECASE):
+            # AND into existing HAVING
+            sql = re.sub(
+                r"\bHAVING\b",
+                f"HAVING COUNT(DISTINCT o.subject) {op} {n} AND",
+                sql,
+                count=1,
+                flags=re.IGNORECASE,
+            )
+        else:
+            # Insert after GROUP BY clause, before ORDER BY / LIMIT / end
+            sql = re.sub(
+                r"(\bGROUP\s+BY\b[^;]*?)(\s*(?:ORDER\s+BY|LIMIT|;|$))",
+                lambda mm: mm.group(1) + f"\n{having_clause}" + mm.group(2),
+                sql,
+                count=1,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+        return sql
 
     def _inject_vocab_miss(self, sql: str, augmented_question: str) -> tuple[str, dict[str, Any]]:
         """Inject free-text fallback filters for unresolved vocabulary terms."""

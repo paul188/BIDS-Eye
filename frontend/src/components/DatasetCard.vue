@@ -62,6 +62,11 @@ const authorLine = computed(() => {
     <!-- Author line -->
     <p v-if="authorLine" class="text-xs text-muted truncate">{{ authorLine }}</p>
 
+    <!-- Institution line -->
+    <p v-if="dataset.institutions?.length" class="text-xs text-muted truncate">
+      {{ dataset.institutions.join(' · ') }}
+    </p>
+
     <!-- Description snippet (always visible, clamped) -->
     <p v-if="dataset.description_text" class="text-sm text-muted line-clamp-3">
       {{ dataset.description_text }}

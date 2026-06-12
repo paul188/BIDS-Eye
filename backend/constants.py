@@ -18,6 +18,11 @@ CREATE TABLE bids_datasets (
     remote_url        TEXT,
     validation_status TEXT,
     authors           TEXT[],     -- dataset authors, e.g. ARRAY['Poldrack, R.A.', 'Gorgolewski, K.']
+    institutions      TEXT[],     -- scanning institutions from MRI sidecar JSONs, e.g. ARRAY['Child Mind Institute', 'NYU_Center_for_Brain_Imaging']
+                                  -- Names come from DICOM headers — expect underscores, abbreviations, and
+                                  -- slight variants (e.g. 'Princeton_University' alongside 'Princeton University').
+                                  -- Always search with ILIKE on unnested elements:
+                                  --   EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%')
     license           TEXT,       -- e.g. 'CC0', 'PDDL'
     doi               TEXT,       -- dataset DOI
     paper_references  TEXT[],     -- linked papers / URLs
@@ -44,9 +49,16 @@ CREATE TABLE bids_objects (
     extension       TEXT,         -- file format ONLY: '.nii.gz', '.json', '.tsv', '.eeg', etc.
                                   -- NEVER contains metadata field names
     other_entities  JSONB         -- sidecar metadata + secondary BIDS entities
-                                  -- e.g. {"AcquisitionTime": "12:00:00", "RepetitionTime": 2.0,
-                                  --       "acq": "highres", "echo": "1"}
-                                  -- Use ->> to extract: other_entities->>'AcquisitionTime'
+                                  -- Scanner hardware keys (use ILIKE for string fields):
+                                  --   Manufacturer          TEXT  e.g. 'Siemens', 'Philips', 'GE', 'Bruker'
+                                  --   ManufacturerModelName TEXT  e.g. 'Prisma', 'Skyra', 'Achieva', 'MAGNETOM'
+                                  --   MagneticFieldStrength FLOAT e.g. 1.5, 3.0, 7.0  (Tesla)
+                                  --   SoftwareVersions      TEXT  e.g. 'syngo MR E11'
+                                  -- Acquisition params:
+                                  --   RepetitionTime, EchoTime, FlipAngle, AcquisitionTime
+                                  -- Secondary BIDS entities: acq, echo, dir, space, res
+                                  -- Extract as text : other_entities->>'Manufacturer'
+                                  -- Cast to numeric : (other_entities->>'MagneticFieldStrength')::float
 );
 
 CREATE TABLE bids_participants (
@@ -89,8 +101,8 @@ You are a Text-to-SQL assistant for BIDS-Eye, a search engine over neuroimaging 
 
 Database schema:
 
-bids_datasets  (d): id UUID PK, name, accession_id, bids_version, dataset_type, source_type, remote_url, validation_status, authors TEXT[], license, doi, paper_references TEXT[], funding TEXT[], description_text TEXT
-bids_objects   (o): id UUID PK, dataset_id FK, subject, subject_index, session, task, run, suffix, datatype, extension (file format only: '.nii.gz' etc.), other_entities JSONB (sidecar metadata + secondary entities, e.g. AcquisitionTime, RepetitionTime, acq, echo)
+bids_datasets  (d): id UUID PK, name, accession_id, bids_version, dataset_type, source_type, remote_url, validation_status, authors TEXT[], institutions TEXT[] (scanning site, from DICOM headers — use ILIKE on unnested elements), license, doi, paper_references TEXT[], funding TEXT[], description_text TEXT
+bids_objects   (o): id UUID PK, dataset_id FK, subject, subject_index, session, task, run, suffix, datatype, extension (file format only: '.nii.gz' etc.), other_entities JSONB (sidecar metadata — scanner hw: Manufacturer TEXT, ManufacturerModelName TEXT, MagneticFieldStrength FLOAT Tesla, SoftwareVersions TEXT; acq params: RepetitionTime, EchoTime, FlipAngle, AcquisitionTime; secondary entities: acq, echo, dir, space, res. Extract: other_entities->>'Manufacturer'. Cast numeric: (other_entities->>'MagneticFieldStrength')::float)
 bids_participants(p): id UUID PK, dataset_id FK, participant_id, age FLOAT, sex, handedness, diagnosis (clinical only), extra JSONB (non-standard columns, e.g. concern_dieting, bmi, group)
 
 suffix values : fmri_bold=fMRI  t1_weighted_mri/t2_weighted_mri=structural  diffusion_mri_dwi=diffusion  eeg=EEG  meg=MEG  intracranial_eeg=iEEG  pet=PET
@@ -109,12 +121,13 @@ Rules:
 - Always GROUP BY d.id.
 - Use EXISTS (...) to filter by file properties without multiplying rows.
 - Use ILIKE '%term%' for case-insensitive text search on d.name and d.description_text.
+- For d.institutions (TEXT[] array): search with EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%term%'). Never use d.institutions = or d.institutions @>; always ILIKE on unnested elements.
 - Only add LIMIT when the question explicitly requests a top-N result or ranking.
 - Never use EXISTS to check a column already on bids_datasets — use d.col directly (e.g. WHERE d.doi IS NOT NULL AND d.doi != '').
 - Never JOIN bids_participants alongside bids_objects — it creates a cross-product that times out. For participant counts in HAVING, use correlated subqueries: HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male') > (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female')
 - Counting: the subject_count alias (COUNT(DISTINCT o.subject)) is supplied by the injected projection. For HAVING thresholds on participant criteria, use COUNT(DISTINCT p.participant_id). Never mix them.
 - o.extension is the file format ONLY ('.nii.gz', '.json', '.tsv'). NEVER search extension for metadata field names.
-- Sidecar metadata (AcquisitionTime, RepetitionTime, etc.) is in o.other_entities JSONB: o.other_entities->>'AcquisitionTime'
+- Sidecar metadata is in o.other_entities JSONB. Extract as text: o.other_entities->>'Manufacturer'. Cast numeric fields: (o.other_entities->>'MagneticFieldStrength')::float. Scanner hardware keys: Manufacturer (ILIKE '%Siemens%'), ManufacturerModelName (ILIKE '%Prisma%'), MagneticFieldStrength (numeric Tesla — always cast with ::float for comparisons), SoftwareVersions (text). Acquisition params: RepetitionTime, EchoTime, FlipAngle, AcquisitionTime.
 - Non-standard participant fields (bmi, group, custom scales, etc.) are in p.extra JSONB: p.extra->>'concern_dieting'
 - p.diagnosis is for clinical diagnoses ONLY. Use p.extra for non-clinical participant attributes.
 - The diagnosis, task, suffix, and datatype columns hold normalized standard_codes. Use the exact

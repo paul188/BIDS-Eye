@@ -124,6 +124,7 @@ def _extract_promoted(accession_id: str, ds: dict, snapshot_desc: dict) -> dict:
     funding = [raw_fund] if isinstance(raw_fund, str) and raw_fund else (raw_fund if isinstance(raw_fund, list) else None)
     return {
         "authors":          authors or None,
+        "institutions":     None,   # not available from GraphQL (no sidecar JSONs)
         "license":          meta.get("license") or snapshot_desc.get("License") or None,
         "doi":              meta.get("datasetDOI") or snapshot_desc.get("DatasetDOI") or None,
         "paper_references": None,   # not available from GraphQL
@@ -168,6 +169,7 @@ async def _upsert_dataset(
                 "source_type":      pg_insert(BIDSDataset).excluded.source_type,
                 "remote_url":       pg_insert(BIDSDataset).excluded.remote_url,
                 "authors":          pg_insert(BIDSDataset).excluded.authors,
+                "institutions":     pg_insert(BIDSDataset).excluded.institutions,
                 "license":          pg_insert(BIDSDataset).excluded.license,
                 "doi":              pg_insert(BIDSDataset).excluded.doi,
                 "paper_references": pg_insert(BIDSDataset).excluded.paper_references,

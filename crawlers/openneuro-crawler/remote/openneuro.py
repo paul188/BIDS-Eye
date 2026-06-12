@@ -30,7 +30,7 @@ from uuid import uuid4
 import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 
 from db.db import async_session_maker
 from db.models import BIDSDataset, BIDSObject
@@ -246,6 +246,19 @@ async def _stamp_dataset(
         _PROMOTED = {"Authors", "License", "DatasetDOI", "ReferencesAndLinks", "Funding", "Description"}
         clean_desc = {k: v for k, v in desc.items() if k not in _PROMOTED}
 
+        # Collect distinct institution names from sidecar JSONs indexed by the pipeline
+        inst_row = await session.execute(
+            text(
+                "SELECT array_agg(DISTINCT other_entities->>'InstitutionName')"
+                " FILTER (WHERE other_entities->>'InstitutionName' IS NOT NULL"
+                "           AND other_entities->>'InstitutionName' != '')"
+                " AS institutions"
+                " FROM bids_objects WHERE dataset_id = :did"
+            ),
+            {"did": dataset.id},
+        )
+        institutions = inst_row.scalar() or None
+
         await session.execute(
             update(BIDSDataset)
             .where(BIDSDataset.id == dataset.id)
@@ -254,6 +267,7 @@ async def _stamp_dataset(
                 accession_id=accession_id,
                 remote_url=remote_url,
                 authors=authors,
+                institutions=institutions,
                 license=desc.get("License") or None,
                 doi=desc.get("DatasetDOI") or None,
                 paper_references=paper_references,
