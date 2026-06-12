@@ -9,7 +9,7 @@ the resulting SQL against the BIDS database, and returns matching datasets.
 The expensive translation (Gemini intent + RAG + SQL generation) runs once per
 question; the resulting base SELECT is cached under an opaque ``query_id`` so
 subsequent pages reuse it. Relevance ordering/weighting and LIMIT/OFFSET are
-applied per page in postprocessing (see services.text_to_sql.build_page_sql).
+applied per page in postprocessing (see services.sql_rewriter.build_page_sql).
 """
 
 from __future__ import annotations
@@ -32,12 +32,8 @@ from schemas import (
     QueryResponse,
 )
 from services.query_cache import CachedQuery, query_cache
-from services.text_to_sql import (
-    _correct_sql_with_gemini,
-    build_count_sql,
-    build_page_sql,
-    text_to_sql,
-)
+from services.sql_rewriter import build_count_sql, build_page_sql
+from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -147,7 +143,12 @@ async def _run_page(
     query then reuses the now-validated base, so it only applies ordering +
     LIMIT/OFFSET.
     """
-    total = await _count_with_base_correction(session, query_id, cached, question)
+    if cached.total is None:
+        total = await _count_with_base_correction(session, query_id, cached, question)
+        cached.total = total
+        query_cache.update(query_id, cached)
+    else:
+        total = cached.total
 
     offset = (page - 1) * page_size
     page_sql, extra_params = build_page_sql(

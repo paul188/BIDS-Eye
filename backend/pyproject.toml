@@ -17,6 +17,7 @@ dependencies = [
     "anthropic>=0.40",
     "rapidfuzz>=3.0.0",
     "pyyaml>=6.0",
+    "sqlglot>=25.0.0",
     "python-jose[cryptography]>=3.3",
 ]
 
