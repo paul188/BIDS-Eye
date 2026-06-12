@@ -31,11 +31,15 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex items-center justify-center h-full bg-background">
-    <div class="w-full max-w-sm bg-panel border border-border rounded-2xl p-8 space-y-6">
+  <div class="flex items-center justify-center h-full bg-surface">
+    <div class="w-full max-w-sm bg-panel border border-border rounded-2xl shadow-sm p-8 space-y-6">
       <div class="text-center">
-        <p class="text-3xl mb-1">🧠</p>
-        <h1 class="text-xl font-bold text-white">BIDS-Eye</h1>
+        <div class="flex items-center justify-center gap-2 mb-1">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" class="text-ink">
+            <path d="M12 3 1 8l11 5 9-4.09V14h2V8L12 3zM5 13.18v3L12 20l7-3.82v-3L12 17l-7-3.82z" />
+          </svg>
+          <h1 class="text-xl text-ink" style="font-weight: 500">BIDS-Eye</h1>
+        </div>
         <p class="text-sm text-muted mt-1">Enter your password to continue</p>
       </div>
 
@@ -45,9 +49,9 @@ async function submit() {
           type="password"
           placeholder="Password"
           autocomplete="current-password"
-          class="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-white placeholder-muted focus:outline-none focus:border-accent transition-colors"
+          class="w-full bg-panel border border-border rounded-xl px-4 py-3 text-sm text-ink placeholder-muted-soft focus:outline-none focus:border-accent transition-colors"
         />
-        <p v-if="error" class="text-red-400 text-xs">{{ error }}</p>
+        <p v-if="error" class="text-red-500 text-xs">{{ error }}</p>
         <button
           type="submit"
           :disabled="!password || loading"

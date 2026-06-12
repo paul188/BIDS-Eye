@@ -137,15 +137,26 @@ from schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 
+# ── Canonical SELECT projection ────────────────────────────────────────────────
+# Single source of truth for the columns every dataset query must return. The LLM
+# never writes these — it emits the `{{COLS}}` placeholder and `_apply_projection`
+# substitutes this list in postprocessing (the projection is identical for every
+# query; only the filters vary). Safe under GROUP BY d.id since d.id is the PK.
+_PLACEHOLDER = "{{COLS}}"
+_PROJECTION = (
+    "d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
+    "       d.source_type, d.remote_url, d.validation_status,\n"
+    "       d.authors, d.description_text,\n"
+    "       COUNT(DISTINCT o.subject) AS subject_count"
+)
+
 # ── Fallback SQL: return a bounded sample of datasets when SQL generation is
 # unavailable (no API key, or every LLM tier failed). The LIMIT is essential:
 # an unbounded all-datasets response (1700+ datasets + every participant) is huge
 # and slow, and gets dropped by Cloudflare's ~100s origin timeout / the browser,
 # surfacing as "NetworkError when attempting to fetch resource". Keep it small.
 _FALLBACK_SQL = (
-    "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-    "       d.source_type, d.remote_url, d.validation_status,\n"
-    "       COUNT(DISTINCT o.subject) AS subject_count\n"
+    f"SELECT {_PROJECTION}\n"
     "FROM bids_datasets d\n"
     "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
     "GROUP BY d.id\n"
@@ -170,6 +181,59 @@ def _extract_sql(raw: str) -> str:
     if re.match(r"(?i)select\b", stripped):
         return stripped.split("\n\n")[0].strip()
     return _FALLBACK_SQL
+
+
+def _outer_select_span(sql: str):
+    """Return (cols_start, from_start) char indices for the outermost SELECT clause.
+
+    ``cols_start`` is just after 'SELECT [DISTINCT]'; ``from_start`` is where the
+    top-level FROM keyword begins. Returns (None, None) if the structure can't be
+    found. Ported from modal_app/app.py so the local pipeline shares the same
+    projection-injection logic.
+    """
+    m = re.match(r"\s*SELECT\s+(?:DISTINCT\s+)?", sql, re.IGNORECASE)
+    if not m:
+        return None, None
+    cols_start = m.end()
+    depth = 0
+    i = cols_start
+    while i < len(sql) - 3:
+        c = sql[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+        elif depth == 0:
+            word = sql[i:i + 4].upper()
+            if word == "FROM" and (i == 0 or (not sql[i - 1].isalnum() and sql[i - 1] != "_")):
+                return cols_start, i
+        i += 1
+    return cols_start, None
+
+
+def _apply_projection(sql: str) -> str:
+    """Substitute the canonical SELECT projection into a generated query.
+
+    Every dataset query returns the identical column list (``_PROJECTION``); only
+    the filters vary. So the LLM emits a ``{{COLS}}`` placeholder and we inject the
+    real columns here, in postprocessing, before the SQL is cached/wrapped.
+
+      1. Placeholder present  → replace ``{{COLS}}`` with ``_PROJECTION``.
+      2. No placeholder (LLM ignored it, Modal/fallback path) → replace the outer
+         projection with ``_PROJECTION`` to guarantee the exact columns.
+      3. Query begins with ``WITH`` (CTE) → leave untouched (rewriting the outer
+         projection of a CTE-bearing query is too fragile).
+    """
+    if _PLACEHOLDER in sql:
+        return sql.replace(_PLACEHOLDER, _PROJECTION)
+
+    if re.match(r"\s*WITH\b", sql, re.IGNORECASE):
+        return sql
+
+    cols_start, from_start = _outer_select_span(sql)
+    if cols_start is None or from_start is None:
+        return sql
+    return sql[:cols_start] + _PROJECTION + "\n" + sql[from_start:]
 
 
 def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: str) -> str:
@@ -257,8 +321,12 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
         "## Required query structure\n"
         "- Only use tables/columns present in the schema.\n"
-        "- Always SELECT: d.id, d.name, d.accession_id, d.bids_version, d.dataset_type, "
-        "d.source_type, d.remote_url, d.validation_status, COUNT(DISTINCT o.subject) AS subject_count\n"
+        "- Begin the query with EXACTLY: SELECT {{COLS}}\n"
+        "  Do NOT list any column names after SELECT — write the literal placeholder "
+        "{{COLS}}. The full column list is injected automatically afterwards. The "
+        "alias `subject_count` is part of that injected list, so you may still "
+        "reference it in HAVING / ORDER BY (e.g. HAVING COUNT(DISTINCT o.subject) > 30, "
+        "ORDER BY subject_count DESC).\n"
         "- Always include: LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
         "- Always include: GROUP BY d.id\n"
         "- Return ONLY the SQL — no explanation, no markdown fences.\n"
@@ -517,7 +585,7 @@ def _run_via_modal(question: str) -> TextToSQLResult:
 
     raw_sql = result.get("sql") or _FALLBACK_SQL
     augmented = result.get("augmented_question", question)
-    sql = _fix_vocab_miss_sql(raw_sql, augmented)
+    sql = _apply_projection(_fix_vocab_miss_sql(raw_sql, augmented))
     explanation = result.get("query_plan", {}) and str(result["query_plan"])
     error = result.get("error")
     if error:
@@ -573,9 +641,11 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     if examples:
         log.info("Injecting %d few-shot examples for family '%s'", len(examples), query_family)
 
-    sql = _fix_vocab_miss_sql(
-        _gemini_sql_generation(augmented_question, api_key, examples_block),
-        augmented_question,
+    sql = _apply_projection(
+        _fix_vocab_miss_sql(
+            _gemini_sql_generation(augmented_question, api_key, examples_block),
+            augmented_question,
+        )
     )
 
     # Relevance ranking is applied in postprocessing (build_page_sql), not baked

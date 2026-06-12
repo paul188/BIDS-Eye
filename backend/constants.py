@@ -67,10 +67,9 @@ CREATE TABLE bids_participants (
 
 -- Query conventions:
 -- Always alias: bids_datasets AS d, bids_objects AS o, bids_participants AS p
--- Always SELECT:
---   d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,
---   d.source_type, d.remote_url, d.validation_status,
---   COUNT(DISTINCT o.subject) AS subject_count   ← always this in SELECT
+-- Begin EXACTLY with: SELECT {{COLS}}   ← literal placeholder; never list columns.
+--   The full projection (id, name, …, authors, description_text,
+--   COUNT(DISTINCT o.subject) AS subject_count) is injected automatically.
 -- Always: LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL
 -- Always: GROUP BY d.id
 -- Use EXISTS (...) to filter by file/participant properties (bids_objects, bids_participants only)
@@ -81,7 +80,7 @@ CREATE TABLE bids_participants (
 --   HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male')
 --        > (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female')
 -- Counting convention:
---   SELECT output  → COUNT(DISTINCT o.subject) AS subject_count   (always)
+--   subject_count alias (from the injected projection) → COUNT(DISTINCT o.subject)
 --   HAVING threshold on participant criteria → COUNT(DISTINCT p.participant_id)\
 """
 
@@ -97,10 +96,12 @@ bids_participants(p): id UUID PK, dataset_id FK, participant_id, age FLOAT, sex,
 suffix values : fmri_bold=fMRI  t1_weighted_mri/t2_weighted_mri=structural  diffusion_mri_dwi=diffusion  eeg=EEG  meg=MEG  intracranial_eeg=iEEG  pet=PET
 datatype values: functional_mri  anatomical_mri  diffusion_mri  field_maps  electroencephalography  magnetoencephalography  intracranial_eeg  behavioural_data  positron_emission_tomography  perfusion_asl  fnirs
 
-Your SQL MUST always SELECT:
-  d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,
-  d.source_type, d.remote_url, d.validation_status,
-  COUNT(DISTINCT o.subject) AS subject_count
+Your SQL MUST begin EXACTLY with: SELECT {{COLS}}
+Never list column names after SELECT — write the literal placeholder {{COLS}}.
+The full projection (id, name, …, authors, description_text,
+COUNT(DISTINCT o.subject) AS subject_count) is injected automatically afterwards.
+The subject_count alias is part of that projection, so you may reference it in
+HAVING / ORDER BY.
 
 Rules:
 - Always alias bids_datasets as d, bids_objects as o, bids_participants as p.
@@ -111,7 +112,7 @@ Rules:
 - Only add LIMIT when the question explicitly requests a top-N result or ranking.
 - Never use EXISTS to check a column already on bids_datasets — use d.col directly (e.g. WHERE d.doi IS NOT NULL AND d.doi != '').
 - Never JOIN bids_participants alongside bids_objects — it creates a cross-product that times out. For participant counts in HAVING, use correlated subqueries: HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male') > (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female')
-- Counting: always use COUNT(DISTINCT o.subject) AS subject_count in SELECT. For HAVING thresholds on participant criteria, use COUNT(DISTINCT p.participant_id). Never mix them.
+- Counting: the subject_count alias (COUNT(DISTINCT o.subject)) is supplied by the injected projection. For HAVING thresholds on participant criteria, use COUNT(DISTINCT p.participant_id). Never mix them.
 - o.extension is the file format ONLY ('.nii.gz', '.json', '.tsv'). NEVER search extension for metadata field names.
 - Sidecar metadata (AcquisitionTime, RepetitionTime, etc.) is in o.other_entities JSONB: o.other_entities->>'AcquisitionTime'
 - Non-standard participant fields (bmi, group, custom scales, etc.) are in p.extra JSONB: p.extra->>'concern_dieting'
@@ -134,9 +135,7 @@ EXAMPLE_PAIRS = [
     {
         "question": "Show me all fMRI datasets",
         "sql": (
-            "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-            "       d.source_type, d.remote_url, d.validation_status,\n"
-            "       COUNT(DISTINCT o.subject) AS subject_count\n"
+            "SELECT {{COLS}}\n"
             "FROM bids_datasets d\n"
             "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
             "WHERE EXISTS (\n"
@@ -149,9 +148,7 @@ EXAMPLE_PAIRS = [
     {
         "question": "EEG datasets with more than 30 subjects",
         "sql": (
-            "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-            "       d.source_type, d.remote_url, d.validation_status,\n"
-            "       COUNT(DISTINCT o.subject) AS subject_count\n"
+            "SELECT {{COLS}}\n"
             "FROM bids_datasets d\n"
             "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
             "WHERE EXISTS (\n"
@@ -165,9 +162,7 @@ EXAMPLE_PAIRS = [
     {
         "question": "Datasets with Alzheimer's patients",
         "sql": (
-            "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-            "       d.source_type, d.remote_url, d.validation_status,\n"
-            "       COUNT(DISTINCT o.subject) AS subject_count\n"
+            "SELECT {{COLS}}\n"
             "FROM bids_datasets d\n"
             "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
             "WHERE EXISTS (\n"
@@ -181,9 +176,7 @@ EXAMPLE_PAIRS = [
     {
         "question": "Find datasets containing participants with any form of epilepsy",
         "sql": (
-            "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-            "       d.source_type, d.remote_url, d.validation_status,\n"
-            "       COUNT(DISTINCT o.subject) AS subject_count\n"
+            "SELECT {{COLS}}\n"
             "FROM bids_datasets d\n"
             "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
             "WHERE EXISTS (\n"
@@ -198,9 +191,7 @@ EXAMPLE_PAIRS = [
     {
         "question": "Datasets that include resting-state scans",
         "sql": (
-            "SELECT d.id, d.name, d.accession_id, d.bids_version, d.dataset_type,\n"
-            "       d.source_type, d.remote_url, d.validation_status,\n"
-            "       COUNT(DISTINCT o.subject) AS subject_count\n"
+            "SELECT {{COLS}}\n"
             "FROM bids_datasets d\n"
             "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
             "WHERE EXISTS (\n"
