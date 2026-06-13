@@ -25,6 +25,7 @@ services:
       - ./nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
+      - ./lottery:/var/www/lottery:ro
     ports:
       - "80:80"
       - "443:443"

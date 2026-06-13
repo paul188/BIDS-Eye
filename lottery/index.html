@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIDS-Eye Lottery — Win Claude Code Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent:  '#1a73e8',
+            surface: '#f8f9fa',
+            ink:     '#202124',
+            muted:   '#5f6368',
+            border:  '#e8eaed',
+            panel:   '#ffffff',
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface min-h-screen font-sans text-ink antialiased">
+
+  <!-- Header -->
+  <header class="bg-panel border-b border-border">
+    <div class="max-w-2xl mx-auto px-6 h-14 flex items-center gap-2 select-none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="text-ink">
+        <path d="M12 3 1 8l11 5 9-4.09V14h2V8L12 3zM5 13.18v3L12 20l7-3.82v-3L12 17l-7-3.82z" />
+      </svg>
+      <span class="text-lg font-medium text-ink">BIDS-Eye</span>
+      <span class="text-muted text-lg font-light mx-0.5">|</span>
+      <span class="text-lg font-medium text-accent">Lottery</span>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-6 py-12 space-y-10">
+
+    <!-- Prize callout -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl px-8 py-7 text-center shadow-sm">
+      <div class="text-5xl mb-4">🎉</div>
+      <h1 class="text-2xl font-semibold text-ink mb-2">Win 3 Months of Claude Code Pro</h1>
+      <p class="text-muted text-sm leading-relaxed max-w-md mx-auto">
+        Help us improve BIDS-Eye and enter a draw to win a
+        <strong class="text-ink">$60 coupon</strong> for
+        <a href="https://claude.ai/code" target="_blank" rel="noopener" class="text-accent underline">Claude Code Pro</a>
+        — the AI coding assistant by Anthropic.
+        No purchase, no subscription required.
+      </p>
+    </div>
+
+    <!-- Steps -->
+    <section>
+      <h2 class="text-xs font-semibold text-muted uppercase tracking-widest mb-6">How to enter</h2>
+
+      <div class="space-y-8">
+
+        <!-- Step 1 -->
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-sm font-semibold shadow-sm">1</div>
+          <div class="pt-0.5">
+            <h3 class="font-semibold text-ink mb-1.5">Create a free account</h3>
+            <p class="text-sm text-muted leading-relaxed">
+              Go to <a href="https://www.bidseye.xyz" class="text-accent underline font-medium">www.bidseye.xyz</a>
+              and sign in with your GitHub account. It takes under a minute and requires no credit card.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-sm font-semibold shadow-sm">2</div>
+          <div class="pt-0.5">
+            <h3 class="font-semibold text-ink mb-1.5">Run at least 10 searches</h3>
+            <p class="text-sm text-muted leading-relaxed mb-3">
+              Use natural language to search for neuroimaging datasets — for example:
+            </p>
+            <ul class="text-sm text-muted space-y-1 mb-3">
+              <li class="flex gap-2"><span class="text-accent flex-shrink-0">→</span><em>"Resting-state fMRI datasets with at least 30 participants"</em></li>
+              <li class="flex gap-2"><span class="text-accent flex-shrink-0">→</span><em>"Datasets with Alzheimer's disease patients and structural MRI"</em></li>
+              <li class="flex gap-2"><span class="text-accent flex-shrink-0">→</span><em>"EEG datasets with task-based paradigms"</em></li>
+            </ul>
+            <p class="text-sm text-muted leading-relaxed">
+              <strong class="text-ink">Take a screenshot of each result page.</strong>
+              Errors and empty results count just as much as successful ones — we want to see how the tool behaves in practice.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-sm font-semibold shadow-sm">3</div>
+          <div class="pt-0.5">
+            <h3 class="font-semibold text-ink mb-1.5">Send us your screenshots &amp; feedback</h3>
+            <p class="text-sm text-muted leading-relaxed mb-4">
+              Email <a href="mailto:pauljoh188@proton.me" class="text-accent underline font-medium">pauljoh188@proton.me</a> with the following:
+            </p>
+
+            <div class="bg-surface border border-border rounded-xl p-5 space-y-3 text-sm">
+              <div class="flex gap-3">
+                <span class="font-semibold text-ink w-24 flex-shrink-0">Subject</span>
+                <code class="bg-panel border border-border rounded px-2 py-0.5 text-xs text-ink">BIDS-Eye Lottery – your_github_username</code>
+              </div>
+              <div class="flex gap-3">
+                <span class="font-semibold text-ink w-24 flex-shrink-0">Attachments</span>
+                <span class="text-muted">Your 10 screenshots</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="font-semibold text-ink w-24 flex-shrink-0">Feedback</span>
+                <span class="text-muted">
+                  150–300 characters describing what worked, what didn't, and what you'd improve
+                </span>
+              </div>
+              <div class="flex gap-3">
+                <span class="font-semibold text-ink w-24 flex-shrink-0">GitHub user</span>
+                <span class="text-muted">Your GitHub username in the email body</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Deadline placeholder -->
+    <!-- DEADLINE -->
+
+    <!-- Fine print -->
+    <footer class="pt-6 border-t border-border">
+      <p class="text-xs text-muted text-center leading-relaxed">
+        No purchase necessary &middot; One entry per GitHub account &middot;
+        Winner drawn at random from all valid entries &middot;
+        Prize: a coupon covering 3&nbsp;months of Claude Code Pro ($20/month, issued by Anthropic)
+      </p>
+    </footer>
+
+  </main>
+</body>
+</html>
