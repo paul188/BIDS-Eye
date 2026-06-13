@@ -51,6 +51,16 @@ export interface CrawlerStatus {
   error_count: number
 }
 
+export class RateLimitError extends Error {
+  retryAfter: string
+  limit: number
+  constructor(retryAfter: string, limit: number) {
+    super('rate_limit_exceeded')
+    this.retryAfter = retryAfter
+    this.limit = limit
+  }
+}
+
 const BASE = '/api'
 
 function authHeaders(): Record<string, string> {
@@ -70,6 +80,10 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
+  if (res.status === 429) {
+    const data = await res.json()
+    throw new RateLimitError(data.detail.retry_after, data.detail.limit)
+  }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }

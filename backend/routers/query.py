@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from datetime import date, datetime, timedelta, timezone
 from typing import Annotated, Sequence
 from uuid import UUID
 
@@ -24,6 +25,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from deps import get_db
+from routers.auth import require_auth
 from schemas import (
     DatasetSchema,
     ParticipantSchema,
@@ -36,6 +38,38 @@ from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql
 from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
+
+_DAILY_LIMIT = int(os.getenv("DAILY_MESSAGE_LIMIT", "20"))
+
+
+async def _enforce_rate_limit(session: AsyncSession, github_login: str) -> None:
+    """Atomically increment today's message count and raise 429 if over the limit."""
+    result = await session.execute(
+        text("""
+            INSERT INTO message_usage (github_login, usage_date, count)
+            VALUES (:login, :today, 1)
+            ON CONFLICT (github_login, usage_date)
+            DO UPDATE SET count = message_usage.count + 1
+            RETURNING count
+        """),
+        {"login": github_login, "today": date.today()},
+    )
+    new_count = result.scalar()
+    await session.commit()
+
+    if new_count > _DAILY_LIMIT:
+        now = datetime.now(timezone.utc)
+        retry_after = (now + timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "code": "rate_limit_exceeded",
+                "retry_after": retry_after.isoformat(),
+                "limit": _DAILY_LIMIT,
+            },
+        )
 
 # Capped here as well as in the cache so a page can't request an unbounded slice.
 _MAX_PAGE_SIZE = 100
@@ -183,11 +217,13 @@ async def _run_page(
 async def query_datasets(
     body: QueryRequest,
     session: Annotated[AsyncSession, Depends(get_db)],
+    _auth: Annotated[dict, Depends(require_auth)],
 ):
     """
     Submit a natural-language question and receive the first page of matching
     BIDS datasets, plus a ``query_id`` for paging through the rest.
     """
+    await _enforce_rate_limit(session, _auth.get("sub", ""))
     page, page_size = _clamp_page(1, _DEFAULT_PAGE_SIZE)
     translation = await text_to_sql(body.question)
 
