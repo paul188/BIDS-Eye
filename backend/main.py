@@ -9,10 +9,11 @@ Startup:
     should run it; in Docker the crawler runs as a separate service).
 
 Routes:
-  POST /api/auth/login     — password login, returns JWT
-  POST /api/auth/logout    — stateless logout
-  POST /api/query          — natural-language dataset search (requires JWT)
-  GET  /api/crawler/status — crawler background service state (requires JWT)
+  GET  /api/auth/github          — redirect to GitHub OAuth consent screen
+  GET  /api/auth/github/callback — OAuth callback; sets JWT and redirects to frontend
+  POST /api/auth/logout          — stateless logout
+  POST /api/query                — natural-language dataset search (requires JWT)
+  GET  /api/crawler/status       — crawler background service state (requires JWT)
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 # ── Make BIDS-SQL importable ──────────────────────────────────────────────────
 _BIDS_SQL = Path(__file__).resolve().parents[1] / "BIDS-SQL"
@@ -33,6 +35,7 @@ if str(_BIDS_SQL) not in sys.path:
     sys.path.insert(0, str(_BIDS_SQL))
 
 import db.models  # noqa: E402, F401 — registers models with Base.metadata before create_all
+import models     # noqa: E402, F401 — registers backend-only models (message_usage, etc.)
 from db.db import create_all_tables  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -78,6 +81,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "change-me"))
 
 _frontend_url = os.getenv("FRONTEND_URL", "*")
 app.add_middleware(

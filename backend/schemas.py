@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ParticipantSchema(BaseModel):
@@ -62,7 +62,7 @@ class TextToSQLResult(BaseModel):
 
 
 class QueryRequest(BaseModel):
-    question: str
+    question: str = Field(..., max_length=2000)
 
 
 class QueryPageRequest(BaseModel):

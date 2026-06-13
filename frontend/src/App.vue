@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from './stores/chat'
+import { RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
 import CrawlerStatusDot from './components/CrawlerStatusDot.vue'
 import LoginView from './components/LoginView.vue'
 
 const CRAWLER_ENABLED = import.meta.env.VITE_CRAWLER_ENABLED === 'true'
+const CHAR_LIMIT = 2000
+const CHAR_WARN_AT = 1500
 
 const isLoggedIn = ref(!!localStorage.getItem('bids_eye_token'))
 
@@ -24,8 +27,40 @@ function logout() {
   clearInterval(crawlerInterval)
 }
 
+// ── Rate limiting ──────────────────────────────────────────────────────────────
+const rateLimitedUntil = ref<string | null>(null)
+const countdownDisplay = ref('00:00:00')
+let countdownInterval: ReturnType<typeof setInterval> | undefined
+
+function formatCountdown(until: string): string {
+  const ms = new Date(until).getTime() - Date.now()
+  if (ms <= 0) return '00:00:00'
+  const h = Math.floor(ms / 3_600_000)
+  const m = Math.floor((ms % 3_600_000) / 60_000)
+  const s = Math.floor((ms % 60_000) / 1_000)
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+function startCountdown() {
+  clearInterval(countdownInterval)
+  if (!rateLimitedUntil.value) return
+  countdownDisplay.value = formatCountdown(rateLimitedUntil.value)
+  countdownInterval = setInterval(() => {
+    if (!rateLimitedUntil.value) { clearInterval(countdownInterval); return }
+    const remaining = new Date(rateLimitedUntil.value).getTime() - Date.now()
+    if (remaining <= 0) {
+      rateLimitedUntil.value = null
+      clearInterval(countdownInterval)
+    } else {
+      countdownDisplay.value = formatCountdown(rateLimitedUntil.value)
+    }
+  }, 1_000)
+}
+
 const store = useChatStore()
 const input = ref('')
+const charCount = computed(() => input.value.length)
+const showCharCount = computed(() => charCount.value >= CHAR_WARN_AT)
 const messagesContainer = ref<HTMLElement | null>(null)
 const textarea = ref<HTMLTextAreaElement | null>(null)
 const drawerOpen = ref(false)
@@ -39,7 +74,7 @@ const SUGGESTIONS = [
 
 async function submit() {
   const q = input.value.trim()
-  if (!q) return
+  if (!q || rateLimitedUntil.value) return
   input.value = ''
   autoResize()
   // sendQuestion pushes the user message + loading bubble synchronously, then
@@ -48,7 +83,16 @@ async function submit() {
   const pending = store.sendQuestion(q)
   await nextTick()
   scrollQuestionToTop()
-  await pending
+  try {
+    await pending
+  } catch (err) {
+    if (err instanceof RateLimitError) {
+      input.value = q  // restore so the user doesn't lose their question
+      autoResize()
+      rateLimitedUntil.value = err.retryAfter
+      startCountdown()
+    }
+  }
 }
 
 function scrollQuestionToTop() {
@@ -102,6 +146,15 @@ function relativeTime(iso: string): string {
 // Poll crawler status every 15 s — only while logged in and crawler is enabled
 let crawlerInterval: ReturnType<typeof setInterval>
 onMounted(() => {
+  // Pick up JWT delivered via ?token= after GitHub OAuth redirect
+  const params = new URLSearchParams(window.location.search)
+  const urlToken = params.get('token')
+  if (urlToken) {
+    localStorage.setItem('bids_eye_token', urlToken)
+    isLoggedIn.value = true
+    history.replaceState({}, '', '/')
+  }
+
   if (CRAWLER_ENABLED && isLoggedIn.value) {
     store.refreshCrawlerStatus()
     crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
@@ -111,7 +164,10 @@ onMounted(() => {
     clearInterval(crawlerInterval)
   })
 })
-onUnmounted(() => clearInterval(crawlerInterval))
+onUnmounted(() => {
+  clearInterval(crawlerInterval)
+  clearInterval(countdownInterval)
+})
 </script>
 
 <template>
@@ -256,30 +312,56 @@ onUnmounted(() => clearInterval(crawlerInterval))
     <!-- ── Input bar ──────────────────────────────────────────────────── -->
     <div class="px-4 pb-4 pt-2 flex-shrink-0">
       <div class="max-w-3xl mx-auto">
-        <div class="flex items-end gap-2 bg-panel border border-border rounded-3xl shadow-sm px-4 py-2 focus-within:border-accent focus-within:shadow-md transition-all">
-          <textarea
-            ref="textarea"
-            v-model="input"
-            rows="1"
-            placeholder="Ask BIDS-Eye"
-            class="flex-1 bg-transparent py-1.5 text-sm text-ink placeholder-muted-soft resize-none focus:outline-none"
-            @keydown="onKeydown"
-            @input="autoResize"
-          />
-          <button
-            :disabled="!input.trim()"
-            class="flex-shrink-0 mb-0.5 p-1.5 rounded-full text-accent hover:bg-panel-soft disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-            title="Search"
-            @click="submit"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 20.5v-7l8-1.5-8-1.5v-7l18 8z" />
-            </svg>
-          </button>
+
+        <!-- Rate-limit banner -->
+        <div
+          v-if="rateLimitedUntil"
+          class="flex flex-col items-center gap-1.5 bg-panel border border-border rounded-2xl shadow-sm px-5 py-4 text-center"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-muted mb-0.5">
+            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm.5 5v6l4.2 2.5-.8 1.3L11 14V7h1.5z"/>
+          </svg>
+          <p class="text-sm font-medium text-ink">You've used all 20 free messages for today.</p>
+          <p class="text-sm text-muted">
+            You can continue in
+            <span class="font-mono font-medium text-accent">{{ countdownDisplay }}</span>
+          </p>
         </div>
-        <p class="text-center text-xs text-muted-soft mt-2">
-          BIDS-Eye is experimental and can make mistakes.
-        </p>
+
+        <!-- Normal input -->
+        <template v-else>
+          <div class="flex items-end gap-2 bg-panel border border-border rounded-3xl shadow-sm px-4 py-2 focus-within:border-accent focus-within:shadow-md transition-all">
+            <textarea
+              ref="textarea"
+              v-model="input"
+              rows="1"
+              :maxlength="CHAR_LIMIT"
+              placeholder="Ask BIDS-Eye"
+              class="flex-1 bg-transparent py-1.5 text-sm text-ink placeholder-muted-soft resize-none focus:outline-none"
+              @keydown="onKeydown"
+              @input="autoResize"
+            />
+            <button
+              :disabled="!input.trim()"
+              class="flex-shrink-0 mb-0.5 p-1.5 rounded-full text-accent hover:bg-panel-soft disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              title="Search"
+              @click="submit"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 20.5v-7l8-1.5-8-1.5v-7l18 8z" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex justify-between items-center mt-2 px-1">
+            <p class="text-xs text-muted-soft">BIDS-Eye is experimental and can make mistakes.</p>
+            <p
+              v-if="showCharCount"
+              class="text-xs tabular-nums"
+              :class="charCount >= CHAR_LIMIT ? 'text-red-500 font-medium' : 'text-muted'"
+            >{{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}</p>
+          </div>
+        </template>
+
       </div>
     </div>
   </div>

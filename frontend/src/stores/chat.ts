@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api, type Dataset, type CrawlerStatus } from '../api'
+import { api, RateLimitError, type Dataset, type CrawlerStatus } from '../api'
 
 export interface Message {
   id: number
@@ -128,8 +128,9 @@ export const useChatStore = defineStore('chat', () => {
       conv.title = question.length > 50 ? question.slice(0, 50) + '…' : question
     }
 
+    const userMsgId = _nextId++
     conv.messages.push({
-      id: _nextId++,
+      id: userMsgId,
       role: 'user',
       content: question,
       datasets: [],
@@ -169,6 +170,14 @@ export const useChatStore = defineStore('chat', () => {
         _preloadNeighbors(loadingId, conv.messages[idx], response.page ?? 1)
       }
     } catch (err) {
+      if (err instanceof RateLimitError) {
+        // Remove the optimistic user + loading messages — the query never happened.
+        conv.messages = conv.messages.filter(
+          m => m.id !== userMsgId && m.id !== loadingId
+        )
+        _save()
+        throw err  // let App.vue show the rate-limit banner
+      }
       const idx = conv.messages.findIndex(m => m.id === loadingId)
       if (idx !== -1) {
         conv.messages[idx] = {
