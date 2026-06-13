@@ -1,0 +1,2544 @@
+{
+  "memory": {
+    "ca_task_id": "trm_4fba85a597ca9",
+    "ca_task_name": "delayed memory task",
+    "matched_via": "delayed memory task",
+    "confidence": 0.9,
+    "measures": [
+      "attention",
+      "impulsivity"
+    ]
+  },
+  "categorized_free_recall_open_loop_stimulation": {
+    "ca_task_id": "trm_565a31fa6f444",
+    "ca_task_name": "regulated heat stimulation",
+    "matched_via": "regulated heat stimulation",
+    "confidence": 0.855,
+    "measures": [
+      "pain"
+    ]
+  },
+  "sternberg_task": {
+    "ca_task_id": "tsk_4a57abb949e0c",
+    "ca_task_name": "Sternberg delayed recognition task",
+    "matched_via": "sternberg task",
+    "confidence": 1.0,
+    "measures": [
+      "maintenance",
+      "serial_search",
+      "working_memory_retrieval"
+    ]
+  },
+  "peaky_snr_speech_masking": {
+    "ca_task_id": "trm_4a3fd79d09b6d",
+    "ca_task_name": "backward masking",
+    "matched_via": "backward masking",
+    "confidence": 0.855,
+    "measures": [
+      "unconscious_perception",
+      "visual_awareness",
+      "visual_perception"
+    ]
+  },
+  "delayed_comparison": {
+    "ca_task_id": "trm_4fbd2af083332",
+    "ca_task_name": "size match task",
+    "matched_via": "size match task",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "environmental_sounds_n_back_laughing_female": {
+    "ca_task_id": "trm_56674133b666c",
+    "ca_task_name": "adaptive n-back task",
+    "matched_via": "adaptive n-back task",
+    "confidence": 0.855,
+    "measures": [
+      "maintenance",
+      "proactive_interference",
+      "updating",
+      "working_memory"
+    ]
+  },
+  "naturalistic_object_category_perception": {
+    "ca_task_id": "trm_4fbd2c18e1dd9",
+    "ca_task_name": "object decision task",
+    "matched_via": "object decision task",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "anti_saccade_task": {
+    "ca_task_id": "tsk_4a57abb949869",
+    "ca_task_name": "antisaccade/prosaccade task",
+    "matched_via": "antisaccade task",
+    "confidence": 0.97,
+    "measures": [
+      "cognitive_control",
+      "overt_attention"
+    ]
+  },
+  "meditation_general": {
+    "ca_task_id": "trm_4fb4175126374",
+    "ca_task_name": "meditation task",
+    "matched_via": "meditation",
+    "confidence": 1.0,
+    "measures": [
+      "anxiety",
+      "attentional_focusing",
+      "emotion"
+    ]
+  },
+  "semantic_conditioning": {
+    "ca_task_id": "trm_4a3fd79d0b3d7",
+    "ca_task_name": "trace conditioning",
+    "matched_via": "trace conditioning",
+    "confidence": 0.769,
+    "measures": [
+      "association_learning"
+    ]
+  },
+  "delayed_match_to_sample": {
+    "ca_task_id": "tsk_4a57abb9499e3",
+    "ca_task_name": "delayed match to sample task",
+    "matched_via": "delayed match to sample",
+    "confidence": 1.0,
+    "measures": [
+      "active_maintenance",
+      "goal_maintenance",
+      "interference_control",
+      "limited_capacity",
+      "memory_decay",
+      "working_memory",
+      "working_memory_retrieval"
+    ]
+  },
+  "perception_natural_image_test": {
+    "ca_task_id": "trm_5667436296862",
+    "ca_task_name": "image monitoring",
+    "matched_via": "image monitoring",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "rule_learning": {
+    "ca_task_id": "tsk_KVUZHlsv8pesh",
+    "ca_task_name": "Language Rule Learning",
+    "matched_via": "language rule learning",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "post_face_task_phase": {
+    "ca_task_id": "trm_50b55d8a6da00",
+    "ca_task_name": "PEBL Perceptual Vigilance Task",
+    "matched_via": "pebl perceptual vigilance task",
+    "confidence": 0.855,
+    "measures": [
+      "attention_capacity"
+    ]
+  },
+  "visuomotor_delayed_match_to_sample_interference": {
+    "ca_task_id": "trm_4fbd2b4bb165c",
+    "ca_task_name": "orientation match task",
+    "matched_via": "orientation match task",
+    "confidence": 0.855,
+    "measures": [
+      "visual_imagery"
+    ]
+  },
+  "cognitive_tasks": {
+    "ca_task_id": "trm_4af89b3a925ca",
+    "ca_task_name": "Vandenberg & Kuse Tasks",
+    "matched_via": "vandenberg & kuse tasks",
+    "confidence": 0.855,
+    "measures": [
+      "mental_rotation",
+      "spatial_ability"
+    ]
+  },
+  "fmri_block_design_variant1": {
+    "ca_task_id": "trm_4b7497a289534",
+    "ca_task_name": "block design test",
+    "matched_via": "block design",
+    "confidence": 0.9,
+    "measures": [
+      "central_coherence"
+    ]
+  },
+  "value_guided_memory_test_part1": {
+    "ca_task_id": "trm_5667476fc14dd",
+    "ca_task_name": "Inter-dimensional/Extra-dimensional Shift Task",
+    "matched_via": "ided",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "semantic_mnemonic_similarity_task": {
+    "ca_task_id": "trm_4b75ea4ddd896",
+    "ca_task_name": "same-different task",
+    "matched_via": "same-different task",
+    "confidence": 0.855,
+    "measures": [
+      "auditory_perception",
+      "judgment",
+      "set_shifting",
+      "visual_search"
+    ]
+  },
+  "transitive_inference_task": {
+    "ca_task_id": "trm_551f1491a2fe8",
+    "ca_task_name": "Transitive inference task",
+    "matched_via": "transitive inference task",
+    "confidence": 1.0,
+    "measures": [
+      "declarative_memory"
+    ]
+  },
+  "object_memory_task": {
+    "ca_task_id": "trm_4f2421c391b83",
+    "ca_task_name": "object working memory task",
+    "matched_via": "object working memory task",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "method_of_loci": {
+    "ca_task_id": "trm_4b94affc43245",
+    "ca_task_name": "Wechsler Abbreviated Scale of Intelligence",
+    "matched_via": "wechsler abbreviated scale of intelligence",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_development",
+      "crystallized_intelligence",
+      "fluid_intelligence",
+      "logical_reasoning",
+      "semantic_knowledge",
+      "spatial_ability",
+      "verbal_fluency"
+    ]
+  },
+  "letter_set": {
+    "ca_task_id": "trm_4c3e0a9576c3b",
+    "ca_task_name": "letter number sequencing",
+    "matched_via": "letter number sequencing",
+    "confidence": 0.855,
+    "measures": [
+      "active_maintenance",
+      "auditory_working_memory",
+      "divided_attention",
+      "limited_capacity",
+      "working_memory"
+    ]
+  },
+  "spatial_span_delay_working_memory": {
+    "ca_task_id": "trm_4da86b539924c",
+    "ca_task_name": "spatial span test",
+    "matched_via": "spatial span",
+    "confidence": 0.9,
+    "measures": [
+      "spatial_working_memory"
+    ]
+  },
+  "passive_listening_natural_speech": {
+    "ca_task_id": "trm_4c8991fadfe01",
+    "ca_task_name": "passive listening",
+    "matched_via": "passive listening",
+    "confidence": 0.9,
+    "measures": [
+      "acoustic_processing",
+      "audition"
+    ]
+  },
+  "self_avatar_exoskeleton_walking_viewing_1": {
+    "ca_task_id": "trm_4c40d325977f0",
+    "ca_task_name": "self ordered pointing task",
+    "matched_via": "self ordered pointing task",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_control",
+      "cognitive_load",
+      "limited_capacity",
+      "perceptual_identification",
+      "processing_capacity"
+    ]
+  },
+  "pavlovian_conditioning": {
+    "ca_task_id": "trm_4c898acd1f28e",
+    "ca_task_name": "pavlovian conditioning task",
+    "matched_via": "pavlovian conditioning",
+    "confidence": 1.0,
+    "measures": [
+      "association_learning",
+      "automaticity",
+      "instinct",
+      "pavlovian_conditioning",
+      "reinstatement"
+    ]
+  },
+  "recognition": {
+    "ca_task_id": "trm_4da6327154fd4",
+    "ca_task_name": "scene recognition task",
+    "matched_via": "scene recognition task",
+    "confidence": 0.95,
+    "measures": [
+      "spatial_memory"
+    ]
+  },
+  "deception_task": {
+    "ca_task_id": "trm_4c898b4b463aa",
+    "ca_task_name": "deception task",
+    "matched_via": "deception task",
+    "confidence": 1.0,
+    "measures": [
+      "deception",
+      "theory_of_mind"
+    ]
+  },
+  "inductive_reasoning": {
+    "ca_task_id": "trm_4d8a48e403c78",
+    "ca_task_name": "inductive reasoning aptitude",
+    "matched_via": "inductive reasoning aptitude",
+    "confidence": 0.95,
+    "measures": [
+      "inductive_reasoning",
+      "reasoning"
+    ]
+  },
+  "darkend_auditory_narrative_listening_1": {
+    "ca_task_id": "trm_4c898bbab4fd4",
+    "ca_task_name": "divided auditory attention",
+    "matched_via": "divided auditory attention",
+    "confidence": 0.855,
+    "measures": [
+      "acoustic_phonetic_processing",
+      "auditory_attention",
+      "cognitive_control"
+    ]
+  },
+  "drawing_task": {
+    "ca_task_id": "trm_4c898be57fcbc",
+    "ca_task_name": "drawing",
+    "matched_via": "drawing",
+    "confidence": 1.0,
+    "measures": [
+      "motor_control",
+      "visual_perception"
+    ]
+  },
+  "encoding": {
+    "ca_task_id": "trm_4c898c33ee5f8",
+    "ca_task_name": "encoding task",
+    "matched_via": "encoding",
+    "confidence": 1.0,
+    "measures": [
+      "acoustic_encoding",
+      "articulatory_rehearsal",
+      "auditory_coding",
+      "auditory_encoding",
+      "effortful_processing",
+      "elaborative_rehearsal",
+      "encoding",
+      "grammatical_encoding",
+      "lexical_encoding",
+      "phonological_encoding"
+    ]
+  },
+  "face_memory_task": {
+    "ca_task_id": "trm_50f99e56117fe",
+    "ca_task_name": "Penn Face Memory Test",
+    "matched_via": "penn face memory",
+    "confidence": 0.95,
+    "measures": [
+      "face_recognition"
+    ]
+  },
+  "rest_film_viewing": {
+    "ca_task_id": "trm_4c898da401420",
+    "ca_task_name": "film viewing",
+    "matched_via": "film viewing",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "finger_tapping_task": {
+    "ca_task_id": "trm_4c898f079d05e",
+    "ca_task_name": "finger tapping task",
+    "matched_via": "finger tapping task",
+    "confidence": 1.0,
+    "measures": [
+      "motor_control",
+      "motor_planning",
+      "rhythm"
+    ]
+  },
+  "gaze_fixation_attention_center": {
+    "ca_task_id": "trm_4c898f72228f3",
+    "ca_task_name": "fixation task",
+    "matched_via": "fixation",
+    "confidence": 0.9,
+    "measures": [
+      "attention_span",
+      "attentional_focusing",
+      "focused_attention",
+      "gaze",
+      "visual_attention"
+    ]
+  },
+  "p300_flashing_combined": {
+    "ca_task_id": "trm_4c898f8f297ac",
+    "ca_task_name": "flashing checkerboard",
+    "matched_via": "flashing checkerboard",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "simon_task": {
+    "ca_task_id": "tsk_4a57abb949dbb",
+    "ca_task_name": "Simon task",
+    "matched_via": "simon task",
+    "confidence": 1.0,
+    "measures": [
+      "cognitive_control",
+      "error_detection",
+      "response_conflict",
+      "response_execution",
+      "response_selection",
+      "spatial_attention",
+      "visual_color_discrimination"
+    ]
+  },
+  "categorized_free_recall_variant_1": {
+    "ca_task_id": "trm_4f2411c91ae5e",
+    "ca_task_name": "recall test",
+    "matched_via": "recall",
+    "confidence": 0.9,
+    "measures": [
+      "articulatory_loop"
+    ]
+  },
+  "tool_grasping_task": {
+    "ca_task_id": "trm_4c898ff0bea97",
+    "ca_task_name": "grasping task",
+    "matched_via": "grasping task",
+    "confidence": 0.95,
+    "measures": [
+      "motor_control",
+      "motor_planning"
+    ]
+  },
+  "eye_movement_magnification_attention": {
+    "ca_task_id": "trm_4c899005b11d5",
+    "ca_task_name": "imagined movement",
+    "matched_via": "imagined movement",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_effort",
+      "imageability",
+      "motor_planning"
+    ]
+  },
+  "imagined_speech": {
+    "ca_task_id": "trm_4c89903149aeb",
+    "ca_task_name": "imagined objects/scenes",
+    "matched_via": "imagined objects/scenes",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_development",
+      "mental_representation"
+    ]
+  },
+  "percentage_force_exertion_task": {
+    "ca_task_id": "trm_4c8990480ad0f",
+    "ca_task_name": "isometric force",
+    "matched_via": "isometric force",
+    "confidence": 0.855,
+    "measures": [
+      "motor_control"
+    ]
+  },
+  "rotation_task": {
+    "ca_task_id": "trm_4c8990810541d",
+    "ca_task_name": "mental rotation task",
+    "matched_via": "mental rotation task",
+    "confidence": 0.9,
+    "measures": [
+      "mental_rotation",
+      "spatial_ability"
+    ]
+  },
+  "music_listening": {
+    "ca_task_id": "trm_4c8990b07a037",
+    "ca_task_name": "music comprehension/production",
+    "matched_via": "music comprehension/production",
+    "confidence": 0.855,
+    "measures": [
+      "articulatory_planning",
+      "auditory_working_memory",
+      "intonation",
+      "rhythm"
+    ]
+  },
+  "aphasia_naming_task_40": {
+    "ca_task_id": "trm_523df616da8a6",
+    "ca_task_name": "adolescent symptom inventory",
+    "matched_via": "asi",
+    "confidence": 0.9,
+    "measures": [
+      "antisocial_personality",
+      "anxiety",
+      "attention",
+      "conduct_disorder",
+      "defiance",
+      "delusion",
+      "fear",
+      "impulsivity",
+      "obsession",
+      "sadness",
+      "social_phobia"
+    ]
+  },
+  "electrical_stimulation": {
+    "ca_task_id": "trm_4e68e08950157",
+    "ca_task_name": "electric stimulation",
+    "matched_via": "electric stimulation",
+    "confidence": 0.952,
+    "measures": [
+      "pain"
+    ]
+  },
+  "thermal_stimulation": {
+    "ca_task_id": "trm_4c89910b7f8bc",
+    "ca_task_name": "non-painful thermal stimulation",
+    "matched_via": "non-painful thermal stimulation",
+    "confidence": 0.9,
+    "measures": [
+      "somatosensation",
+      "thermosensation"
+    ]
+  },
+  "odor_discrimination": {
+    "ca_task_id": "tsk_4a57abb9499b8",
+    "ca_task_name": "color-discrimination task",
+    "matched_via": "color-discrimination",
+    "confidence": 0.872,
+    "measures": [
+      "color_perception"
+    ]
+  },
+  "feature_discrimination_serial_presentation": {
+    "ca_task_id": "trm_4c89913f80802",
+    "ca_task_name": "orthographic discrimination",
+    "matched_via": "orthographic discrimination",
+    "confidence": 0.855,
+    "measures": [
+      "form_perception",
+      "visual_perception",
+      "visual_working_memory"
+    ]
+  },
+  "paired_associates_memory_encoding_cnp": {
+    "ca_task_id": "trm_4c8991e6e8597",
+    "ca_task_name": "paired associate recall",
+    "matched_via": "paired associate recall",
+    "confidence": 0.855,
+    "measures": [
+      "association_learning",
+      "semantic_working_memory"
+    ]
+  },
+  "passive_image_viewing": {
+    "ca_task_id": "trm_4c899211a965c",
+    "ca_task_name": "passive viewing",
+    "matched_via": "passive viewing",
+    "confidence": 0.95,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "silent_reading": {
+    "ca_task_id": "trm_4c8a82ba8a538",
+    "ca_task_name": "reading (covert)",
+    "matched_via": "silent reading",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "word_reading_semantic": {
+    "ca_task_id": "trm_4c8a82eeaa58f",
+    "ca_task_name": "reading (overt)",
+    "matched_via": "reading (overt)",
+    "confidence": 0.855,
+    "measures": [
+      "reading",
+      "visual_perception"
+    ]
+  },
+  "resting_state_eyes_open": {
+    "ca_task_id": "trm_4c8a834779883",
+    "ca_task_name": "rest eyes open",
+    "matched_via": "rest eyes open",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "sequence_learning_six_target": {
+    "ca_task_id": "trm_4c8a83cac75f5",
+    "ca_task_name": "sequence recall/learning",
+    "matched_via": "sequence recall/learning",
+    "confidence": 0.855,
+    "measures": [
+      "motor_learning",
+      "procedural_memory"
+    ]
+  },
+  "spatial_memory_group": {
+    "ca_task_id": "trm_4c8a83f27ac55",
+    "ca_task_name": "spatial location/discrimination",
+    "matched_via": "spatial location/discrimination",
+    "confidence": 0.855,
+    "measures": [
+      "spatial_ability"
+    ]
+  },
+  "dimension_discrimination": {
+    "ca_task_id": "trm_553fc63a54ae6",
+    "ca_task_name": "motion discrimination task",
+    "matched_via": "direction discrimination task",
+    "confidence": 0.897,
+    "measures": []
+  },
+  "sentence_semantic_syntactic_violation_detection": {
+    "ca_task_id": "trm_4f244a453522b",
+    "ca_task_name": "syntactic task",
+    "matched_via": "syntactic",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "tactile_stimulation": {
+    "ca_task_id": "trm_5887c029d46f4",
+    "ca_task_name": "Gustatory stimulation with liquid tastes or flavors ",
+    "matched_via": "taste stimulation",
+    "confidence": 0.889,
+    "measures": [
+      "gustation_processing"
+    ]
+  },
+  "theory_of_mind_group": {
+    "ca_task_id": "trm_4c8a8467304e2",
+    "ca_task_name": "theory of mind task",
+    "matched_via": "theory of mind",
+    "confidence": 1.0,
+    "measures": [
+      "emotional_intelligence",
+      "empathy",
+      "theory_of_mind"
+    ]
+  },
+  "tone_counting_task": {
+    "ca_task_id": "trm_4ebc6a6b75ebf",
+    "ca_task_name": "tone counting",
+    "matched_via": "tone counting",
+    "confidence": 1.0,
+    "measures": [
+      "auditory_tone_discrimination",
+      "response_selection",
+      "visual_number_recognition",
+      "working_memory",
+      "working_memory_maintenance",
+      "working_memory_updating"
+    ]
+  },
+  "video_game_and_video": {
+    "ca_task_id": "trm_4c8a84d4c4157",
+    "ca_task_name": "video games",
+    "matched_via": "video games",
+    "confidence": 0.857,
+    "measures": []
+  },
+  "audiovisual_attention": {
+    "ca_task_id": "trm_4c8a84f20dde2",
+    "ca_task_name": "visual attention task",
+    "matched_via": "visual attention",
+    "confidence": 0.865,
+    "measures": [
+      "attention_shifting",
+      "inattentional_blindness",
+      "visual_attention",
+      "visual_search",
+      "visual_working_memory"
+    ]
+  },
+  "neural_tracking_to_go": {
+    "ca_task_id": "trm_4c8a85534241d",
+    "ca_task_name": "visual pursuit/tracking",
+    "matched_via": "tracking",
+    "confidence": 0.9,
+    "measures": [
+      "selective_attention",
+      "visual_attention",
+      "visual_search"
+    ]
+  },
+  "word_memory_task": {
+    "ca_task_id": "trm_50f998dcbfcc8",
+    "ca_task_name": "Penn Word Memory Test",
+    "matched_via": "penn word memory",
+    "confidence": 0.95,
+    "measures": [
+      "episodic_memory",
+      "verbal_memory"
+    ]
+  },
+  "mixed_gambles_task": {
+    "ca_task_id": "trm_4cacee4a1d875",
+    "ca_task_name": "mixed gambles task",
+    "matched_via": "mixed gambles task",
+    "confidence": 1.0,
+    "measures": [
+      "confidence_judgment",
+      "decision_certainty",
+      "economic_value_processing",
+      "numerical_scale_judgment",
+      "potential_monetary_loss",
+      "potential_monetary_reward",
+      "response_execution",
+      "response_selection",
+      "risk_processing",
+      "visual_number_recognition"
+    ]
+  },
+  "probabilistic_classification_learning": {
+    "ca_task_id": "trm_4cacf22a22d80",
+    "ca_task_name": "Probabilistic classification task",
+    "matched_via": "probabilistic classification learning",
+    "confidence": 1.0,
+    "measures": [
+      "categorization",
+      "error_detection",
+      "negative_feedback_processing",
+      "positive_feedback_processing",
+      "reinforcement_learning",
+      "response_execution",
+      "response_selection",
+      "visual_form_recognition",
+      "visual_word_recognition"
+    ]
+  },
+  "stop_signal_task": {
+    "ca_task_id": "tsk_4a57abb949e1a",
+    "ca_task_name": "stop signal task",
+    "matched_via": "stop signal task",
+    "confidence": 1.0,
+    "measures": [
+      "auditory_tone_detection",
+      "error_detection",
+      "oddball_detection",
+      "proactive_control",
+      "response_execution",
+      "response_inhibition",
+      "response_selection",
+      "visual_form_recognition"
+    ]
+  },
+  "interview_task": {
+    "ca_task_id": "tsk_4a57abb949858",
+    "ca_task_name": "adult attachment interview",
+    "matched_via": "adult attachment interview",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "rapid_serial_visual_presentation": {
+    "ca_task_id": "tsk_4a57abb949879",
+    "ca_task_name": "rapid serial visual presentation task",
+    "matched_via": "rapid serial visual presentation",
+    "confidence": 1.0,
+    "measures": [
+      "inhibition_of_return",
+      "visual_awareness",
+      "visual_masking"
+    ]
+  },
+  "detection_task": {
+    "ca_task_id": "tsk_4a57abb949889",
+    "ca_task_name": "audio-visual target detection task",
+    "matched_via": "audio-visual target detection task",
+    "confidence": 0.9,
+    "measures": [
+      "audiovisual_perception",
+      "conjunction_search",
+      "selective_attention",
+      "serial_search"
+    ]
+  },
+  "spatial_span_immediate_working_memory": {
+    "ca_task_id": "tsk_4a57abb94989b",
+    "ca_task_name": "backward digit span task",
+    "matched_via": "backward digit span task",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_control",
+      "phonological_working_memory",
+      "verbal_memory",
+      "working_memory"
+    ]
+  },
+  "california_verbal_learning_test": {
+    "ca_task_id": "trm_4da6331cdeeb5",
+    "ca_task_name": "California Verbal Learning Test",
+    "matched_via": "california verbal learning test",
+    "confidence": 1.0,
+    "measures": [
+      "recall"
+    ]
+  },
+  "delayed_non_match_to_sample": {
+    "ca_task_id": "tsk_4a57abb9499f1",
+    "ca_task_name": "delayed nonmatch to sample task",
+    "matched_via": "delayed nonmatch to sample",
+    "confidence": 0.981,
+    "measures": [
+      "declarative_memory",
+      "memory_decay",
+      "working_memory"
+    ]
+  },
+  "search_superiority_recollection_familiarity_test": {
+    "ca_task_id": "tsk_4a57abb949a25",
+    "ca_task_name": "digit/symbol coding test",
+    "matched_via": "digit/symbol coding test",
+    "confidence": 0.855,
+    "measures": [
+      "active_retrieval",
+      "memory_retrieval",
+      "motor_control",
+      "working_memory"
+    ]
+  },
+  "doors_task": {
+    "ca_task_id": "tsk_4a57abb949a33",
+    "ca_task_name": "doors and people test",
+    "matched_via": "doors and people test",
+    "confidence": 0.9,
+    "measures": [
+      "forgetting",
+      "iconic_memory",
+      "recall",
+      "recognition",
+      "short_term_memory",
+      "verbal_memory",
+      "visual_memory"
+    ]
+  },
+  "right_hand_task": {
+    "ca_task_id": "tsk_4a57abb949a41",
+    "ca_task_name": "Edinburgh Handedness Inventory",
+    "matched_via": "edinburgh handedness inventory",
+    "confidence": 0.72,
+    "measures": [
+      "motor_control"
+    ]
+  },
+  "flanker_task_ern": {
+    "ca_task_id": "tsk_4a57abb949a4f",
+    "ca_task_name": "Eriksen flanker task",
+    "matched_via": "flanker task",
+    "confidence": 0.95,
+    "measures": [
+      "error_detection",
+      "resistance_to_distractor_inference",
+      "response_conflict",
+      "response_execution",
+      "response_selection",
+      "spatial_selective_attention",
+      "visual_form_recognition"
+    ]
+  },
+  "study_test_memory_task": {
+    "ca_task_id": "tsk_4a57abb949a78",
+    "ca_task_name": "Fagerstrom Test for Nicotine Dependence",
+    "matched_via": "fagerstrom test for nicotine dependence",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "go_no_go_a": {
+    "ca_task_id": "tsk_4a57abb949a93",
+    "ca_task_name": "go/no-go task",
+    "matched_via": "go/no-go task",
+    "confidence": 0.9,
+    "measures": [
+      "behavioral_inhibition_cognitive",
+      "inhibition",
+      "response_inhibition"
+    ]
+  },
+  "test_phase_general": {
+    "ca_task_id": "tsk_4a57abb949aae",
+    "ca_task_name": "Hooper visual organization test",
+    "matched_via": "hooper visual organization test",
+    "confidence": 0.855,
+    "measures": [
+      "central_coherence",
+      "feature_detection",
+      "object_perception",
+      "visual_object_recognition"
+    ]
+  },
+  "spatial_location_immediate_working_memory": {
+    "ca_task_id": "tsk_4a57abb949abc",
+    "ca_task_name": "immediate recall test",
+    "matched_via": "immediate recall test",
+    "confidence": 0.855,
+    "measures": [
+      "declarative_memory",
+      "working_memory",
+      "working_memory_retrieval"
+    ]
+  },
+  "affective_music_listening": {
+    "ca_task_id": "tsk_4a57abb949aca",
+    "ca_task_name": "International Affective Picture System",
+    "matched_via": "international affective picture system",
+    "confidence": 0.855,
+    "measures": [
+      "emotion_perception"
+    ]
+  },
+  "color_change_detection": {
+    "ca_task_id": "tsk_4a57abb949af3",
+    "ca_task_name": "Ishihara plates for color blindness",
+    "matched_via": "ishihara plates for color blindness",
+    "confidence": 0.855,
+    "measures": [
+      "color_perception"
+    ]
+  },
+  "lexical_decision_task": {
+    "ca_task_id": "tsk_4a57abb949b38",
+    "ca_task_name": "lexical decision task",
+    "matched_via": "lexical decision task",
+    "confidence": 1.0,
+    "measures": [
+      "lexical_access",
+      "memory_retrieval"
+    ]
+  },
+  "illusion_game_task": {
+    "ca_task_id": "tsk_4a57abb949b46",
+    "ca_task_name": "matching pennies game ",
+    "matched_via": "matching pennies game ",
+    "confidence": 0.855,
+    "measures": [
+      "conditional_reasoning",
+      "logical_reasoning"
+    ]
+  },
+  "resting_state": {
+    "ca_task_id": "tsk_4a57abb949bb1",
+    "ca_task_name": "Mini Mental State Examination",
+    "matched_via": "mini mental state examination",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_control"
+    ]
+  },
+  "n_back_working_memory": {
+    "ca_task_id": "tsk_4a57abb949bcd",
+    "ca_task_name": "n-back task",
+    "matched_via": "n-back",
+    "confidence": 0.9,
+    "measures": [
+      "active_maintenance",
+      "attention_capacity",
+      "capacity_limitation",
+      "interference_control",
+      "interference_resolution",
+      "limited_capacity",
+      "updating",
+      "working_memory"
+    ]
+  },
+  "oddball_task": {
+    "ca_task_id": "tsk_4a57abb949bf6",
+    "ca_task_name": "oddball task",
+    "matched_via": "oddball task",
+    "confidence": 1.0,
+    "measures": [
+      "auditory_perception",
+      "auditory_tone_discrimination",
+      "oddball_detection",
+      "right_finger_response_execution",
+      "visual_color_discrimination",
+      "visual_form_discrimination"
+    ]
+  },
+  "post_memory_task_phase": {
+    "ca_task_id": "tsk_4a57abb949c04",
+    "ca_task_name": "pantomime task",
+    "matched_via": "pantomime task",
+    "confidence": 0.855,
+    "measures": [
+      "kinaesthetic_representation",
+      "motor_control"
+    ]
+  },
+  "picture_naming_task": {
+    "ca_task_id": "tsk_4a57abb949cfb",
+    "ca_task_name": "picture naming task",
+    "matched_via": "picture naming task",
+    "confidence": 1.0,
+    "measures": [
+      "object_recognition",
+      "semantic_memory",
+      "visual_object_recognition"
+    ]
+  },
+  "incidental_encoding_posner_object_greeble": {
+    "ca_task_id": "tsk_4a57abb949d17",
+    "ca_task_name": "Posner cueing task",
+    "matched_via": "posner cueing",
+    "confidence": 0.9,
+    "measures": [
+      "attention",
+      "attention_shifting",
+      "attentional_focusing",
+      "involuntary_attention",
+      "preattentive_processing"
+    ]
+  },
+  "word_naming_task": {
+    "ca_task_id": "tsk_4a57abb949d25",
+    "ca_task_name": "pseudoword naming task",
+    "matched_via": "pseudoword naming task",
+    "confidence": 0.9,
+    "measures": [
+      "language_processing",
+      "lexical_processing",
+      "morphological_processing"
+    ]
+  },
+  "item_recognition_memory": {
+    "ca_task_id": "tsk_4a57abb949d40",
+    "ca_task_name": "recognition memory test",
+    "matched_via": "recognition memory",
+    "confidence": 0.95,
+    "measures": [
+      "explicit_memory",
+      "working_memory_retrieval"
+    ]
+  },
+  "reversal_learning_task": {
+    "ca_task_id": "tsk_4a57abb949d4e",
+    "ca_task_name": "reversal learning task",
+    "matched_via": "reversal learning task",
+    "confidence": 1.0,
+    "measures": [
+      "analogical_reasoning",
+      "instrumental_learning"
+    ]
+  },
+  "conjunction_selective_attention": {
+    "ca_task_id": "tsk_4a57abb949d76",
+    "ca_task_name": "selective attention task",
+    "matched_via": "selective attention",
+    "confidence": 0.9,
+    "measures": [
+      "divided_attention",
+      "inhibition"
+    ]
+  },
+  "simple_reaction_time": {
+    "ca_task_id": "tsk_4a57abb949dc8",
+    "ca_task_name": "simple reaction time task",
+    "matched_via": "simple reaction time",
+    "confidence": 1.0,
+    "measures": [
+      "motor_control",
+      "processing_speed"
+    ]
+  },
+  "digit_symbol_substitution": {
+    "ca_task_id": "tsk_4a57abb949e44",
+    "ca_task_name": "symbol-digit substitution",
+    "matched_via": "digit symbol substitution",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "voluntary_task_switching_reward": {
+    "ca_task_id": "tsk_4a57abb949e8a",
+    "ca_task_name": "task-switching ",
+    "matched_via": "task-switching ",
+    "confidence": 0.84,
+    "measures": [
+      "attention_shifting",
+      "set_shifting"
+    ]
+  },
+  "delay_discounting_task": {
+    "ca_task_id": "tsk_4a57abb949e98",
+    "ca_task_name": "temporal discounting task",
+    "matched_via": "delay discounting task",
+    "confidence": 1.0,
+    "measures": [
+      "delay_discounting",
+      "intertemporal_choice",
+      "response_execution",
+      "response_selection",
+      "subjective_value_judgment",
+      "visual_number_recognition"
+    ]
+  },
+  "word_memory_encoding": {
+    "ca_task_id": "tsk_4a57abb949ea5",
+    "ca_task_name": "Test of Word Reading Efficiency",
+    "matched_via": "test of word reading efficiency",
+    "confidence": 0.855,
+    "measures": [
+      "language_comprehension",
+      "lexical_processing"
+    ]
+  },
+  "cue_induced_craving": {
+    "ca_task_id": "tsk_4a57abb949eb3",
+    "ca_task_name": "Tobacco Craving Questionnaire",
+    "matched_via": "tobacco craving questionnaire",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "feedback_episodic_semantic_memory": {
+    "ca_task_id": "tsk_4a57abb949ec0",
+    "ca_task_name": "Trail Making Test A and B",
+    "matched_via": "trail making test a and b",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_control",
+      "serial_processing",
+      "visual_search"
+    ]
+  },
+  "taste_rating_task": {
+    "ca_task_id": "tsk_4a57abb949ece",
+    "ca_task_name": "Unified Parkinson's Disease Rating Scale",
+    "matched_via": "unified parkinson's disease rating scale",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "visual_short_term_memory_control": {
+    "ca_task_id": "tsk_4a57abb949edb",
+    "ca_task_name": "visual alignment task ",
+    "matched_via": "visual alignment task ",
+    "confidence": 0.855,
+    "measures": [
+      "spatial_ability",
+      "visual_perception"
+    ]
+  },
+  "washout_period": {
+    "ca_task_id": "tsk_4a57abb949f12",
+    "ca_task_name": "Wechsler Adult Intelligence Scale - Revised",
+    "matched_via": "wais",
+    "confidence": 0.771,
+    "measures": [
+      "cognitive_development",
+      "crystallized_intelligence",
+      "logical_reasoning",
+      "mental_arithmetic",
+      "semantic_knowledge",
+      "verbal_fluency"
+    ]
+  },
+  "balloon_analog_risk_task": {
+    "ca_task_id": "trm_4d559bcd67c18",
+    "ca_task_name": "balloon analogue risk task",
+    "matched_via": "balloon analogue risk task",
+    "confidence": 0.96,
+    "measures": [
+      "decision_under_uncertainty",
+      "feedback_processing",
+      "loss_anticipation",
+      "punishment_processing",
+      "response_execution",
+      "response_selection",
+      "reward_anticipation",
+      "risk",
+      "risk_aversion",
+      "risk_seeking",
+      "task_difficulty",
+      "visual_object_detection"
+    ]
+  },
+  "between_viewing_rest": {
+    "ca_task_id": "trm_50eb0a01bfd05",
+    "ca_task_name": "NIH Toolbox Words-in Noise Test",
+    "matched_via": "win",
+    "confidence": 0.9,
+    "measures": [
+      "audition"
+    ]
+  },
+  "rhyme_judgment_task": {
+    "ca_task_id": "trm_4d949c5b0e380",
+    "ca_task_name": "rhyme verification task",
+    "matched_via": "rhyme judgment task",
+    "confidence": 1.0,
+    "measures": [
+      "lexical_retrieval",
+      "phonological_assembly",
+      "phonological_comparison",
+      "phonological_working_memory",
+      "visual_pseudoword_recognition",
+      "visual_word_recognition"
+    ]
+  },
+  "movie_viewing_variant_1": {
+    "ca_task_id": "trm_4da6304c9aa23",
+    "ca_task_name": "attention networks test",
+    "matched_via": "ant",
+    "confidence": 0.9,
+    "measures": [
+      "arousal_emotion",
+      "attention_shifting",
+      "cognitive_control",
+      "selective_attention"
+    ]
+  },
+  "pattern_memory_implicit": {
+    "ca_task_id": "trm_4da6338803ed2",
+    "ca_task_name": "Wechsler Intelligence Scale for Children - Revised",
+    "matched_via": "wechsler intelligence scale for children - revised",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "dual_task": {
+    "ca_task_id": "trm_4da634216ebbc",
+    "ca_task_name": "dual-task paradigm",
+    "matched_via": "dual-task paradigm",
+    "confidence": 0.9,
+    "measures": [
+      "attention",
+      "automaticity",
+      "central_executive"
+    ]
+  },
+  "cattell_test": {
+    "ca_task_id": "trm_4da86c6808ddd",
+    "ca_task_name": "Cattell's Culture Fair Intelligence Test",
+    "matched_via": "cattell's culture fair intelligence test",
+    "confidence": 0.974,
+    "measures": []
+  },
+  "letter_comparison": {
+    "ca_task_id": "trm_4da86c8bb3b04",
+    "ca_task_name": "letter comparison task",
+    "matched_via": "letter comparison task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "directed_forgetting_task": {
+    "ca_task_id": "trm_4da87f383435b",
+    "ca_task_name": "directed forgetting task",
+    "matched_via": "directed forgetting task",
+    "confidence": 1.0,
+    "measures": [
+      "maintenance",
+      "proactive_interference",
+      "updating",
+      "working_memory"
+    ]
+  },
+  "associative_learning_what_off": {
+    "ca_task_id": "trm_4da88a2a63d97",
+    "ca_task_name": "paired associate learning",
+    "matched_via": "associative learning",
+    "confidence": 0.95,
+    "measures": [
+      "declarative_memory"
+    ]
+  },
+  "sustained_attention_gradcpt": {
+    "ca_task_id": "trm_4da88a8e13f26",
+    "ca_task_name": "vigilance",
+    "matched_via": "sustained attention",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "stimulus_response_mapping": {
+    "ca_task_id": "trm_4da88b3b0cbcc",
+    "ca_task_name": "response mapping task",
+    "matched_via": "response mapping",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "alternating_serial_reaction_time": {
+    "ca_task_id": "trm_4f241c735e7f6",
+    "ca_task_name": "serial reaction time task",
+    "matched_via": "serial reaction time",
+    "confidence": 0.9,
+    "measures": [
+      "motor_learning"
+    ]
+  },
+  "naturalistic_animal_behavior_viewing": {
+    "ca_task_id": "trm_4da88bd4412da",
+    "ca_task_name": "animal naming task",
+    "matched_via": "animal naming task",
+    "confidence": 0.855,
+    "measures": [
+      "semantic_knowledge",
+      "verbal_fluency"
+    ]
+  },
+  "anticipation_task": {
+    "ca_task_id": "trm_4da88c5302e06",
+    "ca_task_name": "Brixton spatial anticipation test",
+    "matched_via": "brixton spatial anticipation test",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "language_speech": {
+    "ca_task_id": "trm_4da8914987ee2",
+    "ca_task_name": "Reynell Developmental Language Scales",
+    "matched_via": "reynell developmental language scales",
+    "confidence": 0.855,
+    "measures": [
+      "language_comprehension",
+      "language_production"
+    ]
+  },
+  "communicative_gaze_co_condition": {
+    "ca_task_id": "trm_4da891794859f",
+    "ca_task_name": "MacArthur Communicative Development Inventories",
+    "matched_via": "macarthur communicative development inventories",
+    "confidence": 0.855,
+    "measures": [
+      "language_acquisition",
+      "language_comprehension"
+    ]
+  },
+  "social_observation": {
+    "ca_task_id": "trm_4da891a546d8c",
+    "ca_task_name": "autism diagnostic observation schedule",
+    "matched_via": "autism diagnostic observation schedule",
+    "confidence": 0.855,
+    "measures": [
+      "communication",
+      "empathy",
+      "imagination",
+      "language_comprehension",
+      "restricted_behavior",
+      "social_intelligence"
+    ]
+  },
+  "similarity_judgment_task": {
+    "ca_task_id": "trm_4e31d031bc8c2",
+    "ca_task_name": "synchrony judgment task",
+    "matched_via": "simultaneity judgment task",
+    "confidence": 0.88,
+    "measures": [
+      "synchrony_perception"
+    ]
+  },
+  "temporal": {
+    "ca_task_id": "trm_4e31d69b7f422",
+    "ca_task_name": "temporal order judgment task",
+    "matched_via": "temporal order judgment task",
+    "confidence": 0.9,
+    "measures": [
+      "synchrony_perception"
+    ]
+  },
+  "post_heat_stimulation_phase": {
+    "ca_task_id": "trm_4e550887d92de",
+    "ca_task_name": "heat stimulation",
+    "matched_via": "heat stimulation",
+    "confidence": 0.9,
+    "measures": [
+      "pain"
+    ]
+  },
+  "habituation_task": {
+    "ca_task_id": "trm_4e5662373bc89",
+    "ca_task_name": "heat sensitization/adaptation",
+    "matched_via": "heat sensibilization / habituation",
+    "confidence": 0.9,
+    "measures": [
+      "pain_habituation",
+      "pain_sensitization"
+    ]
+  },
+  "illusion_of_agency_electrically_actuated": {
+    "ca_task_id": "trm_4e5bb14d814a8",
+    "ca_task_name": "rubber hand illusion",
+    "matched_via": "rubber hand illusion",
+    "confidence": 0.855,
+    "measures": [
+      "sense_of_body_ownership",
+      "sense_of_ownership"
+    ]
+  },
+  "picture_matching_task": {
+    "ca_task_id": "trm_4f241e8a01052",
+    "ca_task_name": "sentence-picture matching task",
+    "matched_via": "sentence-picture matching task",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "deterministic_classification_learning": {
+    "ca_task_id": "trm_4e8dd3831f0cc",
+    "ca_task_name": "deterministic classification",
+    "matched_via": "deterministic classification",
+    "confidence": 0.95,
+    "measures": [
+      "categorization",
+      "error_detection",
+      "reinforcement_learning",
+      "response_execution",
+      "response_selection",
+      "visual_form_recognition",
+      "visual_word_recognition"
+    ]
+  },
+  "classification_learning_mixed_event_related_probe": {
+    "ca_task_id": "trm_4e8dd3dfd9fff",
+    "ca_task_name": "mixed event-related probe",
+    "matched_via": "mixed event-related probe",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "multiplication_task": {
+    "ca_task_id": "trm_5696c2c063222",
+    "ca_task_name": "Multiplication task",
+    "matched_via": "multiplication task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "single_task_weather_prediction": {
+    "ca_task_id": "trm_4ebc728326a13",
+    "ca_task_name": "single-task weather prediction ",
+    "matched_via": "single task weather prediction",
+    "confidence": 1.0,
+    "measures": [
+      "auditory_tone_perception",
+      "categorization",
+      "negative_feedback_processing",
+      "positive_feedback_processing",
+      "reinforcement_learning",
+      "response_execution",
+      "response_selection",
+      "visual_form_recognition",
+      "visual_word_recognition"
+    ]
+  },
+  "dual_task_weather_prediction": {
+    "ca_task_id": "trm_4ebc98cc77e7b",
+    "ca_task_name": "dual-task weather prediction",
+    "matched_via": "dual task weather prediction",
+    "confidence": 1.0,
+    "measures": [
+      "auditory_tone_discrimination",
+      "categorization",
+      "negative_feedback_processing",
+      "numerical_comparison",
+      "positive_feedback_processing",
+      "reinforcement_learning",
+      "response_execution",
+      "response_selection",
+      "updating",
+      "visual_form_recognition",
+      "visual_number_recognition",
+      "visual_word_recognition",
+      "working_memory"
+    ]
+  },
+  "classification_probe_no_feedback": {
+    "ca_task_id": "trm_4ebc9d2e397f2",
+    "ca_task_name": "classification probe without feedback",
+    "matched_via": "classification probe without feedback",
+    "confidence": 0.903,
+    "measures": [
+      "categorization",
+      "color_recognition",
+      "response_execution",
+      "response_selection",
+      "visual_form_recognition"
+    ]
+  },
+  "abstract_concrete_judgment": {
+    "ca_task_id": "trm_4f24126c22011",
+    "ca_task_name": "abstract/concrete task",
+    "matched_via": "abstract/concrete judgment",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "monetary_incentive_delay_task": {
+    "ca_task_id": "trm_4f23fc8c42d28",
+    "ca_task_name": "monetary incentive delay task",
+    "matched_via": "monetary incentive delay task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "mental_imagery_test_phase": {
+    "ca_task_id": "trm_4f240edf92865",
+    "ca_task_name": "mental imagery task",
+    "matched_via": "mental imagery",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "verbal_fluency_task": {
+    "ca_task_id": "trm_4f240f1c740da",
+    "ca_task_name": "verbal fluency task",
+    "matched_via": "verbal fluency task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "visual_guided_saccade": {
+    "ca_task_id": "trm_4f24108555294",
+    "ca_task_name": "visually guided saccade task",
+    "matched_via": "visually guided saccade",
+    "confidence": 0.955,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "categorization_task": {
+    "ca_task_id": "trm_4f24112057e90",
+    "ca_task_name": "categorization task",
+    "matched_via": "categorization task",
+    "confidence": 1.0,
+    "measures": [
+      "auditory_perception"
+    ]
+  },
+  "maze_navigation_task": {
+    "ca_task_id": "trm_4f241173868a3",
+    "ca_task_name": "navigation task",
+    "matched_via": "navigation task",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "semantic_categorization": {
+    "ca_task_id": "trm_4f2412d4c3b88",
+    "ca_task_name": "semantic classification task",
+    "matched_via": "semantic categorization",
+    "confidence": 1.0,
+    "measures": [
+      "language"
+    ]
+  },
+  "auditory_spelling_processing": {
+    "ca_task_id": "trm_4f24135453d65",
+    "ca_task_name": "spelling task",
+    "matched_via": "spelling",
+    "confidence": 0.9,
+    "measures": [
+      "phonological_awareness"
+    ]
+  },
+  "analogical_reasoning": {
+    "ca_task_id": "trm_4f244f0286947",
+    "ca_task_name": "analogical reasoning task",
+    "matched_via": "analogical reasoning",
+    "confidence": 1.0,
+    "measures": [
+      "semantic_memory"
+    ]
+  },
+  "cued_task_switching": {
+    "ca_task_id": "trm_4f241614d4a25",
+    "ca_task_name": "attention switching task",
+    "matched_via": "switching task",
+    "confidence": 0.95,
+    "measures": [
+      "attention_shifting"
+    ]
+  },
+  "arithmetic_task": {
+    "ca_task_id": "trm_4f24179122380",
+    "ca_task_name": "mental arithmetic task",
+    "matched_via": "mental arithmetic task",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "verb_generation_general": {
+    "ca_task_id": "trm_4f24183fe80c6",
+    "ca_task_name": "verb generation task",
+    "matched_via": "verb generation",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "cyberball_task": {
+    "ca_task_id": "trm_4f24189031a4a",
+    "ca_task_name": "cyberball task",
+    "matched_via": "cyberball task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "semantic_encoding": {
+    "ca_task_id": "trm_4f241b50caaf7",
+    "ca_task_name": "semantic task",
+    "matched_via": "semantic",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "word_reading_phonological": {
+    "ca_task_id": "trm_4f241b751c5a0",
+    "ca_task_name": "phonological task",
+    "matched_via": "phonological",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "semantic_fluency": {
+    "ca_task_id": "trm_4f241bd52b509",
+    "ca_task_name": "semantic fluency task",
+    "matched_via": "semantic fluency",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "semantic_memory": {
+    "ca_task_id": "trm_4f241c0737cc0",
+    "ca_task_name": "semantic memory task",
+    "matched_via": "semantic memory",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "discrimination_task_general": {
+    "ca_task_id": "trm_4f241c8d4a75c",
+    "ca_task_name": "gender discrimination task",
+    "matched_via": "gender discrimination task",
+    "confidence": 0.896,
+    "measures": []
+  },
+  "advanced_progressive_matrices": {
+    "ca_task_id": "trm_4f24211a03b07",
+    "ca_task_name": "Raven's Advanced Progressive Matrices",
+    "matched_via": "raven's advanced progressive matrices",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "memory_updating": {
+    "ca_task_id": "trm_4f242172aea5d",
+    "ca_task_name": "updating task",
+    "matched_via": "updating",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "working_memory_general": {
+    "ca_task_id": "trm_4f2421a62cdf8",
+    "ca_task_name": "face working memory task",
+    "matched_via": "face working memory",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "visual_short_term_memory": {
+    "ca_task_id": "tsk_1eLUszKc87tI1",
+    "ca_task_name": "Visual short term memory task",
+    "matched_via": "visual short term memory",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "visual_orthographic_processing": {
+    "ca_task_id": "trm_4f24250e0137e",
+    "ca_task_name": "orthographic task",
+    "matched_via": "orthographic",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "visual_search": {
+    "ca_task_id": "trm_4f2447fe67fb9",
+    "ca_task_name": "visual search task",
+    "matched_via": "visual search",
+    "confidence": 1.0,
+    "measures": [
+      "attention",
+      "attentional_bias",
+      "gestalt_grouping"
+    ]
+  },
+  "hcp_gambling_task": {
+    "ca_task_id": "trm_4f24496a80587",
+    "ca_task_name": "gambling task",
+    "matched_via": "gambling task",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "decision_time_selection_task": {
+    "ca_task_id": "trm_4f2449bdcb0b1",
+    "ca_task_name": "Wason card selection task",
+    "matched_via": "selection task",
+    "confidence": 0.9,
+    "measures": [
+      "attention",
+      "logical_reasoning"
+    ]
+  },
+  "random_dot_motion_perception": {
+    "ca_task_id": "trm_4f244ad7dcde7",
+    "ca_task_name": "dot motion task",
+    "matched_via": "dot motion",
+    "confidence": 0.9,
+    "measures": [
+      "context_representation",
+      "figure_ground_segregation",
+      "monetary_reward_prediction_error",
+      "response_bias"
+    ]
+  },
+  "autobiographical_memory": {
+    "ca_task_id": "trm_4f244d2a54e27",
+    "ca_task_name": "autobiographical memory task",
+    "matched_via": "autobiographical memory",
+    "confidence": 1.0,
+    "measures": [
+      "autobiographical_memory",
+      "autonoesis"
+    ]
+  },
+  "biological_motion_task": {
+    "ca_task_id": "trm_4f245326e2eaf",
+    "ca_task_name": "biological motion task",
+    "matched_via": "biological motion task",
+    "confidence": 1.0,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "social_judgment_task": {
+    "ca_task_id": "trm_4f2453ce33f16",
+    "ca_task_name": "social judgment task",
+    "matched_via": "social judgment task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "theory_of_mind_false_belief": {
+    "ca_task_id": "trm_4f2456027809f",
+    "ca_task_name": "false belief task",
+    "matched_via": "false belief",
+    "confidence": 0.9,
+    "measures": [
+      "theory_of_mind"
+    ]
+  },
+  "enumeration_task_ibc": {
+    "ca_task_id": "tsk_wiCMUNujvVRCR",
+    "ca_task_name": "Enumeration task",
+    "matched_via": "enumeration task",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "probe_task": {
+    "ca_task_id": "trm_50df0d8dc717b",
+    "ca_task_name": "attention bias",
+    "matched_via": "dot-probe",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "associative": {
+    "ca_task_id": "trm_50b6660b1b847",
+    "ca_task_name": "Implicit Association Task",
+    "matched_via": "iat",
+    "confidence": 0.9,
+    "measures": [
+      "association",
+      "implicit_knowledge",
+      "prejudice"
+    ]
+  },
+  "spatial_location_delay_working_memory": {
+    "ca_task_id": "trm_5023ef8eab626",
+    "ca_task_name": "delay conditioning",
+    "matched_via": "delay conditioning",
+    "confidence": 0.855,
+    "measures": [
+      "association_learning"
+    ]
+  },
+  "contrast_change_detection": {
+    "ca_task_id": "trm_502be67697201",
+    "ca_task_name": "contrast detection task",
+    "matched_via": "contrast detection",
+    "confidence": 0.95,
+    "measures": [
+      "lateral_masking",
+      "visual_masking"
+    ]
+  },
+  "information_parsing_task": {
+    "ca_task_id": "trm_50f73d557c967",
+    "ca_task_name": "Information Sampling Task",
+    "matched_via": "information sampling task",
+    "confidence": 0.857,
+    "measures": [
+      "decision_making",
+      "impulsivity"
+    ]
+  },
+  "nih_toolbox_cognition": {
+    "ca_task_id": "trm_50f37767e2958",
+    "ca_task_name": "NIH Toolbox Hearing Handicap Inventory",
+    "matched_via": "nih toolbox hearing handicap inventory",
+    "confidence": 0.855,
+    "measures": [
+      "audition"
+    ]
+  },
+  "one_second_memory": {
+    "ca_task_id": "trm_50f84bbdcfa4e",
+    "ca_task_name": "One Touch Stockings of Cambridge",
+    "matched_via": "one touch stockings of cambridge",
+    "confidence": 0.855,
+    "measures": [
+      "cognitive_control",
+      "prospective_planning"
+    ]
+  },
+  "visual_working_memory_general": {
+    "ca_task_id": "trm_50f8516279419",
+    "ca_task_name": "Rapid Visual Information Processing",
+    "matched_via": "rapid visual information processing",
+    "confidence": 0.855,
+    "measures": [
+      "sustained_attention"
+    ]
+  },
+  "implicit_learning": {
+    "ca_task_id": "trm_50f9daf1c3834",
+    "ca_task_name": "Visual Object Learning Test ",
+    "matched_via": "visual object learning test ",
+    "confidence": 0.855,
+    "measures": [
+      "spatial_working_memory"
+    ]
+  },
+  "information_filtering_task": {
+    "ca_task_id": "trm_5106eae236c21",
+    "ca_task_name": "WAIS-Information",
+    "matched_via": "wais-information",
+    "confidence": 0.733,
+    "measures": [
+      "generic_knowledge"
+    ]
+  },
+  "vocal_task": {
+    "ca_task_id": "trm_5106f17025386",
+    "ca_task_name": "WAIS Vocabulary",
+    "matched_via": "wais vocabulary",
+    "confidence": 0.76,
+    "measures": [
+      "verbal_fluency"
+    ]
+  },
+  "language_comprehension_l1": {
+    "ca_task_id": "trm_5106f82530aff",
+    "ca_task_name": "WAIS Comprehension",
+    "matched_via": "wais comprehension",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "change_detection": {
+    "ca_task_id": "trm_5154906cbead5",
+    "ca_task_name": "Change Detection Task",
+    "matched_via": "change detection",
+    "confidence": 1.0,
+    "measures": [
+      "active_maintenance",
+      "auditory_perception",
+      "limited_capacity",
+      "working_memory"
+    ]
+  },
+  "weather_prediction_reversal_learning": {
+    "ca_task_id": "trm_5181fb7bf350b",
+    "ca_task_name": "reversal weather prediction",
+    "matched_via": "reversal weather prediction",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "magnitude_effect_task": {
+    "ca_task_id": "trm_51a637dfeffd5",
+    "ca_task_name": "McGurk effect",
+    "matched_via": "mcgurk effect",
+    "confidence": 0.855,
+    "measures": [
+      "auditory_perception",
+      "olfactory_perception"
+    ]
+  },
+  "local_global_paradigm": {
+    "ca_task_id": "trm_51c453f64d2a6",
+    "ca_task_name": "psychological refractory period (PRP) paradigm",
+    "matched_via": "psychological refractory period (prp) paradigm",
+    "confidence": 0.855,
+    "measures": [
+      "attention",
+      "processing_capacity",
+      "psychological_refractory_period"
+    ]
+  },
+  "hcp_social_task": {
+    "ca_task_id": "trm_5208fe678c652",
+    "ca_task_name": "Social Responsiveness Scale",
+    "matched_via": "social responsiveness scale",
+    "confidence": 0.855,
+    "measures": [
+      "communication",
+      "restricted_behavior",
+      "social_cognition",
+      "social_intelligence",
+      "social_motivation"
+    ]
+  },
+  "abseq_task": {
+    "ca_task_id": "trm_523c7a0a73cf5",
+    "ca_task_name": "aberrant behavior checklist - community",
+    "matched_via": "abc",
+    "confidence": 0.72,
+    "measures": [
+      "hyperactivity",
+      "inappropriate_speech",
+      "irritability",
+      "lethargy",
+      "restricted_behavior"
+    ]
+  },
+  "silent_movie_viewing": {
+    "ca_task_id": "trm_52405b6f7ebe9",
+    "ca_task_name": "brief symptom inventory",
+    "matched_via": "bsi",
+    "confidence": 0.72,
+    "measures": [
+      "anxiety",
+      "empathy",
+      "fear",
+      "obsession",
+      "offensive_aggression",
+      "paranoia",
+      "psychosis",
+      "sadness",
+      "somatosensation"
+    ]
+  },
+  "memory_task_phase_3_ds001232_ds001430": {
+    "ca_task_id": "trm_525c4cb94bfff",
+    "ca_task_name": "Conners 3rd Edition",
+    "matched_via": "conners 3",
+    "confidence": 0.855,
+    "measures": [
+      "anxiety",
+      "cognitive_control",
+      "defiance",
+      "hyperactivity",
+      "inattention",
+      "offensive_aggression",
+      "perfectionism",
+      "social_cognition",
+      "social_motivation"
+    ]
+  },
+  "phonological_processing": {
+    "ca_task_id": "trm_526027c99b726",
+    "ca_task_name": "Comprehensive Test of Phonological Processing",
+    "matched_via": "comprehensive test of phonological processing",
+    "confidence": 0.9,
+    "measures": [
+      "phonological_encoding",
+      "phonological_working_memory"
+    ]
+  },
+  "tibial_sensory_nerve_stimulation": {
+    "ca_task_id": "trm_526943e3cbaaf",
+    "ca_task_name": "Sensory Profile",
+    "matched_via": "sensory profile",
+    "confidence": 0.855,
+    "measures": [
+      "emotion_regulation",
+      "emotional_expression",
+      "motor_control",
+      "multisensory_integration",
+      "noise_sensitivity",
+      "proprioception",
+      "vestibular_control",
+      "visual_awareness",
+      "visual_perception"
+    ]
+  },
+  "dance_video_viewing": {
+    "ca_task_id": "trm_5272806688e63",
+    "ca_task_name": "Differential Ability Scales",
+    "matched_via": "das",
+    "confidence": 0.72,
+    "measures": [
+      "language_comprehension",
+      "naming",
+      "pattern_recognition",
+      "perceptual_similarity",
+      "phonological_encoding",
+      "processing_capacity",
+      "quantitative_skill",
+      "recall",
+      "word_recognition"
+    ]
+  },
+  "overt_word_repetition": {
+    "ca_task_id": "trm_534690b0e9dc5",
+    "ca_task_name": "Overt word repetition",
+    "matched_via": "overt word repetition",
+    "confidence": 1.0,
+    "measures": [
+      "active_maintenance",
+      "articulatory_rehearsal",
+      "speech_production"
+    ]
+  },
+  "covert_verb_generation": {
+    "ca_task_id": "trm_5346927710e88",
+    "ca_task_name": "Covert verb generation task",
+    "matched_via": "covert verb generation",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "resting_state_eyes_closed": {
+    "ca_task_id": "trm_54e69c642d89b",
+    "ca_task_name": "rest eyes closed",
+    "matched_via": "rest eyes closed",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "social_cognition": {
+    "ca_task_id": "trm_550b557e5f90e",
+    "ca_task_name": "social cognition (theory of mind) fMRI task paradigm",
+    "matched_via": "social cognition (theory of mind) fmri task paradigm",
+    "confidence": 0.9,
+    "measures": [
+      "animacy_decision",
+      "animacy_perception",
+      "motion_detection",
+      "response_execution",
+      "response_selection",
+      "spatial_attention",
+      "visual_form_recognition"
+    ]
+  },
+  "deviant_detection_task": {
+    "ca_task_id": "trm_5519c2d8d7b1d",
+    "ca_task_name": "Deviance Detection",
+    "matched_via": "deviance detection",
+    "confidence": 0.914,
+    "measures": [
+      "auditory_perception"
+    ]
+  },
+  "rsvp_and_low_speed_visual_recognition": {
+    "ca_task_id": "trm_551b0dc4e4359",
+    "ca_task_name": "visual illusion susceptibility",
+    "matched_via": "visual illusion susceptibility",
+    "confidence": 0.855,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "perceptual_adaptation": {
+    "ca_task_id": "trm_57c0c146e0019",
+    "ca_task_name": "Chapman Perceptual Aberration Scale",
+    "matched_via": "chapman perceptual aberration scale",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "face_object_perception": {
+    "ca_task_id": "trm_551b0ee81fb6b",
+    "ca_task_name": "object perception task",
+    "matched_via": "object perception",
+    "confidence": 0.95,
+    "measures": [
+      "auditory_perception",
+      "visual_perception"
+    ]
+  },
+  "retinotopy": {
+    "ca_task_id": "trm_551b0fd03d7d8",
+    "ca_task_name": "retinotopic representation",
+    "matched_via": "retinotopic representation",
+    "confidence": 0.853,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "auditory_perception": {
+    "ca_task_id": "trm_551b1460e89a3",
+    "ca_task_name": "auditory scene perception",
+    "matched_via": "auditory scene perception",
+    "confidence": 0.95,
+    "measures": [
+      "auditory_perception"
+    ]
+  },
+  "somatosensory_task": {
+    "ca_task_id": "trm_551b17b190582",
+    "ca_task_name": "intensity for somatosensory stimulation",
+    "matched_via": "intensity for somatosensory stimulation",
+    "confidence": 0.9,
+    "measures": [
+      "olfactory_perception"
+    ]
+  },
+  "offline_processing_associative_learning": {
+    "ca_task_id": "trm_551efd39a74dd",
+    "ca_task_name": "Re-entrant processing",
+    "matched_via": "re-entrant processing",
+    "confidence": 0.855,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "voice_identification": {
+    "ca_task_id": "trm_551efdfd1a356",
+    "ca_task_name": "Face Identification task",
+    "matched_via": "face identification",
+    "confidence": 0.872,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "attended_speaker_own_name_ignored": {
+    "ca_task_id": "trm_551f06a08dcc4",
+    "ca_task_name": "attentional blink paradigm",
+    "matched_via": "attentional blink paradigm",
+    "confidence": 0.855,
+    "measures": [
+      "attention"
+    ]
+  },
+  "temporal_community_structure_analysis": {
+    "ca_task_id": "trm_5521752956bb2",
+    "ca_task_name": "Corpus analysis",
+    "matched_via": "corpus analysis",
+    "confidence": 0.855,
+    "measures": [
+      "language"
+    ]
+  },
+  "dmn_tracking_training": {
+    "ca_task_id": "trm_55217bd86ee12",
+    "ca_task_name": "Mouse tracking paradigms",
+    "matched_via": "mouse tracking paradigms",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "visual_word_form_area_task": {
+    "ca_task_id": "trm_55217c8179b00",
+    "ca_task_name": "Visual world paradigm",
+    "matched_via": "visual world",
+    "confidence": 0.861,
+    "measures": [
+      "language"
+    ]
+  },
+  "emotion_processing_regulation": {
+    "ca_task_id": "trm_5536be03400e7",
+    "ca_task_name": "Motion processing",
+    "matched_via": "motion processing",
+    "confidence": 0.9,
+    "measures": [
+      "visual_perception"
+    ]
+  },
+  "ultimatum_game": {
+    "ca_task_id": "trm_553e8882e3cb6",
+    "ca_task_name": "Ultimatum Game (UG)",
+    "matched_via": "ultimatum game (ug)",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "drama_narrative_viewing": {
+    "ca_task_id": "trm_5550e5011ce10",
+    "ca_task_name": "audio narrative",
+    "matched_via": "audio narrative",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "sleep": {
+    "ca_task_id": "trm_5585c83d15fad",
+    "ca_task_name": "Pittsburgh Sleep Quality Index",
+    "matched_via": "pittsburgh sleep quality index",
+    "confidence": 0.9,
+    "measures": [
+      "sleep"
+    ]
+  },
+  "social_interaction_dyads": {
+    "ca_task_id": "trm_5586ff878155d",
+    "ca_task_name": "Adult ADHD Clinical Diagnostic Scale",
+    "matched_via": "acds",
+    "confidence": 0.771,
+    "measures": [
+      "distraction",
+      "forgetting",
+      "hyperactivity",
+      "inattention",
+      "listening",
+      "sustained_attention"
+    ]
+  },
+  "language_localizer": {
+    "ca_task_id": "trm_558c35979a284",
+    "ca_task_name": "Sentence/nonword language localizer",
+    "matched_via": "sentence/nonword language localizer",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "the_crown_viewing": {
+    "ca_task_id": "trm_55a6a36d9c3f9",
+    "ca_task_name": "Scale for the Assessment of Negative Symptoms",
+    "matched_via": "scale for the assessment of negative symptoms",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "line_bisection_task": {
+    "ca_task_id": "trm_55a6a8e81b7f4",
+    "ca_task_name": "Barratt Impulsiveness Scale",
+    "matched_via": "bis",
+    "confidence": 0.9,
+    "measures": [
+      "attention",
+      "impulsivity",
+      "self_control"
+    ]
+  },
+  "dichoptic_stimulation": {
+    "ca_task_id": "trm_55a6a95f66508",
+    "ca_task_name": "Dickman Impulsivity Inventory",
+    "matched_via": "dick",
+    "confidence": 0.771,
+    "measures": [
+      "impulsivity"
+    ]
+  },
+  "episodic_memory_task": {
+    "ca_task_id": "trm_55a6ae8f44ac3",
+    "ca_task_name": "Eysenck Personality Questionnaire",
+    "matched_via": "epi",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "food_choice_task": {
+    "ca_task_id": "trm_55c686e0824e8",
+    "ca_task_name": "Single item food choice task",
+    "matched_via": "single item food choice task",
+    "confidence": 0.9,
+    "measures": [
+      "high_energy_density_food_recognition"
+    ]
+  },
+  "probabilistic_selection_task": {
+    "ca_task_id": "trm_5667483dcc371",
+    "ca_task_name": "Probabilistic Selection Task",
+    "matched_via": "probabilistic selection task",
+    "confidence": 1.0,
+    "measures": [
+      "reward_learning"
+    ]
+  },
+  "speech_articulation": {
+    "ca_task_id": "trm_5667488d52ccc",
+    "ca_task_name": "Angling Risk Task",
+    "matched_via": "art",
+    "confidence": 0.9,
+    "measures": [
+      "decision_making",
+      "risk_processing"
+    ]
+  },
+  "columbia_card_task": {
+    "ca_task_id": "trm_5667492c555b7",
+    "ca_task_name": "Columbia Card Task",
+    "matched_via": "columbia card task",
+    "confidence": 1.0,
+    "measures": [
+      "decision_making",
+      "performance_monitoring",
+      "risk_processing"
+    ]
+  },
+  "three_armed_bandit_task": {
+    "ca_task_id": "trm_5696b180169bd",
+    "ca_task_name": "Volatile Bandit",
+    "matched_via": "volatile bandit",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "auditory_visual_shift": {
+    "ca_task_id": "trm_5696c3fa0061a",
+    "ca_task_name": "Shift Task",
+    "matched_via": "shift",
+    "confidence": 0.9,
+    "measures": [
+      "reinforcement_learning"
+    ]
+  },
+  "logical_memory_task": {
+    "ca_task_id": "trm_56a2a7750ffd0",
+    "ca_task_name": "Pennâs Logical Reasoning Test",
+    "matched_via": "pennâs logical reasoning test",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "standing_sitting_motor_imagery": {
+    "ca_task_id": "trm_56a2abffcfae3",
+    "ca_task_name": "Penn Motor Praxis",
+    "matched_via": "penn motor praxis",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "item_memory_general": {
+    "ca_task_id": "trm_56a919a478935",
+    "ca_task_name": "ten item personality questionnaire",
+    "matched_via": "ten item personality questionnaire",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "moral_dilemma": {
+    "ca_task_id": "trm_57ebe6583f52d",
+    "ca_task_name": "Moral Dilemma Task",
+    "matched_via": "moral dilemma task",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "emotion_evaluation_task": {
+    "ca_task_id": "trm_56bbea82c12bb",
+    "ca_task_name": "Emotion Regulation Task",
+    "matched_via": "emotion regulation task",
+    "confidence": 0.87,
+    "measures": []
+  },
+  "emotion_neurofeedback": {
+    "ca_task_id": "trm_56bbead1a7ed4",
+    "ca_task_name": "Emotion Regulation Questionnaire",
+    "matched_via": "emotion regulation questionnaire",
+    "confidence": 0.855,
+    "measures": [
+      "emotion_regulation"
+    ]
+  },
+  "orientation_imagery": {
+    "ca_task_id": "trm_5798d7ba0197d",
+    "ca_task_name": "orientation test",
+    "matched_via": "orientation",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "parallel_adaptation_symbols_quantities_size": {
+    "ca_task_id": "trm_57c0c1af018a5",
+    "ca_task_name": "Chapman Physical Anhedonia Scale",
+    "matched_via": "chapman physical anhedonia scale",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "gradcpt_off_condition": {
+    "ca_task_id": "trm_57c0c34e61fdf",
+    "ca_task_name": "Continuous Performance Task",
+    "matched_via": "cpt",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "half_field_checkerboard_stimulation": {
+    "ca_task_id": "trm_586fd45d1bd21",
+    "ca_task_name": "vertical checkerboard",
+    "matched_via": "vertical checkerboard",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "route_learning": {
+    "ca_task_id": "trm_58ab8a6131c5a",
+    "ca_task_name": "route learning",
+    "matched_via": "route learning",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "ultimatum_game_responder": {
+    "ca_task_id": "trm_59668f09db813",
+    "ca_task_name": "Yellow Light Game",
+    "matched_via": "yellow light game",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "post_event_phase": {
+    "ca_task_id": "trm_59cd03eeeab30",
+    "ca_task_name": "Fictitious event ordering",
+    "matched_via": "fictitious event ordering",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "movie_viewing": {
+    "ca_task_id": "tsk_rjSJbUa5Jk2Mb",
+    "ca_task_name": "Food viewing (passive)",
+    "matched_via": "food viewing (passive)",
+    "confidence": 0.855,
+    "measures": [
+      "food_cue_reactivity"
+    ]
+  },
+  "memory_encoding": {
+    "ca_task_id": "tsk_mFS3uwUMAhXxe",
+    "ca_task_name": "Memory encoding task",
+    "matched_via": "memory encoding",
+    "confidence": 1.0,
+    "measures": []
+  },
+  "other": {
+    "ca_task_id": "tsk_i6bcjHSADB30O",
+    "ca_task_name": "Other evaluation task",
+    "matched_via": "other evaluation task",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "soccer_decision_making": {
+    "ca_task_id": "tsk_Ncknr0soiM4IV",
+    "ca_task_name": "social decision-making task",
+    "matched_via": "social decision-making task",
+    "confidence": 0.889,
+    "measures": []
+  },
+  "risky_decision_making": {
+    "ca_task_id": "tsk_d9vPgovlo7aJU",
+    "ca_task_name": "risky decision-making under social influence",
+    "matched_via": "risky decision-making under social influence",
+    "confidence": 0.857,
+    "measures": []
+  },
+  "narrative_listening": {
+    "ca_task_id": "tsk_vbkfbu486lzDr",
+    "ca_task_name": "Pain-matrix narrative localizer",
+    "matched_via": "pain-matrix narrative localizer",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "movie_memory": {
+    "ca_task_id": "tsk_jbg1oF4D9OTkO",
+    "ca_task_name": "movie watching task",
+    "matched_via": "movie watching task",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "subtraction_task": {
+    "ca_task_id": "tsk_zMlmDcfxjld0K",
+    "ca_task_name": "point subtraction aggression paradigm",
+    "matched_via": "point subtraction aggression paradigm",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "empathy_task": {
+    "ca_task_id": "tsk_tlatUto2tMCYC",
+    "ca_task_name": "Narrative-based Pain Empathy Task",
+    "matched_via": "narrative-based pain empathy task",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "statistical_learning_task": {
+    "ca_task_id": "tsk_NOaQmzjqHM4iO",
+    "ca_task_name": "Visual Statistical Learning",
+    "matched_via": "visual statistical learning",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "contextual_trajectory_paradigm": {
+    "ca_task_id": "tsk_3ICXMd8R3ekcb",
+    "ca_task_name": "contextual bandit",
+    "matched_via": "contextual bandit",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "expectation_task": {
+    "ca_task_id": "tsk_kQEU3vjgDNcJP",
+    "ca_task_name": "cue-based expectation task",
+    "matched_via": "cue-based expectation task",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "face_expression_localizer": {
+    "ca_task_id": "tsk_FV3SD73LtdfUc",
+    "ca_task_name": "State-Trait Anger Expression Inventory–2 (STAXI-2)",
+    "matched_via": "state-trait anger expression inventory–2 (staxi-2)",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "health_rating_task": {
+    "ca_task_id": "tsk_Y0LwjRqYtJSQO",
+    "ca_task_name": "Patient health questionnaire (PHQ-9)",
+    "matched_via": "patient health questionnaire (phq-9)",
+    "confidence": 0.855,
+    "measures": []
+  },
+  "trust_game": {
+    "ca_task_id": "tsk_uzol7erTzr9Ix",
+    "ca_task_name": "Trust game (TG)",
+    "matched_via": "trust game (tg)",
+    "confidence": 0.9,
+    "measures": []
+  },
+  "naturalistic_point_of_view_viewing": {
+    "ca_task_id": "tsk_aojKzJ2tvdhGZ",
+    "ca_task_name": "Mindstrong for Regulation of Self-Focused Reflection",
+    "matched_via": "mindstrong for regulation of self-focused reflection",
+    "confidence": 0.855,
+    "measures": [
+      "self_monitoring"
+    ]
+  },
+  "audiovisual_scenes_short_duration": {
+    "ca_task_id": "tsk_QlXQe5gup7UFj",
+    "ca_task_name": "International Physical Activity Questionnaire – Short Form (IPAQ-SF)",
+    "matched_via": "international physical activity questionnaire – short form (ipaq-sf)",
+    "confidence": 0.855,
+    "measures": [
+      "physical_activity"
+    ]
+  },
+  "optogenetic_stimulation_100hz": {
+    "ca_task_id": "tsk_pmvG0R2l7APPE",
+    "ca_task_name": "optogenetic stimulation",
+    "matched_via": "optogenetic stimulation",
+    "confidence": 0.95,
+    "measures": []
+  },
+  "neurofeedback_block_3": {
+    "ca_task_id": "tsk_L1akyyjEGdiUs",
+    "ca_task_name": "Anxiety Sensitivity Index - 3 (ASI-3)",
+    "matched_via": "anxiety sensitivity index - 3 (asi-3)",
+    "confidence": 0.855,
+    "measures": [
+      "anxiety",
+      "anxiety_sensitivity"
+    ]
+  },
+  "violation_of_expectation": {
+    "ca_task_id": "tsk_2lU25qYLrwkfj",
+    "ca_task_name": "violation-of-expectation task",
+    "matched_via": "violation-of-expectation",
+    "confidence": 0.917,
+    "measures": []
+  },
+  "think_aloud_protocol": {
+    "ca_task_id": "tsk_HJI7NLY38yZgx",
+    "ca_task_name": "Parent-Child Interaction Protocol",
+    "matched_via": "parent-child interaction protocol",
+    "confidence": 0.855,
+    "measures": [
+      "attachment"
+    ]
+  },
+  "social_interaction_amodal": {
+    "ca_task_id": "tsk_QN7TaO3lQgQpv",
+    "ca_task_name": "Rapid Marital Interaction Coding System (RMICS)",
+    "matched_via": "rapid marital interaction coding system (rmics)",
+    "confidence": 0.855,
+    "measures": [
+      "dyadic_effect",
+      "marital_conflict"
+    ]
+  },
+  "stress_induction_assessment": {
+    "ca_task_id": "tsk_m9ORBitZNadcZ",
+    "ca_task_name": "Parent-Rated Stress (NIH Perceived Stress Scale)",
+    "matched_via": "parent-rated stress (nih perceived stress scale)",
+    "confidence": 0.855,
+    "measures": [
+      "stress"
+    ]
+  },
+  "mnemonic_similarity_task": {
+    "ca_task_id": "tsk_RXmB56vrYW66T",
+    "ca_task_name": "Mnemonic similarity task",
+    "matched_via": "mnemonic similarity task",
+    "confidence": 1.0,
+    "measures": []
+  }
+}

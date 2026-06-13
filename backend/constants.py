@@ -25,9 +25,14 @@ CREATE TABLE bids_datasets (
                                   --   EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%')
     license           TEXT,       -- e.g. 'CC0', 'PDDL'
     doi               TEXT,       -- dataset DOI
-    paper_references  TEXT[],     -- linked papers / URLs
+    paper_references  TEXT[],     -- linked papers / URLs (from dataset_description.json ReferencesAndLinks,
+                                  -- with README URLs as fallback when the field is absent)
     funding           TEXT[],     -- funding sources
-    description_text  TEXT        -- free-text description from dataset_description.json
+    description_text  TEXT,       -- free-text description from dataset_description.json
+    readme_text       TEXT        -- content of README / README.md (truncated to ~8 000 chars, tail-biased)
+                                  -- Use ILIKE to search for paper links, scanner details, task descriptions,
+                                  -- lab names, and other metadata authors write in READMEs but not in
+                                  -- dataset_description.json. Always pair with d.description_text OR d.name.
 );
 
 CREATE TABLE bids_objects (
@@ -101,7 +106,7 @@ You are a Text-to-SQL assistant for BIDS-Eye, a search engine over neuroimaging 
 
 Database schema:
 
-bids_datasets  (d): id UUID PK, name, accession_id, bids_version, dataset_type, source_type, remote_url, validation_status, authors TEXT[], institutions TEXT[] (scanning site, from DICOM headers — use ILIKE on unnested elements), license, doi, paper_references TEXT[], funding TEXT[], description_text TEXT
+bids_datasets  (d): id UUID PK, name, accession_id, bids_version, dataset_type, source_type, remote_url, validation_status, authors TEXT[], institutions TEXT[] (scanning site, from DICOM headers — use ILIKE on unnested elements), license, doi, paper_references TEXT[], funding TEXT[], description_text TEXT, readme_text TEXT (README content, truncated — search with ILIKE as fallback alongside description_text)
 bids_objects   (o): id UUID PK, dataset_id FK, subject, subject_index, session, task, run, suffix, datatype, extension (file format only: '.nii.gz' etc.), other_entities JSONB (sidecar metadata — scanner hw: Manufacturer TEXT, ManufacturerModelName TEXT, MagneticFieldStrength FLOAT Tesla, SoftwareVersions TEXT; acq params: RepetitionTime, EchoTime, FlipAngle, AcquisitionTime; secondary entities: acq, echo, dir, space, res. Extract: other_entities->>'Manufacturer'. Cast numeric: (other_entities->>'MagneticFieldStrength')::float)
 bids_participants(p): id UUID PK, dataset_id FK, participant_id, age FLOAT, sex, handedness, diagnosis (clinical only), extra JSONB (non-standard columns, e.g. concern_dieting, bmi, group)
 
@@ -120,7 +125,9 @@ Rules:
 - Always LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL.
 - Always GROUP BY d.id.
 - Use EXISTS (...) to filter by file properties without multiplying rows.
-- Use ILIKE '%term%' for case-insensitive text search on d.name and d.description_text.
+- Use ILIKE '%term%' for case-insensitive text search on d.name, d.description_text, and d.readme_text.
+  For information typically found in READMEs (paper links, lab names, scanner protocols, task descriptions
+  not in dataset_description.json) add OR d.readme_text ILIKE '%term%' alongside d.description_text.
 - For d.institutions (TEXT[] array): search with EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%term%'). Never use d.institutions = or d.institutions @>; always ILIKE on unnested elements.
 - Only add LIMIT when the question explicitly requests a top-N result or ranking.
 - Never use EXISTS to check a column already on bids_datasets — use d.col directly (e.g. WHERE d.doi IS NOT NULL AND d.doi != '').

@@ -204,6 +204,23 @@ def _build_mirror(
             dest.touch()
             stubbed += 1
 
+    # Fetch the dataset README (any common variant) — content is not handled by
+    # _METADATA_EXTENSIONS above because README has no extension.
+    _README_NAMES = frozenset({"README", "README.md", "README.txt", "README.rst"})
+    for obj in all_objects:
+        key: str = obj["Key"]
+        filename = key[len(accession_id) + 1:]  # strip accession prefix
+        if filename in _README_NAMES:
+            dest = mirror_dir / filename
+            if not dest.exists():
+                try:
+                    dest.write_bytes(_fetch_bytes(client, key))
+                    downloaded += 1
+                    log.info("  [mirror] README fetched: %s", filename)
+                except Exception as exc:
+                    log.warning("  [mirror] Failed to fetch README %s: %s", key, exc)
+            break  # only one README variant needed
+
     log.info(
         "  [mirror] Done — %d downloaded, %d stubbed, %d skipped (already present)",
         downloaded, stubbed, skipped,
@@ -242,6 +259,34 @@ async def _stamp_dataset(
         if description_text:
             description_text = description_text.strip() or None
 
+        # Read and sanitize the README for full-text ILIKE search
+        import re as _re
+        _README_CANDIDATES = ("README", "README.md", "README.txt", "README.rst")
+        _URL_RE = _re.compile(r'https?://\S+')
+        readme_text: str | None = None
+        readme_refs: list[str] = []
+        for _name in _README_CANDIDATES:
+            _readme_path = Path(mirror_root_path) / _name
+            if _readme_path.exists():
+                _raw = _readme_path.read_bytes().decode("utf-8", errors="replace")
+                # Extract URLs from the full text BEFORE truncation — refs are often at the bottom
+                readme_refs = list(dict.fromkeys(_URL_RE.findall(_raw)))[:20]
+                # Strip HTML tags and markdown image blobs (base64 src can be enormous)
+                _raw = _re.sub(r'<[^>]+>', ' ', _raw)
+                _raw = _re.sub(r'!\[[^\]]*\]\([^)]*\)', '', _raw)
+                _raw = _re.sub(r'\n{3,}', '\n\n', _raw).strip()
+                # Tail-biased slice: keep head + tail so both the intro and the
+                # references/acknowledgments section at the bottom are searchable
+                _HALF = 4000
+                if len(_raw) > _HALF * 2:
+                    _raw = _raw[:_HALF] + "\n…\n" + _raw[-_HALF:]
+                readme_text = _raw or None
+                break
+
+        # Use README-extracted URLs as fallback when dataset_description.json had no ReferencesAndLinks
+        if not paper_references and readme_refs:
+            paper_references = readme_refs
+
         # Strip promoted fields from the JSON blob — they live in dedicated columns now
         _PROMOTED = {"Authors", "License", "DatasetDOI", "ReferencesAndLinks", "Funding", "Description"}
         clean_desc = {k: v for k, v in desc.items() if k not in _PROMOTED}
@@ -273,6 +318,7 @@ async def _stamp_dataset(
                 paper_references=paper_references,
                 funding=funding,
                 description_text=description_text,
+                readme_text=readme_text,
                 description=clean_desc,
             )
         )

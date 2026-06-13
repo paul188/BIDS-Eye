@@ -1711,7 +1711,7 @@
     },
     {
       "question": "Find datasets that mention 7 Tesla MRI scanners in their description",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.description_text ILIKE '%7 Tesla%' OR d.description_text ILIKE '%7T%' OR d.name ILIKE '%7T%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.description_text ILIKE '%7 Tesla%' OR d.description_text ILIKE '%7T%' OR d.name ILIKE '%7T%' OR d.readme_text ILIKE '%7 Tesla%' OR d.readme_text ILIKE '%7T%') GROUP BY d.id",
       "pattern": "description_7t",
       "meta": {
         "datatype": [],
@@ -1725,7 +1725,7 @@
     },
     {
       "question": "Show me datasets related to consciousness or anaesthesia",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%consciousness%' OR d.description_text ILIKE '%consciousness%' OR d.name ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anesthesia%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%consciousness%' OR d.description_text ILIKE '%consciousness%' OR d.readme_text ILIKE '%consciousness%' OR d.name ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anesthesia%' OR d.readme_text ILIKE '%anaesthesia%' OR d.readme_text ILIKE '%anesthesia%') GROUP BY d.id",
       "pattern": "description_consciousness",
       "meta": {
         "datatype": [],
@@ -1739,7 +1739,7 @@
     },
     {
       "question": "Find datasets about sleep or sleep deprivation",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%sleep%' OR d.description_text ILIKE '%sleep deprivation%' OR d.description_text ILIKE '%polysomnography%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%sleep%' OR d.description_text ILIKE '%sleep deprivation%' OR d.description_text ILIKE '%polysomnography%' OR d.readme_text ILIKE '%sleep deprivation%' OR d.readme_text ILIKE '%polysomnography%') GROUP BY d.id",
       "pattern": "description_sleep",
       "meta": {
         "datatype": [],
@@ -1775,6 +1775,76 @@
         "diagnosis": []
       },
       "structure": []
+    },
+    {
+      "question": "Find datasets from the Poldrack lab.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.description_text ILIKE '%Poldrack%' OR d.name ILIKE '%Poldrack%' OR d.readme_text ILIKE '%Poldrack%') GROUP BY d.id",
+      "pattern": "readme_lab_search",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "ilike"
+      ]
+    },
+    {
+      "question": "Find datasets that cite a NeuroImage paper.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.readme_text ILIKE '%neuroimage%' OR d.description_text ILIKE '%neuroimage%' OR EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%neuroimage%')) GROUP BY d.id",
+      "pattern": "readme_paper_journal",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "ilike"
+      ]
+    },
+    {
+      "question": "Find datasets that link to a paper published in Nature Neuroscience.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.readme_text ILIKE '%nature neuroscience%' OR d.description_text ILIKE '%nature neuroscience%' OR EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%nature%neuroscience%')) GROUP BY d.id",
+      "pattern": "readme_paper_journal",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "ilike"
+      ]
+    },
+    {
+      "question": "Find datasets that mention ketamine in their description or README.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%ketamine%' OR d.description_text ILIKE '%ketamine%' OR d.readme_text ILIKE '%ketamine%') GROUP BY d.id",
+      "pattern": "readme_drug_search",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "ilike"
+      ]
+    },
+    {
+      "question": "Show me datasets that describe a face localizer paradigm.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%face localizer%' OR d.description_text ILIKE '%face localizer%' OR d.readme_text ILIKE '%face localizer%') GROUP BY d.id",
+      "pattern": "readme_task_description",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "ilike"
+      ]
     }
   ],
   "doi_query": [
@@ -3934,6 +4004,500 @@
       "structure": [
         "exists"
       ]
+    }
+  ],
+  "scanner_query": [
+    {
+      "question": "Show me datasets collected on Siemens scanners.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' ILIKE '%Siemens%') GROUP BY d.id",
+      "pattern": "scanner_manufacturer",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find datasets using Philips MRI scanners.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' ILIKE '%Philips%') GROUP BY d.id",
+      "pattern": "scanner_manufacturer",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "List datasets acquired on GE scanners.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' ILIKE '%GE%') GROUP BY d.id",
+      "pattern": "scanner_manufacturer",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find datasets acquired on a Siemens Prisma scanner.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturerModelName' ILIKE '%Prisma%') GROUP BY d.id",
+      "pattern": "scanner_model",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Which datasets were collected on a Siemens Skyra?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturerModelName' ILIKE '%Skyra%') GROUP BY d.id",
+      "pattern": "scanner_model",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find datasets using a Philips Achieva scanner.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturerModelName' ILIKE '%Achieva%') GROUP BY d.id",
+      "pattern": "scanner_model",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "List all 7 Tesla MRI datasets.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float = 7.0) GROUP BY d.id",
+      "pattern": "scanner_field_strength",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find datasets acquired at field strengths of at least 3 Tesla.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float >= 3.0) GROUP BY d.id",
+      "pattern": "scanner_field_strength",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Show me datasets acquired on 1.5 Tesla MRI scanners.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float = 1.5) GROUP BY d.id",
+      "pattern": "scanner_field_strength",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Show me datasets that used ultra-high field MRI (7T or higher).",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float >= 7.0) GROUP BY d.id",
+      "pattern": "scanner_field_strength",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find fMRI datasets not collected on Siemens scanners.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND NOT EXISTS (SELECT 1 FROM bids_objects bo2 WHERE bo2.dataset_id = d.id AND bo2.other_entities->>'Manufacturer' ILIKE '%Siemens%') GROUP BY d.id",
+      "pattern": "scanner_manufacturer_exclusion",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "not_exists", "json"]
+    },
+    {
+      "question": "Find datasets collected on Bruker scanners.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' ILIKE '%Bruker%') GROUP BY d.id",
+      "pattern": "scanner_manufacturer",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    }
+  ],
+  "acquisition_parameter_query": [
+    {
+      "question": "Find fMRI datasets with a repetition time shorter than 1 second.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND (bo.other_entities->>'RepetitionTime')::float < 1.0) GROUP BY d.id",
+      "pattern": "acquisition_tr_threshold",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Show me datasets with TR less than 2 seconds.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'RepetitionTime')::float < 2.0) GROUP BY d.id",
+      "pattern": "acquisition_tr_threshold",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "List datasets acquired with sub-second TR (multiband or simultaneous multislice).",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND (bo.other_entities->>'RepetitionTime')::float < 1.0) GROUP BY d.id",
+      "pattern": "acquisition_multiband",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find fMRI datasets with TR between 1 and 2 seconds.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND (bo.other_entities->>'RepetitionTime')::float BETWEEN 1.0 AND 2.0) GROUP BY d.id",
+      "pattern": "acquisition_tr_range",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find datasets with echo times greater than 30 milliseconds.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'EchoTime')::float > 0.03) GROUP BY d.id",
+      "pattern": "acquisition_te_threshold",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Show datasets with a flip angle around 90 degrees.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'FlipAngle')::float BETWEEN 85 AND 95) GROUP BY d.id",
+      "pattern": "acquisition_flip_angle",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    },
+    {
+      "question": "Find multi-echo fMRI datasets.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.other_entities->>'EchoTime') FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND bo.other_entities->>'EchoTime' IS NOT NULL) > 1 GROUP BY d.id",
+      "pattern": "acquisition_multi_echo",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["json"]
+    },
+    {
+      "question": "Find fMRI datasets with a TR greater than 2 seconds.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND (bo.other_entities->>'RepetitionTime')::float > 2.0) GROUP BY d.id",
+      "pattern": "acquisition_tr_threshold",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "json"]
+    }
+  ],
+  "institution_query": [
+    {
+      "question": "Find datasets collected at MIT.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%') GROUP BY d.id",
+      "pattern": "institution_single",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Show datasets from the Child Mind Institute.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Child Mind%') GROUP BY d.id",
+      "pattern": "institution_single",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets acquired at NYU.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%NYU%') GROUP BY d.id",
+      "pattern": "institution_single",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Which datasets were collected at Princeton University?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Princeton%') GROUP BY d.id",
+      "pattern": "institution_single",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find multi-site datasets collected at more than one institution.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE array_length(d.institutions, 1) > 1 GROUP BY d.id",
+      "pattern": "institution_multisite",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "List datasets acquired at multiple scanning sites.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE array_length(d.institutions, 1) > 1 GROUP BY d.id",
+      "pattern": "institution_multisite",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets NOT collected at Stanford.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Stanford%') GROUP BY d.id",
+      "pattern": "institution_exclusion",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["not_exists"]
+    },
+    {
+      "question": "Show me datasets from Harvard or Massachusetts General Hospital.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Harvard%' OR inst ILIKE '%Massachusetts General%' OR inst ILIKE '%MGH%') GROUP BY d.id",
+      "pattern": "institution_multiple",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets where no institution is recorded.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.institutions IS NULL OR array_length(d.institutions, 1) = 0 GROUP BY d.id",
+      "pattern": "institution_missing",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find fMRI datasets from the Max Planck Institute.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Max Planck%') GROUP BY d.id",
+      "pattern": "institution_with_modality",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    }
+  ],
+  "clinical_design_query": [
+    {
+      "question": "Find datasets with both schizophrenia patients and healthy controls.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'schizophrenia') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "clinical_case_control",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["schizophrenia", "healthy_control"]},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find datasets containing both Parkinson's disease patients and healthy controls.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'parkinsons_disease') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "clinical_case_control",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["parkinsons_disease", "healthy_control"]},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find autism spectrum disorder datasets with matched healthy controls.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'autism_spectrum_disorder') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "clinical_case_control",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["autism_spectrum_disorder", "healthy_control"]},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Which datasets include both ADHD and typically developing participants?",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'adhd') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "clinical_case_control",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["adhd", "healthy_control"]},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find datasets that include both epilepsy patients and healthy controls.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'epilepsy_spectrum') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "clinical_case_control",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["epilepsy_spectrum", "healthy_control"]},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Show datasets that mix clinical and control participants.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IS NOT NULL AND p.diagnosis NOT IN ('healthy_control', 'healthy_volunteer')) AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('healthy_control', 'healthy_volunteer')) GROUP BY d.id",
+      "pattern": "clinical_mixed_design",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Show datasets where more than half the participants have a clinical diagnosis.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IS NOT NULL AND p.diagnosis NOT IN ('healthy_control', 'healthy_volunteer'))::float / NULLIF((SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IS NOT NULL), 0) > 0.5 GROUP BY d.id",
+      "pattern": "clinical_prevalence",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find fMRI datasets with both depression patients and healthy controls.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'major_depressive_disorder') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "pattern": "clinical_case_control_modality",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": ["major_depressive_disorder", "healthy_control"]},
+      "structure": ["exists"]
+    },
+    {
+      "question": "List datasets with patients from at least two different diagnostic groups.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT p.diagnosis) FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis IS NOT NULL AND p.diagnosis NOT IN ('healthy_control', 'healthy_volunteer')) >= 2 GROUP BY d.id",
+      "pattern": "clinical_multi_diagnosis",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    }
+  ],
+  "run_query": [
+    {
+      "question": "Find fMRI datasets with at least 2 runs.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.run) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND bo.run IS NOT NULL) >= 2 GROUP BY d.id",
+      "pattern": "run_count_threshold",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Show me datasets designed for test-retest reliability with multiple scanning runs.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.run) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.run IS NOT NULL) >= 2 GROUP BY d.id",
+      "pattern": "run_test_retest",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets with multiple resting state runs.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.run) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IN ('resting_state', 'resting_state_eyes_open', 'resting_state_eyes_closed') AND bo.run IS NOT NULL) >= 2 GROUP BY d.id",
+      "pattern": "run_resting_state",
+      "meta": {"datatype": [], "suffix": [], "task": ["resting_state"], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "List datasets with more than 3 functional MRI runs.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.run) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND bo.run IS NOT NULL) > 3 GROUP BY d.id",
+      "pattern": "run_count_threshold",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Show datasets with only a single run of functional MRI.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND (SELECT COUNT(DISTINCT bo.run) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND bo.run IS NOT NULL) <= 1 GROUP BY d.id",
+      "pattern": "run_single",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find datasets where fMRI has been acquired with multiple runs per session.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT COUNT(DISTINCT bo.run) FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri' AND bo.run IS NOT NULL) >= 2 GROUP BY d.id ORDER BY subject_count DESC LIMIT 50",
+      "pattern": "run_per_session",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["ranking"]
+    }
+  ],
+  "task_diversity_query": [
+    {
+      "question": "Find datasets with more than 5 distinct tasks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.task) > 5",
+      "pattern": "task_diversity_threshold",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["having"]
+    },
+    {
+      "question": "Show me multi-task battery datasets with at least 8 different paradigms.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.task) >= 8",
+      "pattern": "task_diversity_threshold",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["having"]
+    },
+    {
+      "question": "List datasets that contain only a single task.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.task) = 1",
+      "pattern": "task_diversity_single",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["having"]
+    },
+    {
+      "question": "Find datasets with the most diverse task coverage.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY COUNT(DISTINCT o.task) DESC LIMIT 10",
+      "pattern": "task_diversity_ranking",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["ranking"]
+    },
+    {
+      "question": "Show datasets with at least 3 different cognitive tasks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING COUNT(DISTINCT o.task) >= 3",
+      "pattern": "task_diversity_threshold",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["having"]
+    },
+    {
+      "question": "Find fMRI datasets with more than 4 distinct task conditions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') GROUP BY d.id HAVING COUNT(DISTINCT o.task) > 4",
+      "pattern": "task_diversity_modality",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "having"]
+    }
+  ],
+  "per_subject_session_query": [
+    {
+      "question": "Find datasets where every participant has at least 3 longitudinal sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM (SELECT o2.subject, COUNT(DISTINCT o2.session) AS n_sess FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject IS NOT NULL GROUP BY o2.subject) per_sub WHERE per_sub.n_sess < 3) GROUP BY d.id",
+      "pattern": "per_subject_session_all",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["not_exists"]
+    },
+    {
+      "question": "Show datasets with consistent longitudinal coverage where each subject has been scanned at least twice.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM (SELECT o2.subject, COUNT(DISTINCT o2.session) AS n_sess FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject IS NOT NULL GROUP BY o2.subject) per_sub WHERE per_sub.n_sess < 2) GROUP BY d.id",
+      "pattern": "per_subject_session_all",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["not_exists"]
+    },
+    {
+      "question": "List datasets where the average number of sessions per subject is at least 4.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT AVG(sess_count) FROM (SELECT COUNT(DISTINCT o2.session) AS sess_count FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject IS NOT NULL GROUP BY o2.subject) sub_sessions) >= 4 GROUP BY d.id",
+      "pattern": "per_subject_session_avg",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets where every subject has at least 2 sessions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM (SELECT o2.subject, COUNT(DISTINCT o2.session) AS n_sess FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject IS NOT NULL GROUP BY o2.subject) per_sub WHERE per_sub.n_sess < 2) GROUP BY d.id",
+      "pattern": "per_subject_session_all",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["not_exists"]
+    },
+    {
+      "question": "Show me datasets where the average number of sessions per participant is at least 3.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (SELECT AVG(sess_count) FROM (SELECT COUNT(DISTINCT o2.session) AS sess_count FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.subject IS NOT NULL GROUP BY o2.subject) sub_sessions) >= 3 GROUP BY d.id",
+      "pattern": "per_subject_session_avg",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    }
+  ],
+  "paper_reference_query": [
+    {
+      "question": "Find datasets that have at least one linked publication.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.paper_references IS NOT NULL AND array_length(d.paper_references, 1) > 0 GROUP BY d.id",
+      "pattern": "paper_reference_exists",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Show datasets without any paper references.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.paper_references IS NULL OR array_length(d.paper_references, 1) = 0) AND d.readme_text IS NULL GROUP BY d.id",
+      "pattern": "paper_reference_missing",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets with more than 2 linked papers.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE array_length(d.paper_references, 1) > 2 GROUP BY d.id",
+      "pattern": "paper_reference_count",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "List all datasets that have associated journal article references.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.paper_references IS NOT NULL AND array_length(d.paper_references, 1) > 0 GROUP BY d.id ORDER BY d.name",
+      "pattern": "paper_reference_exists",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets referencing a PubMed article.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%pubmed%' OR ref ILIKE '%ncbi.nlm%') OR d.readme_text ILIKE '%pubmed%' OR d.readme_text ILIKE '%ncbi.nlm%') GROUP BY d.id",
+      "pattern": "paper_reference_pubmed",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["ilike"]
+    },
+    {
+      "question": "Find datasets that reference a paper with a doi.org link.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%doi.org%') OR d.readme_text ILIKE '%doi.org%') GROUP BY d.id",
+      "pattern": "paper_reference_doi_link",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["ilike"]
+    }
+  ],
+  "bids_provenance_query": [
+    {
+      "question": "Show me only raw (unprocessed) datasets.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.dataset_type = 'raw' GROUP BY d.id",
+      "pattern": "bids_dataset_type",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find derivative datasets containing preprocessed data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.dataset_type = 'derivative' GROUP BY d.id",
+      "pattern": "bids_dataset_type",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "List datasets using BIDS version 1.7 or later.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.bids_version >= '1.7.0' GROUP BY d.id",
+      "pattern": "bids_version",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets that use BIDS version 1.0.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.bids_version ILIKE '1.0%' GROUP BY d.id",
+      "pattern": "bids_version",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Find datasets that have passed BIDS validation.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.validation_status = 'valid' GROUP BY d.id",
+      "pattern": "bids_validation",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": []
+    },
+    {
+      "question": "Show me raw fMRI datasets that have a DOI.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.dataset_type = 'raw' AND d.doi IS NOT NULL AND d.doi != '' AND EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') GROUP BY d.id",
+      "pattern": "bids_provenance_combined",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
     }
   ]
 }
