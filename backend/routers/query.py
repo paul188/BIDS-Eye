@@ -40,10 +40,15 @@ from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 router = APIRouter(prefix="/query", tags=["query"])
 
 _DAILY_LIMIT = int(os.getenv("DAILY_MESSAGE_LIMIT", "20"))
+_ADMIN_LOGINS = {
+    u.strip() for u in os.getenv("ADMIN_GITHUB_LOGINS", "paul188").split(",") if u.strip()
+}
 
 
 async def _enforce_rate_limit(session: AsyncSession, github_login: str) -> None:
     """Atomically increment today's message count and raise 429 if over the limit."""
+    if github_login in _ADMIN_LOGINS:
+        return
     result = await session.execute(
         text("""
             INSERT INTO message_usage (github_login, usage_date, count)
