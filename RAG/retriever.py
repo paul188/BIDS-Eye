@@ -81,6 +81,7 @@ from yaml_to_llamaindex import (
     group_display_db,
     hierarchy_db,
     weight_db,
+    measures_db,
     build_embedding_index,
 )
 from join_registry import field_to_db_col as _field_to_db_col
@@ -104,6 +105,14 @@ _NAME_FIELD_KEY = {
 
 # WRatio threshold for YAML fields — keeps false positives low on short tokens
 _SEMANTIC_THRESHOLD = 80
+
+# Higher WRatio threshold applied specifically to the task field.
+# The construct path (_resolve_via_constructs) fires before fuzzy for task
+# queries and is the preferred route for construct-level terms.  Raising the
+# fuzzy bar here prevents weak word-overlap hits (e.g. "social cognition" →
+# ultimatum_game_responder) from contaminating task resolution when the
+# construct path legitimately returns nothing.
+_TASK_SEMANTIC_THRESHOLD = 88
 
 # Terms that are pure modality abbreviations or generic imaging phrases.
 # For these, the task field is skipped in retrieve_scan_terms to prevent
@@ -290,6 +299,75 @@ def _prune_redundant_parents(codes: List[str]) -> List[str]:
     return [c for c in codes if c not in to_remove]
 
 
+def _resolve_via_constructs(term: str) -> List[tuple[str, float]]:
+    """Try term against cognitive_construct, then expand to task codes via measures_db.
+
+    Returns (task_standard_code, score) pairs — or [] when:
+      - the term doesn't match any cognitive construct, or
+      - none of the matched constructs have task links in measures_db yet
+        (i.e. bids_to_ca_map.json hasn't been generated / reviewed yet).
+    """
+    if not measures_db:
+        return []
+
+    cat_leaves        = leaf_db.get("cognitive_construct", {})
+    cat_groups        = group_db.get("cognitive_construct", {})
+    cat_display       = display_db.get("cognitive_construct", {})
+    cat_group_display = group_display_db.get("cognitive_construct", {})
+
+    term_lower = term.lower().strip()
+    construct_codes: List[str] = []
+    score = 0.0
+
+    # Exact match — prefer group (all construct descendants) over single leaf
+    for t in _plural_variants(term_lower):
+        if t in cat_groups:
+            construct_codes = cat_groups[t]
+            score = 1.0
+            break
+        if t in cat_leaves:
+            construct_codes = [cat_leaves[t]]
+            score = 1.0
+            break
+
+    if not construct_codes:
+        all_targets: Dict[str, List[str]] = {
+            k: [v] for k, v in cat_display.items() if len(k) >= 3
+        }
+        all_targets.update(
+            {k: v for k, v in cat_group_display.items() if len(k) >= 3}
+        )
+        if all_targets:
+            results = _process.extract(
+                term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=5
+            )
+            if results and results[0][1] >= _SEMANTIC_THRESHOLD:
+                best_label = results[0][0]
+                score = results[0][1] / 100.0
+                construct_codes = all_targets[best_label]
+
+    if not construct_codes:
+        return []
+
+    # Expand construct codes → BIDS task codes via measures_db
+    seen: set[str] = set()
+    task_codes: List[str] = []
+    for cc in construct_codes:
+        for tc in measures_db.get(cc, []):
+            if tc not in seen:
+                seen.add(tc)
+                task_codes.append(tc)
+
+    if not task_codes:
+        return []
+
+    log.debug(
+        "Construct expansion: '%s' → %d construct(s) → %d task code(s)",
+        term, len(construct_codes), len(task_codes),
+    )
+    return [(tc, score) for tc in task_codes]
+
+
 def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
     """Resolve one term against the YAML KB, returning (code, score) pairs.
 
@@ -304,6 +382,10 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
     cat_groups        = group_db.get(field, {})
     cat_group_display = group_display_db.get(field, {})
 
+    # Task field uses a higher threshold — construct path handles the heavy
+    # lifting for construct-level terms, so fuzzy only fires on strong hits.
+    _sem = _TASK_SEMANTIC_THRESHOLD if field == "task" else _SEMANTIC_THRESHOLD
+
     term_lower = term.lower().strip()
     candidates = _plural_variants(term_lower)
 
@@ -315,6 +397,18 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
             return [(c, 1.0) for c in cat_groups[t]]
         if t in cat_leaves:
             return [(cat_leaves[t], 1.0)]
+
+    # 1b. For the task field: try cognitive construct expansion BEFORE fuzzy.
+    # Abstract construct terms ("pain processing", "social cognition", "error
+    # detection") are not task names, so fuzzy matching on task synonyms produces
+    # spurious hits driven by word-overlap ("processing" → orthographic_processing).
+    # Construct expansion is CA-curated and semantically grounded; if it finds
+    # anything, it is preferred over noisy fuzzy results.
+    # Exact task matches above still take priority (e.g. "working memory" group).
+    if field == "task":
+        construct_hits = _resolve_via_constructs(term)
+        if construct_hits:
+            return construct_hits
 
     # 2. Pooled fuzzy match over display labels + group synonyms
     # Exclude keys shorter than 3 chars from the fuzzy pool — short abbreviations
@@ -340,7 +434,7 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
     results = _process.extract(
         term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=20
     )
-    if not results or results[0][1] < _SEMANTIC_THRESHOLD:
+    if not results or results[0][1] < _sem:
         return _embedding_fallback_scored(field, term)
 
     # Prefer the more specific (longer) label when top scores are tied
@@ -352,7 +446,7 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
     # Weight-adjusted threshold: low-confidence synonyms need a higher fuzzy
     # score to be accepted. Labels and plain-string synonyms default to 1.0.
     weight = weight_db.get(field, {}).get(best_label, 1.0)
-    effective_threshold = _SEMANTIC_THRESHOLD + (1.0 - weight) * _WEIGHT_BOOST
+    effective_threshold = _sem + (1.0 - weight) * _WEIGHT_BOOST
     if best_score < effective_threshold:
         return _embedding_fallback_scored(field, term)
 
@@ -382,12 +476,12 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
         seen: set[str] = set()
         _MIN_COLLECT_LEN = max(len(core_term) // 2, 5)
         for label, score, _ in core_results:
-            if score < _SEMANTIC_THRESHOLD:
+            if score < _sem:
                 break
             if len(label) < _MIN_COLLECT_LEN:
                 continue
             w = weight_db.get(field, {}).get(label, 1.0)
-            eff = _SEMANTIC_THRESHOLD + (1.0 - w) * _WEIGHT_BOOST
+            eff = _sem + (1.0 - w) * _WEIGHT_BOOST
             if score >= eff:
                 for code in all_targets[label]:
                     if code not in seen:

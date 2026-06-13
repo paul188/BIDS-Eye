@@ -47349,16 +47349,13 @@ task:
     - term: social reward
       weight: 0.9
     - Incentive salience
-    - empathy
     - valence
-    - social cognition
     - affective processing
   ultimatum_game_responder:
     label: Ultimatum Game (responder role)
     standard_code: ultimatum_game_responder
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: A task where participants act as the responder in an Ultimatum Game,
       deciding to accept or reject a proposed division of resources.
@@ -47592,7 +47589,6 @@ task:
     standard_code: trustworthiness_judgment_task
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: A task where participants evaluate the trustworthiness of individuals
       based on their observed behaviors.
@@ -47819,6 +47815,7 @@ task:
     - social_emotional_reward
     - social_cognition
     - neuromodulation
+    - emotion_regulation
     description: A neurofeedback task focused on regulating or processing emotions,
       often involving real-time fMRI.
     synonyms:
@@ -49231,7 +49228,6 @@ task:
     standard_code: trust_game
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: A task assessing social trust and reciprocity, often involving monetary
       exchanges.
@@ -49279,7 +49275,6 @@ task:
     standard_code: ultimatum_and_dictator_game
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: A task combining the Ultimatum Game and Dictator Game to study social
       decision-making and reward processing.
@@ -49327,7 +49322,6 @@ task:
     standard_code: ultimatum_game
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: An economic game used to study fairness and decision-making, involving
       a proposer and a responder.
@@ -49415,7 +49409,6 @@ task:
     standard_code: ultimatum_game_proposer
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: Participants act as the proposer in an Ultimatum Game, deciding how
       to split a sum of money with a responder.
@@ -49611,6 +49604,7 @@ task:
     - social_emotional_reward
     - social_cognition
     - face_emotion_processing
+    - emotion_regulation
     description: This task involves the cognitive processes of identifying, evaluating,
       and modulating emotional responses.
     synonyms:
@@ -49795,7 +49789,6 @@ task:
     standard_code: social_intertemporal_choice_task
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     - gambling_risk
     description: A decision-making task involving choices between immediate and delayed
@@ -51523,7 +51516,6 @@ task:
     standard_code: social_risky_choice_task
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     - gambling_risk
     description: Participants make decisions involving risk in a social context, often
@@ -54077,7 +54069,6 @@ task:
     standard_code: social_doors_task
     broader:
     - social_emotional_reward
-    - social_cognition
     - economic_games
     description: A variant of the Doors Task designed to investigate social and nonsocial
       reward processing.
@@ -61212,9 +61203,6 @@ task:
     - social perception
     - social reasoning
     - social learning
-    - social reward
-    - social memory
-    - social observation
     - social judgment
     - social decision
     - social task
@@ -61314,10 +61302,26 @@ task:
     - emotion processing
     - facial expression
     - emotional face
-    - emotion regulation
     - affective processing
     - face memory
     - empathy
+  emotion_regulation:
+    label: Emotion regulation
+    is_group: true
+    broader:
+    - face_emotion_processing
+    synonyms:
+    - emotion regulation
+    - emotional regulation
+    - cognitive reappraisal
+    - emotion reappraisal
+    - affect regulation
+    - emotional control
+    - down-regulation
+    - suppression task
+    - reappraisal task
+    - emotional self-regulation
+    - emotion control task
   economic_games:
     label: Economic and trust games
     is_group: true
