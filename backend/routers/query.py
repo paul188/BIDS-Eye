@@ -245,6 +245,10 @@ async def query_datasets(
         update={"sql": cached.base_sql, "self_corrected": cached.self_corrected}
     )
 
+    from models import UserQuery
+    session.add(UserQuery(github_login=_auth["sub"], question=body.question))
+    await session.commit()
+
     return QueryResponse(
         message=f"Found {total} dataset(s) matching your query.",
         translation=translation,

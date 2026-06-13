@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 _SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
 _ALGORITHM = "HS256"
@@ -144,6 +145,20 @@ async def github_callback(request: Request):
                 status_code=403,
                 detail="Access restricted to members of the required GitHub organization.",
             )
+
+    from db.db import async_session_maker
+    from models import User
+
+    async with async_session_maker() as session:
+        await session.execute(
+            pg_insert(User)
+            .values(github_login=github_login_name, github_email=primary_email)
+            .on_conflict_do_update(
+                index_elements=["github_login"],
+                set_={"github_email": primary_email},
+            )
+        )
+        await session.commit()
 
     jwt_token = _make_token(sub=github_login_name, email=primary_email or "")
 
