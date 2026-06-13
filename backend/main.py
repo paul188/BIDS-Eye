@@ -27,7 +27,6 @@ from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 # ── Make BIDS-SQL importable ──────────────────────────────────────────────────
 _BIDS_SQL = Path(__file__).resolve().parents[1] / "BIDS-SQL"
@@ -81,8 +80,6 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
-
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "change-me"))
 
 _frontend_url = os.getenv("FRONTEND_URL", "*")
 app.add_middleware(
