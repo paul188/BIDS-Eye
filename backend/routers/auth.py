@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import os
+import secrets
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
 
-from authlib.integrations.starlette_client import OAuth
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -16,16 +19,10 @@ _EXPIRE_DAYS = 7
 router = APIRouter(prefix="/auth", tags=["auth"])
 _bearer = HTTPBearer()
 
-oauth = OAuth()
-oauth.register(
-    name="github",
-    client_id=os.getenv("GITHUB_CLIENT_ID"),
-    client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-    authorize_url="https://github.com/login/oauth/authorize",
-    access_token_url="https://github.com/login/oauth/access_token",
-    api_base_url="https://api.github.com/",
-    client_kwargs={"scope": "read:org user:email"},
-)
+# In-memory state store for OAuth CSRF protection.
+# Maps state token → expiry timestamp. Single-instance only (fine for this deployment).
+_oauth_states: dict[str, float] = {}
+_STATE_TTL_MINUTES = 10
 
 
 def _make_token(sub: str, email: str = "") -> str:
@@ -50,36 +47,99 @@ def require_auth(
     return payload
 
 
+def _new_state() -> str:
+    """Generate a fresh CSRF state token and register it with a TTL."""
+    # Prune expired states to keep the dict small
+    now = datetime.now(timezone.utc).timestamp()
+    expired = [k for k, exp in _oauth_states.items() if exp < now]
+    for k in expired:
+        del _oauth_states[k]
+
+    state = secrets.token_urlsafe(24)
+    _oauth_states[state] = (
+        datetime.now(timezone.utc) + timedelta(minutes=_STATE_TTL_MINUTES)
+    ).timestamp()
+    return state
+
+
+def _consume_state(state: str) -> bool:
+    """Validate and remove a state token. Returns False if invalid or expired."""
+    expiry = _oauth_states.pop(state, None)
+    if expiry is None:
+        return False
+    return datetime.now(timezone.utc).timestamp() <= expiry
+
+
 @router.get("/github")
 async def github_login(request: Request):
+    client_id = os.getenv("GITHUB_CLIENT_ID", "")
     redirect_uri = os.getenv(
         "GITHUB_REDIRECT_URI",
         str(request.url_for("github_callback")),
     )
-    return await oauth.github.authorize_redirect(request, redirect_uri)
+    state = _new_state()
+    auth_url = (
+        "https://github.com/login/oauth/authorize"
+        f"?client_id={quote(client_id)}"
+        f"&redirect_uri={quote(redirect_uri, safe='')}"
+        f"&scope={quote('read:org user:email')}"
+        f"&state={state}"
+    )
+    return RedirectResponse(auth_url)
 
 
 @router.get("/github/callback", name="github_callback")
 async def github_callback(request: Request):
-    token = await oauth.github.authorize_access_token(request)
+    state = request.query_params.get("state", "")
+    code = request.query_params.get("code", "")
 
-    user_resp = await oauth.github.get("user", token=token)
+    if not _consume_state(state):
+        raise HTTPException(status_code=400, detail="Invalid or expired OAuth state.")
+
+    # Exchange code for GitHub access token
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(
+            "https://github.com/login/oauth/access_token",
+            json={
+                "client_id": os.getenv("GITHUB_CLIENT_ID"),
+                "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
+                "code": code,
+                "redirect_uri": os.getenv(
+                    "GITHUB_REDIRECT_URI",
+                    str(request.url_for("github_callback")),
+                ),
+            },
+            headers={"Accept": "application/json"},
+            timeout=15,
+        )
+    access_token = token_resp.json().get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="Failed to obtain access token from GitHub.")
+
+    gh_headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+
+    async with httpx.AsyncClient() as client:
+        user_resp, emails_resp = await asyncio.gather(
+            client.get("https://api.github.com/user", headers=gh_headers, timeout=10),
+            client.get("https://api.github.com/user/emails", headers=gh_headers, timeout=10),
+        )
+
     user_data = user_resp.json()
     github_login_name: str = user_data.get("login", "unknown")
-
-    emails_resp = await oauth.github.get("user/emails", token=token)
-    emails = emails_resp.json()
     primary_email = next(
-        (e["email"] for e in emails if e.get("primary") and e.get("verified")),
+        (e["email"] for e in emails_resp.json() if e.get("primary") and e.get("verified")),
         None,
     )
 
     github_org = os.getenv("GITHUB_ORG", "").strip()
     if github_org:
-        membership_resp = await oauth.github.get(
-            f"orgs/{github_org}/members/{github_login_name}", token=token
-        )
-        if membership_resp.status_code != 204:
+        async with httpx.AsyncClient() as client:
+            membership = await client.get(
+                f"https://api.github.com/orgs/{github_org}/members/{github_login_name}",
+                headers=gh_headers,
+                timeout=10,
+            )
+        if membership.status_code != 204:
             raise HTTPException(
                 status_code=403,
                 detail="Access restricted to members of the required GitHub organization.",
