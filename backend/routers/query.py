@@ -251,8 +251,11 @@ async def query_datasets(
     )
 
     from models import UserQuery
-    session.add(UserQuery(github_login=_auth["sub"], question=body.question))
-    await session.commit()
+    try:
+        async with session.begin_nested():
+            session.add(UserQuery(github_login=_auth["sub"], question=body.question))
+    except Exception:
+        pass  # stale/legacy JWT sub not in users table — don't crash the response
 
     return QueryResponse(
         message=f"Found {total} dataset(s) matching your query.",
