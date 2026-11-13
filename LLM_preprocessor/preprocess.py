@@ -386,6 +386,10 @@ class AugmentedQueryPlan(BaseModel):
 # LLM call — preprocess a user query into a QueryPlan
 # ---------------------------------------------------------------------------
 
+# The example concepts in the "Broad task/paradigm concepts" paragraph are on
+# purpose not questions of the recall benchmark (benchmarks/recall/queries.yaml).
+# A prompt that names the benchmark's own questions makes its score say nothing
+# about other questions. Keep it that way when adding examples.
 _SYSTEM_PROMPT = textwrap.dedent("""\
     You are the preprocessing stage of a BIDS neuroimaging dataset search engine.
     Your job is to parse a natural-language user query into a strict JSON structure
@@ -407,6 +411,14 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     Put ALL scan-related terms in ScanRequirement.scan_terms.
     Do NOT try to classify them as datatype vs suffix vs task — the RAG searches
     all three fields simultaneously and returns whatever matches.
+
+    Broad task/paradigm concepts count as scan-related, even when the user says
+    "assessments" or "studies" rather than "task": reading, arithmetic, spatial
+    navigation, mental rotation, time perception, empathy, meditation. Keep the
+    distinctive concept in scan_terms (e.g. "assessments of reading" →
+    ["reading"]). Do not put the only requested task/topic in
+    description_search; task codes and a text search for the same phrase are
+    combined downstream.
 
     Examples:
       "fMRI datasets"                → scan_terms: ["fMRI"]
