@@ -68,6 +68,7 @@ from text_terms import (
     diagnosis_alternatives as _diagnosis_alternatives,
     format_text_match as _format_text_match,
 )
+from institution_index import text_alternatives as _institution_text_alternatives
 
 # ---------------------------------------------------------------------------
 # Schema
@@ -111,6 +112,7 @@ class RAGField(str, Enum):
     DATATYPE  = "datatype"
     AUTHOR    = "author"
     FUNDING   = "funding"
+    INSTITUTION = "institution"
     SCAN      = "scan"      # internal: multi-field lookup across datatype+suffix+task
 
 
@@ -262,6 +264,17 @@ class QueryPlan(BaseModel):
     funding_terms: List[str] = Field(
         default_factory=list,
         description="Funding source strings as mentioned by the user — RAG resolves these to exact DB strings"
+    )
+    institution_terms: List[str] = Field(
+        default_factory=list,
+        description="Institutions, universities, hospitals, labs or imaging centres where the data "
+                    "was collected, as written by the user, one per entry, e.g. ['Stanford'], "
+                    "['MIT', 'Max Planck Institute']. Keep abbreviations as typed."
+    )
+    excluded_institution_terms: List[str] = Field(
+        default_factory=list,
+        description="Institutions the data must NOT come from ('not collected at Stanford' → "
+                    "['Stanford']). Never also list them in institution_terms."
     )
 
     # ── Sidecar / JSONB metadata filters ─────────────────────────────────────
@@ -467,6 +480,21 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     ── Dataset-level terms ─────────────────────────────────────────────────────
     Put author names in author_names; funding agencies in funding_terms.
     The RAG resolves these to exact DB strings.
+    Put the place where data was acquired (university, hospital, institute,
+    lab, imaging centre) in institution_terms, e.g. "scanned at Stanford",
+    "data from MIT", "collected at the Max Planck Institute". A funder is not
+    an institution: "funded by the NIH" → funding_terms, "acquired at the NIH"
+    → institution_terms. Do not also put the institution in description_search.
+    "not from Stanford", "excluding MIT data" → excluded_institution_terms.
+    Leave both lists empty when an institution name is part of something else:
+      a scale, atlas or template:  "Stanford Sleepiness Scale", "Harvard-Oxford
+          atlas", "MNI space", "Montreal Cognitive Assessment" → description_search
+      a study or dataset name:     "Human Connectome Project", "Cam-CAN",
+          "UK Biobank", "ABIDE" → name_search or description_search
+      a person or their lab:       "the Poldrack lab" → author_names ["Poldrack"]
+      a country, region or city:   "datasets from Germany" → description_search
+      a generic word:              "multi-site", "hospital data", "clinical sites"
+          → no institution (multi-site is a property, not a place)
 
     ── Counts and n_results ────────────────────────────────────────────────────
     Do NOT set any n_results, expected_*_codes, or n_*_codes fields.
@@ -636,6 +664,7 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
     # Dataset-level text fields
     _merge(RAGField.AUTHOR,  plan.author_names)
     _merge(RAGField.FUNDING, plan.funding_terms)
+    _merge(RAGField.INSTITUTION, plan.institution_terms + plan.excluded_institution_terms)
 
     # Merge any extra requests the LLM explicitly set
     for req in plan.rag_requests:
@@ -739,6 +768,81 @@ def augment_with_rag(
     return aug
 
 
+def _institution_lines(
+    plan: QueryPlan,
+    resolved: List[ResolvedTerms],
+    unresolved: List[str],
+    available_columns: Collection[str],
+) -> List[str]:
+    """One filter line per institution the user named.
+
+    Resolved names (exact bids_datasets.institutions strings from
+    RAG/institution_index.py) become an array overlap, which the GIN index on
+    the column serves:
+        (d.institutions && ARRAY['Stanford University', ...]::text[]
+         OR text_match('Stanford', 'short'))
+    The text part catches datasets that name the site in their title,
+    description or study fields but whose scans carry no InstitutionName.
+    README text only ranks here: README mentions of an institution are often
+    citations or tools ('Harvard-Oxford atlas', 'Stanford Sleepiness Scale').
+
+    An institution the stored names do not know (or a database without the
+    column) falls back to a full-text search that includes the README, where
+    labs usually describe where they scanned.
+
+    An excluded institution removes datasets with any of its stored names:
+        NOT COALESCE(d.institutions && ARRAY[...]::text[], false)
+    (COALESCE keeps datasets without any recorded institution). Without
+    stored names it removes datasets that name it in their short text fields;
+    a README mention alone does not exclude.
+    """
+    resolved_names: Dict[str, List[str]] = {}
+    for r in resolved:
+        if r.field == RAGField.INSTITUTION:
+            for term, names in r.term_to_codes.items():
+                resolved_names.setdefault(term, []).extend(names)
+
+    excluded = list(dict.fromkeys(t for t in plan.excluded_institution_terms if t and t.strip()))
+    terms = list(dict.fromkeys(
+        [t for t in plan.institution_terms if t and t.strip()] + list(resolved_names) + list(unresolved)
+    ))
+    terms = [t for t in terms if t not in excluded]
+    use_column = "institutions" in available_columns
+
+    def _array(names: List[str]) -> str:
+        return "ARRAY[" + ", ".join("'" + n.replace("'", "''") + "'" for n in names) + "]::text[]"
+
+    lines: List[str] = []
+    for term in excluded:
+        names = list(dict.fromkeys(resolved_names.get(term, []))) if use_column else []
+        if names:
+            condition = f"NOT COALESCE(d.institutions && {_array(names)}, false)"
+        else:
+            text_part = _format_text_match(_institution_text_alternatives(term) or [term], _MODE_SHORT)
+            if not text_part:
+                continue
+            condition = f"NOT {text_part}"
+        label = term.replace('"', "'")
+        lines.append(f'  not institution "{label}": {condition}')
+
+    for term in terms:
+        names = list(dict.fromkeys(resolved_names.get(term, []))) if use_column else []
+        alternatives = _institution_text_alternatives(term)
+        if names:
+            array = ", ".join("'" + name.replace("'", "''") + "'" for name in names)
+            condition = f"d.institutions && ARRAY[{array}]::text[]"
+            text_part = _format_text_match(alternatives, _MODE_SHORT)
+            if text_part:
+                condition = f"({condition} OR {text_part})"
+        else:
+            condition = _format_text_match(alternatives or [term])
+            if not condition:
+                continue
+        label = term.replace('"', "'")
+        lines.append(f'  institution "{label}": {condition}')
+    return lines
+
+
 _BYTES_PER_GB = 1024 ** 3
 
 
@@ -784,7 +888,9 @@ def _build_augmented_question(
     # Unresolved terms count too: their text filter is the only thing that
     # keeps a question like "eye tracking datasets" from returning everything.
     if (not resolved and not plan.description_search and not plan.name_search
-            and not size_conds and not unresolved_terms and not db_miss_terms):
+            and not size_conds and not plan.institution_terms
+            and not plan.excluded_institution_terms
+            and not unresolved_terms and not db_miss_terms):
         return plan.natural_language_summary
 
     _SCAN_FIELDS = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
@@ -822,6 +928,8 @@ def _build_augmented_question(
                 if text_fallback:
                     exists_sql = f"({exists_sql} OR {text_fallback})"
                 context_lines.append(f'  diagnosis: {exists_sql}')
+        elif r.field == RAGField.INSTITUTION:
+            continue  # see _institution_lines()
         else:
             if r.all_codes:
                 label = label_map.get(r.field, r.field.value)
@@ -914,6 +1022,16 @@ def _build_augmented_question(
                 )
 
     context_lines.extend(non_scan_lines)
+
+    # Institutions: an exact filter on d.institutions, or a text search when
+    # the stored names do not know the institution. Unresolved institution
+    # terms are handled there, not in the VOCABULARY MISS block below.
+    unresolved_terms = dict(unresolved_terms or {})
+    context_lines.extend(_institution_lines(
+        plan, resolved,
+        unresolved_terms.pop(RAGField.INSTITUTION.value, []),
+        available_columns,
+    ))
 
     # Inject free-text hints for qualitative/adjectival terms that the
     # preprocessing LLM routed to description_search / name_search because they

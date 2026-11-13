@@ -45,8 +45,11 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "scanning institutions from MRI sidecar JSONs, e.g. ARRAY['Child Mind Institute', 'NYU_Center_for_Brain_Imaging']",
         "Names come from DICOM headers — expect underscores, abbreviations, and",
         "slight variants (e.g. 'Princeton_University' alongside 'Princeton University').",
-        "Always search with ILIKE on unnested elements:",
-        "  EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%')",
+        "An institution named in the question arrives as an 'institution' line in",
+        "[Resolved DB filters] (d.institutions && ARRAY[...] with the exact stored names):",
+        "copy that line verbatim. Only without such a line, match unnested elements with",
+        "a case-insensitive whole-word regex (plain ILIKE '%MIT%' also hits 'Brains Unlimited'):",
+        "  EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ~* '\\mMIT\\M')",
     ]),
     "readme_text": ("TEXT", [
         "content of the dataset README (long free text): paper links, scanner",

@@ -4153,28 +4153,28 @@
   "institution_query": [
     {
       "question": "Find datasets collected at MIT.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.institutions && ARRAY['MIT', 'mit', 'McGovern Institute for Brain Research (3T1)', 'McGovern_Institute_for_Brain_Research_(3T1)']::text[] OR text_match('massachusetts institute technology | mcgovern institute', 'short')) GROUP BY d.id",
       "pattern": "institution_single",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": []
     },
     {
       "question": "Show datasets from the Child Mind Institute.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Child Mind%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.institutions && ARRAY['Child Mind Institute']::text[] OR text_match('child mind institute', 'short')) GROUP BY d.id",
       "pattern": "institution_single",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": []
     },
     {
       "question": "Find datasets acquired at NYU.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%NYU%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.institutions && ARRAY['NYU - CBI', 'NYU AD', 'NYU Center for Brain Imaging', 'NYU LANGONE CBI', 'NYU Langone CBI', 'NYU_-_CBI', 'NYU_Center_for_Brain_Imaging', 'New York University Grossman School of Medicine']::text[] OR text_match('new york university', 'short')) GROUP BY d.id",
       "pattern": "institution_single",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": []
     },
     {
       "question": "Which datasets were collected at Princeton University?",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Princeton%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.institutions && ARRAY['Princeton University', 'Princeton University - Neuroscience Institute', 'Princeton_University', 'Princeton_University_-_Neuroscience_Institute']::text[] OR text_match('princeton university', 'short')) GROUP BY d.id",
       "pattern": "institution_single",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": []
@@ -4195,14 +4195,14 @@
     },
     {
       "question": "Find datasets NOT collected at Stanford.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Stanford%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT COALESCE(d.institutions && ARRAY['Stanford CNI', 'Stanford Hospital and Clinics', 'Stanford Lucas Center', 'Stanford University', 'Stanford University - School of Medicine', 'Stanford_Lucas_Center']::text[], false) GROUP BY d.id",
       "pattern": "institution_exclusion",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["not_exists"]
     },
     {
       "question": "Show me datasets from Harvard or Massachusetts General Hospital.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Harvard%' OR inst ILIKE '%Massachusetts General%' OR inst ILIKE '%MGH%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE ((d.institutions && ARRAY['BCH, Harvard Medical School']::text[] OR text_match('harvard', 'short')) OR (d.institutions && ARRAY['Athinoula A. Martinos Center for Biomedical Imaging', 'MGH', 'MGH 7T', 'MGH NMR-Center', 'MGH PrismaFit-Bay4', 'MGH Terra pTx Bay2', 'MGH-MR1L6', 'MGH_7T', 'MGH_Terra_Bay2', 'Martinos Center', 'Martinos Center 7T', 'Martinos Center 7T Terra', 'Martinos Center Bay 1', 'Martinos Center Bay 3 AC88', 'Martinos Center Bay 4 Prisma', 'Martinos Center Bay 4 Prisma VE11C', 'Martinos Center Bay 6', 'Martinos_Center_7T', 'Martinos_Center_7T_Classic', 'Martinos_Center_7T_Terra', 'Martinos_Center_Bay_1', 'Martinos_Center_Bay_3', 'Mass General Hospital - Martinos Center Bay 1']::text[] OR text_match('massachusetts general hospital | mass general hospital | martinos center', 'short'))) GROUP BY d.id",
       "pattern": "institution_multiple",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": []
@@ -4216,7 +4216,7 @@
     },
     {
       "question": "Find fMRI datasets from the Max Planck Institute.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%Max Planck%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND (d.institutions && ARRAY['Max Planck Institute for Biological Cybernetics', 'Max Planck Institute for Human Cognitive and Brain Sciences', 'MPI', 'MPI CBS', 'MPI Leipzig', 'MPI for Human Development', 'MPI_CBS', 'MPI_Leipzig', 'MPI_for_Human_Development', 'Max-Planck-Institut', 'Max-Planck-Institut fuer Kognitions- und Neurowissenschaften', 'Max_Planck_Institut']::text[] OR text_match('max planck institute | max planck institut', 'short')) GROUP BY d.id",
       "pattern": "institution_with_modality",
       "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists"]
