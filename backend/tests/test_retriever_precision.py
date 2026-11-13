@@ -124,3 +124,20 @@ def test_animal_models_need_an_animal_word() -> None:
 
 def test_autism_is_not_the_sibling_cohort() -> None:
     assert _resolve_yaml_term("diagnosis", "autism") == ["autism_spectrum_disorder"]
+
+
+@pytest.mark.parametrize(
+    "term",
+    ["reward processing", "emotion processing", "reward", "memory", "language", "music"],
+)
+def test_task_terms_resolve_to_no_suffix(term: str) -> None:
+    # "reward processing" used to match the suffix bucket
+    # entities_and_processing_keys through "processing"; that code is in almost
+    # every dataset, so "Datasets with reward processing tasks" returned all.
+    with pytest.raises(AssertionError, match="embedding fallback"):
+        _resolve_yaml_term("suffix", term)
+
+
+@pytest.mark.parametrize("term", ["roi", "atlas", "channels", "entities and processing keys"])
+def test_bucket_suffix_is_never_returned(term: str) -> None:
+    assert "entities_and_processing_keys" not in _resolve_yaml_term("suffix", term)

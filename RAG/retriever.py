@@ -157,6 +157,14 @@ _GENERIC_IMAGING_TERMS = {
 # was raised for the same reason.
 _MIN_FUZZY_SCORE = 88
 
+# Codes that never narrow a search. entities_and_processing_keys is a bucket
+# for BIDS bookkeeping files (participants, channels, coordsystem, masks, ...)
+# that almost every dataset has, so a filter on it returns everything: "reward
+# processing" matched its label through "processing" and the question
+# "Datasets with reward processing tasks" returned all 1,719 datasets.
+# Such codes are never returned; the term falls back to text search instead.
+_NON_FILTERING_CODES = frozenset({"entities_and_processing_keys"})
+
 # Diagnosis concepts that describe animals, not human participants. A fuzzy
 # match reaches them only when the term itself is about animals or models;
 # otherwise "Parkinson's" picks up "Parkinson's model of ATP10B knockdown".
@@ -444,6 +452,18 @@ def _resolve_via_constructs(term: str) -> List[tuple[str, float]]:
 def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
     """Resolve one term against the YAML KB, returning (code, score) pairs.
 
+    Codes in _NON_FILTERING_CODES are dropped from every resolution path.
+    """
+    return [
+        (code, score)
+        for code, score in _match_yaml_term(field, term)
+        if code not in _NON_FILTERING_CODES
+    ]
+
+
+def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
+    """All (code, score) pairs for *term* in *field*; see _resolve_yaml_term_scored.
+
     Score is normalised to 0.0–1.0 so it can be used directly for relevance
     ranking: exact match → 1.0, fuzzy WRatio → score/100, embedding fallback →
     cosine similarity. Codes that share one matched label inherit that label's
@@ -509,14 +529,17 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
             # task, not just those using the working_memory_general code itself.
             all_targets[k] = v
 
+    # Drop codes this term must not reach before ranking, so they cannot win a
+    # tie against a usable label.
+    excluded = set(_NON_FILTERING_CODES)
     if field == "diagnosis" and not _ANIMAL_WORDS.search(term_lower):
-        animal_codes = set(cat_groups.get(_ANIMAL_MODEL_GROUP, []))
-        for k in list(all_targets):
-            codes = [c for c in all_targets[k] if c not in animal_codes]
-            if codes:
-                all_targets[k] = codes
-            else:
-                del all_targets[k]
+        excluded.update(cat_groups.get(_ANIMAL_MODEL_GROUP, []))
+    for k in list(all_targets):
+        codes = [c for c in all_targets[k] if c not in excluded]
+        if codes:
+            all_targets[k] = codes
+        else:
+            del all_targets[k]
 
     if not all_targets:
         return []
