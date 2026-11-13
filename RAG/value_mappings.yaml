@@ -584,6 +584,8 @@ diagnosis:
   psychiatric_disorder:
     broader: []
     synonyms:
+    - term: psychiatric
+      weight: 1.0
     - term: psychiatric illness
       weight: 0.32
     - term: psychiatric diagnoses

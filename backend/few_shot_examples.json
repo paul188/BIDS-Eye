@@ -4253,9 +4253,9 @@
     },
     {
       "question": "Find datasets that include both epilepsy patients and healthy controls.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'epilepsy_spectrum') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.diagnosis = 'epilepsy') AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') GROUP BY d.id",
       "pattern": "clinical_case_control",
-      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["epilepsy_spectrum", "healthy_control"]},
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": ["epilepsy", "healthy_control"]},
       "structure": ["exists"]
     },
     {

@@ -122,7 +122,8 @@ CREATE TABLE bids_objects (
     subject_index   INTEGER,
     session         TEXT,
     task            TEXT,         -- normalized standard_code, e.g. 'resting_state', 'nback'
-                                  -- Use concept keys for groups: 'resting_state', 'working_memory', etc.
+                                  -- A broad category key is expanded to its task codes at runtime:
+                                  --   'memory', 'sleep', 'language_speech', 'working_memory', etc.
     run             TEXT,
     suffix          TEXT,         -- normalized code, e.g. 'fmri_bold' (fMRI), 't1_weighted_mri' (T1w),
                                   --      't2_weighted_mri' (T2w), 'diffusion_mri_dwi', 'eeg', 'meg',
@@ -160,7 +161,7 @@ CREATE TABLE bids_participants (
     diagnosis      TEXT,        -- normalized standard_code, e.g. 'epilepsy', 'schizophrenia',
                              --   'healthy_control', 'major_depressive_disorder', 'adhd'
                              -- Use broad concept keys for categories (auto-expanded at runtime):
-                             --   'epilepsy_spectrum', 'psychiatric', 'neurodevelopmental', etc.
+                             --   'psychiatric_disorder', 'neurodevelopmental', 'neurodegenerative', etc.
     extra          JSON         -- non-standard participant columns from participants.tsv (JSON, not JSONB)
                                 -- e.g. {"concern_dieting": "yes", "bmi": 24.5, "group": "control"}
                                 -- Use ->> to extract: p.extra->>'concern_dieting'

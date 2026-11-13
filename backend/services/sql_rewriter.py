@@ -8,6 +8,7 @@ has already produced a draft query:
   - extracting SQL from fenced or annotated model output,
   - canonical projection replacement,
   - stripping hallucinated scan filters,
+  - expanding broad vocabulary keys ('neurodevelopmental') into their codes,
   - injecting VOCABULARY MISS fallback predicates,
   - expanding text_match() placeholders into full-text predicates,
   - wrapping relevance scoring, text ranking and pagination.
@@ -43,6 +44,7 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
     parse_one = None  # type: ignore[assignment]
 
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
+from services.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 
 from services import text_search as _text_search  # noqa: E402
@@ -210,6 +212,7 @@ class SqlRewriteService:
         sql = self._rewrite_projection(sql)
         sql = self._strip_outer_scan_filters(sql)
         sql = self._rewrite_task_ilike_concepts(sql)
+        sql = _expand_concept_keys(sql)
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._guard_json_number_casts(sql)
         sql = self._inject_vocab_miss(sql, augmented_question)
