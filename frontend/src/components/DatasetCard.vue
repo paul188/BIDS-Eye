@@ -92,7 +92,7 @@ const institutionLine = computed(() => (props.dataset.institutions ?? []).join('
           :href="href"
           target="_blank"
           rel="noopener"
-          class="text-accent hover:text-accent-hover hover:underline decoration-1 underline-offset-2 break-words"
+          class="text-accent visited:text-link-visited hover:underline decoration-1 underline-offset-2 break-words"
         >{{ dataset.name }}</a>
         <span v-else class="text-ink break-words">{{ dataset.name }}</span>
       </h3>

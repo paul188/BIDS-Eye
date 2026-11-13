@@ -9,21 +9,23 @@ export default {
         mono:  ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
-        // Warm paper background with a deep teal accent. Every text colour
-        // here passes WCAG AA (4.5:1) on both `surface` and `panel`.
-        surface:        '#fbfaf7',
+        // White page, blue links (readers know blue text is clickable),
+        // purple once visited. Every text colour passes WCAG AA (4.5:1) on
+        // white and on panel-soft; muted-soft fails on accent-soft (4.35).
+        surface:        '#ffffff',
         panel:          '#ffffff',
-        'panel-soft':   '#f2f0ea',
-        border:         '#e3dfd6',
-        'border-strong':'#cfc9bc',
-        // Outline of inputs and other controls: 3.5:1, the WCAG 1.4.11 minimum is 3:1.
-        'border-input': '#8a8477',
-        accent:         '#0f6b74',
-        'accent-hover': '#0b545b',
-        'accent-soft':  '#e2efee',
-        ink:            '#1d2128',
-        muted:          '#575d69',
-        'muted-soft':   '#6b7180',
+        'panel-soft':   '#f4f5f7',
+        border:         '#e3e5e9',
+        'border-strong':'#c9cdd4',
+        // Outline of inputs and other controls: 3.2:1, the WCAG 1.4.11 minimum is 3:1.
+        'border-input': '#8b919d',
+        accent:         '#1d4ed8',
+        'accent-hover': '#1e3a8a',
+        'accent-soft':  '#eaf0fd',
+        'link-visited': '#5b34a6',
+        ink:            '#1b1f24',
+        muted:          '#555c69',
+        'muted-soft':   '#697080',
         'warn-bg':      '#fbf1de',
         'warn-ink':     '#7f5300',
         'danger-bg':    '#fbe9e7',
