@@ -11,7 +11,8 @@ Three resolution strategies in priority order:
 
   2. Fuzzy match  (YAML fields — primary path)
        RapidFuzz WRatio ≥ 80 over display labels + synonyms.
-       Weight-adjusted threshold for low-confidence synonyms.
+       A term listed under several concepts, or sitting equally well inside
+       the labels of several, resolves to all of them.
 
   3. Embedding fallback  (YAML fields — miss path)
        Two-tier biomedical embedding search when fuzzy match scores < 80.
@@ -78,10 +79,11 @@ if str(_THIS_DIR) not in sys.path:
 from yaml_to_llamaindex import (
     leaf_db,
     display_db,
+    leaf_codes_db,
+    display_codes_db,
     group_db,
     group_display_db,
     hierarchy_db,
-    weight_db,
     measures_db,
     build_embedding_index,
 )
@@ -154,7 +156,7 @@ _GENERIC_IMAGING_TERMS = {
     "brain images", "brain image",
 }
 
-# No fuzzy match below this WRatio is used, whatever the synonym weight.
+# No fuzzy match below this WRatio is used.
 # At or above it, one string contains the other or the two differ by a typo.
 # Below it, a label can qualify on a single shared word: WRatio gives 85.5 to
 # any two strings of unequal length with one word in common ("structural mri" /
@@ -184,16 +186,6 @@ _ANIMAL_WORDS = re.compile(
 
 # token_set_ratio threshold for name fields — looser to handle abbreviations
 _NAME_THRESHOLD = 60
-
-# Maximum extra points added to the fuzzy threshold for a weight-0.0 synonym.
-# A synonym with weight w requires a fuzzy score of at least:
-#   _SEMANTIC_THRESHOLD + (1.0 - w) * _WEIGHT_BOOST
-# Examples (SEMANTIC_THRESHOLD=80, WEIGHT_BOOST=15):
-#   w=1.0 → threshold 80   (no penalty — fully trusted synonym)
-#   w=0.7 → threshold 84.5 (mild penalty)
-#   w=0.5 → threshold 87.5 (moderate penalty)
-#   w=0.2 → threshold 92   (steep penalty — near-exact match required)
-_WEIGHT_BOOST = 8
 
 # Tier-1 embedding model: biomedical ontology SOTA (SNOMED-CT / MedDRA)
 _BIOLORD_MODEL = "FremyCompany/BioLORD-2023-C"
@@ -388,9 +380,9 @@ def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
     Only when none of 1 to 5 exists does a fuzzy construct match count.
     Returns None when nothing matched, so the caller goes on to fuzzy matching.
     """
-    cat_leaves  = leaf_db.get("task", {})
+    cat_leaves  = leaf_codes_db.get("task", {})
     cat_groups  = group_db.get("task", {})
-    cat_display = display_db.get("task", {})
+    cat_display = display_codes_db.get("task", {})
 
     # "decision-making" and "decision making" are one spelling here.
     spellings = list(dict.fromkeys([core, _fuzzy_form(core)]))
@@ -406,7 +398,7 @@ def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
                 scaffold_groups.append(cat_groups[t])
                 break
             if t in cat_leaves:
-                scaffold_leaves.append(cat_leaves[t])
+                scaffold_leaves.extend(cat_leaves[t])
                 break
 
     def with_scaffold_leaves(named: List[str]) -> List[tuple[str, float]]:
@@ -416,12 +408,12 @@ def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
         if t in cat_groups:
             return with_scaffold_leaves(cat_groups[t])
         if t in cat_leaves and t in cat_display:
-            return with_scaffold_leaves([cat_leaves[t]])
+            return with_scaffold_leaves(list(cat_leaves[t]))
 
     codes: Dict[str, float] = {}
     for t in forms():
         if t in cat_leaves:
-            codes[cat_leaves[t]] = 1.0
+            codes.update(dict.fromkeys(cat_leaves[t], 1.0))
             break
     for code in scaffold_leaves:
         codes.setdefault(code, 1.0)
@@ -437,6 +429,15 @@ def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
     if not codes:
         codes.update(_resolve_via_constructs(core))
     return list(codes.items()) or None
+
+
+def _shared(codes: List[str]) -> List[tuple[str, float]]:
+    """Codes that list the same term, each with the share 1/k of the match.
+
+    A term listed under one concept implies it fully; a term listed under k
+    concepts is ambiguous, and each concept gets the structural prior 1/k.
+    """
+    return [(code, 1.0 / len(codes)) for code in codes]
 
 
 def _normalize_term(term: str) -> str:
@@ -577,9 +578,16 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     cosine similarity. Codes that share one matched label inherit that label's
     score. This is the single source of truth; ``_resolve_yaml_term`` is a thin
     codes-only wrapper over it.
+
+    An ambiguous term keeps every reading and splits the score between them:
+    a term listed under k concepts gives each 1/k (_shared), and a term that
+    sits equally well inside several labels gives a code the share of those
+    labels that lead to it. The per-synonym weights in value_mappings.yaml are
+    not used: they count how often a synonym occurs in paper abstracts, which
+    does not say whether a match on it is right.
     """
-    cat_leaves        = leaf_db.get(field, {})
-    cat_display       = display_db.get(field, {})
+    cat_leaves        = leaf_codes_db.get(field, {})
+    cat_display       = display_codes_db.get(field, {})
     cat_groups        = group_db.get(field, {})
     cat_group_display = group_display_db.get(field, {})
 
@@ -609,7 +617,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
         if t in cat_groups:
             return [(c, 1.0) for c in cat_groups[t]]
         if t in cat_leaves:
-            return [(cat_leaves[t], 1.0)]
+            return _shared(cat_leaves[t])
 
     # 1a. Exact match once filler words are dropped ("iEEG recording" → "ieeg").
     core = _without_filler(term_lower)
@@ -618,7 +626,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
             if t in cat_groups:
                 return [(c, 1.0) for c in cat_groups[t]]
             if t in cat_leaves:
-                return [(cat_leaves[t], 1.0)]
+                return _shared(cat_leaves[t])
 
     # (Task field: cognitive construct expansion already ran in step 0, before
     # fuzzy matching. Construct terms such as "pain processing" or "social
@@ -634,7 +642,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     all_targets: Dict[str, List[str]] = {}
     for k, v in cat_display.items():
         if len(k) >= _MIN_FUZZY_KEY_LEN:
-            all_targets[k] = [v]
+            all_targets[k] = list(v)
     for k, v in cat_group_display.items():
         if len(k) >= _MIN_FUZZY_KEY_LEN:
             # Group wins for dual nodes — returning all descendant codes means
@@ -673,14 +681,13 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
             if _aligned_to_words(processed, _fuzzy_form(hit[0]))
         ][:20]
 
-    # Increase limit so low-weight best matches can be supplemented by siblings
     results = fuzzy_hits(term_lower)
     if not results:
         return _embedding_fallback_scored(field, term)
 
     # 100 means the strings are identical once separators are normalised
     # ("resting-state eyes open" / "resting state eyes-open"). Treat that as an
-    # exact match: weights and the low-weight union below do not apply.
+    # exact match and return the codes of every label that scores 100.
     if results[0][1] >= 100:
         codes = dict.fromkeys(
             code for label, score, _ in results if score >= 100 for code in all_targets[label]
@@ -702,54 +709,22 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
             _fuzz.ratio(processed_term, processed_label),
         )
 
-    best_label = max(
-        (label for label, score, _ in results if score >= best_score), key=tie_rank
-    )
+    tied = [label for label, score, _ in results if score >= best_score]
+    whole = [label for label in tied if tie_rank(label)[0]]
+    if whole:
+        # The term names this label and adds words of its own: one label.
+        return [(c, best_score / 100.0) for c in all_targets[max(whole, key=tie_rank)]]
 
-    # Weight-adjusted threshold: low-confidence synonyms need a higher fuzzy
-    # score to be accepted. Labels and plain-string synonyms default to 1.0.
-    weight = weight_db.get(field, {}).get(best_label, 1.0)
-    effective_threshold = _sem + (1.0 - weight) * _WEIGHT_BOOST
-    if best_score < effective_threshold:
-        return _embedding_fallback_scored(field, term)
-
-    # When the best match is a low-confidence synonym (weight < 0.5), the
-    # matched key is generic (e.g. "motor task" → somatomotor_task, weight 0.1).
-    # Strip descriptor adjectives from the user term and re-run fuzzy matching
-    # on the core concept — "complex motor task" → "motor task" scores 95+
-    # against all "X motor task" labels, not just the synonym key itself.
-    if weight < 0.5:
-        _DESCRIPTORS = {
-            "complex", "simple", "basic", "advanced", "various", "different",
-            "specific", "typical", "standard", "common", "regular",
-            "experiment", "experiments", "paradigm", "paradigms",
-            "study", "studies", "data", "trial", "trials",
-        }
-        words = term_lower.split()
-        core_words = [w for w in words if w not in _DESCRIPTORS]
-        core_term = " ".join(core_words) if core_words else term_lower
-        if core_term != term_lower:
-            core_results = fuzzy_hits(core_term)
-        else:
-            core_results = results  # nothing stripped; use original results
-
-        collected: list[tuple[str, float]] = []
-        seen: set[str] = set()
-        _MIN_COLLECT_LEN = max(len(core_term) // 2, 5)
-        for label, score, _ in core_results:
-            if len(label) < _MIN_COLLECT_LEN:
-                continue
-            w = weight_db.get(field, {}).get(label, 1.0)
-            eff = _sem + (1.0 - w) * _WEIGHT_BOOST
-            if score >= eff:
-                for code in all_targets[label]:
-                    if code not in seen:
-                        seen.add(code)
-                        collected.append((code, score / 100.0))
-        if collected:
-            return collected
-
-    return [(c, best_score / 100.0) for c in all_targets[best_label]]
+    # The term sits inside several labels equally well ("trauma" in "post-
+    # traumatic stress disorder" and in "traumatic brain injury"). Nothing in
+    # the term says which was meant, so every tied label counts, and a code
+    # gets the share of tied labels that lead to it.
+    share: Dict[str, float] = {}
+    for label in tied:
+        for code in all_targets[label]:
+            share[code] = share.get(code, 0.0) + 1.0 / len(tied)
+    ranked = sorted(share.items(), key=lambda item: -item[1])
+    return [(code, part * best_score / 100.0) for code, part in ranked]
 
 
 def _resolve_yaml_term(field: str, term: str) -> List[str]:

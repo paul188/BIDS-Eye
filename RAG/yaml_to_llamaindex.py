@@ -56,6 +56,20 @@ _CONCEPT_META = frozenset({
 })
 
 
+# Every code that lists a term, in file order. leaf_db and display_db keep one
+# code per term (the last concept in the file); these keep all of them.
+#   leaf_codes_db    {category: {surface_form_lower: [standard_code, ...]}}
+#   display_codes_db {category: {label_or_synonym_lower: [standard_code, ...]}}
+leaf_codes_db: Dict[str, Dict[str, List[str]]] = {}
+display_codes_db: Dict[str, Dict[str, List[str]]] = {}
+
+
+def _add_code(index: Dict[str, Dict[str, List[str]]], category: str, term: str, code: str) -> None:
+    codes = index.setdefault(category, {}).setdefault(term, [])
+    if code not in codes:
+        codes.append(code)
+
+
 def _parse_flat(
     category: str,
     concepts: Dict[str, dict],
@@ -102,16 +116,19 @@ def _parse_flat(
         for term in all_terms:
             if term:
                 leaf_db[category][term] = std_code
+                _add_code(leaf_codes_db, category, term, std_code)
 
         # display_db + weight_db: label (w=1.0) + each synonym with its weight
         if label:
             t = label.lower()
             display_db[category][t] = std_code
+            _add_code(display_codes_db, category, t, std_code)
             weight_db[category][t] = 1.0
         for syn_term, syn_weight in syn_pairs:
             t = syn_term.lower()
             if t:
                 display_db[category][t] = std_code
+                _add_code(display_codes_db, category, t, std_code)
                 weight_db[category][t] = syn_weight
 
         # hierarchy_db: ancestor chain (std_codes only — group nodes are transparent)

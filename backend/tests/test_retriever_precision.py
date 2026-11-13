@@ -194,3 +194,47 @@ def test_construct_match_needs_more_than_the_word_task() -> None:
     assert _resolve_yaml_term("task", "stroop task") == _resolve_yaml_term("task", "stroop")
     assert len(_resolve_yaml_term("task", "stroop task")) < 5
     assert _resolve_yaml_term("task", "tasks") == []
+
+
+# ── Ambiguous terms keep every reading ────────────────────────────────────────
+
+def test_loader_keeps_every_code_of_a_shared_term() -> None:
+    from yaml_to_llamaindex import leaf_codes_db, leaf_db
+
+    codes = leaf_codes_db["diagnosis"]["typically developing"]
+    assert set(codes) == {"typically_developing", "neurotypical"}
+    assert leaf_db["diagnosis"]["typically developing"] in codes
+
+
+def test_term_listed_under_two_concepts_resolves_to_both() -> None:
+    # The loader used to keep only the concept listed last in the vocabulary,
+    # so "PNT" and "SST" resolved to one unrelated task each.
+    assert "picture_naming_task" in _resolve_yaml_term("task", "PNT")
+    assert "stop_signal_task" in _resolve_yaml_term("task", "SST")
+    assert set(_resolve_yaml_term("diagnosis", "typically developing")) == {
+        "typically_developing", "neurotypical",
+    }
+
+
+def test_shared_term_splits_the_score_between_its_concepts() -> None:
+    scored = dict(retriever._resolve_yaml_term_scored("diagnosis", "typically developing"))
+    assert scored == {"typically_developing": 0.5, "neurotypical": 0.5}
+    # A term with one concept keeps the full score.
+    assert dict(retriever._resolve_yaml_term_scored("diagnosis", "schizophrenia"))[
+        "schizophrenia"
+    ] == 1.0
+
+
+def test_term_inside_labels_of_two_concepts_resolves_to_both() -> None:
+    # "fmri bold signal" (fmri_bold) and "bold signal map" (bold_map) contain
+    # the term equally well; so do the PTSD and brain-injury labels for "trauma".
+    assert {"fmri_bold", "bold_map"} <= set(_resolve_yaml_term("suffix", "BOLD signal"))
+    codes = _resolve_yaml_term("diagnosis", "trauma")
+    assert "post_traumatic_stress_disorder" in codes
+    assert "traumatic_brain_injury" in codes
+
+
+def test_tied_labels_split_the_score_by_how_many_lead_to_a_code() -> None:
+    scored = dict(retriever._resolve_yaml_term_scored("suffix", "BOLD signal"))
+    assert scored["fmri_bold"] == scored["bold_map"]
+    assert 0.4 < scored["fmri_bold"] < 0.5      # half of the 0.95 match
