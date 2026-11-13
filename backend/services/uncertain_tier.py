@@ -191,6 +191,18 @@ def _negated_spans(sql: str) -> List[Tuple[int, int]]:
     return text_search.negated_spans(sql)
 
 
+_README_ONLY = "\x00readme"
+
+
+def partial_reason(words: List[str]) -> str:
+    """Card text for a probable text match."""
+    if _README_ONLY in words and len(words) == 1:
+        return "the search term appears only further down in the README"
+    missing = [w for w in words if w != _README_ONLY]
+    shown = ", ".join(missing[:4]) + (" …" if len(missing) > 4 else "")
+    return f"matches only part of the search; missing: {shown}"
+
+
 def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
     """The weaker text evidence for a condition, and the words involved.
 
@@ -210,7 +222,11 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
         relaxed = relax_tsquery(match.group("query"))
         if relaxed is None:
             continue
-        words.extend(query_words(match.group("query")))
+        if _LABEL_RE.sub("", match.group("query")).replace(" ", "") == relaxed.replace(" ", ""):
+            words.append(_README_ONLY)          # only the scope was widened
+        else:
+            dropped = set(query_words(match.group("query"))) - set(query_words(relaxed))
+            words.extend(sorted(dropped))
         relaxed_atoms.append(f"{match.group('alias')}.{match.group('column')} @@ "
                              f"TO_TSQUERY('english', '{relaxed}')")
     if not relaxed_atoms:
@@ -383,8 +399,7 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     if kinds:
         kind = kinds[0]
         probable = relaxed
-        reason_probable = (f"matches only some of: {' '.join(words)}" if relaxed
-                           else "")
+        reason_probable = partial_reason(words) if relaxed else ""
         if kind == "age":
             group_words = age_group_words(*asked_age_range(sql))
             paper = None
@@ -401,7 +416,7 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     if relaxed or paper:
         return SoftCondition(
             sql=sql, kind="text", probable=relaxed, known=None,
-            reason_probable=(f"matches only some of: {' '.join(words)}" if relaxed else ""),
+            reason_probable=partial_reason(words) if relaxed else "",
             reason_possible="", paper=paper,
         )
     return None

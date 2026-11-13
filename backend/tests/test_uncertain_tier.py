@@ -135,3 +135,10 @@ def test_sidecar_conditions_stay_hard() -> None:
                "OR d.search_tsv @@ to_tsquery('english', 'mri & brain'))")
     sql = BASE.format(where=sidecar)
     assert ut.apply(sql) == sql
+
+
+def test_reasons_name_what_is_missing() -> None:
+    sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'young & children')")
+    assert "missing: young" in ut.apply(sql)
+    scoped = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'language:AB')")
+    assert "only further down in the README" in ut.apply(scoped)
