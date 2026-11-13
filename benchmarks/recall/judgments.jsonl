@@ -1,0 +1,1514 @@
+{"query": "p01_language_fmri", "acc": "ds000030", "label": "not_relevant", "reason": "No language task; tasks are BART, memory, scap, resting state"}
+{"query": "p01_language_fmri", "acc": "ds000031", "label": "unsure", "reason": "Has language_control task but no description of what it involves"}
+{"query": "p01_language_fmri", "acc": "ds000051", "label": "relevant", "reason": "Cross-language repetition priming with word judgment task"}
+{"query": "p01_language_fmri", "acc": "ds000107", "label": "relevant", "reason": "Word and object processing fMRI"}
+{"query": "p01_language_fmri", "acc": "ds000114", "label": "relevant", "reason": "Covert/overt verb generation and word repetition tasks"}
+{"query": "p01_language_fmri", "acc": "ds000158", "label": "relevant", "reason": "Passive listening to natural speech, voice areas"}
+{"query": "p01_language_fmri", "acc": "ds000224", "label": "relevant", "reason": "Lexical and word memory tasks in MSC"}
+{"query": "p01_language_fmri", "acc": "ds000237", "label": "unsure", "reason": "Phonological memory with letters/fingerspelling in sign language; language-related but memory task"}
+{"query": "p01_language_fmri", "acc": "ds000244", "label": "relevant", "reason": "HCP language task and RSVP language processing tasks"}
+{"query": "p01_language_fmri", "acc": "ds001338", "label": "relevant", "reason": "Listening to audio narrative during fMRI"}
+{"query": "p01_language_fmri", "acc": "ds001345", "label": "not_relevant", "reason": "Multisensory semantic memory recognition of objects, not language"}
+{"query": "p01_language_fmri", "acc": "ds001419", "label": "relevant", "reason": "Mental imagery tasks include language production"}
+{"query": "p01_language_fmri", "acc": "ds001510", "label": "relevant", "reason": "Narrative perception and spoken recall of stories"}
+{"query": "p01_language_fmri", "acc": "ds001511", "label": "unsure", "reason": "Scrambled story data, appears movie-based; language component unclear"}
+{"query": "p01_language_fmri", "acc": "ds001525", "label": "relevant", "reason": "Syllable speech sequencing and listen/repeat tasks"}
+{"query": "p01_language_fmri", "acc": "ds001554", "label": "relevant", "reason": "Narrative auditory encoding task"}
+{"query": "p01_language_fmri", "acc": "ds001747", "label": "not_relevant", "reason": "Resting-state only in bilinguals"}
+{"query": "p01_language_fmri", "acc": "ds001748", "label": "not_relevant", "reason": "Autobiographical/episodic memory retrieval, not language task"}
+{"query": "p01_language_fmri", "acc": "ds001796", "label": "not_relevant", "reason": "Bilingual individual differences with resting state and executive tasks"}
+{"query": "p01_language_fmri", "acc": "ds001894", "label": "relevant", "reason": "Auditory and audiovisual word and nonword processing"}
+{"query": "p01_language_fmri", "acc": "ds002014", "label": "relevant", "reason": "Language production task"}
+{"query": "p01_language_fmri", "acc": "ds002219", "label": "relevant", "reason": "Silent reading of sentences and stories"}
+{"query": "p01_language_fmri", "acc": "ds002236", "label": "relevant", "reason": "Auditory/visual rhyme, semantic, spelling word tasks"}
+{"query": "p01_language_fmri", "acc": "ds002322", "label": "relevant", "reason": "Listening to audiobook story"}
+{"query": "p01_language_fmri", "acc": "ds002345", "label": "relevant", "reason": "Story listening, naturalistic language comprehension"}
+{"query": "p01_language_fmri", "acc": "ds002351", "label": "relevant", "reason": "Lexical decision task for visual word recognition"}
+{"query": "p01_language_fmri", "acc": "ds002366", "label": "not_relevant", "reason": "Emotion regulation task in ageing"}
+{"query": "p01_language_fmri", "acc": "ds002382", "label": "relevant", "reason": "Spoken word perception and repetition"}
+{"query": "p01_language_fmri", "acc": "ds002620", "label": "not_relevant", "reason": "Emotion regulation task in ageing"}
+{"query": "p01_language_fmri", "acc": "ds002675", "label": "relevant", "reason": "Language task in TBI patients"}
+{"query": "p01_language_fmri", "acc": "ds002685", "label": "relevant", "reason": "IBC includes language tasks (auditory, standard tasks with reading/listening)"}
+{"query": "p01_language_fmri", "acc": "ds002727", "label": "relevant", "reason": "Silent reading of idiomatic sentences"}
+{"query": "p01_language_fmri", "acc": "ds002842", "label": "relevant", "reason": "Silent reading of metaphorical sentences in L2"}
+{"query": "p01_language_fmri", "acc": "ds002862", "label": "relevant", "reason": "Reading task in children with dyslexia"}
+{"query": "p01_language_fmri", "acc": "ds002873", "label": "not_relevant", "reason": "Music listening, not language"}
+{"query": "p01_language_fmri", "acc": "ds002879", "label": "relevant", "reason": "Auditory and audiovisual word/nonword processing"}
+{"query": "p01_language_fmri", "acc": "ds002894", "label": "relevant", "reason": "Language localizer and phrase composition task"}
+{"query": "p01_language_fmri", "acc": "ds002905", "label": "relevant", "reason": "Language localizer, noun/verb phrase composition"}
+{"query": "p01_language_fmri", "acc": "ds002979", "label": "relevant", "reason": "Narrative listening"}
+{"query": "p01_language_fmri", "acc": "ds003020", "label": "relevant", "reason": "Passive natural language listening"}
+{"query": "p01_language_fmri", "acc": "ds003126", "label": "relevant", "reason": "Reading task with words and pseudohomophones"}
+{"query": "p01_language_fmri", "acc": "ds003145", "label": "relevant", "reason": "Verb generation task"}
+{"query": "p01_language_fmri", "acc": "ds003146", "label": "unsure", "reason": "Speech sentences vs hum vs song listening; speech processing component"}
+{"query": "p01_language_fmri", "acc": "ds003459", "label": "relevant", "reason": "Spelling, rhyming, meaning, syntactic judgments on words"}
+{"query": "p01_language_fmri", "acc": "ds003469", "label": "not_relevant", "reason": "Resting state only despite speech disfluency topic"}
+{"query": "p01_language_fmri", "acc": "ds003481", "label": "relevant", "reason": "Pragmatic language tasks"}
+{"query": "p01_language_fmri", "acc": "ds003533", "label": "relevant", "reason": "Language comprehension and production tasks"}
+{"query": "p01_language_fmri", "acc": "ds003542", "label": "relevant", "reason": "Language comprehension and production tasks"}
+{"query": "p01_language_fmri", "acc": "ds003545", "label": "relevant", "reason": "Language comprehension and production tasks"}
+{"query": "p01_language_fmri", "acc": "ds003569", "label": "relevant", "reason": "Lexical decision visual word recognition"}
+{"query": "p01_language_fmri", "acc": "ds003604", "label": "relevant", "reason": "Grammatical, phonological, semantic judgment tasks in children"}
+{"query": "p01_language_fmri", "acc": "ds003659", "label": "relevant", "reason": "Includes language localizer task"}
+{"query": "p01_language_fmri", "acc": "ds003688", "label": "unsure", "reason": "Audiovisual film with speech; language perception domain but movie viewing"}
+{"query": "p01_language_fmri", "acc": "ds003691", "label": "not_relevant", "reason": "Episodic/semantic memory image retrieval, not language"}
+{"query": "p01_language_fmri", "acc": "ds003717", "label": "relevant", "reason": "Auditory/visual/audiovisual single word processing"}
+{"query": "p01_language_fmri", "acc": "ds003814", "label": "relevant", "reason": "Includes language localizer"}
+{"query": "p01_language_fmri", "acc": "ds003834", "label": "not_relevant", "reason": "Face familiarity, localizer and n-back; no language task"}
+{"query": "p01_language_fmri", "acc": "ds003872", "label": "relevant", "reason": "Reading task"}
+{"query": "p01_language_fmri", "acc": "ds003974", "label": "relevant", "reason": "Reading task"}
+{"query": "p01_language_fmri", "acc": "ds003988", "label": "relevant", "reason": "Reading task"}
+{"query": "p01_language_fmri", "acc": "ds004073", "label": "relevant", "reason": "Word and sentence generation, phonological decision, comprehension"}
+{"query": "p01_language_fmri", "acc": "ds004078", "label": "relevant", "reason": "Listening to stories, language processing"}
+{"query": "p01_language_fmri", "acc": "ds004174", "label": "relevant", "reason": "Listening to concept words"}
+{"query": "p01_language_fmri", "acc": "ds004196", "label": "relevant", "reason": "Inner speech with words"}
+{"query": "p01_language_fmri", "acc": "ds004285", "label": "relevant", "reason": "Spoken language listening task"}
+{"query": "p01_language_fmri", "acc": "ds004301", "label": "relevant", "reason": "Listening to Chinese concept words"}
+{"query": "p01_language_fmri", "acc": "ds004302", "label": "relevant", "reason": "Speech perception in schizophrenia"}
+{"query": "p01_language_fmri", "acc": "ds004341", "label": "unsure", "reason": "Semantic encoding task, likely words; stimuli not stated"}
+{"query": "p01_language_fmri", "acc": "ds004456", "label": "relevant", "reason": "Picture naming, verbal fluency, speech production"}
+{"query": "p01_language_fmri", "acc": "ds004467", "label": "relevant", "reason": "Language task with dialogue/monologue audio, language localizer"}
+{"query": "p01_language_fmri", "acc": "ds004489", "label": "relevant", "reason": "Lexical decision on letter strings"}
+{"query": "p01_language_fmri", "acc": "ds004495", "label": "unsure", "reason": "Semantic memory task; stimulus type not clearly linguistic"}
+{"query": "p01_language_fmri", "acc": "ds004510", "label": "relevant", "reason": "Listening to spoken stories for language decoding"}
+{"query": "p01_language_fmri", "acc": "ds004533", "label": "relevant", "reason": "Irony comprehension, language domain"}
+{"query": "p01_language_fmri", "acc": "ds004544", "label": "relevant", "reason": "Phrase and word processing"}
+{"query": "p01_language_fmri", "acc": "ds004589", "label": "relevant", "reason": "Verbal memory encoding and semantic fluency task"}
+{"query": "p01_language_fmri", "acc": "ds004597", "label": "relevant", "reason": "Speech sequence production"}
+{"query": "p01_language_fmri", "acc": "ds004631", "label": "relevant", "reason": "Listening to narratives"}
+{"query": "p01_language_fmri", "acc": "ds004718", "label": "relevant", "reason": "Listening to story sentences in Cantonese"}
+{"query": "p01_language_fmri", "acc": "ds004765", "label": "not_relevant", "reason": "Resting state only; reading measures behavioural"}
+{"query": "p01_language_fmri", "acc": "ds004775", "label": "not_relevant", "reason": "Viewing soap opera clips, moral violations"}
+{"query": "p01_language_fmri", "acc": "ds004786", "label": "relevant", "reason": "Morphosemantic processing, reading network"}
+{"query": "p01_language_fmri", "acc": "ds004856", "label": "relevant", "reason": "Includes word processing task"}
+{"query": "p01_language_fmri", "acc": "ds004884", "label": "relevant", "reason": "Aphasia naming task"}
+{"query": "p01_language_fmri", "acc": "ds004957", "label": "relevant", "reason": "Word naming task"}
+{"query": "p01_language_fmri", "acc": "ds005003", "label": "relevant", "reason": "Language task in tumor patients"}
+{"query": "p01_language_fmri", "acc": "ds005050", "label": "not_relevant", "reason": "Video game/film events, not language task"}
+{"query": "p01_language_fmri", "acc": "ds005215", "label": "not_relevant", "reason": "Film narrative encoding, not language task"}
+{"query": "p01_language_fmri", "acc": "ds005256", "label": "relevant", "reason": "Narrative listening task"}
+{"query": "p01_language_fmri", "acc": "ds005295", "label": "relevant", "reason": "Language localizer and word form tasks"}
+{"query": "p01_language_fmri", "acc": "ds005329", "label": "relevant", "reason": "Auditory naming to definitions"}
+{"query": "p01_language_fmri", "acc": "ds005341", "label": "relevant", "reason": "Word reading and semantic prediction tasks"}
+{"query": "p01_language_fmri", "acc": "ds005455", "label": "relevant", "reason": "Language control in bilinguals, language task"}
+{"query": "p01_language_fmri", "acc": "ds005518", "label": "relevant", "reason": "Listening to persuasive narrative"}
+{"query": "p01_language_fmri", "acc": "ds005531", "label": "not_relevant", "reason": "Movie/drama viewing; language features only in analysis"}
+{"query": "p01_language_fmri", "acc": "ds005577", "label": "relevant", "reason": "Reading, rhyme judgment, lexical decision, fluency"}
+{"query": "p01_language_fmri", "acc": "ds005596", "label": "relevant", "reason": "Viewing speeches with spoken content"}
+{"query": "p01_language_fmri", "acc": "ds005597", "label": "relevant", "reason": "Language task in tumor patients"}
+{"query": "p01_language_fmri", "acc": "ds005613", "label": "relevant", "reason": "Alice narrative localizer, language tasks"}
+{"query": "p01_language_fmri", "acc": "ds005623", "label": "relevant", "reason": "Listening to stories in Chinese and Mongolian"}
+{"query": "p01_language_fmri", "acc": "ds005850", "label": "relevant", "reason": "Spoken narrative comprehension"}
+{"query": "p01_language_fmri", "acc": "ds006021", "label": "relevant", "reason": "Reading/word learning with spoken and written words"}
+{"query": "p01_language_fmri", "acc": "ds006033", "label": "relevant", "reason": "Inner speech with word stimuli"}
+{"query": "p01_language_fmri", "acc": "ds006111", "label": "unsure", "reason": "Emotional narrative stories; unclear if spoken language processing"}
+{"query": "p01_language_fmri", "acc": "ds006179", "label": "relevant", "reason": "Language localizer and speech perception"}
+{"query": "p01_language_fmri", "acc": "ds006239", "label": "relevant", "reason": "Word reading with semantic and phonological localizers"}
+{"query": "p01_language_fmri", "acc": "ds006240", "label": "relevant", "reason": "Language localizer and speech production"}
+{"query": "p01_language_fmri", "acc": "ds006373", "label": "not_relevant", "reason": "Motor, face and imagery localizers"}
+{"query": "p01_language_fmri", "acc": "ds006598", "label": "relevant", "reason": "Auditory language localizer"}
+{"query": "p01_language_fmri", "acc": "ds006630", "label": "relevant", "reason": "Semantic listening to continuous language"}
+{"query": "p01_language_fmri", "acc": "ds006692", "label": "relevant", "reason": "MRIQC derivatives of dataset with narrative listening task"}
+{"query": "p01_language_fmri", "acc": "ds006905", "label": "not_relevant", "reason": "Organizational skills training, no language task"}
+{"query": "p01_language_fmri", "acc": "ds007022", "label": "relevant", "reason": "Tactile Braille lexical decision task"}
+{"query": "p01_language_fmri", "acc": "ds007115", "label": "unsure", "reason": "Semantic processing of statements; reading task presumed"}
+{"query": "p01_language_fmri", "acc": "ds007275", "label": "relevant", "reason": "Semantic word-pair encoding and similarity task"}
+{"query": "p01_language_fmri", "acc": "ds007342", "label": "relevant", "reason": "Reading words, sentences, narratives"}
+{"query": "p01_language_fmri", "acc": "ds007394", "label": "not_relevant", "reason": "Films with internal monologue; social impression, not language task"}
+{"query": "p01_language_fmri", "acc": "ds007407", "label": "relevant", "reason": "Auditory narrative listening"}
+{"query": "p01_language_fmri", "acc": "ds007446", "label": "relevant", "reason": "Alice narrative localizer"}
+{"query": "p01_language_fmri", "acc": "ds007532", "label": "not_relevant", "reason": "Visual object sequence memory"}
+{"query": "p01_language_fmri", "acc": "ds007535", "label": "relevant", "reason": "Word/letter string speech hemisphere task"}
+{"query": "p01_language_fmri", "acc": "ds007575", "label": "relevant", "reason": "Math and language processing network tasks"}
+{"query": "p02_reward", "acc": "ds000005", "label": "relevant", "reason": "Mixed-gambles task with monetary gains and losses"}
+{"query": "p02_reward", "acc": "ds000053", "label": "relevant", "reason": "Gambling task training loss aversion"}
+{"query": "p02_reward", "acc": "ds000120", "label": "relevant", "reason": "Reward antisaccade task with reward cues"}
+{"query": "p02_reward", "acc": "ds000121", "label": "relevant", "reason": "Incentive antisaccade task with reward cues"}
+{"query": "p02_reward", "acc": "ds000214", "label": "not_relevant", "reason": "Cyberball social exclusion, not reward"}
+{"query": "p02_reward", "acc": "ds000229", "label": "unsure", "reason": "Carbohydrate reward flavor conditioning; task is flavor ratings"}
+{"query": "p02_reward", "acc": "ds000231", "label": "unsure", "reason": "Carbohydrate reward flavor conditioning; task is flavor ratings"}
+{"query": "p02_reward", "acc": "ds000244", "label": "relevant", "reason": "Includes HCP gambling task"}
+{"query": "p02_reward", "acc": "ds001167", "label": "relevant", "reason": "Effort-based gambling task with mixed gambles"}
+{"query": "p02_reward", "acc": "ds001399", "label": "relevant", "reason": "Reward processing task with incentive vs no incentive"}
+{"query": "p02_reward", "acc": "ds001590", "label": "unsure", "reason": "Pattern separation supports reinforcement learning; reward task not explicit in card"}
+{"query": "p02_reward", "acc": "ds001607", "label": "relevant", "reason": "Reward-based decisions, reinforced learning"}
+{"query": "p02_reward", "acc": "ds001612", "label": "relevant", "reason": "Reinforcement learning task"}
+{"query": "p02_reward", "acc": "ds001619", "label": "relevant", "reason": "Voluntary task switching with reward"}
+{"query": "p02_reward", "acc": "ds001734", "label": "relevant", "reason": "Monetary mixed gambles task"}
+{"query": "p02_reward", "acc": "ds002316", "label": "relevant", "reason": "Reward processing task"}
+{"query": "p02_reward", "acc": "ds002424", "label": "relevant", "reason": "Working memory with reward manipulation"}
+{"query": "p02_reward", "acc": "ds002513", "label": "unsure", "reason": "Gambling cue reactivity; craving task, reward manipulation unclear"}
+{"query": "p02_reward", "acc": "ds002543", "label": "relevant", "reason": "Reinforcement learning phase"}
+{"query": "p02_reward", "acc": "ds002685", "label": "relevant", "reason": "IBC includes gambling/reward tasks (HCP-based battery)"}
+{"query": "p02_reward", "acc": "ds002687", "label": "relevant", "reason": "Working memory with reward manipulation"}
+{"query": "p02_reward", "acc": "ds002738", "label": "relevant", "reason": "Reward processing task"}
+{"query": "p02_reward", "acc": "ds003242", "label": "relevant", "reason": "Monetary incentive delay localizer, reward condition"}
+{"query": "p02_reward", "acc": "ds003458", "label": "relevant", "reason": "Three-armed bandit with reinforcement probabilities"}
+{"query": "p02_reward", "acc": "ds003487", "label": "relevant", "reason": "Pavlovian-instrumental transfer, reinforcement learning, reward"}
+{"query": "p02_reward", "acc": "ds003506", "label": "relevant", "reason": "Reinforcement learning task"}
+{"query": "p02_reward", "acc": "ds003517", "label": "not_relevant", "reason": "Video game gameplay, no reward manipulation stated"}
+{"query": "p02_reward", "acc": "ds003518", "label": "relevant", "reason": "Simon task with reinforcement manipulation"}
+{"query": "p02_reward", "acc": "ds003574", "label": "relevant", "reason": "Reward biases reactivation, rewarded games"}
+{"query": "p02_reward", "acc": "ds003638", "label": "relevant", "reason": "Reinforcement learning and effort dimensions tasks"}
+{"query": "p02_reward", "acc": "ds003745", "label": "relevant", "reason": "Shared reward card-guessing task"}
+{"query": "p02_reward", "acc": "ds003753", "label": "relevant", "reason": "Probabilistic learning with feedback, reward positivity"}
+{"query": "p02_reward", "acc": "ds003782", "label": "relevant", "reason": "Effort-based gambling task"}
+{"query": "p02_reward", "acc": "ds003822", "label": "relevant", "reason": "Probabilistic learning with feedback, reward positivity"}
+{"query": "p02_reward", "acc": "ds003858", "label": "relevant", "reason": "Monetary incentive delay task"}
+{"query": "p02_reward", "acc": "ds003987", "label": "relevant", "reason": "Probabilistic learning task"}
+{"query": "p02_reward", "acc": "ds004097", "label": "relevant", "reason": "Monetary incentive delay task"}
+{"query": "p02_reward", "acc": "ds004102", "label": "not_relevant", "reason": "Cue-induced craving task, not reward manipulation"}
+{"query": "p02_reward", "acc": "ds004103", "label": "not_relevant", "reason": "Strategic interaction game, deception"}
+{"query": "p02_reward", "acc": "ds004142", "label": "relevant", "reason": "Feedback-related reward saliency"}
+{"query": "p02_reward", "acc": "ds004147", "label": "relevant", "reason": "Casino gambling task with learning and rewards"}
+{"query": "p02_reward", "acc": "ds004283", "label": "relevant", "reason": "Reinforcement learning conditions with feedback"}
+{"query": "p02_reward", "acc": "ds004295", "label": "relevant", "reason": "Reversal learning with monetary reward"}
+{"query": "p02_reward", "acc": "ds004315", "label": "relevant", "reason": "Reinforcement learning probabilistic selection task"}
+{"query": "p02_reward", "acc": "ds004317", "label": "relevant", "reason": "Reinforcement learning probabilistic selection task"}
+{"query": "p02_reward", "acc": "ds004323", "label": "relevant", "reason": "Reinforcement learning of video games"}
+{"query": "p02_reward", "acc": "ds004515", "label": "relevant", "reason": "Reinforcement learning task with affective feedback"}
+{"query": "p02_reward", "acc": "ds004532", "label": "relevant", "reason": "Probabilistic selection task with reward feedback"}
+{"query": "p02_reward", "acc": "ds004595", "label": "relevant", "reason": "Three-armed bandit RL task"}
+{"query": "p02_reward", "acc": "ds004624", "label": "not_relevant", "reason": "Neuromodulation BCI recordings, no reward task"}
+{"query": "p02_reward", "acc": "ds004627", "label": "relevant", "reason": "Monetary incentive delay task"}
+{"query": "p02_reward", "acc": "ds004920", "label": "relevant", "reason": "Social and nonsocial reward tasks incl. MID"}
+{"query": "p02_reward", "acc": "ds005012", "label": "relevant", "reason": "Monetary incentive delay task"}
+{"query": "p02_reward", "acc": "ds005027", "label": "relevant", "reason": "Monetary incentive delay task"}
+{"query": "p02_reward", "acc": "ds005085", "label": "relevant", "reason": "Shared reward task, reward receipt"}
+{"query": "p02_reward", "acc": "ds005123", "label": "relevant", "reason": "Social and nonsocial reward processing tasks"}
+{"query": "p02_reward", "acc": "ds005230", "label": "relevant", "reason": "Reward-based motor learning, reinforcement learning"}
+{"query": "p02_reward", "acc": "ds005263", "label": "relevant", "reason": "Incentivized reaching with reward/loss jackpots"}
+{"query": "p02_reward", "acc": "ds005264", "label": "not_relevant", "reason": "Resting-state only in this sub-dataset"}
+{"query": "p02_reward", "acc": "ds005265", "label": "unsure", "reason": "Approach-avoidance conflict task; reward manipulation not clear"}
+{"query": "p02_reward", "acc": "ds005266", "label": "not_relevant", "reason": "Active escape task, threat avoidance not reward"}
+{"query": "p02_reward", "acc": "ds005356", "label": "relevant", "reason": "Probabilistic learning task, reward positivity"}
+{"query": "p02_reward", "acc": "ds005364", "label": "relevant", "reason": "Reversal learning task"}
+{"query": "p02_reward", "acc": "ds005479", "label": "relevant", "reason": "Monetary incentive delay task"}
+{"query": "p02_reward", "acc": "ds005586", "label": "not_relevant", "reason": "Passive viewing; monetary incentive is only participant payment"}
+{"query": "p02_reward", "acc": "ds005588", "label": "relevant", "reason": "Social decisions with reward prediction errors"}
+{"query": "p02_reward", "acc": "ds005598", "label": "relevant", "reason": "Reward-based motor learning"}
+{"query": "p02_reward", "acc": "ds005882", "label": "relevant", "reason": "Reward motivation with category learning"}
+{"query": "p02_reward", "acc": "ds005896", "label": "relevant", "reason": "Includes MID task"}
+{"query": "p02_reward", "acc": "ds005901", "label": "relevant", "reason": "Includes MID task"}
+{"query": "p02_reward", "acc": "ds005978", "label": "relevant", "reason": "Monetary gambling task"}
+{"query": "p02_reward", "acc": "ds006105", "label": "relevant", "reason": "Skewed gambling task"}
+{"query": "p02_reward", "acc": "ds006576", "label": "relevant", "reason": "Includes reward prediction task"}
+{"query": "p02_reward", "acc": "ds006693", "label": "not_relevant", "reason": "Resting-state only"}
+{"query": "p02_reward", "acc": "ds006707", "label": "relevant", "reason": "MID and shared reward tasks"}
+{"query": "p02_reward", "acc": "ds007387", "label": "relevant", "reason": "MID task"}
+{"query": "p02_reward", "acc": "ds007388", "label": "relevant", "reason": "MID task"}
+{"query": "p02_reward", "acc": "ds007436", "label": "relevant", "reason": "Reinforcement learning multisensory task"}
+{"query": "p02_reward", "acc": "ds007486", "label": "relevant", "reason": "Trust game monetary reward, social reward processing"}
+{"query": "p02_reward", "acc": "ds007508", "label": "relevant", "reason": "Gambling task for risk preference"}
+{"query": "p03_emotion_regulation", "acc": "ds000009", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds000108", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds000140", "label": "not_relevant", "reason": "Self-regulation of pain, not emotion regulation."}
+{"query": "p03_emotion_regulation", "acc": "ds000201", "label": "relevant", "reason": "Instructed to up-regulate emotion (reappraisal) in sleepiness study."}
+{"query": "p03_emotion_regulation", "acc": "ds000221", "label": "not_relevant", "reason": "Emotion regulation only as questionnaire."}
+{"query": "p03_emotion_regulation", "acc": "ds002366", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds002620", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds003357", "label": "not_relevant", "reason": "HRV biofeedback with resting-state; no emotion regulation task recorded."}
+{"query": "p03_emotion_regulation", "acc": "ds003425", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds003823", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds003831", "label": "unsure", "reason": "Neuromodulation/emotion paradigm; whether participants regulate emotion unclear."}
+{"query": "p03_emotion_regulation", "acc": "ds004144", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds004636", "label": "not_relevant", "reason": "Self-regulation construct (self-control), not emotion regulation."}
+{"query": "p03_emotion_regulation", "acc": "ds004965", "label": "not_relevant", "reason": "Emotion regulation only as questionnaire."}
+{"query": "p03_emotion_regulation", "acc": "ds005237", "label": "not_relevant", "reason": "Emotion regulation only as questionnaire."}
+{"query": "p03_emotion_regulation", "acc": "ds006131", "label": "not_relevant", "reason": "Affective reactivity task; regulation only via questionnaire."}
+{"query": "p03_emotion_regulation", "acc": "ds006601", "label": "relevant", "reason": "Attentional deployment as emotion regulation strategy."}
+{"query": "p03_emotion_regulation", "acc": "ds006861", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p03_emotion_regulation", "acc": "ds006866", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
+{"query": "p04_naturalistic", "acc": "ds000113", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds000171", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds000205", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds000228", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds000233", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds000244", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds000256", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001110", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001132", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001145", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001178", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds001357", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds001430", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds001511", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001545", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001608", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001769", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds001840", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds002168", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds002242", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds002278", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds002322", "label": "not_relevant", "reason": "Audiobook listening, not movie viewing, despite task code."}
+{"query": "p04_naturalistic", "acc": "ds002345", "label": "not_relevant", "reason": "Story-listening collection (auditory narratives), not film viewing."}
+{"query": "p04_naturalistic", "acc": "ds002372", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds002425", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds002684", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds002685", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds002717", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds002837", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003017", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003020", "label": "unsure", "reason": "Mostly spoken stories; movie_viewing code unclear."}
+{"query": "p04_naturalistic", "acc": "ds003097", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003136", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds003171", "label": "not_relevant", "reason": "Audio-only clip from a movie during sedation; no visual film viewing."}
+{"query": "p04_naturalistic", "acc": "ds003216", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003338", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003345", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds003358", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds003507", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003521", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003524", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003574", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds003643", "label": "not_relevant", "reason": "Audiobook listening (Little Prince), not film viewing."}
+{"query": "p04_naturalistic", "acc": "ds003688", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003715", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds003721", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003798", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds003834", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds003835", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004042", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004078", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004097", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004146", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004192", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004228", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004280", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004286", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004323", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004359", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004456", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004467", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004488", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004496", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004510", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004516", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004569", "label": "relevant", "reason": "Naturalistic movie viewing, though recorded with diffuse optical tomography."}
+{"query": "p04_naturalistic", "acc": "ds004592", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004630", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004663", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004718", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds004775", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004783", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004798", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004848", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004892", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds004965", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005040", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005047", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005050", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005191", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005215", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005256", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005345", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds005346", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005354", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005468", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005518", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005525", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds005531", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005533", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds005551", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005596", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005700", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005704", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds005717", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005733", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005752", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds005783", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005917", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds005920", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006128", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds006503", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006564", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006578", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006642", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006654", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006661", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds006692", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds006798", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds006905", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006945", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds006947", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds006952", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds007088", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007116", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007182", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007272", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds007286", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007328", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
+{"query": "p04_naturalistic", "acc": "ds007329", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007335", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds007384", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007394", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p04_naturalistic", "acc": "ds007408", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds007463", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
+{"query": "p05_depression_eeg", "acc": "ds001784", "label": "relevant", "reason": "TRD patients with DBS, resting_state EEG task"}
+{"query": "p05_depression_eeg", "acc": "ds003474", "label": "not_relevant", "reason": "Probabilistic selection task EEG; no resting-state; BDI-selected students"}
+{"query": "p05_depression_eeg", "acc": "ds003478", "label": "relevant", "reason": "Resting EEG in participants selected by high/low BDI depression scores"}
+{"query": "p05_depression_eeg", "acc": "ds004840", "label": "not_relevant", "reason": "Burn patients; depression only HADS measure"}
+{"query": "p05_depression_eeg", "acc": "ds007615", "label": "not_relevant", "reason": "Healthy women; BDI only covariate"}
+{"query": "p06_schizophrenia", "acc": "ds000030", "label": "relevant", "reason": "diagnoses include schizophrenia"}
+{"query": "p06_schizophrenia", "acc": "ds000115", "label": "relevant", "reason": "working memory in schizophrenic individuals title"}
+{"query": "p06_schizophrenia", "acc": "ds000214", "label": "not_relevant", "reason": "EUPD personality disorder; psychosis only exclusion/refs"}
+{"query": "p06_schizophrenia", "acc": "ds001371", "label": "unsure", "reason": "clinical high risk for psychosis adolescents, not diagnosed psychosis"}
+{"query": "p06_schizophrenia", "acc": "ds001461", "label": "relevant", "reason": "schizophrenia and controls rsfMRI"}
+{"query": "p06_schizophrenia", "acc": "ds003011", "label": "relevant", "reason": "SPIN schizophrenia(s) trial title"}
+{"query": "p06_schizophrenia", "acc": "ds003136", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds003944", "label": "relevant", "reason": "first episode psychosis vs control"}
+{"query": "p06_schizophrenia", "acc": "ds003947", "label": "relevant", "reason": "first episode psychosis vs control"}
+{"query": "p06_schizophrenia", "acc": "ds004000", "label": "relevant", "reason": "schizophrenia ultimatum game patients"}
+{"query": "p06_schizophrenia", "acc": "ds004302", "label": "relevant", "reason": "schizophrenia patients with/without AVH"}
+{"query": "p06_schizophrenia", "acc": "ds004367", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds004368", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds004605", "label": "not_relevant", "reason": "psychosis only exclusion"}
+{"query": "p06_schizophrenia", "acc": "ds004837", "label": "relevant", "reason": "schizophrenia/first-episode psychosis MEG"}
+{"query": "p06_schizophrenia", "acc": "ds004856", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds004920", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds005073", "label": "relevant", "reason": "schizophrenia and bipolar shape completion"}
+{"query": "p06_schizophrenia", "acc": "ds005166", "label": "not_relevant", "reason": "KSADS name only"}
+{"query": "p06_schizophrenia", "acc": "ds005237", "label": "relevant", "reason": "inclusion of participants with psychotic illness history"}
+{"query": "p06_schizophrenia", "acc": "ds005504", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds005754", "label": "not_relevant", "reason": "KSADS name only"}
+{"query": "p06_schizophrenia", "acc": "ds005917", "label": "not_relevant", "reason": "schizophrenia only exclusion criterion"}
+{"query": "p06_schizophrenia", "acc": "ds006072", "label": "not_relevant", "reason": "schizophrenia only exclusion/family history"}
+{"query": "p06_schizophrenia", "acc": "ds006303", "label": "not_relevant", "reason": "psychosis only exclusion"}
+{"query": "p06_schizophrenia", "acc": "ds006577", "label": "not_relevant", "reason": "KSADS name only"}
+{"query": "p06_schizophrenia", "acc": "ds006905", "label": "not_relevant", "reason": "no schizophrenia/psychosis participants"}
+{"query": "p06_schizophrenia", "acc": "ds007486", "label": "not_relevant", "reason": "schizophrenia only exclusion"}
+{"query": "p07_bipolar", "acc": "ds000030", "label": "relevant", "reason": "UCLA CNP includes bipolar_disorder diagnosis group"}
+{"query": "p07_bipolar", "acc": "ds000116", "label": "not_relevant", "reason": "Bipolar only as EEG electrode pairs"}
+{"query": "p07_bipolar", "acc": "ds000246", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds000247", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds001408", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds001784", "label": "not_relevant", "reason": "Treatment-resistant depression DBS; no bipolar disorder stated"}
+{"query": "p07_bipolar", "acc": "ds001785", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds003082", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds003498", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds003555", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds003690", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds004101", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds004504", "label": "not_relevant", "reason": "Alzheimer/FTD EEG; bipolar only montage"}
+{"query": "p07_bipolar", "acc": "ds004605", "label": "not_relevant", "reason": "Bipolar disorders only an exclusion criterion"}
+{"query": "p07_bipolar", "acc": "ds004661", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds004789", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds004809", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds004840", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds004865", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005059", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005073", "label": "relevant", "reason": "Visual shape completion in schizophrenia and bipolar disorder"}
+{"query": "p07_bipolar", "acc": "ds005169", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005398", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005411", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005489", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005491", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005494", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005522", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005523", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005555", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005557", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005558", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005795", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds005917", "label": "relevant", "reason": "Ketamine study with bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds006036", "label": "not_relevant", "reason": "Alzheimer EEG; bipolar only montage"}
+{"query": "p07_bipolar", "acc": "ds006303", "label": "not_relevant", "reason": "Bipolar only an exclusion criterion"}
+{"query": "p07_bipolar", "acc": "ds006434", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds006519", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds007216", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds007486", "label": "not_relevant", "reason": "Bipolar disorder only an exclusion criterion"}
+{"query": "p07_bipolar", "acc": "ds007523", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds007524", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p07_bipolar", "acc": "ds007591", "label": "not_relevant", "reason": "Bipolar only as electrode montage/referencing; no bipolar disorder participants"}
+{"query": "p08_stroke_aphasia", "acc": "ds002241", "label": "not_relevant", "reason": "Drawing strokes only; healthy participants"}
+{"query": "p08_stroke_aphasia", "acc": "ds002338", "label": "not_relevant", "reason": "Motor imagery neurofeedback in healthy participants"}
+{"query": "p08_stroke_aphasia", "acc": "ds002675", "label": "not_relevant", "reason": "Traumatic brain injury language network, not stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds003380", "label": "not_relevant", "reason": "Pig ischemia model, not human participants"}
+{"query": "p08_stroke_aphasia", "acc": "ds003511", "label": "not_relevant", "reason": "Healthy autobiographical memory"}
+{"query": "p08_stroke_aphasia", "acc": "ds003555", "label": "relevant", "reason": "Pediatric epilepsy patients, diagnoses include perinatal and postnatal stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds003763", "label": "not_relevant", "reason": "Healthy aging; stroke only as exclusion"}
+{"query": "p08_stroke_aphasia", "acc": "ds003999", "label": "relevant", "reason": "Post-stroke patients rehabilitation fMRI"}
+{"query": "p08_stroke_aphasia", "acc": "ds004101", "label": "not_relevant", "reason": "Neurofeedback in emotional dysregulation, not stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds004199", "label": "not_relevant", "reason": "Epilepsy FCD MRI"}
+{"query": "p08_stroke_aphasia", "acc": "ds004265", "label": "not_relevant", "reason": "Focused ultrasound pain neuromodulation"}
+{"query": "p08_stroke_aphasia", "acc": "ds004498", "label": "relevant", "reason": "Perinatal stroke case with motor task fMRI"}
+{"query": "p08_stroke_aphasia", "acc": "ds004604", "label": "not_relevant", "reason": "Cerebrovascular reactivity in healthy adults"}
+{"query": "p08_stroke_aphasia", "acc": "ds004620", "label": "not_relevant", "reason": "Macaque angiography"}
+{"query": "p08_stroke_aphasia", "acc": "ds004632", "label": "not_relevant", "reason": "Preclinical experimental stroke in animals"}
+{"query": "p08_stroke_aphasia", "acc": "ds004752", "label": "not_relevant", "reason": "Epilepsy verbal working memory"}
+{"query": "p08_stroke_aphasia", "acc": "ds004856", "label": "not_relevant", "reason": "Healthy aging lifespan study"}
+{"query": "p08_stroke_aphasia", "acc": "ds004884", "label": "relevant", "reason": "Aphasia Recovery Cohort, chronic stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds004889", "label": "relevant", "reason": "Stroke Outcome Optimization Project, acute stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds004910", "label": "relevant", "reason": "Includes patients with cortical cerebral infarction"}
+{"query": "p08_stroke_aphasia", "acc": "ds004962", "label": "not_relevant", "reason": "Experimental animal stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds005115", "label": "not_relevant", "reason": "Single participant hormone study; stroke volume incidental"}
+{"query": "p08_stroke_aphasia", "acc": "ds005385", "label": "not_relevant", "reason": "Healthy lifespan EEG; stroke only exclusion"}
+{"query": "p08_stroke_aphasia", "acc": "ds005418", "label": "not_relevant", "reason": "Healthy cerebrovascular reactivity"}
+{"query": "p08_stroke_aphasia", "acc": "ds005602", "label": "not_relevant", "reason": "Epilepsy surgery imaging database"}
+{"query": "p08_stroke_aphasia", "acc": "ds006001", "label": "not_relevant", "reason": "Brainstem bundle atlas"}
+{"query": "p08_stroke_aphasia", "acc": "ds006533", "label": "relevant", "reason": "Left hemisphere chronic stroke survivors numeracy"}
+{"query": "p08_stroke_aphasia", "acc": "ds006554", "label": "not_relevant", "reason": "Social observation EEG, no stroke"}
+{"query": "p08_stroke_aphasia", "acc": "ds007095", "label": "not_relevant", "reason": "Epilepsy RNS iEEG"}
+{"query": "p08_stroke_aphasia", "acc": "ds007314", "label": "relevant", "reason": "Post-stroke anomia aphasia patients tACS"}
+{"query": "p08_stroke_aphasia", "acc": "ds007315", "label": "relevant", "reason": "Post-stroke anomia aphasia patients tACS"}
+{"query": "p08_stroke_aphasia", "acc": "ds007345", "label": "not_relevant", "reason": "Meningioma patients"}
+{"query": "p08_stroke_aphasia", "acc": "ds007347", "label": "not_relevant", "reason": "Cancer pain ultrasound mesencephalotomy"}
+{"query": "p08_stroke_aphasia", "acc": "ds007526", "label": "not_relevant", "reason": "Parkinson's EEG; stroke only exclusion"}
+{"query": "p09_chronic_pain", "acc": "ds000208", "label": "relevant", "reason": "osteoarthritis patients (chronic pain) with duloxetine trial"}
+{"query": "p09_chronic_pain", "acc": "ds001928", "label": "relevant", "reason": "fibromyalgia patients"}
+{"query": "p09_chronic_pain", "acc": "ds004144", "label": "relevant", "reason": "fibromyalgia patients"}
+{"query": "p09_chronic_pain", "acc": "ds005016", "label": "relevant", "reason": "episodic migraine MBSR trial"}
+{"query": "p09_chronic_pain", "acc": "ds005143", "label": "relevant", "reason": "diagnoses include fibromyalgia"}
+{"query": "p09_chronic_pain", "acc": "ds005691", "label": "relevant", "reason": "patients with neuropathic pain"}
+{"query": "p09_chronic_pain", "acc": "ds005713", "label": "relevant", "reason": "trigeminal neuralgia patients"}
+{"query": "p09_chronic_pain", "acc": "ds005839", "label": "not_relevant", "reason": "rat model of post-surgical pain"}
+{"query": "p09_chronic_pain", "acc": "ds006815", "label": "relevant", "reason": "fibromyalgia dx_status, person in pain"}
+{"query": "p09_chronic_pain", "acc": "ds006902", "label": "not_relevant", "reason": "healthy athletes, exercise-induced hypoalgesia"}
+{"query": "p09_chronic_pain", "acc": "ds006949", "label": "relevant", "reason": "chronic pain dx_status"}
+{"query": "p09_chronic_pain", "acc": "ds007135", "label": "relevant", "reason": "chronic low back pain patients"}
+{"query": "p09_chronic_pain", "acc": "ds007181", "label": "relevant", "reason": "zoster-associated neuralgia patients"}
+{"query": "p10_sleep", "acc": "ds000201", "label": "relevant", "reason": "Sleep deprivation effects on cognition/emotion with polysomnography."}
+{"query": "p10_sleep", "acc": "ds000240", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p10_sleep", "acc": "ds002185", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p10_sleep", "acc": "ds003498", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds003555", "label": "relevant", "reason": "Pediatric epilepsy EEG recorded during sleep with sleep staging."}
+{"query": "p10_sleep", "acc": "ds003574", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds003768", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds003826", "label": "unsure", "reason": "Chronotype and sleeping habits topic, but structural MRI only, no sleep recording."}
+{"query": "p10_sleep", "acc": "ds003848", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds003876", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds004348", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds004465", "label": "relevant", "reason": "fMRI of sleeping pigeons, sleep states."}
+{"query": "p10_sleep", "acc": "ds004467", "label": "not_relevant", "reason": "Participant falling asleep only incidental."}
+{"query": "p10_sleep", "acc": "ds004489", "label": "not_relevant", "reason": "Falling asleep only incidental exclusion."}
+{"query": "p10_sleep", "acc": "ds004551", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds004624", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p10_sleep", "acc": "ds004731", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds004733", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds004902", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005121", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005127", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005178", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005185", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005207", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005398", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005530", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005555", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds005620", "label": "relevant", "reason": "Dreaming reports in repeated awakening study under propofol sedation."}
+{"query": "p10_sleep", "acc": "ds005896", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p10_sleep", "acc": "ds005901", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p10_sleep", "acc": "ds006107", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds006366", "label": "relevant", "reason": "Mouse EEG sleep staging validation."}
+{"query": "p10_sleep", "acc": "ds006576", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds006695", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds007022", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p10_sleep", "acc": "ds007118", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds007119", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds007120", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds007181", "label": "relevant", "reason": "Sleep recorded or sleep is the main topic (sleep_state task, PSG, sleep deprivation, staging)."}
+{"query": "p10_sleep", "acc": "ds007318", "label": "not_relevant", "reason": "No sleep evidence; removal task."}
+{"query": "p10_sleep", "acc": "ds007328", "label": "relevant", "reason": "Dense scanning including 17.8h of frank sleep recorded."}
+{"query": "p10_sleep", "acc": "ds007629", "label": "not_relevant", "reason": "Sleep not studied; falling asleep or sleep questionnaires only incidental."}
+{"query": "p11_music", "acc": "ds000113", "label": "relevant", "reason": "Includes participants listening to 25 music clips"}
+{"query": "p11_music", "acc": "ds000171", "label": "relevant", "reason": "Emotional music listening in depression"}
+{"query": "p11_music", "acc": "ds000221", "label": "not_relevant", "reason": "Gold-MSI questionnaire only"}
+{"query": "p11_music", "acc": "ds001110", "label": "not_relevant", "reason": "Movie/story; music only incidental in audio intro"}
+{"query": "p11_music", "acc": "ds001131", "label": "not_relevant", "reason": "Story listening, no music"}
+{"query": "p11_music", "acc": "ds001345", "label": "not_relevant", "reason": "Multisensory memory; musical instruments only as image category"}
+{"query": "p11_music", "acc": "ds001769", "label": "not_relevant", "reason": "Movie watching denoising, no music focus"}
+{"query": "p11_music", "acc": "ds001928", "label": "relevant", "reason": "Music-induced analgesia, music exposure in fibromyalgia"}
+{"query": "p11_music", "acc": "ds002218", "label": "unsure", "reason": "Auditory rhythm perception omission paradigm; musical status unclear"}
+{"query": "p11_music", "acc": "ds002720", "label": "relevant", "reason": "Music BCI, tempo control of music"}
+{"query": "p11_music", "acc": "ds002721", "label": "relevant", "reason": "Affective music listening EEG"}
+{"query": "p11_music", "acc": "ds002722", "label": "relevant", "reason": "Affective music BCI, listening to music clips"}
+{"query": "p11_music", "acc": "ds002723", "label": "relevant", "reason": "Affective music BCI, listening to music clips"}
+{"query": "p11_music", "acc": "ds002724", "label": "relevant", "reason": "Affective music BCI, listening to music clips"}
+{"query": "p11_music", "acc": "ds002725", "label": "relevant", "reason": "EEG-fMRI affective music listening"}
+{"query": "p11_music", "acc": "ds002873", "label": "relevant", "reason": "Musical syntax and tonality, musicianship"}
+{"query": "p11_music", "acc": "ds003023", "label": "relevant", "reason": "Emotional music listening"}
+{"query": "p11_music", "acc": "ds003059", "label": "relevant", "reason": "Music listening scan during LSD session"}
+{"query": "p11_music", "acc": "ds003085", "label": "relevant", "reason": "Emotional music listening"}
+{"query": "p11_music", "acc": "ds003146", "label": "relevant", "reason": "Music, speech and song processing, musicians"}
+{"query": "p11_music", "acc": "ds003484", "label": "not_relevant", "reason": "Foraging task, no music"}
+{"query": "p11_music", "acc": "ds003507", "label": "relevant", "reason": "Instrumental music with video, valence congruence"}
+{"query": "p11_music", "acc": "ds003570", "label": "relevant", "reason": "Musical improvisers listening to chord progressions"}
+{"query": "p11_music", "acc": "ds003715", "label": "relevant", "reason": "Emotional music perception fMRI"}
+{"query": "p11_music", "acc": "ds003720", "label": "relevant", "reason": "Music genre listening fMRI"}
+{"query": "p11_music", "acc": "ds003774", "label": "relevant", "reason": "Music listening EEG across genres"}
+{"query": "p11_music", "acc": "ds004007", "label": "relevant", "reason": "Musical event structure in auditory cortex"}
+{"query": "p11_music", "acc": "ds004044", "label": "not_relevant", "reason": "Whole-body motor mapping"}
+{"query": "p11_music", "acc": "ds004148", "label": "relevant", "reason": "Includes music listening state EEG"}
+{"query": "p11_music", "acc": "ds004356", "label": "relevant", "reason": "Music versus speech auditory responses"}
+{"query": "p11_music", "acc": "ds004444", "label": "not_relevant", "reason": "Sensorimotor rhythm BCI, no music"}
+{"query": "p11_music", "acc": "ds004446", "label": "not_relevant", "reason": "Sensorimotor rhythm BCI, no music"}
+{"query": "p11_music", "acc": "ds004447", "label": "not_relevant", "reason": "Sensorimotor rhythm BCI, no music"}
+{"query": "p11_music", "acc": "ds004448", "label": "not_relevant", "reason": "Sensorimotor rhythm BCI, no music"}
+{"query": "p11_music", "acc": "ds004465", "label": "not_relevant", "reason": "Pigeon sleep fMRI; music clip only as wake-up stimulus"}
+{"query": "p11_music", "acc": "ds004562", "label": "not_relevant", "reason": "Visuomotor adaptation"}
+{"query": "p11_music", "acc": "ds004592", "label": "not_relevant", "reason": "Sitcom/documentary viewing, attention"}
+{"query": "p11_music", "acc": "ds004718", "label": "not_relevant", "reason": "Story listening; music only in questionnaire"}
+{"query": "p11_music", "acc": "ds004783", "label": "not_relevant", "reason": "Dance viewing video, no music evidence"}
+{"query": "p11_music", "acc": "ds004837", "label": "not_relevant", "reason": "Pitch/duration MMN oddball, not music"}
+{"query": "p11_music", "acc": "ds004840", "label": "relevant", "reason": "Music therapy sessions with EEG in burn patients"}
+{"query": "p11_music", "acc": "ds004866", "label": "relevant", "reason": "Musical enculturation, Bach and Shanxi music clips"}
+{"query": "p11_music", "acc": "ds004894", "label": "relevant", "reason": "Listening to music pieces with fMRI"}
+{"query": "p11_music", "acc": "ds005284", "label": "relevant", "reason": "Music reducing pain unpleasantness study"}
+{"query": "p11_music", "acc": "ds005375", "label": "not_relevant", "reason": "Social rating tasks; music preference incidental"}
+{"query": "p11_music", "acc": "ds005876", "label": "relevant", "reason": "Song familiarity melodies listening"}
+{"query": "p11_music", "acc": "ds005880", "label": "relevant", "reason": "Diminished seventh chord listening"}
+{"query": "p11_music", "acc": "ds006502", "label": "not_relevant", "reason": "Motor skill learning; musicians excluded"}
+{"query": "p11_music", "acc": "ds006564", "label": "relevant", "reason": "Films with controlled music soundtracks, dissonant music"}
+{"query": "p11_music", "acc": "ds006583", "label": "relevant", "reason": "Music for affective transitions"}
+{"query": "p11_music", "acc": "ds006629", "label": "not_relevant", "reason": "Harmonic complex tone oddball, not music"}
+{"query": "p11_music", "acc": "ds006642", "label": "not_relevant", "reason": "Movie-watching and tonotopy mapping"}
+{"query": "p11_music", "acc": "ds006735", "label": "relevant", "reason": "Chimeric music perception EEG"}
+{"query": "p11_music", "acc": "ds006943", "label": "not_relevant", "reason": "Environmental sounds, not music"}
+{"query": "p11_music", "acc": "ds007022", "label": "relevant", "reason": "Music training and playing/listening music tasks"}
+{"query": "p11_music", "acc": "ds007471", "label": "relevant", "reason": "Musical joint action duets"}
+{"query": "p12_7t", "acc": "ds000113", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds001293", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds001541", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds001547", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds001555", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds001563", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds001942", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002016", "label": "not_relevant", "reason": "7T not mentioned; BigBrain coregistration only"}
+{"query": "p12_7t", "acc": "ds002179", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002274", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002295", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002551", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002672", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002702", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds002776", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003216", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003417", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003427", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003446", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003563", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003590", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003642", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003684", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003716", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003972", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds003990", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004125", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004271", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004458", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004465", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004484", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004620", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004632", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004640", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004645", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004710", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004814", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004815", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004835", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004906", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004928", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004943", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds004962", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005025", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005090", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005216", "label": "not_relevant", "reason": "9.4T, not 7T"}
+{"query": "p12_7t", "acc": "ds005238", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005263", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005264", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005265", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005266", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005345", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005422", "label": "unsure", "reason": "ex vivo 7T scan of Edlow only mentioned as source data"}
+{"query": "p12_7t", "acc": "ds005427", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005431", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005454", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005533", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005576", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005747", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds005917", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds006123", "label": "not_relevant", "reason": "4.7T animal scanner, phantom"}
+{"query": "p12_7t", "acc": "ds006212", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds006265", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds006266", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds006407", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds006654", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds006746", "label": "not_relevant", "reason": "11.7T animal scanner, not 7T"}
+{"query": "p12_7t", "acc": "ds006871", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds007034", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds007067", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds007122", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds007376", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p12_7t", "acc": "ds007418", "label": "relevant", "reason": "text states 7T / 7 Tesla acquisition"}
+{"query": "p13_older_adults_fmri", "acc": "ds000030", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000109", "label": "relevant", "reason": "max age 88 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000119", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000120", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000121", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000204", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000216", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds000236", "label": "relevant", "reason": "max age 89 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001021", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001242", "label": "relevant", "reason": "older adults group in title/diagnoses"}
+{"query": "p13_older_adults_fmri", "acc": "ds001293", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001354", "label": "relevant", "reason": "max age 77.65 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001386", "label": "relevant", "reason": "max age 74 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001740", "label": "relevant", "reason": "max age 73 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001762", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001907", "label": "relevant", "reason": "healthy aging and Parkinson older participants"}
+{"query": "p13_older_adults_fmri", "acc": "ds001921", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001923", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001928", "label": "relevant", "reason": "max age 70 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002080", "label": "relevant", "reason": "max age 77 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002158", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002219", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002330", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002336", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002338", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002345", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002366", "label": "relevant", "reason": "max age 83.09 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002372", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002382", "label": "relevant", "reason": "max age 81 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002422", "label": "relevant", "reason": "max age 75 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002549", "label": "unsure", "reason": "single subject, age unknown"}
+{"query": "p13_older_adults_fmri", "acc": "ds002620", "label": "relevant", "reason": "max age 83.09 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002647", "label": "relevant", "reason": "max age 75 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002727", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002814", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002837", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002842", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002872", "label": "relevant", "reason": "max age 75 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds002896", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003059", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003148", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003381", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003437", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003453", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003455", "label": "unsure", "reason": "single-case aging brain study, age unknown"}
+{"query": "p13_older_adults_fmri", "acc": "ds003533", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003542", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003569", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003592", "label": "relevant", "reason": "max age 89 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003604", "label": "unsure", "reason": "longitudinal language dataset, ages unknown"}
+{"query": "p13_older_adults_fmri", "acc": "ds003745", "label": "relevant", "reason": "max age 80 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003763", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003764", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003823", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds003871", "label": "relevant", "reason": "28 older adults resting-state"}
+{"query": "p13_older_adults_fmri", "acc": "ds004078", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004092", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004097", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004144", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004169", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004285", "label": "relevant", "reason": "max age 81 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004286", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004302", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004392", "label": "relevant", "reason": "max age 89 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004466", "label": "relevant", "reason": "max age 68 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004489", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004529", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004569", "label": "relevant", "reason": "max age 76 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004604", "label": "relevant", "reason": "max age 67 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004616", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004630", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004710", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004711", "label": "relevant", "reason": "max age 81.48 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004718", "label": "relevant", "reason": "max age 77 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004725", "label": "relevant", "reason": "max age 80.73 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004746", "label": "relevant", "reason": "max age 77 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004796", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004797", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004798", "label": "relevant", "reason": "max age 67 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004848", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004856", "label": "relevant", "reason": "lifespan aging study"}
+{"query": "p13_older_adults_fmri", "acc": "ds004913", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004928", "label": "relevant", "reason": "max age 69 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds004958", "label": "relevant", "reason": "max age 76 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005026", "label": "relevant", "reason": "max age 78 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005123", "label": "relevant", "reason": "max age 80 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005126", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005166", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005237", "label": "relevant", "reason": "max age 68.33 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005270", "label": "relevant", "reason": "max age 86 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005364", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005366", "label": "relevant", "reason": "max age 89 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005374", "label": "relevant", "reason": "max age 74 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005405", "label": "relevant", "reason": "max age 79 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005418", "label": "relevant", "reason": "max age 67 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005460", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005573", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005752", "label": "relevant", "reason": "max age 90 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005795", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005849", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005874", "label": "relevant", "reason": "max age 74 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005880", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005884", "label": "relevant", "reason": "max age 74 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005892", "label": "relevant", "reason": "max age 94 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds005917", "label": "relevant", "reason": "max age 66 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006092", "label": "relevant", "reason": "max age 67 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006156", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006212", "label": "relevant", "reason": "max age 72 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006239", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006391", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006395", "label": "relevant", "reason": "max age 78 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006642", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006661", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006686", "label": "relevant", "reason": "max age 86 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006731", "label": "relevant", "reason": "max age 70 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006815", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds006826", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds007181", "label": "relevant", "reason": "max age 70 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds007182", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds007328", "label": "not_relevant", "reason": "max age <=65 or no evidence of participants over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds007345", "label": "relevant", "reason": "max age 73 >65"}
+{"query": "p13_older_adults_fmri", "acc": "ds007588", "label": "relevant", "reason": "old subjects aging cohort"}
+{"query": "p14_ieeg_memory", "acc": "ds003029", "label": "not_relevant", "reason": "ictal/interictal recordings, no memory task"}
+{"query": "p14_ieeg_memory", "acc": "ds004752", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds004770", "label": "relevant", "reason": "readme describes iEEG working memory trials in children"}
+{"query": "p14_ieeg_memory", "acc": "ds004789", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds004809", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds004865", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds004944", "label": "not_relevant", "reason": "intraoperative ECoG epileptiform detection"}
+{"query": "p14_ieeg_memory", "acc": "ds004993", "label": "not_relevant", "reason": "speech/movie tasks, not memory"}
+{"query": "p14_ieeg_memory", "acc": "ds005059", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005411", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005489", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005491", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005494", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005522", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005523", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005557", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005558", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds005953", "label": "not_relevant", "reason": "visual stimulation, no memory task"}
+{"query": "p14_ieeg_memory", "acc": "ds006065", "label": "relevant", "reason": "iEEG during memory task (recall/working memory)"}
+{"query": "p14_ieeg_memory", "acc": "ds006136", "label": "relevant", "reason": "OWM dataset, working memory task tag, iEEG"}
+{"query": "p15_anxiety", "acc": "ds000030", "label": "not_relevant", "reason": "Schizophrenia, bipolar, ADHD and controls; no anxiety group."}
+{"query": "p15_anxiety", "acc": "ds000144", "label": "relevant", "reason": "Preschool anxiety disorders sample."}
+{"query": "p15_anxiety", "acc": "ds000171", "label": "not_relevant", "reason": "Depression; comorbid anxiety disorders excluded."}
+{"query": "p15_anxiety", "acc": "ds000221", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds002674", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds003059", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds003136", "label": "not_relevant", "reason": "Postnatal depression/anxiety only as outcome of healthy mothers."}
+{"query": "p15_anxiety", "acc": "ds003763", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds003823", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004101", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004129", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004130", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004131", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004146", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004161", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004327", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004605", "label": "not_relevant", "reason": "ADHD, DMDD and healthy volunteers; no anxiety group."}
+{"query": "p15_anxiety", "acc": "ds004630", "label": "relevant", "reason": "Adults with fear of spiders (specific phobia)."}
+{"query": "p15_anxiety", "acc": "ds004840", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004866", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds004965", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds005115", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds005166", "label": "relevant", "reason": "Inclusion requires primary anxiety disorder diagnosis (GAD etc.)."}
+{"query": "p15_anxiety", "acc": "ds005237", "label": "unsure", "reason": "Transdiagnostic sample; anxiety disorders plausible but not shown."}
+{"query": "p15_anxiety", "acc": "ds005360", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds005479", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds005752", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds005754", "label": "relevant", "reason": "Youth meeting criteria for anxiety disorder among groups."}
+{"query": "p15_anxiety", "acc": "ds005896", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds005901", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds006045", "label": "relevant", "reason": "Anxiety dx status; CBT outcome for anxiety in youths."}
+{"query": "p15_anxiety", "acc": "ds006303", "label": "relevant", "reason": "Pediatric anxiety disorder vs healthy volunteers."}
+{"query": "p15_anxiety", "acc": "ds006395", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds006407", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds006491", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds006564", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds006577", "label": "relevant", "reason": "Youth with anxiety disorders in CBT trial."}
+{"query": "p15_anxiety", "acc": "ds006949", "label": "relevant", "reason": "Diagnosis list includes anxiety."}
+{"query": "p15_anxiety", "acc": "ds007052", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007056", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007069", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007096", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007116", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007137", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007139", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007216", "label": "not_relevant", "reason": "No anxiety-disorder group; anxiety only as questionnaire, exclusion, or trait measure."}
+{"query": "p15_anxiety", "acc": "ds007486", "label": "not_relevant", "reason": "OCD only as exclusion criterion."}
+{"query": "p15_anxiety", "acc": "ds007609", "label": "not_relevant", "reason": "Trait anxiety in healthy sample, not a disorder group."}
+{"query": "p16_dbs", "acc": "ds001784", "label": "relevant", "reason": "Patients with implanted DBS, ON/OFF stimulation EEG"}
+{"query": "p16_dbs", "acc": "ds002016", "label": "not_relevant", "reason": "BigBrain atlas coregistration; no DBS participants"}
+{"query": "p16_dbs", "acc": "ds002885", "label": "not_relevant", "reason": "DBS phantom MEG recordings; no participants with DBS"}
+{"query": "p16_dbs", "acc": "ds004471", "label": "relevant", "reason": "Parkinson patients who underwent DBS surgery; pre-DBS imaging"}
+{"query": "p16_dbs", "acc": "ds004738", "label": "not_relevant", "reason": "Phantom MEG measurement of DBS artefacts; no participants"}
+{"query": "p16_dbs", "acc": "ds004913", "label": "relevant", "reason": "Rats with STN DBS stimulation during optogenetic fMRI"}
+{"query": "p16_dbs", "acc": "ds004993", "label": "not_relevant", "reason": "Epilepsy iEEG workshop sample; DBS only in workshop title"}
+{"query": "p16_dbs", "acc": "ds004998", "label": "relevant", "reason": "Externalized DBS patients with STN LFP recordings"}
+{"query": "p16_dbs", "acc": "ds005849", "label": "relevant", "reason": "fMRI during DBS in implanted patients"}
+{"query": "p16_dbs", "acc": "ds005906", "label": "relevant", "reason": "PD patients with STN/GPi DBS implants, fMRI"}
+{"query": "p17_faces", "acc": "ds000113", "label": "not_relevant", "reason": "Movie viewing; faces only incidental to localizer."}
+{"query": "p17_faces", "acc": "ds000117", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds000144", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds000201", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds000224", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds000232", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds001297", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds001419", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds001497", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds001761", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds001818", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds002543", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds002685", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds002718", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds002741", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds002785", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003136", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003377", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds003481", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds003505", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003548", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003553", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003645", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003778", "label": "not_relevant", "reason": "Faces only as memory cues; task is memory distortion."}
+{"query": "p17_faces", "acc": "ds003834", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds003851", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds003965", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds004141", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds004280", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds004349", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds004529", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds004582", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds004589", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds004784", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds004848", "label": "relevant", "reason": "Movie viewing plus face localiser and prosopagnosia face-processing measures."}
+{"query": "p17_faces", "acc": "ds004856", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds005047", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds005107", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds005256", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds005449", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds005642", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds005700", "label": "not_relevant", "reason": "Emotion from film clips, not face stimuli despite task code."}
+{"query": "p17_faces", "acc": "ds005752", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds005896", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds005901", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds006373", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds006576", "label": "not_relevant", "reason": "Faces absent, incidental, or only a minor stimulus/localiser; not the main task."}
+{"query": "p17_faces", "acc": "ds006692", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds006780", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds006826", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds007063", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds007096", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds007172", "label": "unsure", "reason": "Face task is one of several or role unclear from card."}
+{"query": "p17_faces", "acc": "ds007329", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds007369", "label": "relevant", "reason": "Face perception, recognition, facial-emotion or face-localiser task is a main task per tasks/readme."}
+{"query": "p17_faces", "acc": "ds007378", "label": "relevant", "reason": "Derivative of hyperface face-processing dataset."}
+{"query": "p17_faces", "acc": "ds007384", "label": "relevant", "reason": "Derivative of hyperface face-processing dataset."}
+{"query": "p18_decision_making", "acc": "ds000001", "label": "relevant", "reason": "Balloon Analog Risk Task, risky decision-making"}
+{"query": "p18_decision_making", "acc": "ds000005", "label": "relevant", "reason": "Mixed gambles task, loss aversion under risk"}
+{"query": "p18_decision_making", "acc": "ds000006", "label": "not_relevant", "reason": "Living/nonliving text classification, semantic judgment not choice study"}
+{"query": "p18_decision_making", "acc": "ds000009", "label": "relevant", "reason": "Includes delay discounting and BART tasks"}
+{"query": "p18_decision_making", "acc": "ds000030", "label": "relevant", "reason": "Includes balloon analog risk task among tasks"}
+{"query": "p18_decision_making", "acc": "ds000053", "label": "relevant", "reason": "Gambling task, loss aversion training in decision-making"}
+{"query": "p18_decision_making", "acc": "ds000223", "label": "relevant", "reason": "Temporal discounting, intertemporal choice"}
+{"query": "p18_decision_making", "acc": "ds000244", "label": "relevant", "reason": "Includes HCP gambling task among many tasks"}
+{"query": "p18_decision_making", "acc": "ds001167", "label": "relevant", "reason": "Effort-based valuation with prospective choices, gambling"}
+{"query": "p18_decision_making", "acc": "ds001178", "label": "not_relevant", "reason": "MR artifact examples; BART incidental"}
+{"query": "p18_decision_making", "acc": "ds001229", "label": "not_relevant", "reason": "Prospective memory strategy, not decision task per se"}
+{"query": "p18_decision_making", "acc": "ds001371", "label": "not_relevant", "reason": "Rule learning in CHR adolescents; not choice study"}
+{"query": "p18_decision_making", "acc": "ds001607", "label": "relevant", "reason": "Sampling-based decisions for reward"}
+{"query": "p18_decision_making", "acc": "ds001614", "label": "relevant", "reason": "Perceptual decisions evidence accumulation"}
+{"query": "p18_decision_making", "acc": "ds001715", "label": "relevant", "reason": "Evidence accumulation decision time selection task"}
+{"query": "p18_decision_making", "acc": "ds001734", "label": "relevant", "reason": "NARPS mixed gambles, decision under risk"}
+{"query": "p18_decision_making", "acc": "ds001762", "label": "relevant", "reason": "Foraging and economic choice"}
+{"query": "p18_decision_making", "acc": "ds001814", "label": "relevant", "reason": "Approach-avoidance decision conflict with reward/risk choices"}
+{"query": "p18_decision_making", "acc": "ds001882", "label": "relevant", "reason": "Intertemporal choice task"}
+{"query": "p18_decision_making", "acc": "ds001883", "label": "relevant", "reason": "Risky choice task"}
+{"query": "p18_decision_making", "acc": "ds001921", "label": "relevant", "reason": "Foraging context choice difficulty"}
+{"query": "p18_decision_making", "acc": "ds001923", "label": "relevant", "reason": "Foraging context choice difficulty"}
+{"query": "p18_decision_making", "acc": "ds002006", "label": "relevant", "reason": "Food choice task, memory and decision making"}
+{"query": "p18_decision_making", "acc": "ds002041", "label": "relevant", "reason": "Delay discounting task, subjective value"}
+{"query": "p18_decision_making", "acc": "ds002158", "label": "relevant", "reason": "Speeded perceptual decisions with confidence"}
+{"query": "p18_decision_making", "acc": "ds002250", "label": "not_relevant", "reason": "Blame/perspective on accidents, theory of mind; not choice task"}
+{"query": "p18_decision_making", "acc": "ds002312", "label": "not_relevant", "reason": "Lexical decision MEG, language not decision-making study"}
+{"query": "p18_decision_making", "acc": "ds002351", "label": "not_relevant", "reason": "Lexical decision word recognition"}
+{"query": "p18_decision_making", "acc": "ds002513", "label": "not_relevant", "reason": "Gambling disorder cue-induced craving; no choice task"}
+{"query": "p18_decision_making", "acc": "ds002543", "label": "relevant", "reason": "Reinforcement learning and value-driven choice"}
+{"query": "p18_decision_making", "acc": "ds002643", "label": "relevant", "reason": "Self-control dietary choice decision task"}
+{"query": "p18_decision_making", "acc": "ds002685", "label": "relevant", "reason": "IBC includes Columbia card task and delay discounting bidding"}
+{"query": "p18_decision_making", "acc": "ds002734", "label": "relevant", "reason": "Value-based decisions evidence accumulation"}
+{"query": "p18_decision_making", "acc": "ds002739", "label": "relevant", "reason": "Confidence in perceptual decisions"}
+{"query": "p18_decision_making", "acc": "ds002843", "label": "relevant", "reason": "Delay discounting and risky choice tasks"}
+{"query": "p18_decision_making", "acc": "ds002878", "label": "relevant", "reason": "Creative decision making in soccer"}
+{"query": "p18_decision_making", "acc": "ds002908", "label": "unsure", "reason": "Sequential conflict task MEG in Parkinson; decision aspect unclear"}
+{"query": "p18_decision_making", "acc": "ds002989", "label": "relevant", "reason": "Delay discounting bidding task"}
+{"query": "p18_decision_making", "acc": "ds003096", "label": "relevant", "reason": "Valuation of peers' safe choices, risky choice"}
+{"query": "p18_decision_making", "acc": "ds003458", "label": "relevant", "reason": "Three-armed bandit gambling task"}
+{"query": "p18_decision_making", "acc": "ds003484", "label": "relevant", "reason": "Competitive and hazardous foraging"}
+{"query": "p18_decision_making", "acc": "ds003517", "label": "unsure", "reason": "Gambling task mentioned among tasks; main focus video game"}
+{"query": "p18_decision_making", "acc": "ds003540", "label": "not_relevant", "reason": "Resting-state multiband methods"}
+{"query": "p18_decision_making", "acc": "ds003569", "label": "not_relevant", "reason": "Lexical decision word recognition"}
+{"query": "p18_decision_making", "acc": "ds003745", "label": "relevant", "reason": "Trust, ultimatum game, social reward decisions"}
+{"query": "p18_decision_making", "acc": "ds003766", "label": "relevant", "reason": "Dynamic binary choices with mouse tracking"}
+{"query": "p18_decision_making", "acc": "ds003782", "label": "relevant", "reason": "Effort-based valuation under risk gambling"}
+{"query": "p18_decision_making", "acc": "ds004094", "label": "not_relevant", "reason": "Statistical learning and inductive reasoning, not choice paradigm"}
+{"query": "p18_decision_making", "acc": "ds004128", "label": "relevant", "reason": "Dictator game social decisions"}
+{"query": "p18_decision_making", "acc": "ds004147", "label": "unsure", "reason": "Casino gambling learning task; value learning, unclear choice focus"}
+{"query": "p18_decision_making", "acc": "ds004259", "label": "relevant", "reason": "Risk attitudes numerical risk task"}
+{"query": "p18_decision_making", "acc": "ds004283", "label": "relevant", "reason": "Two-alternative forced choice reward-based selection"}
+{"query": "p18_decision_making", "acc": "ds004367", "label": "relevant", "reason": "Perceptual decisions with confidence"}
+{"query": "p18_decision_making", "acc": "ds004368", "label": "relevant", "reason": "Perceptual decisions with confidence"}
+{"query": "p18_decision_making", "acc": "ds004473", "label": "relevant", "reason": "Forced two-choice response task"}
+{"query": "p18_decision_making", "acc": "ds004477", "label": "relevant", "reason": "Strategic decision-making pandemic scenario"}
+{"query": "p18_decision_making", "acc": "ds004626", "label": "relevant", "reason": "Perceptual decision-making drift diffusion"}
+{"query": "p18_decision_making", "acc": "ds004636", "label": "relevant", "reason": "Includes discounting and card gambling tasks"}
+{"query": "p18_decision_making", "acc": "ds004657", "label": "not_relevant", "reason": "Driving with autonomous aids; trust measures not choice task"}
+{"query": "p18_decision_making", "acc": "ds004711", "label": "relevant", "reason": "BART and delay discounting"}
+{"query": "p18_decision_making", "acc": "ds004796", "label": "not_relevant", "reason": "Aging/dementia-risk EEG and fMRI database; no decision task"}
+{"query": "p18_decision_making", "acc": "ds004909", "label": "relevant", "reason": "Color-motion decision-making random dot task"}
+{"query": "p18_decision_making", "acc": "ds004917", "label": "relevant", "reason": "Probability decision-making with ambiguity"}
+{"query": "p18_decision_making", "acc": "ds004920", "label": "relevant", "reason": "Ultimatum/dictator reward-based decision-making tasks"}
+{"query": "p18_decision_making", "acc": "ds004973", "label": "not_relevant", "reason": "Passenger driving risk perception fNIRS; no choices"}
+{"query": "p18_decision_making", "acc": "ds005012", "label": "not_relevant", "reason": "Monetary incentive delay task; reward anticipation not choice"}
+{"query": "p18_decision_making", "acc": "ds005065", "label": "relevant", "reason": "Risky decision-making MEG gambles"}
+{"query": "p18_decision_making", "acc": "ds005123", "label": "relevant", "reason": "Trust and ultimatum game decision-making"}
+{"query": "p18_decision_making", "acc": "ds005241", "label": "not_relevant", "reason": "Lexical decision MEG morphology"}
+{"query": "p18_decision_making", "acc": "ds005364", "label": "unsure", "reason": "Reversal learning task; choice aspect not explicit"}
+{"query": "p18_decision_making", "acc": "ds005381", "label": "relevant", "reason": "Decision-making discrimination-estimation task"}
+{"query": "p18_decision_making", "acc": "ds005427", "label": "unsure", "reason": "Knapsack decision task; computational complexity, not value choice"}
+{"query": "p18_decision_making", "acc": "ds005469", "label": "relevant", "reason": "Free and coerced moral decision-making"}
+{"query": "p18_decision_making", "acc": "ds005588", "label": "relevant", "reason": "Social decision-making under risk"}
+{"query": "p18_decision_making", "acc": "ds005594", "label": "not_relevant", "reason": "Alphabetic decision task, letter recognition"}
+{"query": "p18_decision_making", "acc": "ds005624", "label": "not_relevant", "reason": "Color change detection, working memory"}
+{"query": "p18_decision_making", "acc": "ds005978", "label": "relevant", "reason": "Monetary gambling task"}
+{"query": "p18_decision_making", "acc": "ds006105", "label": "relevant", "reason": "Skewed gambling task, risky choice"}
+{"query": "p18_decision_making", "acc": "ds006253", "label": "relevant", "reason": "Evidence accumulation perceptual decisions and confidence"}
+{"query": "p18_decision_making", "acc": "ds006446", "label": "relevant", "reason": "Intertemporal choice, delay discounting"}
+{"query": "p18_decision_making", "acc": "ds006576", "label": "not_relevant", "reason": "Sleep and memory differentiation study"}
+{"query": "p18_decision_making", "acc": "ds006761", "label": "relevant", "reason": "Competitive decision-making Rock-Paper-Scissors"}
+{"query": "p18_decision_making", "acc": "ds006844", "label": "relevant", "reason": "Parental shopping buy/not-buy decisions"}
+{"query": "p18_decision_making", "acc": "ds006893", "label": "not_relevant", "reason": "Insulin and food cue reactivity; decision only incidental"}
+{"query": "p18_decision_making", "acc": "ds006979", "label": "not_relevant", "reason": "Visual working memory ERP"}
+{"query": "p18_decision_making", "acc": "ds007022", "label": "not_relevant", "reason": "Braille/music training plasticity; lexical decision incidental"}
+{"query": "p18_decision_making", "acc": "ds007026", "label": "relevant", "reason": "Risky decision-making under stress"}
+{"query": "p18_decision_making", "acc": "ds007115", "label": "not_relevant", "reason": "Misinformation semantic processing"}
+{"query": "p18_decision_making", "acc": "ds007267", "label": "unsure", "reason": "Food valuation ratings; not choice task"}
+{"query": "p18_decision_making", "acc": "ds007305", "label": "relevant", "reason": "Value-based simple choice"}
+{"query": "p18_decision_making", "acc": "ds007427", "label": "not_relevant", "reason": "Resting EEG Alzheimer risk"}
+{"query": "p18_decision_making", "acc": "ds007486", "label": "relevant", "reason": "Trust game investment decisions, gambling bets"}
+{"query": "p18_decision_making", "acc": "ds007508", "label": "relevant", "reason": "Risky choices gambling task"}
+{"query": "u01_alzheimer_fmri", "acc": "ds000223", "label": "not_relevant", "reason": "Temporal discounting in healthy subjects; Alzheimer institute only a scanner site"}
+{"query": "u01_alzheimer_fmri", "acc": "ds001747", "label": "not_relevant", "reason": "Healthy bilinguals resting state"}
+{"query": "u01_alzheimer_fmri", "acc": "ds001890", "label": "not_relevant", "reason": "Mouse model of Alzheimer-like pathology, not human patients"}
+{"query": "u01_alzheimer_fmri", "acc": "ds002134", "label": "not_relevant", "reason": "Mouse model, not human patients"}
+{"query": "u01_alzheimer_fmri", "acc": "ds003520", "label": "not_relevant", "reason": "Rat model, not human patients"}
+{"query": "u01_alzheimer_fmri", "acc": "ds004392", "label": "not_relevant", "reason": "Parkinson's disease patients, not Alzheimer's"}
+{"query": "u01_alzheimer_fmri", "acc": "ds004796", "label": "not_relevant", "reason": "Middle-aged people at risk of dementia, no AD patients"}
+{"query": "u01_alzheimer_fmri", "acc": "ds004856", "label": "not_relevant", "reason": "Healthy aging cohort; no AD patients indicated"}
+{"query": "u01_alzheimer_fmri", "acc": "ds006663", "label": "not_relevant", "reason": "Mouse MRI dataset"}
+{"query": "u01_alzheimer_fmri", "acc": "ds007345", "label": "not_relevant", "reason": "Meningioma patients"}
+{"query": "u01_alzheimer_fmri", "acc": "ds007486", "label": "not_relevant", "reason": "Healthy participants, problem gambling topic"}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds002799", "label": "relevant", "reason": "Refractory epilepsy patients with intracranial electrodes, es-fMRI; focal epilepsy likely."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds003830", "label": "not_relevant", "reason": "Canine idiopathic epilepsy, not human focal."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds004469", "label": "relevant", "reason": "Temporal lobe epilepsy patients with fMRI."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds004798", "label": "not_relevant", "reason": "Healthy-control fMRI in movie study; not epilepsy patients."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds004959", "label": "not_relevant", "reason": "Experimental epilepsy in animals, not people."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds005366", "label": "unsure", "reason": "Epilepsy patients among healthy and tumor; focal type not stated."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds005917", "label": "not_relevant", "reason": "Mood disorders; seizures only exclusion."}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds006905", "label": "not_relevant", "reason": "ADHD children; epilepsy only exclusion."}
+{"query": "u03_memory", "acc": "ds000030", "label": "relevant", "reason": "Paired-associates memory encoding/retrieval and spatial working memory tasks"}
+{"query": "u03_memory", "acc": "ds000031", "label": "relevant", "reason": "n-back and working memory tasks"}
+{"query": "u03_memory", "acc": "ds000105", "label": "not_relevant", "reason": "Visual object viewing, no memory task"}
+{"query": "u03_memory", "acc": "ds000110", "label": "relevant", "reason": "Incidental encoding task for later memory"}
+{"query": "u03_memory", "acc": "ds000115", "label": "relevant", "reason": "Working memory (n-back) in schizophrenia"}
+{"query": "u03_memory", "acc": "ds000117", "label": "not_relevant", "reason": "Face recognition viewing/repetition, memory not main focus"}
+{"query": "u03_memory", "acc": "ds000148", "label": "relevant", "reason": "2-back working memory task"}
+{"query": "u03_memory", "acc": "ds000149", "label": "relevant", "reason": "n_back_working_memory task code listed"}
+{"query": "u03_memory", "acc": "ds000170", "label": "relevant", "reason": "Learning and memory: motor skill consolidation"}
+{"query": "u03_memory", "acc": "ds000201", "label": "relevant", "reason": "Working memory task in sleep-deprivation study"}
+{"query": "u03_memory", "acc": "ds000203", "label": "relevant", "reason": "Visual imagery and false memory task"}
+{"query": "u03_memory", "acc": "ds000210", "label": "relevant", "reason": "Autobiographical memory and prospection tasks"}
+{"query": "u03_memory", "acc": "ds000221", "label": "not_relevant", "reason": "Memory tests only in unreleased behavioural battery; resting-state recording"}
+{"query": "u03_memory", "acc": "ds000222", "label": "unsure", "reason": "Reversal learning; n-back mentioned but data are behavioural/VBM"}
+{"query": "u03_memory", "acc": "ds000224", "label": "relevant", "reason": "Face, scene and word memory tasks"}
+{"query": "u03_memory", "acc": "ds000237", "label": "relevant", "reason": "Phonological working memory span task"}
+{"query": "u03_memory", "acc": "ds000238", "label": "relevant", "reason": "n-back working memory tasks"}
+{"query": "u03_memory", "acc": "ds000244", "label": "relevant", "reason": "Battery includes n-back working memory task"}
+{"query": "u03_memory", "acc": "ds001110", "label": "relevant", "reason": "Free recall of movie and audio narrative"}
+{"query": "u03_memory", "acc": "ds001132", "label": "relevant", "reason": "Naturalistic free recall, shared memory"}
+{"query": "u03_memory", "acc": "ds001229", "label": "relevant", "reason": "Episodic and working memory task"}
+{"query": "u03_memory", "acc": "ds001232", "label": "relevant", "reason": "Working memory forgetting task"}
+{"query": "u03_memory", "acc": "ds001235", "label": "relevant", "reason": "n_back_working_memory task code listed"}
+{"query": "u03_memory", "acc": "ds001344", "label": "relevant", "reason": "Working memory trials among control tasks"}
+{"query": "u03_memory", "acc": "ds001345", "label": "relevant", "reason": "Multisensory recognition memory task"}
+{"query": "u03_memory", "acc": "ds001379", "label": "relevant", "reason": "Method of loci memory encoding and recall"}
+{"query": "u03_memory", "acc": "ds001419", "label": "unsure", "reason": "Mental imagery tasks include visuo-spatial memory among many"}
+{"query": "u03_memory", "acc": "ds001430", "label": "relevant", "reason": "Context/source memory encoding tasks"}
+{"query": "u03_memory", "acc": "ds001454", "label": "relevant", "reason": "Learning and memory retrieval, hippocampal replay"}
+{"query": "u03_memory", "acc": "ds001497", "label": "relevant", "reason": "Long-term memory for faces, places, objects"}
+{"query": "u03_memory", "acc": "ds001510", "label": "relevant", "reason": "Memory recall tasks for narratives"}
+{"query": "u03_memory", "acc": "ds001511", "label": "not_relevant", "reason": "Scrambled story viewing only; no recall task in this dataset"}
+{"query": "u03_memory", "acc": "ds001521", "label": "relevant", "reason": "Memory encoding and recall organization"}
+{"query": "u03_memory", "acc": "ds001576", "label": "relevant", "reason": "Episodic memory reinstatement in working memory"}
+{"query": "u03_memory", "acc": "ds001614", "label": "unsure", "reason": "Perceptual decisions from learned memory evidence; memory not clearly main topic"}
+{"query": "u03_memory", "acc": "ds001618", "label": "relevant", "reason": "Autobiographical memory and n-back tasks"}
+{"query": "u03_memory", "acc": "ds001634", "label": "relevant", "reason": "Visual working memory task"}
+{"query": "u03_memory", "acc": "ds001635", "label": "relevant", "reason": "Visual working memory task"}
+{"query": "u03_memory", "acc": "ds001745", "label": "relevant", "reason": "Intentional forgetting, study-test memory task"}
+{"query": "u03_memory", "acc": "ds001748", "label": "relevant", "reason": "Episodic and autobiographical long-term memory retrieval"}
+{"query": "u03_memory", "acc": "ds001775", "label": "relevant", "reason": "Retrieval practice and recall of competing memories"}
+{"query": "u03_memory", "acc": "ds001926", "label": "relevant", "reason": "Memory encoding and memory test phases"}
+{"query": "u03_memory", "acc": "ds002006", "label": "relevant", "reason": "Memory and decision making, learning_and_memory task"}
+{"query": "u03_memory", "acc": "ds002076", "label": "relevant", "reason": "Working memory layer-dependent fMRI"}
+{"query": "u03_memory", "acc": "ds002168", "label": "relevant", "reason": "Mnemonic discrimination task"}
+{"query": "u03_memory", "acc": "ds002237", "label": "relevant", "reason": "Cueing memories, memory task phases"}
+{"query": "u03_memory", "acc": "ds002241", "label": "not_relevant", "reason": "Object recognition/drawing visual cortex; not a memory study"}
+{"query": "u03_memory", "acc": "ds002242", "label": "relevant", "reason": "False memory, recognition memory tests"}
+{"query": "u03_memory", "acc": "ds002311", "label": "relevant", "reason": "Memory reactivation, pre/post memory tasks"}
+{"query": "u03_memory", "acc": "ds002316", "label": "relevant", "reason": "N-back stop task, working memory load"}
+{"query": "u03_memory", "acc": "ds002351", "label": "not_relevant", "reason": "Lexical decision task, no memory"}
+{"query": "u03_memory", "acc": "ds002372", "label": "relevant", "reason": "n-back working memory task among tasks"}
+{"query": "u03_memory", "acc": "ds002424", "label": "relevant", "reason": "Spatial working memory tasks in ADHD"}
+{"query": "u03_memory", "acc": "ds002550", "label": "relevant", "reason": "Working memory selection and maintenance MEG"}
+{"query": "u03_memory", "acc": "ds002603", "label": "relevant", "reason": "Working memory task, dx domain working memory"}
+{"query": "u03_memory", "acc": "ds002655", "label": "relevant", "reason": "Mnemonic discrimination for event duration"}
+{"query": "u03_memory", "acc": "ds002685", "label": "relevant", "reason": "IBC battery includes working memory task"}
+{"query": "u03_memory", "acc": "ds002687", "label": "relevant", "reason": "Spatial working memory tasks and reward"}
+{"query": "u03_memory", "acc": "ds002711", "label": "not_relevant", "reason": "Emoji sentiment task, no memory"}
+{"query": "u03_memory", "acc": "ds002718", "label": "not_relevant", "reason": "Face processing, not memory"}
+{"query": "u03_memory", "acc": "ds002731", "label": "relevant", "reason": "DRM false memory encoding and retrieval"}
+{"query": "u03_memory", "acc": "ds002761", "label": "relevant", "reason": "Memory retrieval replay MEG"}
+{"query": "u03_memory", "acc": "ds002773", "label": "relevant", "reason": "Retrieval practice and memory updating"}
+{"query": "u03_memory", "acc": "ds002785", "label": "relevant", "reason": "Working memory task in battery"}
+{"query": "u03_memory", "acc": "ds002790", "label": "relevant", "reason": "Working memory task in battery"}
+{"query": "u03_memory", "acc": "ds002938", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds003148", "label": "relevant", "reason": "Cognitive battery with working memory and paired-associates tasks"}
+{"query": "u03_memory", "acc": "ds003151", "label": "relevant", "reason": "n-back working memory after stress"}
+{"query": "u03_memory", "acc": "ds003338", "label": "unsure", "reason": "memory_recall task code but naturalistic sports viewing focus on surprise"}
+{"query": "u03_memory", "acc": "ds003377", "label": "not_relevant", "reason": "No name or memory-related evidence"}
+{"query": "u03_memory", "acc": "ds003421", "label": "relevant", "reason": "Working memory condition among EEG tasks"}
+{"query": "u03_memory", "acc": "ds003425", "label": "not_relevant", "reason": "Fear conditioning with mental imagery; not a memory task"}
+{"query": "u03_memory", "acc": "ds003452", "label": "relevant", "reason": "Sternberg working memory task"}
+{"query": "u03_memory", "acc": "ds003465", "label": "relevant", "reason": "Sternberg working memory task"}
+{"query": "u03_memory", "acc": "ds003499", "label": "relevant", "reason": "Value-directed memory encoding and retrieval"}
+{"query": "u03_memory", "acc": "ds003511", "label": "relevant", "reason": "Autobiographical memory recall"}
+{"query": "u03_memory", "acc": "ds003519", "label": "relevant", "reason": "Visual working memory EEG"}
+{"query": "u03_memory", "acc": "ds003523", "label": "relevant", "reason": "Visual working memory EEG"}
+{"query": "u03_memory", "acc": "ds003550", "label": "relevant", "reason": "Repetition memory paradigm"}
+{"query": "u03_memory", "acc": "ds003565", "label": "relevant", "reason": "Verbal working memory EEG"}
+{"query": "u03_memory", "acc": "ds003569", "label": "not_relevant", "reason": "Lexical decision, no memory"}
+{"query": "u03_memory", "acc": "ds003574", "label": "relevant", "reason": "Memory test of reactivation during sleep; memory consolidation theme"}
+{"query": "u03_memory", "acc": "ds003604", "label": "unsure", "reason": "semantic_memory task code in children language study"}
+{"query": "u03_memory", "acc": "ds003645", "label": "not_relevant", "reason": "Face processing, not memory"}
+{"query": "u03_memory", "acc": "ds003655", "label": "relevant", "reason": "Sternberg verbal working memory EEG"}
+{"query": "u03_memory", "acc": "ds003659", "label": "relevant", "reason": "Learning, working and long-term memory"}
+{"query": "u03_memory", "acc": "ds003691", "label": "relevant", "reason": "Episodic and semantic memory retrieval"}
+{"query": "u03_memory", "acc": "ds003694", "label": "relevant", "reason": "Memory retrieval MEG"}
+{"query": "u03_memory", "acc": "ds003702", "label": "relevant", "reason": "Visual working memory task in VR"}
+{"query": "u03_memory", "acc": "ds003707", "label": "relevant", "reason": "Associative episodic memory task"}
+{"query": "u03_memory", "acc": "ds003721", "label": "relevant", "reason": "Emotional memory with recall tests"}
+{"query": "u03_memory", "acc": "ds003778", "label": "relevant", "reason": "Memory distortions, cued recall"}
+{"query": "u03_memory", "acc": "ds003789", "label": "relevant", "reason": "Encoding/retrieval false memory"}
+{"query": "u03_memory", "acc": "ds003814", "label": "relevant", "reason": "Familiar episodic memory task and recall engagement"}
+{"query": "u03_memory", "acc": "ds003823", "label": "unsure", "reason": "HRV biofeedback study; picture memory task only a minor behavioural measure"}
+{"query": "u03_memory", "acc": "ds003834", "label": "relevant", "reason": "n_back_working_memory task code listed"}
+{"query": "u03_memory", "acc": "ds003835", "label": "relevant", "reason": "Memory reconsolidation/prediction error updating, domain memory"}
+{"query": "u03_memory", "acc": "ds003838", "label": "relevant", "reason": "Digit span working memory with EEG"}
+{"query": "u03_memory", "acc": "ds003849", "label": "relevant", "reason": "n-back working memory training plasticity"}
+{"query": "u03_memory", "acc": "ds003851", "label": "relevant", "reason": "Paired-associates learning emphasising memory for instances"}
+{"query": "u03_memory", "acc": "ds003927", "label": "not_relevant", "reason": "Unseen contents recognition, consciousness study"}
+{"query": "u03_memory", "acc": "ds004009", "label": "unsure", "reason": "Category learning with memory_sampling task; memory unclear"}
+{"query": "u03_memory", "acc": "ds004042", "label": "relevant", "reason": "Free spoken recall of movies"}
+{"query": "u03_memory", "acc": "ds004086", "label": "relevant", "reason": "Recognition memory fMRI test"}
+{"query": "u03_memory", "acc": "ds004094", "label": "relevant", "reason": "Statistical learning, domain memory and reasoning"}
+{"query": "u03_memory", "acc": "ds004097", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds004109", "label": "relevant", "reason": "Emotional learning and memory integration"}
+{"query": "u03_memory", "acc": "ds004117", "label": "relevant", "reason": "Sternberg working memory EEG"}
+{"query": "u03_memory", "acc": "ds004119", "label": "not_relevant", "reason": "Vigilance guard duty, not memory"}
+{"query": "u03_memory", "acc": "ds004129", "label": "unsure", "reason": "Healthy volunteer phenotype with episodic/working memory tests, not during recording"}
+{"query": "u03_memory", "acc": "ds004130", "label": "unsure", "reason": "Healthy volunteer phenotype with episodic/working memory tests, not during recording"}
+{"query": "u03_memory", "acc": "ds004131", "label": "unsure", "reason": "Healthy volunteer phenotype with episodic/working memory tests, not during recording"}
+{"query": "u03_memory", "acc": "ds004148", "label": "relevant", "reason": "Memory state EEG recordings and test-retest"}
+{"query": "u03_memory", "acc": "ds004166", "label": "relevant", "reason": "Working memory span training RCT"}
+{"query": "u03_memory", "acc": "ds004169", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds004182", "label": "relevant", "reason": "Incidental encoding and memory test of magic videos"}
+{"query": "u03_memory", "acc": "ds004261", "label": "relevant", "reason": "Memory encoding and false memory"}
+{"query": "u03_memory", "acc": "ds004276", "label": "not_relevant", "reason": "Auditory word recognition lexical, not memory"}
+{"query": "u03_memory", "acc": "ds004278", "label": "relevant", "reason": "Cued recall memory task"}
+{"query": "u03_memory", "acc": "ds004286", "label": "relevant", "reason": "Autobiographical memory video task"}
+{"query": "u03_memory", "acc": "ds004330", "label": "not_relevant", "reason": "Object recognition perception"}
+{"query": "u03_memory", "acc": "ds004331", "label": "not_relevant", "reason": "Object recognition perception"}
+{"query": "u03_memory", "acc": "ds004341", "label": "relevant", "reason": "Semantic encoding, domain memory"}
+{"query": "u03_memory", "acc": "ds004349", "label": "not_relevant", "reason": "Passive viewing of faces, connectivity methods"}
+{"query": "u03_memory", "acc": "ds004350", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds004359", "label": "relevant", "reason": "Movie recall memory"}
+{"query": "u03_memory", "acc": "ds004395", "label": "relevant", "reason": "Free recall memory encoding and retrieval EEG"}
+{"query": "u03_memory", "acc": "ds004456", "label": "relevant", "reason": "Working memory task among localizers"}
+{"query": "u03_memory", "acc": "ds004469", "label": "relevant", "reason": "Working memory fMRI task in TLE, domain memory"}
+{"query": "u03_memory", "acc": "ds004482", "label": "relevant", "reason": "Working memory for binary sound sequences"}
+{"query": "u03_memory", "acc": "ds004483", "label": "relevant", "reason": "Working memory for binary sound sequences"}
+{"query": "u03_memory", "acc": "ds004488", "label": "not_relevant", "reason": "Action recognition perception"}
+{"query": "u03_memory", "acc": "ds004489", "label": "not_relevant", "reason": "Word recognition visual cortex, not memory"}
+{"query": "u03_memory", "acc": "ds004495", "label": "relevant", "reason": "Episodic and semantic memory tasks"}
+{"query": "u03_memory", "acc": "ds004520", "label": "relevant", "reason": "Working memory retro-cue task"}
+{"query": "u03_memory", "acc": "ds004521", "label": "relevant", "reason": "Working memory retro-cue task"}
+{"query": "u03_memory", "acc": "ds004529", "label": "not_relevant", "reason": "Face recognition modelling, not memory"}
+{"query": "u03_memory", "acc": "ds004589", "label": "relevant", "reason": "Face and word memory encoding/retrieval"}
+{"query": "u03_memory", "acc": "ds004590", "label": "relevant", "reason": "Episodic memory recognition and retrieval"}
+{"query": "u03_memory", "acc": "ds004639", "label": "relevant", "reason": "Memory encoding and retrieval, navigation training"}
+{"query": "u03_memory", "acc": "ds004647", "label": "relevant", "reason": "Working memory load task"}
+{"query": "u03_memory", "acc": "ds004661", "label": "relevant", "reason": "Auditory N-back dual-task"}
+{"query": "u03_memory", "acc": "ds004663", "label": "relevant", "reason": "Watching and recall runs of clips"}
+{"query": "u03_memory", "acc": "ds004692", "label": "relevant", "reason": "Recognition memory test"}
+{"query": "u03_memory", "acc": "ds004706", "label": "relevant", "reason": "Spatial/episodic memory closed-loop"}
+{"query": "u03_memory", "acc": "ds004731", "label": "relevant", "reason": "Memory formation during sleep as main topic"}
+{"query": "u03_memory", "acc": "ds004752", "label": "relevant", "reason": "Verbal working memory iEEG"}
+{"query": "u03_memory", "acc": "ds004770", "label": "relevant", "reason": "Visuospatial working memory iEEG"}
+{"query": "u03_memory", "acc": "ds004789", "label": "relevant", "reason": "Delayed free recall"}
+{"query": "u03_memory", "acc": "ds004791", "label": "relevant", "reason": "Working memory task among tasks"}
+{"query": "u03_memory", "acc": "ds004796", "label": "relevant", "reason": "Sternberg memory task and Alzheimer risk"}
+{"query": "u03_memory", "acc": "ds004798", "label": "unsure", "reason": "Movie watching; recognition memory only mentioned as research potential"}
+{"query": "u03_memory", "acc": "ds004809", "label": "relevant", "reason": "Categorized free recall"}
+{"query": "u03_memory", "acc": "ds004848", "label": "not_relevant", "reason": "Face memory test only as screening"}
+{"query": "u03_memory", "acc": "ds004849", "label": "unsure", "reason": "Placeholder dataset with n-back task code only"}
+{"query": "u03_memory", "acc": "ds004850", "label": "unsure", "reason": "Placeholder dataset with n-back task code only"}
+{"query": "u03_memory", "acc": "ds004852", "label": "unsure", "reason": "Placeholder dataset with n-back task code only"}
+{"query": "u03_memory", "acc": "ds004853", "label": "unsure", "reason": "Placeholder dataset with n-back task code only"}
+{"query": "u03_memory", "acc": "ds004854", "label": "unsure", "reason": "Placeholder dataset with n-back task code only"}
+{"query": "u03_memory", "acc": "ds004855", "label": "unsure", "reason": "Placeholder dataset with n-back task code only"}
+{"query": "u03_memory", "acc": "ds004856", "label": "unsure", "reason": "Aging study with memory test battery outside scanner; no memory task in recordings"}
+{"query": "u03_memory", "acc": "ds004865", "label": "relevant", "reason": "Delayed free recall iEEG"}
+{"query": "u03_memory", "acc": "ds004934", "label": "relevant", "reason": "Spatial working memory localizer task"}
+{"query": "u03_memory", "acc": "ds004942", "label": "relevant", "reason": "Spatial working memory EEG young/old"}
+{"query": "u03_memory", "acc": "ds004951", "label": "not_relevant", "reason": "Braille letter perception"}
+{"query": "u03_memory", "acc": "ds005034", "label": "relevant", "reason": "Working memory tasks with tACS"}
+{"query": "u03_memory", "acc": "ds005050", "label": "relevant", "reason": "Narrative memory for details"}
+{"query": "u03_memory", "acc": "ds005059", "label": "relevant", "reason": "Paired-associates cued recall iEEG"}
+{"query": "u03_memory", "acc": "ds005095", "label": "relevant", "reason": "Sternberg working memory EEG"}
+{"query": "u03_memory", "acc": "ds005121", "label": "relevant", "reason": "Memory consolidation, targeted memory reactivation in sleep"}
+{"query": "u03_memory", "acc": "ds005148", "label": "relevant", "reason": "Working memory task"}
+{"query": "u03_memory", "acc": "ds005189", "label": "relevant", "reason": "Recognition memory recollection/familiarity"}
+{"query": "u03_memory", "acc": "ds005215", "label": "relevant", "reason": "Film recall task"}
+{"query": "u03_memory", "acc": "ds005250", "label": "relevant", "reason": "n_back_working_memory task code"}
+{"query": "u03_memory", "acc": "ds005270", "label": "relevant", "reason": "n-back working memory in lifespan sample"}
+{"query": "u03_memory", "acc": "ds005305", "label": "relevant", "reason": "n-back, keep-track, letter-memory tasks"}
+{"query": "u03_memory", "acc": "ds005363", "label": "not_relevant", "reason": "Object viewing in ageing, no memory task"}
+{"query": "u03_memory", "acc": "ds005374", "label": "unsure", "reason": "Object recognition with some memory trials; memory minor"}
+{"query": "u03_memory", "acc": "ds005381", "label": "relevant", "reason": "Working memory and decision-making task"}
+{"query": "u03_memory", "acc": "ds005411", "label": "relevant", "reason": "Free recall iEEG"}
+{"query": "u03_memory", "acc": "ds005427", "label": "unsure", "reason": "Problem-solving study; PAL and spatial WM only cognitive assessments"}
+{"query": "u03_memory", "acc": "ds005464", "label": "relevant", "reason": "Memory strength encoding/retrieval"}
+{"query": "u03_memory", "acc": "ds005468", "label": "relevant", "reason": "Naturalistic memory encoding and recall"}
+{"query": "u03_memory", "acc": "ds005489", "label": "relevant", "reason": "Free recall with stimulation at encoding"}
+{"query": "u03_memory", "acc": "ds005491", "label": "relevant", "reason": "Categorized free recall with stimulation"}
+{"query": "u03_memory", "acc": "ds005494", "label": "relevant", "reason": "Paired associates memory task with stimulation"}
+{"query": "u03_memory", "acc": "ds005522", "label": "relevant", "reason": "Spatial navigation memory task"}
+{"query": "u03_memory", "acc": "ds005523", "label": "relevant", "reason": "Spatial memory of object locations"}
+{"query": "u03_memory", "acc": "ds005551", "label": "unsure", "reason": "Event segmentation movie viewing; memory test not evident"}
+{"query": "u03_memory", "acc": "ds005557", "label": "relevant", "reason": "Free recall closed-loop stimulation"}
+{"query": "u03_memory", "acc": "ds005558", "label": "relevant", "reason": "Categorized free recall closed-loop"}
+{"query": "u03_memory", "acc": "ds005559", "label": "relevant", "reason": "Pattern separation object and spatial memory"}
+{"query": "u03_memory", "acc": "ds005581", "label": "relevant", "reason": "Episodic memory encoding and consolidation"}
+{"query": "u03_memory", "acc": "ds005589", "label": "not_relevant", "reason": "Visual object recognition EEG, not memory"}
+{"query": "u03_memory", "acc": "ds005613", "label": "relevant", "reason": "Includes California Verbal Learning Test and working memory tasks"}
+{"query": "u03_memory", "acc": "ds005700", "label": "not_relevant", "reason": "Emotion recognition fMRI"}
+{"query": "u03_memory", "acc": "ds005704", "label": "relevant", "reason": "Memory palace recall"}
+{"query": "u03_memory", "acc": "ds005752", "label": "relevant", "reason": "Sternberg MEG task and memory tests"}
+{"query": "u03_memory", "acc": "ds005795", "label": "unsure", "reason": "Category learning labelled learning_and_memory; memory unclear"}
+{"query": "u03_memory", "acc": "ds005857", "label": "relevant", "reason": "Delayed repeated free recall"}
+{"query": "u03_memory", "acc": "ds005894", "label": "relevant", "reason": "Method of loci memory encoding and recall"}
+{"query": "u03_memory", "acc": "ds005896", "label": "relevant", "reason": "Working memory task in adolescent fMRI"}
+{"query": "u03_memory", "acc": "ds005901", "label": "relevant", "reason": "Working memory task in adolescent fMRI"}
+{"query": "u03_memory", "acc": "ds005917", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds006039", "label": "relevant", "reason": "Associative inference memory task"}
+{"query": "u03_memory", "acc": "ds006065", "label": "relevant", "reason": "Episodic memory pre/post stimulation iEEG"}
+{"query": "u03_memory", "acc": "ds006136", "label": "relevant", "reason": "Object working memory iEEG"}
+{"query": "u03_memory", "acc": "ds006142", "label": "relevant", "reason": "Movie memory EEG"}
+{"query": "u03_memory", "acc": "ds006148", "label": "relevant", "reason": "Logical memory and working memory tasks"}
+{"query": "u03_memory", "acc": "ds006179", "label": "relevant", "reason": "Working memory condition in localizer"}
+{"query": "u03_memory", "acc": "ds006265", "label": "relevant", "reason": "Episodic memory 7T fMRI"}
+{"query": "u03_memory", "acc": "ds006266", "label": "relevant", "reason": "Episodic memory 7T fMRI"}
+{"query": "u03_memory", "acc": "ds006367", "label": "relevant", "reason": "Memory interference delayed match-to-sample"}
+{"query": "u03_memory", "acc": "ds006370", "label": "relevant", "reason": "Working memory cued-memorization task"}
+{"query": "u03_memory", "acc": "ds006576", "label": "relevant", "reason": "Memory consolidation and sleep fMRI/EEG"}
+{"query": "u03_memory", "acc": "ds006598", "label": "relevant", "reason": "Audiovisual working memory task"}
+{"query": "u03_memory", "acc": "ds006686", "label": "relevant", "reason": "Category learning and memory in older adults"}
+{"query": "u03_memory", "acc": "ds006720", "label": "relevant", "reason": "Working memory load MEG"}
+{"query": "u03_memory", "acc": "ds006779", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds006801", "label": "relevant", "reason": "Learning and memory retrieval practice EEG"}
+{"query": "u03_memory", "acc": "ds006805", "label": "not_relevant", "reason": "Object recognition perception"}
+{"query": "u03_memory", "acc": "ds006848", "label": "relevant", "reason": "Verbal working memory EEG"}
+{"query": "u03_memory", "acc": "ds006943", "label": "relevant", "reason": "n-back task with environmental sounds"}
+{"query": "u03_memory", "acc": "ds006963", "label": "relevant", "reason": "Visual working memory gating"}
+{"query": "u03_memory", "acc": "ds006979", "label": "relevant", "reason": "Visual working memory ERP"}
+{"query": "u03_memory", "acc": "ds007022", "label": "relevant", "reason": "n-back task in behavioural battery"}
+{"query": "u03_memory", "acc": "ds007063", "label": "relevant", "reason": "Memory specificity/generalization as main topic"}
+{"query": "u03_memory", "acc": "ds007081", "label": "relevant", "reason": "Working memory EEG task"}
+{"query": "u03_memory", "acc": "ds007082", "label": "relevant", "reason": "Perception and working memory task"}
+{"query": "u03_memory", "acc": "ds007088", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds007116", "label": "relevant", "reason": "n-back working memory task and Penn memory tasks"}
+{"query": "u03_memory", "acc": "ds007122", "label": "relevant", "reason": "Autobiographical memory retrieval 7T"}
+{"query": "u03_memory", "acc": "ds007156", "label": "relevant", "reason": "Implicit memory for sound patterns"}
+{"query": "u03_memory", "acc": "ds007162", "label": "not_relevant", "reason": "Object recognition perception EEG"}
+{"query": "u03_memory", "acc": "ds007169", "label": "relevant", "reason": "n-back task"}
+{"query": "u03_memory", "acc": "ds007180", "label": "relevant", "reason": "Attention and working memory EEG"}
+{"query": "u03_memory", "acc": "ds007275", "label": "relevant", "reason": "Mnemonic similarity encoding and recognition"}
+{"query": "u03_memory", "acc": "ds007286", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds007318", "label": "relevant", "reason": "Working memory removal task"}
+{"query": "u03_memory", "acc": "ds007329", "label": "relevant", "reason": "visual_memory_general task listed"}
+{"query": "u03_memory", "acc": "ds007335", "label": "relevant", "reason": "Participants performed a working memory task"}
+{"query": "u03_memory", "acc": "ds007342", "label": "relevant", "reason": "Working memory task among localizers"}
+{"query": "u03_memory", "acc": "ds007353", "label": "not_relevant", "reason": "Action recognition, not memory"}
+{"query": "u03_memory", "acc": "ds007376", "label": "relevant", "reason": "Memory 2-back task blocks"}
+{"query": "u03_memory", "acc": "ds007384", "label": "relevant", "reason": "visual_memory_general task listed"}
+{"query": "u03_memory", "acc": "ds007402", "label": "relevant", "reason": "n-back working memory task"}
+{"query": "u03_memory", "acc": "ds007431", "label": "relevant", "reason": "Working memory encoding orientation task"}
+{"query": "u03_memory", "acc": "ds007446", "label": "unsure", "reason": "Multiple-demand localizer; working memory not explicit"}
+{"query": "u03_memory", "acc": "ds007532", "label": "relevant", "reason": "Sequence memory task"}
+{"query": "u03_memory", "acc": "ds007554", "label": "relevant", "reason": "2-back working memory task"}
+{"query": "u03_memory", "acc": "ds007629", "label": "unsure", "reason": "remind_memory_task code in reading mind-wandering study"}
+{"query": "u08_motor_imagery", "acc": "ds000203", "label": "not_relevant", "reason": "Visual imagery and false memory, not motor"}
+{"query": "u08_motor_imagery", "acc": "ds000214", "label": "not_relevant", "reason": "Cyberball social exclusion"}
+{"query": "u08_motor_imagery", "acc": "ds000221", "label": "not_relevant", "reason": "Resting-state cohort; imagery only as questionnaire"}
+{"query": "u08_motor_imagery", "acc": "ds001246", "label": "not_relevant", "reason": "Visual object imagery decoding"}
+{"query": "u08_motor_imagery", "acc": "ds001419", "label": "unsure", "reason": "Mental imagery tasks in one subject; motor imagery not confirmed"}
+{"query": "u08_motor_imagery", "acc": "ds001506", "label": "not_relevant", "reason": "Visual image reconstruction/imagery"}
+{"query": "u08_motor_imagery", "acc": "ds001525", "label": "not_relevant", "reason": "Covert speech repetition, not movement imagery"}
+{"query": "u08_motor_imagery", "acc": "ds001761", "label": "not_relevant", "reason": "Face reconstruction, visual imagery"}
+{"query": "u08_motor_imagery", "acc": "ds002236", "label": "not_relevant", "reason": "Lexical processing in children"}
+{"query": "u08_motor_imagery", "acc": "ds002336", "label": "relevant", "reason": "Motor imagery neurofeedback EEG-fMRI"}
+{"query": "u08_motor_imagery", "acc": "ds002338", "label": "relevant", "reason": "Motor imagery neurofeedback EEG-fMRI"}
+{"query": "u08_motor_imagery", "acc": "ds002547", "label": "not_relevant", "reason": "Emotion imagery, not motor"}
+{"query": "u08_motor_imagery", "acc": "ds002720", "label": "relevant", "reason": "BCMI: kinaesthetically imagining squeezing ball to control music tempo"}
+{"query": "u08_motor_imagery", "acc": "ds002721", "label": "not_relevant", "reason": "Affective music listening EEG"}
+{"query": "u08_motor_imagery", "acc": "ds002722", "label": "not_relevant", "reason": "Affective BCMI calibration; no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds002723", "label": "not_relevant", "reason": "Affective BCMI testing; no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds002724", "label": "not_relevant", "reason": "Affective BCMI training; no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds002835", "label": "not_relevant", "reason": "Future scenario imagination, not motor"}
+{"query": "u08_motor_imagery", "acc": "ds003004", "label": "not_relevant", "reason": "Imagined emotion, not movement"}
+{"query": "u08_motor_imagery", "acc": "ds003146", "label": "not_relevant", "reason": "Vocal/music task, no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds003425", "label": "not_relevant", "reason": "Visual imagery fear conditioning"}
+{"query": "u08_motor_imagery", "acc": "ds003612", "label": "relevant", "reason": "Motor imagery vs execution in handedness study"}
+{"query": "u08_motor_imagery", "acc": "ds003626", "label": "not_relevant", "reason": "Inner speech imagination, not motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds003643", "label": "not_relevant", "reason": "Naturalistic story listening"}
+{"query": "u08_motor_imagery", "acc": "ds003810", "label": "relevant", "reason": "Motor imagery vs rest BCI EEG"}
+{"query": "u08_motor_imagery", "acc": "ds003814", "label": "not_relevant", "reason": "Social and spatial reasoning"}
+{"query": "u08_motor_imagery", "acc": "ds003831", "label": "not_relevant", "reason": "Emotion regulation neurofeedback"}
+{"query": "u08_motor_imagery", "acc": "ds004022", "label": "relevant", "reason": "Motor imagery EEG-fNIRS in orthopedic impairment"}
+{"query": "u08_motor_imagery", "acc": "ds004141", "label": "not_relevant", "reason": "Face processing neurofeedback"}
+{"query": "u08_motor_imagery", "acc": "ds004142", "label": "not_relevant", "reason": "Visual motion area imagery neurofeedback, not motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds004196", "label": "not_relevant", "reason": "Inner speech imagination, not motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds004286", "label": "not_relevant", "reason": "Memory video imagery task"}
+{"query": "u08_motor_imagery", "acc": "ds004306", "label": "not_relevant", "reason": "Semantic imagination of objects, not movement"}
+{"query": "u08_motor_imagery", "acc": "ds004312", "label": "not_relevant", "reason": "Imagined taste"}
+{"query": "u08_motor_imagery", "acc": "ds004324", "label": "not_relevant", "reason": "Affective ERP faces"}
+{"query": "u08_motor_imagery", "acc": "ds004327", "label": "not_relevant", "reason": "Odour imagery"}
+{"query": "u08_motor_imagery", "acc": "ds004362", "label": "relevant", "reason": "EEG motor movement/imagery dataset, imagined fist opening/closing"}
+{"query": "u08_motor_imagery", "acc": "ds004393", "label": "not_relevant", "reason": "Imagined fear stimuli"}
+{"query": "u08_motor_imagery", "acc": "ds004407", "label": "not_relevant", "reason": "Mental imagery fear extinction"}
+{"query": "u08_motor_imagery", "acc": "ds004444", "label": "relevant", "reason": "SMR-based BCI high-density EEG, motor imagery control"}
+{"query": "u08_motor_imagery", "acc": "ds004446", "label": "relevant", "reason": "SMR-based BCI high-density EEG, motor imagery control"}
+{"query": "u08_motor_imagery", "acc": "ds004447", "label": "relevant", "reason": "SMR-based BCI high-density EEG, motor imagery control"}
+{"query": "u08_motor_imagery", "acc": "ds004448", "label": "relevant", "reason": "SMR-based BCI high-density EEG, motor imagery control"}
+{"query": "u08_motor_imagery", "acc": "ds004477", "label": "not_relevant", "reason": "Decision-making scenario EEG, no imagery"}
+{"query": "u08_motor_imagery", "acc": "ds004510", "label": "not_relevant", "reason": "Imagined speech decoding, not motor"}
+{"query": "u08_motor_imagery", "acc": "ds004514", "label": "not_relevant", "reason": "Semantic imagery of animals/tools"}
+{"query": "u08_motor_imagery", "acc": "ds004515", "label": "not_relevant", "reason": "Alcohol imagery reinforcement learning"}
+{"query": "u08_motor_imagery", "acc": "ds004517", "label": "not_relevant", "reason": "Auditory imagery semantic decoding"}
+{"query": "u08_motor_imagery", "acc": "ds004624", "label": "not_relevant", "reason": "Intracranial BCI2000 neuromodulation; no motor imagery stated"}
+{"query": "u08_motor_imagery", "acc": "ds004830", "label": "not_relevant", "reason": "Spatial attention decoding fNIRS"}
+{"query": "u08_motor_imagery", "acc": "ds004944", "label": "not_relevant", "reason": "Intraoperative ECoG BCI2000 format; no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds004973", "label": "not_relevant", "reason": "Driving risk fNIRS"}
+{"query": "u08_motor_imagery", "acc": "ds005170", "label": "not_relevant", "reason": "Imagined speech EEG"}
+{"query": "u08_motor_imagery", "acc": "ds005191", "label": "not_relevant", "reason": "Visual mental imagery captioning"}
+{"query": "u08_motor_imagery", "acc": "ds005342", "label": "relevant", "reason": "Motor imagery of standing and sitting EEG"}
+{"query": "u08_motor_imagery", "acc": "ds005366", "label": "unsure", "reason": "Motor-based BCI fMRI; imagery versus attempted movement not stated"}
+{"query": "u08_motor_imagery", "acc": "ds005540", "label": "not_relevant", "reason": "Emotional imagery EEG"}
+{"query": "u08_motor_imagery", "acc": "ds005589", "label": "not_relevant", "reason": "Visual object recognition EEG"}
+{"query": "u08_motor_imagery", "acc": "ds005672", "label": "not_relevant", "reason": "Visual imagination EEG"}
+{"query": "u08_motor_imagery", "acc": "ds005697", "label": "not_relevant", "reason": "Visual imagination EEG"}
+{"query": "u08_motor_imagery", "acc": "ds005776", "label": "unsure", "reason": "fNIRS finger tapping with mental imagery task; imagery type not stated"}
+{"query": "u08_motor_imagery", "acc": "ds005815", "label": "not_relevant", "reason": "Multisensory mental imagery, not motor"}
+{"query": "u08_motor_imagery", "acc": "ds005946", "label": "not_relevant", "reason": "Metaphor and mental imagery language task"}
+{"query": "u08_motor_imagery", "acc": "ds006040", "label": "not_relevant", "reason": "Sustained attention task EEG-fMRI"}
+{"query": "u08_motor_imagery", "acc": "ds006126", "label": "relevant", "reason": "tDCS modulation of motor imagery EEG"}
+{"query": "u08_motor_imagery", "acc": "ds006317", "label": "not_relevant", "reason": "Imagined speech"}
+{"query": "u08_motor_imagery", "acc": "ds006373", "label": "relevant", "reason": "Leg, trunk and arm motor imagery fMRI tasks"}
+{"query": "u08_motor_imagery", "acc": "ds006437", "label": "not_relevant", "reason": "Guided imagery hypnotherapy, not motor"}
+{"query": "u08_motor_imagery", "acc": "ds006446", "label": "not_relevant", "reason": "Delay discounting EEG"}
+{"query": "u08_motor_imagery", "acc": "ds006465", "label": "not_relevant", "reason": "Imagined speech Pinyin"}
+{"query": "u08_motor_imagery", "acc": "ds006518", "label": "not_relevant", "reason": "Visual orientation imagery MEG"}
+{"query": "u08_motor_imagery", "acc": "ds006564", "label": "not_relevant", "reason": "Film viewing theory of mind"}
+{"query": "u08_motor_imagery", "acc": "ds006593", "label": "not_relevant", "reason": "BCI typing spelling, no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds006623", "label": "relevant", "reason": "Mental imagery tasks incl. tennis and hand squeeze under propofol"}
+{"query": "u08_motor_imagery", "acc": "ds006647", "label": "not_relevant", "reason": "Poetry reading EEG"}
+{"query": "u08_motor_imagery", "acc": "ds006648", "label": "not_relevant", "reason": "Poetry reading EEG"}
+{"query": "u08_motor_imagery", "acc": "ds006798", "label": "not_relevant", "reason": "Visual scene viewing with visual imagery"}
+{"query": "u08_motor_imagery", "acc": "ds006840", "label": "not_relevant", "reason": "Intention-action conflict hand kinematics, executed movement"}
+{"query": "u08_motor_imagery", "acc": "ds006890", "label": "not_relevant", "reason": "Macaque ECoG motor tasks, no imagery"}
+{"query": "u08_motor_imagery", "acc": "ds006945", "label": "relevant", "reason": "Kinesthetic motor imagery of walking"}
+{"query": "u08_motor_imagery", "acc": "ds007216", "label": "not_relevant", "reason": "Sustained attention and experience sampling"}
+{"query": "u08_motor_imagery", "acc": "ds007272", "label": "not_relevant", "reason": "Visual scene viewing with visual imagery"}
+{"query": "u08_motor_imagery", "acc": "ds007327", "label": "relevant", "reason": "Basketball motor imagery EEG"}
+{"query": "u08_motor_imagery", "acc": "ds007554", "label": "relevant", "reason": "Motor imagery task among cognitive-motor tasks"}
+{"query": "u09_qmri_ageing", "acc": "ds000218", "label": "not_relevant", "reason": "fMRI flavour study, young adults, no quantitative maps"}
+{"query": "u09_qmri_ageing", "acc": "ds000219", "label": "not_relevant", "reason": "fMRI flavour study, young adults, no quantitative maps"}
+{"query": "u09_qmri_ageing", "acc": "ds000221", "label": "unsure", "reason": "Quantitative T1 and QSM acquired; age range not shown on card"}
+{"query": "u09_qmri_ageing", "acc": "ds000224", "label": "not_relevant", "reason": "Young adults 24-34; myelin maps from T1w/T2w only"}
+{"query": "u09_qmri_ageing", "acc": "ds001491", "label": "not_relevant", "reason": "Multi-echo fMRI, young adults, no qMRI maps"}
+{"query": "u09_qmri_ageing", "acc": "ds002634", "label": "not_relevant", "reason": "MPM maps present but young healthy sample, no ageing"}
+{"query": "u09_qmri_ageing", "acc": "ds003563", "label": "not_relevant", "reason": "Single-subject ultrahigh-res phantom with QSM; no age range"}
+{"query": "u09_qmri_ageing", "acc": "ds003653", "label": "not_relevant", "reason": "T1w/T2w ratio proxy, ages 19-44; not quantitative maps"}
+{"query": "u09_qmri_ageing", "acc": "ds004054", "label": "relevant", "reason": "T2 and T2* mapping, ages 10-63 healthy and epilepsy"}
+{"query": "u09_qmri_ageing", "acc": "ds004187", "label": "not_relevant", "reason": "3 young adults, qT1 for LGN localisation"}
+{"query": "u09_qmri_ageing", "acc": "ds004513", "label": "not_relevant", "reason": "PET/fMRI/DWI, no quantitative MRI maps"}
+{"query": "u09_qmri_ageing", "acc": "ds004552", "label": "not_relevant", "reason": "TMS PET/fMRI derivatives; no qMRI or ageing"}
+{"query": "u09_qmri_ageing", "acc": "ds004611", "label": "not_relevant", "reason": "qT1/T2 maps but children aged 3-18 only"}
+{"query": "u09_qmri_ageing", "acc": "ds004666", "label": "not_relevant", "reason": "Diffusion denoising, single subject"}
+{"query": "u09_qmri_ageing", "acc": "ds004873", "label": "relevant", "reason": "Quantitative r2', CBF, CMRO2 maps in adults aged 21-60"}
+{"query": "u09_qmri_ageing", "acc": "ds004958", "label": "relevant", "reason": "MP2RAGE T1 maps and GRE, healthy ages 19-76"}
+{"query": "u09_qmri_ageing", "acc": "ds005698", "label": "not_relevant", "reason": "PET radioligand dataset, no qMRI"}
+{"query": "u09_qmri_ageing", "acc": "ds005851", "label": "relevant", "reason": "MPM qMRI aging data, ages 19-75"}
+{"query": "u09_qmri_ageing", "acc": "ds006131", "label": "not_relevant", "reason": "MEGRE for QSM but ages 15-31 affective study"}
+{"query": "u09_qmri_ageing", "acc": "ds006248", "label": "not_relevant", "reason": "Clinical pituitary adenoma MRI, no ageing"}
+{"query": "u09_qmri_ageing", "acc": "ds007116", "label": "not_relevant", "reason": "Adolescents 8-16; QSM sequence only"}
+{"query": "u09_qmri_ageing", "acc": "ds007313", "label": "unsure", "reason": "Single-participant qMRI; repository named aging but one subject"}
+{"query": "u09_qmri_ageing", "acc": "ds007418", "label": "not_relevant", "reason": "T2* multi-echo at 10.5T in 4 adults; not ageing"}
+{"query": "u10_diffusion_children", "acc": "ds000113", "label": "relevant", "reason": "Has diffusion MRI; ages 15-35 include minors"}
+{"query": "u10_diffusion_children", "acc": "ds001894", "label": "relevant", "reason": "Children's lexical processing study with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds003416", "label": "relevant", "reason": "Diffusion MRI including 83 healthy children aged 5-8"}
+{"query": "u10_diffusion_children", "acc": "ds003604", "label": "relevant", "reason": "Longitudinal child language dataset ages 5-7 with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds004097", "label": "not_relevant", "reason": "Adult equivalent of ABCD; no children indicated"}
+{"query": "u10_diffusion_children", "acc": "ds004146", "label": "relevant", "reason": "Adolescent twins aged 8-14 with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds004161", "label": "not_relevant", "reason": "Sheep, not human children"}
+{"query": "u10_diffusion_children", "acc": "ds004498", "label": "relevant", "reason": "13-year-old with perinatal stroke, diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds004605", "label": "relevant", "reason": "Youth aged 7-20.5 with DTI"}
+{"query": "u10_diffusion_children", "acc": "ds004627", "label": "relevant", "reason": "Adolescent depression sample with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds004632", "label": "not_relevant", "reason": "Preclinical animal stroke model"}
+{"query": "u10_diffusion_children", "acc": "ds004889", "label": "relevant", "reason": "Stroke cohort with ages from 16 and diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds005256", "label": "relevant", "reason": "Age range 17-44 includes 17-year-olds, diffusion MRI present"}
+{"query": "u10_diffusion_children", "acc": "ds005577", "label": "relevant", "reason": "Ages 17-37 include minors; diffusion MRI present"}
+{"query": "u10_diffusion_children", "acc": "ds005664", "label": "not_relevant", "reason": "Adult traveling subjects, ages 22-55"}
+{"query": "u10_diffusion_children", "acc": "ds005752", "label": "not_relevant", "reason": "Adult volunteers aged 18-90"}
+{"query": "u10_diffusion_children", "acc": "ds005896", "label": "relevant", "reason": "Adolescent health and development study with DTI"}
+{"query": "u10_diffusion_children", "acc": "ds005901", "label": "relevant", "reason": "Adolescent health and development study with DTI"}
+{"query": "u10_diffusion_children", "acc": "ds005917", "label": "not_relevant", "reason": "Adults aged 20-66"}
+{"query": "u10_diffusion_children", "acc": "ds006131", "label": "relevant", "reason": "Ages 15-31 with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds006169", "label": "relevant", "reason": "Infant to school-age longitudinal diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds006239", "label": "unsure", "reason": "Reading development dataset with diffusion; ages not given"}
+{"query": "u10_diffusion_children", "acc": "ds006592", "label": "relevant", "reason": "16-year-old participant with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds006663", "label": "not_relevant", "reason": "Mice"}
+{"query": "u10_diffusion_children", "acc": "ds007116", "label": "relevant", "reason": "Adolescents aged 8-16 with diffusion MRI"}
+{"query": "u10_diffusion_children", "acc": "ds007398", "label": "relevant", "reason": "Children aged 6-8.5 diffusion MRI"}
+{"query": "u11_diffusion_adhd", "acc": "ds000030", "label": "relevant", "reason": "ADHD group among participants; diffusion MRI present."}
+{"query": "u11_diffusion_adhd", "acc": "ds004605", "label": "relevant", "reason": "ADHD or DMDD youth with DTI."}
+{"query": "u11_diffusion_adhd", "acc": "ds005360", "label": "not_relevant", "reason": "Healthy menstrual cycle study; no ADHD."}
+{"query": "u11_diffusion_adhd", "acc": "ds006131", "label": "not_relevant", "reason": "Affective instability sample; ADHD only as questionnaire."}
+{"query": "u11_diffusion_adhd", "acc": "ds007116", "label": "not_relevant", "reason": "Transdiagnostic adolescents; ADHD only via questionnaire."}
+{"query": "u12_mrs_tbi", "acc": "ds000030", "label": "not_relevant", "reason": "No TBI, no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds000204", "label": "not_relevant", "reason": "TBI PET/MRI but no MR spectroscopy evidence"}
+{"query": "u12_mrs_tbi", "acc": "ds000214", "label": "not_relevant", "reason": "BPD sample, no TBI or spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds000220", "label": "not_relevant", "reason": "TBI resting fMRI; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds001386", "label": "not_relevant", "reason": "TBI resting fMRI; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds002675", "label": "not_relevant", "reason": "TBI fMRI language; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds003367", "label": "not_relevant", "reason": "TBI diffusion MRI only; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds003397", "label": "not_relevant", "reason": "Healthy PET-fMRI; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds003522", "label": "not_relevant", "reason": "mTBI EEG; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds003523", "label": "not_relevant", "reason": "mTBI EEG; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds004752", "label": "not_relevant", "reason": "Epilepsy iEEG; no TBI or spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds005114", "label": "not_relevant", "reason": "mTBI EEG; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds005237", "label": "not_relevant", "reason": "Psychiatric transdiagnostic; concussion only exclusion; no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds005385", "label": "not_relevant", "reason": "Healthy lifespan EEG"}
+{"query": "u12_mrs_tbi", "acc": "ds006001", "label": "not_relevant", "reason": "Diffusion MRI tool; TBI only validation cohort, no spectroscopy"}
+{"query": "u12_mrs_tbi", "acc": "ds006905", "label": "not_relevant", "reason": "ADHD trial; TBI exclusion"}
+{"query": "u12_mrs_tbi", "acc": "ds007526", "label": "not_relevant", "reason": "Parkinson EEG; no TBI"}
+{"query": "u13_mrs", "acc": "ds003823", "label": "relevant", "reason": "README lists magnetic resonance spectroscopy (MRS) among acquisitions"}
+{"query": "u13_mrs", "acc": "ds004514", "label": "not_relevant", "reason": "EEG and fNIRS only"}
+{"query": "u13_mrs", "acc": "ds004644", "label": "relevant", "reason": "PRESS MRS data from mouse model"}
+{"query": "u13_mrs", "acc": "ds004868", "label": "not_relevant", "reason": "PET only"}
+{"query": "u13_mrs", "acc": "ds005093", "label": "relevant", "reason": "MRS voxels over putamen in primate study"}
+{"query": "u13_mrs", "acc": "ds005186", "label": "not_relevant", "reason": "DWI of mice, no MRS"}
+{"query": "u13_mrs", "acc": "ds005236", "label": "not_relevant", "reason": "DWI of mice, no MRS"}
+{"query": "u13_mrs", "acc": "ds005371", "label": "relevant", "reason": "Edited single-voxel PRESS and sLASER MRS"}
+{"query": "u13_mrs", "acc": "ds005605", "label": "not_relevant", "reason": "PET only"}
+{"query": "u13_mrs", "acc": "ds005619", "label": "not_relevant", "reason": "PET only"}
+{"query": "u13_mrs", "acc": "ds005635", "label": "not_relevant", "reason": "Mouse resting-state fMRI, no MRS"}
+{"query": "u13_mrs", "acc": "ds005636", "label": "not_relevant", "reason": "Mouse resting-state fMRI, no MRS"}
+{"query": "u13_mrs", "acc": "ds005698", "label": "not_relevant", "reason": "PET only"}
+{"query": "u13_mrs", "acc": "ds005839", "label": "unsure", "reason": "GABA pain study; MRS plausible but not stated in card"}
+{"query": "u13_mrs", "acc": "ds005917", "label": "relevant", "reason": "MRS acquired at 7T in ketamine study"}
+{"query": "u13_mrs", "acc": "ds006444", "label": "relevant", "reason": "MRS metabolite quantification dataset"}
+{"query": "u13_mrs", "acc": "ds006613", "label": "not_relevant", "reason": "PET only"}
+{"query": "u13_mrs", "acc": "ds006812", "label": "relevant", "reason": "1H MRS sLASER dataset"}
+{"query": "u13_mrs", "acc": "ds006902", "label": "not_relevant", "reason": "fNIRS only"}
+{"query": "u14_fetal", "acc": "ds000030", "label": "not_relevant", "reason": "Adult cohort; pregnancy only exclusion"}
+{"query": "u14_fetal", "acc": "ds000214", "label": "not_relevant", "reason": "Adult BPD Cyberball study"}
+{"query": "u14_fetal", "acc": "ds002717", "label": "not_relevant", "reason": "Adult women pregnancy loss, body odor; no fetal MRI"}
+{"query": "u14_fetal", "acc": "ds003136", "label": "not_relevant", "reason": "Mothers' MRI at three months postnatal, not fetal"}
+{"query": "u14_fetal", "acc": "ds004129", "label": "not_relevant", "reason": "Adult healthy volunteers; pregnancy test only"}
+{"query": "u14_fetal", "acc": "ds004130", "label": "not_relevant", "reason": "Adult healthy volunteers; pregnancy test only"}
+{"query": "u14_fetal", "acc": "ds004131", "label": "not_relevant", "reason": "Adult healthy volunteers; pregnancy test only"}
+{"query": "u14_fetal", "acc": "ds004145", "label": "not_relevant", "reason": "Rodent offspring 2-3 months old MRI, postnatal not fetal"}
+{"query": "u14_fetal", "acc": "ds004327", "label": "not_relevant", "reason": "Adult odour imagery; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds004605", "label": "not_relevant", "reason": "Youth 7-20 DTI; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds004725", "label": "not_relevant", "reason": "Adult oxytocin study; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds005237", "label": "not_relevant", "reason": "Adult transdiagnostic; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds005299", "label": "not_relevant", "reason": "Maternal brain MRI, mother not fetus"}
+{"query": "u14_fetal", "acc": "ds005360", "label": "not_relevant", "reason": "Adult menstrual cycle MRI; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds005525", "label": "not_relevant", "reason": "Adult circadian study; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds005752", "label": "not_relevant", "reason": "Adult volunteers; pregnancy test only"}
+{"query": "u14_fetal", "acc": "ds005917", "label": "not_relevant", "reason": "Adult ketamine study; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds006072", "label": "not_relevant", "reason": "Adult psilocybin; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds006303", "label": "not_relevant", "reason": "Pediatric anxiety; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds006491", "label": "not_relevant", "reason": "Adult hormone study; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds006905", "label": "not_relevant", "reason": "Children ADHD training; pregnancy exclusion"}
+{"query": "u14_fetal", "acc": "ds007216", "label": "not_relevant", "reason": "Adult EEG-fMRI; pregnancy exclusion"}
+{"query": "u15_newborn", "acc": "ds001365", "label": "not_relevant", "reason": "Reading skill individual differences; ages implausible, no newborn evidence"}
+{"query": "u15_newborn", "acc": "ds001399", "label": "not_relevant", "reason": "Multiband test adults; age 0 is missing value"}
+{"query": "u15_newborn", "acc": "ds002737", "label": "not_relevant", "reason": "Single adult task fMRI; age 0 placeholder"}
+{"query": "u15_newborn", "acc": "ds002750", "label": "not_relevant", "reason": "Adult resting-state; age 0 placeholder"}
+{"query": "u15_newborn", "acc": "ds003136", "label": "not_relevant", "reason": "Mothers' MRI at three months postnatal, not infants"}
+{"query": "u15_newborn", "acc": "ds004776", "label": "not_relevant", "reason": "Infant FreeSurfer test subject aged 1-1.5 years, not first months"}
+{"query": "u15_newborn", "acc": "ds005356", "label": "not_relevant", "reason": "Depression MEG; age 0 placeholder"}
+{"query": "u15_newborn", "acc": "ds006169", "label": "relevant", "reason": "Longitudinal infant-to-school-age MRI, infant session from about 2.5 months"}
+{"query": "u15_newborn", "acc": "ds006557", "label": "not_relevant", "reason": "Adult ultra-low-field MRI; newborn centre only site name"}
+{"query": "u15_newborn", "acc": "ds006559", "label": "not_relevant", "reason": "Adult attitude study; age 0 placeholder"}
+{"query": "u15_newborn", "acc": "ds006568", "label": "not_relevant", "reason": "Adult attitude study; age 0 placeholder"}
+{"query": "u15_newborn", "acc": "ds007335", "label": "not_relevant", "reason": "Adult superior colliculus; infant only in prior work"}
+{"query": "u16_parkinson", "acc": "ds001354", "label": "relevant", "reason": "de novo Parkinson and controls (diagnoses)"}
+{"query": "u16_parkinson", "acc": "ds001784", "label": "not_relevant", "reason": "DBS for treatment-resistant depression, not PD"}
+{"query": "u16_parkinson", "acc": "ds001907", "label": "relevant", "reason": "healthy aging and Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds002016", "label": "not_relevant", "reason": "PD only cited as atlas reference"}
+{"query": "u16_parkinson", "acc": "ds002040", "label": "unsure", "reason": "name BIDS_PARKINSON, single subject, no description"}
+{"query": "u16_parkinson", "acc": "ds002041", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds002778", "label": "relevant", "reason": "EEG from Parkinson patients"}
+{"query": "u16_parkinson", "acc": "ds002885", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds002908", "label": "relevant", "reason": "dx_status Parkinson patients, MEG task"}
+{"query": "u16_parkinson", "acc": "ds003114", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds003194", "label": "relevant", "reason": "PD patients in Neuroepo trial"}
+{"query": "u16_parkinson", "acc": "ds003195", "label": "relevant", "reason": "PD patients placebo arm of Neuroepo trial"}
+{"query": "u16_parkinson", "acc": "ds003490", "label": "relevant", "reason": "EEG in Parkinson patients"}
+{"query": "u16_parkinson", "acc": "ds003506", "label": "relevant", "reason": "EEG in Parkinson patients"}
+{"query": "u16_parkinson", "acc": "ds003508", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds003509", "label": "relevant", "reason": "EEG in Parkinson patients"}
+{"query": "u16_parkinson", "acc": "ds003715", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds004073", "label": "not_relevant", "reason": "PD is phonological decision task"}
+{"query": "u16_parkinson", "acc": "ds004392", "label": "relevant", "reason": "Parkinson disease connectivity title"}
+{"query": "u16_parkinson", "acc": "ds004471", "label": "relevant", "reason": "Parkinson dataset title"}
+{"query": "u16_parkinson", "acc": "ds004574", "label": "relevant", "reason": "Parkinson disease vs control oddball"}
+{"query": "u16_parkinson", "acc": "ds004579", "label": "relevant", "reason": "Parkinson disease vs control"}
+{"query": "u16_parkinson", "acc": "ds004580", "label": "relevant", "reason": "Parkinson disease vs control"}
+{"query": "u16_parkinson", "acc": "ds004584", "label": "relevant", "reason": "Parkinson disease vs control"}
+{"query": "u16_parkinson", "acc": "ds004738", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds004913", "label": "not_relevant", "reason": "hemi-parkinsonian rats, not human patients"}
+{"query": "u16_parkinson", "acc": "ds004993", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds004998", "label": "relevant", "reason": "PD patients with DBS, MEG-LFP"}
+{"query": "u16_parkinson", "acc": "ds005263", "label": "not_relevant", "reason": "SKIP: healthy young participants, PD only context"}
+{"query": "u16_parkinson", "acc": "ds005264", "label": "not_relevant", "reason": "SKIP healthy young participants; PD only context"}
+{"query": "u16_parkinson", "acc": "ds005265", "label": "not_relevant", "reason": "SKIP healthy young participants; PD only context"}
+{"query": "u16_parkinson", "acc": "ds005266", "label": "not_relevant", "reason": "SKIP healthy young participants; PD only context"}
+{"query": "u16_parkinson", "acc": "ds005385", "label": "not_relevant", "reason": "Parkinson only as exclusion criterion"}
+{"query": "u16_parkinson", "acc": "ds005402", "label": "not_relevant", "reason": "MPTP mouse model"}
+{"query": "u16_parkinson", "acc": "ds005795", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds005849", "label": "unsure", "reason": "DBS precision imaging, indication not stated"}
+{"query": "u16_parkinson", "acc": "ds005892", "label": "relevant", "reason": "PD and PD-MCI groups"}
+{"query": "u16_parkinson", "acc": "ds005895", "label": "not_relevant", "reason": "animal/cell model"}
+{"query": "u16_parkinson", "acc": "ds005906", "label": "relevant", "reason": "Parkinson disease DBS rs-fMRI"}
+{"query": "u16_parkinson", "acc": "ds006001", "label": "not_relevant", "reason": "PD only mentioned as application"}
+{"query": "u16_parkinson", "acc": "ds006224", "label": "relevant", "reason": "PD participants from PPMI"}
+{"query": "u16_parkinson", "acc": "ds007020", "label": "relevant", "reason": "PD EEG mortality dataset"}
+{"query": "u16_parkinson", "acc": "ds007275", "label": "not_relevant", "reason": "PD means proton density"}
+{"query": "u16_parkinson", "acc": "ds007328", "label": "not_relevant", "reason": "no evidence of Parkinson participants"}
+{"query": "u16_parkinson", "acc": "ds007376", "label": "not_relevant", "reason": "PD means proton density"}
+{"query": "u16_parkinson", "acc": "ds007526", "label": "relevant", "reason": "Parkinson disease and controls EEG"}

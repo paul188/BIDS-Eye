@@ -1,0 +1,323 @@
+# Recall test set for BIDS-Eye search.
+#
+# Each query has a written relevance criterion (`relevant_if`). A dataset is
+# relevant when a careful human reading its metadata and README would say it
+# answers the question. Judgments live in judgments.jsonl.
+#
+# How the judged set was built (pooling, the standard method when the full
+# collection is too big to judge):
+#   1. `pool` lists every signal that could point at a relevant dataset:
+#      regular expressions over name, description, README, dx_status and
+#      study_domain (`text`), the same without the README (`text_short`, for
+#      words READMEs use in passing), structured diagnosis and task codes, and
+#      age bounds. The union of their hits is the candidate pool.
+#   2. `require_datatypes_any` / `require_datatypes_all` are hard conditions:
+#      the modality is recorded reliably (1,701 of 1,722 datasets), so a
+#      dataset without it is not relevant and is not judged.
+#   3. Every candidate is judged against `relevant_if`.
+# Datasets outside the pool are assumed not relevant. Recall measured this way
+# is an upper bound if the pool misses relevant datasets; widen `pool` when a
+# search returns a relevant dataset the pool lacked (eval_recall.py lists
+# returned-but-unjudged datasets for that reason).
+#
+# `kind: structural` queries need no judging: relevance is computed exactly from
+# recorded modalities by `rule`.
+#
+# Sources: user_log = asked by real users on bidseye.xyz (June–October 2026,
+# lightly normalised); probe = written to cover a known weakness.
+
+queries:
+
+# ── From the user log ──────────────────────────────────────────────────────────
+- id: u01_alzheimer_fmri
+  source: user_log
+  question: "Find fMRI datasets with Alzheimer's patients"
+  relevant_if: "Participants include people with Alzheimer's disease (or AD dementia / prodromal AD / MCI due to AD), and the dataset contains fMRI."
+  require_datatypes_any: [functional_mri]
+  pool:
+    text: ["alzheimer", "\\bAD\\b", "dementia"]
+    diagnoses: ["alzheimer", "dementia", "mild_cognitive"]
+
+- id: u02_focal_epilepsy_fmri
+  source: user_log
+  question: "Find fMRI datasets with patients with focal epilepsy"
+  relevant_if: "Participants include people with focal (partial, temporal-lobe, frontal-lobe) epilepsy, and the dataset contains fMRI."
+  require_datatypes_any: [functional_mri]
+  pool:
+    text: ["epilep", "seizure", "\\bTLE\\b", "focal cortical dysplasia"]
+    diagnoses: ["epilep", "dysplasia", "sclerosis", "seizure"]
+
+- id: u03_memory
+  source: user_log
+  question: "Datasets with assessments related to memory"
+  relevant_if: "Participants perform a memory task (episodic, working, recognition, recall, spatial memory) during the recording, or memory is the main topic of the study."
+  pool:
+    text_short: ["memory", "recall", "recogni[st]", "n-?back", "remember", "mnemonic", "forget"]
+    text: ["memory (task|test|paradigm|encoding|retrieval)", "(episodic|working|recognition|spatial|autobiographical|associative) memory", "free recall", "n-?back", "sternberg", "remember(ed)?[- /]know", "subsequent memory"]
+    tasks: ["memory", "recall", "recogni", "n_back", "encoding", "retrieval", "sternberg"]
+
+- id: u04_struct_and_func
+  source: user_log
+  kind: structural
+  question: "Find datasets with both structural and functional MRI"
+  rule: {datatypes_all: [anatomical_mri, functional_mri]}
+
+- id: u05_sickle_cell
+  source: user_log
+  question: "Find datasets with structural MRI in sickle cell disease"
+  relevant_if: "Participants include people with sickle cell disease, and the dataset contains structural MRI."
+  require_datatypes_any: [anatomical_mri]
+  pool:
+    text: ["sickle", "\\bSCD\\b", "anemia", "anaemia"]
+
+- id: u06_asl_autism
+  source: user_log
+  question: "Datasets containing ASL in patients with autism"
+  relevant_if: "Participants include autistic people (autism spectrum disorder), and the dataset contains arterial spin labelling (perfusion) MRI."
+  require_datatypes_any: [perfusion_asl]
+  pool:
+    text: ["autis", "\\bASD\\b", "asperger"]
+    diagnoses: ["autis", "asd"]
+
+- id: u07_eeg
+  source: user_log
+  kind: structural
+  question: "What are the EEG datasets?"
+  rule: {datatypes_any: [electroencephalography]}
+
+- id: u08_motor_imagery
+  source: user_log
+  question: "What are the motor imagery datasets available?"
+  relevant_if: "Participants imagine movements (motor imagery), typically for a brain-computer interface; executed movement alone does not count."
+  pool:
+    text: ["imagery", "\\bimagin(e|ed|es|ing|ation)\\b", "\\bBCI\\b", "brain[- ]computer"]
+    tasks: ["imager", "imagin(e|ed|es|ing|ation)"]
+
+- id: u09_qmri_ageing
+  source: user_log
+  question: "Quantitative MRI datasets on ageing"
+  relevant_if: "The dataset contains quantitative MRI maps (T1/T2/T2* maps, MPM, R1, R2*, MTsat, myelin water, QSM) and studies ageing or spans a wide adult age range."
+  require_datatypes_any: [anatomical_mri, field_maps]
+  pool:
+    text: ["quantitative", "\\bqMRI\\b", "relaxometr", "multi-?parameter", "\\bMPM\\b", "T1 ?map", "T2\\*? ?map", "\\bR2\\*", "myelin", "\\bQSM\\b", "MTsat"]
+
+- id: u10_diffusion_children
+  source: user_log
+  question: "Diffusion MRI in children"
+  relevant_if: "The dataset contains diffusion MRI and participants include children (under 18)."
+  require_datatypes_any: [diffusion_mri]
+  pool:
+    text: ["\\bchild", "pediatric", "paediatric", "\\bkids?\\b", "infan", "adolescen", "school[- ]age", "developing brain", "neurodevelopment"]
+    age_below: 18
+
+- id: u11_diffusion_adhd
+  source: user_log
+  question: "Datasets with diffusion imaging in ADHD"
+  relevant_if: "Participants include people with ADHD, and the dataset contains diffusion MRI."
+  require_datatypes_any: [diffusion_mri]
+  pool:
+    text: ["\\bADHD\\b", "attention[- ]deficit", "hyperactiv"]
+    diagnoses: ["adhd"]
+
+- id: u12_mrs_tbi
+  source: user_log
+  question: "Studies with spectroscopy data of traumatic brain injury"
+  relevant_if: "Participants include people with traumatic brain injury or concussion, and the dataset contains MR spectroscopy."
+  pool:
+    text: ["traumatic brain", "\\bTBI\\b", "concussi", "head injur"]
+    diagnoses: ["traumatic", "contusion"]
+
+- id: u13_mrs
+  source: user_log
+  question: "Datasets with MR spectroscopy"
+  relevant_if: "The dataset contains magnetic resonance spectroscopy (MRS, MRSI, single-voxel spectroscopy) data."
+  pool:
+    text: ["spectroscop", "\\bMRS\\b", "\\bMRSI\\b", "\\bGABA\\b", "metabolit", "\\bNAA\\b"]
+    datatypes: ["magnetic_resonance_spectroscopy"]
+
+- id: u14_fetal
+  source: user_log
+  question: "Fetal structural MRI datasets"
+  relevant_if: "The dataset contains structural MRI of fetuses (in utero)."
+  require_datatypes_any: [anatomical_mri]
+  pool:
+    text: ["fetal", "fetus", "foetal", "in utero", "pregnan", "gestation"]
+
+- id: u15_newborn
+  source: user_log
+  question: "Newborn structural MRI datasets"
+  relevant_if: "The dataset contains structural MRI of newborns or infants in their first months of life."
+  require_datatypes_any: [anatomical_mri]
+  pool:
+    text: ["newborn", "neonat", "infant", "preterm", "baby", "babies", "postnatal"]
+    age_below: 1
+
+- id: u16_parkinson
+  source: user_log
+  question: "Datasets with Parkinson's patients"
+  relevant_if: "Participants include people with Parkinson's disease."
+  pool:
+    text: ["parkinson", "\\bPD\\b", "subthalamic", "deep brain stimulation", "\\bDBS\\b", "dopamin"]
+    diagnoses: ["parkinson"]
+
+- id: u17_struct_func_small
+  source: user_log
+  kind: structural
+  question: "Find datasets with functional and structural MRI with a size no larger than 5GB"
+  rule: {datatypes_all: [anatomical_mri, functional_mri], max_size_gb: 5}
+
+# ── Probes for known weaknesses ────────────────────────────────────────────────
+- id: p01_language_fmri
+  source: probe
+  question: "fMRI datasets with language tasks"
+  relevant_if: "Participants perform a language task (reading, listening to speech or stories, word or sentence processing, naming, verb generation) during fMRI."
+  require_datatypes_any: [functional_mri]
+  pool:
+    text_short: ["language", "linguistic", "speech", "sentence", "\\bwords?\\b", "reading", "semantic", "narrative", "stor(y|ies)", "\\bverbs?\\b", "lexical", "syntax", "bilingual"]
+    text: ["language (task|localizer|localiser|network|comprehension|production)", "(sentence|word|speech|story|narrative) (comprehension|processing|listening|reading|production)", "verb generation", "picture naming", "lexical decision", "listen\\w* to (stories|narratives|speech|sentences)"]
+    tasks: ["language", "speech", "sentence", "word", "read", "semantic", "narrat", "story", "verb", "lexical", "naming"]
+
+- id: p02_reward
+  source: probe
+  question: "Datasets with reward processing tasks"
+  relevant_if: "Participants perform a task that manipulates or measures reward (monetary incentive delay, gambling, reinforcement learning with rewards, reward anticipation)."
+  pool:
+    text_short: ["reward", "incentive", "gambl", "monetary", "reinforcement"]
+    text: ["reward (task|processing|anticipation|learning|prediction)", "monetary incentive", "\\bMID\\b task", "gambling task", "reinforcement learning"]
+    tasks: ["reward", "incentive", "gambl", "reinforcement", "monetary"]
+
+- id: p03_emotion_regulation
+  source: probe
+  question: "Emotion regulation studies"
+  relevant_if: "Participants are asked to regulate their emotions (reappraisal, suppression, neurofeedback of emotional states) during the recording."
+  pool:
+    text: ["emotion regulation", "reappraisal", "regulat\\w* (their )?emotion", "suppress\\w* emotion", "emotional regulation"]
+    tasks: ["regulat", "reappraisal"]
+
+- id: p04_naturalistic
+  source: probe
+  question: "fMRI while watching movies"
+  relevant_if: "Participants watch films, movie clips or TV episodes during fMRI."
+  require_datatypes_any: [functional_mri]
+  pool:
+    text: ["movie", "film", "naturalistic", "episode", "cinema", "video clip"]
+    tasks: ["movie", "film", "naturalistic", "video"]
+
+- id: p05_depression_eeg
+  source: probe
+  question: "Resting-state EEG in depression"
+  relevant_if: "Participants include people with depression (major depressive disorder or depressive symptoms as the studied condition), and the dataset contains resting-state EEG."
+  require_datatypes_any: [electroencephalography]
+  pool:
+    text: ["depress", "\\bMDD\\b"]
+    diagnoses: ["depress"]
+
+- id: p06_schizophrenia
+  source: probe
+  question: "Schizophrenia datasets"
+  relevant_if: "Participants include people with schizophrenia or another psychotic disorder."
+  pool:
+    text: ["schizo", "psychos", "psychotic"]
+    diagnoses: ["schizo", "psychos"]
+
+- id: p07_bipolar
+  source: probe
+  question: "Datasets with bipolar disorder patients"
+  relevant_if: "Participants include people with bipolar disorder. 'Bipolar' as an electrode montage does not count."
+  pool:
+    text: ["bipolar"]
+    diagnoses: ["bipolar"]
+
+- id: p08_stroke_aphasia
+  source: probe
+  question: "Datasets with stroke patients or aphasia"
+  relevant_if: "Participants include people who had a stroke or have aphasia."
+  pool:
+    text: ["stroke", "aphasi", "lesion", "infarct", "cerebrovascular"]
+    diagnoses: ["stroke", "aphasi", "lesion"]
+
+- id: p09_chronic_pain
+  source: probe
+  question: "Chronic pain or migraine datasets"
+  relevant_if: "Participants include people with chronic pain, fibromyalgia, migraine or another chronic pain condition."
+  pool:
+    text: ["chronic pain", "fibromyalg", "migraine", "back pain", "headache", "neuropath\\w* pain", "arthritis"]
+    diagnoses: ["fibromyalg", "pain", "migraine"]
+
+- id: p10_sleep
+  source: probe
+  question: "Sleep datasets"
+  relevant_if: "Participants are recorded while asleep, or sleep (deprivation, staging, dreaming) is the main topic of the study."
+  pool:
+    text_short: ["sleep", "\\bnap", "insomni", "dream"]
+    text: ["\\bsleep (deprivation|stage|staging|study|recording|spindle)", "polysomno", "insomni", "\\bnaps?\\b", "dreaming", "\\bREM sleep", "\\bNREM\\b", "slow[- ]wave sleep", "asleep"]
+    tasks: ["sleep", "nap", "rem"]
+
+- id: p11_music
+  source: probe
+  question: "Music perception datasets"
+  relevant_if: "Participants listen to, imagine or perform music during the recording, or musical training is the main topic."
+  pool:
+    text_short: ["music", "melod", "song", "musician", "pitch", "rhythm"]
+    text: ["music", "melod", "\\bsongs?\\b", "musician"]
+    tasks: ["music", "melod", "song", "rhythm"]
+
+- id: p12_7t
+  source: probe
+  question: "Datasets recorded at 7 Tesla"
+  relevant_if: "MRI data were acquired at 7 Tesla (ultra-high field)."
+  require_datatypes_any: [anatomical_mri, functional_mri, diffusion_mri, field_maps]
+  pool:
+    text: ["7 ?T\\b", "7 ?tesla", "7\\.0 ?T", "ultra-?high field", "ultrahigh"]
+
+- id: p13_older_adults_fmri
+  source: probe
+  question: "fMRI in older adults over 65"
+  relevant_if: "The dataset contains fMRI and participants include people aged over 65."
+  require_datatypes_any: [functional_mri]
+  pool:
+    text_short: ["older adult", "elderly", "aging", "ageing", "old age", "late[- ]life", "senior", "lifespan", "life span"]
+    text: ["older adults", "elderly", "aged (6[5-9]|[7-9][0-9])", "(6[5-9]|[7-9][0-9]) years (of age|and older|or older)", "over (6[5-9]|[7-9][0-9])", "lifespan", "life[- ]span"]
+    age_above: 65
+
+- id: p14_ieeg_memory
+  source: probe
+  question: "Intracranial EEG during memory tasks"
+  relevant_if: "The dataset contains intracranial EEG (sEEG, ECoG, depth electrodes) recorded while participants perform a memory task."
+  require_datatypes_any: [intracranial_eeg]
+  pool:
+    text: ["memory", "recall", "recogni[st]", "encod", "remember", "sternberg", "n-?back"]
+    tasks: ["memory", "recall", "recogni", "encod", "sternberg", "n_back"]
+
+- id: p15_anxiety
+  source: probe
+  question: "Anxiety disorder datasets"
+  relevant_if: "Participants include people with an anxiety disorder (generalised anxiety, social anxiety, panic, phobia, PTSD, OCD) as a studied group."
+  pool:
+    text: ["anxi", "phobi", "panic", "\\bPTSD\\b", "post-?traumatic", "\\bOCD\\b", "obsessive"]
+    diagnoses: ["anxi", "panic", "stress", "obsess", "phobi"]
+
+- id: p16_dbs
+  source: probe
+  question: "Deep brain stimulation datasets"
+  relevant_if: "Participants have deep brain stimulation electrodes, or the recordings come from DBS leads."
+  pool:
+    text: ["deep brain stim", "\\bDBS\\b", "subthalamic", "\\bSTN\\b", "globus pallidus", "\\bGPi\\b"]
+
+- id: p17_faces
+  source: probe
+  question: "Face perception datasets"
+  relevant_if: "Participants view or judge faces (face perception, face recognition, face localiser, facial emotion) as a main task."
+  pool:
+    text_short: ["\\bfaces?\\b", "facial", "fusiform"]
+    text: ["face (perception|recognition|processing|localizer|localiser|task|stimuli|images)", "facial (expression|emotion)", "\\bFFA\\b", "fusiform face"]
+    tasks: ["face", "facial"]
+
+- id: p18_decision_making
+  source: probe
+  question: "Decision making tasks"
+  relevant_if: "Participants make choices whose study is the point of the task (value-based, perceptual, risky or intertemporal decisions, gambling, foraging)."
+  pool:
+    text_short: ["decision", "choice", "choose", "gambl", "risk", "intertemporal", "discount", "forag"]
+    text: ["decision[- ]making", "(value|risky|perceptual|economic)[- ]\\w* ?(choice|decision)", "intertemporal", "delay discounting", "forag", "gambling task"]
+    tasks: ["decision", "choice", "gambl", "risk", "discount", "forag"]
