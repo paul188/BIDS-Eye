@@ -14,12 +14,20 @@
 #   4. Start everything:
 #        docker compose -f docker-compose-hetzner.yml up -d
 
+# Rotate container logs (the default json-file log grows without limit).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 services:
 
   # ── Reverse proxy + SSL ────────────────────────────────────────────────────
   nginx:
     image: nginx:stable-alpine
     container_name: bids_nginx
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - ./nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
@@ -39,6 +47,7 @@ services:
   certbot:
     image: certbot/certbot
     container_name: bids_certbot
+    logging: *default-logging
     volumes:
       - ./certbot/www:/var/www/certbot:rw
       - ./certbot/conf:/etc/letsencrypt:rw
@@ -54,6 +63,7 @@ services:
       args:
         VITE_CRAWLER_ENABLED: ${CRAWLER_ENABLED:-false}
     container_name: bids_frontend
+    logging: *default-logging
     restart: unless-stopped
     networks:
       - bids-net
@@ -64,6 +74,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: bids_backend
+    logging: *default-logging
     env_file: .env
     environment:
       METADATA_DB_HOST: postgres
@@ -79,6 +90,7 @@ services:
   postgres:
     image: postgres:16
     container_name: bids_postgres
+    logging: *default-logging
     env_file: .env
     environment:
       POSTGRES_DB:       ${METADATA_DB_NAME}
