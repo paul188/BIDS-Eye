@@ -400,6 +400,9 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         scored_filters=scored_filters,
         apply_relevance=apply_relevance,
         params=rewritten.params,
+        # Without this the router ranks by code matches only: the text rank
+        # (ts_rank_cd over search_tsv) is silently left out.
+        rank_tsquery=rewritten.rank_tsquery,
     )
 
 
