@@ -259,7 +259,9 @@ def _compute_confidence_calibration(
             max_conf = 0.0
             for syn in synonyms:
                 if isinstance(syn, dict):
-                    max_conf = max(max_conf, float(syn.get("confidence", 0.0)))
+                    # The YAML key is "weight"; a synonym without one counts as 1.0,
+                    # as in RAG/yaml_to_llamaindex.py.
+                    max_conf = max(max_conf, float(syn.get("weight", 1.0)))
                 elif isinstance(syn, str):
                     max_conf = max(max_conf, 1.0)
             code_conf[field][str(code)] = max_conf
@@ -323,6 +325,11 @@ def main() -> None:
     parser.add_argument("--ground-truth", default="benchmarks/ground_truth/rag_terms.jsonl")
     parser.add_argument("--out", default="benchmarks/results/rag_metrics.json")
     parser.add_argument("--verbose", action="store_true", help="Print per-entry results")
+    parser.add_argument(
+        "--no-embeddings", action="store_true",
+        help="Skip the embedding fallback, as in the deployed image, which does "
+             "not install sentence-transformers",
+    )
     args = parser.parse_args()
 
     gt_path = Path(args.ground_truth)
@@ -336,6 +343,11 @@ def main() -> None:
     print("Loading MetadataRetriever...")
     retriever = MetadataRetriever(args.name_index)
     print("Retriever loaded.")
+
+    if args.no_embeddings:
+        import RAG.retriever as retriever_module
+        retriever_module._embedding_fallback_scored = lambda field, term: []
+        print("Embedding fallback disabled.")
 
     results = []
     failed_entries = []
