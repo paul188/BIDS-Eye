@@ -26,8 +26,11 @@ Re-ranking is skipped when the user asked for an order or a top N, when the
 question returned the fallback sample, when there is nothing to reorder, and
 whenever the model fails or is slower than RERANK_TIMEOUT_SECONDS.
 
+Off unless RERANK_ENABLED is "true": the step sends candidate descriptions
+(public catalogue metadata) to Gemini, which needs an explicit decision.
+
 Config (env):
-  RERANK_ENABLED          "false" turns it off
+  RERANK_ENABLED          "true" turns it on (default off)
   RERANK_MODEL            Gemini models, comma-separated, in order
                           (default gemini-3.5-flash-lite, then gemini-2.5-flash-lite)
   RERANK_THINKING         Gemini 3+ thinking level (default low)
@@ -110,7 +113,7 @@ class RerankResult:
 def settings() -> Dict[str, Any]:
     models = os.getenv("RERANK_MODEL", "gemini-3.5-flash-lite,gemini-2.5-flash-lite")
     return {
-        "enabled": os.getenv("RERANK_ENABLED", "true").lower() not in ("0", "false", "no", "off"),
+        "enabled": os.getenv("RERANK_ENABLED", "false").lower() in ("1", "true", "yes", "on"),
         "models": [m.strip() for m in models.split(",") if m.strip()],
         "thinking": os.getenv("RERANK_THINKING", "low") or None,
         "candidates": max(2, int(os.getenv("RERANK_CANDIDATES", "40"))),

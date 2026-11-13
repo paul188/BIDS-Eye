@@ -22,7 +22,7 @@ BASE = (
 @pytest.fixture(autouse=True)
 def _env(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test")
-    monkeypatch.delenv("RERANK_ENABLED", raising=False)
+    monkeypatch.setenv("RERANK_ENABLED", "true")
     caps.set_available_columns({"readme_text", "dx_status"})
     caps.set_display_columns({"llm_profile"})
     yield
@@ -63,6 +63,8 @@ def test_should_rerank_respects_order_requests_fallback_and_switch(monkeypatch) 
     assert not rerank.should_rerank(True, 1, False)
     monkeypatch.setenv("RERANK_ENABLED", "false")
     assert not rerank.should_rerank(True, 10, False)
+    monkeypatch.delenv("RERANK_ENABLED")
+    assert not rerank.should_rerank(True, 10, False)   # off unless switched on
 
 
 class _Result:
