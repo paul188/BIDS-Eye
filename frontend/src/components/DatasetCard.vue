@@ -2,7 +2,13 @@
 import { computed } from 'vue'
 import type { Dataset } from '../api'
 
-const props = defineProps<{ dataset: Dataset }>()
+const props = withDefaults(defineProps<{
+  dataset: Dataset
+  /** Words of the active filter chips, to bold in the description. */
+  terms?: string[]
+  /** Chip kinds in effect (diagnosis, age, subjects, sex): those facts are emphasised. */
+  emphasis?: string[]
+}>(), { terms: () => [], emphasis: () => [] })
 
 // The backend sends at most this many participants per dataset
 // (_MAX_PARTICIPANTS_PER_DATASET in backend/routers/query.py). Below it the
@@ -64,12 +70,7 @@ const sexSplit = computed(() => {
     if (s === 'f' || s === 'female') f++
     else if (s === 'm' || s === 'male') m++
   }
-  return f + m ? `${f} F · ${m} M` : ''
-})
-
-const bidsLine = computed(() => {
-  const d = props.dataset
-  return [d.bids_version && `v${d.bids_version}`, d.validation_status].filter(Boolean).join(' · ')
+  return f + m ? `${f} F, ${m} M` : ''
 })
 
 // Authors: first three, then "+N"; institutions follow on the same line.
@@ -79,97 +80,130 @@ const authorLine = computed(() => {
   const shown = a.slice(0, 3).join(', ')
   return a.length > 3 ? `${shown} +${a.length - 3}` : shown
 })
-const institutionLine = computed(() => (props.dataset.institutions ?? []).join(' · '))
+const institutionLine = computed(() => (props.dataset.institutions ?? []).join(', '))
+
+// "42 PD, 4 control" (counts only when the participant list is complete).
+const groupsText = computed(() => {
+  const parts = groups.value.shown.map(g => (g.n !== null ? `${g.n} ${g.label}` : g.label))
+  if (groups.value.more) parts.push(`+${groups.value.more} more`)
+  return parts.join(', ')
+})
+
+// A fact the search filtered on is shown in ink and semibold, the rest muted.
+const emphasised = computed(() => new Set(props.emphasis))
+function factClass(kind: string): string {
+  if (!emphasised.value.size) return 'text-ink'
+  return emphasised.value.has(kind) ? 'text-ink font-semibold' : 'text-muted'
+}
+
+// Description with the search words bolded. When the first match lies past
+// what three lines show, start at the sentence that contains it.
+const SNIPPET_START_LIMIT = 220
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+const termPattern = computed(() => {
+  const terms = [...new Set(props.terms.map(t => t.trim()).filter(Boolean))]
+    .sort((a, b) => b.length - a.length)
+  if (!terms.length) return null
+  // Prefix match, so "parkinson" also marks "Parkinson's" and "parkinsonism".
+  return new RegExp(`\\b(?:${terms.map(escapeRegExp).join('|')})[\\w'’-]*`, 'gi')
+})
+
+const snippet = computed(() => {
+  const text = props.dataset.description_text ?? ''
+  const pattern = termPattern.value
+  if (!text || !pattern) return [{ text, hit: false }]
+
+  pattern.lastIndex = 0
+  const first = pattern.exec(text)
+  let body = text
+  if (first && first.index > SNIPPET_START_LIMIT) {
+    const before = text.slice(0, first.index)
+    const sentenceStart = Math.max(before.lastIndexOf('. '), before.lastIndexOf('\n'))
+    if (sentenceStart > 0) body = '… ' + text.slice(sentenceStart + 1).trimStart()
+  }
+
+  const parts: { text: string; hit: boolean }[] = []
+  let last = 0
+  pattern.lastIndex = 0
+  for (const match of body.matchAll(pattern)) {
+    const at = match.index ?? 0
+    if (at > last) parts.push({ text: body.slice(last, at), hit: false })
+    parts.push({ text: match[0], hit: true })
+    last = at + match[0].length
+  }
+  if (last < body.length) parts.push({ text: body.slice(last), hit: false })
+  return parts
+})
 </script>
 
 <template>
-  <article class="py-6 grid gap-x-10 gap-y-4 md:grid-cols-[minmax(0,1fr)_16rem]">
-    <!-- Left: what the dataset is -->
-    <div class="min-w-0 flex flex-col gap-1.5">
-      <h3 class="text-[17px] leading-snug font-semibold">
-        <a
-          v-if="href"
-          :href="href"
-          target="_blank"
-          rel="noopener"
-          class="text-accent visited:text-link-visited hover:underline decoration-1 underline-offset-2 break-words"
-        >{{ dataset.name }}</a>
-        <span v-else class="text-ink break-words">{{ dataset.name }}</span>
-      </h3>
+  <article class="py-5 flex flex-col gap-1.5">
+    <h3 class="text-[17px] leading-snug font-semibold">
+      <a
+        v-if="href"
+        :href="href"
+        target="_blank"
+        rel="noopener"
+        class="text-link visited:text-link-visited hover:underline decoration-1 underline-offset-2 break-words"
+      >{{ dataset.name }}</a>
+      <span v-else class="text-ink break-words">{{ dataset.name }}</span>
+    </h3>
 
-      <p v-if="authorLine || institutionLine" class="text-[13px] text-muted break-words">
-        <span v-if="authorLine" class="text-ink/80">{{ authorLine }}</span>
-        <span v-if="authorLine && institutionLine" class="mx-1.5 text-border-strong">—</span>
-        <span v-if="institutionLine">{{ institutionLine }}</span>
-      </p>
+    <!-- Uncertain tier: which filter could not be checked for this dataset -->
+    <p
+      v-if="dataset.uncertain_level && dataset.uncertain_reasons"
+      class="text-[13px] text-warn-ink"
+    >
+      <span class="font-semibold">{{ dataset.uncertain_level === 1 ? 'Probably relevant' : 'Possibly relevant' }}:</span>
+      {{ dataset.uncertain_reasons }}
+    </p>
 
-      <!-- Uncertain tier: which filter could not be checked for this dataset -->
-      <p
-        v-if="dataset.uncertain_level && dataset.uncertain_reasons"
-        class="text-[13px] text-warn-ink"
+    <!-- Why the dataset is marked deprecated (e.g. no longer on OpenNeuro) -->
+    <p v-if="dataset.deprecated_reason" class="text-[13px] text-danger-ink">
+      <span class="font-semibold">Deprecated:</span>
+      {{ dataset.deprecated_reason }}
+    </p>
+
+    <!-- What the dataset is: the description, at a readable line length -->
+    <p v-if="dataset.description_text" class="max-w-3xl text-sm leading-relaxed text-ink/80 line-clamp-3">
+      <template v-for="(part, i) in snippet" :key="i"><strong v-if="part.hit" class="font-semibold text-ink">{{ part.text }}</strong><template v-else>{{ part.text }}</template></template>
+    </p>
+
+    <!-- Who was scanned: same order on every row -->
+    <p class="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[13px]">
+      <a
+        v-if="dataset.accession_id && href"
+        :href="href"
+        target="_blank"
+        rel="noopener"
+        class="font-mono text-link visited:text-link-visited hover:underline"
+        title="Open on OpenNeuro"
+      >{{ dataset.accession_id }}</a>
+      <span v-if="dataset.subject_count !== null" :class="factClass('subjects')">
+        <span class="font-semibold tabular-nums">{{ dataset.subject_count }}</span>
+        subject{{ dataset.subject_count === 1 ? '' : 's' }}
+      </span>
+      <span
+        v-if="groups.shown.length"
+        class="tabular-nums"
+        :class="factClass('diagnosis')"
+        :title="participantsComplete ? undefined : `Groups seen in the first ${dataset.participants.length} participants; others may differ`"
       >
-        <span class="font-semibold">{{ dataset.uncertain_level === 1 ? 'Probably relevant' : 'Possibly relevant' }}:</span>
-        {{ dataset.uncertain_reasons }}
-      </p>
+        {{ groupsText }}
+        <span v-if="!participantsComplete" class="font-normal text-muted-soft">(first {{ dataset.participants.length }} participants)</span>
+      </span>
+      <span v-if="ageRange" class="tabular-nums" :class="factClass('age')">ages {{ ageRange }}</span>
+      <span v-if="sexSplit" class="tabular-nums" :class="factClass('sex')">{{ sexSplit }}</span>
+    </p>
 
-      <!-- Why the dataset is marked deprecated (e.g. no longer on OpenNeuro) -->
-      <p v-if="dataset.deprecated_reason" class="text-[13px] text-danger-ink">
-        <span class="inline-block text-[11px] font-semibold uppercase tracking-wider px-1.5 py-px mr-1.5 rounded bg-danger-bg align-[1px]">Deprecated</span>
-        {{ dataset.deprecated_reason }}
-      </p>
-
-      <!-- Description snippet (always visible, clamped) -->
-      <p v-if="dataset.description_text" class="mt-1 text-sm leading-relaxed text-ink/75 line-clamp-3">
-        {{ dataset.description_text }}
-      </p>
-    </div>
-
-    <!-- Right: who was scanned, at a glance -->
-    <dl class="max-w-sm md:max-w-none md:border-l md:border-border md:pl-6 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[13px] content-start">
-      <template v-if="dataset.accession_id">
-        <dt class="text-muted-soft">Accession</dt>
-        <dd>
-          <a
-            :href="href ?? undefined"
-            target="_blank"
-            rel="noopener"
-            class="font-mono text-accent hover:underline"
-            title="Open on OpenNeuro"
-          >{{ dataset.accession_id }}&thinsp;↗</a>
-        </dd>
-      </template>
-
-      <dt class="text-muted-soft">Subjects</dt>
-      <dd class="text-ink font-semibold tabular-nums">{{ dataset.subject_count ?? '—' }}</dd>
-
-      <template v-if="groups.shown.length">
-        <dt class="text-muted-soft">Groups</dt>
-        <dd class="text-ink flex flex-col gap-0.5">
-          <span v-for="g in groups.shown" :key="g.label" class="flex justify-between gap-2">
-            <span class="break-words min-w-0" :class="g.label === 'control' ? 'text-muted' : ''">{{ g.label }}</span>
-            <span v-if="g.n !== null" class="tabular-nums text-muted">{{ g.n }}</span>
-          </span>
-          <span v-if="groups.more" class="text-muted-soft">+{{ groups.more }} more</span>
-          <span v-if="!participantsComplete" class="text-[12px] text-muted-soft leading-snug">
-            from the first {{ dataset.participants.length }} participants; others may differ
-          </span>
-        </dd>
-      </template>
-
-      <template v-if="ageRange">
-        <dt class="text-muted-soft">Ages</dt>
-        <dd class="text-ink tabular-nums">{{ ageRange }}</dd>
-      </template>
-
-      <template v-if="sexSplit">
-        <dt class="text-muted-soft">Sex</dt>
-        <dd class="text-ink tabular-nums">{{ sexSplit }}</dd>
-      </template>
-
-      <template v-if="bidsLine">
-        <dt class="text-muted-soft">BIDS</dt>
-        <dd class="text-muted">{{ bidsLine }}</dd>
-      </template>
-    </dl>
+    <p v-if="authorLine || institutionLine" class="text-[13px] text-muted break-words">
+      <span v-if="authorLine">{{ authorLine }}</span>
+      <span v-if="authorLine && institutionLine"> — </span>
+      <span v-if="institutionLine">{{ institutionLine }}</span>
+    </p>
   </article>
 </template>

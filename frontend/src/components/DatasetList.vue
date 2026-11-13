@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { Dataset } from '../api'
+import type { Dataset, QueryFilter } from '../api'
 import DatasetCard from './DatasetCard.vue'
 
 const props = defineProps<{
@@ -10,11 +10,43 @@ const props = defineProps<{
   page?: number
   pageSize?: number
   loading?: boolean
+  /** The search's filter chips and which were removed: drive the highlighting. */
+  filters?: QueryFilter[]
+  removedFilters?: string[]
 }>()
 
 const emit = defineEmits<{ (e: 'page-change', page: number): void }>()
 
 const showSql = ref(false)
+
+// Words too common to be worth bolding in a description.
+const STOP_WORDS = new Set([
+  'and', 'or', 'the', 'with', 'of', 'in', 'for', 'on', 'at', 'to', 'a', 'an',
+  'data', 'dataset', 'datasets', 'study', 'task', 'disease', 'disorder', 'patients',
+])
+
+const activeFilters = computed(() => {
+  const removed = new Set(props.removedFilters ?? [])
+  return (props.filters ?? []).filter(f => !removed.has(f.id) && !f.negated)
+})
+
+const highlightTerms = computed(() => {
+  const words = new Set<string>()
+  for (const f of activeFilters.value) {
+    const phrases = [...f.text_words]
+    // Coded values also show up in descriptions ("fMRI", "EEG", "ADHD").
+    if (['modality', 'diagnosis', 'task'].includes(f.kind)) phrases.push(f.label.replace(/\s\+\d+$/, ''))
+    for (const word of phrases.join(' ').split(/[\s,/]+/)) {
+      const clean = word.replace(/^[“"']+|[”"'.]+$/g, '').replace(/'s$/i, '')
+      if (clean.length < 3 && !/^[A-Z]{2}$/.test(clean)) continue
+      if (STOP_WORDS.has(clean.toLowerCase())) continue
+      words.add(clean)
+    }
+  }
+  return [...words]
+})
+
+const emphasisKinds = computed(() => activeFilters.value.map(f => f.kind))
 
 const pageCount = computed(() => {
   const size = props.pageSize ?? 0
@@ -50,7 +82,7 @@ function go(page: number) {
           it filters on (for example participant ages). Each card says what could
           not be checked.
         </div>
-        <DatasetCard :dataset="ds" />
+        <DatasetCard :dataset="ds" :terms="highlightTerms" :emphasis="emphasisKinds" />
       </template>
     </div>
     <p v-else class="text-muted text-sm py-4">No datasets found.</p>

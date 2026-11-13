@@ -73,6 +73,8 @@ function onResetFilters() {
         :page="message.page"
         :page-size="message.pageSize"
         :loading="message.pageLoading || message.refining"
+        :filters="message.filters"
+        :removed-filters="message.removedFilters"
         @page-change="onPageChange"
       />
     </template>
