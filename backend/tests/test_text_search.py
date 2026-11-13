@@ -202,11 +202,12 @@ def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
     assert text_search.build_filter_tsquery(terms, "loose") == "complex"
     text_search.set_frequency_lookup(lambda queries: None)
     assert text_search.build_filter_tsquery(terms, "loose") == "complex"
-    # A word no dataset contains is never required.
+    # A word no dataset contains: every word is required, so nothing matches
+    # ("sickle cell disease" must not become a search for "cell").
     text_search.set_frequency_lookup(
         lambda queries: [0, 40, 900] if len(queries) == 3 else [2]
     )
-    assert text_search.build_filter_tsquery(terms, "loose") == "motor"
+    assert text_search.build_filter_tsquery(terms, "loose") == "complex & motor & task"
 
 
 def test_without_an_installed_lookup_counts_come_from_an_own_connection(monkeypatch) -> None:

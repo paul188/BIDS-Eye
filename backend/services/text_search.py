@@ -250,6 +250,12 @@ def _loose_core(term: Term) -> Term:
     LOOSE_MIN_MATCHES datasets are required: "eye tracking" keeps both words
     ("tracking" alone finds rat linear-track studies), "virtual reality
     navigation" drops "navigation" if the three together are too rare.
+
+    A word that no dataset contains is usually the distinctive one ("sickle"
+    in "sickle cell disease") or a typo. Searching the remaining words would
+    answer a different question ("cell"), so then every word is required and
+    the term honestly matches nothing.
+
     With no frequencies available, the longest word, as the ILIKE search did.
     """
     if len(term) == 1:
@@ -258,9 +264,9 @@ def _loose_core(term: Term) -> Term:
     counts = _lookup_counts([_word_query(word) for word in term])
     if counts is None:
         return longest
-    present = sorted((count, index) for index, count in enumerate(counts) if count > 0)
-    if not present:
-        return longest
+    if any(count == 0 for count in counts):
+        return term
+    present = sorted((count, index) for index, count in enumerate(counts))
     by_rarity = [term[index] for _, index in present]
     if len(by_rarity) == 1:
         return by_rarity
