@@ -59,6 +59,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -147,12 +148,25 @@ _GENERIC_IMAGING_TERMS = {
     "brain images", "brain image",
 }
 
-# WRatio at or above this means one string contains the other or the two are
-# near-identical. Below it, down to _SEMANTIC_THRESHOLD, a label can qualify
-# on a single shared word: WRatio gives 85.5 to any two strings of unequal
-# length with one word in common ("structural mri" / "bold mri").
-# Same value as _TASK_SEMANTIC_THRESHOLD, which exists to exclude those hits.
-_STRONG_MATCH_SCORE = 88
+# No fuzzy match below this WRatio is used, whatever the synonym weight.
+# At or above it, one string contains the other or the two differ by a typo.
+# Below it, a label can qualify on a single shared word: WRatio gives 85.5 to
+# any two strings of unequal length with one word in common ("structural mri" /
+# "bold mri", "down syndrome" / "west syndrome", "conduct disorder" /
+# "major depressive disorder"). Same value as _TASK_SEMANTIC_THRESHOLD, which
+# was raised for the same reason.
+_MIN_FUZZY_SCORE = 88
+
+# Diagnosis concepts that describe animals, not human participants. A fuzzy
+# match reaches them only when the term itself is about animals or models;
+# otherwise "Parkinson's" picks up "Parkinson's model of ATP10B knockdown".
+# Exact synonyms ("mouse", "ATP10B KD mouse model") are not affected.
+_ANIMAL_MODEL_GROUP = "animal_preclinical_models"
+_ANIMAL_WORDS = re.compile(
+    r"\b(?:animals?|mouse|mice|rats?|rodents?|murine|primates?|macaques?|monkeys?|"
+    r"nhp|models?|preclinical|pre-clinical|knock-?outs?|knock-?downs?|ko|kd|"
+    r"wild[- ]?type|transgenic|in vivo)\b"
+)
 
 # token_set_ratio threshold for name fields — looser to handle abbreviations
 _NAME_THRESHOLD = 60
@@ -274,6 +288,51 @@ def _embedding_fallback(field: str, term: str) -> List[str]:
 # ── YAML-field resolution helpers ──────────────────────────────────────────────
 # These mirror the logic in RAG_postprocess.py but accept plain strings instead
 # of UserQueryEntities, and return a list of codes for a single term.
+
+def _aligned_to_words(term: str, label: str) -> bool:
+    """False if one string sits inside the other only part-way through a word.
+
+    WRatio scores containment at 90 even inside a word: "als" in "cerebral
+    palsy", "chi" in "td children", "phobia" in "agoraphobia".
+    - A label inside the term must cover whole words of the term.
+    - The term inside a label must start at a word, but may end mid-word, so
+      "t1" still finds "t1w" and "trauma" still finds "post-traumatic".
+    Strings where neither contains the other (typos, spelling variants) are
+    not affected. Both strings are expected in _fuzzy_form.
+    """
+    short, long = sorted((term, label), key=len)
+    if short not in long:
+        return True
+    must_end_at_word = short == label
+    for m in re.finditer(re.escape(short), long):
+        starts = m.start() == 0 or not long[m.start() - 1].isalnum()
+        ends = m.end() == len(long) or not long[m.end()].isalnum()
+        if starts and (ends or not must_end_at_word):
+            return True
+    return False
+
+
+def _fuzzy_form(text: str) -> str:
+    """Lower-case and treat - _ / as spaces, so "near infrared" equals "near-infrared".
+
+    Other punctuation is kept on purpose: "*" separates T2* from T2, and the
+    apostrophe keeps "parkinson's" one word.
+    """
+    return " ".join(re.sub(r"[-_/]+", " ", text.lower()).split())
+
+
+# Words that say what kind of record or person the user wants, not which
+# concept. "iEEG recording" means the iEEG concept; fuzzy matching on the full
+# phrase prefers "MEG recording" (one letter apart) over it.
+_FILLER_WORDS = frozenset({
+    "data", "dataset", "datasets", "recording", "recordings", "file", "files",
+    "participants", "patients", "subjects", "individuals", "cohort",
+})
+
+
+def _without_filler(term: str) -> str:
+    return " ".join(w for w in term.split() if w not in _FILLER_WORDS)
+
 
 def _normalize_term(term: str) -> str:
     """Lower-case, trim, and use the ASCII apostrophe the vocabulary is written with."""
@@ -412,6 +471,15 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
         if t in cat_leaves:
             return [(cat_leaves[t], 1.0)]
 
+    # 1a. Exact match once filler words are dropped ("iEEG recording" → "ieeg").
+    core = _without_filler(term_lower)
+    if core and core != term_lower:
+        for t in _plural_variants(core):
+            if t in cat_groups:
+                return [(c, 1.0) for c in cat_groups[t]]
+            if t in cat_leaves:
+                return [(cat_leaves[t], 1.0)]
+
     # 1b. For the task field: try cognitive construct expansion BEFORE fuzzy.
     # Abstract construct terms ("pain processing", "social cognition", "error
     # detection") are not task names, so fuzzy matching on task synonyms produces
@@ -441,21 +509,66 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
             # task, not just those using the working_memory_general code itself.
             all_targets[k] = v
 
+    if field == "diagnosis" and not _ANIMAL_WORDS.search(term_lower):
+        animal_codes = set(cat_groups.get(_ANIMAL_MODEL_GROUP, []))
+        for k in list(all_targets):
+            codes = [c for c in all_targets[k] if c not in animal_codes]
+            if codes:
+                all_targets[k] = codes
+            else:
+                del all_targets[k]
+
     if not all_targets:
         return []
 
+    def fuzzy_hits(query: str) -> list:
+        """Top 20 usable labels for *query*, best first.
+
+        Strings are compared in _fuzzy_form.
+        """
+        processed = _fuzzy_form(query)
+        hits = _process.extract(
+            query, all_targets.keys(), scorer=_fuzz.WRatio,
+            processor=_fuzzy_form,
+            score_cutoff=max(_sem, _MIN_FUZZY_SCORE), limit=None,
+        )
+        return [
+            hit for hit in hits
+            if _aligned_to_words(processed, _fuzzy_form(hit[0]))
+        ][:20]
+
     # Increase limit so low-weight best matches can be supplemented by siblings
-    results = _process.extract(
-        term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=20
-    )
-    if not results or results[0][1] < _sem:
+    results = fuzzy_hits(term_lower)
+    if not results:
         return _embedding_fallback_scored(field, term)
 
-    # Prefer the more specific (longer) label when top scores are tied
-    best_label, best_score = results[0][0], results[0][1]
-    for label, score, _ in results[1:]:
-        if score >= best_score and len(label) > len(best_label):
-            best_label, best_score = label, score
+    # 100 means the strings are identical once separators are normalised
+    # ("resting-state eyes open" / "resting state eyes-open"). Treat that as an
+    # exact match: weights and the low-weight union below do not apply.
+    if results[0][1] >= 100:
+        codes = dict.fromkeys(
+            code for label, score, _ in results if score >= 100 for code in all_targets[label]
+        )
+        return [(code, 1.0) for code in codes]
+
+    # Several labels often tie on WRatio: every label containing the term, and
+    # every label the term contains, scores the same. Prefer a label made only
+    # of words the user typed ("resting state eeg" → "resting-state", not
+    # "resting-state tms-eeg"), then the label closest to the term overall.
+    best_score = results[0][1]
+    processed_term = _fuzzy_form(term_lower)
+    term_words = set(processed_term.split())
+
+    def tie_rank(label: str) -> tuple:
+        processed_label = _fuzzy_form(label)
+        return (
+            set(processed_label.split()) <= term_words,
+            _fuzz.ratio(processed_term, processed_label),
+        )
+
+    best_label = max(
+        (label for label, score, _ in results if score >= best_score), key=tie_rank
+    )
 
     # Weight-adjusted threshold: low-confidence synonyms need a higher fuzzy
     # score to be accepted. Labels and plain-string synonyms default to 1.0.
@@ -480,38 +593,23 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
         core_words = [w for w in words if w not in _DESCRIPTORS]
         core_term = " ".join(core_words) if core_words else term_lower
         if core_term != term_lower:
-            core_results = _process.extract(
-                core_term, all_targets.keys(), scorer=_fuzz.WRatio, limit=20
-            )
+            core_results = fuzzy_hits(core_term)
         else:
             core_results = results  # nothing stripped; use original results
 
-        admitted: list[tuple[str, float]] = []
+        collected: list[tuple[str, float]] = []
+        seen: set[str] = set()
         _MIN_COLLECT_LEN = max(len(core_term) // 2, 5)
         for label, score, _ in core_results:
-            if score < _sem:
-                break
             if len(label) < _MIN_COLLECT_LEN:
                 continue
             w = weight_db.get(field, {}).get(label, 1.0)
             eff = _sem + (1.0 - w) * _WEIGHT_BOOST
             if score >= eff:
-                admitted.append((label, score))
-
-        # A label that only shares a word with the term must not ride along
-        # with labels that contain the whole term: "structural mri" matches
-        # "t1 structural mri" (95) and, through "mri" alone, "bold mri" (85.5).
-        # Shared-word matches count only when nothing stronger was found.
-        if any(score >= _STRONG_MATCH_SCORE for _, score in admitted):
-            admitted = [(l, s) for l, s in admitted if s >= _STRONG_MATCH_SCORE]
-
-        collected: list[tuple[str, float]] = []
-        seen: set[str] = set()
-        for label, score in admitted:
-            for code in all_targets[label]:
-                if code not in seen:
-                    seen.add(code)
-                    collected.append((code, score / 100.0))
+                for code in all_targets[label]:
+                    if code not in seen:
+                        seen.add(code)
+                        collected.append((code, score / 100.0))
         if collected:
             return collected
 

@@ -160,6 +160,8 @@ diagnosis:
       weight: 0.1
     - term: typically developing controls
       weight: 0.1
+    - term: TD children
+      weight: 0.1
     - term: TD controls
       weight: 0.1
     - term: TD control
@@ -1217,6 +1219,8 @@ diagnosis:
     broader:
     - neurodevelopmental
     synonyms:
+    - term: autism
+      weight: 1.0
     - term: autistic
       weight: 1.0
     - term: autistic individuals
