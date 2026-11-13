@@ -93,15 +93,10 @@ defineExpose({ focus: () => textarea.value?.focus() })
         <span v-if="large" class="hidden sm:inline">Search</span>
       </button>
     </div>
-    <div class="flex justify-between items-center gap-4 mt-2 px-1">
-      <p class="text-xs text-muted-soft">
-        Answers are generated and can be wrong. Check a dataset before you rely on it.
-      </p>
-      <p
-        v-if="showCharCount"
-        class="text-xs tabular-nums flex-shrink-0"
-        :class="charCount >= CHAR_LIMIT ? 'text-danger-ink font-medium' : 'text-muted'"
-      >{{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}</p>
-    </div>
+    <p
+      v-if="showCharCount"
+      class="mt-2 px-1 text-right text-xs tabular-nums"
+      :class="charCount >= CHAR_LIMIT ? 'text-danger-ink font-medium' : 'text-muted'"
+    >{{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}</p>
   </template>
 </template>

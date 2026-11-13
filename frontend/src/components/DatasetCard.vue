@@ -92,12 +92,12 @@ const institutionLine = computed(() => (props.dataset.institutions ?? []).join('
           :href="href"
           target="_blank"
           rel="noopener"
-          class="text-accent hover:text-accent-hover hover:underline decoration-1 underline-offset-2 line-clamp-2"
+          class="text-accent hover:text-accent-hover hover:underline decoration-1 underline-offset-2 break-words"
         >{{ dataset.name }}</a>
-        <span v-else class="text-ink line-clamp-2">{{ dataset.name }}</span>
+        <span v-else class="text-ink break-words">{{ dataset.name }}</span>
       </h3>
 
-      <p v-if="authorLine || institutionLine" class="text-[13px] text-muted truncate">
+      <p v-if="authorLine || institutionLine" class="text-[13px] text-muted break-words">
         <span v-if="authorLine" class="text-ink/80">{{ authorLine }}</span>
         <span v-if="authorLine && institutionLine" class="mx-1.5 text-border-strong">—</span>
         <span v-if="institutionLine">{{ institutionLine }}</span>
