@@ -7,6 +7,8 @@ Measures how many of the relevant datasets a search actually returns.
 | `queries.yaml` | 35 questions: 17 from the bidseye.xyz user log, 18 probes for known weaknesses. Each has a written relevance criterion and the signals used to find candidates. |
 | `ground_truth.json` | Relevant / not relevant / unsure datasets per question. |
 | `judgments.jsonl` | Every label with its one-line reason, for review. |
+| `corrections.jsonl` | Labels changed after review, with reason and who decided; `merge_judgments.py` applies them last. |
+| `paired_papers_run.py` | Runs each question once and its SQL twice, with and without paper text in the text filters. |
 | `build_pool.py` | Builds the candidate pool of each question from a database snapshot. |
 | `merge_judgments.py` | Turns judge output into `ground_truth.json` and `judgments.jsonl`. |
 | `eval_recall.py` | `run`: sends every question through the deployed search code. `score`: compares the result with the ground truth. |
@@ -48,6 +50,23 @@ correct a label in `judgments.jsonl` when you disagree, and widen a pool when
 - Reliability: a blind second judge re-read 383 "not relevant" labels, chosen
   mostly among the datasets most similar to their question. It disagreed on
   14 (3.7%) and called 5 (1.3%) relevant, several of them borderline.
+- Review of 150 labels (60 relevant, 60 not relevant, 20 partially relevant,
+  10 unsure, over 96 questions), each decided without seeing the judge's
+  label:
+  - by a person: 11 labels, 10 agree with the judge. Too few to stand alone
+    (95% interval 62–98%).
+  - by a machine reviewer on the review page (all 150), and by a second
+    machine reviewer that also read the full README and the dataset's paper
+    (all 150). They give the judge's label in 83% and 85% of cases, and agree
+    with the judge on relevant-versus-not in 94%. The two reviewers agree
+    with each other in 90%.
+  - Of 60 "not relevant" labels, the reviewers call 0 and 1 relevant; of 60
+    "relevant" labels, 1 is wrong and 4 are downgraded to partially relevant.
+    Most disagreement is at the "partially relevant" boundary.
+  - The paper changed the reviewer's label in 2 of the 83 items that have
+    one, both with an empty README.
+  - 15 labels where both reviewers agree with each other and not with the
+    judge were corrected (`corrections.jsonl`); 6 of them were "unsure".
 - `score` groups results by source and by logic operator.
 
 ## Running it

@@ -314,7 +314,7 @@
 {"query": "b10_pain_fmri_chronic", "acc": "ds005143", "label": "relevant", "reason": "Spinal cord fMRI includes fibromyalgia participants"}
 {"query": "b10_pain_fmri_chronic", "acc": "ds005413", "label": "partially_relevant", "reason": "Pain expectation fMRI, healthy"}
 {"query": "b10_pain_fmri_chronic", "acc": "ds005713", "label": "relevant", "reason": "Trigeminal neuralgia patients with resting fMRI"}
-{"query": "b10_pain_fmri_chronic", "acc": "ds005839", "label": "partially_relevant", "reason": "Pain fMRI in healthy"}
+{"query": "b10_pain_fmri_chronic", "acc": "ds005839", "label": "not_relevant", "reason": "Rat model of post-surgical pain; no human chronic pain patients.", "corrected_from": "partially_relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "b10_pain_fmri_chronic", "acc": "ds005883", "label": "partially_relevant", "reason": "Thermal pain fMRI healthy adults"}
 {"query": "b10_pain_fmri_chronic", "acc": "ds006243", "label": "not_relevant", "reason": "No chronic pain patients and not pain-focused"}
 {"query": "b10_pain_fmri_chronic", "acc": "ds006815", "label": "relevant", "reason": "Fibromyalgia chronic pain individuals, fMRI"}
@@ -778,7 +778,7 @@
 {"query": "d07_spatial_semantic_memory", "acc": "ds003707", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
 {"query": "d07_spatial_semantic_memory", "acc": "ds003778", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
 {"query": "d07_spatial_semantic_memory", "acc": "ds003789", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
-{"query": "d07_spatial_semantic_memory", "acc": "ds003814", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
+{"query": "d07_spatial_semantic_memory", "acc": "ds003814", "label": "partially_relevant", "reason": "Memory recall about familiar places/people (spatial & semantic content), healthy adults, but no learning of ordered sequences.", "corrected_from": "not_relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "d07_spatial_semantic_memory", "acc": "ds004006", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
 {"query": "d07_spatial_semantic_memory", "acc": "ds004009", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
 {"query": "d07_spatial_semantic_memory", "acc": "ds004086", "label": "not_relevant", "reason": "Memory task but not a spatial/semantic sequence or relational memory design targeting hippocampal long axis"}
@@ -1349,7 +1349,7 @@
 {"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005166", "label": "not_relevant", "reason": "Youth inhibitory control; schizophrenia only in KSADS name"}
 {"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005169", "label": "not_relevant", "reason": "Epilepsy patients, stimulation-evoked visual hallucinations, not psychosis"}
 {"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005170", "label": "not_relevant", "reason": "Healthy imagined speech"}
-{"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005237", "label": "unsure", "reason": "Transdiagnostic psychiatric sample; psychotic illness mentioned in criteria, groups unclear"}
+{"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005237", "label": "relevant", "reason": "Transdiagnostic sample incl. psychotic illness (PANSS collected); voices not specifically documented.", "corrected_from": "unsure", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005754", "label": "not_relevant", "reason": "Youth psychopathology; schizophrenia only in KSADS name"}
 {"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005815", "label": "not_relevant", "reason": "Healthy multisensory imagery EEG"}
 {"query": "g08_auditory_hallucinations_psychosis", "acc": "ds005917", "label": "not_relevant", "reason": "MDD without psychotic features, bipolar, healthy"}
@@ -1535,7 +1535,7 @@
 {"query": "g12_pediatric_epilepsy_children", "acc": "ds007398", "label": "not_relevant", "reason": "Healthy early readers"}
 {"query": "g12_pediatric_epilepsy_children", "acc": "ds007401", "label": "not_relevant", "reason": "Adult epilepsy surgery diffusion cohort, no children stated"}
 {"query": "g13_incentive_delay", "acc": "ds000005", "label": "not_relevant", "reason": "Mixed gambles decision task; no anticipation paradigm"}
-{"query": "g13_incentive_delay", "acc": "ds000053", "label": "not_relevant", "reason": "Loss aversion gambling training; decision task, not anticipation"}
+{"query": "g13_incentive_delay", "acc": "ds000053", "label": "partially_relevant", "reason": "Mixed-gambles loss-aversion task with gains/losses, not MID / reward anticipation.", "corrected_from": "not_relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "g13_incentive_delay", "acc": "ds000120", "label": "relevant", "reason": "Incentive-modulated antisaccade with reward cues; reward anticipation paradigm"}
 {"query": "g13_incentive_delay", "acc": "ds000121", "label": "relevant", "reason": "Reward-contingent antisaccade with reward vs neutral cues; reward anticipation"}
 {"query": "g13_incentive_delay", "acc": "ds000148", "label": "not_relevant", "reason": "2-back working memory self-control"}
@@ -1669,7 +1669,7 @@
 {"query": "g16_gambles_loss_aversion", "acc": "ds002685", "label": "relevant", "reason": "IBC battery includes Columbia card task risk choice"}
 {"query": "g16_gambles_loss_aversion", "acc": "ds002843", "label": "relevant", "reason": "Risky decision-making task in fMRI"}
 {"query": "g16_gambles_loss_aversion", "acc": "ds003096", "label": "not_relevant", "reason": "No gambling or risky-choice task evidenced"}
-{"query": "g16_gambles_loss_aversion", "acc": "ds003458", "label": "relevant", "reason": "Three-armed bandit gambling task with probabilistic rewards"}
+{"query": "g16_gambles_loss_aversion", "acc": "ds003458", "label": "partially_relevant", "reason": "3-armed bandit with drifting reward probabilities = reward/RL learning, not risky choice between gambles or loss aversion.", "corrected_from": "relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "g16_gambles_loss_aversion", "acc": "ds003517", "label": "not_relevant", "reason": "No gambling or risky-choice task evidenced"}
 {"query": "g16_gambles_loss_aversion", "acc": "ds003568", "label": "not_relevant", "reason": "No gambling or risky-choice task evidenced"}
 {"query": "g16_gambles_loss_aversion", "acc": "ds003682", "label": "not_relevant", "reason": "No gambling or risky-choice task evidenced"}
@@ -2787,7 +2787,7 @@
 {"query": "g56_meg_word_recognition", "acc": "ds004483", "label": "not_relevant", "reason": "Constraint not met; no matching evidence in card"}
 {"query": "g56_meg_word_recognition", "acc": "ds005234", "label": "not_relevant", "reason": "Vowel sounds, not words"}
 {"query": "g56_meg_word_recognition", "acc": "ds005241", "label": "relevant", "reason": "MEG lexical decision on morphologically complex words"}
-{"query": "g56_meg_word_recognition", "acc": "ds005261", "label": "not_relevant", "reason": "Constraint not met; no matching evidence in card"}
+{"query": "g56_meg_word_recognition", "acc": "ds005261", "label": "partially_relevant", "reason": "Audiovisual presentation of pseudoword syllables, then overt repetition. MEG stimulus-locked, but no real words/lexical processing. Speech perception + production, phonotactics.”\n\nIf your category treats “speech” broadly to include sublexical speech sounds, you could argue for Relevant. Under a stri", "corrected_from": "not_relevant", "corrected_by": "person and reviewer with README and paper agree"}
 {"query": "g56_meg_word_recognition", "acc": "ds005279", "label": "relevant", "reason": "MEG picture-word interference with spoken distractor words"}
 {"query": "g56_meg_word_recognition", "acc": "ds005346", "label": "unsure", "reason": "MEG/fMRI reality TV show with speech; word-level processing not evident"}
 {"query": "g56_meg_word_recognition", "acc": "ds006012", "label": "not_relevant", "reason": "Constraint not met; no matching evidence in card"}
@@ -3101,7 +3101,7 @@
 {"query": "g69_spinal_cord_fmri", "acc": "ds007067", "label": "relevant", "reason": "Spine fMRI at 7T, motor and resting-state tasks."}
 {"query": "g69_spinal_cord_fmri", "acc": "ds007313", "label": "relevant", "reason": "Brain and spinal cord fMRI and qMRI in single participant."}
 {"query": "g70_multishell_diffusion_repeats", "acc": "ds000113", "label": "not_relevant", "reason": "Forrest Gump single-shell DWI mention only, no multi-shell evidence"}
-{"query": "g70_multishell_diffusion_repeats", "acc": "ds000206", "label": "unsure", "reason": "Traveling phantom repeated DWI across protocols; shells not stated"}
+{"query": "g70_multishell_diffusion_repeats", "acc": "ds000206", "label": "partially_relevant", "reason": "Repeated DWI across 8 sites/protocols (good for reliability), but bvals show single shell b=1000 only, not multi-shell.", "corrected_from": "unsure", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "g70_multishell_diffusion_repeats", "acc": "ds001226", "label": "unsure", "reason": "Multi-shell HARDI stated; directions/repeats unknown, tumor patients"}
 {"query": "g70_multishell_diffusion_repeats", "acc": "ds001378", "label": "not_relevant", "reason": "Single shell b=1000, 15 directions"}
 {"query": "g70_multishell_diffusion_repeats", "acc": "ds001743", "label": "not_relevant", "reason": "Glaucoma dMRI, no multi-shell evidence"}
@@ -3442,7 +3442,7 @@
 {"query": "g78_focused_ultrasound", "acc": "ds004102", "label": "relevant", "reason": "DLPFC brain stimulation sham vs verum with fMRI"}
 {"query": "g78_focused_ultrasound", "acc": "ds004141", "label": "not_relevant", "reason": "Neurofeedback, not stimulation"}
 {"query": "g78_focused_ultrasound", "acc": "ds004142", "label": "not_relevant", "reason": "Neurofeedback, not stimulation"}
-{"query": "g78_focused_ultrasound", "acc": "ds004265", "label": "partially_relevant", "reason": "[non-human data: partial] MR-guided focused ultrasound with fMRI"}
+{"query": "g78_focused_ultrasound", "acc": "ds004265", "label": "relevant", "reason": "MR-guided focused ultrasound with simultaneous fMRI (heat pain circuits).", "corrected_from": "partially_relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "g78_focused_ultrasound", "acc": "ds004478", "label": "not_relevant", "reason": "No brain stimulation; unrelated task or measurement"}
 {"query": "g78_focused_ultrasound", "acc": "ds004484", "label": "not_relevant", "reason": "No brain stimulation; unrelated task or measurement"}
 {"query": "g78_focused_ultrasound", "acc": "ds004493", "label": "not_relevant", "reason": "No brain stimulation; unrelated task or measurement"}
@@ -3686,7 +3686,7 @@
 {"query": "l12_healthy_only_wm_fmri", "acc": "ds006598", "label": "relevant", "reason": "Ten adults with working memory task fMRI; no patients evidenced"}
 {"query": "l12_healthy_only_wm_fmri", "acc": "ds006642", "label": "not_relevant", "reason": "Working-memory task not the focus or not evidenced in healthy-only sample"}
 {"query": "l12_healthy_only_wm_fmri", "acc": "ds006798", "label": "not_relevant", "reason": "Working-memory task not the focus or not evidenced in healthy-only sample"}
-{"query": "l12_healthy_only_wm_fmri", "acc": "ds007022", "label": "relevant", "reason": "Healthy adults 18-24, n-back task, fMRI in training study"}
+{"query": "l12_healthy_only_wm_fmri", "acc": "ds007022", "label": "not_relevant", "reason": "n-back is behavioural only (outside scanner); fMRI tasks are finger tapping, Braille, music.", "corrected_from": "relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "l12_healthy_only_wm_fmri", "acc": "ds007082", "label": "unsure", "reason": "Perception and working memory fMRI, participants not described as healthy"}
 {"query": "l12_healthy_only_wm_fmri", "acc": "ds007286", "label": "partially_relevant", "reason": "N-back fMRI in diagnostically diverse participants including patients"}
 {"query": "l12_healthy_only_wm_fmri", "acc": "ds007318", "label": "partially_relevant", "reason": "Working memory fMRI, participants tagged patient_general"}
@@ -3905,7 +3905,7 @@
 {"query": "l18_music_or_speech_meg", "acc": "ds002761", "label": "not_relevant", "reason": "MEG without listening to speech or music (tones, visual, other task, or no MEG)"}
 {"query": "l18_music_or_speech_meg", "acc": "ds002908", "label": "not_relevant", "reason": "MEG without listening to speech or music (tones, visual, other task, or no MEG)"}
 {"query": "l18_music_or_speech_meg", "acc": "ds003082", "label": "not_relevant", "reason": "MEG without listening to speech or music (tones, visual, other task, or no MEG)"}
-{"query": "l18_music_or_speech_meg", "acc": "ds003633", "label": "unsure", "reason": "MEG movie watching with audio; speech/music not the focus"}
+{"query": "l18_music_or_speech_meg", "acc": "ds003633", "label": "relevant", "reason": "MEG while watching dubbed Forrest Gump movie (continuous speech listening, audiovisual).", "corrected_from": "unsure", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "l18_music_or_speech_meg", "acc": "ds003694", "label": "not_relevant", "reason": "MEG without listening to speech or music (tones, visual, other task, or no MEG)"}
 {"query": "l18_music_or_speech_meg", "acc": "ds003703", "label": "relevant", "reason": "MEG during passive listening to natural speech (syntactic frequency tagging)"}
 {"query": "l18_music_or_speech_meg", "acc": "ds003922", "label": "not_relevant", "reason": "MEG without listening to speech or music (tones, visual, other task, or no MEG)"}
@@ -4244,7 +4244,7 @@
 {"query": "p03_emotion_regulation", "acc": "ds005700", "label": "not_relevant", "reason": "Emotion recognition movie viewing; no regulation"}
 {"query": "p03_emotion_regulation", "acc": "ds006092", "label": "not_relevant", "reason": "Grief emotional task; no explicit regulation"}
 {"query": "p03_emotion_regulation", "acc": "ds006131", "label": "not_relevant", "reason": "Affective reactivity task; regulation only via questionnaire."}
-{"query": "p03_emotion_regulation", "acc": "ds006193", "label": "unsure", "reason": "Affective reactivity task; no description of regulation instruction"}
+{"query": "p03_emotion_regulation", "acc": "ds006193", "label": "not_relevant", "reason": "Single test participant; affective reactivity task, no explicit emotion regulation instruction.", "corrected_from": "unsure", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "p03_emotion_regulation", "acc": "ds006601", "label": "relevant", "reason": "Attentional deployment as emotion regulation strategy."}
 {"query": "p03_emotion_regulation", "acc": "ds006861", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
 {"query": "p03_emotion_regulation", "acc": "ds006866", "label": "relevant", "reason": "Participants regulate emotions (reappraisal/regulation task) during recording per tasks/readme."}
@@ -4330,7 +4330,7 @@
 {"query": "p04_naturalistic", "acc": "ds005050", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
 {"query": "p04_naturalistic", "acc": "ds005191", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
 {"query": "p04_naturalistic", "acc": "ds005215", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
-{"query": "p04_naturalistic", "acc": "ds005256", "label": "unsure", "reason": "Video-like stimuli or ambiguous task code; evidence insufficient to confirm film viewing."}
+{"query": "p04_naturalistic", "acc": "ds005256", "label": "relevant", "reason": "Includes 2 hours of naturalistic movie viewing in fMRI.", "corrected_from": "unsure", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "p04_naturalistic", "acc": "ds005345", "label": "not_relevant", "reason": "No evidence of film/movie viewing; other stimuli or task (audio, images, games, rest)."}
 {"query": "p04_naturalistic", "acc": "ds005346", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
 {"query": "p04_naturalistic", "acc": "ds005354", "label": "relevant", "reason": "Movie, film, TV or video-clip viewing during fMRI per readme/task codes."}
@@ -5625,7 +5625,7 @@
 {"query": "u09_qmri_ageing", "acc": "ds006686", "label": "not_relevant", "reason": "Older vs young fMRI category learning; no qMRI"}
 {"query": "u09_qmri_ageing", "acc": "ds006746", "label": "not_relevant", "reason": "Mouse Mn-enhanced MRI"}
 {"query": "u09_qmri_ageing", "acc": "ds007116", "label": "not_relevant", "reason": "Adolescents 8-16; QSM sequence only"}
-{"query": "u09_qmri_ageing", "acc": "ds007313", "label": "unsure", "reason": "Single-participant qMRI; repository named aging but one subject"}
+{"query": "u09_qmri_ageing", "acc": "ds007313", "label": "partially_relevant", "reason": "Single participant brain+spinal cord fMRI/qMRI from an ageing project; no age range.", "corrected_from": "unsure", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "u09_qmri_ageing", "acc": "ds007328", "label": "not_relevant", "reason": "Single subject; no ageing qMRI"}
 {"query": "u09_qmri_ageing", "acc": "ds007418", "label": "not_relevant", "reason": "T2* multi-echo at 10.5T in 4 adults; not ageing"}
 {"query": "u09_qmri_ageing", "acc": "ds007508", "label": "not_relevant", "reason": "Risk decision fMRI; no qMRI"}
@@ -5650,7 +5650,7 @@
 {"query": "u10_diffusion_children", "acc": "ds005431", "label": "not_relevant", "reason": "No evidence of participants under 18 (adults, animals or unspecified)"}
 {"query": "u10_diffusion_children", "acc": "ds005563", "label": "unsure", "reason": "Diffusion in fetal and 1-2 month infants plus adult; infants not clearly children"}
 {"query": "u10_diffusion_children", "acc": "ds005572", "label": "unsure", "reason": "Name PREK suggests pre-kindergarten children but ages not given"}
-{"query": "u10_diffusion_children", "acc": "ds005577", "label": "relevant", "reason": "Ages 17-37 include minors; diffusion MRI present"}
+{"query": "u10_diffusion_children", "acc": "ds005577", "label": "partially_relevant", "reason": "Adults with dyslexia (17-37), dMRI present; at most a few 17-year-olds, essentially no children.", "corrected_from": "relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "u10_diffusion_children", "acc": "ds005664", "label": "not_relevant", "reason": "Adult traveling subjects, ages 22-55"}
 {"query": "u10_diffusion_children", "acc": "ds005752", "label": "not_relevant", "reason": "Adult volunteers aged 18-90"}
 {"query": "u10_diffusion_children", "acc": "ds005896", "label": "relevant", "reason": "Adolescent health and development study with DTI"}
@@ -5915,7 +5915,7 @@
 {"query": "u19_mpm_healthy_adults", "acc": "ds003563", "label": "relevant", "reason": "ultrahigh-res healthy human phantom with QSM and quantitative contrasts"}
 {"query": "u19_mpm_healthy_adults", "acc": "ds003653", "label": "not_relevant", "reason": "no quantitative mapping maps evident"}
 {"query": "u19_mpm_healthy_adults", "acc": "ds004044", "label": "not_relevant", "reason": "no quantitative mapping maps evident"}
-{"query": "u19_mpm_healthy_adults", "acc": "ds004054", "label": "partially_relevant", "reason": "T2/T2* mapping PET-MRI, healthy controls plus temporal lobe epilepsy patients"}
+{"query": "u19_mpm_healthy_adults", "acc": "ds004054", "label": "relevant", "reason": "T2/T2* mapping in 18 healthy controls (+ TLE patients).", "corrected_from": "partially_relevant", "corrected_by": "two reviewers agree (review page; reviewer with full README and paper)"}
 {"query": "u19_mpm_healthy_adults", "acc": "ds004169", "label": "not_relevant", "reason": "no quantitative mapping maps evident"}
 {"query": "u19_mpm_healthy_adults", "acc": "ds004187", "label": "relevant", "reason": "qT1 maps from 3 young adults"}
 {"query": "u19_mpm_healthy_adults", "acc": "ds004305", "label": "not_relevant", "reason": "no quantitative mapping maps evident"}

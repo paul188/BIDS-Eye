@@ -6,6 +6,10 @@ structural queries into ground_truth.json, the file eval_recall.py scores
 against. Also writes judgments.jsonl, the human-readable record with the
 reason behind every label, so labels can be reviewed and corrected.
 
+corrections.jsonl overrides judge labels after review: one line per
+(query, acc) with the new label, the reason and who decided. Corrections are
+applied last, so they survive a re-run with new judge output.
+
     python benchmarks/recall/merge_judgments.py POOLS.json JUDGED_DIR --snapshot-date 2026-11-13
 """
 
@@ -37,6 +41,22 @@ def main() -> None:
             if line.strip():
                 row = json.loads(line)
                 labels[(row["query"], row["acc"])] = row
+
+    corrections = HERE / "corrections.jsonl"
+    corrected = 0
+    if corrections.exists():
+        for line in corrections.read_text().splitlines():
+            if line.strip():
+                fix = json.loads(line)
+                key = (fix["query"], fix["acc"])
+                if key not in labels:
+                    raise SystemExit(f"correction for an unjudged pair: {key}")
+                labels[key] = {
+                    "query": fix["query"], "acc": fix["acc"], "label": fix["label"],
+                    "reason": fix["reason"], "corrected_from": labels[key]["label"],
+                    "corrected_by": fix["by"],
+                }
+                corrected += 1
 
     truth, missing = {}, []
     for q in queries:
@@ -77,7 +97,7 @@ def main() -> None:
     for t in truth.values():
         for label in ("relevant", "partially_relevant", "not_relevant", "unsure"):
             counts[label] += len(t.get(label, []))
-    print(f"{len(truth)} queries, {len(labels)} judgments: {dict(counts)}")
+    print(f"{len(truth)} queries, {len(labels)} judgments ({corrected} corrected): {dict(counts)}")
     print("relevant per query:", {k: len(v["relevant"]) for k, v in truth.items()})
 
 

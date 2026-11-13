@@ -1,6 +1,6 @@
 {
  "snapshot_date": "2026-11-13",
- "judged_by": "LLM judges (Claude Sonnet), criteria in queries.yaml; species rule applied; not yet reviewed by a person",
+ "judged_by": "LLM judge (Claude Sonnet), criteria in queries.yaml; 150 labels reviewed blind, 15 corrected (corrections.jsonl)",
  "note": "Relevance of datasets outside each query's pool is assumed false. Structural truth is computed from recorded modalities and sizes on the snapshot date.",
  "queries": {
   "u01_alzheimer_fmri": {
@@ -1861,7 +1861,9 @@
     "ds004958",
     "ds005851"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds007313"
+   ],
    "not_relevant": [
     "ds000218",
     "ds000219",
@@ -1895,8 +1897,7 @@
     "ds007508"
    ],
    "unsure": [
-    "ds000221",
-    "ds007313"
+    "ds000221"
    ]
   },
   "u10_diffusion_children": {
@@ -1914,7 +1915,6 @@
     "ds004627",
     "ds004889",
     "ds005256",
-    "ds005577",
     "ds005896",
     "ds005901",
     "ds006131",
@@ -1923,7 +1923,9 @@
     "ds007116",
     "ds007398"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds005577"
+   ],
    "not_relevant": [
     "ds000206",
     "ds001378",
@@ -2717,11 +2719,11 @@
     "ds005530",
     "ds005700",
     "ds006092",
-    "ds006131"
+    "ds006131",
+    "ds006193"
    ],
    "unsure": [
-    "ds003831",
-    "ds006193"
+    "ds003831"
    ]
   },
   "p04_naturalistic": {
@@ -2757,6 +2759,7 @@
     "ds004848",
     "ds004892",
     "ds005215",
+    "ds005256",
     "ds005346",
     "ds005468",
     "ds005531",
@@ -2848,7 +2851,6 @@
    ],
    "unsure": [
     "ds003020",
-    "ds005256",
     "ds005518",
     "ds001357",
     "ds003136",
@@ -3883,13 +3885,13 @@
    "relevant": [
     "ds002634",
     "ds003563",
+    "ds004054",
     "ds004187",
     "ds005851",
     "ds007313",
     "ds007418"
    ],
    "partially_relevant": [
-    "ds004054",
     "ds004611"
    ],
    "not_relevant": [
@@ -5228,7 +5230,6 @@
     "ds005270",
     "ds005381",
     "ds006598",
-    "ds007022",
     "ds007376"
    ],
    "partially_relevant": [
@@ -5251,7 +5252,8 @@
     "ds005464",
     "ds006206",
     "ds006642",
-    "ds006798"
+    "ds006798",
+    "ds007022"
    ],
    "unsure": [
     "ds000149",
@@ -5536,6 +5538,7 @@
    "source": "logic",
    "type": "logic_or",
    "relevant": [
+    "ds003633",
     "ds003703",
     "ds004078",
     "ds004276",
@@ -5568,7 +5571,6 @@
     "ds007524"
    ],
    "unsure": [
-    "ds003633",
     "ds004012"
    ]
   },
@@ -6099,12 +6101,12 @@
     "ds004746",
     "ds004926",
     "ds005413",
-    "ds005839",
     "ds005883"
    ],
    "not_relevant": [
     "ds003466",
     "ds004386",
+    "ds005839",
     "ds006243"
    ],
    "unsure": []
@@ -6680,7 +6682,9 @@
    "relevant": [
     "ds007532"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds003814"
+   ],
    "not_relevant": [
     "ds001229",
     "ds001232",
@@ -6707,7 +6711,6 @@
     "ds003707",
     "ds003778",
     "ds003789",
-    "ds003814",
     "ds004006",
     "ds004009",
     "ds004086",
@@ -7431,7 +7434,8 @@
     "ds004367",
     "ds004368",
     "ds004837",
-    "ds005073"
+    "ds005073",
+    "ds005237"
    ],
    "partially_relevant": [],
    "not_relevant": [
@@ -7465,9 +7469,7 @@
     "ds007407",
     "ds007486"
    ],
-   "unsure": [
-    "ds005237"
-   ]
+   "unsure": []
   },
   "g09_epilepsy_surgery_presurgical": {
    "method": "judged",
@@ -7710,10 +7712,11 @@
     "ds007387",
     "ds007388"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds000053"
+   ],
    "not_relevant": [
     "ds000005",
-    "ds000053",
     "ds000148",
     "ds000231",
     "ds001167",
@@ -7860,7 +7863,6 @@
     "ds001883",
     "ds002685",
     "ds002843",
-    "ds003458",
     "ds003782",
     "ds004147",
     "ds004259",
@@ -7874,7 +7876,9 @@
     "ds007305",
     "ds007508"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds003458"
+   ],
    "not_relevant": [
     "ds001814",
     "ds003096",
@@ -9429,7 +9433,9 @@
     "ds007523",
     "ds007524"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds005261"
+   ],
    "not_relevant": [
     "ds003082",
     "ds003633",
@@ -9437,7 +9443,6 @@
     "ds004229",
     "ds004483",
     "ds005234",
-    "ds005261",
     "ds006012",
     "ds006035"
    ],
@@ -9911,7 +9916,9 @@
     "ds005664",
     "ds006181"
    ],
-   "partially_relevant": [],
+   "partially_relevant": [
+    "ds000206"
+   ],
    "not_relevant": [
     "ds000113",
     "ds001378",
@@ -9939,7 +9946,6 @@
     "ds007401"
    ],
    "unsure": [
-    "ds000206",
     "ds001226",
     "ds002080",
     "ds003037",
@@ -10324,6 +10330,7 @@
     "ds003670",
     "ds004024",
     "ds004102",
+    "ds004265",
     "ds004552",
     "ds005498",
     "ds006126",
@@ -10334,7 +10341,6 @@
     "ds007347"
    ],
    "partially_relevant": [
-    "ds004265",
     "ds005093",
     "ds005688",
     "ds006721"
