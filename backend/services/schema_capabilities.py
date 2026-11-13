@@ -15,7 +15,10 @@ columns exist and are populated. Prompt building then
   - widens the disease text fallback with dx_status / study_domain when present.
 
 The same inspection records whether the full-text column search_tsv exists
-(services/text_search.py). Without it text search falls back to ILIKE.
+(services/text_search.py). Without it text search falls back to ILIKE. It
+also records search_tsv_papers, the same vector plus the text of the papers a
+dataset names (crawlers/migrate_add_paper_search.sql), which text search uses
+when TEXT_SEARCH_PAPERS is on.
 
 After a migration or backfill, restart the backend to pick up the new state.
 """
@@ -54,6 +57,22 @@ _has_fts: bool = False
 def has_fts() -> bool:
     """True if bids_datasets has the full-text column in the running database."""
     return _has_fts
+
+
+# search_tsv plus the dataset's paper text; see crawlers/migrate_add_paper_search.sql.
+PAPER_FTS_COLUMN = "search_tsv_papers"
+_has_paper_fts: bool = False
+
+
+def has_paper_fts() -> bool:
+    """True if bids_datasets has the full-text column that includes paper text."""
+    return _has_paper_fts
+
+
+def set_paper_fts(available: bool) -> None:
+    """Override the detected paper full-text capability (tests)."""
+    global _has_paper_fts
+    _has_paper_fts = bool(available)
 
 
 def set_fts(available: bool) -> None:
@@ -135,9 +154,12 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
         )
     )
     present = {row[0] for row in rows}
-    global _present_display, _has_fts
+    global _present_display, _has_fts, _has_paper_fts
     _present_display = frozenset(name for name in DISPLAY_COLUMNS if name in present)
     _has_fts = FTS_COLUMN in present
+    _has_paper_fts = _has_fts and PAPER_FTS_COLUMN in present
+    if _has_paper_fts:
+        log.info("Full-text column %s found (used when TEXT_SEARCH_PAPERS is on)", PAPER_FTS_COLUMN)
     log.info(
         "Full-text column %s %s", FTS_COLUMN,
         "found → text_match() uses full-text search and ranking" if _has_fts
@@ -175,7 +197,7 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
 
 async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
     """Detect and store the state. On any error, assume no optional column."""
-    global _available, _present_display, _has_fts
+    global _available, _present_display, _has_fts, _has_paper_fts
     try:
         async with engine.connect() as connection:
             _available = await detect_available_columns(connection)
@@ -184,4 +206,5 @@ async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
         _available = frozenset()
         _present_display = frozenset()
         _has_fts = False
+        _has_paper_fts = False
     return _available

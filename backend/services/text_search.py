@@ -27,17 +27,33 @@ does not in every sqlglot version.
 
 On a database without search_tsv the placeholders expand to ILIKE on the short
 text columns, and there is no text rank.
+
+Paper text (TEXT_SEARCH_PAPERS=true). search_tsv_papers is search_tsv plus,
+at weight D, the title, abstract and keywords of the papers the dataset names
+as its own (crawlers/paper_enrichment_plan.md). With the switch on and the
+column present, a positive text_match() filters on it, so a dataset whose own
+text lacks a word but whose paper has it is found. Everything else stays on
+search_tsv:
+  - the rank, so a dataset found only through its paper sorts after every
+    dataset that matches on its own text (paper text adds results, it never
+    promotes them);
+  - NOT text_match(), so a condition a paper mentions only as background or
+    as an exclusion never removes a dataset;
+  - the word counts behind 'loose' terms.
+Terms scoped to the name or the short fields (labels A, AB) cannot match the
+paper text at all, because it carries weight D.
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Sequence
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 _ROOT = Path(__file__).resolve().parents[2]
 _RAG_DIR = _ROOT / "RAG"
@@ -62,6 +78,8 @@ log = logging.getLogger(__name__)
 
 TS_CONFIG = "english"
 FTS_COLUMN = "search_tsv"
+PAPER_FTS_COLUMN = schema_capabilities.PAPER_FTS_COLUMN
+PAPERS_ENV = "TEXT_SEARCH_PAPERS"
 # ts_rank_cd weights in the order {D, C, B, A}: README, LLM profile of the
 # README, short fields (incl. conditions the README says were studied), name.
 RANK_WEIGHTS = "{0.05, 0.4, 0.6, 1.0}"
@@ -359,19 +377,88 @@ def convert_long_text_ilike(sql: str) -> str:
     return _LONG_TEXT_ILIKE_RE.sub(replace, sql)
 
 
-def expand_text_search(sql: str, fts: Optional[bool] = None) -> ExpandedSearch:
+def papers_enabled() -> bool:
+    """True when positive text matches should include paper text.
+
+    Read on every call, so a one-off container can set the variable.
+    """
+    flag = os.getenv(PAPERS_ENV, "false").strip().lower() in ("1", "true", "yes", "on")
+    return flag and schema_capabilities.has_paper_fts()
+
+
+_VECTOR_MATCH_RE = re.compile(
+    rf"(?P<negated>\bNOT\s+)?\b(?P<alias>[A-Za-z_]\w*)\.{FTS_COLUMN}\s+@@\s+to_tsquery\(",
+    re.IGNORECASE)
+_NOT_BEFORE_RE = re.compile(r"\bNOT\s*$", re.IGNORECASE)
+
+
+def negated_spans(sql: str) -> List[Tuple[int, int]]:
+    """Character ranges of the parenthesised groups that directly follow NOT.
+
+    Quoted strings are skipped, so parentheses inside a literal do not count.
+    """
+    spans: List[Tuple[int, int]] = []
+    stack: List[Tuple[int, bool]] = []
+    position, length = 0, len(sql)
+    while position < length:
+        char = sql[position]
+        if char == "'":
+            end = position + 1
+            while end < length:
+                if sql[end] == "'" and (end + 1 >= length or sql[end + 1] != "'"):
+                    break
+                end += 2 if sql[end] == "'" else 1
+            position = end + 1
+            continue
+        if char == "(":
+            stack.append((position, bool(_NOT_BEFORE_RE.search(sql[max(0, position - 12):position]))))
+        elif char == ")" and stack:
+            start, negated = stack.pop()
+            if negated:
+                spans.append((start, position))
+        position += 1
+    return spans
+
+
+def _is_negated(position: int, spans: Sequence[Tuple[int, int]]) -> bool:
+    return any(start < position < end for start, end in spans)
+
+
+def with_paper_text(sql: str) -> str:
+    """The same SQL with every positive full-text filter reading paper text too.
+
+    Equivalent to expanding with papers on; used by the benchmark to compare
+    both from one translation (benchmarks/recall/paired_papers_run.py).
+    """
+    spans = negated_spans(sql)
+
+    def replace(match: re.Match) -> str:
+        if match.group("negated") or _is_negated(match.start(), spans):
+            return match.group(0)
+        return f"{match.group('alias')}.{PAPER_FTS_COLUMN} @@ to_tsquery("
+
+    return _VECTOR_MATCH_RE.sub(replace, sql)
+
+
+def expand_text_search(
+    sql: str, fts: Optional[bool] = None, papers: Optional[bool] = None,
+) -> ExpandedSearch:
     """Replace every text_match() placeholder in *sql* and build the rank query.
 
-    *fts* overrides the detected database capability (tests).
+    *fts* and *papers* override the detected database capability and the
+    TEXT_SEARCH_PAPERS switch (tests).
     """
     use_fts = schema_capabilities.has_fts() if fts is None else fts
+    use_papers = use_fts and (papers_enabled() if papers is None else papers)
     if use_fts:
         sql = convert_long_text_ilike(sql)
     alias = _dataset_alias(sql)
     rank_parts: List[str] = []
+    not_groups = negated_spans(sql) if use_papers else []
 
     def replace(match: re.Match) -> str:
         negated = match.group("negated") or ""
+        inside_not = bool(negated) or _is_negated(match.start(), not_groups)
         mode = (match.group("mode") or MODE_ALL).lower()
         if mode not in MODES:
             mode = MODE_ALL
@@ -386,7 +473,8 @@ def expand_text_search(sql: str, fts: Optional[bool] = None) -> ExpandedSearch:
             rank = build_rank_tsquery(terms, mode)
             if rank:
                 rank_parts.append(rank)
-        return f"{negated}{alias}.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', '{query}')"
+        column = PAPER_FTS_COLUMN if (use_papers and not inside_not) else FTS_COLUMN
+        return f"{negated}{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
 
     expanded = _TEXT_MATCH_RE.sub(replace, sql)
 
