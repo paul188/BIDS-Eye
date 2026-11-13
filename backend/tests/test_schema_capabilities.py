@@ -166,3 +166,23 @@ def test_display_column_needs_only_to_exist() -> None:
     )
     asyncio.run(caps.detect_available_columns(connection))
     assert caps.has_display_column("deprecated_reason")
+
+
+def test_size_limit_becomes_a_filter_only_when_the_column_is_available() -> None:
+    from preprocess import QueryPlan, _build_augmented_question
+
+    plan = QueryPlan(
+        query_family="scan_filter",
+        natural_language_summary="Find fMRI datasets.",
+        max_size_gb=5,
+        min_size_gb=0.5,
+    )
+    # Database without size_bytes: the question passes through unchanged.
+    assert _build_augmented_question(plan, []) == "Find fMRI datasets."
+
+    augmented = _build_augmented_question(plan, [], available_columns={"size_bytes"})
+    assert "dataset size: d.size_bytes <= 5368709120 AND d.size_bytes >= 536870912" in augmented
+    assert augmented.endswith("Find fMRI datasets.")
+
+    no_limit = QueryPlan(query_family="scan_filter", natural_language_summary="Find fMRI datasets.")
+    assert _build_augmented_question(no_limit, [], available_columns={"size_bytes"}) == "Find fMRI datasets."

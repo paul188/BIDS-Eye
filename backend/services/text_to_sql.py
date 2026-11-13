@@ -273,7 +273,8 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "## Important rules\n"
         "- [Resolved DB filters]: copy each EXISTS subquery VERBATIM into WHERE (AND them together). "
         "'scan X:' and 'scan task X:' for the same term are two separate EXISTS — keep both. "
-        "If a 'subject count: HAVING ...' line is present, add that HAVING clause after GROUP BY d.id.\n"
+        "If a 'subject count: HAVING ...' line is present, add that HAVING clause after GROUP BY d.id. "
+        "If a 'dataset size: ...' line is present, AND that condition into WHERE verbatim.\n"
         f"- ILIKE: use only on {text_cols_phrase} "
         "(for keyword/title searches). Never on diagnosis, task, datatype, or suffix "
         "(they hold canonical codes). Use the single most distinctive keyword "
@@ -351,7 +352,10 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
             log.warning("Could not load RAG name index: %s", exc)
 
     # Stages 1 + 2
-    augmented_plan = run_pipeline(question, retriever=retriever, api_key=api_key)
+    augmented_plan = run_pipeline(
+        question, retriever=retriever, api_key=api_key,
+        available_columns=_available_columns(),
+    )
     augmented_question = augmented_plan.augmented_question
     query_family = augmented_plan.plan.query_family.value
     explanation = augmented_plan.plan.natural_language_summary

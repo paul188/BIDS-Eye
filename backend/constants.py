@@ -69,9 +69,11 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
     ]),
     "age_max": ("FLOAT", [
         "oldest participant age reported for the dataset (NULL when not reported)",
-        "Dataset-level summary; bids_participants.age has the per-participant values.",
-        "Has a participant younger than N: d.age_min < N.  Older than N: d.age_max > N.",
-        "All participants younger than N: d.age_max < N.",
+        "age_min / age_max COMPLEMENT bids_participants.age: some datasets have only one of",
+        "the two. For an age filter ALWAYS OR both sources, e.g. participants under 12:",
+        "  (EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.age < 12)",
+        "   OR d.age_min < 12)",
+        "and participants over 65: (EXISTS (... p.age > 65) OR d.age_max > 65).",
     ]),
     "size_bytes": ("BIGINT", [
         "total size of the dataset in bytes (1 GB = 1073741824);",

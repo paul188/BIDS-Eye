@@ -8,6 +8,10 @@ COPY backend/                          /app/backend/
 COPY LLM_preprocessor/                 /app/LLM_preprocessor/
 COPY RAG/                              /app/RAG/
 
+# Every pip call is constrained to the pinned versions in constraints.txt so
+# that a rebuild yields the same environment (see the comment in that file).
+ENV PIP_CONSTRAINT=/app/backend/constraints.txt
+
 # Install BIDS-SQL dependencies and package
 RUN pip install --no-cache-dir -r /app/BIDS-SQL/requirements.txt && \
     pip install --no-cache-dir -e /app/BIDS-SQL

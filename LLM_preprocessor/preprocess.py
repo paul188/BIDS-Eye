@@ -48,7 +48,7 @@ import sys
 import textwrap
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Collection, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -263,6 +263,17 @@ class QueryPlan(BaseModel):
         description="Filters on bids_objects.other_entities JSONB sidecar fields"
     )
 
+    # ── Dataset size ──────────────────────────────────────────────────────────
+    max_size_gb: Optional[float] = Field(
+        default=None,
+        description="Upper bound on the total dataset size, in gigabytes "
+                    "('no larger than 5 GB' → 5, 'under 500 MB' → 0.5, 'below 2 TB' → 2048)"
+    )
+    min_size_gb: Optional[float] = Field(
+        default=None,
+        description="Lower bound on the total dataset size, in gigabytes"
+    )
+
     # ── Session / longitudinal ────────────────────────────────────────────────
     min_sessions: Optional[int] = Field(
         default=None,
@@ -474,6 +485,17 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "Prisma scanner"           → metadata_filters: [{"json_field": "ManufacturerModelName", "operator": "=", "value": "Prisma"}]
       "has software version info"→ metadata_filters: [{"json_field": "SoftwareVersions", "operator": "exists"}]
 
+    ── Dataset size ────────────────────────────────────────────────────────────
+    A limit on how big the dataset is on disk goes into max_size_gb / min_size_gb,
+    always converted to gigabytes (1 GB = 1024 MB, 1 TB = 1024 GB). This is about
+    download size, NOT the number of subjects.
+
+    Examples:
+      "fMRI datasets no larger than 5 GB"   → max_size_gb: 5
+      "small datasets under 500 MB"         → max_size_gb: 0.5
+      "datasets of at least 1 TB"           → min_size_gb: 1024
+      "datasets with at least 50 subjects"  → no size field (that is min_subjects)
+
     ── query_family guidelines ─────────────────────────────────────────────────
       concept_query        — asks for datasets containing a concept (diagnosis/modality)
       participant_filter   — filters by participant properties (sex, age, handedness, count)
@@ -661,6 +683,7 @@ def augment_with_rag(
     unresolved_terms: Optional[Dict[str, List[str]]] = None,
     db_miss_terms: Optional[Dict[str, List[str]]] = None,
     scores: Optional[Dict[str, Dict[str, float]]] = None,
+    available_columns: Collection[str] = (),
 ) -> AugmentedQueryPlan:
     """
     Combine a QueryPlan with RAG results to produce an AugmentedQueryPlan.
@@ -700,10 +723,24 @@ def augment_with_rag(
         resolved=resolved,
         scored_filters=_build_scored_filters(rag_results, scores or {}),
         augmented_question=_build_augmented_question(
-            plan, resolved, unresolved_terms or {}, db_miss_terms or {}
+            plan, resolved, unresolved_terms or {}, db_miss_terms or {},
+            available_columns,
         ),
     )
     return aug
+
+
+_BYTES_PER_GB = 1024 ** 3
+
+
+def _size_conditions(plan: QueryPlan) -> List[str]:
+    """SQL conditions on d.size_bytes for the size limits in the plan."""
+    conds: List[str] = []
+    if plan.max_size_gb is not None and plan.max_size_gb > 0:
+        conds.append(f"d.size_bytes <= {int(plan.max_size_gb * _BYTES_PER_GB)}")
+    if plan.min_size_gb is not None and plan.min_size_gb > 0:
+        conds.append(f"d.size_bytes >= {int(plan.min_size_gb * _BYTES_PER_GB)}")
+    return conds
 
 
 def _build_augmented_question(
@@ -711,9 +748,14 @@ def _build_augmented_question(
     resolved: List[ResolvedTerms],
     unresolved_terms: Optional[Dict[str, List[str]]] = None,
     db_miss_terms: Optional[Dict[str, List[str]]] = None,
+    available_columns: Collection[str] = (),
 ) -> str:
     """
     Inject resolved canonical codes into the natural-language summary.
+
+    *available_columns* names the optional bids_datasets columns the database
+    has populated (backend/services/schema_capabilities.py). A filter on a
+    column that is not listed is left out rather than emitted and failing.
 
     Scan-related fields (datatype / suffix / task) are grouped by the source
     user term and emitted as pre-built EXISTS subqueries so the SQL model can
@@ -723,7 +765,8 @@ def _build_augmented_question(
 
     Non-scan fields (diagnosis, author, funding) are listed as code names.
     """
-    if not resolved and not plan.description_search and not plan.name_search:
+    size_conds = _size_conditions(plan) if "size_bytes" in available_columns else []
+    if not resolved and not plan.description_search and not plan.name_search and not size_conds:
         return plan.natural_language_summary
 
     _SCAN_FIELDS = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
@@ -858,6 +901,10 @@ def _build_augmented_question(
             f"  dataset name: d.name ILIKE '%{plan.name_search}%'"
         )
 
+    # Dataset size limit — a plain condition on bids_datasets, no EXISTS needed.
+    if size_conds:
+        context_lines.append("  dataset size: " + " AND ".join(size_conds))
+
     # Emit min_subjects as a HAVING hint using the total subject count.
     # "at least N participants with X" → HAVING COUNT(DISTINCT o.subject) >= N
     # (subject_count in SELECT is computed over all subjects, not just diagnosed ones —
@@ -940,6 +987,7 @@ def run_pipeline(
     query: str,
     retriever: Any = None,
     api_key: Optional[str] = None,
+    available_columns: Collection[str] = (),
 ) -> AugmentedQueryPlan:
     """
     End-to-end: parse query → RAG lookup → return AugmentedQueryPlan.
@@ -957,7 +1005,9 @@ def run_pipeline(
         return AugmentedQueryPlan(
             plan=plan,
             resolved=[],
-            augmented_question=plan.natural_language_summary,
+            augmented_question=_build_augmented_question(
+                plan, [], available_columns=available_columns
+            ),
         )
 
     rag_requests = build_rag_requests(plan)
@@ -1071,6 +1121,7 @@ def run_pipeline(
     return augment_with_rag(
         plan, rag_results, unresolved_terms=unresolved,
         db_miss_terms=db_miss_terms, scores=rag_scores,
+        available_columns=available_columns,
     )
 
 
