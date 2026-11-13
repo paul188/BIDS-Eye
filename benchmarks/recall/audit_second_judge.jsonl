@@ -1,0 +1,383 @@
+{"query": "b01_reward_fmri_adolescents", "acc": "ds001371", "label": "not_relevant", "reason": "Rule-learning fMRI in CHR adolescents; executive function, no reward task"}
+{"query": "b01_reward_fmri_adolescents", "acc": "ds001748", "label": "not_relevant", "reason": "Long-term memory retrieval fMRI in children; no reward paradigm"}
+{"query": "b01_reward_fmri_adolescents", "acc": "ds004935", "label": "not_relevant", "reason": "Inhibitory control fMRI in youth; no reward task evidence"}
+{"query": "b02_oddball_eeg_scz", "acc": "ds002893", "label": "partially_relevant", "reason": "Auditory/visual oddball EEG in aging healthy adults; no schizophrenia participants"}
+{"query": "b02_oddball_eeg_scz", "acc": "ds006394", "label": "not_relevant", "reason": "Surprise-induced awareness failure task in healthy participants; not oddball in schizophrenia"}
+{"query": "b02_oddball_eeg_scz", "acc": "ds007056", "label": "not_relevant", "reason": "Visual P300 oddball in undergraduates; neither auditory nor schizophrenia"}
+{"query": "b03_dwi_ms", "acc": "ds004742", "label": "not_relevant", "reason": "Single-subject white matter tract diffusion data; no multiple sclerosis evidence"}
+{"query": "b03_dwi_ms", "acc": "ds007401", "label": "not_relevant", "reason": "Diffusion MRI in epilepsy surgery cohort, not multiple sclerosis"}
+{"query": "b04_pet_amyloid_tau", "acc": "ds001705", "label": "not_relevant", "reason": "PET grand challenge, ages 28-53, no amyloid/tau tracer mentioned"}
+{"query": "b04_pet_amyloid_tau", "acc": "ds004230", "label": "not_relevant", "reason": "[11C]PS13 COX-1 radioligand in adults 22-54; not amyloid/tau"}
+{"query": "b04_pet_amyloid_tau", "acc": "ds004869", "label": "not_relevant", "reason": "COX-2 radioligand PET in healthy adults 22-56; not amyloid/tau"}
+{"query": "b05_meg_visual_healthy", "acc": "ds004276", "label": "not_relevant", "reason": "Auditory word recognition MEG, not visual perception"}
+{"query": "b05_meg_visual_healthy", "acc": "ds005261", "label": "not_relevant", "reason": "MEG learning task and rest; no visual perception focus"}
+{"query": "b06_infant_structural", "acc": "ds003136", "label": "not_relevant", "reason": "Mothers aged 19-33 scanned; infants not scanned"}
+{"query": "b06_infant_structural", "acc": "ds003592", "label": "not_relevant", "reason": "Adult aging cohort 18-89"}
+{"query": "b07_fear_conditioning_fmri", "acc": "ds000053", "label": "not_relevant", "reason": "Loss aversion training gambling fMRI, not fear conditioning"}
+{"query": "b07_fear_conditioning_fmri", "acc": "ds000108", "label": "not_relevant", "reason": "Emotion regulation fMRI, no fear conditioning or extinction"}
+{"query": "b08_ieeg_language_epilepsy", "acc": "ds004752", "label": "not_relevant", "reason": "iEEG verbal working memory task; not a language/speech task per se"}
+{"query": "b08_ieeg_language_epilepsy", "acc": "ds004770", "label": "not_relevant", "reason": "iEEG visuospatial working memory/gameplay; no language"}
+{"query": "b09_motor_eeg_stroke", "acc": "ds003506", "label": "not_relevant", "reason": "Parkinson patients reinforcement learning EEG; no stroke"}
+{"query": "b09_motor_eeg_stroke", "acc": "ds004460", "label": "not_relevant", "reason": "Healthy EEG plus motion capture rotation task; no stroke"}
+{"query": "b09_motor_eeg_stroke", "acc": "ds006963", "label": "not_relevant", "reason": "Healthy adults visual working memory gating EEG; no stroke"}
+{"query": "b10_pain_fmri_chronic", "acc": "ds003466", "label": "not_relevant", "reason": "Healthy haptic exploration fMRI; no pain or patients"}
+{"query": "b10_pain_fmri_chronic", "acc": "ds006243", "label": "not_relevant", "reason": "Empathic pain in meditation-trained healthy participants; no chronic pain"}
+{"query": "b11_rest_fmri_depression", "acc": "ds001168", "label": "not_relevant", "reason": "7T resting test-retest in healthy participants; no depression evidence"}
+{"query": "b11_rest_fmri_depression", "acc": "ds001450", "label": "not_relevant", "reason": "Two-subject resting results dataset; no depression"}
+{"query": "b11_rest_fmri_depression", "acc": "ds005166", "label": "not_relevant", "reason": "Youth inhibitory control; major depression was an exclusion criterion"}
+{"query": "b11_rest_fmri_depression", "acc": "ds007116", "label": "partially_relevant", "reason": "Transdiagnostic adolescent cohort with resting fMRI and depression questionnaires; no explicit MDD group"}
+{"query": "b11_rest_fmri_depression", "acc": "ds007328", "label": "partially_relevant", "reason": "Single participant resting fMRI during antidepressant discontinuation; not a depression group"}
+{"query": "b12_attention_eeg_adhd_children", "acc": "ds005863", "label": "not_relevant", "reason": "Healthy young adults 18-30; ADHD only a symptom checklist"}
+{"query": "b12_attention_eeg_adhd_children", "acc": "ds006018", "label": "not_relevant", "reason": "Healthy young adults 18-30; no ADHD participants"}
+{"query": "b13_tom_fmri_autism", "acc": "ds001339", "label": "not_relevant", "reason": "IAPS picture viewing fMRI, 14 subjects; no autism or ToM"}
+{"query": "b13_tom_fmri_autism", "acc": "ds003011", "label": "not_relevant", "reason": "Traveling phantoms resting fMRI for schizophrenia project; no autism"}
+{"query": "b13_tom_fmri_autism", "acc": "ds003354", "label": "not_relevant", "reason": "Empathy/ToM fMRI in psychopathic traits, not autism"}
+{"query": "b14_brain_tumor_mri", "acc": "ds005118", "label": "not_relevant", "reason": "Single healthy individual multi-echo fMRI; no tumor"}
+{"query": "b14_brain_tumor_mri", "acc": "ds005602", "label": "not_relevant", "reason": "Epilepsy surgery MRI database; not tumors"}
+{"query": "b15_cue_reactivity_fmri", "acc": "ds001233", "label": "not_relevant", "reason": "Finger motor training fMRI; no cues of substances"}
+{"query": "b15_cue_reactivity_fmri", "acc": "ds003487", "label": "not_relevant", "reason": "Pavlovian reward conditioning in healthy; not substance/craving cue reactivity"}
+{"query": "b15_cue_reactivity_fmri", "acc": "ds004693", "label": "not_relevant", "reason": "Scene categorization fMRI; no cue reactivity"}
+{"query": "b15_cue_reactivity_fmri", "acc": "ds006105", "label": "not_relevant", "reason": "Skewed gambling task fMRI; not cue reactivity"}
+{"query": "d01_depression_rest_connectivity", "acc": "ds002749", "label": "not_relevant", "reason": "Eyes-closed resting fMRI of depressed patients in treatment groups only; no healthy control group"}
+{"query": "d01_depression_rest_connectivity", "acc": "ds003007", "label": "not_relevant", "reason": "Mild depression patients in three treatment groups; no healthy controls mentioned"}
+{"query": "d01_depression_rest_connectivity", "acc": "ds006206", "label": "not_relevant", "reason": "Five healthy participants at 10.5T; no depression"}
+{"query": "d02_aging_trust_striatum", "acc": "ds003103", "label": "not_relevant", "reason": "College couples shopping interaction; young adults, no older group"}
+{"query": "d02_aging_trust_striatum", "acc": "ds004103", "label": "not_relevant", "reason": "Hyperscanning game in ages 20-29; no older adults"}
+{"query": "d03_multiecho_aging", "acc": "ds000258", "label": "unsure", "reason": "Multi-echo resting fMRI, 89 neurotypical adults; age range and cognitive scores not shown"}
+{"query": "d03_multiecho_aging", "acc": "ds001634", "label": "not_relevant", "reason": "19 young adults 18-28 visual working memory; not lifespan or multi-echo"}
+{"query": "d03_multiecho_aging", "acc": "ds002156", "label": "not_relevant", "reason": "Single multi-echo run for masking debugging; no lifespan cohort"}
+{"query": "d03_multiecho_aging", "acc": "ds003148", "label": "not_relevant", "reason": "60 adults aged 18-38 intelligence tasks; not lifespan or multi-echo"}
+{"query": "d04_prediction_error_episodic", "acc": "ds002242", "label": "not_relevant", "reason": "False memory generalization study; no video/narrative expectation violation"}
+{"query": "d04_prediction_error_episodic", "acc": "ds004261", "label": "not_relevant", "reason": "Misinformation effect false memory; not prediction-error narrative paradigm"}
+{"query": "d04_prediction_error_episodic", "acc": "ds005215", "label": "not_relevant", "reason": "Film recall hippocampal event sequencing; no expected versus unexpected outcome manipulation evident"}
+{"query": "d05_language_decoding", "acc": "ds001293", "label": "not_relevant", "reason": "Visual orientation 7T fMRI; no language"}
+{"query": "d05_language_decoding", "acc": "ds005623", "label": "not_relevant", "reason": "Only 10-minute stories per participant; not many hours of stories"}
+{"query": "d05_language_decoding", "acc": "ds005850", "label": "not_relevant", "reason": "Single 10-minute Chinese story per participant; not large per-subject story data"}
+{"query": "d06_meg_memory_replay", "acc": "ds005346", "label": "not_relevant", "reason": "Reality TV viewing MEG with resting replay; no associative retrieval or localizer"}
+{"query": "d06_meg_memory_replay", "acc": "ds006720", "label": "not_relevant", "reason": "Temporal interval working memory MEG; not episodic retrieval"}
+{"query": "d07_spatial_semantic_memory", "acc": "ds001521", "label": "not_relevant", "reason": "Free recall of encoded stimuli; no spatial/semantic sequence learning evident"}
+{"query": "d07_spatial_semantic_memory", "acc": "ds002168", "label": "not_relevant", "reason": "Mnemonic similarity discrimination; not sequence or relational learning"}
+{"query": "d07_spatial_semantic_memory", "acc": "ds005215", "label": "not_relevant", "reason": "Narrative film recall; no spatial versus conceptual relations manipulation"}
+{"query": "d08_pd_meg_dbs", "acc": "ds004012", "label": "not_relevant", "reason": "Healthy MEG with auditory stimuli; no Parkinson patients or deep brain recordings"}
+{"query": "d08_pd_meg_dbs", "acc": "ds004738", "label": "not_relevant", "reason": "MEG phantom for DBS artefacts; no patients recorded"}
+{"query": "d09_social_trait_decisions", "acc": "ds002294", "label": "not_relevant", "reason": "Trait-role perception fMRI; no resource allocation decisions evident"}
+{"query": "d09_social_trait_decisions", "acc": "ds003436", "label": "not_relevant", "reason": "Animated shapes social perception; no allocation game"}
+{"query": "d10_ieeg_stimulation_connectivity", "acc": "ds004752", "label": "not_relevant", "reason": "iEEG during verbal working memory task; no electrical stimulation evident"}
+{"query": "d10_ieeg_stimulation_connectivity", "acc": "ds005953", "label": "not_relevant", "reason": "ECoG visual gamma task in 2 subjects; no stimulation"}
+{"query": "d11_mouse_knockout_mri", "acc": "ds005496", "label": "not_relevant", "reason": "Awake mouse whisker stimulation fMRI; no knockout comparison"}
+{"query": "d11_mouse_knockout_mri", "acc": "ds006746", "label": "not_relevant", "reason": "Mouse MRI of rearing adversity, both C57BL/6J; no knockout"}
+{"query": "d11_mouse_knockout_mri", "acc": "ds007100", "label": "not_relevant", "reason": "Awake mouse resting fMRI on aging; no knockout versus wild-type"}
+{"query": "d12_eeg_fmri_confidence", "acc": "ds003669", "label": "not_relevant", "reason": "Confidence detection/discrimination fMRI, but no EEG recorded"}
+{"query": "d12_eeg_fmri_confidence", "acc": "ds006040", "label": "not_relevant", "reason": "Simultaneous EEG-fMRI sustained attention gradCPT; not speeded decision with confidence"}
+{"query": "d12_eeg_fmri_confidence", "acc": "ds007216", "label": "not_relevant", "reason": "Simultaneous EEG-fMRI gradCPT with experience sampling; no confidence reports"}
+{"query": "d13_music_improv_eeg", "acc": "ds002218", "label": "not_relevant", "reason": "Rhythm omission EEG in 18 participants; no chords or musician groups"}
+{"query": "d13_music_improv_eeg", "acc": "ds006466", "label": "not_relevant", "reason": "Older adult auditory oddball tones; not chords or musicians"}
+{"query": "d13_music_improv_eeg", "acc": "ds006735", "label": "not_relevant", "reason": "Chimeric melody EEG; no musician versus non-musician chord expectancy"}
+{"query": "d14_emotion_faces_decoding", "acc": "ds002168", "label": "not_relevant", "reason": "Mnemonic discrimination task; not faces with emotion"}
+{"query": "d14_emotion_faces_decoding", "acc": "ds002425", "label": "not_relevant", "reason": "Emotional movie clips in 5 subjects; videos rather than face expressions"}
+{"query": "d15_reward_learning_value", "acc": "ds001621", "label": "not_relevant", "reason": "Temporal community structure sequence viewing; no reward or value learning"}
+{"query": "d15_reward_learning_value", "acc": "ds003764", "label": "not_relevant", "reason": "Auditory category learning with feedback; not reward/value learning across days"}
+{"query": "d15_reward_learning_value", "acc": "ds003789", "label": "not_relevant", "reason": "False memory repetition effect on word lists; no reward learning"}
+{"query": "d15_reward_learning_value", "acc": "ds006686", "label": "not_relevant", "reason": "Category learning without feedback in young and older adults; not reward learning"}
+{"query": "g01_tbi_concussion", "acc": "ds004590", "label": "not_relevant", "reason": "Four healthy participants episodic memory fMRI; no concussion"}
+{"query": "g01_tbi_concussion", "acc": "ds007584", "label": "not_relevant", "reason": "ROI dataset, healthy/control status; no concussion evidence"}
+{"query": "g02_dyslexia_adults", "acc": "ds004956", "label": "not_relevant", "reason": "Braille letter fMRI in visually deprived and controls; no dyslexia"}
+{"query": "g02_dyslexia_adults", "acc": "ds005296", "label": "not_relevant", "reason": "Deaf and hearing readers ERP; not dyslexia"}
+{"query": "g03_trigeminal_neuralgia", "acc": "ds002080", "label": "not_relevant", "reason": "Glioma and meningioma patients post-operative; no neuralgia"}
+{"query": "g03_trigeminal_neuralgia", "acc": "ds005016", "label": "not_relevant", "reason": "MBSR patients and controls with pain scans; no trigeminal neuralgia evidence"}
+{"query": "g05_postherpetic_neuralgia", "acc": "ds005691", "label": "unsure", "reason": "Neuropathic pain patients with epidural spinal electrodes; cause such as herpes zoster not stated"}
+{"query": "g05_postherpetic_neuralgia", "acc": "ds005713", "label": "not_relevant", "reason": "Trigeminal neuralgia surgical MRI, not post-herpetic neuropathic pain"}
+{"query": "g06_cerebral_aneurysm", "acc": "ds004498", "label": "not_relevant", "reason": "Perinatal stroke single participant; not aneurysm or vascular malformation"}
+{"query": "g06_cerebral_aneurysm", "acc": "ds004620", "label": "not_relevant", "reason": "Macaque TOF-MRA healthy; not patients with aneurysm"}
+{"query": "g06_cerebral_aneurysm", "acc": "ds005917", "label": "not_relevant", "reason": "Ketamine study in mood disorders; aneurysm clip only an exclusion criterion"}
+{"query": "g07_cortical_dysplasia_epilepsy", "acc": "ds004959", "label": "not_relevant", "reason": "Experimental rodent temporal lobe epilepsy model; not human lesional epilepsy"}
+{"query": "g07_cortical_dysplasia_epilepsy", "acc": "ds004993", "label": "not_relevant", "reason": "Epilepsy iEEG sample of 3 patients; no structural lesion detection or dysplasia stated"}
+{"query": "g07_cortical_dysplasia_epilepsy", "acc": "ds005216", "label": "not_relevant", "reason": "9.4T anatomical MRI of healthy adults 20-53; no epilepsy"}
+{"query": "g08_auditory_hallucinations_psychosis", "acc": "ds001338", "label": "not_relevant", "reason": "Healthy participants with trait paranoia; no psychosis patients"}
+{"query": "g08_auditory_hallucinations_psychosis", "acc": "ds002896", "label": "not_relevant", "reason": "Tinnitus and controls resting fMRI; not psychosis"}
+{"query": "g08_auditory_hallucinations_psychosis", "acc": "ds004703", "label": "not_relevant", "reason": "sEEG speech listening in epilepsy patients; no psychosis"}
+{"query": "g08_auditory_hallucinations_psychosis", "acc": "ds006468", "label": "not_relevant", "reason": "Healthy MEG speech dataset 20-33 years; no psychosis"}
+{"query": "g09_epilepsy_surgery_presurgical", "acc": "ds003830", "label": "not_relevant", "reason": "Idiopathic epileptic dogs resting fMRI; non-human, no surgical evaluation"}
+{"query": "g09_epilepsy_surgery_presurgical", "acc": "ds004054", "label": "not_relevant", "reason": "Aerobic glycolysis PET-MRI, status Other; no epilepsy surgery evidence"}
+{"query": "g10_depression_youth", "acc": "ds003799", "label": "not_relevant", "reason": "Running intervention in young adults measuring depressive symptoms; no depressed patient group stated"}
+{"query": "g10_depression_youth", "acc": "ds005166", "label": "not_relevant", "reason": "Youth inhibitory control; major depression was an exclusion criterion"}
+{"query": "g10_depression_youth", "acc": "ds005754", "label": "not_relevant", "reason": "Youth inhibitory control with psychopathology; major depression excluded"}
+{"query": "g11_fragile_x", "acc": "ds005137", "label": "not_relevant", "reason": "Mouse WHIM syndrome CXCR4 model; not human participants"}
+{"query": "g11_fragile_x", "acc": "ds006780", "label": "not_relevant", "reason": "Autism children EEG; known genetic syndromes were exclusion criteria"}
+{"query": "g12_pediatric_epilepsy_children", "acc": "ds004199", "label": "unsure", "reason": "Presurgery MRI of FCD type II epilepsy; ages missing, drug-resistance and children not confirmed"}
+{"query": "g12_pediatric_epilepsy_children", "acc": "ds005504", "label": "not_relevant", "reason": "Children in extreme poverty inhibitory control; no epilepsy"}
+{"query": "g12_pediatric_epilepsy_children", "acc": "ds006239", "label": "not_relevant", "reason": "Healthy children word reading fMRI; no epilepsy"}
+{"query": "g12_pediatric_epilepsy_children", "acc": "ds006519", "label": "relevant", "reason": "Drug-resistant epilepsy stereo-EEG patients, ages 9-54, stimulation study including children"}
+{"query": "g13_incentive_delay", "acc": "ds000053", "label": "not_relevant", "reason": "Loss aversion gambling training; accept/reject gambles, not anticipation paradigm"}
+{"query": "g13_incentive_delay", "acc": "ds001882", "label": "not_relevant", "reason": "Social intertemporal choice for self or other; not incentive delay"}
+{"query": "g13_incentive_delay", "acc": "ds004295", "label": "not_relevant", "reason": "Reward/punishment reversal learning EEG; feedback-based, not anticipation task"}
+{"query": "g13_incentive_delay", "acc": "ds005978", "label": "not_relevant", "reason": "Monetary gambling task with 3 subjects and motion capture; no incentive delay evidence"}
+{"query": "g14_stop_signal", "acc": "ds000122", "label": "not_relevant", "reason": "Visual attention block-design task; no stop-signal or go/no-go"}
+{"query": "g14_stop_signal", "acc": "ds006370", "label": "not_relevant", "reason": "Delayed match-to-sample memory EEG; no response inhibition task"}
+{"query": "g15_flanker", "acc": "ds000114", "label": "not_relevant", "reason": "Motor, language, line bisection tasks; no flanker"}
+{"query": "g15_flanker", "acc": "ds004693", "label": "not_relevant", "reason": "Scene categorization fMRI; no flanker task"}
+{"query": "g15_flanker", "acc": "ds005256", "label": "not_relevant", "reason": "Face, narrative, social, video game tasks listed; no flanker task"}
+{"query": "g16_gambles_loss_aversion", "acc": "ds003745", "label": "not_relevant", "reason": "Trust, ultimatum, shared reward tasks; no gambling or loss aversion task"}
+{"query": "g16_gambles_loss_aversion", "acc": "ds007486", "label": "not_relevant", "reason": "Problem gamblers with ad viewing, stop signal, trust tasks; no gambling-choice task"}
+{"query": "g17_category_learning", "acc": "ds001847", "label": "not_relevant", "reason": "Latent cause orbitofrontal fMRI; no category learning evident"}
+{"query": "g17_category_learning", "acc": "ds004174", "label": "not_relevant", "reason": "Concept representation with listening to words; not category learning"}
+{"query": "g18_delay_discounting", "acc": "ds001167", "label": "not_relevant", "reason": "Effort-based gambling and mixed gambles; not delay discounting or intertemporal choice"}
+{"query": "g18_delay_discounting", "acc": "ds003745", "label": "not_relevant", "reason": "Trust, ultimatum, shared reward tasks; no intertemporal choice"}
+{"query": "g19_cerebellum_task_battery", "acc": "ds003020", "label": "not_relevant", "reason": "Mostly natural language listening stories plus localizers; not a broad multi-task battery"}
+{"query": "g19_cerebellum_task_battery", "acc": "ds004299", "label": "not_relevant", "reason": "Habit learning study with one learning paradigm; not many tasks"}
+{"query": "g19_cerebellum_task_battery", "acc": "ds004483", "label": "not_relevant", "reason": "Single MEG sequence working memory task; not fMRI battery"}
+{"query": "g19_cerebellum_task_battery", "acc": "ds005038", "label": "not_relevant", "reason": "Single and dual-task multitasking fMRI; not broad task battery"}
+{"query": "g20_sequence_learning", "acc": "ds005884", "label": "not_relevant", "reason": "Repetitive hand grasping cortico-spinal fMRI; no sequence learning or finger tapping"}
+{"query": "g20_sequence_learning", "acc": "ds006926", "label": "not_relevant", "reason": "Visuomotor, oddball and rest multi-echo fMRI; no motor sequence learning"}
+{"query": "g21_heartbeat_interoception", "acc": "ds002724", "label": "not_relevant", "reason": "Affective brain-computer music interface EEG; no interoception task"}
+{"query": "g21_heartbeat_interoception", "acc": "ds005815", "label": "not_relevant", "reason": "Multisensory perception and imagery EEG; no heartbeat task"}
+{"query": "g23_habit_goal_directed", "acc": "ds001348", "label": "not_relevant", "reason": "Effortful goal-directed behavior; no habit versus goal-directed dissociation evident"}
+{"query": "g23_habit_goal_directed", "acc": "ds001607", "label": "not_relevant", "reason": "Episodic context sampling decisions for reward; not habit/goal-directed"}
+{"query": "g23_habit_goal_directed", "acc": "ds004407", "label": "not_relevant", "reason": "Imagery-based fear extinction; not instrumental habit learning"}
+{"query": "g24_visual_search", "acc": "ds006512", "label": "not_relevant", "reason": "Spatial attention pRF mapping during target anticipation; not visual search"}
+{"query": "g24_visual_search", "acc": "ds007046", "label": "not_relevant", "reason": "Scene affordance fMRI vision for action; no visual search"}
+{"query": "g25_reversal_learning", "acc": "ds002242", "label": "not_relevant", "reason": "False memory generalization; no reversal learning"}
+{"query": "g25_reversal_learning", "acc": "ds003682", "label": "not_relevant", "reason": "Aversive model-based learning MEG with replay; not reversal learning"}
+{"query": "g26_sign_language_memory", "acc": "ds000254", "label": "not_relevant", "reason": "Finger tapping and ASL sequence development; no sign language"}
+{"query": "g26_sign_language_memory", "acc": "ds003703", "label": "not_relevant", "reason": "Speech frequency tagging MEG in hearing adults; no sign language"}
+{"query": "g27_eeg_children_adolescents", "acc": "ds003670", "label": "not_relevant", "reason": "Adult tES EEG ages 19-43; no children"}
+{"query": "g27_eeg_children_adolescents", "acc": "ds005863", "label": "not_relevant", "reason": "Young adults 18-30 EEG; not children"}
+{"query": "g27_eeg_children_adolescents", "acc": "ds006018", "label": "not_relevant", "reason": "Young adults 18-30 EEG; not children"}
+{"query": "g28_asl_adolescents", "acc": "ds000240", "label": "not_relevant", "reason": "Resting perfusion in healthy aging; adults, not adolescents"}
+{"query": "g29_ieeg_children", "acc": "ds004752", "label": "not_relevant", "reason": "iEEG in epilepsy patients aged 18-56; no children"}
+{"query": "g29_ieeg_children", "acc": "ds007095", "label": "not_relevant", "reason": "RNS iEEG in 8 epilepsy patients aged 24-55; adults only"}
+{"query": "g30_fmri_children_motion", "acc": "ds005596", "label": "not_relevant", "reason": "Public speaking movie fMRI in adults aged about 22"}
+{"query": "g30_fmri_children_motion", "acc": "ds005920", "label": "not_relevant", "reason": "Public speaking fMRI in adults 19-31; no children"}
+{"query": "g31_structural_mri_older", "acc": "ds000206", "label": "not_relevant", "reason": "Traveling human phantom of five healthy controls; no elderly group stated"}
+{"query": "g31_structural_mri_older", "acc": "ds001499", "label": "not_relevant", "reason": "BOLD5000 four participants aged 24-27; not elderly"}
+{"query": "g31_structural_mri_older", "acc": "ds002372", "label": "not_relevant", "reason": "Single healthy man aged 56; not 60+ elderly group"}
+{"query": "g31_structural_mri_older", "acc": "ds003826", "label": "not_relevant", "reason": "Young healthy adults 18-35 chronotype T1 images"}
+{"query": "g31_structural_mri_older", "acc": "ds007418", "label": "not_relevant", "reason": "Four healthy adults 10.5T multi-echo GRE; no elderly group"}
+{"query": "g32_meg_teenagers", "acc": "ds003633", "label": "not_relevant", "reason": "Forrest Gump MEG in adults 19-25"}
+{"query": "g32_meg_teenagers", "acc": "ds003645", "label": "not_relevant", "reason": "Face processing MEEG adults aged 23-37"}
+{"query": "g32_meg_teenagers", "acc": "ds005241", "label": "not_relevant", "reason": "Morpheme lexical decision MEG; ages not given, no adolescent evidence"}
+{"query": "g32_meg_teenagers", "acc": "ds005346", "label": "not_relevant", "reason": "Reality TV MEG participants mean age about 23"}
+{"query": "g33_eeg_field_lmic", "acc": "ds004752", "label": "not_relevant", "reason": "Hospital iEEG verbal working memory patients; not field or LMIC"}
+{"query": "g33_eeg_field_lmic", "acc": "ds006018", "label": "not_relevant", "reason": "Lab EEG of young adults in US socioeconomic study; not field or LMIC"}
+{"query": "g34_tau_pet_healthy_adults", "acc": "ds003397", "label": "not_relevant", "reason": "FDG-PET fMRI in 18-20 year-olds; not tau tracer"}
+{"query": "g34_tau_pet_healthy_adults", "acc": "ds004869", "label": "not_relevant", "reason": "COX-2 radioligand PET in healthy adults; not tau"}
+{"query": "g34_tau_pet_healthy_adults", "acc": "ds005483", "label": "not_relevant", "reason": "COX-1 [11C]PS13 PET in ages 52-70; not tau or amyloid similar tracer"}
+{"query": "g35_twins", "acc": "ds003602", "label": "not_relevant", "reason": "Childhood sexual abuse and drinking in women EEG; no twin evidence"}
+{"query": "g35_twins", "acc": "ds005115", "label": "not_relevant", "reason": "Single male dense-sampling study; not twins"}
+{"query": "g36_musicians_training", "acc": "ds002721", "label": "not_relevant", "reason": "Affective music listening EEG; no musician group"}
+{"query": "g36_musicians_training", "acc": "ds002724", "label": "not_relevant", "reason": "Affective music BCI training sessions; no musicianship comparison"}
+{"query": "g36_musicians_training", "acc": "ds003720", "label": "not_relevant", "reason": "Music genre fMRI in 5 participants; no musicians stated"}
+{"query": "g36_musicians_training", "acc": "ds003764", "label": "not_relevant", "reason": "Auditory category learning in Mandarin speakers; not musical training"}
+{"query": "g36_musicians_training", "acc": "ds006502", "label": "not_relevant", "reason": "Motor skill learning MEG; active musicians were excluded"}
+{"query": "g37_blind_participants", "acc": "ds001345", "label": "not_relevant", "reason": "Multisensory memory decoding in healthy sighted participants"}
+{"query": "g37_blind_participants", "acc": "ds004065", "label": "not_relevant", "reason": "Luminance fMRI in healthy controls; no blind participants"}
+{"query": "g37_blind_participants", "acc": "ds005296", "label": "not_relevant", "reason": "Deaf and hearing readers ERP; not blind"}
+{"query": "g38_chronotype_morning_evening", "acc": "ds002674", "label": "not_relevant", "reason": "Single woman hormone dense-sampling; not chronotype"}
+{"query": "g38_chronotype_morning_evening", "acc": "ds004065", "label": "not_relevant", "reason": "Luminance mood fMRI in healthy controls; no chronotype measure"}
+{"query": "g39_bilinguals", "acc": "ds002219", "label": "not_relevant", "reason": "Native German speakers reading metaphors; monolingual, no bilingual group"}
+{"query": "g39_bilinguals", "acc": "ds003974", "label": "not_relevant", "reason": "Native English L1 adult subset of reading project; not bilingual"}
+{"query": "g39_bilinguals", "acc": "ds004279", "label": "not_relevant", "reason": "Spanish speech EEG in healthy adults; no bilingualism evidence"}
+{"query": "g40_hormonal_contraception_women", "acc": "ds004130", "label": "not_relevant", "reason": "Aggregated NIMH healthy volunteer example with 1 subject; no cycle or contraceptive focus"}
+{"query": "g40_hormonal_contraception_women", "acc": "ds005115", "label": "not_relevant", "reason": "Single male diurnal hormone study; not women"}
+{"query": "g40_hormonal_contraception_women", "acc": "ds006267", "label": "not_relevant", "reason": "Puberty endocrine study in children aged 8-9; not cycle or contraception"}
+{"query": "g41_school_age_children", "acc": "ds000200", "label": "not_relevant", "reason": "Pre-adolescents aged 12-19 manganese exposure; older than school-age range"}
+{"query": "g41_school_age_children", "acc": "ds001748", "label": "not_relevant", "reason": "Children 10-12, adolescents and adults; mostly above the 6-10 range"}
+{"query": "g41_school_age_children", "acc": "ds004770", "label": "relevant", "reason": "iEEG in children aged 9-20 during gameplay; includes school-age children around 9"}
+{"query": "g42_students_experts", "acc": "ds001454", "label": "not_relevant", "reason": "Participants learned novel satellite objects in lab; no real-world course or experts"}
+{"query": "g42_students_experts", "acc": "ds005594", "label": "not_relevant", "reason": "Alphabetic decision EEG in 16 adults; no novice/expert contrast"}
+{"query": "g42_students_experts", "acc": "ds006502", "label": "not_relevant", "reason": "Skill learning with active musicians excluded; no expert comparison"}
+{"query": "g43_autism_meg", "acc": "ds003633", "label": "not_relevant", "reason": "Healthy adults 19-25 Forrest Gump MEG; no autism"}
+{"query": "g43_autism_meg", "acc": "ds004229", "label": "not_relevant", "reason": "Single infant MEG from dyslexia-risk study; not autism"}
+{"query": "g43_autism_meg", "acc": "ds005346", "label": "not_relevant", "reason": "Healthy adults mean age 23 reality TV MEG; no autism"}
+{"query": "g44_parkinson_meg", "acc": "ds003392", "label": "not_relevant", "reason": "hMT+ localizer MEG in healthy volunteers; no Parkinson patients"}
+{"query": "g44_parkinson_meg", "acc": "ds005346", "label": "not_relevant", "reason": "Healthy adult reality TV MEG; no Parkinson patients"}
+{"query": "g44_parkinson_meg", "acc": "ds006035", "label": "not_relevant", "reason": "Five healthy controls median nerve MEG; no Parkinson patients"}
+{"query": "g45_epilepsy_ieeg_seizures", "acc": "ds001785", "label": "not_relevant", "reason": "Twenty healthy participants evidence accumulation; not epilepsy patients"}
+{"query": "g46_alzheimer_pet", "acc": "ds004054", "label": "not_relevant", "reason": "Aerobic glycolysis PET-MRI, status Other; no Alzheimer or MCI evidence"}
+{"query": "g46_alzheimer_pet", "acc": "ds006917", "label": "not_relevant", "reason": "Seven healthy individuals scanner comparison PET; no Alzheimer patients"}
+{"query": "g47_schizophrenia_eeg", "acc": "ds003670", "label": "not_relevant", "reason": "Healthy adults tES EEG tracking task; no schizophrenia"}
+{"query": "g47_schizophrenia_eeg", "acc": "ds005342", "label": "not_relevant", "reason": "Healthy motor imagery EEG in 32 adults; no schizophrenia"}
+{"query": "g47_schizophrenia_eeg", "acc": "ds006018", "label": "not_relevant", "reason": "Healthy young adult SES EEG; no schizophrenia"}
+{"query": "g48_stroke_aphasia_dti", "acc": "ds005577", "label": "not_relevant", "reason": "Adults with dyslexia and controls diffusion MRI; no stroke"}
+{"query": "g48_stroke_aphasia_dti", "acc": "ds007398", "label": "not_relevant", "reason": "Diffusion MRI of healthy Spanish-speaking children; no stroke"}
+{"query": "g49_parkinson_fmri_attention", "acc": "ds004913", "label": "not_relevant", "reason": "Hemi-parkinsonian rat optogenetic fMRI; non-human, not patients"}
+{"query": "g49_parkinson_fmri_attention", "acc": "ds005264", "label": "relevant", "reason": "SKIP Parkinson's kinesia/incentivization dataset with 7T resting fMRI; PD focus"}
+{"query": "g50_tbi_eeg_p300", "acc": "ds003061", "label": "not_relevant", "reason": "Auditory oddball EEG in meditators in India; no TBI"}
+{"query": "g50_tbi_eeg_p300", "acc": "ds007056", "label": "not_relevant", "reason": "Visual P300 oddball in undergraduates; no TBI"}
+{"query": "g51_schizophrenia_fmri_nback", "acc": "ds001344", "label": "not_relevant", "reason": "Healthy adults basic sensory/cognitive fMRI; no schizophrenia"}
+{"query": "g51_schizophrenia_fmri_nback", "acc": "ds003011", "label": "not_relevant", "reason": "Traveling phantoms (healthy) for schizophrenia project; no patients or relatives"}
+{"query": "g52_epilepsy_ccep_stimulation", "acc": "ds003876", "label": "not_relevant", "reason": "Interictal iEEG in epilepsy; no electrical stimulation responses"}
+{"query": "g52_epilepsy_ccep_stimulation", "acc": "ds004100", "label": "not_relevant", "reason": "Ictal and interictal iEEG for surgical planning; no stimulation CCEP evidence"}
+{"query": "g52_epilepsy_ccep_stimulation", "acc": "ds004752", "label": "not_relevant", "reason": "iEEG during verbal working memory; no stimulation"}
+{"query": "g53_oddball_eeg_mobile", "acc": "ds002218", "label": "not_relevant", "reason": "Rhythm omission paradigm EEG; not an oddball paradigm"}
+{"query": "g53_oddball_eeg_mobile", "acc": "ds005403", "label": "not_relevant", "reason": "Delayed auditory feedback speech EEG; not oddball"}
+{"query": "g54_ssvep_frequency_tagging", "acc": "ds006695", "label": "not_relevant", "reason": "Sleep staging forehead patch EEG; no frequency tagging"}
+{"query": "g54_ssvep_frequency_tagging", "acc": "ds006777", "label": "not_relevant", "reason": "Audiovisual simple reaction-time EEG in children; no SSVEP/frequency tagging"}
+{"query": "g55_free_recall_eeg", "acc": "ds003565", "label": "not_relevant", "reason": "Verbal working memory EEG; not free recall or episodic memory"}
+{"query": "g55_free_recall_eeg", "acc": "ds006848", "label": "not_relevant", "reason": "Digit span serial recall working memory EEG; not episodic free recall"}
+{"query": "g56_meg_word_recognition", "acc": "ds004483", "label": "not_relevant", "reason": "Binary sound sequence working memory MEG; not words"}
+{"query": "g56_meg_word_recognition", "acc": "ds006035", "label": "not_relevant", "reason": "Median nerve stimulation and motor MEG; no words"}
+{"query": "g57_ecog_podcast_speech", "acc": "ds006890", "label": "not_relevant", "reason": "Macaque ECoG with listening among tasks; not human speech listening"}
+{"query": "g58_naming_intracranial", "acc": "ds005491", "label": "not_relevant", "reason": "Categorized free recall intracranial; no picture naming"}
+{"query": "g58_naming_intracranial", "acc": "ds005558", "label": "not_relevant", "reason": "Categorized free recall with stimulation; no naming task"}
+{"query": "g59_memory_stimulation_ieeg", "acc": "ds005059", "label": "not_relevant", "reason": "Paired associates intracranial recordings; no electrical stimulation described"}
+{"query": "g59_memory_stimulation_ieeg", "acc": "ds005411", "label": "not_relevant", "reason": "Free recall with repeated items iEEG; no stimulation described"}
+{"query": "g60_optical_movie_viewing", "acc": "ds004929", "label": "not_relevant", "reason": "fNIRS ball squeezing task; no movie viewing"}
+{"query": "g60_optical_movie_viewing", "acc": "ds006673", "label": "not_relevant", "reason": "fNIRS ball squeeze and rest; no movie viewing"}
+{"query": "g61_meg_risky_decisions", "acc": "ds002908", "label": "not_relevant", "reason": "Parkinson MEG sequential conflict mouse task; not risky choice"}
+{"query": "g61_meg_risky_decisions", "acc": "ds005356", "label": "not_relevant", "reason": "MDD MEG probabilistic selection reward positivity; learning feedback, not risky gambling choices"}
+{"query": "g62_meg_somatosensory", "acc": "ds003633", "label": "not_relevant", "reason": "Movie watching MEG; no somatosensory stimulation"}
+{"query": "g62_meg_somatosensory", "acc": "ds004276", "label": "not_relevant", "reason": "Auditory word recognition MEG; no somatosensory stimulation"}
+{"query": "g62_meg_somatosensory", "acc": "ds005346", "label": "not_relevant", "reason": "Reality TV MEG; no somatosensory stimulation"}
+{"query": "g63_qsm_multiecho_gre", "acc": "ds003416", "label": "not_relevant", "reason": "Multisite diffusion MRI variability dataset; no multi-echo GRE"}
+{"query": "g63_qsm_multiecho_gre", "acc": "ds004814", "label": "not_relevant", "reason": "7T gradient-echo EPI and GRASE auditory fMRI; multi-echo QSM-suitable GRE not described"}
+{"query": "g64_simultaneous_eeg_fnirs", "acc": "ds002336", "label": "not_relevant", "reason": "Simultaneous EEG-fMRI neurofeedback; no fNIRS"}
+{"query": "g64_simultaneous_eeg_fnirs", "acc": "ds005964", "label": "not_relevant", "reason": "fNIRS-only dataset (datatypes list fnirs); no EEG recorded"}
+{"query": "g65_ultrahigh_field_9t", "acc": "ds002179", "label": "not_relevant", "reason": "Ex vivo brain scanned at 7T; below 9.4T"}
+{"query": "g65_ultrahigh_field_9t", "acc": "ds004814", "label": "not_relevant", "reason": "7T auditory cortex MRI; below 9.4T"}
+{"query": "g65_ultrahigh_field_9t", "acc": "ds005266", "label": "not_relevant", "reason": "SKIP task fMRI with 7T subset; below 9.4T"}
+{"query": "g65_ultrahigh_field_9t", "acc": "ds006557", "label": "not_relevant", "reason": "Ultra-low-field 64 mT MRI; opposite of ultra-high field"}
+{"query": "g66_tms_eeg_combined", "acc": "ds003670", "label": "not_relevant", "reason": "Transcranial electrical stimulation with EEG; not TMS"}
+{"query": "g66_tms_eeg_combined", "acc": "ds005571", "label": "not_relevant", "reason": "EEG-fMRI go/no-go conflict expectation; no TMS"}
+{"query": "g67_high_density_dot", "acc": "ds004830", "label": "unsure", "reason": "fNIRS spatial attention decoding; array density not stated"}
+{"query": "g67_high_density_dot", "acc": "ds006459", "label": "relevant", "reason": "High-density versus sparse fNIRS word-color Stroop dataset"}
+{"query": "g68_apt_cest_imaging", "acc": "ds004054", "label": "not_relevant", "reason": "Aerobic glycolysis PET-MRI; no CEST or APT mentioned"}
+{"query": "g68_apt_cest_imaging", "acc": "ds005946", "label": "not_relevant", "reason": "Metaphor imagery EEG; \"apt\" only incidental word"}
+{"query": "g68_apt_cest_imaging", "acc": "ds006917", "label": "not_relevant", "reason": "PET scanner comparison; no CEST/APT"}
+{"query": "g69_spinal_cord_fmri", "acc": "ds002734", "label": "not_relevant", "reason": "Brain EEG-fMRI value-based decisions; corticospinal only a term"}
+{"query": "g69_spinal_cord_fmri", "acc": "ds003027", "label": "not_relevant", "reason": "Brain resting fMRI and diffusion in NF1 study; no spinal cord evidence"}
+{"query": "g69_spinal_cord_fmri", "acc": "ds004493", "label": "not_relevant", "reason": "Visual checkerboard CSF flow fMRI; brain not spinal cord"}
+{"query": "g69_spinal_cord_fmri", "acc": "ds005603", "label": "not_relevant", "reason": "Resting-state fMRI of 8 subjects; no spinal cord evidence"}
+{"query": "g70_multishell_diffusion_repeats", "acc": "ds001378", "label": "not_relevant", "reason": "Single-shell DTI with 15 directions at 1.5T; not multi-shell"}
+{"query": "g70_multishell_diffusion_repeats", "acc": "ds003563", "label": "not_relevant", "reason": "Single human phantom with 800 micron DTI; multi-shell many directions not stated"}
+{"query": "g70_multishell_diffusion_repeats", "acc": "ds005431", "label": "not_relevant", "reason": "Ex vivo animal brains DTI with 30 directions, single b-value"}
+{"query": "g71_dense_single_subject", "acc": "ds002311", "label": "not_relevant", "reason": "23 participants multiple-object tracking memory reactivation; not dense single-subject sampling"}
+{"query": "g71_dense_single_subject", "acc": "ds004044", "label": "not_relevant", "reason": "62 healthy adults whole-body somatotopic mapping; not dense repeated individuals"}
+{"query": "g72_test_retest_7t", "acc": "ds001450", "label": "not_relevant", "reason": "Two-subject resting fMRI results dataset; no test-retest design described"}
+{"query": "g72_test_retest_7t", "acc": "ds001566", "label": "not_relevant", "reason": "Single subject resting test dataset; no repeated-session reliability described"}
+{"query": "g72_test_retest_7t", "acc": "ds002153", "label": "not_relevant", "reason": "Single subject test run resting fMRI; no reliability design described"}
+{"query": "g73_psychedelic_lsd", "acc": "ds003647", "label": "not_relevant", "reason": "Rat scopolamine model fMRI; not psychedelic and non-human"}
+{"query": "g73_psychedelic_lsd", "acc": "ds005077", "label": "not_relevant", "reason": "Optogenetic serotonin stimulation in animals; no psychedelic compound"}
+{"query": "g74_sleep_deprivation", "acc": "ds003574", "label": "not_relevant", "reason": "Reward and sleep reactivation EEG-fMRI naps; no sleep deprivation"}
+{"query": "g74_sleep_deprivation", "acc": "ds003768", "label": "not_relevant", "reason": "Simultaneous EEG-fMRI sleep recordings of healthy participants; not deprivation"}
+{"query": "g75_nonhuman_primate", "acc": "ds002179", "label": "not_relevant", "reason": "Ex vivo human brain specimen at 7T; not primate"}
+{"query": "g75_nonhuman_primate", "acc": "ds004465", "label": "not_relevant", "reason": "Sleeping pigeons fMRI; bird, not primate"}
+{"query": "g76_exercise_intervention", "acc": "ds001417", "label": "not_relevant", "reason": "Cue-approach snack training; behavioural training, not exercise"}
+{"query": "g76_exercise_intervention", "acc": "ds003823", "label": "not_relevant", "reason": "Heart rate variability biofeedback training; not physical exercise"}
+{"query": "g76_exercise_intervention", "acc": "ds006905", "label": "not_relevant", "reason": "Organizational skills training in ADHD children; not physical training"}
+{"query": "g77_sedation_anesthesia", "acc": "ds001529", "label": "not_relevant", "reason": "Mouse resting fMRI under anesthetics; not humans"}
+{"query": "g77_sedation_anesthesia", "acc": "ds003380", "label": "not_relevant", "reason": "Juvenile pigs under sedation EEG; not humans"}
+{"query": "g77_sedation_anesthesia", "acc": "ds004054", "label": "not_relevant", "reason": "Aerobic glycolysis PET-MRI; no sedation evidence"}
+{"query": "g77_sedation_anesthesia", "acc": "ds004869", "label": "not_relevant", "reason": "COX-2 PET healthy volunteers; no sedation or anaesthesia"}
+{"query": "g78_focused_ultrasound", "acc": "ds003831", "label": "not_relevant", "reason": "Real-time fMRI neurofeedback self-regulation; no external brain stimulation"}
+{"query": "g78_focused_ultrasound", "acc": "ds005533", "label": "not_relevant", "reason": "MRI with conductive-ink EEG net; no neuromodulation"}
+{"query": "g79_large_cohort_1000", "acc": "ds003442", "label": "not_relevant", "reason": "One subject suboptimal event-related design data"}
+{"query": "g79_large_cohort_1000", "acc": "ds006092", "label": "not_relevant", "reason": "60 participants prolonged grief fMRI; not several hundred"}
+{"query": "g80_natural_conversation", "acc": "ds002979", "label": "not_relevant", "reason": "Single subject narrative listening; no conversation"}
+{"query": "g80_natural_conversation", "acc": "ds004042", "label": "not_relevant", "reason": "Movie viewing and spoken recall; not dialogue or conversation"}
+{"query": "l10_pd_or_tremor", "acc": "ds005264", "label": "relevant", "reason": "SKIP dataset focused on Parkinson's disease movement and incentivization with 7T fMRI"}
+{"query": "l10_pd_or_tremor", "acc": "ds005366", "label": "not_relevant", "reason": "Brain-computer interface motor fMRI in healthy, epilepsy, tumor patients; no Parkinson"}
+{"query": "l11_scz_not_bipolar", "acc": "ds000214", "label": "not_relevant", "reason": "Borderline personality disorder Cyberball; schizophrenia appears only in a reference"}
+{"query": "l11_scz_not_bipolar", "acc": "ds003136", "label": "not_relevant", "reason": "Postnatal mothers affective fMRI; no schizophrenia"}
+{"query": "l11_scz_not_bipolar", "acc": "ds003568", "label": "not_relevant", "reason": "Adolescents with MDD and healthy volunteers MEG; no schizophrenia"}
+{"query": "l11_scz_not_bipolar", "acc": "ds003751", "label": "not_relevant", "reason": "Healthy emotion EEG with naturalistic videos; no schizophrenia"}
+{"query": "l11_scz_not_bipolar", "acc": "ds004809", "label": "not_relevant", "reason": "Intracranial free recall in epilepsy patients; no schizophrenia"}
+{"query": "l12_healthy_only_wm_fmri", "acc": "ds005346", "label": "not_relevant", "reason": "Reality TV viewing fMRI/MEG; no working memory task"}
+{"query": "l12_healthy_only_wm_fmri", "acc": "ds005464", "label": "not_relevant", "reason": "Encoding and rest fMRI of priority learning; not working memory task"}
+{"query": "l12_healthy_only_wm_fmri", "acc": "ds006206", "label": "not_relevant", "reason": "10.5T resting-state fMRI in five people; no working memory"}
+{"query": "l13_autism_or_adhd_children", "acc": "ds003604", "label": "not_relevant", "reason": "Longitudinal child language dataset ages 5-9; no autism or ADHD stated"}
+{"query": "l13_autism_or_adhd_children", "acc": "ds006303", "label": "not_relevant", "reason": "Pediatric anxiety youth; autism excluded and no ADHD group"}
+{"query": "l14_epilepsy_not_ieeg", "acc": "ds003876", "label": "not_relevant", "reason": "Epilepsy but only intracranial EEG recordings"}
+{"query": "l14_epilepsy_not_ieeg", "acc": "ds004774", "label": "not_relevant", "reason": "Intracranial CCEP and epileptiform recordings only; no non-invasive data"}
+{"query": "l15_depression_no_eeg", "acc": "ds002723", "label": "not_relevant", "reason": "Affective music BCI EEG; no depression"}
+{"query": "l15_depression_no_eeg", "acc": "ds003751", "label": "not_relevant", "reason": "Healthy emotion EEG dataset; no depression"}
+{"query": "l16_stroke_or_tbi_dwi", "acc": "ds000206", "label": "not_relevant", "reason": "Five healthy travelling phantoms diffusion MRI; no stroke or TBI"}
+{"query": "l16_stroke_or_tbi_dwi", "acc": "ds003416", "label": "not_relevant", "reason": "Diffusion variability dataset with healthy volunteers; no stroke or TBI evidence"}
+{"query": "l17_older_not_dementia", "acc": "ds003020", "label": "not_relevant", "reason": "Healthy language listening participants; ages not given, no evidence of over 65"}
+{"query": "l17_older_not_dementia", "acc": "ds004796", "label": "not_relevant", "reason": "Healthy middle-aged adults 50-63; not over 65"}
+{"query": "l17_older_not_dementia", "acc": "ds005795", "label": "not_relevant", "reason": "Healthy adults 18-36 category learning; no older adults"}
+{"query": "l17_older_not_dementia", "acc": "ds006036", "label": "not_relevant", "reason": "Alzheimer's and frontotemporal dementia patients EEG; includes dementia group"}
+{"query": "l18_music_or_speech_meg", "acc": "ds000246", "label": "not_relevant", "reason": "Auditory tones and deviants MEG tutorial; not music or speech"}
+{"query": "l18_music_or_speech_meg", "acc": "ds003082", "label": "not_relevant", "reason": "Pure-tone auditory cortex mapping MEG; not music or speech"}
+{"query": "l19_language_fmri_or_meg_adults", "acc": "ds000248", "label": "not_relevant", "reason": "MNE sample audio-visual stimuli; no language task"}
+{"query": "l19_language_fmri_or_meg_adults", "acc": "ds004483", "label": "not_relevant", "reason": "Binary sound sequence working memory MEG; not language task"}
+{"query": "l20_sleep_eeg_not_deprivation", "acc": "ds003775", "label": "not_relevant", "reason": "Resting-state eyes-closed EEG while awake; not sleep"}
+{"query": "l20_sleep_eeg_not_deprivation", "acc": "ds005342", "label": "not_relevant", "reason": "Motor imagery EEG in awake adults; not sleep"}
+{"query": "p01_language_fmri", "acc": "ds005717", "label": "not_relevant", "reason": "Silent movie watching fMRI; no language task"}
+{"query": "p01_language_fmri", "acc": "ds006401", "label": "not_relevant", "reason": "Monetary incentive delay and theory-of-mind tasks; not language"}
+{"query": "p02_reward", "acc": "ds002833", "label": "not_relevant", "reason": "Picture naming EEG task; no reward component"}
+{"query": "p02_reward", "acc": "ds004660", "label": "not_relevant", "reason": "Oddball task EEG; no reward manipulation"}
+{"query": "p02_reward", "acc": "ds005980", "label": "not_relevant", "reason": "Rule learning fMRI; no reward manipulation evident"}
+{"query": "p03_emotion_regulation", "acc": "ds003751", "label": "not_relevant", "reason": "Passive emotion elicitation with naturalistic videos; no regulation instruction"}
+{"query": "p03_emotion_regulation", "acc": "ds005530", "label": "not_relevant", "reason": "Targeted memory reactivation of emotional memories in REM sleep; not regulation"}
+{"query": "p03_emotion_regulation", "acc": "ds006092", "label": "not_relevant", "reason": "Prolonged grief emotional task; no regulation instruction evident"}
+{"query": "p04_naturalistic", "acc": "ds000149", "label": "not_relevant", "reason": "Scene perception with n-back; static scenes, not movies"}
+{"query": "p05_depression_eeg", "acc": "ds002778", "label": "not_relevant", "reason": "Parkinson's disease resting EEG; no depression"}
+{"query": "p05_depression_eeg", "acc": "ds007609", "label": "not_relevant", "reason": "Resting EEG and trait anxiety in students; not depression"}
+{"query": "p06_schizophrenia", "acc": "ds004590", "label": "not_relevant", "reason": "Four healthy participants episodic memory; no schizophrenia"}
+{"query": "p06_schizophrenia", "acc": "ds007584", "label": "not_relevant", "reason": "ROI dataset with healthy status; no schizophrenia evidence"}
+{"query": "p07_bipolar", "acc": "ds003751", "label": "not_relevant", "reason": "Healthy emotion EEG; no bipolar patients"}
+{"query": "p07_bipolar", "acc": "ds007584", "label": "not_relevant", "reason": "ROI dataset with healthy status; no bipolar evidence"}
+{"query": "p08_stroke_aphasia", "acc": "ds005341", "label": "not_relevant", "reason": "Typical and dyslexic adult readers; no stroke or aphasia"}
+{"query": "p08_stroke_aphasia", "acc": "ds005366", "label": "not_relevant", "reason": "BCI motor fMRI in healthy, epilepsy, tumor participants; no stroke"}
+{"query": "p09_chronic_pain", "acc": "ds004746", "label": "not_relevant", "reason": "Paingen placebo fMRI of pain in general participants; no chronic pain group stated"}
+{"query": "p09_chronic_pain", "acc": "ds005883", "label": "not_relevant", "reason": "Thermal pain cortico-spinal fMRI in healthy adults; no chronic pain"}
+{"query": "p10_sleep", "acc": "ds002791", "label": "unsure", "reason": "EEG DataSet1 with no description or tasks; sleep content cannot be determined"}
+{"query": "p10_sleep", "acc": "ds004148", "label": "not_relevant", "reason": "Resting and cognitive EEG; sleep only a questionnaire measure"}
+{"query": "p11_music", "acc": "ds003688", "label": "not_relevant", "reason": "Audiovisual short film iEEG-fMRI; music not the focus"}
+{"query": "p11_music", "acc": "ds006486", "label": "not_relevant", "reason": "Anatomical scan only titled Decoding Sounds; no music evidence"}
+{"query": "p12_7t", "acc": "ds004993", "label": "not_relevant", "reason": "Intracranial epilepsy sample data; no 7T MRI"}
+{"query": "p12_7t", "acc": "ds006519", "label": "not_relevant", "reason": "Intracranial stimulation dataset; no 7T MRI"}
+{"query": "p13_older_adults_fmri", "acc": "ds001635", "label": "not_relevant", "reason": "Healthy adults aged 19-41 visual working memory; no one over 65"}
+{"query": "p13_older_adults_fmri", "acc": "ds001747", "label": "not_relevant", "reason": "Young healthy adults 18-29 bilingual resting fMRI; not older"}
+{"query": "p14_ieeg_memory", "acc": "ds007118", "label": "not_relevant", "reason": "Intracranial recordings during non-REM sleep; no memory task"}
+{"query": "p14_ieeg_memory", "acc": "ds007119", "label": "not_relevant", "reason": "Intracranial recordings during non-REM sleep; no memory task"}
+{"query": "p15_anxiety", "acc": "ds003751", "label": "not_relevant", "reason": "Healthy emotion EEG dataset; no anxiety disorder group"}
+{"query": "p15_anxiety", "acc": "ds004144", "label": "not_relevant", "reason": "Fibromyalgia patients and controls emotion regulation; not an anxiety disorder"}
+{"query": "p16_dbs", "acc": "ds004339", "label": "not_relevant", "reason": "Test dataset with two anatomical scans; no DBS"}
+{"query": "p16_dbs", "acc": "ds005366", "label": "not_relevant", "reason": "fMRI for implanted BCI design; participants not DBS recipients"}
+{"query": "p17_faces", "acc": "ds004693", "label": "not_relevant", "reason": "Scene categorization fMRI; not faces"}
+{"query": "p17_faces", "acc": "ds004715", "label": "not_relevant", "reason": "Visual symmetry and luminance perception; not faces"}
+{"query": "p17_faces", "acc": "ds007436", "label": "not_relevant", "reason": "Multisensory learning computational study; no face task evident"}
+{"query": "p18_decision_making", "acc": "ds003701", "label": "not_relevant", "reason": "Concrete Permuted Rule Operations task; rule use, not decision choices"}
+{"query": "p18_decision_making", "acc": "ds004167", "label": "not_relevant", "reason": "Number comparison task with no data subjects; not decision study"}
+{"query": "u01_alzheimer_fmri", "acc": "ds004590", "label": "not_relevant", "reason": "Four healthy participants episodic memory fMRI; no Alzheimer"}
+{"query": "u01_alzheimer_fmri", "acc": "ds007318", "label": "not_relevant", "reason": "Patients ages 17-28 removal task fMRI; no Alzheimer"}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds004693", "label": "not_relevant", "reason": "Healthy scene categorization fMRI; no epilepsy"}
+{"query": "u02_focal_epilepsy_fmri", "acc": "ds005143", "label": "not_relevant", "reason": "Spinal cord fMRI in myelopathy, fibromyalgia, healthy; no epilepsy"}
+{"query": "u03_memory", "acc": "ds006260", "label": "not_relevant", "reason": "Children with learning difficulties reading and math training EEG; not memory task"}
+{"query": "u03_memory", "acc": "ds007584", "label": "not_relevant", "reason": "ROI dataset with no task or memory evidence"}
+{"query": "u05_sickle_cell", "acc": "ds001780", "label": "unsure", "reason": "Single anatomical scan named SC MRI with no description; condition unknown"}
+{"query": "u05_sickle_cell", "acc": "ds003500", "label": "not_relevant", "reason": "ADHD children and adults selective attention fMRI; no sickle cell"}
+{"query": "u05_sickle_cell", "acc": "ds005112", "label": "not_relevant", "reason": "NIMH structural MRI endocrine and clinical protocols; no sickle cell evidence"}
+{"query": "u06_asl_autism", "acc": "ds006148", "label": "not_relevant", "reason": "Negative BOLD and neurodegeneration multimodal data; no autism evidence"}
+{"query": "u08_motor_imagery", "acc": "ds002814", "label": "not_relevant", "reason": "Visual category EEG-fMRI; no motor imagery"}
+{"query": "u08_motor_imagery", "acc": "ds004460", "label": "not_relevant", "reason": "Full-body rotation with motion capture; physical movement, not imagery"}
+{"query": "u08_motor_imagery", "acc": "ds006963", "label": "not_relevant", "reason": "Visuomotor working memory gating EEG; not motor imagery"}
+{"query": "u09_qmri_ageing", "acc": "ds002293", "label": "not_relevant", "reason": "Tiny FSL development dataset; no quantitative maps or ageing"}
+{"query": "u09_qmri_ageing", "acc": "ds004173", "label": "not_relevant", "reason": "Lifespan adults 18-75 but only T1-weighted images for motion artefacts; no quantitative maps"}
+{"query": "u09_qmri_ageing", "acc": "ds007508", "label": "not_relevant", "reason": "Risky choice fMRI behavioural economics; no quantitative MRI"}
+{"query": "u10_diffusion_children", "acc": "ds000206", "label": "not_relevant", "reason": "Five healthy adult travelling phantoms diffusion; no children"}
+{"query": "u10_diffusion_children", "acc": "ds001378", "label": "not_relevant", "reason": "SCA2 patients and age-matched controls DTI; ages missing, no children evidence"}
+{"query": "u11_diffusion_adhd", "acc": "ds004097", "label": "not_relevant", "reason": "Accelerated adult ABCD equivalent in 8 adults; no ADHD group"}
+{"query": "u11_diffusion_adhd", "acc": "ds004666", "label": "not_relevant", "reason": "Single healthy subject diffusion denoising evaluation; no ADHD"}
+{"query": "u11_diffusion_adhd", "acc": "ds007398", "label": "not_relevant", "reason": "Healthy Spanish-speaking children early reading diffusion; no ADHD"}
+{"query": "u12_mrs_tbi", "acc": "ds004541", "label": "not_relevant", "reason": "EEG-fNIRS in endoscopy patients under anesthesia; no TBI or MRS"}
+{"query": "u12_mrs_tbi", "acc": "ds006673", "label": "not_relevant", "reason": "fNIRS ball squeeze dataset; no MRS or TBI"}
+{"query": "u13_mrs", "acc": "ds001780", "label": "not_relevant", "reason": "Single anatomical scan only; no spectroscopy datatype"}
+{"query": "u13_mrs", "acc": "ds004590", "label": "not_relevant", "reason": "Anatomical and functional MRI of four participants; no spectroscopy"}
+{"query": "u13_mrs", "acc": "ds005717", "label": "not_relevant", "reason": "Silent movie fMRI only; no spectroscopy"}
+{"query": "u14_fetal", "acc": "ds001780", "label": "not_relevant", "reason": "Single anatomical scan titled SC MRI; no fetal indication"}
+{"query": "u14_fetal", "acc": "ds002328", "label": "not_relevant", "reason": "FSL development dataset one scan; no fetal indication"}
+{"query": "u14_fetal", "acc": "ds006248", "label": "not_relevant", "reason": "Adult pituitary adenoma patients MRI; not fetal"}
+{"query": "u15_newborn", "acc": "ds001780", "label": "not_relevant", "reason": "Single anatomical scan titled SC MRI; no newborn indication"}
+{"query": "u15_newborn", "acc": "ds005112", "label": "not_relevant", "reason": "NIMH structural MRI ages 8-55; no newborns"}
+{"query": "u16_parkinson", "acc": "ds004339", "label": "not_relevant", "reason": "Brainhack test dataset with two anatomical scans; no Parkinson"}
+{"query": "u16_parkinson", "acc": "ds005366", "label": "not_relevant", "reason": "BCI fMRI in healthy, epilepsy, tumor participants; no Parkinson"}
+{"query": "u18_mri_autism", "acc": "ds000234", "label": "not_relevant", "reason": "pCASL sequence development in 5 adults; no autism"}
+{"query": "u18_mri_autism", "acc": "ds004274", "label": "not_relevant", "reason": "Emotional tears study in men; no autism"}
+{"query": "u18_mri_autism", "acc": "ds005166", "label": "not_relevant", "reason": "Youth inhibitory control; autism was an exclusion criterion"}
+{"query": "u19_mpm_healthy_adults", "acc": "ds004044", "label": "not_relevant", "reason": "Healthy adults somatotopic fMRI; no quantitative maps"}
+{"query": "u19_mpm_healthy_adults", "acc": "ds005118", "label": "not_relevant", "reason": "Single individual multi-echo resting fMRI plus T1w/T2w; no quantitative mapping"}
+{"query": "u20_dwi_1_5t", "acc": "ds002374", "label": "not_relevant", "reason": "Straight 3AM phantom diffusion scan; field strength unstated"}
+{"query": "u20_dwi_1_5t", "acc": "ds003563", "label": "not_relevant", "reason": "Ultrahigh resolution single subject dataset; field strength not stated as 1.5T"}

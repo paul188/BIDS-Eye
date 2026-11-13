@@ -27,6 +27,29 @@ Spot checks found the labels sound, but treat them as a first version:
 correct a label in `judgments.jsonl` when you disagree, and widen a pool when
 `score` lists returned datasets nobody judged.
 
+## Second round (2026-11-13, 167 questions)
+
+| Source | Questions |
+|---|---|
+| Real questions from the bidseye.xyz log | 21 |
+| Probes for known weaknesses | 18 |
+| Explicit AND / OR / NOT logic (9 computed exactly) | 20 |
+| bioCADDIE-style "Find <data> on <topic> in <population>" | 15 |
+| Research needs written from paper abstracts (DataFinder method) | 15 |
+| Generated from READMEs, 8 question types | 78 |
+
+- Pools: keyword signals plus the 20 nearest datasets by embedding
+  (`embed_datasets.py`, BAAI/bge-base-en-v1.5), depth-limited to the 30
+  keyword matches closest to the question.
+- Graded relevance: `partially_if` marks datasets that miss one constraint;
+  `score` reports strict and lenient recall.
+- Non-human data counts fully only for animal or pure acquisition-method
+  questions (`work/apply_species_rule.py`, species from OpenNeuro).
+- Reliability: a blind second judge re-read 383 "not relevant" labels, chosen
+  mostly among the datasets most similar to their question. It disagreed on
+  14 (3.7%) and called 5 (1.3%) relevant, several of them borderline.
+- `score` groups results by source and by logic operator.
+
 ## Running it
 
 On the server, in a one-off backend container (needs the LLM keys and the

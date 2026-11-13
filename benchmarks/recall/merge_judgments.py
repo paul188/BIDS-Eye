@@ -41,11 +41,18 @@ def main() -> None:
     truth, missing = {}, []
     for q in queries:
         qid = q["id"]
+        meta = {"source": q.get("source"), "type": q.get("type")}
         if q.get("kind") == "structural":
-            truth[qid] = {"method": "structural", "relevant": pools[qid]["structural_relevant"]}
+            truth[qid] = {"method": "structural", **meta, "relevant": pools[qid]["structural_relevant"]}
             continue
-        entry = {"method": "judged", "relevant": [], "not_relevant": [], "unsure": []}
-        for acc in pools[qid]["candidates"]:
+        # partially_relevant: the dataset meets the topic but misses one
+        # constraint of the question (graded relevance as in bioCADDIE 2016).
+        entry = {"method": "judged", **meta, "relevant": [], "partially_relevant": [],
+                 "not_relevant": [], "unsure": []}
+        # Every pooled candidate must have a label; labels from earlier rounds
+        # whose candidate is no longer in the (shallower) pool are kept too.
+        earlier = sorted(a for (q, a) in labels if q == qid)
+        for acc in dict.fromkeys(list(pools[qid]["candidates"]) + earlier):
             row = labels.get((qid, acc))
             if row is None:
                 missing.append((qid, acc))
@@ -68,9 +75,8 @@ def main() -> None:
 
     counts = Counter()
     for t in truth.values():
-        counts["relevant"] += len(t["relevant"])
-        counts["not_relevant"] += len(t.get("not_relevant", []))
-        counts["unsure"] += len(t.get("unsure", []))
+        for label in ("relevant", "partially_relevant", "not_relevant", "unsure"):
+            counts[label] += len(t.get(label, []))
     print(f"{len(truth)} queries, {len(labels)} judgments: {dict(counts)}")
     print("relevant per query:", {k: len(v["relevant"]) for k, v in truth.items()})
 

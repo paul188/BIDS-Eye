@@ -25,6 +25,19 @@
 #
 # Sources: user_log = asked by real users on bidseye.xyz (June–October 2026,
 # lightly normalised); probe = written to cover a known weakness.
+#
+# Added 2026-11-13 (second round, 132 questions):
+#   - 4 more distinct questions from the user log, 20 with explicit AND / OR /
+#     NOT logic (9 of them structural), 15 in the bioCADDIE 2016 constraint
+#     form "Find <data> on <topic> in <population>"            (hand-written)
+#   - 15 DataFinder-style research needs written from abstracts of papers
+#     linked to datasets                                        (LLM, reviewed)
+#   - 78 questions generated from dataset READMEs across 8 question types,
+#     each anchored on a seed dataset that satisfies it         (LLM, reviewed)
+#   Graded relevance: `partially_if` describes datasets that meet the topic but
+#   miss one constraint; they are labelled partially_relevant and only count in
+#   the lenient recall. Pools of these questions also include the 30 nearest
+#   datasets by embedding similarity (build_pool.py --embeddings).
 
 queries:
 
@@ -321,3 +334,2567 @@ queries:
     text_short: ["decision", "choice", "choose", "gambl", "risk", "intertemporal", "discount", "forag"]
     text: ["decision[- ]making", "(value|risky|perceptual|economic)[- ]\\w* ?(choice|decision)", "intertemporal", "delay discounting", "forag", "gambling task"]
     tasks: ["decision", "choice", "gambl", "risk", "discount", "forag"]
+
+# ── Second round: user log, logic, bioCADDIE-style ────────────────────────────
+- id: u18_mri_autism
+  source: user_log
+  type: diagnosis_modality
+  question: Mri autism
+  relevant_if: Participants include autistic people (autism spectrum disorder), and the dataset contains MRI of
+    any kind (structural, functional, diffusion or perfusion).
+  require_datatypes_any:
+  - anatomical_mri
+  - functional_mri
+  - diffusion_mri
+  - perfusion_asl
+  pool:
+    text:
+    - autis
+    - \bASD\b
+    - asperger
+    diagnoses:
+    - autis
+    - asd
+- id: u19_mpm_healthy_adults
+  source: user_log
+  type: acquisition
+  question: multiparameter maps quantitative mri in heatlhy adults datasets
+  relevant_if: The dataset contains quantitative MRI maps (multi-parameter mapping / MPM, R1, R2*, PD, MT saturation,
+    T1/T2 maps, QSM) acquired in healthy adults.
+  partially_if: Quantitative maps, but the participants are not healthy adults (patients or children only).
+  require_datatypes_any:
+  - anatomical_mri
+  - field_maps
+  pool:
+    text:
+    - quantitative
+    - \bqMRI\b
+    - relaxometr
+    - multi-?parameter
+    - \bMPM\b
+    - T1 ?map
+    - T2\*? ?map
+    - \bR2\*
+    - \bR1\b map
+    - myelin
+    - \bQSM\b
+    - MTsat
+    - MT saturation
+- id: u20_dwi_1_5t
+  source: user_log
+  type: acquisition
+  question: Datasets with diffusion MRI data scanned at 1.5T
+  relevant_if: The dataset contains diffusion MRI acquired on a 1.5 Tesla scanner.
+  require_datatypes_any:
+  - diffusion_mri
+  pool:
+    text:
+    - 1\.5 ?T\b
+    - 1\.5 ?tesla
+    - 1,5 ?T\b
+- id: u21_fmri_healthy_controls
+  source: user_log
+  type: diagnosis_modality
+  question: fmri datasets with healthy controls
+  relevant_if: The dataset contains fMRI and includes a healthy control group that is compared with a patient or
+    clinical group.
+  partially_if: fMRI of healthy participants only (no patient group to be controls for).
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - healthy controls?
+    - control (group|participants|subjects)
+    - \bHCs?\b
+    - matched controls
+    - versus controls
+    - and controls
+    diagnoses:
+    - healthy_control
+- id: l01_eeg_no_mri
+  source: logic
+  type: logic_not
+  kind: structural
+  question: EEG datasets without any MRI
+  rule:
+    datatypes_any:
+    - electroencephalography
+    datatypes_none:
+    - anatomical_mri
+    - functional_mri
+    - diffusion_mri
+    - field_maps
+    - perfusion_asl
+- id: l02_meg_not_eeg
+  source: logic
+  type: logic_not
+  kind: structural
+  question: Datasets with MEG but no EEG
+  rule:
+    datatypes_any:
+    - magnetoencephalography
+    datatypes_none:
+    - electroencephalography
+- id: l03_eeg_and_fmri
+  source: logic
+  type: logic_and
+  kind: structural
+  question: Datasets that have both EEG and fMRI
+  rule:
+    datatypes_all:
+    - electroencephalography
+    - functional_mri
+- id: l04_dwi_or_asl
+  source: logic
+  type: logic_or
+  kind: structural
+  question: Datasets with diffusion MRI or arterial spin labelling
+  rule:
+    datatypes_any:
+    - diffusion_mri
+    - perfusion_asl
+- id: l05_fmri_no_t1
+  source: logic
+  type: logic_not
+  kind: structural
+  question: fMRI datasets that do not include a structural scan
+  rule:
+    datatypes_any:
+    - functional_mri
+    datatypes_none:
+    - anatomical_mri
+- id: l06_pet_and_mri
+  source: logic
+  type: logic_and
+  kind: structural
+  question: Datasets with PET and MRI
+  rule:
+    datatypes_all:
+    - positron_emission_tomography
+    datatypes_any:
+    - anatomical_mri
+    - functional_mri
+    - diffusion_mri
+- id: l07_ieeg_or_meg
+  source: logic
+  type: logic_or
+  kind: structural
+  question: iEEG or MEG datasets
+  rule:
+    datatypes_any:
+    - intracranial_eeg
+    - magnetoencephalography
+- id: l08_fnirs_and_eeg
+  source: logic
+  type: logic_and
+  kind: structural
+  question: fNIRS datasets that also have EEG
+  rule:
+    datatypes_all:
+    - fnirs
+    - electroencephalography
+- id: l09_rest_and_task_fmri
+  source: logic
+  type: logic_and
+  kind: structural
+  question: fMRI datasets with both resting state and at least one task
+  rule:
+    datatypes_all:
+    - functional_mri
+    tasks_any:
+    - resting_state
+    tasks_excluding: resting|^rest|noise|unknown|unnamed|^run|practice|^task$|^main$|^\d+$
+- id: l10_pd_or_tremor
+  source: logic
+  type: logic_or
+  question: Parkinson's disease or essential tremor datasets
+  relevant_if: Participants include people with Parkinson's disease or with essential tremor.
+  pool:
+    text:
+    - parkinson
+    - \bPD\b
+    - essential tremor
+    - \bET\b patients
+    - tremor
+    - subthalamic
+    - \bDBS\b
+    diagnoses:
+    - parkinson
+    - tremor
+- id: l11_scz_not_bipolar
+  source: logic
+  type: logic_not
+  question: Schizophrenia datasets that do not include bipolar disorder patients
+  relevant_if: Participants include people with schizophrenia or another psychotic disorder, and the dataset has
+    no bipolar disorder group.
+  partially_if: Schizophrenia patients plus a bipolar group.
+  pool:
+    text:
+    - schizo
+    - psychos
+    - psychotic
+    diagnoses:
+    - schizo
+    - psychos
+- id: l12_healthy_only_wm_fmri
+  source: logic
+  type: logic_not
+  question: Working memory fMRI in healthy adults only, no patient groups
+  relevant_if: Participants perform a working-memory task (n-back, Sternberg, delayed match, span) during fMRI,
+    all participants are healthy adults, and there is no patient group.
+  partially_if: Working-memory fMRI that also includes a patient group, or healthy children/adolescents.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - working memory
+    - n-?back
+    - sternberg
+    - delayed match
+    - \bspan\b
+    tasks:
+    - working_memory
+    - n_back
+    - sternberg
+    - delayed
+- id: l13_autism_or_adhd_children
+  source: logic
+  type: logic_or
+  question: Autism or ADHD in children
+  relevant_if: Participants include children or adolescents (under 18) with autism spectrum disorder or with ADHD.
+  partially_if: Autism or ADHD, but only adults.
+  pool:
+    text:
+    - autis
+    - \bASD\b
+    - \bADHD\b
+    - attention[- ]deficit
+    - hyperactiv
+    diagnoses:
+    - autis
+    - asd
+    - adhd
+- id: l14_epilepsy_not_ieeg
+  source: logic
+  type: logic_not
+  question: Epilepsy datasets that are not intracranial recordings
+  relevant_if: Participants include people with epilepsy, and the dataset contains non-invasive data (scalp EEG,
+    MEG or MRI), not intracranial EEG.
+  partially_if: Epilepsy dataset with both intracranial and non-invasive recordings.
+  pool:
+    text:
+    - epilep
+    - seizure
+    - \bTLE\b
+    diagnoses:
+    - epilep
+    - seizure
+    - dysplasia
+    - sclerosis
+- id: l15_depression_no_eeg
+  source: logic
+  type: logic_not
+  question: Depression datasets excluding EEG
+  relevant_if: Participants include people with depression (major depressive disorder or clinically significant
+    depressive symptoms as the studied condition), and the dataset contains no EEG.
+  pool:
+    text:
+    - depress
+    - \bMDD\b
+    diagnoses:
+    - depress
+- id: l16_stroke_or_tbi_dwi
+  source: logic
+  type: logic_or
+  question: Stroke or traumatic brain injury patients with diffusion MRI
+  relevant_if: Participants include people after stroke or with traumatic brain injury / concussion, and the dataset
+    contains diffusion MRI.
+  require_datatypes_any:
+  - diffusion_mri
+  pool:
+    text:
+    - stroke
+    - infarct
+    - aphasi
+    - traumatic brain
+    - \bTBI\b
+    - concussi
+    - lesion
+    diagnoses:
+    - stroke
+    - traumatic
+    - contusion
+    - lesion
+- id: l17_older_not_dementia
+  source: logic
+  type: logic_not
+  question: Datasets with older adults but without dementia patients
+  relevant_if: Participants include adults over 65, and the dataset has no dementia, Alzheimer's or MCI group.
+  partially_if: Older adults over 65 together with a dementia/MCI group.
+  pool:
+    text_short:
+    - older adult
+    - elderly
+    - aging
+    - ageing
+    - lifespan
+    - life span
+    - senior
+    text:
+    - older adults
+    - elderly
+    - aged (6[5-9]|[7-9][0-9])
+    - over (6[5-9]|[7-9][0-9])
+    - lifespan
+    - life[- ]span
+    age_above: 65
+- id: l18_music_or_speech_meg
+  source: logic
+  type: logic_or
+  question: MEG recordings of people listening to music or speech
+  relevant_if: The dataset contains MEG recorded while participants listen to music or to speech (stories, sentences,
+    words, syllables).
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - music
+    - melod
+    - song
+    - speech
+    - story
+    - stories
+    - sentence
+    - spoken
+    - syllable
+    - listen
+    - auditory
+    - narrative
+    tasks:
+    - music
+    - speech
+    - story
+    - listen
+    - auditory
+    - language
+    - sentence
+    - word
+- id: l19_language_fmri_or_meg_adults
+  source: logic
+  type: logic_and
+  question: Language tasks recorded with fMRI or MEG, adults only
+  relevant_if: Participants perform a language task (reading, listening to speech, word or sentence processing,
+    naming) during fMRI or MEG, and all participants are adults.
+  partially_if: Language task with fMRI or MEG that includes children.
+  require_datatypes_any:
+  - functional_mri
+  - magnetoencephalography
+  pool:
+    text_short:
+    - language
+    - linguistic
+    - speech
+    - sentence
+    - \bwords?\b
+    - reading
+    - semantic
+    - narrative
+    - lexical
+    text:
+    - language (task|localizer|localiser|comprehension|production)
+    - (sentence|word|speech|story) (comprehension|processing|listening|reading)
+    - picture naming
+    - verb generation
+    - lexical decision
+    tasks:
+    - language
+    - speech
+    - sentence
+    - word
+    - read
+    - semantic
+    - narrat
+    - story
+    - lexical
+    - naming
+- id: l20_sleep_eeg_not_deprivation
+  source: logic
+  type: logic_not
+  question: Sleep EEG recordings, but not sleep deprivation studies
+  relevant_if: The dataset contains EEG recorded during sleep (overnight or naps), and the study is not about sleep
+    deprivation.
+  partially_if: Sleep EEG within a sleep deprivation design.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text_short:
+    - sleep
+    - \bnap
+    - insomni
+    - dream
+    text:
+    - \bsleep (stage|staging|study|recording|spindle)
+    - polysomno
+    - \bnaps?\b
+    - \bREM sleep
+    - \bNREM\b
+    - slow[- ]wave sleep
+    - asleep
+    - overnight
+    tasks:
+    - sleep
+    - nap
+- id: b01_reward_fmri_adolescents
+  source: biocaddie_style
+  type: task_modality
+  question: Find fMRI data on reward processing in adolescents
+  relevant_if: fMRI during a reward task (monetary incentive, gambling, reward learning) with adolescent participants
+    (roughly 10–19 years).
+  partially_if: Reward fMRI in adults only, or adolescents doing a non-reward task related to motivation.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - reward
+    - incentive
+    - gambl
+    - monetary
+    tasks:
+    - reward
+    - incentive
+    - gambl
+    - monetary
+- id: b02_oddball_eeg_scz
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find EEG data on auditory oddball responses in schizophrenia patients
+  relevant_if: EEG during an auditory oddball or mismatch-negativity paradigm, with people with schizophrenia or
+    psychosis among the participants.
+  partially_if: Auditory oddball EEG in healthy people only, or schizophrenia EEG with a different paradigm.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - schizo
+    - psychos
+    - oddball
+    - mismatch negativity
+    - \bMMN\b
+    - \bP300\b
+    - \bP3\b
+    tasks:
+    - oddball
+    - mismatch
+    - mmn
+    diagnoses:
+    - schizo
+    - psychos
+- id: b03_dwi_ms
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find diffusion MRI data on white matter in multiple sclerosis
+  relevant_if: Diffusion MRI with people with multiple sclerosis among the participants.
+  partially_if: Multiple sclerosis MRI without diffusion data.
+  require_datatypes_any:
+  - diffusion_mri
+  pool:
+    text:
+    - multiple sclerosis
+    - \bMS\b patients
+    - demyelinat
+    - \bRRMS\b
+    diagnoses:
+    - sclerosis
+    - demyelin
+- id: b04_pet_amyloid_tau
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find PET data on amyloid or tau in older adults
+  relevant_if: PET imaging of amyloid or tau (e.g. PiB, florbetapir, flortaucipir) in older adults.
+  partially_if: Amyloid/tau PET in a non-elderly or animal cohort, or other PET tracers in older adults.
+  require_datatypes_any:
+  - positron_emission_tomography
+  pool:
+    text:
+    - amyloid
+    - \btau\b
+    - \bPiB\b
+    - florbetapir
+    - flortaucipir
+    - florbetaben
+    - \bAV-?45\b
+    - \bAV-?1451\b
+    - alzheimer
+    - older adult
+    - aging
+    - ageing
+- id: b05_meg_visual_healthy
+  source: biocaddie_style
+  type: task_modality
+  question: Find MEG data on visual perception in healthy adults
+  relevant_if: MEG recorded while healthy adults view visual stimuli as the main task (objects, faces, scenes, gratings,
+    visual categorisation).
+  partially_if: Visual MEG task that also includes patients, or a task where vision is incidental.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - visual
+    - image
+    - object
+    - face
+    - scene
+    - grating
+    - picture
+    - categor
+    tasks:
+    - visual
+    - image
+    - object
+    - face
+    - scene
+    - grating
+    - picture
+    - categor
+- id: b06_infant_structural
+  source: biocaddie_style
+  type: modality_population
+  question: Find structural MRI data on brain development in infants or toddlers
+  relevant_if: Structural MRI of infants or toddlers (under 3 years).
+  partially_if: Structural MRI of older children only.
+  require_datatypes_any:
+  - anatomical_mri
+  pool:
+    text:
+    - infant
+    - toddler
+    - newborn
+    - neonat
+    - baby
+    - babies
+    - preterm
+    - early brain development
+    - months? of age
+    - month-old
+    age_below: 3
+- id: b07_fear_conditioning_fmri
+  source: biocaddie_style
+  type: task_modality
+  question: Find fMRI data on fear conditioning or extinction
+  relevant_if: fMRI during fear (threat) conditioning, extinction or reinstatement.
+  partially_if: Fear conditioning with another modality (EEG, skin conductance only), or other aversive learning
+    without conditioning.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - \bfear\b
+    - threat (conditioning|learning)
+    - \bconditioning\b
+    - conditioned stimul
+    - \bextinction\b
+    - \bCS\+
+    - reinstatement
+    tasks:
+    - fear
+    - threat
+    - conditioning
+    - extinction
+    - aversive
+- id: b08_ieeg_language_epilepsy
+  source: biocaddie_style
+  type: task_modality
+  question: Find iEEG data on language or speech processing in epilepsy patients
+  relevant_if: Intracranial EEG (sEEG/ECoG) recorded during a language or speech task (listening, reading, naming,
+    speaking).
+  partially_if: Intracranial recordings during auditory but non-linguistic stimuli.
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - language
+    - speech
+    - speak
+    - word
+    - sentence
+    - reading
+    - naming
+    - story
+    - listen
+    - verbal
+    - linguistic
+    - phonem
+    tasks:
+    - language
+    - speech
+    - word
+    - sentence
+    - read
+    - naming
+    - story
+    - listen
+    - verbal
+- id: b09_motor_eeg_stroke
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find EEG data on movement or motor execution in stroke patients
+  relevant_if: EEG recorded during movement, motor execution or motor imagery, with people after stroke among the
+    participants.
+  partially_if: Stroke EEG without a motor task, or motor EEG in healthy people only.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - stroke
+    - hemipare
+    - hemiplegi
+    - infarct
+    diagnoses:
+    - stroke
+- id: b10_pain_fmri_chronic
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find fMRI data on pain in chronic pain patients
+  relevant_if: fMRI with people with a chronic pain condition (fibromyalgia, chronic back pain, migraine, neuropathic
+    pain) among the participants.
+  partially_if: Experimental pain fMRI in healthy people only.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - chronic pain
+    - fibromyalg
+    - back pain
+    - migraine
+    - neuropath
+    - pain patients
+    diagnoses:
+    - fibromyalg
+    - pain
+    - migraine
+- id: b11_rest_fmri_depression
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find resting-state fMRI data in people with depression
+  relevant_if: Resting-state fMRI with people with depression (major depressive disorder or clinically significant
+    depressive symptoms) among the participants.
+  partially_if: Depression fMRI with tasks only, or resting-state fMRI where depression is only a questionnaire
+    score in a healthy sample.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - depress
+    - \bMDD\b
+    diagnoses:
+    - depress
+- id: b12_attention_eeg_adhd_children
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find EEG data on attention in children with ADHD
+  relevant_if: EEG with children or adolescents with ADHD among the participants.
+  partially_if: ADHD EEG in adults only.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - \bADHD\b
+    - attention[- ]deficit
+    - hyperactiv
+    diagnoses:
+    - adhd
+- id: b13_tom_fmri_autism
+  source: biocaddie_style
+  type: diagnosis_modality
+  question: Find fMRI data on social cognition or theory of mind in autism
+  relevant_if: fMRI during a social cognition or theory-of-mind task, with autistic participants.
+  partially_if: Autism fMRI with non-social tasks, or social/ToM fMRI in healthy people only.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - autis
+    - \bASD\b
+    - theory of mind
+    - mentaliz
+    - mentalis
+    - social cognition
+    - false belief
+    tasks:
+    - theory_of_mind
+    - social
+    - mentaliz
+    - false_belief
+    diagnoses:
+    - autis
+    - asd
+- id: b14_brain_tumor_mri
+  source: biocaddie_style
+  type: diagnosis
+  question: Find MRI data on brain tumors
+  relevant_if: MRI of people with a brain tumour (glioma, glioblastoma, meningioma, metastasis or other).
+  require_datatypes_any:
+  - anatomical_mri
+  - functional_mri
+  - diffusion_mri
+  - perfusion_asl
+  pool:
+    text:
+    - tumou?r
+    - gliom
+    - glioblastom
+    - meningiom
+    - astrocytom
+    - oligodendrogli
+    - metastas
+    - neoplasm
+    - cancer
+    - resection
+    diagnoses:
+    - tumor
+    - glioma
+    - astrocytoma
+    - meningioma
+- id: b15_cue_reactivity_fmri
+  source: biocaddie_style
+  type: task_modality
+  question: Find fMRI data on smoking, alcohol or drug cue reactivity
+  relevant_if: fMRI while participants see or respond to smoking, alcohol, drug or food-craving cues (cue reactivity
+    paradigms).
+  partially_if: Substance-use participants in fMRI without a cue-reactivity task.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - cue[- ]reactiv
+    - craving
+    - smok
+    - nicotine
+    - cigarette
+    - alcohol
+    - cocaine
+    - cannabis
+    - drug cue
+    tasks:
+    - cue
+    - crav
+    - smok
+    - alcohol
+    - drug
+
+# ── Second round: research needs from paper abstracts (DataFinder-style) ──────
+- id: d01_depression_rest_connectivity
+  source: paper
+  type: paper_need
+  seed: ds002748
+  paper_doi: 10.1155/2021/8846097
+  question: I want to compare default-mode and frontoparietal network connectivity between adults with mild-to-moderate
+    depression and healthy controls. Is there eyes-closed resting-state fMRI from depressed patients plus a control
+    group?
+  relevant_if: Contains resting-state fMRI from adults with depression (any severity) and healthy controls, so patient
+    versus control connectivity can be compared.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - depress
+    - \bMDD\b
+    - dysthymi
+    - mood disorder
+    diagnoses:
+    - depress
+    - mdd
+- id: d02_aging_trust_striatum
+  source: paper
+  type: paper_need
+  seed: ds003745
+  paper_doi: 10.1016/j.neuroimage.2022.119267
+  question: Do older adults show weaker ventral striatum responses than young adults when a partner reciprocates
+    their cooperation? I need fMRI from a social exchange or trust game in participants spanning a wide adult age
+    range.
+  relevant_if: fMRI during an interactive social economic game (trust, ultimatum, shared reward) in healthy adults
+    covering a wide age range including older adults, enabling age-group comparison.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - trust game
+    - ultimatum
+    - social reward
+    - reciproc
+    - economic game
+    - social (decision|exchange|interaction)
+    - cooperat
+    text_short:
+    - trust
+    - social
+    - game
+    tasks:
+    - trust
+    - ultimatum
+    - reward
+    - game
+    - social
+- id: d03_multiecho_aging
+  source: paper
+  type: paper_need
+  seed: ds003592
+  paper_doi: 10.1038/s41597-022-01231-7
+  question: I am planning to study how cognition and cortical structure change across the adult lifespan, and want
+    to denoise the data with multi-echo methods. Is there a cross-sectional adult life-span cohort with multi-echo
+    fMRI, structural MRI and cognitive test scores?
+  relevant_if: Healthy adult lifespan or aging sample (young through older adults) with multi-echo fMRI and structural
+    MRI plus behavioural or cognitive measures.
+  require_datatypes_any:
+  - functional_mri
+  - anatomical_mri
+  pool:
+    text:
+    - multi-?echo
+    - \bME-?fMRI\b
+    - lifespan
+    - life-span
+    - neurocognitive aging
+    - cognitive aging
+    - adult aging
+    - older adults
+    text_short:
+    - aging
+    - ageing
+    - lifespan
+    - multi-echo
+- id: d04_prediction_error_episodic
+  source: paper
+  type: paper_need
+  seed: ds003835
+  paper_doi: 10.1073/pnas.2117625118
+  question: I want to test whether surprise when a familiar sequence of events changes drives the hippocampus to
+    update stored memories. Is there fMRI from healthy adults who watched or played through narratives or videos
+    with expected versus unexpected outcomes, with later memory tests?
+  relevant_if: Healthy adult fMRI (hippocampus covered) with a memory paradigm using video or narrative events that
+    manipulate expectation violation or prediction error, with a subsequent memory test.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - prediction error
+    - expectation violation
+    - surprise
+    - memory (update|updating|reconsolidation)
+    - episodic memory
+    - hippocamp
+    - event segmentation
+    text_short:
+    - episodic
+    - prediction
+    - hippocamp
+    - memory
+    tasks:
+    - memory
+    - episodic
+    - video
+    - prediction
+- id: d05_language_decoding
+  source: paper
+  type: paper_need
+  seed: ds004510
+  paper_doi: 10.1038/s41593-023-01304-9
+  question: I want to train and test a model that decodes the meaning of continuous language from brain responses.
+    Is there fMRI of people listening to many hours of spoken stories, ideally with additional held-out stories
+    or movies?
+  relevant_if: fMRI from participants listening to extended naturalistic spoken stories or narrative speech (many
+    sessions, per-subject large data) suitable for language encoding or decoding models.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - stor(y|ies)
+    - narrative
+    - podcast
+    - natural(istic)? (speech|language)
+    - continuous (speech|language)
+    - decod
+    - encoding model
+    - semantic
+    - listening
+    text_short:
+    - story
+    - stories
+    - speech
+    - language
+    - listening
+    tasks:
+    - story
+    - narrative
+    - listening
+    - speech
+    - language
+    - moth
+- id: d06_meg_memory_replay
+  source: paper
+  type: paper_need
+  seed: ds002761
+  paper_doi: 10.1101/758185
+  question: I'd like to check whether successful episodic retrieval is accompanied by fast reactivation of the encoded
+    content in the human brain. Is there MEG data from healthy volunteers doing associative memory retrieval, together
+    with a visual localizer to train classifiers?
+  relevant_if: MEG recordings from healthy participants performing an episodic or associative memory retrieval task,
+    ideally with a stimulus localizer enabling decoding of reactivated content.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - replay
+    - reactivation
+    - memory retrieval
+    - episodic
+    - associative memory
+    - decoding
+    - localizer
+    - recall
+    text_short:
+    - memory
+    - retrieval
+    - replay
+    tasks:
+    - memory
+    - retrieval
+    - recall
+    - localizer
+- id: d07_spatial_semantic_memory
+  source: paper
+  type: paper_need
+  seed: ds007532
+  paper_doi: 10.1073/pnas.2525724123
+  question: Does the long axis of the hippocampus differ in how it supports remembering where things were versus
+    what they meant? I need fMRI from healthy adults learning ordered sequences of items with spatial or conceptual
+    relations.
+  relevant_if: Healthy adult fMRI with a sequence or relational memory task involving spatial and/or semantic information,
+    covering the hippocampus.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - sequence memory
+    - spatial memory
+    - semantic memory
+    - hippocamp
+    - cognitive map
+    - relational memory
+    - long axis
+    - temporal order
+    text_short:
+    - hippocamp
+    - memory
+    - sequence
+    - spatial
+    tasks:
+    - sequence
+    - memory
+    - spatial
+    - navigation
+- id: d08_pd_meg_dbs
+  source: paper
+  type: paper_need
+  seed: ds004998
+  paper_doi: 10.1038/s41597-024-03768-1
+  question: I want to relate cortical beta oscillations to subthalamic activity in Parkinson's disease. Is there
+    MEG recorded together with deep brain electrode recordings in patients, at rest and during simple movements?
+  relevant_if: MEG from patients with Parkinson's disease, ideally combined with deep brain (subthalamic or LFP)
+    recordings, during rest and/or motor tasks.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - parkinson
+    - subthalamic
+    - \bSTN\b
+    - deep brain
+    - \bDBS\b
+    - \bLFP\b
+    - beta (band|oscillation|activity)
+    - basal ganglia
+    diagnoses:
+    - parkinson
+    tasks:
+    - fist
+    - movement
+    - motor
+    - rest
+- id: d09_social_trait_decisions
+  source: paper
+  type: paper_need
+  seed: ds004128
+  paper_doi: 10.1073/pnas.2116944119
+  question: I want to know how people represent personality traits of others when deciding how to share resources
+    with them. Is there fMRI from adults making allocation decisions (e.g. dictator-style games) about other individuals?
+  relevant_if: Adult fMRI during social decision making where participants allocate money or resources to other
+    people (dictator, trust, ultimatum or similar game).
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - dictator
+    - social decision
+    - allocation
+    - trust game
+    - ultimatum
+    - prosocial
+    - generosity
+    - altruis
+    - person perception
+    text_short:
+    - social
+    - dictator
+    - decision
+    tasks:
+    - dictator
+    - trust
+    - ultimatum
+    - social
+    - decision
+  partially_if: Social decision fMRI without resource allocation, or allocation games with another modality.
+- id: d10_ieeg_stimulation_connectivity
+  source: paper
+  type: paper_need
+  seed: ds005169
+  paper_doi: 10.1002/hbm.25749
+  question: I want to map effective connectivity by looking at how electrical stimulation at one cortical site evokes
+    responses elsewhere. Is there intracranial EEG from epilepsy patients with single-pulse stimulation recorded
+    across many electrodes?
+  relevant_if: Intracranial EEG (SEEG or ECoG) from patients with direct electrical cortical stimulation (single-pulse
+    or high-frequency) with evoked responses recorded at other sites.
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - stimulation
+    - cortico-?cortical evoked
+    - \bCCEP\b
+    - evoked potential
+    - effective connectivity
+    - \bSPES\b
+    - electrical stim
+    text_short:
+    - stimulation
+    - CCEP
+    - evoked
+    tasks:
+    - stimulation
+    - ccep
+    - spes
+- id: d11_mouse_knockout_mri
+  source: paper
+  type: paper_need
+  seed: ds006663
+  paper_doi: 10.1101/2025.04.24.650541
+  question: I'm studying whether deleting an immune-related gene alters brain development in mice. Are there in
+    vivo mouse MRI datasets comparing knockout and wild-type animals, ideally scanned repeatedly over time with
+    structural and functional connectivity measures?
+  relevant_if: Animal (mouse) MRI dataset comparing genetic knockout or transgenic animals with wild-type controls,
+    with structural MRI and preferably longitudinal and/or resting-state fMRI.
+  require_datatypes_any:
+  - anatomical_mri
+  - functional_mri
+  pool:
+    text:
+    - mice
+    - mouse
+    - murine
+    - knock-?out
+    - transgenic
+    - wild[- ]type
+    - rodent
+    - \brats?\b
+    - C57
+    text_short:
+    - mouse
+    - mice
+    - rodent
+    - animal
+    diagnoses:
+    - animal
+    - knockout
+    - wild_type
+    - mouse
+    - transgenic
+- id: d12_eeg_fmri_confidence
+  source: paper
+  type: paper_need
+  seed: ds002158
+  paper_doi: 10.1073/pnas.1918335117
+  question: I want to separate the neural signals of evidence accumulation from the signals of subjective confidence
+    in fast perceptual decisions. Is there simultaneous or matched EEG and fMRI from healthy adults performing a
+    speeded perceptual discrimination task with confidence reports?
+  relevant_if: Healthy adult EEG and fMRI (simultaneous or in separate sessions) during a speeded perceptual decision
+    task including confidence or metacognitive judgements.
+  require_datatypes_any:
+  - electroencephalography
+  - functional_mri
+  pool:
+    text:
+    - confidence
+    - metacognit
+    - perceptual decision
+    - evidence accumulation
+    - drift diffusion
+    - speeded
+    - EEG-?fMRI
+    - simultaneous EEG
+    text_short:
+    - confidence
+    - metacognition
+    - perceptual
+    - decision
+    tasks:
+    - decision
+    - confidence
+    - perceptual
+    - discrimination
+- id: d13_music_improv_eeg
+  source: paper
+  type: paper_need
+  seed: ds003570
+  paper_doi: 10.1101/2021.02.25.432633
+  question: I'd like to test whether professional musicians who improvise process unexpected harmonies differently
+    from non-musicians. Is there EEG from musicians and controls listening to chord sequences with expected and
+    unexpected chords?
+  relevant_if: EEG from musicians (especially improvisers) and non-musician comparison participants listening to
+    chords or harmonic sequences with expected versus unexpected events (oddball, harmonic violation).
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - musician
+    - improvis
+    - chord
+    - harmon
+    - musical (structure|expertise|training)
+    - music perception
+    - oddball
+    - \bMMN\b
+    - mismatch negativity
+    text_short:
+    - music
+    - musician
+    - chord
+    - auditory
+    tasks:
+    - chord
+    - music
+    - oddball
+    - auditory
+- id: d14_emotion_faces_decoding
+  source: paper
+  type: paper_need
+  seed: ds003548
+  paper_doi: 10.1101/2021.04.04.438425
+  question: I want to see whether multivariate activity patterns can tell apart perceived emotional expressions
+    in faces across visual and limbic regions. Is there fMRI of healthy adults viewing faces displaying different
+    emotion categories?
+  relevant_if: Healthy adult fMRI during passive or active viewing of faces with different emotional expressions
+    (emotion categories), suitable for pattern analysis.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - emotional (face|expression)
+    - facial expression
+    - emotion categor
+    - face perception
+    - emotion (perception|recognition)
+    - fearful
+    - angry
+    - happy face
+    - face (task|stimuli)
+    text_short:
+    - emotion
+    - emotional
+    - face
+    - faces
+    - expression
+    tasks:
+    - emotion
+    - face
+    - expression
+- id: d15_reward_learning_value
+  source: paper
+  type: paper_need
+  seed: ds002738
+  paper_doi: 10.1101/158964
+  question: I want to know how value representations in the brain change when associations are learned over several
+    days rather than within one session. Is there fMRI of healthy adults performing a reward learning task, with
+    extended training across multiple sessions?
+  relevant_if: Healthy adult fMRI during a reward or value learning task with training spread over several sessions
+    or days.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - reward learning
+    - reinforcement learning
+    - value (representation|coding|learning)
+    - habit
+    - overtrain
+    - multi-?day
+    - multiple sessions
+    - reward (task|processing)
+    - stimulus-outcome
+    text_short:
+    - reward
+    - reinforcement
+    - value
+    - learning
+    tasks:
+    - reward
+    - learning
+    - reinforcement
+    - value
+  partially_if: Healthy adult reward or value learning fMRI within a single session.
+
+# ── Second round: generated from READMEs ──────────────────────────────────────
+- id: g01_tbi_concussion
+  source: generated_readme
+  type: diagnosis
+  seed: ds005114
+  question: Are there any datasets on people who had a concussion or mild traumatic brain injury?
+  relevant_if: Participants include people with mild traumatic brain injury / concussion (acute, sub-acute or chronic).
+  pool:
+    text:
+    - concussion
+    - traumatic brain injur
+    - \bm?TBI\b
+    - head injur
+    diagnoses:
+    - tbi
+    - traumatic
+    - concussion
+- id: g02_dyslexia_adults
+  source: generated_readme
+  type: diagnosis
+  seed: ds004786
+  question: dyslexia
+  relevant_if: Participants include people with developmental dyslexia (reading disability), children or adults.
+  pool:
+    text:
+    - dyslexi
+    - reading (disab|impair|difficult)
+    diagnoses:
+    - dyslexi
+- id: g03_trigeminal_neuralgia
+  source: generated_readme
+  type: diagnosis
+  seed: ds005713
+  question: Is there any MRI data from patients with trigeminal neuralgia, for example before and after surgery?
+  relevant_if: Participants include patients with trigeminal neuralgia (or other cranial neuralgia).
+  pool:
+    text:
+    - trigeminal
+    - neuralgia
+    diagnoses:
+    - trigeminal
+    - neuralgia
+- id: g05_postherpetic_neuralgia
+  source: generated_readme
+  type: diagnosis
+  seed: ds007181
+  question: Do you have data from patients with neuropathic pain after shingles (herpes zoster)?
+  relevant_if: Participants include patients with herpes zoster / post-herpetic neuralgia or zoster-associated neuropathic
+    pain.
+  pool:
+    text:
+    - zoster
+    - shingles
+    - herpe
+    - post-?herpetic
+    - neuropathic pain
+    diagnoses:
+    - zoster
+    - herpe
+    - neuropathic
+- id: g06_cerebral_aneurysm
+  source: generated_readme
+  type: diagnosis
+  seed: ds005096
+  question: Cerebral aneurysms and other cerebrovascular malformations
+  relevant_if: Participants are patients with intracranial aneurysms or other cerebrovascular malformations (AVM,
+    vessel stenosis).
+  pool:
+    text:
+    - aneurysm
+    - cerebrovascular
+    - arteriovenous
+    - angiograph
+    - \bAVM\b
+    - moyamoya
+    diagnoses:
+    - aneurysm
+    - vascular
+- id: g07_cortical_dysplasia_epilepsy
+  source: generated_readme
+  type: diagnosis
+  seed: ds004199
+  question: I need structural MRI of people with focal cortical dysplasia or other lesional epilepsy for lesion
+    detection.
+  relevant_if: Participants are patients with lesional focal epilepsy such as focal cortical dysplasia.
+  pool:
+    text:
+    - dysplasia
+    - \bFCD\b
+    - lesional epilep
+    - epilep
+    diagnoses:
+    - dysplasia
+    - epilep
+    - fcd
+- id: g08_auditory_hallucinations_psychosis
+  source: generated_readme
+  type: diagnosis
+  seed: ds004302
+  question: Do any datasets include patients with psychosis who hear voices?
+  relevant_if: Participants include patients with psychosis or schizophrenia, in particular with auditory verbal
+    hallucinations.
+  pool:
+    text:
+    - hallucination
+    - \bAVH\b
+    - psychosis
+    - psychotic
+    - schizophreni
+    diagnoses:
+    - schizo
+    - psychosis
+    - hallucination
+    - avh
+- id: g09_epilepsy_surgery_presurgical
+  source: generated_readme
+  type: diagnosis
+  seed: ds005602
+  question: Imaging from epilepsy patients evaluated for resective surgery
+  relevant_if: Participants are epilepsy patients undergoing presurgical evaluation or epilepsy surgery (resection/ablation).
+  pool:
+    text:
+    - epilep
+    - seizure
+    - presurgical|pre-surgical
+    - resection
+    diagnoses:
+    - epilep
+    - seizure
+- id: g10_depression_youth
+  source: generated_readme
+  type: diagnosis
+  seed: ds005356
+  question: Major depression in adolescents and young adults
+  relevant_if: Participants include adolescents or young adults with major depressive disorder / depression.
+  pool:
+    text:
+    - major depress
+    - \bMDD\b
+    - depress
+    diagnoses:
+    - depress
+    - mdd
+- id: g11_fragile_x
+  source: generated_readme
+  type: diagnosis
+  seed: ds004654
+  question: Fragile X syndrome and other genetic intellectual disability syndromes
+  relevant_if: Participants include people with Fragile X syndrome or another genetic neurodevelopmental syndrome
+    (Down, Williams, 22q11).
+  pool:
+    text:
+    - fragile ?x
+    - \bFXS\b
+    - down syndrome
+    - williams syndrome
+    - 22q11
+    - genetic syndrome
+    - intellectual disabilit
+    diagnoses:
+    - fragile
+    - down_syndrome
+    - williams
+    - 22q
+- id: g12_pediatric_epilepsy_children
+  source: generated_readme
+  type: diagnosis
+  seed: ds005083
+  question: Children with drug-resistant epilepsy
+  relevant_if: Participants are children or adolescents with drug-resistant / refractory epilepsy.
+  pool:
+    text:
+    - epilep
+    - seizure
+    - pediatric
+    - paediatric
+    - children
+    text_short:
+    - epilep
+    - pediatric
+    - paediatric
+    diagnoses:
+    - epilep
+- id: g13_incentive_delay
+  source: generated_readme
+  type: task
+  seed: ds003858
+  question: 'Monetary incentive delay task: anticipation of gains and losses'
+  relevant_if: Participants performed a monetary incentive delay (MID) task or similar reward-anticipation (gain/loss)
+    paradigm.
+  pool:
+    text:
+    - incentive delay
+    - \bMID\b
+    - reward anticipation
+    - anticipation of (reward|gain)
+    tasks:
+    - incentive
+    - monetary
+    - reward
+- id: g14_stop_signal
+  source: generated_readme
+  type: task
+  seed: ds000007
+  question: Stop-signal task for studying response inhibition
+  relevant_if: Participants performed a stop-signal (or go/no-go style) response-inhibition task.
+  pool:
+    text:
+    - stop[- ]signal
+    - response inhibition
+    - go/?no-?go
+    - inhibitory control
+    tasks:
+    - stop
+    - inhibit
+    - go_no_go
+    - nogo
+- id: g15_flanker
+  source: generated_readme
+  type: task
+  seed: ds000102
+  question: Eriksen flanker task datasets
+  relevant_if: Participants performed a flanker task (congruent/incongruent conflict).
+  pool:
+    text:
+    - flanker
+    tasks:
+    - flanker
+- id: g16_gambles_loss_aversion
+  source: generated_readme
+  type: task
+  seed: ds000005
+  question: Who has data on gambling choices under risk and loss aversion?
+  relevant_if: Participants performed a gambling or risky-choice task (mixed gambles, lotteries, loss aversion,
+    risk preference).
+  pool:
+    text:
+    - gambl
+    - loss aversion
+    - risk(y)? (choice|decision)
+    - lotter
+    tasks:
+    - gambl
+    - risk
+    - lotter
+- id: g17_category_learning
+  source: generated_readme
+  type: task
+  seed: ds000002
+  question: probabilistic category learning
+  relevant_if: Participants performed a category / classification learning task (e.g., weather prediction, probabilistic
+    classification).
+  pool:
+    text:
+    - category learning
+    - classification learning
+    - probabilistic (classification|learning)
+    - weather prediction
+    tasks:
+    - classification
+    - category
+    - probabilistic
+- id: g18_delay_discounting
+  source: generated_readme
+  type: task
+  seed: ds004711
+  question: Intertemporal choice and delay discounting experiments
+  relevant_if: Participants performed a delay discounting / intertemporal choice task or related impulsivity measure
+    (e.g., BART).
+  pool:
+    text:
+    - delay discount
+    - intertemporal
+    - impulsiv
+    - balloon analog
+    tasks:
+    - delay_discount
+    - intertemporal
+    - balloon
+    - discount
+- id: g19_cerebellum_task_battery
+  source: generated_readme
+  type: task
+  seed: ds002105
+  question: Are there fMRI studies with many different tasks in the same people, for example to map the cerebellum?
+  relevant_if: Participants performed a broad battery of many different cognitive/motor tasks in the same scanning
+    sessions (multi-task design, e.g. cerebellar functional mapping).
+  pool:
+    text:
+    - task battery
+    - multi-?domain
+    - cerebell
+    - many (different )?tasks
+    tasks:
+    - battery
+    - mdtb
+- id: g20_sequence_learning
+  source: generated_readme
+  type: task
+  seed: ds002776
+  question: finger tapping motor sequence learning
+  relevant_if: Participants learned or performed motor sequences (finger tapping, sequence learning, skill learning).
+  pool:
+    text:
+    - motor sequence
+    - sequence learning
+    - finger[- ]tapping
+    - motor (skill )?learning
+    tasks:
+    - motor_sequence
+    - sequence
+    - finger_tapping
+    - motor_learning
+- id: g21_heartbeat_interoception
+  source: generated_readme
+  type: task
+  seed: ds003763
+  question: Datasets with interoception or heartbeat perception tasks
+  relevant_if: Participants performed an interoceptive task (heartbeat detection/counting, interoceptive awareness).
+  pool:
+    text:
+    - interocep
+    - heartbeat
+    - cardiac awareness
+    tasks:
+    - interocep
+    - heartbeat
+- id: g23_habit_goal_directed
+  source: generated_readme
+  type: task
+  seed: ds004299
+  question: Habitual versus goal-directed instrumental learning
+  relevant_if: Participants performed instrumental learning tasks that dissociate habitual and goal-directed behaviour
+    (e.g., outcome devaluation, extinction, reacquisition).
+  pool:
+    text:
+    - habit
+    - goal-directed
+    - instrumental learning
+    - outcome devaluation
+    tasks:
+    - habit
+    - goal_directed
+    - extinction
+    - instrumental
+- id: g24_visual_search
+  source: generated_readme
+  type: task
+  seed: ds005267
+  question: 'Visual search tasks: where do people look for targets?'
+  relevant_if: Participants performed a visual search task (target search among distractors, with or without eye
+    movements).
+  pool:
+    text:
+    - visual search
+    tasks:
+    - visual_search
+    - search
+- id: g25_reversal_learning
+  source: generated_readme
+  type: task
+  seed: ds000222
+  question: reversal learning
+  relevant_if: Participants performed a reversal learning task (behavioural flexibility, contingency reversal).
+  pool:
+    text:
+    - reversal learning
+    - contingency reversal
+    tasks:
+    - reversal
+- id: g26_sign_language_memory
+  source: generated_readme
+  type: task
+  seed: ds000237
+  question: Sign language processing
+  relevant_if: Participants used or processed sign language (deaf signers or hearing signers/interpreters).
+  pool:
+    text:
+    - sign language
+    - \bsigners?\b
+    - deaf
+    tasks:
+    - sign_language
+- id: g27_eeg_children_adolescents
+  source: generated_readme
+  type: modality_population
+  seed: ds005506
+  question: EEG in children and adolescents
+  relevant_if: Dataset contains EEG recorded in children and/or adolescents (below 18 years).
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - child
+    - adolescen
+    - pediatric
+    - paediatric
+    - youth
+    text_short:
+    - child
+    - adolescen
+    - pediatric
+    - paediatric
+    - developmental
+- id: g28_asl_adolescents
+  source: generated_readme
+  type: modality_population
+  seed: ds006744
+  question: Do you have arterial spin labeling perfusion scans of adolescents?
+  relevant_if: Dataset contains ASL perfusion MRI (cerebral blood flow) in adolescents or youth under about 20 years.
+  require_datatypes_any:
+  - perfusion_asl
+  pool:
+    text:
+    - adolescen
+    - youth
+    - teen
+    - young people
+    text_short:
+    - adolescen
+    - youth
+- id: g29_ieeg_children
+  source: generated_readme
+  type: modality_population
+  seed: ds004551
+  question: Intracranial EEG recorded in paediatric patients
+  relevant_if: Dataset contains intracranial EEG (ECoG/SEEG) recorded in children or adolescents.
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - child
+    - pediatric
+    - paediatric
+    - adolescen
+    text_short:
+    - child
+    - pediatric
+    - paediatric
+- id: g30_fmri_children_motion
+  source: generated_readme
+  type: modality_population
+  seed: ds000256
+  question: fMRI in young children
+  relevant_if: Dataset contains fMRI in children (roughly under 13 years).
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - child
+    - kids
+    - pediatric
+    - paediatric
+    text_short:
+    - child
+    - pediatric
+    - paediatric
+    - developmental
+- id: g31_structural_mri_older
+  source: generated_readme
+  type: modality_population
+  seed: ds004856
+  question: Structural MRI of elderly people
+  relevant_if: Dataset contains structural MRI in older adults (roughly 60+) such as an elderly group.
+  require_datatypes_any:
+  - anatomical_mri
+  pool:
+    text:
+    - older adults?
+    - elderly
+    - aging
+    - ageing
+    - senior
+    - \bageing\b
+    text_short:
+    - older
+    - elderly
+    - aging
+    - ageing
+- id: g32_meg_teenagers
+  source: generated_readme
+  type: modality_population
+  seed: ds004229
+  question: MEG in adolescents
+  relevant_if: Dataset contains MEG recorded in adolescents (about 12-19 years).
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - adolescen
+    - teen
+    - youth
+    text_short:
+    - adolescen
+    - teen
+    - \bMEG\b
+- id: g33_eeg_field_lmic
+  source: generated_readme
+  type: modality_population
+  seed: ds007358
+  question: Large EEG collections recorded in the field in low- and middle-income countries
+  relevant_if: Dataset contains EEG recorded outside the lab, in field settings or non-Western / low-and-middle-income
+    populations (e.g., India, Tanzania, Africa).
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - india
+    - tanzania
+    - africa
+    - low-? and middle-?income
+    - \bLMIC\b
+    - in the field
+    - field (study|data|recording)
+- id: g34_tau_pet_healthy_adults
+  source: generated_readme
+  type: modality_population
+  seed: ds006756
+  question: Tau PET in cognitively healthy adults
+  relevant_if: Dataset contains PET (tau tracer or similar) acquired in healthy / cognitively normal adults.
+  require_datatypes_any:
+  - positron_emission_tomography
+  pool:
+    text:
+    - \btau\b
+    - flortaucipir
+    - \bAV-?1451\b
+    text_short:
+    - tau
+    - healthy
+- id: g35_twins
+  source: generated_readme
+  type: population_age
+  seed: ds004146
+  question: Twin studies
+  relevant_if: Participants are twins (monozygotic/dizygotic) or twin pairs.
+  pool:
+    text:
+    - \btwins?\b
+    - monozygotic
+    - dizygotic
+    - \bMZ\b
+- id: g36_musicians_training
+  source: generated_readme
+  type: population_age
+  seed: ds007022
+  question: Musicians and musical training
+  relevant_if: Participants are musicians or underwent musical training (e.g., piano), compared with non-musicians
+    or controls.
+  pool:
+    text:
+    - musician
+    - music(al)? training
+    - piano
+    - music training
+    diagnoses:
+    - music
+- id: g37_blind_participants
+  source: generated_readme
+  type: population_age
+  seed: ds004951
+  question: Blind or visually deprived people
+  relevant_if: Participants include congenitally or early blind / visually impaired people.
+  pool:
+    text:
+    - blind
+    - visual(ly)? deprived
+    - visual impairment
+    - visually impaired
+    - braille
+    diagnoses:
+    - blind
+    - visual
+- id: g38_chronotype_morning_evening
+  source: generated_readme
+  type: population_age
+  seed: ds003826
+  question: Morning versus evening chronotype in healthy young adults
+  relevant_if: Participants are characterised by chronotype (morning/evening types, circadian preference) or circadian
+    rhythm measures.
+  pool:
+    text:
+    - chronotype
+    - circadian
+    - morningness
+    - eveningness
+    diagnoses:
+    - chronotype
+- id: g39_bilinguals
+  source: generated_readme
+  type: population_age
+  seed: ds005139
+  question: Bilingual speakers
+  relevant_if: Participants are bilingual (or multilingual) adults or children.
+  pool:
+    text:
+    - bilingual
+    - multilingual
+    - second language
+    - \bL2\b
+- id: g40_hormonal_contraception_women
+  source: generated_readme
+  type: population_age
+  seed: ds003151
+  question: Women across the menstrual cycle or on hormonal contraception
+  relevant_if: Participants are women studied by menstrual-cycle phase or hormonal contraceptive use.
+  pool:
+    text:
+    - menstrual
+    - hormonal contracepti
+    - oral contracepti
+    - estrogen
+    - oestrogen
+    - hormone
+    - ovulat
+    - progesterone
+- id: g41_school_age_children
+  source: generated_readme
+  type: population_age
+  seed: ds004697
+  question: Studies of school-age children around 8 years old
+  relevant_if: Participants are school-age children (roughly 6 to 10 years old).
+  pool:
+    text:
+    - children
+    - school[- ]age
+    - \bkids\b
+    - pediatric
+    - paediatric
+    text_short:
+    - child
+    - pediatric
+    - paediatric
+- id: g42_students_experts
+  source: generated_readme
+  type: population_age
+  seed: ds003233
+  question: novices vs experts, students learning a course
+  relevant_if: Participants include students undergoing a real-world course/training and/or experts compared with
+    novices.
+  pool:
+    text:
+    - \bexperts?\b
+    - \bstudents?\b
+    - novice
+    - expertise
+    - course
+    text_short:
+    - expert
+    - student
+    - novice
+- id: g43_autism_meg
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds005234
+  question: MEG studies of children with autism spectrum disorder
+  relevant_if: Participants include children or adolescents with autism spectrum disorder and the dataset contains
+    MEG.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - autis
+    - \bASD\b
+    diagnoses:
+    - autis
+    - asd
+- id: g44_parkinson_meg
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds004998
+  question: Parkinson's disease patients recorded with MEG
+  relevant_if: Participants include patients with Parkinson's disease and the dataset contains MEG (possibly with
+    LFP/DBS recordings).
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - parkinson
+    - \bPD\b
+    diagnoses:
+    - parkinson
+- id: g45_epilepsy_ieeg_seizures
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds004100
+  question: Intracranial EEG seizure recordings from epilepsy patients
+  relevant_if: Participants are epilepsy patients and the dataset contains intracranial EEG (ECoG/SEEG), e.g. ictal/interictal
+    recordings.
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - epilep
+    - seizure
+    - ictal
+    - drug[- ]resistant
+    diagnoses:
+    - epilep
+    - seizure
+- id: g46_alzheimer_pet
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds007561
+  question: Alzheimer's disease PET imaging
+  relevant_if: Participants include patients with Alzheimer's disease or MCI and the dataset contains PET.
+  require_datatypes_any:
+  - positron_emission_tomography
+  pool:
+    text:
+    - alzheimer
+    - dementia
+    - cognitive impairment
+    - amyloid
+    - \bMCI\b
+    diagnoses:
+    - alzheimer
+    - dementia
+    - mild_cognitive
+- id: g47_schizophrenia_eeg
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds004000
+  question: EEG schizophrenia
+  relevant_if: Participants include patients with schizophrenia or psychosis and the dataset contains EEG.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - schizophreni
+    - psychosis
+    - psychotic
+    diagnoses:
+    - schizo
+    - psychosis
+- id: g48_stroke_aphasia_dti
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds004884
+  question: Is there diffusion imaging of chronic stroke survivors with language problems?
+  relevant_if: Participants are stroke patients (e.g., aphasia) and the dataset contains diffusion MRI.
+  require_datatypes_any:
+  - diffusion_mri
+  pool:
+    text:
+    - stroke
+    - aphasi
+    - cerebrovascular
+    - ischemi
+    diagnoses:
+    - stroke
+    - aphasia
+- id: g49_parkinson_fmri_attention
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds001907
+  question: fMRI in Parkinson's disease
+  relevant_if: Participants include patients with Parkinson's disease and the dataset contains fMRI.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - parkinson
+    diagnoses:
+    - parkinson
+- id: g50_tbi_eeg_p300
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds003522
+  question: EEG with oddball P300 in traumatic brain injury
+  relevant_if: Participants include people with traumatic brain injury / concussion and the dataset contains EEG.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - \bTBI\b
+    - traumatic brain
+    - concussion
+    - head injur
+    diagnoses:
+    - tbi
+    - traumatic
+    - concussion
+- id: g51_schizophrenia_fmri_nback
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds000115
+  question: Schizophrenia patients doing a working memory task in the scanner
+  relevant_if: Participants include patients with schizophrenia (or siblings/relatives) and the dataset contains
+    fMRI.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - schizophreni
+    - psychosis
+    diagnoses:
+    - schizo
+    - psychosis
+- id: g52_epilepsy_ccep_stimulation
+  source: generated_readme
+  type: diagnosis_modality
+  seed: ds004696
+  question: single pulse electrical stimulation epilepsy patients intracranial
+  relevant_if: Participants are epilepsy patients with intracranial electrodes and the dataset contains intracranial
+    EEG with electrical stimulation responses (CCEP/SPES).
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - epilep
+    - single pulse
+    - \bCCEP
+    - evoked potential
+    - electrical stimulation
+    diagnoses:
+    - epilep
+- id: g53_oddball_eeg_mobile
+  source: generated_readme
+  type: task_modality
+  seed: ds003620
+  question: Auditory oddball EEG recordings
+  relevant_if: Participants performed an auditory (or visual) oddball paradigm and the dataset contains EEG.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - oddball
+    - \bP300\b
+    - \bP3\b
+    - mismatch negativity
+    tasks:
+    - oddball
+    - p300
+    - mmn
+- id: g54_ssvep_frequency_tagging
+  source: generated_readme
+  type: task_modality
+  seed: ds005406
+  question: Do you have EEG using frequency tagging or SSVEP?
+  relevant_if: Experiment uses frequency tagging / steady-state evoked potentials (SSVEP, SSAEP) and dataset contains
+    EEG.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - frequency[- ]tagging
+    - \bSSVEP
+    - steady[- ]state (visual|auditory|evoked)
+    - fast periodic
+    tasks:
+    - frequency_tagging
+    - ssvep
+    - steady_state
+- id: g55_free_recall_eeg
+  source: generated_readme
+  type: task_modality
+  seed: ds004395
+  question: scalp EEG during free recall of word lists
+  relevant_if: Participants performed a free-recall (or similar episodic memory) task and the dataset contains scalp
+    EEG.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - free[- ]recall
+    - episodic memory
+    - word list
+    - paired associate
+    tasks:
+    - free_recall
+    - recall
+    - episodic
+- id: g56_meg_word_recognition
+  source: generated_readme
+  type: task_modality
+  seed: ds004276
+  question: MEG responses to spoken or written words
+  relevant_if: Participants listened to or read words (word recognition, lexical processing, speech) and the dataset
+    contains MEG.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - word recognition
+    - lexical
+    - spoken word
+    - word processing
+    - speech
+    - language
+    text_short:
+    - word
+    - speech
+    - language
+    - lexical
+    tasks:
+    - word
+    - lexical
+    - speech
+    - language
+- id: g57_ecog_podcast_speech
+  source: generated_readme
+  type: task_modality
+  seed: ds005574
+  question: ECoG while people listen to continuous natural speech
+  relevant_if: Participants listened to natural continuous speech/story/podcast and the dataset contains intracranial
+    EEG (ECoG or sEEG).
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - podcast
+    - natural speech
+    - narrative
+    - story
+    - audiobook
+    - listening
+    tasks:
+    - podcast
+    - audiobook
+    - natural_speech
+    - listening
+    - story
+- id: g58_naming_intracranial
+  source: generated_readme
+  type: task_modality
+  seed: ds006233
+  question: Picture naming with electrodes implanted in the brain
+  relevant_if: Participants performed a picture/object naming (or auditory naming) task and the dataset contains
+    intracranial EEG.
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - naming
+    tasks:
+    - naming
+- id: g59_memory_stimulation_ieeg
+  source: generated_readme
+  type: task_modality
+  seed: ds005558
+  question: Memory encoding experiments with direct electrical stimulation recorded intracranially
+  relevant_if: Participants performed a memory task (free recall, spatial memory, paired associates) with intracranial
+    EEG and electrical brain stimulation.
+  require_datatypes_any:
+  - intracranial_eeg
+  pool:
+    text:
+    - closed[- ]loop
+    - stimulation
+    - free recall
+    - memory
+    text_short:
+    - memory
+    - recall
+    - stimulation
+    tasks:
+    - recall
+    - memory
+    - stimulation
+- id: g60_optical_movie_viewing
+  source: generated_readme
+  type: task_modality
+  seed: ds004569
+  question: fNIRS or diffuse optical imaging while watching naturalistic movies
+  relevant_if: Participants watched movies / naturalistic videos and the dataset contains fNIRS or diffuse optical
+    tomography.
+  require_datatypes_any:
+  - fnirs
+  pool:
+    text:
+    - movie
+    - naturalistic
+    - film
+    - video
+    tasks:
+    - movie
+    - naturalistic
+    - film
+- id: g61_meg_risky_decisions
+  source: generated_readme
+  type: task_modality
+  seed: ds005065
+  question: MEG while making risky choices
+  relevant_if: Participants performed a risky decision-making / gambling task and the dataset contains MEG.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - risk
+    - gambl
+    - decision
+    text_short:
+    - risk
+    - decision
+    - gambl
+    tasks:
+    - risk
+    - decision
+    - gambl
+- id: g62_meg_somatosensory
+  source: generated_readme
+  type: task_modality
+  seed: ds003104
+  question: somatosensory MEG
+  relevant_if: Participants received somatosensory (tactile/electrical) stimulation and the dataset contains MEG.
+  require_datatypes_any:
+  - magnetoencephalography
+  pool:
+    text:
+    - somatosens
+    - tactile
+    - median nerve
+    - somato
+    tasks:
+    - somato
+    - tactile
+- id: g63_qsm_multiecho_gre
+  source: generated_readme
+  type: acquisition
+  seed: ds006131
+  question: Quantitative susceptibility mapping from multi-echo gradient-echo scans
+  relevant_if: Dataset includes multi-echo gradient-echo MRI suitable for quantitative susceptibility mapping (QSM)
+    or other quantitative maps.
+  pool:
+    text:
+    - susceptibility mapping
+    - \bQSM\b
+    - multi-?echo
+    - MEGRE
+    - quantitative (MRI|map|susceptib)
+    - relaxometry
+    - \bT2\*
+    text_short:
+    - QSM
+    - quantitative
+- id: g64_simultaneous_eeg_fnirs
+  source: generated_readme
+  type: acquisition
+  seed: ds004514
+  question: Datasets with EEG and fNIRS recorded at the same time
+  relevant_if: EEG and fNIRS recorded simultaneously (concurrent multimodal EEG-fNIRS).
+  require_datatypes_any:
+  - electroencephalography
+  - fnirs
+  pool:
+    text:
+    - simultaneous(ly)? (EEG|fNIRS|NIRS)
+    - EEG[- ]fNIRS
+    - EEG[- ]NIRS
+    - concurrent(ly)?
+    - EEG and fNIRS
+    - fNIRS and EEG
+    - multimodal EEG
+    text_short:
+    - EEG-?fNIRS
+    - simultaneous
+    - fNIRS
+- id: g65_ultrahigh_field_9t
+  source: generated_readme
+  type: acquisition
+  seed: ds005216
+  question: Brain MRI scanned at 9.4 tesla or higher at ultra-high field
+  relevant_if: Dataset contains MRI acquired at ultra-high field (9.4 T or above).
+  require_datatypes_any:
+  - anatomical_mri
+  pool:
+    text:
+    - 9\.4 ?T
+    - \b9T\b
+    - 10\.5 ?T
+    - 11\.7
+    - ultra-?high[- ]field
+    - ultra high field
+    text_short:
+    - 9\.4
+    - ultra-?high
+- id: g66_tms_eeg_combined
+  source: generated_readme
+  type: acquisition
+  seed: ds004024
+  question: Combined TMS and EEG experiments
+  relevant_if: Transcranial magnetic stimulation combined with EEG (and possibly MRI) recording, e.g. TMS-evoked
+    potentials.
+  require_datatypes_any:
+  - electroencephalography
+  pool:
+    text:
+    - \bTMS\b
+    - transcranial magnetic
+    - TMS-EEG
+    - paired associative stimulation
+    text_short:
+    - TMS
+- id: g67_high_density_dot
+  source: generated_readme
+  type: acquisition
+  seed: ds007463
+  question: High-density diffuse optical tomography
+  relevant_if: Dataset acquired with high-density diffuse optical tomography (HD-DOT) or dense fNIRS arrays.
+  require_datatypes_any:
+  - fnirs
+  pool:
+    text:
+    - diffuse optical
+    - \bHD-?DOT\b
+    - \bDOT\b
+    - high[- ]density (fNIRS|optical)
+    text_short:
+    - optical
+    - DOT
+    - fNIRS
+- id: g68_apt_cest_imaging
+  source: generated_readme
+  type: acquisition
+  seed: ds004717
+  question: Chemical exchange saturation transfer or amide proton transfer imaging
+  relevant_if: Dataset includes CEST / amide proton transfer (APT) or similar molecular/quantitative MRI.
+  pool:
+    text:
+    - \bCEST\b
+    - amide proton
+    - \bAPT\b
+    - chemical exchange
+    - magnetization transfer
+    text_short:
+    - CEST
+    - APT
+    - amide
+- id: g69_spinal_cord_fmri
+  source: generated_readme
+  type: acquisition
+  seed: ds004386
+  question: Spinal cord fMRI
+  relevant_if: Dataset contains functional MRI of the spinal cord.
+  require_datatypes_any:
+  - functional_mri
+  pool:
+    text:
+    - spinal cord
+    - spinal
+    text_short:
+    - spinal
+- id: g70_multishell_diffusion_repeats
+  source: generated_readme
+  type: acquisition
+  seed: ds004666
+  question: High-quality multi-shell diffusion MRI with many directions and repeats
+  relevant_if: Dataset contains multi-shell (several b-values) diffusion MRI with many gradient directions, e.g.
+    repeated acquisitions or protocol/denoising evaluation.
+  require_datatypes_any:
+  - diffusion_mri
+  pool:
+    text:
+    - multi-?shell
+    - high angular
+    - HARDI
+    - b-?values?
+    - UK Biobank protocol
+    - denois
+    text_short:
+    - multi-?shell
+    - diffusion
+- id: g71_dense_single_subject
+  source: generated_readme
+  type: design
+  seed: ds007328
+  question: Dense repeated scanning of one individual over many sessions (precision functional mapping)
+  relevant_if: Dataset follows one or a few individuals with a very large number of repeated sessions.
+  pool:
+    text:
+    - single[- ]subject
+    - single participant
+    - densely sampled
+    - precision
+    - one individual
+    - dense longitudinal
+    - many sessions
+    - deep
+    text_short:
+    - single
+    - longitudinal
+    - dense
+- id: g72_test_retest_7t
+  source: generated_readme
+  type: design
+  seed: ds001168
+  question: Test-retest reliability of resting-state fMRI
+  relevant_if: Dataset acquired the same participants repeatedly to assess test-retest reliability / reproducibility.
+  pool:
+    text:
+    - test-?retest
+    - reliability
+    - reproducib
+    - repeatab
+    text_short:
+    - test-?retest
+    - reliab
+- id: g73_psychedelic_lsd
+  source: generated_readme
+  type: design
+  seed: ds003059
+  question: Psychedelic drug imaging, LSD or psilocybin
+  relevant_if: Participants received a psychedelic compound (LSD, psilocybin, DMT, ayahuasca) with imaging.
+  pool:
+    text:
+    - \bLSD\b
+    - psilocybin
+    - psychedelic
+    - \bDMT\b
+    - ayahuasca
+    - lysergic
+    text_short:
+    - LSD
+    - psychedelic
+    - psilocybin
+- id: g74_sleep_deprivation
+  source: generated_readme
+  type: design
+  seed: ds004902
+  question: Effects of sleep deprivation on the brain
+  relevant_if: Participants were sleep deprived (total or partial sleep restriction) compared with normal rest.
+  pool:
+    text:
+    - sleep deprivation
+    - sleep[- ]deprived
+    - sleep restriction
+    - sleep loss
+    - wake extension
+    text_short:
+    - sleep deprivation
+    - sleep
+- id: g75_nonhuman_primate
+  source: generated_readme
+  type: design
+  seed: ds001945
+  question: Non-human primate MRI
+  relevant_if: Dataset contains MRI of non-human primates (macaque, marmoset, mouse lemur, chimpanzee...).
+  pool:
+    text:
+    - macaque
+    - monkey
+    - marmoset
+    - lemur
+    - non-?human primate
+    - chimpanzee
+    - primate
+    text_short:
+    - primate
+    - macaque
+    - monkey
+    - lemur
+- id: g76_exercise_intervention
+  source: generated_readme
+  type: design
+  seed: ds004937
+  question: Exercise or physical training intervention studies
+  relevant_if: Participants underwent an exercise/physical activity intervention with pre/post or repeated imaging.
+  pool:
+    text:
+    - running
+    - exercise
+    - aerobic
+    - physical (activity|training|fitness)
+    - training intervention
+    - fitness
+    text_short:
+    - exercise
+    - running
+    - intervention
+- id: g77_sedation_anesthesia
+  source: generated_readme
+  type: design
+  seed: ds003171
+  question: Imaging under sedation or anaesthesia in humans
+  relevant_if: Participants were scanned under graded sedation or general anaesthesia (propofol, sevoflurane, etc.)
+    in humans.
+  pool:
+    text:
+    - sedation
+    - anesthe
+    - anaesthe
+    - propofol
+    - sevoflurane
+    - isoflurane
+    - unconscious
+    text_short:
+    - sedation
+    - anesthe
+    - anaesthe
+    - consciousness
+- id: g78_focused_ultrasound
+  source: generated_readme
+  type: design
+  seed: ds004265
+  question: Studies applying focused ultrasound or other non-invasive brain stimulation with imaging
+  relevant_if: Participants received focused ultrasound, TMS, tDCS or similar neuromodulation with imaging or recording.
+  pool:
+    text:
+    - focused ultrasound
+    - ultrasound
+    - \bFUS\b
+    - \btDCS\b
+    - \bTMS\b
+    - neuromodulation
+    text_short:
+    - ultrasound
+    - FUS
+    - stimulation
+    - neuromodulation
+- id: g79_large_cohort_1000
+  source: generated_readme
+  type: design
+  seed: ds003097
+  question: Very large cohorts with close to a thousand participants
+  relevant_if: Dataset has several hundred to over a thousand participants (large cohort) with imaging.
+  pool:
+    text:
+    - \b9\d\d (participants|subjects)
+    - 1,?\d\d\d (participants|subjects)
+    - large[- ]scale
+    - large (cohort|sample)
+    - population[- ]based
+    - biobank
+    text_short:
+    - large
+    - cohort
+    - biobank
+    - '1000'
+- id: g80_natural_conversation
+  source: generated_readme
+  type: design
+  seed: ds004669
+  question: naturalistic dialogue and real conversation in the scanner
+  relevant_if: Participants engaged in natural conversation/dialogue or other free naturalistic communication during
+    imaging.
+  pool:
+    text:
+    - dialogue
+    - conversation
+    - natural(istic)? (speech|communication|language)
+    - chatting
+    - talking
+    tasks:
+    - conversation
+    - dialogue
