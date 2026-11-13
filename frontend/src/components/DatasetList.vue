@@ -68,7 +68,7 @@ function go(page: number) {
     <!-- Results: one row after the next, separated by rules -->
     <div
       v-if="datasets.length"
-      class="flex flex-col divide-y divide-border border-y border-border transition-opacity"
+      class="flex flex-col transition-opacity"
       :class="{ 'opacity-50 pointer-events-none': loading }"
     >
       <template v-for="(ds, i) in datasets" :key="ds.id">
