@@ -1,0 +1,44 @@
+query                         rel   ret recall  R@20  prec unjdg  note
+u01_alzheimer_fmri              0     1      —     —    0%     0  
+u02_focal_epilepsy_fmri         2     4    50%   50%   25%     0  
+u03_memory                    198   119    27%   65%   84%    56  
+u04_struct_and_func           942   200    11%  100%   52%     0  FALLBACK SAMPLE
+u05_sickle_cell                 0   200      —     —     —   200  FALLBACK SAMPLE
+u06_asl_autism                  0     0      —     —     —     0  
+u07_eeg                       410   414   100%  100%   99%     0  
+u08_motor_imagery              18     4    22%   22%  100%     0  
+u09_qmri_ageing                 4     0     0%    0%     —     0  
+u10_diffusion_children         18     0     0%    0%     —     0  
+u11_diffusion_adhd              2     2   100%  100%  100%     0  
+u12_mrs_tbi                     0     0      —     —     —     0  
+u13_mrs                         7     6    86%   86%  100%     0  
+u14_fetal                       0     0      —     —     —     0  
+u15_newborn                     1   200     0%    0%    0%   198  FALLBACK SAMPLE
+u16_parkinson                  21    27    90%   75%   70%     0  
+u17_struct_func_small         214   214   100%  100%  100%     0  
+p01_language_fmri              93    25     8%   30%   88%    17  
+p02_reward                     66  1719   100%   60%   82%  1639  
+p03_emotion_regulation         11    10    82%   82%  100%     1  
+p04_naturalistic               74    53    62%   85%   88%     1  
+p05_depression_eeg              2   200     0%    0%     —   200  FALLBACK SAMPLE
+p06_schizophrenia              11     7    64%   64%  100%     0  
+p07_bipolar                     3     3   100%  100%  100%     0  
+p08_stroke_aphasia              9    12   100%  100%   75%     0  
+p09_chronic_pain               11    24    73%   55%   80%    14  
+p10_sleep                      31    22    68%  100%   95%     0  
+p11_music                      33     5     0%    0%     —     5  
+p12_7t                         68    50    38%   45%  100%    24  
+p13_older_adults_fmri          58    53    91%  100%  100%     0  
+p14_ieeg_memory                16     8    50%   50%  100%     0  
+p15_anxiety                     8     8    62%   62%   62%     0  
+p16_dbs                         6    10   100%  100%   67%     1  
+p17_faces                      32    55    69%   25%   65%    21  
+p18_decision_making            63   107    22%   20%   82%    90  
+
+Average over 30 queries with relevant datasets: recall 56%, recall@20 59%, precision 81%
+Queries that found none of their relevant datasets: 5
+No relevant dataset exists for u01_alzheimer_fmri: returned 1 (all false positives)
+No relevant dataset exists for u05_sickle_cell: returned 200 (all false positives)
+No relevant dataset exists for u06_asl_autism: returned 0 (all false positives)
+No relevant dataset exists for u12_mrs_tbi: returned 0 (all false positives)
+No relevant dataset exists for u14_fetal: returned 0 (all false positives)
