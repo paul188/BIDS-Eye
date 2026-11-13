@@ -222,11 +222,9 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
         relaxed = relax_tsquery(match.group("query"))
         if relaxed is None:
             continue
-        if _LABEL_RE.sub("", match.group("query")).replace(" ", "") == relaxed.replace(" ", ""):
-            words.append(_README_ONLY)          # only the scope was widened
-        else:
-            dropped = set(query_words(match.group("query"))) - set(query_words(relaxed))
-            words.extend(sorted(dropped))
+        dropped = set(query_words(match.group("query"))) - set(query_words(relaxed))
+        # No word dropped: only the scope was widened, to the whole README.
+        words.extend(sorted(dropped) or [_README_ONLY])
         relaxed_atoms.append(f"{match.group('alias')}.{match.group('column')} @@ "
                              f"TO_TSQUERY('english', '{relaxed}')")
     if not relaxed_atoms:

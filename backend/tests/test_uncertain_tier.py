@@ -142,3 +142,7 @@ def test_reasons_name_what_is_missing() -> None:
     assert "missing: young" in ut.apply(sql)
     scoped = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'language:AB')")
     assert "only further down in the README" in ut.apply(scoped)
+
+    synonyms = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', "
+                                 "'parkinson:AB | (paralysis:AB <-> agitans:AB)')")
+    assert "only further down in the README" in ut.apply(synonyms)
