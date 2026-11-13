@@ -361,6 +361,11 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
         return None
     sql = node.sql(dialect="postgres")
     columns = {column.name.lower() for column in node.find_all(exp.Column)}
+    # Sidecar values (field strength, echo times …) are recorded with the
+    # files, like the modality, and reading them is slow: evaluating such a
+    # condition a second time for the tier took two minutes on one question.
+    if "other_entities" in columns:
+        return None
     # A condition on the outer join's rows (o.datatype …) is about files.
     if _columns_outside_subqueries(node) - {alias, ""}:
         return None

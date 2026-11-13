@@ -127,3 +127,11 @@ def test_top_n_and_ordered_questions_keep_their_shape() -> None:
     limited = BASE.format(where="d.age_max <= 12 AND d.search_tsv @@ to_tsquery('english', 'autism')") \
         + " ORDER BY d.size_bytes DESC LIMIT 10"
     assert ut.apply(limited) == limited
+
+
+def test_sidecar_conditions_stay_hard() -> None:
+    sidecar = ("(EXISTS(SELECT 1 FROM bids_objects AS bo WHERE bo.dataset_id = d.id "
+               "AND CAST((bo.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) >= 9.4) "
+               "OR d.search_tsv @@ to_tsquery('english', 'mri & brain'))")
+    sql = BASE.format(where=sidecar)
+    assert ut.apply(sql) == sql
