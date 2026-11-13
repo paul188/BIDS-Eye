@@ -38,6 +38,11 @@ import models     # noqa: E402, F401 — registers backend-only models (message_
 from db.db import create_all_tables, engine  # noqa: E402
 from services.schema_capabilities import refresh_available_columns  # noqa: E402
 
+_RAG = Path(__file__).resolve().parents[1] / "RAG"
+if str(_RAG) not in sys.path:
+    sys.path.insert(0, str(_RAG))
+import institution_index  # noqa: E402
+
 log = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
@@ -55,6 +60,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Record which optional dataset columns (README, OpenNeuro metadata,
     # institutions) this database has filled; prompts only mention those.
     await refresh_available_columns(engine)
+
+    # Distinct bids_datasets.institutions values, for resolving institution
+    # names in questions (RAG/institution_index.py). Falls back to
+    # RAG/name_index.json when the column is missing.
+    await institution_index.refresh_from_db(engine)
 
     # Optionally run the crawler in-process (useful for single-container dev).
     # In production the crawler runs as its own Docker service.

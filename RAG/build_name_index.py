@@ -86,6 +86,9 @@ def fetch_names(db_url: str) -> Dict[str, List[str]]:
     columns = {
         "authors":         ("authors",  "author"),
         "funding_sources": ("funding",  "funding_source"),
+        # Fallback for RAG/institution_index.py; the backend loads the live
+        # list from the database at startup.
+        "institutions":    ("institutions", "institution"),
     }
     names: Dict[str, List[str]] = {key: [] for key in columns}
 

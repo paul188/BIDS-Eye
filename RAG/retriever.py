@@ -86,6 +86,7 @@ from yaml_to_llamaindex import (
     build_embedding_index,
 )
 from join_registry import field_to_db_col as _field_to_db_col
+import institution_index as _institution_index
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -97,6 +98,11 @@ _NAME_FIELDS = {"author", "funding"}
 
 # Fields searched together for scan/modality/task terms
 _SCAN_FIELDS = ("datatype", "suffix", "task")
+
+# Institutions: exact phrase/token matching against the stored names
+# (RAG/institution_index.py), not token-set similarity — 'Beijing Normal
+# University' must not pull in 'Jiangsu Normal University'.
+_INSTITUTION_FIELD = "institution"
 
 # RAGField.value → name_index.json key
 _NAME_FIELD_KEY = {
@@ -672,6 +678,16 @@ class MetadataRetriever:
         self._db_url: Optional[str] = db_url
 
     # ------------------------------------------------------------------
+    def _resolve_institution(self, term: str) -> List[tuple[str, float]]:
+        """Exact bids_datasets.institutions strings for *term*, with scores.
+
+        Uses the names loaded from the database at startup; without them,
+        the 'institutions' list in name_index.json.
+        """
+        index = _institution_index.get_index(self._names.get("institutions", []))
+        return index.resolve(term)
+
+    # ------------------------------------------------------------------
     def db_verify_codes(
         self,
         field: str,
@@ -786,6 +802,9 @@ class MetadataRetriever:
             codes = _resolve_yaml_term(field, term)
             return codes[:n_results]
 
+        if field == _INSTITUTION_FIELD:
+            return [name for name, _ in self._resolve_institution(term)][:n_results]
+
         if field in _NAME_FIELDS:
             candidates = self._names.get(_NAME_FIELD_KEY[field], [])
             if not candidates:
@@ -866,6 +885,8 @@ class MetadataRetriever:
         for term in terms:
             if field in _YAML_FIELDS:
                 scored = _resolve_yaml_term_scored(field, term)[:n_results_per_term]
+            elif field == _INSTITUTION_FIELD:
+                scored = self._resolve_institution(term)
             elif field in _NAME_FIELDS:
                 candidates = self._names.get(_NAME_FIELD_KEY[field], [])
                 if candidates:
