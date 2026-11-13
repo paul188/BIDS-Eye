@@ -65392,6 +65392,8 @@ datatype:
     - mri
     synonyms:
     - func
+    - term: fMRI
+      weight: 1.0
     - term: functional MR
       weight: 0.57
     - term: f-MRI

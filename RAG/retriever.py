@@ -147,6 +147,13 @@ _GENERIC_IMAGING_TERMS = {
     "brain images", "brain image",
 }
 
+# WRatio at or above this means one string contains the other or the two are
+# near-identical. Below it, down to _SEMANTIC_THRESHOLD, a label can qualify
+# on a single shared word: WRatio gives 85.5 to any two strings of unequal
+# length with one word in common ("structural mri" / "bold mri").
+# Same value as _TASK_SEMANTIC_THRESHOLD, which exists to exclude those hits.
+_STRONG_MATCH_SCORE = 88
+
 # token_set_ratio threshold for name fields — looser to handle abbreviations
 _NAME_THRESHOLD = 60
 
@@ -268,9 +275,16 @@ def _embedding_fallback(field: str, term: str) -> List[str]:
 # These mirror the logic in RAG_postprocess.py but accept plain strings instead
 # of UserQueryEntities, and return a list of codes for a single term.
 
+def _normalize_term(term: str) -> str:
+    """Lower-case, trim, and use the ASCII apostrophe the vocabulary is written with."""
+    return term.lower().strip().replace("\u2019", "'")
+
+
 def _plural_variants(term: str) -> List[str]:
-    """Simple singular/plural variants to improve exact-match recall."""
+    """Simple singular/plural/possessive variants to improve exact-match recall."""
     variants = [term]
+    if term.endswith("'s"):
+        variants.append(term[:-2])          # "parkinson's" → "parkinson"
     if term.endswith("s") and not term.endswith("ss"):
         variants.append(term[:-1])          # "disorders" → "disorder"
     else:
@@ -315,7 +329,7 @@ def _resolve_via_constructs(term: str) -> List[tuple[str, float]]:
     cat_display       = display_db.get("cognitive_construct", {})
     cat_group_display = group_display_db.get("cognitive_construct", {})
 
-    term_lower = term.lower().strip()
+    term_lower = _normalize_term(term)
     construct_codes: List[str] = []
     score = 0.0
 
@@ -386,7 +400,7 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
     # lifting for construct-level terms, so fuzzy only fires on strong hits.
     _sem = _TASK_SEMANTIC_THRESHOLD if field == "task" else _SEMANTIC_THRESHOLD
 
-    term_lower = term.lower().strip()
+    term_lower = _normalize_term(term)
     candidates = _plural_variants(term_lower)
 
     # 1. Exact match — prefer group (all descendants) over single leaf code
@@ -472,8 +486,7 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
         else:
             core_results = results  # nothing stripped; use original results
 
-        collected: list[tuple[str, float]] = []
-        seen: set[str] = set()
+        admitted: list[tuple[str, float]] = []
         _MIN_COLLECT_LEN = max(len(core_term) // 2, 5)
         for label, score, _ in core_results:
             if score < _sem:
@@ -483,10 +496,22 @@ def _resolve_yaml_term_scored(field: str, term: str) -> List[tuple[str, float]]:
             w = weight_db.get(field, {}).get(label, 1.0)
             eff = _sem + (1.0 - w) * _WEIGHT_BOOST
             if score >= eff:
-                for code in all_targets[label]:
-                    if code not in seen:
-                        seen.add(code)
-                        collected.append((code, score / 100.0))
+                admitted.append((label, score))
+
+        # A label that only shares a word with the term must not ride along
+        # with labels that contain the whole term: "structural mri" matches
+        # "t1 structural mri" (95) and, through "mri" alone, "bold mri" (85.5).
+        # Shared-word matches count only when nothing stronger was found.
+        if any(score >= _STRONG_MATCH_SCORE for _, score in admitted):
+            admitted = [(l, s) for l, s in admitted if s >= _STRONG_MATCH_SCORE]
+
+        collected: list[tuple[str, float]] = []
+        seen: set[str] = set()
+        for label, score in admitted:
+            for code in all_targets[label]:
+                if code not in seen:
+                    seen.add(code)
+                    collected.append((code, score / 100.0))
         if collected:
             return collected
 
