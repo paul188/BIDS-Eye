@@ -37,6 +37,9 @@ class DatasetSchema(BaseModel):
     authors: Optional[List[str]] = None
     institutions: Optional[List[str]] = None
     description_text: Optional[str] = None
+    # Set when the dataset is gone from, or flagged deprecated on, its source
+    # repository; None for datasets that are fine. Shown as a tag in the UI.
+    deprecated_reason: Optional[str] = None
     # Computed fields (not direct ORM columns)
     subject_count: Optional[int] = None
     participants: List[ParticipantSchema] = []

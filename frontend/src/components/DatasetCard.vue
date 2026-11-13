@@ -50,6 +50,13 @@ const authorLine = computed(() => {
         </span>
       </div>
       <div class="flex gap-1 flex-shrink-0">
+        <span
+          v-if="dataset.deprecated_reason"
+          :title="dataset.deprecated_reason"
+          class="text-xs px-2 py-0.5 rounded-full bg-[#fce8e6] text-[#b3261e] font-medium cursor-help"
+        >
+          deprecated
+        </span>
         <span class="text-xs px-2 py-0.5 rounded-full bg-[#e8f0fe] text-accent">
           {{ dataset.source_type }}
         </span>
@@ -58,6 +65,11 @@ const authorLine = computed(() => {
         </span>
       </div>
     </div>
+
+    <!-- Why the dataset is marked deprecated (e.g. no longer on OpenNeuro) -->
+    <p v-if="dataset.deprecated_reason" class="text-xs text-[#b3261e]">
+      {{ dataset.deprecated_reason }}
+    </p>
 
     <!-- Author line -->
     <p v-if="authorLine" class="text-xs text-muted truncate">{{ authorLine }}</p>

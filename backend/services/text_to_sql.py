@@ -106,6 +106,10 @@ def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
     all_examples: List[tuple] = []
     for fam, examples in pool.items():
         for ex in examples:
+            # An example that queries a missing or empty column would teach the
+            # model to write SQL that fails or returns nothing.
+            if _uses_unavailable_column(ex["sql"]):
+                continue
             all_examples.append((fam, ex))
 
     resolved_set: set = set()
@@ -171,6 +175,11 @@ from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
 from services.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
 from services.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
+from services.schema_capabilities import (  # noqa: E402
+    available_columns as _available_columns,
+    disease_text_columns as _disease_text_columns,
+    uses_unavailable_column as _uses_unavailable_column,
+)
 
 
 def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: str) -> str:
@@ -179,16 +188,17 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     Returns the corrected SQL, or the original if correction fails.
     """
     try:
-        from constants import SCHEMA_DDL
+        from constants import build_schema_ddl
     except ImportError as exc:
         log.warning("Gemini correction unavailable: %s", exc)
         return sql
+    schema_ddl = build_schema_ddl(_available_columns())
 
     prompt = (
         "A PostgreSQL query failed. Fix it and return ONLY the corrected SQL — "
         "no explanation, no markdown fences.\n\n"
         f"Original question:\n{question}\n\n"
-        f"Database schema:\n{SCHEMA_DDL}\n\n"
+        f"Database schema:\n{schema_ddl}\n\n"
         f"Failed SQL:\n{sql}\n\n"
         f"PostgreSQL error:\n{db_error}"
     )
@@ -211,10 +221,23 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     Previously a fallback; now the main pipeline.
     """
     try:
-        from constants import SCHEMA_DDL
+        from constants import build_schema_ddl
     except ImportError as exc:
         log.warning("Gemini SQL generation unavailable: %s", exc)
         return _FALLBACK_SQL
+    schema_ddl = build_schema_ddl(_available_columns())
+
+    # Free-text columns that back up a disease filter. dx_status / study_domain
+    # join the list once the database has them (schema_capabilities).
+    disease_cols = _disease_text_columns()
+    disease_fallback = " OR ".join(f"d.{col} ILIKE '%<term>%'" for col in disease_cols)
+    text_cols = [f"bids_datasets.{col}" for col in disease_cols]
+    text_cols += [
+        f"bids_datasets.{col}"
+        for col in ("study_design", "readme_text")
+        if col in _available_columns()
+    ]
+    text_cols_phrase = ", ".join(text_cols[:-1]) + " or " + text_cols[-1]
 
     instructions = (
         "## CRITICAL rules — violations produce wrong results\n"
@@ -233,9 +256,9 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "(e.g. structural MRI → just `datatype = 'anatomical_mri'`, never add suffix ORs).\n"
         "2. Disease/condition completeness: bids_participants.diagnosis is sparsely populated "
         "— most datasets about a disease have no structured diagnosis rows. "
-        "For ANY disease filter, ALWAYS combine the EXISTS block with a name/description fallback: "
+        "For ANY disease filter, ALWAYS combine the EXISTS block with a free-text fallback: "
         "(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
-        "AND p2.diagnosis IN ('...')) OR d.name ILIKE '%<term>%' OR d.description_text ILIKE '%<term>%'). "
+        f"AND p2.diagnosis IN ('...')) OR {disease_fallback}). "
         "Derive <term> by stripping trailing '_disease', '_disorder', '_syndrome' from the code "
         "(e.g. 'parkinsons_disease' → 'parkinson', 'alzheimers_disease' → 'alzheimer', "
         "'autism_spectrum_disorder' → 'autism'). "
@@ -251,7 +274,7 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "- [Resolved DB filters]: copy each EXISTS subquery VERBATIM into WHERE (AND them together). "
         "'scan X:' and 'scan task X:' for the same term are two separate EXISTS — keep both. "
         "If a 'subject count: HAVING ...' line is present, add that HAVING clause after GROUP BY d.id.\n"
-        "- ILIKE: use only on bids_datasets.name or bids_datasets.description_text "
+        f"- ILIKE: use only on {text_cols_phrase} "
         "(for keyword/title searches). Never on diagnosis, task, datatype, or suffix "
         "(they hold canonical codes). Use the single most distinctive keyword "
         "(e.g. for 'drinking alcohol' use '%alcohol%', not '%drinking alcohol%') — "
@@ -288,7 +311,7 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         ### Instructions
         {instructions}{examples_section}
         ### Database Schema
-        {SCHEMA_DDL}
+        {schema_ddl}
 
         ### Answer
         [SQL]

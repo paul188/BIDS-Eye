@@ -3,38 +3,111 @@ Shared SQL prompt/schema constants for BIDS-Eye.
 
 This module is used by the backend text-to-SQL pipeline. It intentionally
 stays small and dependency-free.
+
+The schema shown to the SQL model is built per request by build_schema_ddl():
+columns in OPTIONAL_DATASET_COLUMNS appear only when the database really has
+them filled (see services/schema_capabilities.py). A column the model is told
+about but that is missing or empty produces failing or empty queries.
 """
 
 from __future__ import annotations
 
-SCHEMA_DDL = """\
-CREATE TABLE bids_datasets (
-    id                UUID PRIMARY KEY,
-    name              TEXT,
-    accession_id      TEXT,
-    bids_version      TEXT,
-    dataset_type      TEXT,
-    source_type       TEXT,       -- e.g. 'openneuro'
-    remote_url        TEXT,
-    validation_status TEXT,
-    authors           TEXT[],     -- dataset authors, e.g. ARRAY['Poldrack, R.A.', 'Gorgolewski, K.']
-    institutions      TEXT[],     -- scanning institutions from MRI sidecar JSONs, e.g. ARRAY['Child Mind Institute', 'NYU_Center_for_Brain_Imaging']
-                                  -- Names come from DICOM headers — expect underscores, abbreviations, and
-                                  -- slight variants (e.g. 'Princeton_University' alongside 'Princeton University').
-                                  -- Always search with ILIKE on unnested elements:
-                                  --   EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%')
-    license           TEXT,       -- e.g. 'CC0', 'PDDL'
-    doi               TEXT,       -- dataset DOI
-    paper_references  TEXT[],     -- linked papers / URLs (from dataset_description.json ReferencesAndLinks,
-                                  -- with README URLs as fallback when the field is absent)
-    funding           TEXT[],     -- funding sources
-    description_text  TEXT,       -- free-text description from dataset_description.json
-    readme_text       TEXT        -- content of README / README.md (truncated to ~8 000 chars, tail-biased)
-                                  -- Use ILIKE to search for paper links, scanner details, task descriptions,
-                                  -- lab names, and other metadata authors write in READMEs but not in
-                                  -- dataset_description.json. Always pair with d.description_text OR d.name.
-);
+from typing import Collection, Dict, List, Tuple
 
+# (name, type, comment lines) — always present on bids_datasets.
+_CORE_DATASET_COLUMNS: List[Tuple[str, str, List[str]]] = [
+    ("id",                "UUID PRIMARY KEY", []),
+    ("name",              "TEXT", []),
+    ("accession_id",      "TEXT", []),
+    ("bids_version",      "TEXT", []),
+    ("dataset_type",      "TEXT", []),
+    ("source_type",       "TEXT", ["e.g. 'openneuro'"]),
+    ("remote_url",        "TEXT", []),
+    ("validation_status", "TEXT", []),
+    ("authors",           "TEXT[]", ["dataset authors, e.g. ARRAY['Poldrack, R.A.', 'Gorgolewski, K.']"]),
+    ("license",           "TEXT", ["e.g. 'CC0', 'PDDL'"]),
+    ("doi",               "TEXT", ["dataset DOI"]),
+    ("paper_references",  "TEXT[]", [
+        "linked papers / URLs (from dataset_description.json ReferencesAndLinks,",
+        "with README URLs as fallback when the field is absent)",
+    ]),
+    ("funding",           "TEXT[]", ["funding sources"]),
+    ("description_text",  "TEXT", ["free-text description from dataset_description.json"]),
+]
+
+# Columns that exist only after a migration + backfill. Each one is shown to
+# the SQL model only when the running database has it populated.
+OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
+    "institutions": ("TEXT[]", [
+        "scanning institutions from MRI sidecar JSONs, e.g. ARRAY['Child Mind Institute', 'NYU_Center_for_Brain_Imaging']",
+        "Names come from DICOM headers — expect underscores, abbreviations, and",
+        "slight variants (e.g. 'Princeton_University' alongside 'Princeton University').",
+        "Always search with ILIKE on unnested elements:",
+        "  EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%')",
+    ]),
+    "readme_text": ("TEXT", [
+        "content of the dataset README (long free text)",
+        "Use ILIKE to search for paper links, scanner details, task descriptions,",
+        "lab names, and other things authors write in READMEs but not in",
+        "dataset_description.json. Always pair with d.description_text OR d.name.",
+    ]),
+    "dx_status": ("TEXT", [
+        "diagnosis / health status of the cohort as typed by the uploader (free text,",
+        "NULL for many datasets), e.g. 'Healthy / Control', 'Epilepsy', 'Parkinson''s Disease'.",
+        "Search with ILIKE '%term%'; never compare with canonical diagnosis codes.",
+    ]),
+    "study_domain": ("TEXT", [
+        "research topic as typed by the uploader (free text, NULL for many datasets),",
+        "e.g. 'Basal Ganglia in Parkinson', 'Language'. Search with ILIKE '%term%'.",
+    ]),
+    "study_design": ("TEXT", [
+        "study design as typed by the uploader (free text), e.g. 'Longitudinal',",
+        "'Cross-Sectional'. Search with ILIKE '%term%'.",
+    ]),
+    "age_min": ("FLOAT", [
+        "youngest participant age reported for the dataset (NULL when not reported)",
+    ]),
+    "age_max": ("FLOAT", [
+        "oldest participant age reported for the dataset (NULL when not reported)",
+        "Dataset-level summary; bids_participants.age has the per-participant values.",
+        "Has a participant younger than N: d.age_min < N.  Older than N: d.age_max > N.",
+        "All participants younger than N: d.age_max < N.",
+    ]),
+    "size_bytes": ("BIGINT", [
+        "total size of the dataset in bytes (1 GB = 1073741824);",
+        "e.g. no larger than 5 GB: d.size_bytes <= 5 * 1073741824::bigint",
+    ]),
+}
+
+
+def _render_dataset_table(available: Collection[str]) -> str:
+    columns = list(_CORE_DATASET_COLUMNS) + [
+        (name, sql_type, comments)
+        for name, (sql_type, comments) in OPTIONAL_DATASET_COLUMNS.items()
+        if name in available
+    ]
+    lines = ["CREATE TABLE bids_datasets ("]
+    for index, (name, sql_type, comments) in enumerate(columns):
+        comma = "," if index < len(columns) - 1 else ""
+        definition = f"    {name:<17} {sql_type}{comma}"
+        if comments:
+            lines.append(f"{definition:<34}-- {comments[0]}")
+            lines.extend(f"{'':<34}-- {comment}" for comment in comments[1:])
+        else:
+            lines.append(definition)
+    lines.append(");")
+    return "\n".join(lines)
+
+
+def build_schema_ddl(available: Collection[str] = ()) -> str:
+    """Schema text for the SQL-generation and SQL-correction prompts.
+
+    *available* names the OPTIONAL_DATASET_COLUMNS the database has populated.
+    """
+    return _render_dataset_table(available) + "\n\n" + _OTHER_TABLES_DDL
+
+
+_OTHER_TABLES_DDL = """\
 CREATE TABLE bids_objects (
     id              UUID PRIMARY KEY,
     dataset_id      UUID REFERENCES bids_datasets(id),
@@ -100,125 +173,3 @@ CREATE TABLE bids_participants (
 --   subject_count alias (from the injected projection) → COUNT(DISTINCT o.subject)
 --   HAVING threshold on participant criteria → COUNT(DISTINCT p.participant_id)\
 """
-
-SYSTEM = """\
-You are a Text-to-SQL assistant for BIDS-Eye, a search engine over neuroimaging datasets.
-
-Database schema:
-
-bids_datasets  (d): id UUID PK, name, accession_id, bids_version, dataset_type, source_type, remote_url, validation_status, authors TEXT[], institutions TEXT[] (scanning site, from DICOM headers — use ILIKE on unnested elements), license, doi, paper_references TEXT[], funding TEXT[], description_text TEXT, readme_text TEXT (README content, truncated — search with ILIKE as fallback alongside description_text)
-bids_objects   (o): id UUID PK, dataset_id FK, subject, subject_index, session, task, run, suffix, datatype, extension (file format only: '.nii.gz' etc.), other_entities JSONB (sidecar metadata — scanner hw: Manufacturer TEXT, ManufacturerModelName TEXT, MagneticFieldStrength FLOAT Tesla, SoftwareVersions TEXT; acq params: RepetitionTime, EchoTime, FlipAngle, AcquisitionTime; secondary entities: acq, echo, dir, space, res. Extract: other_entities->>'Manufacturer'. Cast numeric: (other_entities->>'MagneticFieldStrength')::float)
-bids_participants(p): id UUID PK, dataset_id FK, participant_id, age FLOAT, sex, handedness, diagnosis (clinical only), extra JSONB (non-standard columns, e.g. concern_dieting, bmi, group)
-
-suffix values : fmri_bold=fMRI  t1_weighted_mri/t2_weighted_mri=structural  diffusion_mri_dwi=diffusion  eeg=EEG  meg=MEG  intracranial_eeg=iEEG  pet=PET
-datatype values: functional_mri  anatomical_mri  diffusion_mri  field_maps  electroencephalography  magnetoencephalography  intracranial_eeg  behavioural_data  positron_emission_tomography  perfusion_asl  fnirs
-
-Your SQL MUST begin EXACTLY with: SELECT {{COLS}}
-Never list column names after SELECT — write the literal placeholder {{COLS}}.
-The full projection (id, name, …, authors, description_text,
-COUNT(DISTINCT o.subject) AS subject_count) is injected automatically afterwards.
-The subject_count alias is part of that projection, so you may reference it in
-HAVING / ORDER BY.
-
-Rules:
-- Always alias bids_datasets as d, bids_objects as o, bids_participants as p.
-- Always LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL.
-- Always GROUP BY d.id.
-- Use EXISTS (...) to filter by file properties without multiplying rows.
-- Use ILIKE '%term%' for case-insensitive text search on d.name, d.description_text, and d.readme_text.
-  For information typically found in READMEs (paper links, lab names, scanner protocols, task descriptions
-  not in dataset_description.json) add OR d.readme_text ILIKE '%term%' alongside d.description_text.
-- For d.institutions (TEXT[] array): search with EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%term%'). Never use d.institutions = or d.institutions @>; always ILIKE on unnested elements.
-- Only add LIMIT when the question explicitly requests a top-N result or ranking.
-- Never use EXISTS to check a column already on bids_datasets — use d.col directly (e.g. WHERE d.doi IS NOT NULL AND d.doi != '').
-- Never JOIN bids_participants alongside bids_objects — it creates a cross-product that times out. For participant counts in HAVING, use correlated subqueries: HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male') > (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female')
-- Counting: the subject_count alias (COUNT(DISTINCT o.subject)) is supplied by the injected projection. For HAVING thresholds on participant criteria, use COUNT(DISTINCT p.participant_id). Never mix them.
-- o.extension is the file format ONLY ('.nii.gz', '.json', '.tsv'). NEVER search extension for metadata field names.
-- Sidecar metadata is in o.other_entities JSONB. Extract as text: o.other_entities->>'Manufacturer'. Cast numeric fields: (o.other_entities->>'MagneticFieldStrength')::float. Scanner hardware keys: Manufacturer (ILIKE '%Siemens%'), ManufacturerModelName (ILIKE '%Prisma%'), MagneticFieldStrength (numeric Tesla — always cast with ::float for comparisons), SoftwareVersions (text). Acquisition params: RepetitionTime, EchoTime, FlipAngle, AcquisitionTime.
-- Non-standard participant fields (bmi, group, custom scales, etc.) are in p.extra JSONB: p.extra->>'concern_dieting'
-- p.diagnosis is for clinical diagnoses ONLY. Use p.extra for non-clinical participant attributes.
-- The diagnosis, task, suffix, and datatype columns hold normalized standard_codes. Use the exact
-  standard_code string in SQL (e.g. p.diagnosis = 'epilepsy', o.task = 'resting_state').
-- For BROAD CATEGORIES use a concept key — the system auto-expands it to all specific codes:
-    diagnosis concept keys: healthy_cohorts, psychiatric, schizophrenia_spectrum, mood_disorders,
-      neurodevelopmental, neurological, epilepsy_spectrum, epilepsy_syndromes, cortical_malformations,
-      neurodegenerative, cerebrovascular, movement_disorders, demyelinating_disorders, brain_tumors
-    task concept keys: resting_state, working_memory, memory, attention, language, social_cognition,
-      reward_learning, motor, sensory, emotion
-    suffix concept keys: mri_functional, mri_anatomical, mri_diffusion, mri_fieldmap, electrophysiology
-  Example: p.diagnosis = 'epilepsy_spectrum' is expanded to IN ('epilepsy', 'watanabe_syndrome', ...)
-  Example: o.task = 'resting_state' is expanded to IN ('resting_state', 'resting_state_eyes_open', ...)
-- Output ONLY the SQL query, no explanation.\
-"""
-
-EXAMPLE_PAIRS = [
-    {
-        "question": "Show me all fMRI datasets",
-        "sql": (
-            "SELECT {{COLS}}\n"
-            "FROM bids_datasets d\n"
-            "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-            "WHERE EXISTS (\n"
-            "    SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.suffix = 'bold'\n"
-            ")\n"
-            "GROUP BY d.id\n"
-            "ORDER BY d.name"
-        ),
-    },
-    {
-        "question": "EEG datasets with more than 30 subjects",
-        "sql": (
-            "SELECT {{COLS}}\n"
-            "FROM bids_datasets d\n"
-            "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-            "WHERE EXISTS (\n"
-            "    SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'eeg'\n"
-            ")\n"
-            "GROUP BY d.id\n"
-            "HAVING COUNT(DISTINCT o.subject) > 30\n"
-            "ORDER BY subject_count DESC"
-        ),
-    },
-    {
-        "question": "Datasets with Alzheimer's patients",
-        "sql": (
-            "SELECT {{COLS}}\n"
-            "FROM bids_datasets d\n"
-            "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-            "WHERE EXISTS (\n"
-            "    SELECT 1 FROM bids_participants p\n"
-            "    WHERE p.dataset_id = d.id AND p.diagnosis ILIKE '%alzheimer%'\n"
-            ")\n"
-            "GROUP BY d.id\n"
-            "ORDER BY d.name"
-        ),
-    },
-    {
-        "question": "Find datasets containing participants with any form of epilepsy",
-        "sql": (
-            "SELECT {{COLS}}\n"
-            "FROM bids_datasets d\n"
-            "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-            "WHERE EXISTS (\n"
-            "    SELECT 1 FROM bids_participants p\n"
-            "    WHERE p.dataset_id = d.id\n"
-            "      AND p.diagnosis = 'epilepsy_spectrum'\n"
-            ")\n"
-            "GROUP BY d.id\n"
-            "ORDER BY d.name"
-        ),
-    },
-    {
-        "question": "Datasets that include resting-state scans",
-        "sql": (
-            "SELECT {{COLS}}\n"
-            "FROM bids_datasets d\n"
-            "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-            "WHERE EXISTS (\n"
-            "    SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task = 'resting_state'\n"
-            ")\n"
-            "GROUP BY d.id\n"
-            "ORDER BY d.name"
-        ),
-    },
-]

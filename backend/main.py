@@ -35,7 +35,8 @@ if str(_BIDS_SQL) not in sys.path:
 
 import db.models  # noqa: E402, F401 — registers models with Base.metadata before create_all
 import models     # noqa: E402, F401 — registers backend-only models (message_usage, etc.)
-from db.db import create_all_tables  # noqa: E402
+from db.db import create_all_tables, engine  # noqa: E402
+from services.schema_capabilities import refresh_available_columns  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -50,6 +51,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Ensure DB schema is up to date
     await create_all_tables()
     log.info("Database tables verified.")
+
+    # Record which optional dataset columns (README, OpenNeuro metadata,
+    # institutions) this database has filled; prompts only mention those.
+    await refresh_available_columns(engine)
 
     # Optionally run the crawler in-process (useful for single-container dev).
     # In production the crawler runs as its own Docker service.

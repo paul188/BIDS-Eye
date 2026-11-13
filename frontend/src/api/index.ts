@@ -19,6 +19,8 @@ export interface Dataset {
   authors: string[] | null
   institutions: string[] | null
   description_text: string | null
+  /** Set when the dataset was removed from, or flagged deprecated on, its source. */
+  deprecated_reason?: string | null
   subject_count: number | null
   participants: Participant[]
 }

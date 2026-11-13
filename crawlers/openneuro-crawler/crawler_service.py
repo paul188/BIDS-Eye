@@ -127,6 +127,14 @@ async def run_crawl_cycle() -> None:
     if not accessions:
         return
 
+    # Columns the crawler writes outside the ORM model (README, OpenNeuro
+    # metadata, institutions). Idempotent, so safe on every cycle.
+    from db.db import async_session_maker
+    from remote.openneuro_metadata import ensure_columns
+    async with async_session_maker() as session:
+        await ensure_columns(session)
+        await session.commit()
+
     delay = float(os.getenv("CRAWL_DELAY_SECONDS", "30"))
     crawler_state["running"] = True
     crawler_state["queue"] = list(accessions)

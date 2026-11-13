@@ -107,7 +107,11 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         monkeypatch.setenv("GEMINI_API_KEY", "dummy-key")
 
         session = _FakeSession()
-        first = await query_router.query_datasets(query_router.QueryRequest(question="find datasets"), session)
+        # An admin login: exempt from the daily rate limit, so no usage row is written.
+        monkeypatch.setattr(query_router, "_ADMIN_LOGINS", {"tester"})
+        first = await query_router.query_datasets(
+            query_router.QueryRequest(question="find datasets"), session, {"sub": "tester"}
+        )
 
         assert first.total == 2
         assert first.query_id is not None
@@ -134,3 +138,36 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         assert len(second.datasets) == 1
 
     asyncio.run(run())
+
+
+def test_deprecated_reason_is_attached_only_when_the_column_exists() -> None:
+    from services import schema_capabilities as caps
+
+    dataset_id = UUID("00000000-0000-0000-0000-000000000001")
+    other_id = UUID("00000000-0000-0000-0000-000000000002")
+
+    class _Session:
+        def __init__(self):
+            self.statements = []
+
+        async def execute(self, statement, params=None):
+            self.statements.append(str(statement))
+            return [(dataset_id, "No longer available on OpenNeuro")]
+
+    async def scenario() -> None:
+        # Database without the column (production before the migration): no query at all.
+        caps.set_display_columns(())
+        session = _Session()
+        assert await query_router._deprecations_for(session, [dataset_id, other_id]) == {}
+        assert session.statements == []
+
+        caps.set_display_columns({"deprecated_reason"})
+        session = _Session()
+        found = await query_router._deprecations_for(session, [dataset_id, other_id])
+        assert found == {dataset_id: "No longer available on OpenNeuro"}
+        assert "deprecated_reason IS NOT NULL" in session.statements[0]
+
+    try:
+        asyncio.run(scenario())
+    finally:
+        caps.set_display_columns(())

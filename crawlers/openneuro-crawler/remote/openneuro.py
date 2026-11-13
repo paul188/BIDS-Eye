@@ -34,6 +34,17 @@ from sqlalchemy import select, text, update
 
 from db.db import async_session_maker
 from db.models import BIDSDataset, BIDSObject
+from remote.openneuro_metadata import (
+    README_NAMES,
+    OpenNeuroAPIError,
+    apply_fields,
+    clean_readme,
+    decode_readme_bytes,
+    deprecation_reason,
+    extract_fields,
+    fetch_batch,
+    set_deprecation,
+)
 
 log = logging.getLogger(__name__)
 
@@ -206,11 +217,10 @@ def _build_mirror(
 
     # Fetch the dataset README (any common variant) — content is not handled by
     # _METADATA_EXTENSIONS above because README has no extension.
-    _README_NAMES = frozenset({"README", "README.md", "README.txt", "README.rst"})
     for obj in all_objects:
         key: str = obj["Key"]
         filename = key[len(accession_id) + 1:]  # strip accession prefix
-        if filename in _README_NAMES:
+        if filename in README_NAMES:
             dest = mirror_dir / filename
             if not dest.exists():
                 try:
@@ -259,50 +269,20 @@ async def _stamp_dataset(
         if description_text:
             description_text = description_text.strip() or None
 
-        # Read and sanitize the README for full-text ILIKE search
-        import re as _re
-        _README_CANDIDATES = ("README", "README.md", "README.txt", "README.rst")
-        _URL_RE = _re.compile(r'https?://\S+')
+        # README from the mirror (downloaded by _build_mirror), cleaned for search
         readme_text: str | None = None
         readme_refs: list[str] = []
-        for _name in _README_CANDIDATES:
+        for _name in README_NAMES:
             _readme_path = Path(mirror_root_path) / _name
             if _readme_path.exists():
-                _raw = _readme_path.read_bytes().decode("utf-8", errors="replace")
-                # Extract URLs from the full text BEFORE truncation — refs are often at the bottom
-                readme_refs = list(dict.fromkeys(_URL_RE.findall(_raw)))[:20]
-                # Strip HTML tags and markdown image blobs (base64 src can be enormous)
-                _raw = _re.sub(r'<[^>]+>', ' ', _raw)
-                _raw = _re.sub(r'!\[[^\]]*\]\([^)]*\)', '', _raw)
-                _raw = _re.sub(r'\n{3,}', '\n\n', _raw).strip()
-                # Tail-biased slice: keep head + tail so both the intro and the
-                # references/acknowledgments section at the bottom are searchable
-                _HALF = 4000
-                if len(_raw) > _HALF * 2:
-                    _raw = _raw[:_HALF] + "\n…\n" + _raw[-_HALF:]
-                readme_text = _raw or None
+                readme_text, readme_refs = clean_readme(
+                    decode_readme_bytes(_readme_path.read_bytes())
+                )
                 break
-
-        # Use README-extracted URLs as fallback when dataset_description.json had no ReferencesAndLinks
-        if not paper_references and readme_refs:
-            paper_references = readme_refs
 
         # Strip promoted fields from the JSON blob — they live in dedicated columns now
         _PROMOTED = {"Authors", "License", "DatasetDOI", "ReferencesAndLinks", "Funding", "Description"}
         clean_desc = {k: v for k, v in desc.items() if k not in _PROMOTED}
-
-        # Collect distinct institution names from sidecar JSONs indexed by the pipeline
-        inst_row = await session.execute(
-            text(
-                "SELECT array_agg(DISTINCT other_entities->>'InstitutionName')"
-                " FILTER (WHERE other_entities->>'InstitutionName' IS NOT NULL"
-                "           AND other_entities->>'InstitutionName' != '')"
-                " AS institutions"
-                " FROM bids_objects WHERE dataset_id = :did"
-            ),
-            {"did": dataset.id},
-        )
-        institutions = inst_row.scalar() or None
 
         await session.execute(
             update(BIDSDataset)
@@ -312,18 +292,75 @@ async def _stamp_dataset(
                 accession_id=accession_id,
                 remote_url=remote_url,
                 authors=authors,
-                institutions=institutions,
                 license=desc.get("License") or None,
                 doi=desc.get("DatasetDOI") or None,
                 paper_references=paper_references,
                 funding=funding,
                 description_text=description_text,
-                readme_text=readme_text,
                 description=clean_desc,
             )
         )
+
+        # institutions, readme_text and the OpenNeuro metadata columns are not
+        # part of the BIDS-SQL ORM model, so they are written with plain SQL.
+        # (ensure_columns() in run_crawl_cycle creates them on a fresh database.)
+
+        # Distinct institution names from the sidecar JSONs indexed by the pipeline
+        await session.execute(
+            text(
+                "UPDATE bids_datasets SET institutions = ("
+                "  SELECT array_agg(DISTINCT o.other_entities->>'InstitutionName')"
+                "         FILTER (WHERE COALESCE(o.other_entities->>'InstitutionName', '') <> '')"
+                "  FROM bids_objects o WHERE o.dataset_id = :did"
+                ") WHERE id = :did"
+            ),
+            {"did": dataset.id},
+        )
+
+        # README text; its links become paper_references when the dataset
+        # description declared none.
+        await apply_fields(
+            session,
+            accession_id,
+            {"readme_text": readme_text, "readme_urls": readme_refs},
+        )
         await session.commit()
         return dataset
+
+
+async def _enrich_from_openneuro_api(accession_id: str) -> None:
+    """Fill dx_status, study_domain, study_design, age range and size.
+
+    These exist only in the OpenNeuro API, not in the BIDS files. The API also
+    returns the README of the latest snapshot (the same file the mirror holds),
+    which covers datasets whose mirror had none. A failure here is logged and
+    never fails the crawl of the dataset: the BIDS index is already complete.
+    """
+    import asyncio
+
+    try:
+        records, unavailable = await asyncio.to_thread(fetch_batch, [accession_id])
+        record = records.get(accession_id)
+        if record is None:
+            log.info("  [metadata] OpenNeuro API has no record for %s", accession_id)
+            if accession_id in unavailable:
+                async with async_session_maker() as session:
+                    await set_deprecation(session, accession_id, unavailable[accession_id])
+                    await session.commit()
+            return
+        fields = extract_fields(record)
+        async with async_session_maker() as session:
+            await apply_fields(session, accession_id, fields)
+            await set_deprecation(session, accession_id, deprecation_reason(record))
+            await session.commit()
+        log.info(
+            "  [metadata] %s: dx_status=%r study_domain=%r size=%s",
+            accession_id, fields["dx_status"], fields["study_domain"], fields["size_bytes"],
+        )
+    except OpenNeuroAPIError as exc:
+        log.warning("  [metadata] OpenNeuro API unavailable for %s: %s", accession_id, exc)
+    except Exception as exc:
+        log.warning("  [metadata] Could not store OpenNeuro metadata for %s: %s", accession_id, exc)
 
 
 async def _mark_objects_remote(dataset_id: uuid4) -> int:
@@ -408,4 +445,7 @@ async def index_openneuro(
     # ── Step 5: mark all objects as remote ────────────────────────────────────
     n = await _mark_objects_remote(dataset.id)
     log.info("  [db] Marked %d object(s) as remote for %s", n, accession_id)
+
+    # ── Step 6: metadata that only the OpenNeuro API has ──────────────────────
+    await _enrich_from_openneuro_api(accession_id)
     log.info("=== OpenNeuro: done (%s) ===", accession_id)

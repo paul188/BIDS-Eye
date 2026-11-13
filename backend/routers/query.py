@@ -34,6 +34,7 @@ from schemas import (
     QueryResponse,
 )
 from services.query_cache import CachedQuery, query_cache
+from services.schema_capabilities import has_display_column
 from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
 from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
@@ -101,6 +102,27 @@ async def _participants_for(
     return result
 
 
+async def _deprecations_for(
+    session: AsyncSession, dataset_ids: list[UUID]
+) -> dict[UUID, str]:
+    """Return {dataset_id: reason} for datasets marked deprecated.
+
+    Read with its own query instead of through the generated SQL, so the
+    projection the LLM pipeline relies on stays unchanged, and databases that
+    do not have the column yet keep working.
+    """
+    if not dataset_ids or not has_display_column("deprecated_reason"):
+        return {}
+    rows = await session.execute(
+        text(
+            "SELECT id, deprecated_reason FROM bids_datasets "
+            "WHERE id = ANY(:ids) AND deprecated_reason IS NOT NULL"
+        ),
+        {"ids": dataset_ids},
+    )
+    return {row[0]: row[1] for row in rows}
+
+
 async def _count_with_base_correction(
     session: AsyncSession, query_id: str, cached: CachedQuery, question: str
 ) -> int:
@@ -154,6 +176,7 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
     """Build DatasetSchema objects (with capped participants) from result rows."""
     dataset_ids = [UUID(str(r["id"])) for r in raw]
     participants_map = await _participants_for(session, dataset_ids)
+    deprecations = await _deprecations_for(session, dataset_ids)
     return [
         DatasetSchema(
             id=r["id"],
@@ -167,6 +190,7 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
             authors=r.get("authors"),
             institutions=r.get("institutions"),
             description_text=r.get("description_text"),
+            deprecated_reason=deprecations.get(UUID(str(r["id"]))),
             subject_count=r.get("subject_count"),
             participants=participants_map.get(UUID(str(r["id"])), [])[
                 :_MAX_PARTICIPANTS_PER_DATASET
