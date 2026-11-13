@@ -27,6 +27,8 @@ export interface Dataset {
   uncertain_reasons?: string | null
   subject_count: number | null
   participants: Participant[]
+  /** README passage: the part matching the search, else the start. Matches sit between ⟦ and ⟧. */
+  snippet?: string | null
 }
 
 export interface TextToSQLResult {

@@ -112,7 +112,17 @@ const termPattern = computed(() => {
   return new RegExp(`\\b(?:${terms.map(escapeRegExp).join('|')})[\\w'’-]*`, 'gi')
 })
 
+// The backend marks README matches with ⟦ ⟧ (Postgres ts_headline, so
+// stemming is right: "resting" also marks "rest").
+function markedParts(text: string): { text: string; hit: boolean }[] {
+  return text.split(/(⟦[^⟧]*⟧)/).filter(Boolean).map(part =>
+    part.startsWith('⟦') ? { text: part.slice(1, -1), hit: true } : { text: part, hit: false })
+}
+
+const hasDescription = computed(() => !!(props.dataset.snippet || props.dataset.description_text))
+
 const snippet = computed(() => {
+  if (props.dataset.snippet) return markedParts(props.dataset.snippet)
   const text = props.dataset.description_text ?? ''
   const pattern = termPattern.value
   if (!text || !pattern) return [{ text, hit: false }]
@@ -152,6 +162,11 @@ const snippet = computed(() => {
       >{{ dataset.name }}</a>
       <span v-else class="text-ink break-words">{{ dataset.name }}</span>
     </h3>
+    <p v-if="authorLine || institutionLine" class="-mt-0.5 text-[13px] text-muted break-words">
+      <span v-if="authorLine">{{ authorLine }}</span>
+      <span v-if="authorLine && institutionLine"> — </span>
+      <span v-if="institutionLine">{{ institutionLine }}</span>
+    </p>
 
     <!-- Uncertain tier: which filter could not be checked for this dataset -->
     <p
@@ -169,7 +184,7 @@ const snippet = computed(() => {
     </p>
 
     <!-- What the dataset is: the description, at a readable line length -->
-    <p v-if="dataset.description_text" class="max-w-3xl text-sm leading-relaxed text-ink/80 line-clamp-3">
+    <p v-if="hasDescription" class="max-w-3xl text-sm leading-relaxed text-ink/80 line-clamp-3">
       <template v-for="(part, i) in snippet" :key="i"><strong v-if="part.hit" class="font-semibold text-ink">{{ part.text }}</strong><template v-else>{{ part.text }}</template></template>
     </p>
 
@@ -200,10 +215,5 @@ const snippet = computed(() => {
       <span v-if="sexSplit" class="tabular-nums" :class="factClass('sex')">{{ sexSplit }}</span>
     </p>
 
-    <p v-if="authorLine || institutionLine" class="text-[13px] text-muted break-words">
-      <span v-if="authorLine">{{ authorLine }}</span>
-      <span v-if="authorLine && institutionLine"> — </span>
-      <span v-if="institutionLine">{{ institutionLine }}</span>
-    </p>
   </article>
 </template>

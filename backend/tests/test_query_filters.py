@@ -214,3 +214,84 @@ def test_refine_is_refused_for_self_corrected_queries():
         asyncio.run(query_router.query_refine(
             QueryRefineRequest(query_id=query_id, remove=["w0"]), _Session(), {"sub": "t"}))
     assert raised.value.status_code == 400
+
+
+# ── README excerpts ───────────────────────────────────────────────────────────
+
+def test_highlight_query_takes_words_of_text_and_coded_chips():
+    query = qf.highlight_tsquery(_sql(DIAGNOSIS, MODALITY, NO_EEG, ADULTS, TEXT))
+    words = query.split(" | ")
+    assert {"parkinson", "parkinsons", "paralysis", "agitans", "fmri", "sleep", "deprivation"} <= set(words)
+    # Negated chips and ages have nothing to mark.
+    assert "eeg" not in words and "18" not in words
+    assert qf.highlight_tsquery(_HEAD + "GROUP BY d.id") is None
+    assert qf.highlight_tsquery(None) is None
+
+
+def test_clean_snippet_strips_markdown():
+    import routers.query as query_router
+
+    raw = ("# Dataset ⟦Parkinson⟧ study\n![logo](img.png) See [the paper](https://doi.org/x) "
+           "and https://openneuro.org.\n| col | col |\n**Bold** text with sub_01 and __init__")
+    assert query_router.clean_snippet(raw) == (
+        "Dataset ⟦Parkinson⟧ study See the paper and col col Bold text with sub_01 and init")
+
+
+class _SnippetSession:
+    def __init__(self, rows):
+        self.rows = rows
+        self.calls = []
+
+    def begin_nested(self):
+        class _Nested:
+            async def __aenter__(self_inner):
+                return self_inner
+
+            async def __aexit__(self_inner, *exc):
+                return False
+        return _Nested()
+
+    async def execute(self, statement, params=None):
+        self.calls.append((str(statement), params))
+        return self.rows
+
+
+def _dataset(n: int):
+    from schemas import DatasetSchema
+    return DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
+                         source_type="openneuro", participants=[])
+
+
+def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
+    import routers.query as query_router
+    from services import schema_capabilities as caps
+
+    long_start = "Plain README start. " * 30
+    session = _SnippetSession([
+        (UUID(int=1), "patients with ⟦Parkinson's⟧ disease … scanned with ⟦fMRI⟧"),
+        (UUID(int=2), long_start),
+    ])
+    datasets = [_dataset(1), _dataset(2), _dataset(3)]
+    caps.set_display_columns({"readme_text"})
+    try:
+        asyncio.run(query_router._attach_snippets(session, datasets, "parkinson | fmri"))
+    finally:
+        caps.set_display_columns(())
+
+    sql, params = session.calls[0]
+    assert "ts_headline" in sql and params["q"] == "parkinson | fmri"
+    # A passage from mid-sentence is marked as an excerpt at both ends.
+    assert datasets[0].snippet == "… patients with ⟦Parkinson's⟧ disease … scanned with ⟦fMRI⟧ …"
+    # No match in the README: ts_headline returns its start, cut at a word.
+    assert datasets[1].snippet.endswith(" …") and len(datasets[1].snippet) <= 330
+    assert "⟦" not in datasets[1].snippet
+    assert datasets[2].snippet is None
+
+
+def test_attach_snippets_without_the_column_does_nothing():
+    import routers.query as query_router
+
+    session = _SnippetSession([])
+    datasets = [_dataset(1)]
+    asyncio.run(query_router._attach_snippets(session, datasets, "x"))
+    assert session.calls == [] and datasets[0].snippet is None

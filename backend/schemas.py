@@ -48,6 +48,9 @@ class DatasetSchema(BaseModel):
     # Computed fields (not direct ORM columns)
     subject_count: Optional[int] = None
     participants: List[ParticipantSchema] = []
+    # A passage of the README: the part that matches the search when it has
+    # text terms, else the start. Matched words sit between "⟦" and "⟧".
+    snippet: Optional[str] = None
 
 
 class DatasetListResponse(BaseModel):

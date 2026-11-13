@@ -449,3 +449,28 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
         cls = exp.Where if clause == "where" else exp.Having
         tree.set(clause, cls(this=condition))
     return tree.sql(dialect="postgres")
+
+
+# ── Highlighting ──────────────────────────────────────────────────────────────
+
+_HIGHLIGHT_KINDS = {"diagnosis", "modality", "task", "text", "field"}
+_WORD_RE = re.compile(r"[A-Za-z0-9]+")
+
+
+def highlight_tsquery(sql: Optional[str]) -> Optional[str]:
+    """An OR tsquery of the words the chips search for, to mark them in a README.
+
+    Uses each chip's text words, and the labels of coded chips ("fMRI",
+    "ADHD"), which READMEs often spell out too. None without such words.
+    """
+    words: List[str] = []
+    for chip in describe(sql):
+        if chip.negated or chip.kind not in _HIGHLIGHT_KINDS:
+            continue
+        phrases = list(chip.text_words)
+        if chip.kind in ("diagnosis", "modality", "task"):
+            phrases.append(re.sub(r"\s\+\d+$", "", chip.label))
+        for phrase in phrases:
+            words.extend(w.lower() for w in _WORD_RE.findall(phrase) if len(w) > 1)
+    words = list(dict.fromkeys(words))
+    return " | ".join(words) or None

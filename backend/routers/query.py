@@ -15,9 +15,11 @@ applied per page in postprocessing (see services.sql_rewriter.build_page_sql).
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
+import re
 from datetime import date, datetime, timedelta, timezone
-from typing import Annotated, Sequence
+from typing import Annotated, Optional, Sequence
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -45,6 +47,7 @@ from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql
 from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
+log = logging.getLogger(__name__)
 
 _DAILY_LIMIT = int(os.getenv("DAILY_MESSAGE_LIMIT", "20"))
 _ADMIN_LOGINS = {
@@ -236,6 +239,95 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
     ]
 
 
+# README excerpts (_attach_snippets). Matched words are wrapped in these
+# marks, which READMEs do not use, so the page can bold them without HTML.
+SNIPPET_START, SNIPPET_STOP = "⟦", "⟧"
+_SNIPPET_README_CHARS = 20000   # bounds ts_headline's work on huge READMEs
+_SNIPPET_PLAIN_CHARS = 320      # excerpt length without search words
+_HEADLINE_OPTIONS = (
+    f"StartSel={SNIPPET_START}, StopSel={SNIPPET_STOP}, MaxFragments=2, "
+    "MaxWords=28, MinWords=12, ShortWord=2, FragmentDelimiter=\" … \""
+)
+_MD_IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+_MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+_URL_RE = re.compile(r"https?://\S+")
+_MD_SYNTAX_RE = re.compile(r"[#*`>|]+|(?<!\w)_{1,2}|_{1,2}(?!\w)|^-{3,}|={3,}", re.M)
+
+
+def clean_snippet(text_: str) -> str:
+    """README Markdown reduced to plain text: no images, link targets, URLs,
+    heading marks, emphasis or table pipes; whitespace collapsed."""
+    text_ = _MD_IMAGE_RE.sub(" ", text_)
+    text_ = _MD_LINK_RE.sub(r"\1", text_)
+    text_ = _URL_RE.sub(" ", text_)
+    text_ = _MD_SYNTAX_RE.sub(" ", text_)
+    return re.sub(r"\s+", " ", text_).strip()
+
+
+def _cut_at_word(text_: str, limit: int) -> str:
+    if len(text_) <= limit:
+        return text_
+    cut = text_[:limit].rsplit(" ", 1)[0]
+    return cut.rstrip(" ,;:") + " …"
+
+
+async def _attach_snippets(
+    session: AsyncSession, datasets: list[DatasetSchema], highlight: Optional[str]
+) -> None:
+    """Give each dataset a README excerpt: the passages matching *highlight*
+    (an OR tsquery, services/query_filters.highlight_tsquery), or the start.
+
+    Read with its own query, like _deprecations_for, so the generated SQL stays
+    unchanged and databases without readme_text keep working. A failure leaves
+    the page without excerpts rather than failing it.
+    """
+    if not datasets or not has_display_column("readme_text"):
+        return
+    ids = [d.id for d in datasets]
+    if highlight:
+        sql = (
+            "SELECT id, ts_headline('english', left(readme_text, :chars), "
+            "to_tsquery('english', :q), :opts) FROM bids_datasets "
+            "WHERE id = ANY(:ids) AND readme_text IS NOT NULL AND readme_text <> ''"
+        )
+        params = {"ids": ids, "q": highlight, "opts": _HEADLINE_OPTIONS,
+                  "chars": _SNIPPET_README_CHARS}
+    else:
+        sql = (
+            "SELECT id, left(readme_text, :chars) FROM bids_datasets "
+            "WHERE id = ANY(:ids) AND readme_text IS NOT NULL AND readme_text <> ''"
+        )
+        params = {"ids": ids, "chars": _SNIPPET_PLAIN_CHARS * 4}
+    try:
+        async with session.begin_nested():
+            rows = await session.execute(text(sql), params)
+            found = {row[0]: row[1] for row in rows}
+    except Exception:
+        log.warning("README excerpts unavailable for this page", exc_info=True)
+        return
+    for dataset in datasets:
+        raw = found.get(dataset.id)
+        if not raw:
+            continue
+        snippet = clean_snippet(raw)
+        if not highlight or SNIPPET_START not in snippet:
+            snippet = _cut_at_word(snippet.replace(SNIPPET_START, "").replace(SNIPPET_STOP, ""),
+                                   _SNIPPET_PLAIN_CHARS)
+        else:
+            # A matched passage usually starts and ends mid-sentence.
+            if snippet.lstrip(SNIPPET_START)[:1].islower():
+                snippet = "… " + snippet
+            if snippet[-1:] not in ".!?…":
+                snippet += " …"
+        dataset.snippet = snippet or None
+
+
+def _highlight_for(cached: CachedQuery) -> Optional[str]:
+    if cached.self_corrected:
+        return None
+    return query_filters.highlight_tsquery(cached.filter_sql)
+
+
 def _filters_for(cached: CachedQuery) -> list[QueryFilterSchema]:
     """The query's conditions as chips; none once the SQL was self-corrected,
     since the corrected query no longer matches the conditions read earlier."""
@@ -289,6 +381,7 @@ async def _run_page(
         text(page_sql), {**cached.params, **extra_params}
     )
     datasets = await _rows_to_datasets(session, result.mappings().all())
+    await _attach_snippets(session, datasets, _highlight_for(cached))
     return datasets, total
 
 

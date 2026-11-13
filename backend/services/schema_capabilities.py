@@ -44,8 +44,9 @@ _available: FrozenSet[str] = frozenset()
 
 # Columns the API reads directly (not through generated SQL). For these only
 # existence matters, not how many rows are filled.
-# llm_profile is read by the re-ranker (services/rerank.py).
-DISPLAY_COLUMNS = ("deprecated_reason", "llm_profile")
+# llm_profile is read by the re-ranker (services/rerank.py); readme_text gives
+# each result its README excerpt (routers/query.py, _attach_snippets).
+DISPLAY_COLUMNS = ("deprecated_reason", "llm_profile", "readme_text")
 _present_display: FrozenSet[str] = frozenset()
 
 
