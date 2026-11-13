@@ -61717,7 +61717,7 @@ suffix:
     label: cerebral blood flow (ASL)
     standard_code: cerebral_blood_flow
     broader:
-    - mri_functional
+    - pet_asl
     synonyms:
     - term: asl cbf
       weight: 0.1
@@ -61761,7 +61761,7 @@ suffix:
     label: in-plane T2
     standard_code: in_plane_t2
     broader:
-    - mri_functional
+    - mri_anatomical
     synonyms:
     - term: inplane T2
       weight: 0.1
@@ -62401,12 +62401,6 @@ suffix:
     label: quantitative and miscellaneous MRI
     broader: []
     synonyms:
-    - term: quantitative magnetic resonance imaging
-      weight: 0.1
-    - term: quantitative MR
-      weight: 0.1
-    - term: qMR
-      weight: 0.1
     - term: miscellaneous MRI
       weight: 0.1
     - term: miscellaneous MR
@@ -62442,11 +62436,25 @@ suffix:
     - term: other MR
       weight: 0.1
     is_group: true
+  mri_quantitative:
+    label: quantitative MRI
+    is_group: true
+    broader:
+    - mri_quantitative_and_misc
+    synonyms:
+    - term: qMRI
+      weight: 1.0
+    - term: quantitative magnetic resonance imaging
+      weight: 0.1
+    - term: quantitative MR
+      weight: 0.1
+    - term: qMR
+      weight: 0.1
   t1_map:
     label: T1 map
     standard_code: t1_map
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: T1 maps
       weight: 0.43
@@ -62490,7 +62498,7 @@ suffix:
     label: T2 map
     standard_code: t2_map
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: quantitative t2 map
       weight: 0.38
@@ -62538,7 +62546,7 @@ suffix:
     label: T2* map
     standard_code: t2_star_map
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: T2star map
       weight: 0.1
@@ -62628,7 +62636,7 @@ suffix:
     label: Oxygen Extraction Fraction (OEF)
     standard_code: oxygen_extraction_fraction
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - OEF
     - term: cerebral oxygen extraction fraction
@@ -62672,7 +62680,7 @@ suffix:
     label: multi-parameter mapping MRI
     standard_code: multi_parameter_mapping
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: MPM
       weight: 0.1
@@ -62718,7 +62726,7 @@ suffix:
     label: magnetization transfer saturation MRI
     standard_code: magnetization_transfer_saturation
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: MTsat
       weight: 0.1
@@ -62763,7 +62771,7 @@ suffix:
     label: multi-echo gradient-echo MRI
     standard_code: multi_echo_gre
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: multi-gradient-echo
       weight: 0.38
@@ -62811,7 +62819,7 @@ suffix:
     label: no-RF (quantitative MRI)
     standard_code: no_rf_q_mri
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     synonyms:
     - term: no-RF qMRI
       weight: 0.1
@@ -62939,7 +62947,7 @@ suffix:
     label: Susceptibility map (QSM)
     standard_code: chi_map
     broader:
-    - mri_quantitative_and_misc
+    - mri_quantitative
     codes:
     - Chimap
     synonyms:
