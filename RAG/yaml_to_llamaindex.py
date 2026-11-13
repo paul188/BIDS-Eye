@@ -264,9 +264,12 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
         have standard_codes — used by retriever._prune_redundant_parents.
 
     weight_db : {category: {term_lower: float}}
-        Match-confidence weight for every term in display_db.
-        Labels → 1.0. Plain-string synonyms → 1.0.
-        Weighted-dict synonyms → their declared weight.
+        The "weight" of every term in display_db: how often the synonym
+        occurred in the paper abstracts it was proposed from
+        (RAG/expand_synonyms.py). Labels → 1.0. Plain-string synonyms → 1.0.
+        It is not a match confidence and the resolver does not read it. Its
+        one use is in RAG/text_terms.py, which searches a diagnosis by its
+        most common synonyms first.
     """
     with open(yaml_path, "r") as fh:
         schema = yaml.safe_load(fh)
