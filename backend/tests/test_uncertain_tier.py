@@ -97,3 +97,13 @@ def test_weaker_form_does_not_repeat_the_file_check() -> None:
     tiered = ut.apply(BASE.format(where=expensive))
     weaker = tiered.split("THEN 0 WHEN (", 1)[1].split(") THEN 1", 1)[0]
     assert weaker == "d.search_tsv @@ TO_TSQUERY('english', 'resective & surgery')"
+
+
+def test_paper_text_is_second_tier_evidence() -> None:
+    sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'placebo')")
+    assert ut.apply(sql, papers=False) == sql            # one word, nothing to relax
+    tiered = ut.apply(sql, papers=True)
+    assert "d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo')" in tiered
+    assert ut.PAPER_REASON in tiered
+    # Confirmation still uses the dataset's own text.
+    assert "CASE WHEN (d.search_tsv @@ TO_TSQUERY('english', 'placebo')) THEN 0" in tiered

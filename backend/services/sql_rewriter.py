@@ -217,9 +217,12 @@ class SqlRewriteService:
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._guard_json_number_casts(sql)
         sql = self._inject_vocab_miss(sql, augmented_question)
-        expanded = _text_search.expand_text_search(sql)
+        tiered = _uncertain_tier.enabled()
+        # With the tier on, paper text is evidence for the second tier only;
+        # confirmed results match on the dataset's own text.
+        expanded = _text_search.expand_text_search(sql, papers=False if tiered else None)
         sql = expanded.sql
-        if _uncertain_tier.enabled():
+        if tiered:
             # Keep datasets a filter cannot check, as a second tier
             # (services/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)

@@ -15,9 +15,10 @@ Each top-level AND condition of the generated SQL gets one of four states for
 a dataset:
 
     0  confirmed     the condition holds
-    1  probable      a weaker form holds: some of the search words, or, for a
-                     missing field, the README names the asked group
-                     ("children" for an age filter up to 12)
+    1  probable      a weaker form holds: some of the search words, the words
+                     only in a paper the dataset names (with TEXT_SEARCH_PAPERS
+                     on), or, for a missing field, the README names the asked
+                     group ("children" for an age filter up to 12)
     2  possible      the field is not recorded and nothing hints either way
     9  contradicted  the dataset records the field and it does not fit
 
@@ -261,6 +262,9 @@ def _sql_literal(text: str) -> str:
 
 # ── Classification ────────────────────────────────────────────────────────────
 
+PAPER_REASON = "found only in a paper the dataset names"
+
+
 @dataclass
 class SoftCondition:
     sql: str                    # the condition as generated
@@ -269,6 +273,12 @@ class SoftCondition:
     known: Optional[str]        # SQL: the field is recorded (None for text)
     reason_probable: str
     reason_possible: str
+    paper: Optional[str] = None  # SQL: the terms match the dataset's paper text
+
+    def __post_init__(self) -> None:
+        # Paper evidence is one more weaker form, checked first.
+        if self.paper:
+            self.probable = f"({self.paper}) OR ({self.probable})" if self.probable else self.paper
 
     def state_sql(self) -> str:
         """0 confirmed, 1 probable, 2 possible, 9 contradicted."""
@@ -306,8 +316,28 @@ def _columns_outside_subqueries(node) -> set:
     return found
 
 
-def classify(node, alias: str) -> Optional[SoftCondition]:
-    """A SoftCondition for a condition that may be uncertain, else None."""
+def paper_atoms(sql: str, alias: str) -> Optional[str]:
+    """The condition's positive text searches run on the paper vector, ORed.
+
+    Labels are dropped: paper text carries the lowest weight, so a search
+    scoped to the name and short fields could never reach it.
+    """
+    from services.text_search import PAPER_FTS_COLUMN
+    spans = _negated_spans(sql)
+    atoms = []
+    for match in _TSQUERY_RE.finditer(sql):
+        if match.group("negated") or any(s < match.start() < e for s, e in spans):
+            continue
+        query = _LABEL_RE.sub("", match.group("query"))
+        atoms.append(f"{alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')")
+    return " OR ".join(dict.fromkeys(atoms)) or None
+
+
+def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
+    """A SoftCondition for a condition that may be uncertain, else None.
+
+    *papers*: the database has paper text and it may serve as evidence.
+    """
     if isinstance(node, exp.Paren):
         node = node.this
     if isinstance(node, exp.Not):
@@ -327,6 +357,7 @@ def classify(node, alias: str) -> Optional[SoftCondition]:
     if len(kinds) > 1:
         return None
     relaxed, words = relax_text_condition(sql)
+    paper = paper_atoms(sql, alias) if papers else None
     if kinds:
         kind = kinds[0]
         probable = relaxed
@@ -334,19 +365,22 @@ def classify(node, alias: str) -> Optional[SoftCondition]:
                            else "")
         if kind == "age":
             group_words = age_group_words(*asked_age_range(sql))
+            paper = None
             if group_words:
-                probable = f"{alias}.search_tsv @@ TO_TSQUERY('english', '{_tsquery_for_words(group_words)}')"
+                vector = "search_tsv_papers" if papers else "search_tsv"
+                probable = (f"{alias}.{vector} @@ TO_TSQUERY('english', "
+                            f"'{_tsquery_for_words(group_words)}')")
                 reason_probable = "ages not recorded; the description names the age group"
         return SoftCondition(
             sql=sql, kind=kind, probable=probable, known=_known_sql(kind, alias),
             reason_probable=reason_probable or _REASON[kind],
-            reason_possible=_REASON[kind],
+            reason_possible=_REASON[kind], paper=paper,
         )
-    if relaxed:
+    if relaxed or paper:
         return SoftCondition(
             sql=sql, kind="text", probable=relaxed, known=None,
-            reason_probable=f"matches only some of: {' '.join(words)}",
-            reason_possible="",
+            reason_probable=(f"matches only some of: {' '.join(words)}" if relaxed else ""),
+            reason_possible="", paper=paper,
         )
     return None
 
@@ -369,12 +403,16 @@ def _dataset_alias(select) -> Optional[str]:
     return None
 
 
-def apply(sql: str) -> str:
+def apply(sql: str, papers: Optional[bool] = None) -> str:
     """The query with uncertain conditions softened and the two tier columns.
 
-    Returns *sql* unchanged when it has nothing that can be uncertain, or when
-    it cannot be parsed.
+    *papers*: let paper text serve as evidence (default: TEXT_SEARCH_PAPERS
+    and the column exist). Returns *sql* unchanged when it has nothing that
+    can be uncertain, or when it cannot be parsed.
     """
+    if papers is None:
+        from services import text_search
+        papers = text_search.papers_enabled()
     if sqlglot is None or LEVEL_COLUMN in sql:
         return sql
     try:
@@ -393,7 +431,7 @@ def apply(sql: str) -> str:
     for node in _flatten_and(where.this):
         condition = None
         try:
-            condition = classify(node, alias)
+            condition = classify(node, alias, papers=papers)
         except Exception as exc:  # one odd condition must not break the query
             log.debug("uncertain_tier: could not classify %s (%s)", node, exc)
         if condition is None:
@@ -408,7 +446,9 @@ def apply(sql: str) -> str:
     inner.set("where", exp.Where(this=sqlglot.parse_one(keep, read="postgres")))
     inner_sql = inner.sql(dialect="postgres")
 
-    states = ",\n      ".join(f"{c.state_sql()} AS u{i}" for i, c in enumerate(soft))
+    states = ",\n      ".join(
+        [f"{c.state_sql()} AS u{i}" for i, c in enumerate(soft)]
+        + [f"({c.paper}) AS p{i}" for i, c in enumerate(soft) if c.paper])
     names = [f"us.u{i}" for i in range(len(soft))]
     unsure = " + ".join(f"(CASE WHEN {n} > 0 THEN 1 ELSE 0 END)" for n in names)
     evidence = " OR ".join(f"{n} <= 1" for n in names)
@@ -416,6 +456,8 @@ def apply(sql: str) -> str:
     reasons = []
     for i, c in enumerate(soft):
         branches = []
+        if c.paper:
+            branches.append(f"WHEN us.u{i} = 1 AND us.p{i} THEN {_sql_literal(PAPER_REASON)}")
         if c.reason_probable:
             branches.append(f"WHEN us.u{i} = 1 THEN {_sql_literal(c.reason_probable)}")
         if c.reason_possible:
