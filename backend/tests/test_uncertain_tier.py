@@ -36,8 +36,11 @@ def test_age_range_and_group_words() -> None:
     low, high = ut.asked_age_range(sql)
     assert (low, high) == (10, 19)
     words = ut.age_group_words(low, high)
-    assert "adolescents" in words and "children" in words and "adults" not in words
+    assert "adolescents" in words and "children" not in words and "adults" not in words
     assert "adolescent" not in ut.age_group_words(18, 120)
+    older = ut.age_group_words(60, 120)
+    assert "elderly" in older and "adults" not in older and "aging" not in older
+    assert "elderly" not in ut.age_group_words(18, 65)
     assert ut.age_group_words(0, 120) == []
 
 
@@ -107,3 +110,20 @@ def test_paper_text_is_second_tier_evidence() -> None:
     assert ut.PAPER_REASON in tiered
     # Confirmation still uses the dataset's own text.
     assert "CASE WHEN (d.search_tsv @@ TO_TSQUERY('english', 'placebo')) THEN 0" in tiered
+
+
+def test_modifiers_are_not_kept_alone() -> None:
+    # Even when "young" is rarer than "children".
+    import services.text_search as ts
+    original = ts._lookup_counts
+    ts._lookup_counts = lambda qs: [{"young": 54, "children": 63}.get(q, 1000) for q in qs]
+    try:
+        assert ut.relax_tsquery("young & children") == "children"
+    finally:
+        ts._lookup_counts = original
+
+
+def test_top_n_and_ordered_questions_keep_their_shape() -> None:
+    limited = BASE.format(where="d.age_max <= 12 AND d.search_tsv @@ to_tsquery('english', 'autism')") \
+        + " ORDER BY d.size_bytes DESC LIMIT 10"
+    assert ut.apply(limited) == limited

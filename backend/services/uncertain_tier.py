@@ -95,7 +95,10 @@ _AGE_GROUPS: Tuple[Tuple[float, float, Tuple[str, ...]], ...] = (
     (12, 19, ("adolescent", "adolescents", "adolescence", "teen", "teens", "teenager",
               "teenagers", "youth", "youths")),
     (18, 65, ("adult", "adults")),
-    (60, 120, ("older", "elderly", "aging", "ageing", "aged", "geriatric", "seniors")),
+    # Not "aging" / "ageing" / "aged": the stemmer turns them into "age", which
+    # every README with an age range contains. Not "older" alone either.
+    (60, 120, ("older-adults", "older-adult", "older-participants", "elderly", "geriatric",
+               "seniors", "old-age")),
 )
 
 _REASON = {
@@ -129,6 +132,14 @@ def _top_level_and(query: str) -> List[str]:
     return [part for part in parts if part]
 
 
+# Words that qualify the thing searched for rather than name it.
+_MODIFIERS = frozenset({
+    "young", "old", "older", "healthy", "many", "few", "single", "multiple", "different",
+    "large", "small", "high", "low", "new", "long", "short", "early", "late", "normal",
+    "typical", "various", "several", "repeated", "dense", "continuous", "natural",
+})
+
+
 def _rarest_parts(parts: List[str]) -> List[str]:
     """The rarer half of a term's parts (rounded up), in their original order.
 
@@ -145,7 +156,10 @@ def _rarest_parts(parts: List[str]) -> List[str]:
     except Exception:  # pragma: no cover — no database available
         counts = None
     if counts and len(counts) == len(parts):
-        order = sorted(range(len(parts)), key=lambda i: (counts[i], -len(parts[i])))
+        # A modifier ("young", "healthy", "many") is never kept in place of a
+        # noun, however rare it happens to be.
+        order = sorted(range(len(parts)),
+                       key=lambda i: (parts[i].strip("()") in _MODIFIERS, counts[i], -len(parts[i])))
     else:
         order = sorted(range(len(parts)), key=lambda i: -len(parts[i]))
     chosen = set(order[:keep])
@@ -155,7 +169,7 @@ def _rarest_parts(parts: List[str]) -> List[str]:
 def relax_tsquery(query: str) -> Optional[str]:
     """The weaker form of a tsquery: its rarer half, anywhere in the text.
 
-    "young & children" → "children" (if fewer datasets say "children");
+    "young & children" → "children" ("young" is a modifier, never kept alone);
     "evaluated & resective & surgery" → "resective & surgery";
     "language:AB" → "language" (the README counts too).
     None when relaxing changes nothing.
@@ -226,9 +240,12 @@ def age_group_words(low: float, high: float) -> List[str]:
         return []
     words: List[str] = []
     for group_low, group_high, group_words in _AGE_GROUPS:
-        # More than a year of overlap: "18 and over" is not about teenagers,
-        # "10 to 19" not about adults.
-        if min(group_high, high) - max(group_low, low) > 1:
+        # The group must cover a good part of the asked range, or the asked
+        # range a good part of the group: "60 and over" is not about adults
+        # in general, "18 to 65" not about older adults.
+        overlap = min(group_high, high) - max(group_low, low)
+        needed = min((high - low) / 2, (group_high - group_low) / 2)
+        if overlap > 0 and overlap >= needed:
             words.extend(group_words)
     return list(dict.fromkeys(words))
 
@@ -420,6 +437,11 @@ def apply(sql: str, papers: Optional[bool] = None) -> str:
     except Exception:
         return sql
     if not isinstance(tree, exp.Select):
+        return sql
+    # A top-N or ordered question ("the 10 largest …") keeps its own order and
+    # limit; softening the filter inside them would let rows the tier later
+    # drops fill the limit and push confirmed results out.
+    if tree.args.get("limit") or tree.args.get("order") or tree.args.get("offset"):
         return sql
     alias = _dataset_alias(tree)
     where = tree.args.get("where")
