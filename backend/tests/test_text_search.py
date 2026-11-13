@@ -177,6 +177,32 @@ def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
     assert text_search.build_filter_tsquery(terms, "loose") == "motor"
 
 
+def test_without_an_installed_lookup_counts_come_from_an_own_connection(monkeypatch) -> None:
+    """Entry points that skip main.py's startup (benchmark, one-off runs) still get frequencies."""
+    asked = []
+
+    def own(queries):
+        asked.append(queries)
+        return [900, 40] if len(queries) == 2 else [12]
+
+    monkeypatch.setattr(text_search, "_own_connection_lookup", own)
+    monkeypatch.setattr(text_search, "_frequency_lookup", text_search._OWN_CONNECTION)
+    terms = text_terms.parse_alternatives("eye tracking")
+    assert text_search.build_filter_tsquery(terms, "loose") == "tracking & eye"
+    assert asked == [["eye", "tracking"], ["tracking & eye"]]
+
+
+def test_own_connection_lookup_stays_off_without_the_column_or_on_the_loop() -> None:
+    caps.set_fts(False)
+    assert text_search._own_connection_lookup(["eye"]) is None
+    caps.set_fts(True)
+
+    async def on_loop():
+        return text_search._own_connection_lookup(["eye"])
+
+    assert asyncio.run(on_loop()) is None
+
+
 def test_frequency_lookup_refuses_to_block_the_event_loop() -> None:
     async def scenario():
         lookup = text_search.make_frequency_lookup(engine=object(), loop=asyncio.get_running_loop())

@@ -95,7 +95,21 @@ _SAFE_TSQUERY_RE = re.compile(r"^[a-z0-9 &|()<>:AB-]+$")
 # Given tsquery strings, returns how many datasets match each one, or None
 # when the answer is not available.
 FrequencyLookup = Callable[[List[str]], Optional[List[int]]]
-_frequency_lookup: Optional[FrequencyLookup] = None
+
+# Until something else is installed, the lookup opens its own short-lived
+# connection (_own_connection_lookup), so every entry point gets frequencies:
+# the API (main.py installs a pooled lookup at startup), one-off containers,
+# the recall benchmark. set_frequency_lookup(None) switches lookups off.
+_OWN_CONNECTION = object()
+_frequency_lookup: Any = _OWN_CONNECTION
+FREQUENCY_TIMEOUT_SECONDS = 3.0
+
+_COUNT_SQL = (
+    f"SELECT (SELECT count(*) FROM bids_datasets d "
+    f"        WHERE d.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', q.tsq)) "
+    "FROM unnest(CAST(:queries AS text[])) WITH ORDINALITY AS q(tsq, ord) "
+    "ORDER BY q.ord"
+)
 
 
 def set_frequency_lookup(lookup: Optional[FrequencyLookup]) -> None:
@@ -103,21 +117,58 @@ def set_frequency_lookup(lookup: Optional[FrequencyLookup]) -> None:
     _frequency_lookup = lookup
 
 
+def _on_event_loop() -> bool:
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return False
+    return True
+
+
+def _own_connection_lookup(queries: List[str]) -> Optional[List[int]]:
+    """Count with a connection of its own; for callers that installed nothing.
+
+    Runs only off the event loop (the translation pipeline runs in a worker
+    thread) and only when the database has search_tsv.
+    """
+    if _on_event_loop() or not schema_capabilities.has_fts():
+        return None
+    try:
+        from db.db import engine as app_engine
+        from sqlalchemy import text
+        from sqlalchemy.ext.asyncio import create_async_engine
+        from sqlalchemy.pool import NullPool
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Word frequency lookup unavailable (%s) — using the longest word", exc)
+        return None
+
+    async def _count() -> List[int]:
+        # NullPool: the connection belongs to this short-lived event loop only.
+        engine = create_async_engine(app_engine.url, poolclass=NullPool)
+        try:
+            async with engine.connect() as connection:
+                rows = await connection.execute(text(_COUNT_SQL), {"queries": queries})
+                return [int(row[0]) for row in rows]
+        finally:
+            await engine.dispose()
+
+    try:
+        return asyncio.run(asyncio.wait_for(_count(), FREQUENCY_TIMEOUT_SECONDS))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Word frequency lookup failed (%s) — using the longest word", exc)
+        return None
+
+
 def make_frequency_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
-                          timeout: float = 3.0) -> FrequencyLookup:
-    """Frequency lookup for code running in a worker thread.
+                          timeout: float = FREQUENCY_TIMEOUT_SECONDS) -> FrequencyLookup:
+    """Pooled frequency lookup for code running in a worker thread.
 
     The translation pipeline runs in asyncio.to_thread, while the database
     engine belongs to the event loop; the count is scheduled there.
     """
     from sqlalchemy import text
 
-    statement = text(
-        f"SELECT (SELECT count(*) FROM bids_datasets d "
-        f"        WHERE d.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', q.tsq)) "
-        "FROM unnest(CAST(:queries AS text[])) WITH ORDINALITY AS q(tsq, ord) "
-        "ORDER BY q.ord"
-    )
+    statement = text(_COUNT_SQL)
 
     async def _count(queries: List[str]) -> List[int]:
         async with engine.connect() as connection:
@@ -179,10 +230,11 @@ LOOSE_MIN_MATCHES = 3
 
 
 def _lookup_counts(queries: List[str]) -> Optional[List[int]]:
-    if _frequency_lookup is None:
+    lookup = _own_connection_lookup if _frequency_lookup is _OWN_CONNECTION else _frequency_lookup
+    if lookup is None:
         return None
     try:
-        counts = _frequency_lookup(queries)
+        counts = lookup(queries)
     except Exception as exc:  # a lookup must never break a search
         log.warning("Word frequency lookup raised (%s) — using the longest word", exc)
         return None
