@@ -10,6 +10,11 @@ corrections.jsonl overrides judge labels after review: one line per
 (query, acc) with the new label, the reason and who decided. Corrections are
 applied last, so they survive a re-run with new judge output.
 
+extra_judgments.jsonl holds labels for datasets outside the pools that a
+search variant returned and the same judge labelled afterwards (the
+uncertain tier and paper text, 2026-11-13). They are added like labels of
+earlier rounds; a label in the judged directory wins.
+
     python benchmarks/recall/merge_judgments.py POOLS.json JUDGED_DIR --snapshot-date 2026-11-13
 """
 
@@ -41,6 +46,13 @@ def main() -> None:
             if line.strip():
                 row = json.loads(line)
                 labels[(row["query"], row["acc"])] = row
+
+    extra = HERE / "extra_judgments.jsonl"
+    if extra.exists():
+        for line in extra.read_text().splitlines():
+            if line.strip():
+                row = json.loads(line)
+                labels.setdefault((row["query"], row["acc"]), row)
 
     corrections = HERE / "corrections.jsonl"
     corrected = 0

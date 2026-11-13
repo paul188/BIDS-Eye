@@ -7,7 +7,9 @@ Measures how many of the relevant datasets a search actually returns.
 | `queries.yaml` | 227 questions from three rounds: 167 for development, 60 held out. Each has a written relevance criterion and the signals used to find candidates. |
 | `ground_truth.json` | Relevant / not relevant / unsure datasets per question. |
 | `judgments.jsonl` | Every label with its one-line reason, for review. |
+| `extra_judgments.jsonl` | Labels for 1,340 datasets outside the pools that the uncertain tier or paper text returned, judged afterwards by the same judge (the cards also showed the dataset's papers). |
 | `corrections.jsonl` | Labels changed after review, with reason and who decided; `merge_judgments.py` applies them last. |
+| `paired_uncertain_run.py` | Runs each question once and its SQL twice, with and without the uncertain tier. |
 | `paired_papers_run.py` | Runs each question once and its SQL twice, with and without paper text in the text filters. |
 | `build_pool.py` | Builds the candidate pool of each question from a database snapshot. |
 | `merge_judgments.py` | Turns judge output into `ground_truth.json` and `judgments.jsonl`. |
