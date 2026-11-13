@@ -1,0 +1,90 @@
+# HELD-OUT QUESTIONS of the recall benchmark — do not tune on these.
+#
+# The 60 questions listed here are set aside to check a finished change. Their
+# ids all start with "h". The other 167 questions in queries.yaml are the
+# development set.
+#
+# Rules:
+#   - Develop and compare on the development set (`eval_recall.py score`).
+#   - Run and score the held-out set once, when a change is finished
+#     (`eval_recall.py run --split held-out`, then `score --held-out`), and
+#     report both numbers.
+#   - Do not read per-question held-out results, their SQL or their failures,
+#     and do not add vocabulary, synonyms, few-shot examples or prompt text
+#     because of a held-out question. A gain that shows on development but not
+#     here was fitted to the development questions.
+#   - Label work is allowed: judging datasets, correcting labels, widening pools.
+#   - Never move a development question into this set. A held-out question
+#     that has been studied goes back to development and is replaced by a
+#     newly written one.
+#
+# How they were made (2026-11-13, after commit 9d76ad7): written by LLM
+# writers that saw dataset cards and the existing questions, but no search
+# code and no results; seed datasets picked by a hash among datasets never
+# used as a seed before. 36 from READMEs, 8 from paper abstracts, 7 in the
+# bioCADDIE constraint form, 9 with AND / OR / NOT (4 computed exactly).
+# Pools, judge and species rule as in the second round (work/recipe/,
+# work/heldout2/). No search has been run on them yet.
+#
+# One id per line; lines starting with # are ignored.
+
+hg01_dystonia
+hg02_congenital_heart
+hg03_borderline_personality
+hg04_cannabis_users
+hg05_pituitary
+hg06_obesity_eeg_kids
+hg07_fibromyalgia_fmri
+hg08_hazardous_drinkers_eeg
+hg09_preschool_anxiety_fmri
+hg10_meningioma_fmri
+hg11_odor_perception
+hg12_antisaccade
+hg13_arithmetic
+hg14_moral_judgment
+hg15_statistical_learning
+hg16_auctions_bidding
+hg17_sternberg_eeg
+hg18_imagined_speech_eeg
+hg19_mobile_eeg_balance
+hg20_retinotopy_fmri
+hg21_abr_eeg
+hg22_asl_older_adults
+hg23_infant_eeg
+hg24_fmri_teenagers
+hg25_pet_healthy_young
+hg26_athletes
+hg27_elderly_women
+hg28_childhood_ses
+hg29_children_vs_adults
+hg30_laminar_fmri
+hg31_ultra_low_field
+hg32_multi_echo
+hg33_single_dose_drug
+hg34_awake_mice
+hg35_traveling_subjects
+hg36_head_motion
+hd01_changepoint_learning_rate
+hd02_nap_pet_visual_learning
+hd03_scene_navigation_motion_fmri
+hd04_multisensory_association_learning
+hd05_letter_perception_eeg_rsa
+hd06_smr_bci_learning_eeg
+hd07_tacs_aphasia_naming_eeg
+hd08_sequence_training_finger_patterns
+hb01_obesity_food_fmri
+hb02_ern_eeg_healthy
+hb03_preterm_cortex_mri
+hb04_huntington
+hb05_eeg_rest_ad_mci
+hb06_numerical_fmri_children
+hb07_fnirs_infants
+hl01_meg_and_t1
+hl02_fnirs_or_mocap
+hl03_dwi_without_fmri
+hl04_pet_no_mri
+hl05_anxiety_and_face_task
+hl06_spatial_nav_young_adults
+hl07_tourette_or_tic
+hl08_cannabis_or_cocaine
+hl09_autism_adults_not_children

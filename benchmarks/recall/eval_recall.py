@@ -22,9 +22,18 @@ scoring needs only files:
 
        python benchmarks/recall/eval_recall.py score run.json
 
-   Prints per-query and average recall, precision and recall@20 (the first
-   page a user sees), and lists returned datasets that nobody judged, so the
-   pool can be widened.
+   Prints per-query and average recall, precision, recall@20 (the first
+   page a user sees) and nDCG@10 (are the best datasets at the top), and
+   lists returned datasets that nobody judged, so the pool can be widened.
+
+   The questions in held_out_questions.txt are set aside: `run` skips them and
+   `score` leaves them out. When a change is finished, check it once:
+
+       ... eval_recall.py run --split held-out --out /out/held_out.json
+       python benchmarks/recall/eval_recall.py score held_out.json --held-out
+
+   The score prints their averages only, never single questions. Read the
+   rules at the top of held_out_questions.txt before using it.
 """
 
 from __future__ import annotations
@@ -33,6 +42,7 @@ import argparse
 import asyncio
 import inspect
 import json
+import math
 import sys
 import time
 from pathlib import Path
@@ -40,6 +50,31 @@ from typing import Any, Dict, List, Optional
 
 HERE = Path(__file__).resolve().parent
 PAGE = 20
+NDCG_DEPTH = 10
+HELD_OUT_FILE = HERE / "held_out_questions.txt"
+
+
+def load_held_out(path: Path = HELD_OUT_FILE) -> set:
+    """Ids of the questions set aside for checking finished changes."""
+    if not path.exists():
+        return set()
+    lines = (line.strip() for line in path.read_text().splitlines())
+    return {line for line in lines if line and not line.startswith("#")}
+
+
+def ndcg(returned: List[str], relevant: set, partial: set, depth: int = NDCG_DEPTH) -> Optional[float]:
+    """Normalised discounted cumulative gain of the first `depth` results.
+
+    A relevant dataset gains 1, a partially relevant one 0.5, anything else
+    (judged not relevant, unsure or never judged) 0. Each gain is divided by
+    log2(position + 1), and the sum by the best sum any ordering could reach.
+    """
+    if not relevant:
+        return None
+    gains = [1.0 if a in relevant else 0.5 if a in partial else 0.0 for a in returned[:depth]]
+    ideal = ([1.0] * len(relevant) + [0.5] * len(partial))[:depth]
+    dcg = sum(g / math.log2(i + 2) for i, g in enumerate(gains))
+    return dcg / sum(g / math.log2(i + 2) for i, g in enumerate(ideal))
 
 
 # ── run ───────────────────────────────────────────────────────────────────────
@@ -156,8 +191,13 @@ def _load_truth(truth_path: Path) -> Dict[str, dict]:
     return json.loads(truth_path.read_text())["queries"]
 
 
-def _score(run_path: Path, truth_path: Path, show_unjudged: int) -> None:
+def _score(run_path: Path, truth_path: Path, show_unjudged: int,
+           held_out: bool = False, held_out_path: Path = HELD_OUT_FILE) -> None:
     truth = _load_truth(truth_path)
+    held_ids = load_held_out(held_out_path)
+    unknown = sorted(held_ids - set(truth))
+    if unknown:
+        sys.exit(f"{held_out_path.name} names questions that are not in {truth_path.name}: {', '.join(unknown)}")
     data = json.loads(run_path.read_text())
     meta = data.get("meta") or {}
     if meta:
@@ -166,7 +206,7 @@ def _score(run_path: Path, truth_path: Path, show_unjudged: int) -> None:
     rows = []
     for qid, t in truth.items():
         r = run.get(qid)
-        if r is None:
+        if r is None or (qid in held_ids) != held_out:
             continue
         relevant = set(t["relevant"])
         partial = set(t.get("partially_relevant", []))
@@ -185,6 +225,7 @@ def _score(run_path: Path, truth_path: Path, show_unjudged: int) -> None:
             # relevant + partially relevant both count as found
             "recall_lenient": len([a for a in returned if a in lenient]) / len(lenient) if lenient else None,
             "recall_at_20": len(first_page & relevant) / min(len(relevant), PAGE) if relevant else None,
+            "ndcg": ndcg(returned, relevant, partial),
             "precision": (len(hit) / len(judged_returned)) if judged_returned else None,
             "unjudged": [a for a in returned if t["method"] != "structural" and a not in judged],
             "fallback": r.get("fallback"),
@@ -194,12 +235,24 @@ def _score(run_path: Path, truth_path: Path, show_unjudged: int) -> None:
     def fmt(x: Optional[float]) -> str:
         return "   —" if x is None else f"{x:4.0%}"
 
-    print(f"{'query':30} {'rel':>4} {'ret':>5} {'recall':>6} {'lenient':>7} {'R@20':>5} {'prec':>5} {'unjdg':>5}  note")
-    for row in rows:
-        note = "FALLBACK SAMPLE" if row["fallback"] else (row["error"] or "")
-        print(f"{row['id']:30} {row['n_relevant']:4d} {row['returned']:5d} {fmt(row['recall']):>6} "
-              f"{fmt(row['recall_lenient']):>7} {fmt(row['recall_at_20']):>5} {fmt(row['precision']):>5} "
-              f"{len(row['unjudged']):5d}  {note[:50]}")
+    n_held = len(held_ids & set(run))
+    if held_out and not rows:
+        sys.exit(f"This run contains none of the held-out questions. Run them with: run --split held-out")
+    if held_out:
+        # Averages only: a per-question table would invite tuning on them.
+        print(f"HELD-OUT SET: {len(rows)} questions, averages only. Use it to check a finished change, "
+              f"not to develop one ({held_out_path.name}).")
+    else:
+        if held_ids:
+            left_out = (f" {n_held} held-out question(s) in this run are left out; score them with "
+                        f"--held-out when the change is finished.") if n_held else ""
+            print(f"DEVELOPMENT SET: {len(rows)} questions.{left_out}\n")
+        print(f"{'query':30} {'rel':>4} {'ret':>5} {'recall':>6} {'lenient':>7} {'R@20':>5} {'nDCG':>5} {'prec':>5} {'unjdg':>5}  note")
+        for row in rows:
+            note = "FALLBACK SAMPLE" if row["fallback"] else (row["error"] or "")
+            print(f"{row['id']:30} {row['n_relevant']:4d} {row['returned']:5d} {fmt(row['recall']):>6} "
+                  f"{fmt(row['recall_lenient']):>7} {fmt(row['recall_at_20']):>5} {fmt(row['ndcg']):>5} "
+                  f"{fmt(row['precision']):>5} {len(row['unjudged']):5d}  {note[:50]}")
 
     def summary(subset: List[dict], label: str) -> None:
         scored = [row for row in subset if row["recall"] is not None]
@@ -209,15 +262,22 @@ def _score(run_path: Path, truth_path: Path, show_unjudged: int) -> None:
             vals = [row[key] for row in scored if row[key] is not None]
             return f"{sum(vals) / len(vals):4.0%}" if vals else "   —"
         print(f"{label:22} {len(scored):4d} {avg('recall'):>7} {avg('recall_lenient'):>8} "
-              f"{avg('recall_at_20'):>6} {avg('precision'):>6} {sum(row['recall'] == 0 for row in scored):>9}")
+              f"{avg('recall_at_20'):>6} {avg('ndcg'):>8} {avg('precision'):>6} "
+              f"{sum(row['recall'] == 0 for row in scored):>9}")
 
-    print(f"\n{'group':22} {'n':>4} {'recall':>7} {'lenient':>8} {'R@20':>6} {'prec':>6} {'found none':>9}")
+    print(f"\n{'group':22} {'n':>4} {'recall':>7} {'lenient':>8} {'R@20':>6} {'nDCG@' + str(NDCG_DEPTH):>8} {'prec':>6} {'found none':>9}")
     for group in sorted({row["group"] for row in rows}):
         summary([row for row in rows if row["group"] == group], group)
-    summary(rows, "ALL")
+    summary(rows, "ALL HELD-OUT" if held_out else "ALL DEVELOPMENT" if held_ids else "ALL")
     fallbacks = sum(bool(row["fallback"]) for row in rows)
     if fallbacks:
         print(f"\n{fallbacks} question(s) fell back to the 200-dataset sample.")
+    if held_out:
+        unjudged = sum(len(row["unjudged"]) for row in rows)
+        if unjudged:
+            print(f"{unjudged} returned dataset(s) were never judged: nDCG counts them as not relevant, "
+                  f"precision leaves them out.")
+        return
     for row in rows:
         if row["recall"] is None:
             print(f"No relevant dataset exists for {row['id']}: returned {row['returned']} (all false positives)")
@@ -245,6 +305,9 @@ def main() -> None:
     run.add_argument("--out", type=Path, required=True)
     run.add_argument("--queries", type=Path, default=HERE / "queries.yaml")
     run.add_argument("--only", default="", help="comma-separated query ids")
+    run.add_argument("--split", choices=("development", "held-out", "all"), default="development",
+                     help="which questions to run: 'development' (default) skips those in "
+                          "held_out_questions.txt, 'held-out' runs only those")
     run.add_argument("--backend-dir", default="/app/backend")
     run.add_argument("--label", default="", help="what is being measured, e.g. the commits in the image")
     run.add_argument("--no-rerank", action="store_true", help="measure SQL retrieval without the LLM re-ranker")
@@ -252,6 +315,9 @@ def main() -> None:
     score.add_argument("run", type=Path)
     score.add_argument("--truth", type=Path, default=HERE / "ground_truth.json")
     score.add_argument("--show-unjudged", type=int, default=8)
+    score.add_argument("--held-out", action="store_true",
+                       help="score the held-out questions (averages only) instead of the development questions")
+    score.add_argument("--held-out-file", type=Path, default=HELD_OUT_FILE)
     args = parser.parse_args()
 
     if args.command == "run":
@@ -263,9 +329,12 @@ def main() -> None:
         if args.only:
             wanted = set(args.only.split(","))
             questions = [q for q in questions if q["id"] in wanted]
+        if args.split != "all" and not args.only:
+            held_ids = load_held_out()
+            questions = [q for q in questions if (q["id"] in held_ids) == (args.split == "held-out")]
         asyncio.run(_run(questions, args.out, args.backend_dir, args.label))
     else:
-        _score(args.run, args.truth, args.show_unjudged)
+        _score(args.run, args.truth, args.show_unjudged, args.held_out, args.held_out_file)
 
 
 if __name__ == "__main__":

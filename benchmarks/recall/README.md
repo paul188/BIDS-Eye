@@ -4,7 +4,7 @@ Measures how many of the relevant datasets a search actually returns.
 
 | File | What it is |
 |---|---|
-| `queries.yaml` | 35 questions: 17 from the bidseye.xyz user log, 18 probes for known weaknesses. Each has a written relevance criterion and the signals used to find candidates. |
+| `queries.yaml` | 227 questions from three rounds: 167 for development, 60 held out. Each has a written relevance criterion and the signals used to find candidates. |
 | `ground_truth.json` | Relevant / not relevant / unsure datasets per question. |
 | `judgments.jsonl` | Every label with its one-line reason, for review. |
 | `corrections.jsonl` | Labels changed after review, with reason and who decided; `merge_judgments.py` applies them last. |
@@ -12,6 +12,9 @@ Measures how many of the relevant datasets a search actually returns.
 | `build_pool.py` | Builds the candidate pool of each question from a database snapshot. |
 | `merge_judgments.py` | Turns judge output into `ground_truth.json` and `judgments.jsonl`. |
 | `eval_recall.py` | `run`: sends every question through the deployed search code. `score`: compares the result with the ground truth. |
+| `held_out_questions.txt` | The questions set aside for checking finished changes, with the rules for using them. |
+| `paired_rank_run.py` | Runs each question once and orders its results twice, with and without the text rank. |
+| `compare_pair.py` | Compares the two result files of a paired run: recall@20, nDCG@20, bootstrap interval. |
 
 ## How the ground truth was made
 
@@ -69,6 +72,58 @@ correct a label in `judgments.jsonl` when you disagree, and widen a pool when
     judge were corrected (`corrections.jsonl`); 6 of them were "unsure".
 - `score` groups results by source and by logic operator.
 
+## Development and held-out questions
+
+A change that was developed by looking at benchmark questions scores better
+on those questions than it will for users. So part of the questions is set
+aside: the 60 questions listed in `held_out_questions.txt`, whose ids start
+with "h". The other 167 are the development set.
+
+- `run` runs the development questions; `run --split held-out` runs the
+  held-out ones (`--split all` runs both).
+- `score` shows the development questions only.
+- `score --held-out` shows the held-out averages, never single questions.
+  Do this once, when a change is finished, and report both numbers.
+- Do not read held-out results, SQL or failures question by question, and do
+  not add vocabulary, examples or prompt text because of a held-out question.
+- Other runners that read `queries.yaml` must skip the listed ids too.
+
+Compare gains, not levels: the two sets differ in make-up (the development
+set contains the 35 first-round questions, on which the search scores far
+higher), so their averages differ for that reason alone.
+
+### Third round: the held-out questions (2026-11-13)
+
+All 167 earlier questions had been run, and their failures read, while the
+search was changed, so none of them could serve as a held-out set. The 60
+held-out questions were written afterwards (after commit 9d76ad7) with the
+recipe of the second round (`work/recipe/`, scripts in `work/heldout2/`):
+
+| Source | Questions |
+|---|---|
+| Generated from READMEs, 8 question types (seeds never used before, picked by hash) | 36 |
+| Research needs written from paper abstracts | 8 |
+| bioCADDIE-style | 7 |
+| Explicit AND / OR / NOT (4 computed exactly) | 9 |
+
+- The writers saw dataset cards and the existing questions, but no search
+  code and no results.
+- 2,023 candidates judged by the same LLM judge with the same instructions;
+  the same rule for non-human data. 56 questions have at least one relevant
+  dataset; 3 have none in the catalogue and one has only partial matches.
+- Not done for these labels: the blind second judge and the label review.
+- 10 questions have a single relevant dataset, so their recall is 0 or 100%.
+
+## Metrics
+
+| Metric | Meaning |
+|---|---|
+| recall | Share of the relevant datasets that the search returned at all. |
+| lenient | The same, with partially relevant datasets also counting. |
+| R@20 | Share of the relevant datasets on the first page of 20 (out of 20 when more exist). |
+| nDCG@10 | Whether the first 10 results are the best ones, in the best order: a relevant dataset gains 1, a partially relevant one 0.5, divided by log2(position + 1) and by the best achievable sum. Never-judged datasets gain 0. |
+| prec | Share of the returned, judged datasets that are relevant. |
+
 ## Running it
 
 On the server, in a one-off backend container (needs the LLM keys and the
@@ -83,7 +138,8 @@ docker compose -f docker-compose-hetzner.yml run --rm --no-deps \
 About 30 seconds per question, so 15–20 minutes. Then, anywhere:
 
 ```bash
-python benchmarks/recall/eval_recall.py score run.json
+python benchmarks/recall/eval_recall.py score run.json                  # development questions
+python benchmarks/recall/eval_recall.py score held_out.json --held-out  # once, for a finished change
 ```
 
 Compare two versions of the search by running both against the same
