@@ -4051,28 +4051,28 @@
     },
     {
       "question": "List all 7 Tesla MRI datasets.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float = 7.0) GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float BETWEEN 6.5 AND 7.5) OR text_match('7t | 7 tesla')) GROUP BY d.id",
       "pattern": "scanner_field_strength",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]
     },
     {
       "question": "Find datasets acquired at field strengths of at least 3 Tesla.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float >= 3.0) GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float >= 2.8) GROUP BY d.id",
       "pattern": "scanner_field_strength",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]
     },
     {
       "question": "Show me datasets acquired on 1.5 Tesla MRI scanners.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float = 1.5) GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float BETWEEN 1.4 AND 1.6) GROUP BY d.id",
       "pattern": "scanner_field_strength",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]
     },
     {
       "question": "Show me datasets that used ultra-high field MRI (7T or higher).",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float >= 7.0) GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND (bo.other_entities->>'MagneticFieldStrength')::float >= 6.5) OR text_match('7t | 7 tesla | ultra-high field')) GROUP BY d.id",
       "pattern": "scanner_field_strength",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]

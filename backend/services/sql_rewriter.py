@@ -80,6 +80,9 @@ _TEXT_MATCH_CALL_RE = re.compile(
     re.IGNORECASE,
 )
 _CODE_RE = re.compile(r"^[A-Za-z0-9_]+$")
+# A JSON text value that PostgreSQL can cast to a number (no backslashes, so
+# the pattern survives sqlglot and standard_conforming_strings unchanged).
+_NUMBER_PATTERN = r"^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$"
 _SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
 
 # Task ILIKE concept expansion: maps vague category terms to canonical task codes.
@@ -208,6 +211,7 @@ class SqlRewriteService:
         sql = self._strip_outer_scan_filters(sql)
         sql = self._rewrite_task_ilike_concepts(sql)
         sql = self._rewrite_participant_count_to_having(sql)
+        sql = self._guard_json_number_casts(sql)
         sql = self._inject_vocab_miss(sql, augmented_question)
         expanded = _text_search.expand_text_search(sql)
         return RewriteResult(sql=expanded.sql, params={}, rank_tsquery=expanded.rank_tsquery)
@@ -468,6 +472,56 @@ class SqlRewriteService:
         if column not in {"task", "datatype", "suffix"}:
             return False
         return isinstance(right, exp.Literal)
+
+    def _guard_json_number_casts(self, sql: str) -> str:
+        """Make number casts of JSON values safe: a non-number no longer crashes the query.
+
+        Sidecar and participants.tsv values are free text ("n/a", "7T",
+        "unknown"), so CAST(o.other_entities ->> 'MagneticFieldStrength' AS
+        DOUBLE PRECISION) fails the whole query on the first such value and the
+        user gets the fallback sample. Each such cast becomes
+            CASE WHEN <value> ~ '<number>' THEN CAST(<value> AS <type>) END
+        so a non-number is NULL and simply does not match. Casts already inside
+        a CASE that tests the same value are left alone.
+        """
+        if parse_one is None or exp is None or "->>" not in sql:
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+        except Exception:
+            return sql
+        changed = False
+        for cast in list(parsed.find_all(exp.Cast)):
+            inner = cast.this.unnest() if isinstance(cast.this, exp.Paren) else cast.this
+            if not isinstance(inner, exp.JSONExtractScalar):
+                continue
+            if not cast.to.is_type(*exp.DataType.NUMERIC_TYPES):
+                continue
+            value_sql = inner.sql(dialect="postgres")
+            if self._already_guarded(cast, value_sql):
+                continue
+            guarded = parse_one(
+                f"CASE WHEN ({value_sql}) ~ '{_NUMBER_PATTERN}' "
+                f"THEN CAST(({value_sql}) AS {cast.to.sql(dialect='postgres')}) END",
+                read="postgres",
+            )
+            cast.replace(guarded)
+            changed = True
+        if not changed:
+            return sql
+        log.info("Guarded number casts of JSON values")
+        return parsed.sql(dialect="postgres")
+
+    @staticmethod
+    def _already_guarded(node: Any, value_sql: str) -> bool:
+        parent = node.parent
+        while parent is not None:
+            if isinstance(parent, exp.If):
+                condition = parent.this.sql(dialect="postgres")
+                if value_sql in condition and "~" in condition:
+                    return True
+            parent = parent.parent
+        return False
 
     def _rewrite_task_ilike_concepts(self, sql: str) -> str:
         """Replace vague `task ILIKE '%term%'` patterns with precise task IN lists.

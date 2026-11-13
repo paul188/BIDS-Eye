@@ -133,17 +133,21 @@ CREATE TABLE bids_objects (
                                   --      'positron_emission_tomography', 'perfusion_asl', 'fnirs'
     extension       TEXT,         -- file format ONLY: '.nii.gz', '.json', '.tsv', '.eeg', etc.
                                   -- NEVER contains metadata field names
-    other_entities  JSONB         -- sidecar metadata + secondary BIDS entities
+    other_entities  JSON          -- sidecar metadata + secondary BIDS entities (JSON, not JSONB:
+                                  --   json_typeof works, jsonb_* functions and ?/@> do not)
                                   -- Scanner hardware keys (use ILIKE for string fields):
                                   --   Manufacturer          TEXT  e.g. 'Siemens', 'Philips', 'GE', 'Bruker'
                                   --   ManufacturerModelName TEXT  e.g. 'Prisma', 'Skyra', 'Achieva', 'MAGNETOM'
-                                  --   MagneticFieldStrength FLOAT e.g. 1.5, 3.0, 7.0  (Tesla)
+                                  --   MagneticFieldStrength FLOAT e.g. 1.5, 3.0, 7.0  (Tesla). Vendors write
+                                  --     approximate values (2.89 for 3 T, 6.98 for 7 T): compare with a
+                                  --     range, e.g. 7 T → BETWEEN 6.5 AND 7.5, never = 7.0
                                   --   SoftwareVersions      TEXT  e.g. 'syngo MR E11'
                                   -- Acquisition params:
                                   --   RepetitionTime, EchoTime, FlipAngle, AcquisitionTime
                                   -- Secondary BIDS entities: acq, echo, dir, space, res
                                   -- Extract as text : other_entities->>'Manufacturer'
                                   -- Cast to numeric : (other_entities->>'MagneticFieldStrength')::float
+                                  --   (non-numeric values such as 'n/a' are skipped automatically)
 );
 
 CREATE TABLE bids_participants (
@@ -157,7 +161,7 @@ CREATE TABLE bids_participants (
                              --   'healthy_control', 'major_depressive_disorder', 'adhd'
                              -- Use broad concept keys for categories (auto-expanded at runtime):
                              --   'epilepsy_spectrum', 'psychiatric', 'neurodevelopmental', etc.
-    extra          JSONB        -- non-standard participant columns from participants.tsv
+    extra          JSON         -- non-standard participant columns from participants.tsv (JSON, not JSONB)
                                 -- e.g. {"concern_dieting": "yes", "bmi": 24.5, "group": "control"}
                                 -- Use ->> to extract: p.extra->>'concern_dieting'
 );

@@ -107,3 +107,39 @@ def test_extract_sql_drops_a_trailing_closing_tag() -> None:
         assert SERVICE.extract_sql(raw) == sql, raw
     # No marker: prose after a blank line is still dropped.
     assert SERVICE.extract_sql("SELECT 1\n\nThis returns one.") == "SELECT 1"
+
+
+def test_number_casts_of_json_values_cannot_crash_the_query() -> None:
+    """'7 Tesla': one sidecar value like 'n/a' used to fail the whole query."""
+    from services import sql_rewriter
+
+    if sql_rewriter.parse_one is None:
+        return
+    raw_sql = (
+        "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "
+        "AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE "
+        "bo.dataset_id = d.id AND CAST((bo.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) "
+        "BETWEEN 6.5 AND 7.5) AND EXISTS (SELECT 1 FROM bids_participants p WHERE "
+        "p.dataset_id = d.id AND (p.extra->>'bmi')::numeric > 30) GROUP BY d.id"
+    )
+    sql = SERVICE.rewrite_generated_sql(raw_sql, "7 Tesla datasets").sql
+    assert sql.count("CASE WHEN") == 2
+    assert "~ '^[[:space:]]*[-+]?" in sql
+    assert "THEN CAST((bo.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END" in sql
+    assert "THEN CAST((p.extra ->> 'bmi') AS DECIMAL) END" in sql
+
+
+def test_already_guarded_and_non_number_casts_are_left_alone() -> None:
+    from services import sql_rewriter
+
+    if sql_rewriter.parse_one is None:
+        return
+    guarded = (
+        "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "
+        "AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id "
+        "AND CASE WHEN (bo.other_entities->>'EchoTime') ~ '^[0-9.]+$' "
+        "THEN (bo.other_entities->>'EchoTime')::float > 0.03 ELSE FALSE END "
+        "AND (bo.other_entities->>'Manufacturer')::text = 'Siemens') GROUP BY d.id"
+    )
+    sql = SERVICE.rewrite_generated_sql(guarded, "q").sql
+    assert sql.count("CASE WHEN") == 1
