@@ -403,6 +403,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         # Without this the router ranks by code matches only: the text rank
         # (ts_rank_cd over search_tsv) is silently left out.
         rank_tsquery=rewritten.rank_tsquery,
+        filter_sql=rewritten.filter_sql,
     )
 
 
@@ -431,7 +432,7 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     )
     return TextToSQLResult(
         sql=sql, explanation=explanation + " Showing a plain keyword search for your question instead.",
-        apply_relevance=True, rank_tsquery=query,
+        apply_relevance=True, rank_tsquery=query, filter_sql=sql,
     )
 
 

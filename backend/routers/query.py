@@ -29,10 +29,15 @@ from routers.auth import require_auth
 from schemas import (
     DatasetSchema,
     ParticipantSchema,
+    QueryFilterSchema,
     QueryPageRequest,
+    QueryRefineRequest,
     QueryRequest,
     QueryResponse,
+    TextToSQLResult,
 )
+from services import query_filters
+from services import uncertain_tier
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
 from services.rerank import rerank_candidates, settings as rerank_settings, should_rerank
@@ -231,6 +236,14 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
     ]
 
 
+def _filters_for(cached: CachedQuery) -> list[QueryFilterSchema]:
+    """The query's conditions as chips; none once the SQL was self-corrected,
+    since the corrected query no longer matches the conditions read earlier."""
+    if cached.self_corrected or not cached.filter_sql:
+        return []
+    return [QueryFilterSchema(**f.to_dict()) for f in query_filters.describe(cached.filter_sql)]
+
+
 def _clamp_page(page: int, page_size: int) -> tuple[int, int]:
     page = max(1, page)
     page_size = max(1, min(page_size or _DEFAULT_PAGE_SIZE, _MAX_PAGE_SIZE))
@@ -301,6 +314,7 @@ async def query_datasets(
         rank_tsquery=translation.rank_tsquery,
         explanation=translation.explanation,
         self_corrected=translation.self_corrected,
+        filter_sql=translation.filter_sql,
     )
     query_id = query_cache.put(cached)
 
@@ -327,6 +341,7 @@ async def query_datasets(
     return QueryResponse(
         message=f"Found {total} dataset(s) matching your query.",
         translation=translation,
+        filters=_filters_for(cached),
         datasets=datasets,
         query_id=query_id,
         total=total,
@@ -362,6 +377,74 @@ async def query_page(
         translation=None,
         datasets=datasets,
         query_id=body.query_id,
+        total=total,
+        page=page,
+        page_size=page_size,
+        has_more=(page * page_size) < total,
+    )
+
+
+@router.post("/refine", response_model=QueryResponse)
+async def query_refine(
+    body: QueryRefineRequest,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    _auth: Annotated[dict, Depends(require_auth)],
+):
+    """Re-run a translated query without some of its conditions.
+
+    *remove* names chips of the original query (its ``filters``). The
+    conditions are dropped from the cached query (services/query_filters.py),
+    so no language model runs and the daily limit is not charged. The answer
+    carries a new ``query_id`` for paging; the original stays valid, so the
+    user can put chips back by refining the original again.
+    """
+    original = query_cache.get(body.query_id)
+    if original is None:
+        raise HTTPException(
+            status_code=410,
+            detail="This search has expired. Please run the query again.",
+        )
+    if original.self_corrected or not original.filter_sql:
+        raise HTTPException(status_code=400, detail="This search has no filters to change.")
+
+    filter_sql = query_filters.remove(original.filter_sql, body.remove)
+    if filter_sql is None:
+        raise HTTPException(status_code=400, detail="Could not change the filters of this search.")
+    base_sql = uncertain_tier.apply(filter_sql) if uncertain_tier.enabled() else filter_sql
+
+    cached = CachedQuery(
+        base_sql=base_sql,
+        params=original.params,
+        scored_filters=original.scored_filters,
+        apply_relevance=original.apply_relevance,
+        rank_tsquery=original.rank_tsquery,
+        explanation=original.explanation,
+        # Keep the original re-ranking instead of asking the LLM again.
+        rerank_done=True,
+        rerank_ordered=list(original.rerank_ordered),
+        rerank_demoted=list(original.rerank_demoted),
+        filter_sql=filter_sql,
+    )
+    # Count here rather than in _run_page, whose error path asks Gemini to fix
+    # the SQL: dropping AND conditions from a working query should not fail,
+    # and if it does, the user should hear so instead of waiting on an LLM.
+    try:
+        result = await session.execute(text(build_count_sql(base_sql)), cached.params)
+        cached.total = int(result.scalar() or 0)
+    except Exception:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail="Could not run the search without these filters.")
+    query_id = query_cache.put(cached)
+
+    page, page_size = _clamp_page(1, body.page_size)
+    datasets, total = await _run_page(session, query_id, cached, "", page, page_size)
+    return QueryResponse(
+        message=f"Found {total} dataset(s) matching your query.",
+        # The SQL that ran, for the "Show generated SQL" panel.
+        translation=TextToSQLResult(sql=base_sql, explanation=original.explanation),
+        filters=_filters_for(original),
+        datasets=datasets,
+        query_id=query_id,
         total=total,
         page=page,
         page_size=page_size,

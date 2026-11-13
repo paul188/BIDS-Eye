@@ -45,6 +45,9 @@ class CachedQuery:
     rerank_demoted: List[str] = field(default_factory=list)
     self_corrected: bool = False
     total: Optional[int] = None
+    # The query before the uncertain tier (services/query_filters.py reads its
+    # conditions as chips); None when chips cannot be offered.
+    filter_sql: Optional[str] = None
     created_at: float = field(default_factory=time.monotonic)
 
 

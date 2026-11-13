@@ -151,6 +151,9 @@ class RewriteResult:
     params: dict[str, Any]
     # Full-text query that ranks the result; None without text terms.
     rank_tsquery: Optional[str] = None
+    # The query before the uncertain tier wraps it: its WHERE conditions are
+    # the filter chips (services/query_filters.py). Equals sql without the tier.
+    filter_sql: Optional[str] = None
 
 
 class SqlRewriteService:
@@ -222,11 +225,13 @@ class SqlRewriteService:
         # confirmed results match on the dataset's own text.
         expanded = _text_search.expand_text_search(sql, papers=False if tiered else None)
         sql = expanded.sql
+        filter_sql = sql
         if tiered:
             # Keep datasets a filter cannot check, as a second tier
             # (services/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)
-        return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery)
+        return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery,
+                             filter_sql=filter_sql)
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""

@@ -72,6 +72,28 @@ class TextToSQLResult(BaseModel):
     rank_tsquery: Optional[str] = None
     # Number of first candidates an LLM judged and reordered; None = not re-ranked.
     reranked: Optional[int] = None
+    # The query before the uncertain tier wraps it, read for the filter chips
+    # (services/query_filters.py). Server-side only.
+    filter_sql: Optional[str] = Field(default=None, exclude=True)
+
+
+class QueryFilterSchema(BaseModel):
+    """One condition of the query, shown as a chip the user can remove."""
+    id: str
+    kind: str
+    field: str
+    label: str
+    negated: bool = False
+    text_words: List[str] = []
+    detail: str = ""
+
+
+class QueryRefineRequest(BaseModel):
+    """Re-run a translated query without some of its conditions (no LLM call)."""
+    query_id: str
+    # Chip ids from the original query's `filters`; [] restores the original.
+    remove: List[str] = Field(default_factory=list, max_length=50)
+    page_size: int = 20
 
 
 class QueryRequest(BaseModel):
@@ -89,6 +111,9 @@ class QueryPageRequest(BaseModel):
 class QueryResponse(BaseModel):
     message: str
     translation: Optional[TextToSQLResult] = None  # exposed for debugging
+    # How the question was understood: one chip per condition. Empty when the
+    # query has no readable conditions (sample fallback, self-corrected SQL).
+    filters: List[QueryFilterSchema] = []
     datasets: List[DatasetSchema]
     # Pagination metadata (shared by the initial /query and /query/page replies).
     query_id: Optional[str] = None
