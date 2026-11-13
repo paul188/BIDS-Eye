@@ -408,6 +408,33 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
 
 # ── Public entry point ─────────────────────────────────────────────────────────
 
+def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
+    """Plain keyword search when no language model answered.
+
+    Matches any content word of the question in the dataset text and ranks by
+    full-text rank, so the best matches come first. Without the full-text
+    column, or without usable words, the bounded sample as before.
+    """
+    from services import text_search
+    from services.schema_capabilities import has_fts
+    from services.sql_rewriter import DEFAULT_DATASET_PROJECTION
+
+    query = text_search.keyword_query(question) if has_fts() else None
+    if not query:
+        return TextToSQLResult(sql=_FALLBACK_SQL, explanation=explanation + " Showing a sample of datasets.")
+    sql = (
+        f"SELECT {DEFAULT_DATASET_PROJECTION}\n"
+        "FROM bids_datasets d\n"
+        "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
+        f"WHERE d.{text_search.FTS_COLUMN} @@ to_tsquery('{text_search.TS_CONFIG}', '{query}')\n"
+        "GROUP BY d.id"
+    )
+    return TextToSQLResult(
+        sql=sql, explanation=explanation + " Showing a plain keyword search for your question instead.",
+        apply_relevance=True, rank_tsquery=query,
+    )
+
+
 async def text_to_sql(question: str) -> TextToSQLResult:
     """
     Translate a natural-language question into a PostgreSQL SELECT statement via
@@ -433,17 +460,13 @@ async def text_to_sql(question: str) -> TextToSQLResult:
         except LLMAllFailedError as exc:
             # Every LLM tier (all Gemini models + the Claude fallback) is down.
             # Degrade gracefully instead of 500ing the request.
-            log.warning("All LLM providers failed (%s) — returning a sample of datasets", exc)
-            return TextToSQLResult(
-                sql=_FALLBACK_SQL,
-                explanation="All LLM providers are currently unavailable — showing a sample of datasets. Please try again shortly.",
-            )
+            log.warning("All LLM providers failed (%s) — falling back to a keyword search", exc)
+            return keyword_fallback(
+                question, "The language model is unavailable right now; please try again shortly.")
         except asyncio.TimeoutError:
-            log.warning("LLM pipeline exceeded %.0fs deadline — returning a sample of datasets", deadline)
-            return TextToSQLResult(
-                sql=_FALLBACK_SQL,
-                explanation="That query is taking too long right now — showing a sample of datasets. Please try again or narrow your query.",
-            )
+            log.warning("LLM pipeline exceeded %.0fs deadline — falling back to a keyword search", deadline)
+            return keyword_fallback(
+                question, "Understanding that question took too long right now.")
 
     log.warning("No GEMINI_API_KEY set — returning a sample of datasets")
     return TextToSQLResult(

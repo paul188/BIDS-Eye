@@ -220,6 +220,8 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
             institutions=r.get("institutions"),
             description_text=r.get("description_text"),
             deprecated_reason=deprecations.get(UUID(str(r["id"]))),
+            uncertain_level=r.get("uncertain_level"),
+            uncertain_reasons=r.get("uncertain_reasons"),
             subject_count=r.get("subject_count"),
             participants=participants_map.get(UUID(str(r["id"])), [])[
                 :_MAX_PARTICIPANTS_PER_DATASET

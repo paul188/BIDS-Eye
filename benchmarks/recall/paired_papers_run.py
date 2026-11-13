@@ -157,6 +157,8 @@ def main() -> None:
     parser.add_argument("--only", default="", help="comma-separated query ids")
     parser.add_argument("--backend-dir", default="/app/backend")
     parser.add_argument("--label", default="")
+    parser.add_argument("--include-held-out", action="store_true",
+                        help="also run the held-out questions (once per finished change)")
     args = parser.parse_args()
 
     import yaml
@@ -164,6 +166,13 @@ def main() -> None:
     # The translation must not use paper text; the second variant adds it.
     os.environ["TEXT_SEARCH_PAPERS"] = "false"
     questions = yaml.safe_load(args.queries.read_text())["queries"]
+    # Held-out questions are scored once per finished change, never run while
+    # developing (benchmarks/recall/held_out_questions.txt).
+    held_out_file = args.queries.parent / "held_out_questions.txt"
+    if held_out_file.exists() and not args.include_held_out:
+        held_out = {line.strip() for line in held_out_file.read_text().splitlines()
+                    if line.strip() and not line.startswith("#")}
+        questions = [q for q in questions if q["id"] not in held_out]
     if args.only:
         wanted = set(args.only.split(","))
         questions = [q for q in questions if q["id"] in wanted]

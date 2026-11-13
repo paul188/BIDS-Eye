@@ -21,6 +21,10 @@ export interface Dataset {
   description_text: string | null
   /** Set when the dataset was removed from, or flagged deprecated on, its source. */
   deprecated_reason?: string | null
+  /** 1 = probably relevant, 2 = possibly relevant: a filter could not be checked. */
+  uncertain_level?: number | null
+  /** Why, e.g. "ages not recorded". */
+  uncertain_reasons?: string | null
   subject_count: number | null
   participants: Participant[]
 }

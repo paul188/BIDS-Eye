@@ -225,13 +225,27 @@ def llm_generate(
             f"no prose, no code fences:\n{json.dumps(json_schema)}"
         )
 
-    for tier in _build_cascade(models, use_fallback):
+    cascade = list(_build_cascade(models, use_fallback))
+    gemini_tiers = [t for t in cascade if t.provider == "gemini"]
+    # The last Gemini tier (the fastest model) always gets one short attempt,
+    # even after the budget is spent: one slow 504 from the first model must
+    # not leave the request without an answer. 0 switches this off.
+    reserve = float(os.getenv("GEMINI_RESERVE_SECONDS", "12"))
+    for tier in cascade:
+        call_timeout_now = call_timeout
+        attempts = tier.max_attempts
         if tier.provider == "gemini" and (time.monotonic() - t0) > gemini_budget:
-            failures.append(f"gemini/{tier.model}: skipped (Gemini time budget exceeded)")
-            log.warning("llm_generate: skipping gemini/%s — budget exhausted, failing over",
-                        tier.model)
-            continue
-        for attempt in range(1, tier.max_attempts + 1):
+            if reserve > 0 and gemini_tiers and tier is gemini_tiers[-1] and len(gemini_tiers) > 1:
+                call_timeout_now = reserve
+                attempts = 1
+                log.warning("llm_generate: budget exhausted — one %.0fs reserve attempt on gemini/%s",
+                            reserve, tier.model)
+            else:
+                failures.append(f"gemini/{tier.model}: skipped (Gemini time budget exceeded)")
+                log.warning("llm_generate: skipping gemini/%s — budget exhausted, failing over",
+                            tier.model)
+                continue
+        for attempt in range(1, attempts + 1):
             try:
                 if tier.provider == "gemini":
                     if not gem_key:
@@ -239,7 +253,7 @@ def llm_generate(
                     text = _call_gemini(
                         tier.model, prompt, system, temperature, gem_key,
                         json_schema=json_schema, thinking_level=thinking_level,
-                        call_timeout=call_timeout,
+                        call_timeout=call_timeout_now,
                         max_tokens=max_tokens if json_schema is not None else None,
                     )
                 else:  # anthropic
@@ -256,7 +270,7 @@ def llm_generate(
                     _gemini_is_transient(str(exc)) if tier.provider == "gemini"
                     else _anthropic_is_transient(exc)
                 )
-                if transient and attempt < tier.max_attempts:
+                if transient and attempt < attempts:
                     time.sleep(tier.waits[attempt - 1])
                     continue
                 failures.append(f"{tier.provider}/{tier.model}: {exc}")

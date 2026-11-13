@@ -491,6 +491,29 @@ def expand_text_search(
     return ExpandedSearch(sql=expanded, rank_tsquery=rank_tsquery or None)
 
 
+# Words of a question that say nothing about the datasets wanted.
+_QUESTION_NOISE = frozenset({
+    "dataset", "datasets", "data", "find", "show", "search", "looking", "look", "want",
+    "need", "get", "list", "give", "me", "i", "we", "all", "any", "some", "which", "what",
+    "that", "there", "have", "has", "had", "is", "are", "be", "was", "were", "do", "does",
+    "can", "could", "would", "please", "available", "open", "public", "study", "studies",
+    "recorded", "using", "use", "used", "where", "who", "about", "into", "their", "this",
+})
+
+
+def keyword_query(question: str) -> Optional[str]:
+    """A tsquery that matches any content word of *question*, or None.
+
+    Used when no language model is reachable (services/text_to_sql.py): a
+    plain keyword search ranked by full-text rank beats an arbitrary sample.
+    """
+    words = [word for word in split_words(question)
+             if not (len(word) == 1 and (word[0] in _QUESTION_NOISE or len(word[0]) < 2))]
+    queries = list(dict.fromkeys(_word_query(word) for word in words))
+    query = " | ".join(queries[:12])
+    return query if query and is_safe_tsquery(query) else None
+
+
 def is_safe_tsquery(query: Optional[str]) -> bool:
     """True if *query* was built here and can be inlined into SQL."""
     return bool(query) and _SAFE_TSQUERY_RE.match(query) is not None

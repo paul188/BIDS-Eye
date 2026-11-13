@@ -48,6 +48,7 @@ from services.concept_keys import expand_concept_keys as _expand_concept_keys  #
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 
 from services import text_search as _text_search  # noqa: E402
+from services import uncertain_tier as _uncertain_tier  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -217,7 +218,12 @@ class SqlRewriteService:
         sql = self._guard_json_number_casts(sql)
         sql = self._inject_vocab_miss(sql, augmented_question)
         expanded = _text_search.expand_text_search(sql)
-        return RewriteResult(sql=expanded.sql, params={}, rank_tsquery=expanded.rank_tsquery)
+        sql = expanded.sql
+        if _uncertain_tier.enabled():
+            # Keep datasets a filter cannot check, as a second tier
+            # (services/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
+            sql = _uncertain_tier.apply(sql)
+        return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery)
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""
@@ -253,7 +259,14 @@ class SqlRewriteService:
         ranked = ordered != base_sql
         ordered = self._normalize_sql(ordered)
         params: dict[str, Any] = {"_limit": limit, "_offset": offset}
+        # Confirmed results first, then the uncertain tier (services/uncertain_tier.py).
+        tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
+        tier_key = f"page_result.{_uncertain_tier.LEVEL_COLUMN}, " if tiered else ""
         order_clause = ""
+        if tiered and not (rerank_ordered or rerank_demoted):
+            order_clause = "ORDER BY " + tier_key + (
+                "page_result.relevance_score + page_result.text_rank DESC, " if ranked else ""
+            ) + "page_result.subject_count DESC NULLS LAST, page_result.id\n"
         if rerank_ordered or rerank_demoted:
             params["_rr_top"] = [str(i) for i in (rerank_ordered or [])]
             params["_rr_low"] = [str(i) for i in (rerank_demoted or [])]
@@ -262,7 +275,7 @@ class SqlRewriteService:
                 if ranked else ""
             ) + "page_result.subject_count DESC NULLS LAST, page_result.id"
             order_clause = (
-                "ORDER BY CASE WHEN page_result.id = ANY(CAST(:_rr_top AS uuid[])) THEN 0\n"
+                f"ORDER BY {tier_key}CASE WHEN page_result.id = ANY(CAST(:_rr_top AS uuid[])) THEN 0\n"
                 "              WHEN page_result.id = ANY(CAST(:_rr_low AS uuid[])) THEN 2\n"
                 "              ELSE 1 END,\n"
                 "         array_position(CAST(:_rr_top AS uuid[]), page_result.id),\n"
