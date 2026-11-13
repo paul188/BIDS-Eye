@@ -44,9 +44,10 @@ PAGE = 20
 
 # ── run ───────────────────────────────────────────────────────────────────────
 
-async def _run(questions: List[dict], out: Path, backend_dir: str) -> None:
+async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -> None:
     sys.path.insert(0, backend_dir)
     import main  # noqa: F401  — sets up import paths exactly as the app does
+    from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker
     import routers.query as router
@@ -56,6 +57,14 @@ async def _run(questions: List[dict], out: Path, backend_dir: str) -> None:
 
     page_params = inspect.signature(build_page_sql).parameters
     results: List[Dict[str, Any]] = []
+    # Recorded with the results so a run can never be mistaken for another:
+    # which code (label, e.g. the commits in the image) against which database.
+    meta = {
+        "label": label,
+        "database": f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}",
+        "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+    }
+    print(f"label={label!r} database={meta['database']}", file=sys.stderr, flush=True)
     async with main.lifespan(main.app):
         for number, q in enumerate(questions, 1):
             started = time.time()
@@ -105,7 +114,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str) -> None:
             results.append(record)
             print(f"[{number:2d}/{len(questions)}] {q['id']:28} total={record.get('total')} "
                   f"fallback={record.get('fallback')} {record['seconds']}s", file=sys.stderr, flush=True)
-            out.write_text(json.dumps({"results": results}, indent=1))
+            out.write_text(json.dumps({"meta": meta, "results": results}, indent=1))
     print(f"wrote {out}", file=sys.stderr)
 
 
@@ -117,7 +126,11 @@ def _load_truth(truth_path: Path) -> Dict[str, dict]:
 
 def _score(run_path: Path, truth_path: Path, show_unjudged: int) -> None:
     truth = _load_truth(truth_path)
-    run = {r["id"]: r for r in json.loads(run_path.read_text())["results"]}
+    data = json.loads(run_path.read_text())
+    meta = data.get("meta") or {}
+    if meta:
+        print(f"run: {meta.get('label') or '(no label)'} | database {meta.get('database')} | {meta.get('started')}\n")
+    run = {r["id"]: r for r in data["results"]}
     rows = []
     for qid, t in truth.items():
         r = run.get(qid)
@@ -176,6 +189,7 @@ def main() -> None:
     run.add_argument("--queries", type=Path, default=HERE / "queries.yaml")
     run.add_argument("--only", default="", help="comma-separated query ids")
     run.add_argument("--backend-dir", default="/app/backend")
+    run.add_argument("--label", default="", help="what is being measured, e.g. the commits in the image")
     score = sub.add_parser("score")
     score.add_argument("run", type=Path)
     score.add_argument("--truth", type=Path, default=HERE / "ground_truth.json")
@@ -188,7 +202,7 @@ def main() -> None:
         if args.only:
             wanted = set(args.only.split(","))
             questions = [q for q in questions if q["id"] in wanted]
-        asyncio.run(_run(questions, args.out, args.backend_dir))
+        asyncio.run(_run(questions, args.out, args.backend_dir, args.label))
     else:
         _score(args.run, args.truth, args.show_unjudged)
 
