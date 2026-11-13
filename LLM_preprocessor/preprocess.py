@@ -67,6 +67,7 @@ from text_terms import (
     MODE_SHORT as _MODE_SHORT,
     diagnosis_alternatives as _diagnosis_alternatives,
     format_text_match as _format_text_match,
+    format_task_text_match as _format_task_text_match,
 )
 from institution_index import text_alternatives as _institution_text_alternatives
 
@@ -994,9 +995,12 @@ def _build_augmented_question(
             or_part = " OR ".join(all_conds)
             if len(all_conds) > 1:
                 or_part = f"({or_part})"
+            condition = f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {or_part})"
+            text_fallback = _format_task_text_match([term])
+            if text_fallback:
+                condition = f"({condition} OR {text_fallback})"
             context_lines.append(
-                f'  scan "{term}": '
-                f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {or_part})"
+                f'  scan "{term}": {condition}'
             )
         else:
             # Modality EXISTS: OR between datatype and suffix so partially-annotated
@@ -1016,9 +1020,12 @@ def _build_augmented_question(
                 where_part = " OR ".join(task_conds)
                 if len(task_conds) > 1:
                     where_part = f"({where_part})"
+                condition = f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {where_part})"
+                text_fallback = _format_task_text_match([term])
+                if text_fallback:
+                    condition = f"({condition} OR {text_fallback})"
                 context_lines.append(
-                    f'  scan "{term}": '
-                    f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {where_part})"
+                    f'  scan "{term}": {condition}'
                 )
 
     context_lines.extend(non_scan_lines)

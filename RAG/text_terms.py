@@ -70,6 +70,21 @@ _POPULATION_WORDS = frozenset({
     "volunteers",
 })
 
+# These words say that something is a task but do not identify its paradigm.
+# Drop them before pairing structured task codes with a text fallback:
+# "assessments related to memory" should search for "memory", while
+# "decision making tasks" should retain both parts of the construct.
+# "cognitive" is not one of them: "cognitive control" without it is "control",
+# which every description with "healthy controls" matches.
+_TASK_CONTEXT_WORDS = frozenset({
+    "assessment", "assessments", "data", "dataset", "datasets",
+    "paradigm", "paradigms", "related", "study", "studies", "task", "tasks",
+    "test", "tests", "processing",
+})
+# A lone word shorter than this gets no task fallback. Without search_tsv the
+# search is by substring, and "rest" is in "interest", "pain" in "Spain".
+_MIN_LONE_TASK_WORD = 5
+
 # The user's own words and the concept label are trusted down to three
 # letters ("ASD", "OCD"). Two letters are not: "PD" is also proton density.
 _MIN_TRUSTED_PART = 3
@@ -129,6 +144,37 @@ def format_text_match(alternatives: Iterable[str], mode: str = MODE_ALL) -> Opti
         return None
     argument = " | ".join(_canonical(term) for term in terms)
     return f"text_match('{argument}')" if mode == MODE_ALL else f"text_match('{argument}', '{mode}')"
+
+
+def format_task_text_match(terms: Iterable[str]) -> Optional[str]:
+    """Text search that backs up the structured filter of a resolved task term.
+
+    Task codes are incomplete: many datasets carry a task label the vocabulary
+    does not map. A dataset whose name or description names the paradigm
+    still belongs in the result.
+
+    The search is deliberately narrow, because it is added to every resolved
+    task term: every word of the phrase must match, and only in the short
+    fields (mode 'short'), not anywhere in a README. The 'loose' mode this
+    used before kept one word per phrase, so "working memory" searched for
+    "working" and "face perception" for "perception".
+    """
+    cleaned: List[str] = []
+    seen = set()
+    for raw in terms:
+        words = [
+            word for word in split_words(raw)
+            if not (len(word) == 1 and word[0] in _TASK_CONTEXT_WORDS)
+        ]
+        if not words:
+            continue
+        if len(words) == 1 and sum(len(part) for part in words[0]) < _MIN_LONE_TASK_WORD:
+            continue
+        phrase = " ".join("-".join(word) for word in words)
+        if phrase not in seen:
+            seen.add(phrase)
+            cleaned.append(phrase)
+    return format_text_match(cleaned, MODE_SHORT)
 
 
 # ── Diagnosis alternatives ────────────────────────────────────────────────────

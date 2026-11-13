@@ -348,6 +348,97 @@ def _without_filler(term: str) -> str:
     return " ".join(w for w in term.split() if w not in _FILLER_WORDS)
 
 
+# Words that say a term is a task without naming which one. In the task field
+# "decision making", "decision making task" and "decision making tasks" are one
+# request and must resolve identically; see _match_task_term.
+_TASK_SCAFFOLD_WORDS = ("task", "paradigm", "assessment")
+_TASK_SCAFFOLD_FORMS = frozenset(
+    form for word in _TASK_SCAFFOLD_WORDS for form in (word, word + "s")
+)
+
+
+def _task_core(term: str) -> str:
+    """*term* without task scaffold words; "" if it names no task at all ("tasks")."""
+    return " ".join(w for w in term.split() if w not in _TASK_SCAFFOLD_FORMS)
+
+
+def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
+    """Exact and construct matches for a task term, the same for every phrasing.
+
+    The vocabulary files the same request in different places. "decision
+    making" is a cognitive construct linked to 45 tasks, while "decision making
+    task" is a synonym of the single code decision_task_general. "language" is
+    a raw task label one dataset used (mapped to language_control), while
+    "language tasks" reached the language construct and its 22 tasks. Taking
+    the first hit made the result depend on whether the user typed "tasks".
+
+    Every phrasing is first reduced to its core (_task_core); the result is
+    the union of
+      1. the core itself, if it is a task label, synonym or group name
+         ("theory of mind", "reward processing"),
+      2. single tasks named by the core plus a scaffold word ("lexical decision
+         task", "decision making task").
+    A core that is not such a name also gets
+      3. its raw dataset label, if it is one ("language", "reward", "pain":
+         what one dataset called its task, not what the word means),
+      4. groups named by the core plus a scaffold word ("reward task"),
+      5. the construct of that exact name ("decision making", "language").
+    A named core does not get 4 and 5: "theory of mind task" is also listed
+    under the whole social-cognition group, which is not what was asked.
+    Only when none of 1 to 5 exists does a fuzzy construct match count.
+    Returns None when nothing matched, so the caller goes on to fuzzy matching.
+    """
+    cat_leaves  = leaf_db.get("task", {})
+    cat_groups  = group_db.get("task", {})
+    cat_display = display_db.get("task", {})
+
+    # "decision-making" and "decision making" are one spelling here.
+    spellings = list(dict.fromkeys([core, _fuzzy_form(core)]))
+
+    def forms(suffix: str = "") -> List[str]:
+        return [t for spelling in spellings for t in _plural_variants(spelling + suffix)]
+
+    scaffold_leaves: List[str] = []
+    scaffold_groups: List[List[str]] = []
+    for word in _TASK_SCAFFOLD_WORDS:
+        for t in forms(f" {word}"):
+            if t in cat_groups:
+                scaffold_groups.append(cat_groups[t])
+                break
+            if t in cat_leaves:
+                scaffold_leaves.append(cat_leaves[t])
+                break
+
+    def with_scaffold_leaves(named: List[str]) -> List[tuple[str, float]]:
+        return [(code, 1.0) for code in dict.fromkeys(named + scaffold_leaves)]
+
+    for t in forms():
+        if t in cat_groups:
+            return with_scaffold_leaves(cat_groups[t])
+        if t in cat_leaves and t in cat_display:
+            return with_scaffold_leaves([cat_leaves[t]])
+
+    codes: Dict[str, float] = {}
+    for t in forms():
+        if t in cat_leaves:
+            codes[cat_leaves[t]] = 1.0
+            break
+    for code in scaffold_leaves:
+        codes.setdefault(code, 1.0)
+    for group in scaffold_groups:
+        for code in group:
+            codes.setdefault(code, 1.0)
+    for spelling in spellings:
+        hits = _resolve_via_constructs(spelling, fuzzy=False)
+        if hits:
+            for code, score in hits:
+                codes.setdefault(code, score)
+            break
+    if not codes:
+        codes.update(_resolve_via_constructs(core))
+    return list(codes.items()) or None
+
+
 def _normalize_term(term: str) -> str:
     """Lower-case, trim, and use the ASCII apostrophe the vocabulary is written with."""
     return term.lower().strip().replace("\u2019", "'")
@@ -386,8 +477,10 @@ def _prune_redundant_parents(codes: List[str]) -> List[str]:
     return [c for c in codes if c not in to_remove]
 
 
-def _resolve_via_constructs(term: str) -> List[tuple[str, float]]:
+def _resolve_via_constructs(term: str, fuzzy: bool = True) -> List[tuple[str, float]]:
     """Try term against cognitive_construct, then expand to task codes via measures_db.
+
+    With fuzzy=False only an exact construct label, synonym or group name counts.
 
     Returns (task_standard_code, score) pairs — or [] when:
       - the term doesn't match any cognitive construct, or
@@ -417,7 +510,7 @@ def _resolve_via_constructs(term: str) -> List[tuple[str, float]]:
             score = 1.0
             break
 
-    if not construct_codes:
+    if not construct_codes and fuzzy:
         all_targets: Dict[str, List[str]] = {
             k: [v] for k, v in cat_display.items() if len(k) >= 3
         }
@@ -425,10 +518,19 @@ def _resolve_via_constructs(term: str) -> List[tuple[str, float]]:
             {k: v for k, v in cat_group_display.items() if len(k) >= 3}
         )
         if all_targets:
-            results = _process.extract(
-                term_lower, all_targets.keys(), scorer=_fuzz.WRatio, limit=5
-            )
-            if results and results[0][1] >= _SEMANTIC_THRESHOLD:
+            # Same rules as the fuzzy step of _match_yaml_term: no match on a
+            # single shared word ("stroop task" / "task set reconfiguration"
+            # scored 85.5 and returned 51 unrelated tasks), and containment
+            # must line up with words.
+            processed = _fuzzy_form(term_lower)
+            results = [
+                hit for hit in _process.extract(
+                    term_lower, all_targets.keys(), scorer=_fuzz.WRatio,
+                    processor=_fuzzy_form, score_cutoff=_MIN_FUZZY_SCORE, limit=None,
+                )
+                if _aligned_to_words(processed, _fuzzy_form(hit[0]))
+            ]
+            if results:
                 best_label = results[0][0]
                 score = results[0][1] / 100.0
                 construct_codes = all_targets[best_label]
@@ -486,6 +588,18 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     _sem = _TASK_SEMANTIC_THRESHOLD if field == "task" else _SEMANTIC_THRESHOLD
 
     term_lower = _normalize_term(term)
+
+    # 0. Task field: scaffold words are dropped for good, and exact and
+    # construct matches are combined (see _match_task_term). What follows only
+    # runs for a task term that matched neither.
+    if field == "task":
+        term_lower = _task_core(term_lower)
+        if not term_lower:
+            return []
+        task_hits = _match_task_term(term_lower)
+        if task_hits:
+            return task_hits
+
     candidates = _plural_variants(term_lower)
 
     # 1. Exact match — prefer group (all descendants) over single leaf code
@@ -506,17 +620,10 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
             if t in cat_leaves:
                 return [(cat_leaves[t], 1.0)]
 
-    # 1b. For the task field: try cognitive construct expansion BEFORE fuzzy.
-    # Abstract construct terms ("pain processing", "social cognition", "error
-    # detection") are not task names, so fuzzy matching on task synonyms produces
-    # spurious hits driven by word-overlap ("processing" → orthographic_processing).
-    # Construct expansion is CA-curated and semantically grounded; if it finds
-    # anything, it is preferred over noisy fuzzy results.
-    # Exact task matches above still take priority (e.g. "working memory" group).
-    if field == "task":
-        construct_hits = _resolve_via_constructs(term)
-        if construct_hits:
-            return construct_hits
+    # (Task field: cognitive construct expansion already ran in step 0, before
+    # fuzzy matching. Construct terms such as "pain processing" or "social
+    # cognition" are not task names, and fuzzy matching on task synonyms gives
+    # them word-overlap hits.)
 
     # 2. Pooled fuzzy match over display labels + group synonyms
     # Exclude keys shorter than 3 chars from the fuzzy pool — short abbreviations

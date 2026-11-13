@@ -141,3 +141,56 @@ def test_task_terms_resolve_to_no_suffix(term: str) -> None:
 @pytest.mark.parametrize("term", ["roi", "atlas", "channels", "entities and processing keys"])
 def test_bucket_suffix_is_never_returned(term: str) -> None:
     assert "entities_and_processing_keys" not in _resolve_yaml_term("suffix", term)
+
+
+# ── Task terms: the same result however the request is phrased ────────────────
+
+@pytest.mark.parametrize(
+    "phrasings",
+    [
+        # Was 45 codes (construct) vs 1 code (synonym of decision_task_general).
+        ["decision making", "decision making tasks", "decision making task",
+         "decision-making", "decision-making paradigm"],
+        # Was 1 code (a raw dataset label) vs 22 codes (construct).
+        ["language", "language tasks", "language task"],
+        # Was 166 vs 38 vs 52 codes.
+        ["memory", "memory tasks", "memory assessments"],
+        # Was 21 codes vs 1 (synonym of the monetary incentive delay task).
+        ["reward processing", "reward processing tasks"],
+        ["reward", "reward tasks"],
+        # Was 51 codes vs 4.
+        ["social cognition", "social cognition tasks"],
+        ["working memory", "working memory tasks"],
+        ["lexical decision", "lexical decision task"],
+        ["n-back", "n back", "n-back task"],
+    ],
+)
+def test_task_phrasings_resolve_identically(phrasings: list) -> None:
+    results = {term: frozenset(_resolve_yaml_term("task", term)) for term in phrasings}
+    assert len(set(results.values())) == 1, {t: len(codes) for t, codes in results.items()}
+    assert results[phrasings[0]]
+
+
+def test_task_core_is_combined_from_construct_and_task_synonym() -> None:
+    codes = _resolve_yaml_term("task", "decision making tasks")
+    assert "decision_task_general" in codes      # synonym "decision making task"
+    assert "columbia_card_task" in codes         # through the construct
+    codes = _resolve_yaml_term("task", "language")
+    assert "language_control" in codes           # raw dataset label "language"
+    assert "picture_naming_task" in codes        # through the construct
+
+
+def test_named_task_is_not_widened_by_its_task_suffix() -> None:
+    # "theory of mind task" is also a synonym of the social-cognition group.
+    assert len(_resolve_yaml_term("task", "theory of mind task")) == \
+        len(_resolve_yaml_term("task", "theory of mind")) < 10
+    # The specific task named with its suffix is still found.
+    assert "lexical_decision_task" in _resolve_yaml_term("task", "lexical decision")
+
+
+def test_construct_match_needs_more_than_the_word_task() -> None:
+    # "stroop task" matched the construct "task set reconfiguration" through
+    # "task" alone and returned 51 unrelated tasks.
+    assert _resolve_yaml_term("task", "stroop task") == _resolve_yaml_term("task", "stroop")
+    assert len(_resolve_yaml_term("task", "stroop task")) < 5
+    assert _resolve_yaml_term("task", "tasks") == []

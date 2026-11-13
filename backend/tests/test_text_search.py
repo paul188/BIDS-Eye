@@ -61,6 +61,38 @@ def test_placeholder_round_trip_uses_a_restricted_alphabet() -> None:
         text_terms.format_text_match(["x"], "everything")
 
 
+def test_task_text_fallback_drops_query_scaffolding_but_keeps_the_construct() -> None:
+    assert text_terms.format_task_text_match(["assessments related to memory"]) == \
+        "text_match('memory', 'short')"
+    assert text_terms.format_task_text_match(["decision making tasks"]) == \
+        "text_match('decision making', 'short')"
+    assert text_terms.format_task_text_match(["music perception paradigm"]) == \
+        "text_match('music perception', 'short')"
+    assert text_terms.format_task_text_match(["task assessments"]) is None
+
+
+def test_task_text_fallback_requires_every_word_of_the_phrase() -> None:
+    # In 'loose' mode, without search_tsv, only the longest word was searched:
+    # "working memory" → %working%, "face perception" → %perception%.
+    for phrase, words in (("working memory", ("working", "memory")),
+                          ("face perception", ("face", "perception")),
+                          ("cognitive control", ("cognitive", "control"))):
+        macro = text_terms.format_task_text_match([phrase])
+        sql = text_search.expand_text_search(f"SELECT 1 FROM bids_datasets d WHERE {macro}", fts=False).sql
+        for word in words:
+            assert f"ILIKE '%{word}%'" in sql, (phrase, sql)
+        assert sql.count(" AND ") >= 1, (phrase, sql)
+        assert "readme_text" not in sql
+
+
+def test_task_text_fallback_skips_short_lone_words() -> None:
+    # Substring search: "rest" is in "interest", "pain" in "Spain".
+    assert text_terms.format_task_text_match(["rest"]) is None
+    assert text_terms.format_task_text_match(["pain tasks"]) is None
+    assert text_terms.format_task_text_match(["n-back"]) == "text_match('n-back', 'short')"
+    assert text_terms.format_task_text_match(["stroop task"]) == "text_match('stroop', 'short')"
+
+
 _VOCABULARY = {
     "epilepsy": [("epilepsy", 1.0), ("seizures", 1.0), ("epileptic", 0.9),
                  ("epileptic patients", 0.9), ("TLE", 0.3), ("refractory epilepsy", 0.3)],
@@ -393,6 +425,26 @@ def test_unresolved_term_alone_still_gets_its_text_filter() -> None:
     assert "text_match('eye tracking', 'loose')" in question
     rewritten = SERVICE.rewrite_generated_sql(BASE + "GROUP BY d.id", question)
     assert "search_tsv @@" in rewritten.sql
+
+
+def test_resolved_task_filter_keeps_a_readme_text_fallback(monkeypatch) -> None:
+    import preprocess
+
+    plan = preprocess.QueryPlan(
+        query_family="scan_filter",
+        natural_language_summary="Assessments related to memory",
+    )
+    resolved = [preprocess.ResolvedTerms(
+        field=preprocess.RAGField.TASK,
+        term_to_codes={"assessments related to memory": ["memory_task"]},
+    )]
+    question = preprocess._build_augmented_question(plan, resolved)
+    assert (
+        'scan "assessments related to memory": '
+        "(EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id "
+        "AND o2.task = 'memory_task') OR text_match('memory', 'short'))"
+    ) in question
+    assert "bids_objects o2" in question
 
 
 # ── Capability detection and DDL ──────────────────────────────────────────────
