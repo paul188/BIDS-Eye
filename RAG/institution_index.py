@@ -70,6 +70,11 @@ SCORE_TOKENS = 0.8
 
 _UMLAUT_SPELLINGS = (("ae", "a"), ("oe", "o"), ("ue", "u"))
 
+# Dropped on both sides, so 'Max Planck Institute in Leipzig' can match
+# 'Max Planck Institute, Leipzig' and 'University of Texas at Austin' still
+# matches 'Univ of Texas Austin'.
+_PLACE_CONNECTORS = frozenset({"in", "at"})
+
 # Words that say what kind of place it is, not which one.
 _GENERIC_TOKENS = frozenset("""
     a an and at de del della der des di du el en et for fur in la le of on the und von zu
@@ -113,7 +118,8 @@ _ALIAS_GROUPS: Sequence[Sequence[str]] = (
     ("utsw", "ut southwestern"),
     ("kcl", "kings college london"),
     ("mpi", "max planck institute", "max planck institut"),
-    ("mpi cbs", "mpi leipzig", "max planck institute for human cognitive and brain sciences",
+    ("mpi cbs", "mpi leipzig", "max planck institute leipzig", "max planck leipzig",
+     "max planck institute for human cognitive and brain sciences",
      "max planck institut fuer kognitions und neurowissenschaften"),
     ("mrc cbu", "mrc cognition and brain sciences unit", "mrc cognition brain sciences unit"),
     ("ohsu", "o h s u", "oregon health and science university"),
@@ -191,7 +197,7 @@ def tokens(text: str) -> Tokens:
     for token in raw:
         if token == "s" and merged:      # 'Queen s University' (apostrophe lost upstream)
             merged[-1] += "s"
-        else:
+        elif token not in _PLACE_CONNECTORS:
             merged.append(token)
     return tuple(_fold_token(token) for token in merged)
 

@@ -112,3 +112,13 @@ def test_retriever_resolves_institutions_from_shared_index(tmp_path) -> None:
         assert "Cambridge" not in scored
     finally:
         ii._index = previous
+
+
+def test_city_after_in_or_at_narrows_to_that_site() -> None:
+    index = InstitutionIndex([
+        "MPI_Leipzig", "Max Planck Institute for Human Cognitive and Brain Sciences",
+        "Max Planck Institute for Biological Cybernetics", "Univ of Texas Austin",
+    ])
+    found = _names(index, "Max Planck Institute in Leipzig")
+    assert found == {"MPI_Leipzig", "Max Planck Institute for Human Cognitive and Brain Sciences"}
+    assert _names(index, "Univ of Texas at Austin") == {"Univ of Texas Austin"}
