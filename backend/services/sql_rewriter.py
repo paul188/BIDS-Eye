@@ -9,7 +9,8 @@ has already produced a draft query:
   - canonical projection replacement,
   - stripping hallucinated scan filters,
   - injecting VOCABULARY MISS fallback predicates,
-  - wrapping relevance scoring and pagination.
+  - expanding text_match() placeholders into full-text predicates,
+  - wrapping relevance scoring, text ranking and pagination.
 
 The LLM-facing prompt generation stays in ``services.text_to_sql`` so the
 translation stack has a clean separation between "generate SQL" and "rewrite
@@ -23,7 +24,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Sequence
 
 # Make project-local modules importable regardless of working directory.
 _ROOT = Path(__file__).resolve().parents[2]
@@ -42,6 +43,9 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
     parse_one = None  # type: ignore[assignment]
 
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
+from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
+
+from services import text_search as _text_search  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -67,11 +71,14 @@ _BAD_OUTER_FILTER = re.compile(
     r"(?:AND\s+)?o\d*\.(task|datatype|suffix)\s*=\s*'[^']*'",
     re.IGNORECASE,
 )
-_VOCAB_MISS_ILIKE_RE = re.compile(
+_VOCAB_MISS_HINT_RE = re.compile(
     r"For free-text search use:\s*(.+?)(?=\s*\])",
     re.IGNORECASE | re.DOTALL,
 )
-_LITERAL_QUOTE_RE = re.compile(r"'(%[^']*%)'")
+_TEXT_MATCH_CALL_RE = re.compile(
+    r"\btext_match\s*\(\s*'([^']*)'\s*(?:,\s*'[^']*'\s*)?\)",
+    re.IGNORECASE,
+)
 _CODE_RE = re.compile(r"^[A-Za-z0-9_]+$")
 _SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
 
@@ -120,11 +127,24 @@ _PARTICIPANTS_COUNT_WHERE_RE = re.compile(
 )
 
 
+_SQL_END_MARKER_RE = re.compile(r"\[/SQL\]|\[SQL\]|```", re.IGNORECASE)
+
+
+def _cut_at_end_marker(sql: str) -> tuple[str, bool]:
+    """Drop a closing [/SQL] tag or code fence and anything after it."""
+    m = _SQL_END_MARKER_RE.search(sql)
+    if m is None:
+        return sql.strip(), False
+    return sql[: m.start()].strip(), True
+
+
 @dataclass(slots=True)
 class RewriteResult:
-    """Normalized SQL plus any bind parameters introduced during rewriting."""
+    """Normalized SQL plus what later stages need to run and rank it."""
     sql: str
     params: dict[str, Any]
+    # Full-text query that ranks the result; None without text terms.
+    rank_tsquery: Optional[str] = None
 
 
 class SqlRewriteService:
@@ -162,13 +182,18 @@ class SqlRewriteService:
         """
         m = re.search(r"\[SQL\]\s*(.*?)(?:\[/SQL\]|$)", raw, re.DOTALL | re.IGNORECASE)
         if m and re.match(r"(?i)(select|with)\b", m.group(1).strip()):
-            return m.group(1).strip()
+            return _cut_at_end_marker(m.group(1))[0]
         m = _SQL_FENCE.search(raw)
         if m and re.match(r"(?i)(select|with)\b", m.group(1).strip()):
-            return m.group(1).strip()
+            return _cut_at_end_marker(m.group(1))[0]
         stripped = raw.strip()
         if re.match(r"(?i)(select|with)\b", stripped):
-            return stripped.split("\n\n")[0].strip()
+            # The prompt ends with "[SQL]", so the model often answers with
+            # bare SQL followed by "[/SQL]"; everything from there on goes.
+            sql, had_marker = _cut_at_end_marker(stripped)
+            # Without a marker, a blank line is the best guess for where
+            # trailing prose begins.
+            return sql if had_marker else sql.split("\n\n")[0].strip()
         return _FALLBACK_SQL
 
     def rewrite_generated_sql(self, raw_sql: str, augmented_question: str) -> RewriteResult:
@@ -183,8 +208,9 @@ class SqlRewriteService:
         sql = self._strip_outer_scan_filters(sql)
         sql = self._rewrite_task_ilike_concepts(sql)
         sql = self._rewrite_participant_count_to_having(sql)
-        sql, params = self._inject_vocab_miss(sql, augmented_question)
-        return RewriteResult(sql=sql, params=params)
+        sql = self._inject_vocab_miss(sql, augmented_question)
+        expanded = _text_search.expand_text_search(sql)
+        return RewriteResult(sql=expanded.sql, params={}, rank_tsquery=expanded.rank_tsquery)
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""
@@ -198,19 +224,49 @@ class SqlRewriteService:
         apply_relevance: bool,
         limit: int,
         offset: int,
-    ) -> tuple[str, dict[str, int]]:
+        rank_tsquery: Optional[str] = None,
+        rerank_ordered: Optional[Sequence[str]] = None,
+        rerank_demoted: Optional[Sequence[str]] = None,
+    ) -> tuple[str, dict[str, Any]]:
         """Wrap a cached base query for one page of results.
 
         Relevance ordering is layered on only when requested so the cached base
         query can be reused across pages without rebaking the sort order.
+
+        *rerank_ordered* / *rerank_demoted* are dataset ids from the LLM
+        re-ranker (services/rerank.py): the first come first in that order,
+        the second last, everything else keeps the relevance order between.
+        Their parameters are added after the last sqlglot pass, which would
+        otherwise re-render them.
         """
-        ordered = self._inject_relevance_cte(base_sql, scored_filters) if apply_relevance else base_sql
+        ordered = (
+            self._inject_relevance_cte(base_sql, scored_filters, rank_tsquery)
+            if apply_relevance else base_sql
+        )
+        ranked = ordered != base_sql
         ordered = self._normalize_sql(ordered)
+        params: dict[str, Any] = {"_limit": limit, "_offset": offset}
+        order_clause = ""
+        if rerank_ordered or rerank_demoted:
+            params["_rr_top"] = [str(i) for i in (rerank_ordered or [])]
+            params["_rr_low"] = [str(i) for i in (rerank_demoted or [])]
+            tail = (
+                "page_result.relevance_score + page_result.text_rank DESC, "
+                if ranked else ""
+            ) + "page_result.subject_count DESC NULLS LAST, page_result.id"
+            order_clause = (
+                "ORDER BY CASE WHEN page_result.id = ANY(CAST(:_rr_top AS uuid[])) THEN 0\n"
+                "              WHEN page_result.id = ANY(CAST(:_rr_low AS uuid[])) THEN 2\n"
+                "              ELSE 1 END,\n"
+                "         array_position(CAST(:_rr_top AS uuid[]), page_result.id),\n"
+                f"         {tail}\n"
+            )
         sql = (
             f"SELECT * FROM (\n{ordered}\n) AS page_result\n"
+            f"{order_clause}"
             "LIMIT :_limit OFFSET :_offset"
         )
-        return sql, {"_limit": limit, "_offset": offset}
+        return sql, params
 
     def _normalize_sql(self, sql: str) -> str:
         sql = sql.strip().rstrip(";").strip()
@@ -477,64 +533,73 @@ class SqlRewriteService:
             )
         return sql
 
-    def _inject_vocab_miss(self, sql: str, augmented_question: str) -> tuple[str, dict[str, Any]]:
-        """Inject free-text fallback filters for unresolved vocabulary terms."""
+    def _inject_vocab_miss(self, sql: str, augmented_question: str) -> str:
+        """Add the free-text filter for unresolved vocabulary terms if the model left it out.
+
+        The [VOCABULARY MISS] block of the augmented question carries one
+        text_match() placeholder per unresolved term. A placeholder the model
+        already copied (same search terms) is not added twice.
+        """
         cleaned, _ = self._strip_outer_scan_filters_fallback(sql)
-        ilike_parts = [m.group(1).strip() for m in _VOCAB_MISS_ILIKE_RE.finditer(augmented_question)]
-        if not ilike_parts:
-            return cleaned, {}
+        hinted: list[str] = []
+        for hint in _VOCAB_MISS_HINT_RE.finditer(augmented_question):
+            hinted.extend(m.group(0) for m in _TEXT_MATCH_CALL_RE.finditer(hint.group(1)))
+        if not hinted:
+            return cleaned
 
-        if re.search(r"\bILIKE\b", cleaned, re.IGNORECASE):
-            return cleaned, {}
+        def key(call: str) -> tuple:
+            argument = _TEXT_MATCH_CALL_RE.match(call).group(1)  # type: ignore[union-attr]
+            return tuple(sorted(str(term) for term in _parse_alternatives(argument)))
 
-        params: dict[str, Any] = {}
-        literal_to_param: dict[str, str] = {}
-        parameterized_parts: list[str] = []
-        for part in ilike_parts:
-            matches = _LITERAL_QUOTE_RE.findall(part)
-            for match in matches:
-                param_name = literal_to_param.get(match)
-                if param_name is None:
-                    param_name = f"vocab_miss_{len(params)}"
-                    literal_to_param[match] = param_name
-                    params[param_name] = match
-                part = part.replace(f"'{match}'", f":{param_name}")
-            parameterized_parts.append(part)
+        present = {key(m.group(0)) for m in _TEXT_MATCH_CALL_RE.finditer(cleaned)}
+        missing = [call for call in dict.fromkeys(hinted) if key(call) not in present]
+        if not missing:
+            return cleaned
 
-        combined = " AND ".join(f"({part})" for part in parameterized_parts)
-        log.info("Injecting VOCABULARY MISS ILIKE: %s", combined)
+        combined = " AND ".join(missing)
+        log.info("Injecting VOCABULARY MISS text filter: %s", combined)
+        return self._and_into_where(cleaned, combined)
 
-        if re.search(r"\bWHERE\b", cleaned, re.IGNORECASE):
-            return (
-                re.sub(
-                    r"\bWHERE\b",
-                    f"WHERE {combined} AND",
-                    cleaned,
-                    count=1,
-                    flags=re.IGNORECASE,
-                ),
-                params,
+    def _and_into_where(self, sql: str, condition: str) -> str:
+        """AND *condition* onto the outer WHERE, keeping the existing filter intact."""
+        if parse_one is not None and exp is not None:
+            try:
+                parsed = parse_one(sql, read="postgres")
+                extra = exp.condition(condition, dialect="postgres")
+                if isinstance(parsed, exp.Select):
+                    where = parsed.args.get("where")
+                    # Parenthesise the old filter: it may contain a top-level OR.
+                    merged = exp.and_(extra, exp.paren(where.this)) if where else extra
+                    parsed.set("where", exp.Where(this=merged))
+                    return parsed.sql(dialect="postgres")
+            except Exception:
+                pass  # fall through to the string-based edit
+
+        if re.search(r"\bWHERE\b", sql, re.IGNORECASE):
+            return re.sub(
+                r"\bWHERE\b", f"WHERE {condition} AND", sql, count=1, flags=re.IGNORECASE
             )
-
-        return (
-            re.sub(
-                r"\bGROUP\s+BY\b",
-                f"WHERE {combined}\nGROUP BY",
-                cleaned,
-                count=1,
-                flags=re.IGNORECASE,
-            ),
-            params,
+        return re.sub(
+            r"\bGROUP\s+BY\b", f"WHERE {condition}\nGROUP BY", sql, count=1, flags=re.IGNORECASE
         )
 
-    def _inject_relevance_cte(self, sql: str, scored_filters: list) -> str:
-        """Wrap the base SQL so relevance scoring can be applied per row."""
-        if not scored_filters:
-            return sql
+    def _inject_relevance_cte(
+        self, sql: str, scored_filters: list, rank_tsquery: Optional[str] = None
+    ) -> str:
+        """Wrap the base SQL so each row gets a score and the result is ordered by it.
 
+        relevance_score  sum of the RAG scores of the canonical codes the
+                         dataset really has (structured match)
+        text_rank        0..1 full-text rank of the dataset text against the
+                         question's free-text terms (services/text_search.py)
+
+        Datasets are ordered by the sum, so a dataset with a diagnosis row and
+        the term in its title beats one with only either, and a dataset that
+        merely mentions the term in its README comes last.
+        """
         rows: list[str] = []
         field_cols: dict[str, tuple[str, str]] = {}
-        for scored_filter in scored_filters:
+        for scored_filter in scored_filters or []:
             if isinstance(scored_filter, dict):
                 field = scored_filter.get("field")
                 code = scored_filter.get("code")
@@ -555,29 +620,53 @@ class SqlRewriteService:
             field_cols[field] = col_info
             rows.append(f"('{field}', '{code}', {float(score):.4f})")
 
-        if not rows:
+        use_text_rank = _text_search.is_safe_tsquery(rank_tsquery)
+        if not rows and not use_text_rank:
             return sql
 
-        values_block = ",\n    ".join(rows)
-        exists_clauses = [
-            f"(mc.field = '{field}' AND EXISTS (SELECT 1 FROM {table} mt "
-            f"WHERE mt.dataset_id = base.id AND mt.{col} = mc.code))"
-            for field, (table, col) in field_cols.items()
-        ]
-        where_expr = "\n           OR ".join(exists_clauses)
         base_sql = self._normalize_sql(sql)
+        with_clause = ""
+        relevance_expr = "0"
+        if rows:
+            values_block = ",\n    ".join(rows)
+            exists_clauses = [
+                f"(mc.field = '{field}' AND EXISTS (SELECT 1 FROM {table} mt "
+                f"WHERE mt.dataset_id = base.id AND mt.{col} = mc.code))"
+                for field, (table, col) in field_cols.items()
+            ]
+            where_expr = "\n           OR ".join(exists_clauses)
+            with_clause = (
+                "WITH matched_codes (field, code, score) AS (\n"
+                f"  VALUES\n    {values_block}\n"
+                ")\n"
+            )
+            relevance_expr = (
+                "COALESCE((\n"
+                "    SELECT SUM(mc.score) FROM matched_codes mc\n"
+                f"    WHERE {where_expr}\n"
+                "  ), 0)"
+            )
 
+        text_rank_expr = "0"
+        text_join = ""
+        if use_text_rank:
+            text_rank_expr = _text_search.text_rank_expression(
+                f"ft.{_text_search.FTS_COLUMN}", rank_tsquery  # type: ignore[arg-type]
+            )
+            text_join = "\n  LEFT JOIN bids_datasets ft ON ft.id = base.id"
+
+        # ORDER BY cannot add two output aliases in the same SELECT, hence the
+        # extra level.
         return (
-            "WITH matched_codes (field, code, score) AS (\n"
-            f"  VALUES\n    {values_block}\n"
-            ")\n"
-            "SELECT base.*,\n"
-            "  COALESCE((\n"
-            "    SELECT SUM(mc.score) FROM matched_codes mc\n"
-            f"    WHERE {where_expr}\n"
-            "  ), 0) AS relevance_score\n"
-            f"FROM (\n{base_sql}\n) AS base\n"
-            "ORDER BY relevance_score DESC, base.subject_count DESC NULLS LAST"
+            f"{with_clause}"
+            "SELECT * FROM (\n"
+            "  SELECT base.*,\n"
+            f"  {relevance_expr} AS relevance_score,\n"
+            f"  {text_rank_expr} AS text_rank\n"
+            f"  FROM (\n{base_sql}\n) AS base{text_join}\n"
+            ") AS ranked\n"
+            "ORDER BY ranked.relevance_score + ranked.text_rank DESC, "
+            "ranked.subject_count DESC NULLS LAST"
         )
 
 
@@ -602,5 +691,11 @@ def build_page_sql(
     apply_relevance: bool,
     limit: int,
     offset: int,
-) -> tuple[str, dict[str, int]]:
-    return sql_rewrite_service.build_page_sql(base_sql, scored_filters, apply_relevance, limit, offset)
+    rank_tsquery: Optional[str] = None,
+    rerank_ordered: Optional[Sequence[str]] = None,
+    rerank_demoted: Optional[Sequence[str]] = None,
+) -> tuple[str, dict[str, Any]]:
+    return sql_rewrite_service.build_page_sql(
+        base_sql, scored_filters, apply_relevance, limit, offset, rank_tsquery=rank_tsquery,
+        rerank_ordered=rerank_ordered, rerank_demoted=rerank_demoted,
+    )

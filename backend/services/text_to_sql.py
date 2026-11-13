@@ -8,8 +8,9 @@ Pipeline:
   2. RAG resolution        → canonical DB codes (diagnoses, tasks, scan types)
  3. Gemini SQL generation → raw PostgreSQL SELECT from augmented question +
                              schema + few-shot examples
-  4. SQL rewrite service    → projection normalization, filter cleanup, and
-                             VOCABULARY MISS fallback predicates
+  4. SQL rewrite service    → projection normalization, filter cleanup,
+                             VOCABULARY MISS fallback predicates, and expansion
+                             of text_match() into full-text search
   5. Gemini error corrector → fixes any SQL that fails at runtime
 
 Which mode is used:
@@ -177,7 +178,6 @@ from services.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
 from services.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.schema_capabilities import (  # noqa: E402
     available_columns as _available_columns,
-    disease_text_columns as _disease_text_columns,
     uses_unavailable_column as _uses_unavailable_column,
 )
 
@@ -227,17 +227,13 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         return _FALLBACK_SQL
     schema_ddl = build_schema_ddl(_available_columns())
 
-    # Free-text columns that back up a disease filter. dx_status / study_domain
-    # join the list once the database has them (schema_capabilities).
-    disease_cols = _disease_text_columns()
-    disease_fallback = " OR ".join(f"d.{col} ILIKE '%<term>%'" for col in disease_cols)
-    text_cols = [f"bids_datasets.{col}" for col in disease_cols]
-    text_cols += [
-        f"bids_datasets.{col}"
-        for col in ("study_design", "readme_text")
-        if col in _available_columns()
-    ]
-    text_cols_phrase = ", ".join(text_cols[:-1]) + " or " + text_cols[-1]
+    # The model never writes a text predicate itself. It copies or writes
+    # text_match('...') placeholders, which services/text_search.py expands
+    # into full-text search (or ILIKE on a database without search_tsv).
+    long_text_cols = ["d.description_text"]
+    if "readme_text" in _available_columns():
+        long_text_cols.append("d.readme_text")
+    long_text_phrase = " or ".join(long_text_cols)
 
     instructions = (
         "## CRITICAL rules — violations produce wrong results\n"
@@ -256,30 +252,39 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "(e.g. structural MRI → just `datatype = 'anatomical_mri'`, never add suffix ORs).\n"
         "2. Disease/condition completeness: bids_participants.diagnosis is sparsely populated "
         "— most datasets about a disease have no structured diagnosis rows. "
-        "For ANY disease filter, ALWAYS combine the EXISTS block with a free-text fallback: "
+        "Each 'diagnosis:' line in [Resolved DB filters] therefore already pairs the EXISTS "
+        "block with a text fallback: "
         "(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
-        f"AND p2.diagnosis IN ('...')) OR {disease_fallback}). "
-        "Derive <term> by stripping trailing '_disease', '_disorder', '_syndrome' from the code "
-        "(e.g. 'parkinsons_disease' → 'parkinson', 'alzheimers_disease' → 'alzheimer', "
-        "'autism_spectrum_disorder' → 'autism'). "
-        "Never emit a bare diagnosis EXISTS without this OR fallback.\n"
+        "AND p2.diagnosis IN ('...')) OR text_match('...', 'short')). "
+        "Copy the whole parenthesised expression verbatim, including every term inside "
+        "text_match. Never emit the diagnosis EXISTS without its OR text_match(...) part.\n"
         "3. Participant diagnosis: only add a diagnosis filter if one is explicitly present in "
         "[Resolved DB filters]. Words like 'patients', 'participants', 'subjects' refer to "
         "study participants in general — NOT a diagnosis constraint. "
         "Never generate `p.diagnosis != 'healthy_volunteer'` based only on those words.\n"
         "4. VOCABULARY MISS: If [VOCABULARY MISS] appears, those terms have no canonical code. "
-        "Use ONLY the ILIKE clause shown in that block (copy it verbatim). "
+        "Use ONLY the text_match(...) clause shown in that block (copy it verbatim). "
         "Never assign a VOCABULARY MISS term to o.task, o.datatype, o.suffix, or p.diagnosis.\n"
         "## Important rules\n"
-        "- [Resolved DB filters]: copy each EXISTS subquery VERBATIM into WHERE (AND them together). "
+        "- [Resolved DB filters]: copy each filter expression VERBATIM into WHERE (AND them together). "
         "'scan X:' and 'scan task X:' for the same term are two separate EXISTS — keep both. "
         "If a 'subject count: HAVING ...' line is present, add that HAVING clause after GROUP BY d.id. "
         "If a 'dataset size: ...' line is present, AND that condition into WHERE verbatim.\n"
-        f"- ILIKE: use only on {text_cols_phrase} "
-        "(for keyword/title searches). Never on diagnosis, task, datatype, or suffix "
-        "(they hold canonical codes). Use the single most distinctive keyword "
-        "(e.g. for 'drinking alcohol' use '%alcohol%', not '%drinking alcohol%') — "
-        "never multi-word phrases when a single word suffices.\n"
+        "- Text search: text_match('<keyword>') is a search macro that the system expands into "
+        "a full-text predicate over the dataset's name, description, study fields and README. "
+        "It is a boolean condition for WHERE and combines with AND / OR / NOT. Use it for every "
+        "keyword or topic search on dataset text. Use the single most distinctive keyword "
+        "(e.g. for 'drinking alcohol' write text_match('alcohol')) — several words in one "
+        "term must ALL occur, so add words only when each one is essential. "
+        "Separate alternatives with ' | ': text_match('anaesthesia | anesthesia'). "
+        "Word forms are matched automatically ('depression' also finds 'depressive'). "
+        f"Never write ILIKE on {long_text_phrase} to look for a word; the one exception is "
+        "a URL fragment such as '%doi.org%', which text_match cannot find. "
+        "Use d.name ILIKE '%word%' only when the question asks for a word in the dataset "
+        "name or title. ILIKE remains correct for short fields: d.license, "
+        "unnest(d.paper_references), scanner strings in other_entities. "
+        "Never use text_match or ILIKE on diagnosis, task, datatype, or suffix "
+        "(they hold canonical codes).\n"
         "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
         "## Required query structure\n"
         "- Only use tables/columns present in the schema.\n"

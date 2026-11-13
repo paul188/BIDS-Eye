@@ -62,6 +62,11 @@ class TextToSQLResult(BaseModel):
     # base SELECT can be cached and reused across pages.
     scored_filters: List[Dict[str, Any]] = []
     apply_relevance: bool = False
+    # Full-text query that ranks the result (services/text_search.py); None
+    # when the question has no text terms or the database has no search_tsv.
+    rank_tsquery: Optional[str] = None
+    # Number of first candidates an LLM judged and reordered; None = not re-ranked.
+    reranked: Optional[int] = None
 
 
 class QueryRequest(BaseModel):

@@ -842,7 +842,7 @@
     },
     {
       "question": "Show me MRI datasets about Alzheimer's disease with at least 30 subjects",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri') AND (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') OR d.name ILIKE '%alzheimer%' OR d.description_text ILIKE '%alzheimer%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri') AND (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'alzheimers_disease') OR text_match('alzheimer', 'short')) GROUP BY d.id HAVING COUNT(DISTINCT o.subject) >= 30",
       "pattern": "alzheimers_mri_large",
       "meta": {
         "datatype": [
@@ -1369,7 +1369,7 @@
     },
     {
       "question": "Find datasets related to pain and nociception",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%pain%' OR d.description_text ILIKE '%pain%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('pain') GROUP BY d.id",
       "pattern": "concept_ilike_pain",
       "meta": {
         "datatype": [],
@@ -1549,7 +1549,7 @@
     },
     {
       "question": "Find datasets focused on pain perception or pain processing tasks.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IN ('pain_perception_general', 'thermal_pain', 'heat_pain', 'cold_pain', 'mechanical_pain')) OR d.name ILIKE '%pain%' OR d.description_text ILIKE '%pain%' GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IN ('pain_perception_general', 'thermal_pain', 'heat_pain', 'cold_pain', 'mechanical_pain')) OR text_match('pain') GROUP BY d.id",
       "meta": {
         "datatype": [],
         "suffix": [],
@@ -1627,7 +1627,7 @@
     },
     {
       "question": "Retrieve datasets that contain the word participants in their description.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%participants%' GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('participants') GROUP BY d.id",
       "pattern": "text_search",
       "meta": {
         "datatype": [],
@@ -1641,7 +1641,7 @@
     },
     {
       "question": "Find datasets that mention the insula in their description",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%insula%' GROUP BY d.id LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('insula') GROUP BY d.id LIMIT 50",
       "pattern": "exists",
       "meta": {
         "datatype": [],
@@ -1655,7 +1655,7 @@
     },
     {
       "question": "Search for datasets that mention cognitive in their description text.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text ILIKE '%cognitive%' GROUP BY d.id LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('cognitive') GROUP BY d.id LIMIT 50",
       "pattern": "description_text_search",
       "meta": {
         "datatype": [],
@@ -1669,7 +1669,7 @@
     },
     {
       "question": "List all datasets that lack any mention of control in their project description.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.description_text NOT ILIKE '%control%' GROUP BY d.id LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE NOT text_match('control') GROUP BY d.id LIMIT 50",
       "pattern": "negation_search",
       "meta": {
         "datatype": [],
@@ -1683,7 +1683,7 @@
     },
     {
       "question": "Identify datasets that describe research involving fluid dynamics or related brain activity.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%fluid%' OR d.description_text ILIKE '%fluid%' GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('fluid') GROUP BY d.id",
       "pattern": "description_keyword_search",
       "meta": {
         "datatype": [],
@@ -1697,7 +1697,7 @@
     },
     {
       "question": "Search for datasets containing the term within in either the name or the description.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.name ILIKE '%within%' OR d.description_text ILIKE '%within%' GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('within') GROUP BY d.id",
       "pattern": "text_search_within",
       "meta": {
         "datatype": [],
@@ -1711,7 +1711,7 @@
     },
     {
       "question": "Find datasets that mention 7 Tesla MRI scanners in their description",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.description_text ILIKE '%7 Tesla%' OR d.description_text ILIKE '%7T%' OR d.name ILIKE '%7T%' OR d.readme_text ILIKE '%7 Tesla%' OR d.readme_text ILIKE '%7T%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('7t | 7 tesla') GROUP BY d.id",
       "pattern": "description_7t",
       "meta": {
         "datatype": [],
@@ -1725,7 +1725,7 @@
     },
     {
       "question": "Show me datasets related to consciousness or anaesthesia",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%consciousness%' OR d.description_text ILIKE '%consciousness%' OR d.readme_text ILIKE '%consciousness%' OR d.name ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anaesthesia%' OR d.description_text ILIKE '%anesthesia%' OR d.readme_text ILIKE '%anaesthesia%' OR d.readme_text ILIKE '%anesthesia%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('consciousness | anaesthesia | anesthesia') GROUP BY d.id",
       "pattern": "description_consciousness",
       "meta": {
         "datatype": [],
@@ -1739,7 +1739,7 @@
     },
     {
       "question": "Find datasets about sleep or sleep deprivation",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%sleep%' OR d.description_text ILIKE '%sleep deprivation%' OR d.description_text ILIKE '%polysomnography%' OR d.readme_text ILIKE '%sleep deprivation%' OR d.readme_text ILIKE '%polysomnography%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('sleep | polysomnography') GROUP BY d.id",
       "pattern": "description_sleep",
       "meta": {
         "datatype": [],
@@ -1753,7 +1753,7 @@
     },
     {
       "question": "Find datasets studying reward or reinforcement learning",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%reward%' OR d.description_text ILIKE '%reinforcement learning%' OR d.description_text ILIKE '%reward processing%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('reward | reinforcement learning') GROUP BY d.id",
       "pattern": "description_reward",
       "meta": {
         "datatype": [],
@@ -1778,7 +1778,7 @@
     },
     {
       "question": "Find datasets from the Poldrack lab.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.description_text ILIKE '%Poldrack%' OR d.name ILIKE '%Poldrack%' OR d.readme_text ILIKE '%Poldrack%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('poldrack') GROUP BY d.id",
       "pattern": "readme_lab_search",
       "meta": {
         "datatype": [],
@@ -1792,7 +1792,7 @@
     },
     {
       "question": "Find datasets that cite a NeuroImage paper.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.readme_text ILIKE '%neuroimage%' OR d.description_text ILIKE '%neuroimage%' OR EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%neuroimage%')) GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (text_match('neuroimage') OR EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%neuroimage%')) GROUP BY d.id",
       "pattern": "readme_paper_journal",
       "meta": {
         "datatype": [],
@@ -1806,7 +1806,7 @@
     },
     {
       "question": "Find datasets that link to a paper published in Nature Neuroscience.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.readme_text ILIKE '%nature neuroscience%' OR d.description_text ILIKE '%nature neuroscience%' OR EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%nature%neuroscience%')) GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (text_match('nature neuroscience') OR EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%nature%neuroscience%')) GROUP BY d.id",
       "pattern": "readme_paper_journal",
       "meta": {
         "datatype": [],
@@ -1820,7 +1820,7 @@
     },
     {
       "question": "Find datasets that mention ketamine in their description or README.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%ketamine%' OR d.description_text ILIKE '%ketamine%' OR d.readme_text ILIKE '%ketamine%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('ketamine') GROUP BY d.id",
       "pattern": "readme_drug_search",
       "meta": {
         "datatype": [],
@@ -1834,7 +1834,7 @@
     },
     {
       "question": "Show me datasets that describe a face localizer paradigm.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%face localizer%' OR d.description_text ILIKE '%face localizer%' OR d.readme_text ILIKE '%face localizer%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('face localizer') GROUP BY d.id",
       "pattern": "readme_task_description",
       "meta": {
         "datatype": [],
@@ -3081,7 +3081,7 @@
     },
     {
       "question": "Find datasets with bipolar disorder patients",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'bipolar_disorder') OR d.name ILIKE '%bipolar%' OR d.description_text ILIKE '%bipolar%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'bipolar_disorder') OR text_match('bipolar', 'short')) GROUP BY d.id",
       "pattern": "bipolar_dx",
       "meta": {
         "datatype": [],
@@ -3098,7 +3098,7 @@
     },
     {
       "question": "Show me datasets with participants who have epilepsy",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('epilepsy','focal_cortical_dysplasia','genetic_epilepsy','complex_epilepsy_lgs_west_syndrome_history')) OR d.name ILIKE '%epilepsy%' OR d.description_text ILIKE '%epilepsy%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('epilepsy','focal_cortical_dysplasia','genetic_epilepsy','complex_epilepsy_lgs_west_syndrome_history')) OR text_match('epilepsy | seizures | seizure | epileptic', 'short')) GROUP BY d.id",
       "pattern": "epilepsy_dx",
       "meta": {
         "datatype": [],
@@ -3118,7 +3118,7 @@
     },
     {
       "question": "Give me datasets about Parkinson's disease with more than 40 participants",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('parkinsons_disease','parkinsons_disease_mci','de_novo_parkinsons')) OR d.name ILIKE '%parkinson%' OR d.description_text ILIKE '%parkinson%') GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 40",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('parkinsons_disease','parkinsons_disease_mci','de_novo_parkinsons')) OR text_match('parkinson', 'short')) GROUP BY d.id HAVING COUNT(DISTINCT o.subject) > 40",
       "pattern": "",
       "meta": {
         "datatype": [],
@@ -3554,7 +3554,7 @@
     },
     {
       "question": "List all 7T fMRI datasets",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (d.name ILIKE '%7T%' OR d.description_text ILIKE '%7 Tesla%' OR d.description_text ILIKE '%7T%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE text_match('7t | 7 tesla') GROUP BY d.id",
       "pattern": "7t_scanner",
       "meta": {
         "datatype": [],
@@ -4443,7 +4443,7 @@
     },
     {
       "question": "Find datasets referencing a PubMed article.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%pubmed%' OR ref ILIKE '%ncbi.nlm%') OR d.readme_text ILIKE '%pubmed%' OR d.readme_text ILIKE '%ncbi.nlm%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE (EXISTS (SELECT 1 FROM unnest(d.paper_references) AS ref WHERE ref ILIKE '%pubmed%' OR ref ILIKE '%ncbi.nlm%') OR text_match('pubmed') OR d.readme_text ILIKE '%ncbi.nlm%') GROUP BY d.id",
       "pattern": "paper_reference_pubmed",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["ilike"]

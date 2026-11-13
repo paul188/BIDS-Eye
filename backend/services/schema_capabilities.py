@@ -14,6 +14,9 @@ columns exist and are populated. Prompt building then
   - drops few-shot examples that use any other optional column,
   - widens the disease text fallback with dx_status / study_domain when present.
 
+The same inspection records whether the full-text column search_tsv exists
+(services/text_search.py). Without it text search falls back to ILIKE.
+
 After a migration or backfill, restart the backend to pick up the new state.
 """
 
@@ -38,8 +41,25 @@ _available: FrozenSet[str] = frozenset()
 
 # Columns the API reads directly (not through generated SQL). For these only
 # existence matters, not how many rows are filled.
-DISPLAY_COLUMNS = ("deprecated_reason",)
+# llm_profile is read by the re-ranker (services/rerank.py).
+DISPLAY_COLUMNS = ("deprecated_reason", "llm_profile")
 _present_display: FrozenSet[str] = frozenset()
+
+
+# Stored tsvector behind text_match(); see crawlers/migrate_add_search_tsv.sql.
+FTS_COLUMN = "search_tsv"
+_has_fts: bool = False
+
+
+def has_fts() -> bool:
+    """True if bids_datasets has the full-text column in the running database."""
+    return _has_fts
+
+
+def set_fts(available: bool) -> None:
+    """Override the detected full-text capability (tests)."""
+    global _has_fts
+    _has_fts = bool(available)
 
 
 def has_display_column(name: str) -> bool:
@@ -81,12 +101,13 @@ def uses_unavailable_column(sql: str) -> bool:
 
 
 def disease_text_columns() -> List[str]:
-    """Free-text columns to OR into a disease filter, most specific first.
+    """Short free-text columns for substring search, most specific first.
 
-    dx_status and study_domain are short fields about the cohort and the
-    topic, so a match there is strong evidence. README text is left out on
-    purpose: a plain substring match on it is noisy ("bipolar channels",
-    "Beck Depression Inventory").
+    Used when the database has no full-text column: text_match() then expands
+    to ILIKE on these. dx_status and study_domain are short fields about the
+    cohort and the topic, so a match there is strong evidence. README text is
+    left out on purpose: a plain substring match on it is noisy ("bipolar
+    channels", "Beck Depression Inventory").
     """
     columns = ["name", "description_text"]
     columns += [c for c in ("dx_status", "study_domain") if c in _available]
@@ -114,8 +135,14 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
         )
     )
     present = {row[0] for row in rows}
-    global _present_display
+    global _present_display, _has_fts
     _present_display = frozenset(name for name in DISPLAY_COLUMNS if name in present)
+    _has_fts = FTS_COLUMN in present
+    log.info(
+        "Full-text column %s %s", FTS_COLUMN,
+        "found → text_match() uses full-text search and ranking" if _has_fts
+        else "missing → text_match() falls back to ILIKE on short text columns",
+    )
     candidates = [name for name in OPTIONAL_DATASET_COLUMNS if name in present]
     absent = [name for name in OPTIONAL_DATASET_COLUMNS if name not in present]
     if absent:
@@ -148,7 +175,7 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
 
 async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
     """Detect and store the state. On any error, assume no optional column."""
-    global _available, _present_display
+    global _available, _present_display, _has_fts
     try:
         async with engine.connect() as connection:
             _available = await detect_available_columns(connection)
@@ -156,4 +183,5 @@ async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
         log.warning("Could not inspect optional dataset columns (%s) — hiding all of them", exc)
         _available = frozenset()
         _present_display = frozenset()
+        _has_fts = False
     return _available

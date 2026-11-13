@@ -86,6 +86,23 @@ CRAWLER_MANAGED_COLUMNS: Dict[str, str] = {
     "institutions": "TEXT[]", **METADATA_COLUMNS, **STATUS_COLUMNS,
 }
 
+# Full-text search column (see crawlers/migrate_add_search_tsv.sql). It is
+# GENERATED from the text columns, so nothing in the crawler writes it; it is
+# only created here so that a fresh crawl database can be searched.
+# "/" becomes a space because PostgreSQL reads "ADD/ADHD" as one file path.
+SEARCH_VECTOR_EXPRESSION = (
+    "setweight(to_tsvector('english'::regconfig, "
+    "translate(coalesce(name, '')::text, '/', ' ')), 'A') || "
+    "setweight(to_tsvector('english'::regconfig, translate("
+    "coalesce(dx_status, '') || ' ' || coalesce(study_domain, '') || ' ' || "
+    "coalesce(study_design, '') || ' ' || coalesce(description_text, '') || ' ' || "
+    "coalesce(llm_conditions, ''), '/', ' ')), 'B') || "
+    "setweight(to_tsvector('english'::regconfig, "
+    "translate(coalesce(llm_profile, ''), '/', ' ')), 'C') || "
+    "setweight(to_tsvector('english'::regconfig, "
+    "translate(coalesce(readme_text, ''), '/', ' ')), 'D')"
+)
+
 # Selection shared by every query in this module.
 METADATA_SELECTION = """
     metadata { species studyDesign studyDomain dxStatus ages }
@@ -340,9 +357,35 @@ def ensure_columns_sql() -> List[str]:
     ]
 
 
+# Written by scripts/extract_readme_profiles.py, read by the search vector.
+PROFILE_COLUMNS: Dict[str, str] = {
+    "llm_profile": "TEXT",
+    "llm_conditions": "TEXT",
+    "llm_profile_meta": "JSONB",
+}
+
+
+def search_vector_sql() -> List[str]:
+    """Idempotent DDL for the full-text column and its index.
+
+    Must run after ensure_columns_sql(): the expression reads those columns.
+    Adds nothing to an existing search_tsv; a changed definition is applied by
+    crawlers/migrate_add_search_tsv.sql, which recreates the column.
+    """
+    return [
+        f"ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS {name} {sql_type}"
+        for name, sql_type in PROFILE_COLUMNS.items()
+    ] + [
+        "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS search_tsv tsvector "
+        f"GENERATED ALWAYS AS ({SEARCH_VECTOR_EXPRESSION}) STORED",
+        "CREATE INDEX IF NOT EXISTS idx_bids_datasets_search_tsv "
+        "ON bids_datasets USING GIN (search_tsv)",
+    ]
+
+
 async def ensure_columns(session: Any) -> None:
     """Create the crawler-managed columns if they are missing. Caller commits."""
-    for statement in ensure_columns_sql():
+    for statement in ensure_columns_sql() + search_vector_sql():
         await session.execute(text(statement))
 
 

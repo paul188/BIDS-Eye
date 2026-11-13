@@ -18,6 +18,7 @@ Routes:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import sys
@@ -36,12 +37,13 @@ if str(_BIDS_SQL) not in sys.path:
 import db.models  # noqa: E402, F401 — registers models with Base.metadata before create_all
 import models     # noqa: E402, F401 — registers backend-only models (message_usage, etc.)
 from db.db import create_all_tables, engine  # noqa: E402
-from services.schema_capabilities import refresh_available_columns  # noqa: E402
+from services import text_search  # noqa: E402
 
 _RAG = Path(__file__).resolve().parents[1] / "RAG"
 if str(_RAG) not in sys.path:
     sys.path.insert(0, str(_RAG))
 import institution_index  # noqa: E402
+from services.schema_capabilities import has_fts, refresh_available_columns  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -65,6 +67,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # names in questions (RAG/institution_index.py). Falls back to
     # RAG/name_index.json when the column is missing.
     await institution_index.refresh_from_db(engine)
+
+    # Multi-word free-text terms filter on their rarest word; the count comes
+    # from the database and is asked for from the translation worker thread.
+    if has_fts():
+        text_search.set_frequency_lookup(
+            text_search.make_frequency_lookup(engine, asyncio.get_running_loop())
+        )
 
     # Optionally run the crawler in-process (useful for single-container dev).
     # In production the crawler runs as its own Docker service.

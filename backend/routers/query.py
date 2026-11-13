@@ -35,6 +35,7 @@ from schemas import (
 )
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
+from services.rerank import rerank_candidates, settings as rerank_settings, should_rerank
 from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
 from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
@@ -172,6 +173,34 @@ async def _count_with_base_correction(
             return int(result.scalar() or 0)
 
 
+async def _rerank_once(
+    session: AsyncSession, query_id: str, cached: CachedQuery, question: str, total: int
+) -> None:
+    """Let an LLM judge the first candidates and store the new order (once per query)."""
+    cached.rerank_done = True
+    if not question or not should_rerank(
+        cached.apply_relevance, total, cached.base_sql == _FALLBACK_SQL
+    ):
+        query_cache.update(query_id, cached)
+        return
+    try:
+        candidate_sql, params = build_page_sql(
+            cached.base_sql, cached.scored_filters, True,
+            rerank_settings()["candidates"], 0, rank_tsquery=cached.rank_tsquery,
+        )
+        rows = await session.execute(text(candidate_sql), {**cached.params, **params})
+        candidate_ids = [row["id"] for row in rows.mappings().all()]
+    except Exception:
+        await session.rollback()
+        query_cache.update(query_id, cached)
+        return
+    result = await rerank_candidates(session, candidate_ids, question, cached.explanation)
+    if result is not None:
+        cached.rerank_ordered = result.ordered_ids
+        cached.rerank_demoted = result.demoted_ids
+    query_cache.update(query_id, cached)
+
+
 async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[DatasetSchema]:
     """Build DatasetSchema objects (with capped participants) from result rows."""
     dataset_ids = [UUID(str(r["id"])) for r in raw]
@@ -227,6 +256,9 @@ async def _run_page(
     else:
         total = cached.total
 
+    if not cached.rerank_done:
+        await _rerank_once(session, query_id, cached, question, total)
+
     offset = (page - 1) * page_size
     page_sql, extra_params = build_page_sql(
         cached.base_sql,
@@ -234,6 +266,9 @@ async def _run_page(
         cached.apply_relevance,
         page_size,
         offset,
+        rank_tsquery=cached.rank_tsquery,
+        rerank_ordered=cached.rerank_ordered,
+        rerank_demoted=cached.rerank_demoted,
     )
     result = await session.execute(
         text(page_sql), {**cached.params, **extra_params}
@@ -261,6 +296,7 @@ async def query_datasets(
         params=translation.params,
         scored_filters=translation.scored_filters,
         apply_relevance=translation.apply_relevance,
+        rank_tsquery=translation.rank_tsquery,
         explanation=translation.explanation,
         self_corrected=translation.self_corrected,
     )
@@ -270,8 +306,13 @@ async def query_datasets(
         session, query_id, cached, body.question, page, page_size
     )
     # Surface any base-SQL self-correction that happened during the count.
+    reranked = len(cached.rerank_ordered) + len(cached.rerank_demoted)
     translation = translation.model_copy(
-        update={"sql": cached.base_sql, "self_corrected": cached.self_corrected}
+        update={
+            "sql": cached.base_sql,
+            "self_corrected": cached.self_corrected,
+            "reranked": reranked or None,
+        }
     )
 
     from models import UserQuery

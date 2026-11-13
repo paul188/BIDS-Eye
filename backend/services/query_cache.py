@@ -37,7 +37,12 @@ class CachedQuery:
     params: Dict[str, Any]
     scored_filters: List[Dict[str, Any]]
     apply_relevance: bool
+    rank_tsquery: Optional[str] = None
     explanation: Optional[str] = None
+    # LLM re-ranking (services/rerank.py), done once on the first page.
+    rerank_done: bool = False
+    rerank_ordered: List[str] = field(default_factory=list)
+    rerank_demoted: List[str] = field(default_factory=list)
     self_corrected: bool = False
     total: Optional[int] = None
     created_at: float = field(default_factory=time.monotonic)

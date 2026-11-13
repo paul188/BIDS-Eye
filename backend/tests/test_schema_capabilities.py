@@ -18,9 +18,11 @@ FEW_SHOT_PATH = Path(__file__).resolve().parents[1] / "few_shot_examples.json"
 def _reset_capabilities():
     caps.set_available_columns(())
     caps.set_display_columns(())
+    caps.set_fts(False)
     yield
     caps.set_available_columns(())
     caps.set_display_columns(())
+    caps.set_fts(False)
 
 
 def _dataset_table(ddl: str) -> str:

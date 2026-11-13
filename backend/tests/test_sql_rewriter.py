@@ -54,15 +54,19 @@ def test_rewrite_generated_sql_strips_bad_outer_filters_and_adds_vocab_miss_clau
     )
     augmented_question = (
         "[VOCABULARY MISS] task term not resolved. For free-text search use: "
-        "d.name ILIKE '%alcohol%' OR d.description_text ILIKE '%alcohol%' ]"
+        "text_match('alcohol', 'loose')]"
     )
 
+    # A database without the full-text column: the placeholder becomes ILIKE.
     rewritten = SERVICE.rewrite_generated_sql(raw_sql, augmented_question)
 
     assert "o.task = 'complex_motor_task'" not in rewritten.sql
-    assert "ILIKE" in rewritten.sql
-    assert rewritten.params == {"vocab_miss_0": "%alcohol%"}
-    assert ":vocab_miss_0" in rewritten.sql
+    assert "text_match" not in rewritten.sql.lower()
+    assert "d.name ILIKE '%alcohol%'" in rewritten.sql
+    assert "d.description_text ILIKE '%alcohol%'" in rewritten.sql
+    assert "d.dataset_type = 'raw'" in rewritten.sql
+    assert rewritten.params == {}
+    assert rewritten.rank_tsquery is None
 
 
 def test_build_count_and_page_sql_wrap_base_query() -> None:
@@ -89,3 +93,17 @@ def test_build_count_and_page_sql_wrap_base_query() -> None:
 def test_fallback_sql_remains_available() -> None:
     assert "LIMIT 200" in FALLBACK_SQL
 
+
+
+def test_extract_sql_drops_a_trailing_closing_tag() -> None:
+    """The prompt ends with "[SQL]"; Gemini then often answers SQL + "[/SQL]"."""
+    sql = "SELECT {{COLS}} FROM bids_datasets d\n\nWHERE d.license = 'CC0'\nGROUP BY d.id"
+    for raw in (
+        sql + "[/SQL]",
+        sql + "\n[/SQL]\nThis query finds CC0 datasets.",
+        "[SQL]\n" + sql + "\n```",
+        "```sql\n" + sql + "\n[/SQL]\n```",
+    ):
+        assert SERVICE.extract_sql(raw) == sql, raw
+    # No marker: prose after a blank line is still dropped.
+    assert SERVICE.extract_sql("SELECT 1\n\nThis returns one.") == "SELECT 1"

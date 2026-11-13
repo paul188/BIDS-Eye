@@ -30,10 +30,11 @@ Config (env):
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import time
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 log = logging.getLogger(__name__)
 
@@ -69,10 +70,18 @@ class _Tier:
         self.waits = waits
 
 
-def _build_cascade() -> List[_Tier]:
-    """Assemble the tier list from defaults + env overrides (cheap; called per request)."""
+def _build_cascade(models: Optional[Sequence[str]] = None,
+                   use_fallback: bool = True) -> List[_Tier]:
+    """Assemble the tier list from defaults + env overrides (cheap; called per request).
+
+    *models* replaces the Gemini part of the cascade for one call (e.g. a cheap
+    model for a bulk job); *use_fallback* False drops the Claude tier.
+    """
     gem_env = os.getenv("GEMINI_MODEL_CASCADE")
-    gem_models = [m.strip() for m in gem_env.split(",") if m.strip()] if gem_env else _DEFAULT_GEMINI_CASCADE
+    if models:
+        gem_models = [m.strip() for m in models if m and m.strip()]
+    else:
+        gem_models = [m.strip() for m in gem_env.split(",") if m.strip()] if gem_env else _DEFAULT_GEMINI_CASCADE
 
     tiers: List[_Tier] = []
     for i, m in enumerate(gem_models):
@@ -87,7 +96,7 @@ def _build_cascade() -> List[_Tier]:
             tiers.append(_Tier("gemini", m, True, 1, []))    # secondary: single shot
 
     # cross-provider last resort — only if a key is configured
-    if os.getenv("ANTHROPIC_API_KEY"):
+    if use_fallback and os.getenv("ANTHROPIC_API_KEY"):
         model = os.getenv("ANTHROPIC_FALLBACK_MODEL", _DEFAULT_ANTHROPIC_MODEL)
         accepts_temp = not model.startswith(_NO_TEMPERATURE_PREFIXES)
         # Single attempt: the SDK call already has its own timeout; a retry here
@@ -106,16 +115,29 @@ def _gemini_is_transient(err: str) -> bool:
     ))
 
 
-def _call_gemini(model, prompt, system, temperature, api_key) -> str:
+def _call_gemini(model, prompt, system, temperature, api_key, *, json_schema=None,
+                 thinking_level=None, call_timeout=None, max_tokens=None) -> str:
     from google import genai
     from google.genai import types
+    extra = {}
+    if json_schema is not None:
+        extra["response_mime_type"] = "application/json"
+        extra["response_json_schema"] = json_schema
+    # Gemini 3+ take a thinking level; 2.x models reject it with a 400.
+    if thinking_level and not model.startswith("gemini-2."):
+        extra["thinking_config"] = types.ThinkingConfig(thinking_level=thinking_level.upper())
+    if max_tokens:
+        extra["max_output_tokens"] = max_tokens
     cfg = types.GenerateContentConfig(
         system_instruction=system or None,
         temperature=temperature,
+        **extra,
     )
     # Per-call timeout (ms) so a hanging/slow Gemini call can't blow the wall-clock
     # budget — during a 503 storm a single call can otherwise stall ~30s.
-    timeout_ms = int(float(os.getenv("GEMINI_CALL_TIMEOUT_SECONDS", "12")) * 1000)
+    if call_timeout is None:
+        call_timeout = float(os.getenv("GEMINI_CALL_TIMEOUT_SECONDS", "12"))
+    timeout_ms = int(call_timeout * 1000)
     client = genai.Client(api_key=api_key,
                           http_options=types.HttpOptions(timeout=timeout_ms))
     resp = client.models.generate_content(model=model, contents=prompt, config=cfg)
@@ -166,8 +188,24 @@ def llm_generate(
     temperature: float = 0.0,
     max_tokens: int = 2048,
     api_key: Optional[str] = None,
+    models: Optional[Sequence[str]] = None,
+    json_schema: Optional[dict] = None,
+    thinking_level: Optional[str] = None,
+    call_timeout: Optional[float] = None,
+    budget_seconds: Optional[float] = None,
+    use_fallback: bool = True,
 ) -> str:
     """Run the prompt through the cascade; return the first tier's text response.
+
+    The keyword options default to the pipeline's behaviour; other callers
+    (README extraction, re-ranking) use them to pick their own models:
+      models          Gemini models for this call, in order (replaces the cascade)
+      json_schema     JSON Schema the answer must follow (Gemini structured
+                      output; the Claude tier gets it as an instruction)
+      thinking_level  "minimal" / "low" / "medium" / "high" on Gemini 3+
+      call_timeout    seconds per Gemini call
+      budget_seconds  wall-clock budget for all Gemini tiers
+      use_fallback    False skips the Claude tier
 
     Raises LLMAllFailedError if every tier fails.
     """
@@ -177,10 +215,17 @@ def llm_generate(
     # Wall-clock budget for the Gemini tiers. Once exceeded, skip any remaining
     # Gemini models and go straight to the cross-provider (Claude) fallback, so a
     # Gemini-overload storm can't drag a single stage toward Cloudflare's limit.
-    gemini_budget = float(os.getenv("GEMINI_BUDGET_SECONDS", "12"))
+    gemini_budget = (budget_seconds if budget_seconds is not None
+                     else float(os.getenv("GEMINI_BUDGET_SECONDS", "12")))
     t0 = time.monotonic()
+    claude_prompt = prompt
+    if json_schema is not None:
+        claude_prompt = (
+            f"{prompt}\n\nReturn only a JSON value that follows this JSON Schema, "
+            f"no prose, no code fences:\n{json.dumps(json_schema)}"
+        )
 
-    for tier in _build_cascade():
+    for tier in _build_cascade(models, use_fallback):
         if tier.provider == "gemini" and (time.monotonic() - t0) > gemini_budget:
             failures.append(f"gemini/{tier.model}: skipped (Gemini time budget exceeded)")
             log.warning("llm_generate: skipping gemini/%s — budget exhausted, failing over",
@@ -193,10 +238,13 @@ def llm_generate(
                         raise RuntimeError("no GEMINI_API_KEY/GOOGLE_API_KEY configured")
                     text = _call_gemini(
                         tier.model, prompt, system, temperature, gem_key,
+                        json_schema=json_schema, thinking_level=thinking_level,
+                        call_timeout=call_timeout,
+                        max_tokens=max_tokens if json_schema is not None else None,
                     )
                 else:  # anthropic
                     text = _call_anthropic(
-                        tier.model, prompt, system, temperature,
+                        tier.model, claude_prompt, system, temperature,
                         tier.accepts_temperature, max_tokens,
                     )
                 if text:

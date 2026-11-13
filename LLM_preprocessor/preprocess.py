@@ -62,6 +62,12 @@ from join_registry import (
     check_contradictions as _check_contradictions,
     field_to_db_col as _field_to_db_col,
 )
+from text_terms import (
+    MODE_LOOSE as _MODE_LOOSE,
+    MODE_SHORT as _MODE_SHORT,
+    diagnosis_alternatives as _diagnosis_alternatives,
+    format_text_match as _format_text_match,
+)
 
 # ---------------------------------------------------------------------------
 # Schema
@@ -242,7 +248,8 @@ class QueryPlan(BaseModel):
     )
     description_search: Optional[str] = Field(
         default=None,
-        description="Substring to ILIKE-search in bids_datasets.description_text"
+        description="Keyword for full-text search over the dataset's name, description, "
+                    "study fields and README"
     )
     license_search: Optional[str] = Field(
         default=None,
@@ -371,7 +378,8 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     (a QueryPlan) that downstream components will use to build a SQL query.
 
     The database contains neuroimaging datasets with:
-      - bids_datasets: name, authors, license, doi, funding, description_text
+      - bids_datasets: name, authors, license, doi, funding, description_text,
+                       README text
       - bids_objects:  task, suffix, datatype, session, subject,
                        other_entities (JSONB sidecar metadata)
       - bids_participants: diagnosis, sex, handedness, age, extra (JSONB)
@@ -419,7 +427,8 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     specific task type or modality. These have no DB code and must NOT go into
     scan_terms — the RAG layer cannot resolve them and they will block results.
     Instead, place the single most distinctive keyword in description_search so
-    the pipeline runs a free-text search over dataset description fields.
+    the pipeline runs a full-text search over the dataset's name, description
+    and README.
 
     Route a word/phrase to description_search when it is:
       • A difficulty or complexity adjective: "complex", "simple", "basic",
@@ -506,7 +515,7 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       absence_query        — "does NOT contain X"
       subject_multimodal   — same subject must have multiple scan types
       author_query         — filter by author name
-      description_search   — ILIKE search on dataset name or description
+      description_search   — keyword search on dataset name, description or README
       doi_query            — has / lacks a DOI
       license_query        — filter by license
       funding_query        — filter by funding source
@@ -763,10 +772,19 @@ def _build_augmented_question(
     (e.g. "fMRI" → datatype=functional_mri AND suffix=fmri_bold) are
     combined with AND inside a single EXISTS.
 
-    Non-scan fields (diagnosis, author, funding) are listed as code names.
+    A diagnosis becomes an EXISTS on the structured rows OR a text_match()
+    placeholder on the short text fields, because most datasets about a
+    disease have no diagnosis rows.  Free-text terms (description_search,
+    unresolved vocabulary) become text_match() placeholders as well; the
+    backend expands them into full-text predicates (RAG/text_terms.py).
+
+    Author and funding are listed as exact DB strings.
     """
     size_conds = _size_conditions(plan) if "size_bytes" in available_columns else []
-    if not resolved and not plan.description_search and not plan.name_search and not size_conds:
+    # Unresolved terms count too: their text filter is the only thing that
+    # keeps a question like "eye tracking datasets" from returning everything.
+    if (not resolved and not plan.description_search and not plan.name_search
+            and not size_conds and not unresolved_terms and not db_miss_terms):
         return plan.natural_language_summary
 
     _SCAN_FIELDS = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
@@ -795,6 +813,14 @@ def _build_augmented_question(
                     f"EXISTS (SELECT 1 FROM bids_participants p2 "
                     f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
                 )
+                # Structured diagnosis rows are sparse: back them up with the
+                # user's words and the vocabulary synonyms in name,
+                # description and study fields.
+                text_fallback = _format_text_match(
+                    _diagnosis_alternatives(r.term_to_codes), _MODE_SHORT
+                )
+                if text_fallback:
+                    exists_sql = f"({exists_sql} OR {text_fallback})"
                 context_lines.append(f'  diagnosis: {exists_sql}')
         else:
             if r.all_codes:
@@ -889,13 +915,13 @@ def _build_augmented_question(
 
     context_lines.extend(non_scan_lines)
 
-    # Inject free-text ILIKE hints for qualitative/adjectival terms that the
+    # Inject free-text hints for qualitative/adjectival terms that the
     # preprocessing LLM routed to description_search / name_search because they
     # can't be resolved to a DB code (e.g. "complex", "pediatric", "demanding").
-    if plan.description_search:
-        context_lines.append(
-            f"  description text: d.description_text ILIKE '%{plan.description_search}%'"
-        )
+    # description_search covers name, description, study fields and README.
+    description_match = _format_text_match([plan.description_search or ""])
+    if description_match:
+        context_lines.append(f"  dataset text: {description_match}")
     if plan.name_search:
         context_lines.append(
             f"  dataset name: d.name ILIKE '%{plan.name_search}%'"
@@ -920,26 +946,25 @@ def _build_augmented_question(
         )
 
     # Warn about terms that RAG could not map — prevent SQL model from generating
-    # broken ILIKE queries on canonical-code columns (diagnosis, task, datatype, suffix).
+    # broken text filters on canonical-code columns (diagnosis, task, datatype, suffix).
     if unresolved_terms:
         missing_parts = []
         for field, terms in unresolved_terms.items():
             missing_parts.append(f"{field}: {', '.join(repr(t) for t in terms)}")
-        # Build ILIKE keyword suggestions — use longest word from each term
-        ilike_suggestions = []
+        # One 'loose' text_match() per term: the dataset must contain the
+        # term's most distinctive word anywhere in its text (README included);
+        # the other words only move it up in the ranking.
+        text_suggestions = []
         for field, terms in unresolved_terms.items():
             for term in terms:
-                # Pick the longest individual word as the most distinctive keyword
-                words = [w for w in term.split() if len(w) >= 4]
-                kw = max(words, key=len) if words else term
-                ilike_suggestions.append(
-                    f"(d.name ILIKE '%{kw}%' OR d.description_text ILIKE '%{kw}%')"
-                )
+                suggestion = _format_text_match([term], _MODE_LOOSE)
+                if suggestion and suggestion not in text_suggestions:
+                    text_suggestions.append(suggestion)
         ilike_hint = ""
-        if ilike_suggestions:
+        if text_suggestions:
             ilike_hint = (
                 " For free-text search use: "
-                + " AND ".join(ilike_suggestions)
+                + " AND ".join(text_suggestions)
             )
         context_lines.append(
             "[VOCABULARY MISS — these terms are not in the known concept vocabulary: "
@@ -972,7 +997,7 @@ def _build_augmented_question(
         return plan.natural_language_summary
 
     header = (
-        "[Resolved DB filters — copy each EXISTS subquery verbatim into the SQL WHERE clause]"
+        "[Resolved DB filters — copy each filter expression verbatim into the SQL WHERE clause]"
     )
     join_block = _build_join_context_block()
     context = join_block + "\n\n" + header + "\n" + "\n".join(context_lines)

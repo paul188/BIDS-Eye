@@ -32,7 +32,10 @@ _CORE_DATASET_COLUMNS: List[Tuple[str, str, List[str]]] = [
         "with README URLs as fallback when the field is absent)",
     ]),
     ("funding",           "TEXT[]", ["funding sources"]),
-    ("description_text",  "TEXT", ["free-text description from dataset_description.json"]),
+    ("description_text",  "TEXT", [
+        "free-text description from dataset_description.json;",
+        "search it with text_match('keyword'), not ILIKE",
+    ]),
 ]
 
 # Columns that exist only after a migration + backfill. Each one is shown to
@@ -46,19 +49,18 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "  EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ILIKE '%MIT%')",
     ]),
     "readme_text": ("TEXT", [
-        "content of the dataset README (long free text)",
-        "Use ILIKE to search for paper links, scanner details, task descriptions,",
-        "lab names, and other things authors write in READMEs but not in",
-        "dataset_description.json. Always pair with d.description_text OR d.name.",
+        "content of the dataset README (long free text): paper links, scanner",
+        "details, task descriptions, lab names. Do not ILIKE it — text_match('keyword')",
+        "searches it together with name and description_text.",
     ]),
     "dx_status": ("TEXT", [
         "diagnosis / health status of the cohort as typed by the uploader (free text,",
         "NULL for many datasets), e.g. 'Healthy / Control', 'Epilepsy', 'Parkinson''s Disease'.",
-        "Search with ILIKE '%term%'; never compare with canonical diagnosis codes.",
+        "Covered by text_match('term'); never compare with canonical diagnosis codes.",
     ]),
     "study_domain": ("TEXT", [
         "research topic as typed by the uploader (free text, NULL for many datasets),",
-        "e.g. 'Basal Ganglia in Parkinson', 'Language'. Search with ILIKE '%term%'.",
+        "e.g. 'Basal Ganglia in Parkinson', 'Language'. Covered by text_match('term').",
     ]),
     "study_design": ("TEXT", [
         "study design as typed by the uploader (free text), e.g. 'Longitudinal',",
@@ -166,7 +168,11 @@ CREATE TABLE bids_participants (
 -- Always: GROUP BY d.id
 -- Use EXISTS (...) to filter by file/participant properties (bids_objects, bids_participants only)
 -- Never use EXISTS to check a column already on bids_datasets — use d.col directly
--- Use ILIKE '%term%' for case-insensitive text search
+-- Keyword search on dataset text: text_match('keyword'). This is a macro; the system
+--   expands it into  d.search_tsv @@ to_tsquery('english', '...')  (search_tsv is a
+--   full-text index over name, description, study fields and README). Keep such an
+--   expanded predicate unchanged when you see one in a query.
+-- Use ILIKE '%term%' only for short fields (license, references, scanner strings)
 -- Never JOIN bids_participants alongside bids_objects — cross-product risk.
 --   For participant counts in HAVING, use correlated subqueries:
 --   HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male')
