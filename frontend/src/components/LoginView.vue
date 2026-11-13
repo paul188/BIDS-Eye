@@ -1,19 +1,25 @@
+<script setup lang="ts">
+import LogoMark from './LogoMark.vue'
+</script>
+
 <template>
-  <div class="flex items-center justify-center h-full bg-surface">
-    <div class="w-full max-w-sm bg-panel border border-border rounded-2xl shadow-sm p-8 space-y-6">
-      <div class="text-center">
-        <div class="flex items-center justify-center gap-2 mb-1">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" class="text-ink">
-            <path d="M12 3 1 8l11 5 9-4.09V14h2V8L12 3zM5 13.18v3L12 20l7-3.82v-3L12 17l-7-3.82z" />
-          </svg>
-          <h1 class="text-xl text-ink" style="font-weight: 500">BIDS-Eye</h1>
-        </div>
-        <p class="text-sm text-muted mt-1">Sign in to continue</p>
+  <div class="flex items-center justify-center h-full bg-surface px-4">
+    <div class="w-full max-w-sm">
+      <div class="flex items-center gap-2.5 mb-8">
+        <LogoMark :size="30" />
+        <span class="text-xl font-semibold tracking-tight text-ink">BIDS-Eye</span>
       </div>
+
+      <h1 class="font-serif text-[1.75rem] leading-tight text-ink">
+        Find open neuroimaging datasets by describing them.
+      </h1>
+      <p class="mt-3 text-sm text-muted leading-relaxed">
+        Sign in to search the indexed OpenNeuro datasets. Each account gets 20 searches a day.
+      </p>
 
       <a
         href="/api/auth/github"
-        class="flex items-center justify-center gap-3 w-full bg-ink hover:opacity-90 text-white rounded-xl px-4 py-3 text-sm font-medium transition-opacity"
+        class="mt-8 flex items-center justify-center gap-3 w-full bg-ink hover:bg-ink/90 text-white rounded-xl px-4 py-3 text-sm font-medium transition-colors"
       >
         <!-- GitHub mark -->
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

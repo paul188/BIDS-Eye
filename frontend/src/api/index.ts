@@ -35,9 +35,24 @@ export interface TextToSQLResult {
   explanation: string | null
 }
 
+/** One condition of the search, as the backend read it from the generated SQL. */
+export interface QueryFilter {
+  /** Position in the original query ("w0", "h0"); pass back to refine. */
+  id: string
+  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'field' | 'other'
+  field: string
+  label: string
+  negated: boolean
+  /** Words also searched in the dataset text; a "text" chip is only these. */
+  text_words: string[]
+  detail: string
+}
+
 export interface QueryResponse {
   message: string
   translation: TextToSQLResult | null
+  /** How the question was understood; [] when it has no readable conditions. */
+  filters?: QueryFilter[]
   datasets: Dataset[]
   query_id: string | null
   total: number
@@ -107,6 +122,10 @@ export const api = {
 
   queryPage: (queryId: string, page: number, pageSize: number) =>
     post<QueryResponse>('/query/page', { query_id: queryId, page, page_size: pageSize }),
+
+  /** Re-run a search without some of its filters: no LLM call, not rate-limited. */
+  refine: (queryId: string, remove: string[], pageSize: number) =>
+    post<QueryResponse>('/query/refine', { query_id: queryId, remove, page_size: pageSize }),
 
   crawlerStatus: () =>
     get<CrawlerStatus>('/crawler/status'),

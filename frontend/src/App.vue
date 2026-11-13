@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from './stores/chat'
 import { RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
 import CrawlerStatusDot from './components/CrawlerStatusDot.vue'
 import LoginView from './components/LoginView.vue'
+import LogoMark from './components/LogoMark.vue'
+import InputBar from './components/InputBar.vue'
 
 const CRAWLER_ENABLED = import.meta.env.VITE_CRAWLER_ENABLED === 'true'
-const CHAR_LIMIT = 2000
-const CHAR_WARN_AT = 1500
 
 const isLoggedIn = ref(!!localStorage.getItem('bids_eye_token'))
 
@@ -59,24 +59,21 @@ function startCountdown() {
 
 const store = useChatStore()
 const input = ref('')
-const charCount = computed(() => input.value.length)
-const showCharCount = computed(() => charCount.value >= CHAR_WARN_AT)
 const messagesContainer = ref<HTMLElement | null>(null)
-const textarea = ref<HTMLTextAreaElement | null>(null)
+const inputBar = ref<InstanceType<typeof InputBar> | null>(null)
 const drawerOpen = ref(false)
 
 const SUGGESTIONS = [
-  'Datasets with at least 40 Parkinson\'s patients',
-  'Show datasets with Alzheimer\'s disease participants',
-  'List all resting-state fMRI datasets',
-  'Find datasets with both structural and functional MRI',
+  { tag: 'Clinical',   text: 'Datasets with at least 40 Parkinson\'s patients' },
+  { tag: 'Clinical',   text: 'Show datasets with Alzheimer\'s disease participants' },
+  { tag: 'Modality',   text: 'List all resting-state fMRI datasets' },
+  { tag: 'Multimodal', text: 'Find datasets with both structural and functional MRI' },
 ]
 
 async function submit() {
   const q = input.value.trim()
   if (!q || rateLimitedUntil.value) return
   input.value = ''
-  autoResize()
   // sendQuestion pushes the user message + loading bubble synchronously, then
   // awaits the API. Scroll the new question to the top *before* the answer lands
   // so the user isn't pushed down and never has to scroll back up.
@@ -88,7 +85,6 @@ async function submit() {
   } catch (err) {
     if (err instanceof RateLimitError) {
       input.value = q  // restore so the user doesn't lose their question
-      autoResize()
       rateLimitedUntil.value = err.retryAfter
       startCountdown()
     }
@@ -103,22 +99,9 @@ function scrollQuestionToTop() {
   last?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault()
-    submit()
-  }
-}
-
-function autoResize() {
-  if (!textarea.value) return
-  textarea.value.style.height = 'auto'
-  textarea.value.style.height = Math.min(textarea.value.scrollHeight, 160) + 'px'
-}
-
 function useSuggestion(s: string) {
   input.value = s
-  nextTick(() => textarea.value?.focus())
+  nextTick(() => inputBar.value?.focus())
 }
 
 function selectConversation(id: number) {
@@ -129,6 +112,7 @@ function selectConversation(id: number) {
 function startNewConversation() {
   store.newConversation()
   drawerOpen.value = false
+  nextTick(() => inputBar.value?.focus())
 }
 
 function relativeTime(iso: string): string {
@@ -176,53 +160,60 @@ onUnmounted(() => {
   <div v-else class="flex flex-col h-full overflow-hidden bg-surface">
 
     <!-- ── Header bar ─────────────────────────────────────────────────── -->
-    <header class="flex items-center gap-3 h-14 px-4 border-b border-border flex-shrink-0">
+    <header class="flex items-center gap-2 sm:gap-3 h-14 px-3 sm:px-5 border-b border-border bg-surface/90 backdrop-blur flex-shrink-0">
       <button
-        class="p-2 -ml-2 rounded-full text-muted hover:bg-panel-soft transition-colors"
-        title="Menu"
+        class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm text-muted hover:bg-panel-soft hover:text-ink transition-colors"
+        title="Search history"
         @click="drawerOpen = true"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v4h4" /><path d="M12 8v4l3 2" />
         </svg>
+        <span class="hidden md:inline">History</span>
       </button>
 
-      <!-- Wordmark: "BIDS-Eye | Search" -->
-      <div class="flex items-center gap-2 select-none">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="text-ink">
-          <path d="M12 3 1 8l11 5 9-4.09V14h2V8L12 3zM5 13.18v3L12 20l7-3.82v-3L12 17l-7-3.82z" />
-        </svg>
-        <span class="text-xl text-ink" style="font-weight: 500">BIDS-Eye</span>
-        <span class="text-muted-soft text-xl font-light">|</span>
-        <span class="text-xl text-accent" style="font-weight: 500">Search</span>
-      </div>
+      <button class="flex items-center gap-2.5 select-none" title="New search" @click="startNewConversation">
+        <LogoMark :size="26" />
+        <span class="text-[17px] font-semibold tracking-tight text-ink">BIDS-Eye</span>
+        <span class="hidden lg:inline text-sm text-muted-soft ml-1">Open neuroimaging dataset search</span>
+      </button>
 
       <div class="flex-1" />
 
       <CrawlerStatusDot v-if="CRAWLER_ENABLED" :status="store.crawlerStatus" />
       <button
-        class="p-2 rounded-full text-muted hover:bg-panel-soft transition-colors"
+        v-if="store.currentMessages.length"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-accent hover:bg-accent-soft transition-colors"
+        @click="startNewConversation"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span class="hidden sm:inline">New search</span>
+      </button>
+      <button
+        class="p-2 rounded-lg text-muted hover:bg-panel-soft hover:text-ink transition-colors"
         title="Sign out"
         @click="logout"
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z" />
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 17l5-5-5-5" /><path d="M15 12H4" />
         </svg>
       </button>
     </header>
 
     <!-- ── History drawer ─────────────────────────────────────────────── -->
     <transition name="fade">
-      <div v-if="drawerOpen" class="fixed inset-0 z-30 bg-black/20" @click="drawerOpen = false" />
+      <div v-if="drawerOpen" class="fixed inset-0 z-30 bg-ink/20" @click="drawerOpen = false" />
     </transition>
     <aside
       class="fixed top-0 left-0 z-40 h-full w-72 bg-panel border-r border-border shadow-xl flex flex-col transition-transform duration-200"
       :class="drawerOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <div class="flex items-center justify-between px-4 h-14 border-b border-border">
-        <span class="text-sm font-medium text-ink">Search history</span>
-        <button class="p-2 -mr-2 rounded-full text-muted hover:bg-panel-soft" @click="drawerOpen = false">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <span class="text-sm font-semibold text-ink">Search history</span>
+        <button class="p-2 -mr-2 rounded-lg text-muted hover:bg-panel-soft" title="Close" @click="drawerOpen = false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <line x1="6" y1="6" x2="18" y2="18" /><line x1="6" y1="18" x2="18" y2="6" />
           </svg>
         </button>
@@ -230,15 +221,18 @@ onUnmounted(() => {
 
       <div class="p-3">
         <button
-          class="w-full text-sm text-left px-3 py-2 rounded-full border border-border hover:bg-panel-soft transition-colors text-accent"
+          class="w-full inline-flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border border-border hover:bg-accent-soft hover:border-accent/30 transition-colors text-accent"
           @click="startNewConversation"
         >
-          + New search
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          New search
         </button>
       </div>
 
       <div class="flex-1 overflow-y-auto pb-2">
-        <p v-if="!store.conversations.length" class="px-4 py-3 text-xs text-muted italic">No history yet</p>
+        <p v-if="!store.conversations.length" class="px-4 py-3 text-xs text-muted">No history yet</p>
         <div
           v-for="conv in [...store.conversations].reverse()"
           :key="conv.id"
@@ -247,7 +241,7 @@ onUnmounted(() => {
           <button
             class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex flex-col gap-0.5 pr-7"
             :class="conv.id === store.currentId
-              ? 'bg-[#e8f0fe] text-accent'
+              ? 'bg-accent-soft text-accent'
               : 'text-ink hover:bg-panel-soft'"
             @click="selectConversation(conv.id)"
           >
@@ -255,7 +249,7 @@ onUnmounted(() => {
             <span class="text-xs text-muted">{{ relativeTime(conv.createdAt) }}</span>
           </button>
           <button
-            class="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-all text-xs leading-none"
+            class="absolute right-1 top-1.5 w-7 h-7 inline-flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-muted hover:text-danger-ink hover:bg-danger-bg transition-all text-xs leading-none"
             title="Delete"
             @click.stop="store.deleteConversation(conv.id)"
           >
@@ -265,103 +259,79 @@ onUnmounted(() => {
       </div>
     </aside>
 
-    <!-- ── Messages ───────────────────────────────────────────────────── -->
-    <div ref="messagesContainer" class="flex-1 overflow-y-auto">
-      <div class="max-w-3xl mx-auto px-6 sm:px-8 py-8">
+    <!-- ── Main ───────────────────────────────────────────────────────── -->
+    <main ref="messagesContainer" class="flex-1 overflow-y-auto">
 
-        <!-- Empty state -->
-        <div
-          v-if="!store.currentMessages.length"
-          class="flex flex-col items-center text-center pt-12 gap-8"
-        >
-          <div class="flex items-center gap-3">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" class="text-muted-soft">
-              <path d="M12 3 1 8l11 5 9-4.09V14h2V8L12 3zM5 13.18v3L12 20l7-3.82v-3L12 17l-7-3.82z" />
-            </svg>
-            <p class="text-2xl text-muted" style="font-weight: 500">
-              Ask a detailed research question to find datasets
-            </p>
-          </div>
+      <!-- Start page: the search box sits in the page, not at the bottom -->
+      <div
+        v-if="!store.currentMessages.length"
+        class="max-w-3xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16"
+      >
+        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent mb-4">
+          OpenNeuro · BIDS datasets
+        </p>
+        <h1 class="font-serif text-[2rem] sm:text-[2.5rem] leading-[1.15] text-ink">
+          Describe the data your study needs.
+        </h1>
+        <p class="mt-4 text-base text-muted max-w-xl leading-relaxed">
+          Name a diagnosis, a sample size, a modality or a task, in your own words.
+          Each result shows who was scanned, so you can judge the fit at a glance.
+        </p>
 
-          <div class="w-full text-left">
-            <p class="text-sm font-medium text-muted mb-3">Example questions</p>
-            <div class="flex flex-col gap-2">
-              <button
-                v-for="s in SUGGESTIONS"
-                :key="s"
-                class="text-left text-sm px-4 py-3.5 rounded-lg bg-panel-soft hover:bg-[#ececed] text-accent transition-colors"
-                @click="useSuggestion(s)"
-              >
-                {{ s }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Message thread -->
-        <div v-else class="flex flex-col gap-6">
-          <MessageBubble
-            v-for="msg in store.currentMessages"
-            :key="msg.id"
-            :message="msg"
+        <div class="mt-8">
+          <InputBar
+            ref="inputBar"
+            v-model="input"
+            large
+            :rate-limited-until="rateLimitedUntil"
+            :countdown="countdownDisplay"
+            placeholder="e.g. resting-state fMRI in adolescents with ADHD"
+            @submit="submit"
           />
         </div>
-      </div>
-    </div>
 
-    <!-- ── Input bar ──────────────────────────────────────────────────── -->
-    <div class="px-4 pb-4 pt-2 flex-shrink-0">
-      <div class="max-w-3xl mx-auto">
-
-        <!-- Rate-limit banner -->
-        <div
-          v-if="rateLimitedUntil"
-          class="flex flex-col items-center gap-1.5 bg-panel border border-border rounded-2xl shadow-sm px-5 py-4 text-center"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-muted mb-0.5">
-            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm.5 5v6l4.2 2.5-.8 1.3L11 14V7h1.5z"/>
-          </svg>
-          <p class="text-sm font-medium text-ink">You've used all 20 free messages for today.</p>
-          <p class="text-sm text-muted">
-            You can continue in
-            <span class="font-mono font-medium text-accent">{{ countdownDisplay }}</span>
-          </p>
-        </div>
-
-        <!-- Normal input -->
-        <template v-else>
-          <div class="flex items-end gap-2 bg-panel border border-border rounded-3xl shadow-sm px-4 py-2 focus-within:border-accent focus-within:shadow-md transition-all">
-            <textarea
-              ref="textarea"
-              v-model="input"
-              rows="1"
-              :maxlength="CHAR_LIMIT"
-              placeholder="Ask BIDS-Eye"
-              class="flex-1 bg-transparent py-1.5 text-sm text-ink placeholder-muted-soft resize-none focus:outline-none"
-              @keydown="onKeydown"
-              @input="autoResize"
-            />
+        <div class="mt-12">
+          <p class="text-sm font-medium text-ink mb-3">Try one of these</p>
+          <div class="grid sm:grid-cols-2 gap-3">
             <button
-              :disabled="!input.trim()"
-              class="flex-shrink-0 mb-0.5 p-1.5 rounded-full text-accent hover:bg-panel-soft disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-              title="Search"
-              @click="submit"
+              v-for="s in SUGGESTIONS"
+              :key="s.text"
+              class="group text-left px-4 py-3.5 rounded-xl border border-border bg-panel hover:border-accent/40 hover:bg-accent-soft/40 transition-colors flex flex-col gap-1.5"
+              @click="useSuggestion(s.text)"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 20.5v-7l8-1.5-8-1.5v-7l18 8z" />
-              </svg>
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-soft">{{ s.tag }}</span>
+              <span class="text-sm text-ink leading-snug group-hover:text-accent">{{ s.text }}</span>
             </button>
           </div>
-          <div class="flex justify-between items-center mt-2 px-1">
-            <p class="text-xs text-muted-soft">BIDS-Eye is experimental and can make mistakes.</p>
-            <p
-              v-if="showCharCount"
-              class="text-xs tabular-nums"
-              :class="charCount >= CHAR_LIMIT ? 'text-red-500 font-medium' : 'text-muted'"
-            >{{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}</p>
-          </div>
-        </template>
+        </div>
+      </div>
 
+      <!-- Results thread -->
+      <div v-else class="thread max-w-5xl mx-auto px-4 sm:px-8 pt-8 pb-10 flex flex-col">
+        <MessageBubble
+          v-for="msg in store.currentMessages"
+          :key="msg.id"
+          :message="msg"
+        />
+      </div>
+    </main>
+
+    <!-- ── Follow-up input, once there are results ────────────────────── -->
+    <div
+      v-if="store.currentMessages.length"
+      class="flex-shrink-0 border-t border-border bg-surface pt-3 pb-3"
+    >
+      <div class="max-w-5xl mx-auto px-4 sm:px-8">
+        <div class="max-w-3xl">
+          <InputBar
+            ref="inputBar"
+            v-model="input"
+            :rate-limited-until="rateLimitedUntil"
+            :countdown="countdownDisplay"
+            placeholder="Ask a new question"
+            @submit="submit"
+          />
+        </div>
       </div>
     </div>
   </div>
