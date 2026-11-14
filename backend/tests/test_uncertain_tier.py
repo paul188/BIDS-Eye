@@ -106,7 +106,8 @@ def test_paper_text_is_second_tier_evidence() -> None:
     sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'placebo')")
     assert ut.apply(sql, papers=False) == sql            # one word, nothing to relax
     tiered = ut.apply(sql, papers=True)
-    assert "d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo')" in tiered
+    assert ("d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo') "
+            "AND NOT d.search_tsv @@ TO_TSQUERY('english', 'placebo')") in tiered
     assert ut.PAPER_REASON in tiered
     # Confirmation still uses the dataset's own text.
     assert "CASE WHEN (d.search_tsv @@ TO_TSQUERY('english', 'placebo')) THEN 0" in tiered

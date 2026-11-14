@@ -360,7 +360,10 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
         if match.group("negated") or any(s < match.start() < e for s, e in spans):
             continue
         query = _LABEL_RE.sub("", match.group("query"))
-        atoms.append(f"{alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')")
+        # The paper vector also holds the dataset's own text; "only in a
+        # paper" means it matches there and not in the dataset's text.
+        atoms.append(f"({alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}') "
+                     f"AND NOT {alias}.search_tsv @@ TO_TSQUERY('english', '{query}'))")
     return " OR ".join(dict.fromkeys(atoms)) or None
 
 
