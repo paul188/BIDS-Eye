@@ -14,8 +14,13 @@ scripts/backfill_papers.py and the post-crawl step keep it
     python scripts/demote_paper_links.py --dry-run     # list what would change
     python scripts/demote_paper_links.py               # write
 
+'unclear' links are demoted too when the check listed a mismatch (sample,
+modality, population): a meta-analysis or review behind a dataset is the usual
+case. Without a mismatch they stay primary.
+
 Options:
     --relations tool,related_study   relations to demote (default)
+    --keep-unclear                   leave 'unclear' links alone
     --dry-run                        report only
 
 Database connection as scripts/backfill_papers.py (DATABASE_URL or METADATA_DB_*).
@@ -47,6 +52,9 @@ _CANDIDATES = text("""
     JOIN bids_papers p ON p.paper_key = d.paper_relation->>'paper_key'
     JOIN bids_dataset_papers dp ON dp.dataset_id = d.id AND dp.paper_id = p.id
     WHERE d.paper_relation->>'relation' = ANY(:relations)
+       OR (:unclear_with_mismatches AND d.paper_relation->>'relation' = 'unclear'
+           AND jsonb_typeof(d.paper_relation->'mismatches') = 'array'
+           AND jsonb_array_length(d.paper_relation->'mismatches') > 0)
     ORDER BY d.accession_id
 """).bindparams(bindparam("relations", type_=ARRAY(String)))
 
@@ -58,12 +66,13 @@ _PRIMARY_PAPERS = text("""
 """)
 
 
-async def _run(relations: list, dry_run: bool) -> int:
+async def _run(relations: list, dry_run: bool, unclear_with_mismatches: bool = True) -> int:
     engine = create_async_engine(_database_url())
     changed = 0
     try:
         async with engine.begin() as conn:
-            rows = (await conn.execute(_CANDIDATES, {"relations": relations})).all()
+            rows = (await conn.execute(_CANDIDATES, {"relations": relations,
+                                                     "unclear_with_mismatches": unclear_with_mismatches})).all()
             for dataset_id, accession, relation, key, paper_id, role in rows:
                 if role != "primary":
                     print(f"{accession}  {key}  {relation}: already {role}")
@@ -92,9 +101,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--relations", default="tool,related_study")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--keep-unclear", action="store_true",
+                        help="do not demote 'unclear' links even when the check found a mismatch")
     args = parser.parse_args()
     relations = [r.strip() for r in args.relations.split(",") if r.strip()]
-    return asyncio.run(_run(relations, args.dry_run))
+    return asyncio.run(_run(relations, args.dry_run, not args.keep_unclear))
 
 
 if __name__ == "__main__":
