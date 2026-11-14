@@ -27,6 +27,15 @@ export interface Dataset {
   uncertain_reasons?: string | null
   subject_count: number | null
   participants: Participant[]
+  /** Counts over all participants; `participants` itself is capped at 50. */
+  participant_summary?: {
+    total: number
+    diagnoses: Record<string, number>
+    female: number
+    male: number
+    age_min: number | null
+    age_max: number | null
+  } | null
   /** README passage: the part matching the search, else the start. Matches sit between ⟦ and ⟧. */
   snippet?: string | null
   /** 2–3 generated sentences, only where the README is thin; show them labelled as generated. */

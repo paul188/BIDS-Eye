@@ -88,6 +88,24 @@ def test_too_vague_terms_are_ignored() -> None:
     assert many.resolve("University Hospital") == []
 
 
+def test_parent_institution_finds_its_hospitals_but_not_the_reverse() -> None:
+    # Production spellings (Nov 2026): no scan header says "Harvard" except BCH's.
+    index = InstitutionIndex([
+        "BCH, Harvard Medical School", "MGH 7T", "MGH-MR1L6", "Martinos_Center_Bay_3",
+        "Athinoula A. Martinos Center for Biomedical Imaging", "Mclean Hospital", "MGB_IMG_BELM",
+        "Brigham_Young_University", "MIT", "McGovern_Institute_for_Brain_Research_(3T1)",
+        "Policlinico G. Martino",
+    ])
+    harvard = _names(index, "Harvard")
+    assert harvard == {
+        "BCH, Harvard Medical School", "MGH 7T", "MGH-MR1L6", "Martinos_Center_Bay_3",
+        "Athinoula A. Martinos Center for Biomedical Imaging", "Mclean Hospital", "MGB_IMG_BELM",
+    }
+    assert _names(index, "Harvard Medical School") == harvard
+    assert "Mclean Hospital" not in _names(index, "MGH")
+    assert "massachusetts general hospital" in text_alternatives("Harvard")
+
+
 def test_text_alternatives_drop_short_acronyms_and_keep_spelling() -> None:
     assert text_alternatives("MIT") == ["massachusetts institute of technology", "mcgovern institute"]
     assert text_alternatives("Queen's University") == ["Queen's University"]

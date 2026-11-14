@@ -32,6 +32,7 @@ from schemas import (
     DatasetSchema,
     LinkedPaperSchema,
     ParticipantSchema,
+    ParticipantSummarySchema,
     QueryFilterSchema,
     QueryPageRequest,
     QueryRefineRequest,
@@ -110,6 +111,35 @@ async def _participants_for(
     for p in rows.scalars():
         result.setdefault(p.dataset_id, []).append(ParticipantSchema.model_validate(p))
     return result
+
+
+def _found_message(total: int) -> str:
+    return f"Found {total} dataset{'' if total == 1 else 's'} matching your query."
+
+
+def summarize_participants(participants: Sequence[ParticipantSchema]) -> Optional[ParticipantSummarySchema]:
+    """Group, sex and age counts over every participant, so a card can show
+    exact numbers for datasets larger than the participant cap."""
+    if not participants:
+        return None
+    diagnoses: dict[str, int] = {}
+    female = male = 0
+    ages: list[float] = []
+    for p in participants:
+        label = (p.diagnosis or "").strip()
+        if label:
+            diagnoses[label] = diagnoses.get(label, 0) + 1
+        sex = (p.sex or "").strip().lower()
+        if sex in ("f", "female"):
+            female += 1
+        elif sex in ("m", "male"):
+            male += 1
+        if p.age is not None and p.age > 0:
+            ages.append(p.age)
+    return ParticipantSummarySchema(
+        total=len(participants), diagnoses=diagnoses, female=female, male=male,
+        age_min=min(ages) if ages else None, age_max=max(ages) if ages else None,
+    )
 
 
 async def _deprecations_for(
@@ -235,6 +265,7 @@ async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Datase
             participants=participants_map.get(UUID(str(r["id"])), [])[
                 :_MAX_PARTICIPANTS_PER_DATASET
             ],
+            participant_summary=summarize_participants(participants_map.get(UUID(str(r["id"])), [])),
         )
         for r in raw
     ]
@@ -481,7 +512,7 @@ async def query_datasets(
         pass  # stale/legacy JWT sub not in users table — don't crash the response
 
     return QueryResponse(
-        message=f"Found {total} dataset(s) matching your query.",
+        message=_found_message(total),
         translation=translation,
         filters=_filters_for(cached),
         datasets=datasets,
@@ -515,7 +546,7 @@ async def query_page(
     )
 
     return QueryResponse(
-        message=f"Found {total} dataset(s) matching your query.",
+        message=_found_message(total),
         translation=None,
         datasets=datasets,
         query_id=body.query_id,
@@ -581,7 +612,7 @@ async def query_refine(
     page, page_size = _clamp_page(1, body.page_size)
     datasets, total = await _run_page(session, query_id, cached, "", page, page_size)
     return QueryResponse(
-        message=f"Found {total} dataset(s) matching your query.",
+        message=_found_message(total),
         # The SQL that ran, for the "Show generated SQL" panel.
         translation=TextToSQLResult(sql=base_sql, explanation=original.explanation),
         filters=_filters_for(original),

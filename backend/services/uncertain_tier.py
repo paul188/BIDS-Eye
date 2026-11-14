@@ -196,9 +196,15 @@ _README_ONLY = "\x00readme"
 
 def partial_reason(words: List[str]) -> str:
     """Card text for a probable text match."""
-    if _README_ONLY in words and len(words) == 1:
-        return "the search term appears only further down in the README"
-    missing = [w for w in words if w != _README_ONLY]
+    missing = [w for w in words if not w.startswith(_README_ONLY)]
+    if not missing:
+        # _README_ONLY + the words whose scope was widened, e.g. "\x00readme harvard".
+        terms = list(dict.fromkeys(
+            t for w in words for t in w[len(_README_ONLY):].split() if t))
+        if not terms:
+            return "the search term appears only further down in the README"
+        shown = " / ".join(f'"{t}"' for t in terms[:2]) + (" …" if len(terms) > 2 else "")
+        return f"{shown} appears only further down in the README"
     shown = ", ".join(missing[:4]) + (" …" if len(missing) > 4 else "")
     return f"matches only part of the search; missing: {shown}"
 
@@ -224,7 +230,7 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
             continue
         dropped = set(query_words(match.group("query"))) - set(query_words(relaxed))
         # No word dropped: only the scope was widened, to the whole README.
-        words.extend(sorted(dropped) or [_README_ONLY])
+        words.extend(sorted(dropped) or [f"{_README_ONLY} {' '.join(query_words(relaxed))}"])
         relaxed_atoms.append(f"{match.group('alias')}.{match.group('column')} @@ "
                              f"TO_TSQUERY('english', '{relaxed}')")
     if not relaxed_atoms:
@@ -382,6 +388,12 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     # files, like the modality, and reading them is slow: evaluating such a
     # condition a second time for the tier took two minutes on one question.
     if "other_entities" in columns:
+        return None
+    # A resolved institution filter is evidence from the scanner headers. Its
+    # weaker form would be the name anywhere in the README or a paper, and
+    # those mentions are mostly suppliers, software and citations ('kindly
+    # provided by … Harvard Medical School', surfer.nmr.mgh.harvard.edu).
+    if "institutions" in columns:
         return None
     # A condition on the outer join's rows (o.datatype …) is about files.
     if _columns_outside_subqueries(node) - {alias, ""}:

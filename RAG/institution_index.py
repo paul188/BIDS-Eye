@@ -174,6 +174,25 @@ _ALIAS_GROUPS: Sequence[Sequence[str]] = (
     ("tu berlin", "technische universitat berlin"),
 )
 
+# One-way aliases: a parent institution that scans under the names of its
+# hospitals and centres. Scanner headers almost never say "Harvard"; they say
+# 'MGH 7T', 'Martinos Center Bay 4 Prisma' or 'McLean Hospital BIC'. A user
+# term equal to a key is searched under all its members, but a member does
+# not pull in the others: "MGH" must not match McLean Hospital.
+_UMBRELLAS: Dict[str, Sequence[str]] = {
+    "harvard": (
+        "harvard medical school", "harvard university",
+        "massachusetts general hospital", "mass general hospital", "mgh",
+        "martinos center", "mclean hospital",
+        "mass general brigham", "mgb", "brigham and womens hospital", "bwh",
+        "boston childrens hospital", "beth israel deaconess medical center", "bidmc",
+        "dana farber cancer institute", "spaulding rehabilitation hospital",
+        "massachusetts eye and ear", "joslin diabetes center",
+    ),
+}
+for _alias in ("harvard university", "harvard medical school", "hms"):
+    _UMBRELLAS[_alias] = _UMBRELLAS["harvard"]
+
 
 # ── Normalisation ─────────────────────────────────────────────────────────────
 
@@ -258,6 +277,10 @@ def _build_aliases() -> Dict[Tokens, List[Tuple[Tokens, str]]]:
 
 
 _ALIASES = _build_aliases()
+_UMBRELLA_MEMBERS: Dict[Tokens, List[Tuple[Tokens, str]]] = {
+    tokens(parent): [(tokens(member), member) for member in members]
+    for parent, members in _UMBRELLAS.items()
+}
 
 
 def _variants(term: str) -> List[Tuple[Tokens, float, str]]:
@@ -270,8 +293,9 @@ def _variants(term: str) -> List[Tuple[Tokens, float, str]]:
     if not own:
         return []
     found = [(own, 1.0, written)]
-    for alias, alias_written in _ALIASES.get(own, []):
-        found.append((alias, ALIAS_FACTOR, alias_written))
+    for alias, alias_written in _ALIASES.get(own, []) + _UMBRELLA_MEMBERS.get(own, []):
+        if all(alias != f[0] for f in found):
+            found.append((alias, ALIAS_FACTOR, alias_written))
     return found
 
 

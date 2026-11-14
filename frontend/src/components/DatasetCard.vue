@@ -27,20 +27,32 @@ const href = computed(() => {
   return d.remote_url || null
 })
 
+// The backend's counts over all participants; older backends send only the
+// capped list, counted here when it is complete.
+const summary = computed(() => props.dataset.participant_summary ?? null)
+
 const participantsComplete = computed(() => {
+  if (summary.value) return true
   const n = props.dataset.participants.length
   return n > 0 && n < PARTICIPANT_CAP
 })
 
 // Diagnosis groups, patient groups first by size, controls last. Counts only
-// when the participant list is complete.
+// when they cover every participant.
 const groups = computed(() => {
+  const raw = new Map<string, number>()
+  if (summary.value) {
+    for (const [label, n] of Object.entries(summary.value.diagnoses)) raw.set(label, n)
+  } else {
+    for (const p of props.dataset.participants) {
+      const label = p.diagnosis?.trim()
+      if (label) raw.set(label, (raw.get(label) ?? 0) + 1)
+    }
+  }
   const counts = new Map<string, number>()
-  for (const p of props.dataset.participants) {
-    const raw = p.diagnosis?.trim()
-    if (!raw) continue
-    const label = CONTROL_LABELS.has(raw.toLowerCase()) ? 'control' : raw
-    counts.set(label, (counts.get(label) ?? 0) + 1)
+  for (const [rawLabel, n] of raw) {
+    const label = CONTROL_LABELS.has(rawLabel.toLowerCase()) ? 'control' : rawLabel
+    counts.set(label, (counts.get(label) ?? 0) + n)
   }
   const all = [...counts.entries()]
     .map(([label, n]) => ({ label, n: participantsComplete.value ? n : null }))
@@ -53,22 +65,34 @@ const groups = computed(() => {
 
 const ageRange = computed(() => {
   if (!participantsComplete.value) return ''
-  const ages = props.dataset.participants
-    .map(p => p.age)
-    .filter((a): a is number => typeof a === 'number' && a > 0)
-  if (!ages.length) return ''
-  const lo = Math.round(Math.min(...ages))
-  const hi = Math.round(Math.max(...ages))
+  let lo: number, hi: number
+  if (summary.value) {
+    if (summary.value.age_min === null || summary.value.age_max === null) return ''
+    lo = Math.round(summary.value.age_min)
+    hi = Math.round(summary.value.age_max)
+  } else {
+    const ages = props.dataset.participants
+      .map(p => p.age)
+      .filter((a): a is number => typeof a === 'number' && a > 0)
+    if (!ages.length) return ''
+    lo = Math.round(Math.min(...ages))
+    hi = Math.round(Math.max(...ages))
+  }
   return lo === hi ? `${lo}` : `${lo}–${hi}`
 })
 
 const sexSplit = computed(() => {
   if (!participantsComplete.value) return ''
   let f = 0, m = 0
-  for (const p of props.dataset.participants) {
-    const s = p.sex?.trim().toLowerCase()
-    if (s === 'f' || s === 'female') f++
-    else if (s === 'm' || s === 'male') m++
+  if (summary.value) {
+    f = summary.value.female
+    m = summary.value.male
+  } else {
+    for (const p of props.dataset.participants) {
+      const s = p.sex?.trim().toLowerCase()
+      if (s === 'f' || s === 'female') f++
+      else if (s === 'm' || s === 'male') m++
+    }
   }
   return f + m ? `${f} F, ${m} M` : ''
 })

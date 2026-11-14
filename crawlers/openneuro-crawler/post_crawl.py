@@ -3,6 +3,9 @@ post_crawl.py
 -------------
 Steps that run after a crawl cycle, for the datasets the cycle indexed:
 
+  0. links      derivatives (OpenNeuro's preprocessing bucket and the
+                dataset's own derivatives/ folders) and scanner-header sites
+                (remote/dataset_links.refresh_links). No LLM, public sources only.
   1. papers     find and look up the papers each dataset names
                 (remote/paper_store.enrich: Europe PMC, bioRxiv/medRxiv, arXiv,
                 OpenAlex). Only datasets whose papers were never checked, or
@@ -14,6 +17,7 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 Needs GEMINI_API_KEY; the text goes to Gemini only.
 
 Environment:
+    CRAWL_LINKS             "false" skips step 0 (default on)
     CRAWL_PAPERS            "false" skips step 1 (default on)
     CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
     PAPER_RECHECK_DAYS      how old a paper lookup may get (default 30)
@@ -108,6 +112,16 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
     if not accessions:
         return
     from db.db import engine
+
+    if _flag("CRAWL_LINKS"):
+        try:
+            from remote import dataset_links
+
+            async with engine.begin() as conn:
+                stats = await dataset_links.refresh_links(conn, accessions)
+            log.info("[post-crawl] Derivatives and sites: %s", stats)
+        except Exception as exc:
+            log.error("[post-crawl] Derivatives and sites failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_PAPERS"):
         try:

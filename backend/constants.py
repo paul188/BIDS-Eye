@@ -69,6 +69,36 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "study design as typed by the uploader (free text), e.g. 'Longitudinal',",
         "'Cross-Sectional'. Search with ILIKE '%term%'.",
     ]),
+    "species": ("TEXT", [
+        "species as typed by the uploader on OpenNeuro (free text, NULL for about 40%",
+        "of datasets, nearly all of them human), e.g. 'Human', 'Mouse', 'Rat', 'Macaque',",
+        "'Monkey', 'Sus scrofa domesticus', 'Phantom'. Use it for animal / non-human questions:",
+        "  mice: d.species ~* '\\m(mouse|mice|mus)\\M'",
+        "  any animal: d.species IS NOT NULL AND d.species !~* '(human|homo sapiens|phantom|synthetic|printed)'",
+        "Do not text_match animal words instead: READMEs of human studies say 'mouse click'.",
+    ]),
+    "study_longitudinal": ("TEXT", [
+        "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",
+        "'Experimental' (NULL for about half). Longitudinal: d.study_longitudinal = 'Longitudinal'",
+        "(study_design is a different free-text field, mostly 'Event-related' or 'Observational').",
+    ]),
+    "senior_author": ("TEXT", [
+        "senior / last author as typed by the uploader, e.g. 'Russell A. Poldrack'.",
+        "For 'the X lab' compare with ILIKE '%surname%' (it is not in d.authors for every dataset).",
+    ]),
+    "publish_date": ("TIMESTAMPTZ", [
+        "when the dataset went public on OpenNeuro, e.g. recent datasets:",
+        "d.publish_date >= now() - interval '1 year'",
+    ]),
+    "on_brainlife": ("BOOLEAN", [
+        "true when the dataset is also available for processing on brainlife.io",
+    ]),
+    "downloads": ("INTEGER", [
+        "OpenNeuro download count of the latest snapshot; 'most popular' orders by it",
+    ]),
+    "views": ("INTEGER", [
+        "OpenNeuro page views of the latest snapshot",
+    ]),
     "age_min": ("FLOAT", [
         "youngest participant age reported for the dataset (NULL when not reported)",
     ]),

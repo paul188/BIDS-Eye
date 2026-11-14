@@ -23,6 +23,16 @@ Columns written (all on bids_datasets, see crawlers/migrate_add_openneuro_metada
     dx_status     TEXT      metadata.dxStatus     e.g. "Healthy / Control", "Epilepsy"
     study_domain  TEXT      metadata.studyDomain  e.g. "Basal Ganglia in Parkinson"
     study_design  TEXT      metadata.studyDesign  e.g. "Longitudinal"
+    species       TEXT      metadata.species      e.g. "Human", "Mouse", "Macaque"
+    study_longitudinal TEXT metadata.studyLongitudinal  "Cross-Sectional", "Longitudinal", …
+    senior_author TEXT      metadata.seniorAuthor
+    publish_date  TIMESTAMPTZ  publishDate        when the dataset went public
+    on_brainlife  BOOLEAN   onBrainlife           processed on brainlife.io
+    downloads     INTEGER   latestSnapshot.analytics.downloads   (current count)
+    views         INTEGER   latestSnapshot.analytics.views       (current count)
+
+The EthicsApprovals of the latest snapshot go to bids_dataset_sites with
+source 'ethics_board' (remote/dataset_links.py), not to a column.
     age_min       FLOAT     youngest reported participant age
     age_max       FLOAT     oldest reported participant age
     size_bytes    BIGINT    total size of the latest snapshot
@@ -41,11 +51,15 @@ import re
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import bindparam, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import String
+
+from .dataset_links import SITE_ETHICS, clean_site_names, replace_sites
+from .dataset_links import TABLES_SQL as LINK_TABLES_SQL
 
 log = logging.getLogger(__name__)
 
@@ -73,6 +87,13 @@ METADATA_COLUMNS: Dict[str, str] = {
     "dx_status":    "TEXT",
     "study_domain": "TEXT",
     "study_design": "TEXT",
+    "species":      "TEXT",
+    "study_longitudinal": "TEXT",
+    "senior_author": "TEXT",
+    "publish_date": "TIMESTAMPTZ",
+    "on_brainlife": "BOOLEAN",
+    "downloads":    "INTEGER",
+    "views":        "INTEGER",
     "age_min":      "DOUBLE PRECISION",
     "age_max":      "DOUBLE PRECISION",
     "size_bytes":   "BIGINT",
@@ -105,8 +126,12 @@ SEARCH_VECTOR_EXPRESSION = (
 
 # Selection shared by every query in this module.
 METADATA_SELECTION = """
-    metadata { species studyDesign studyDomain dxStatus ages }
-    latestSnapshot { tag readme size summary { size } deprecated { reason } }
+    publishDate onBrainlife
+    metadata { species studyDesign studyDomain studyLongitudinal seniorAuthor dxStatus ages }
+    latestSnapshot {
+      tag readme size summary { size } deprecated { reason }
+      description { EthicsApprovals } analytics { downloads views }
+    }
 """
 
 
@@ -306,6 +331,24 @@ def _size_bytes(snapshot: dict) -> Optional[int]:
     return None
 
 
+def _timestamp(value: Any) -> Optional[datetime]:
+    """An ISO 8601 time from the API ('2016-10-12T23:40:22.670Z'), or None."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _count(value: Any) -> Optional[int]:
+    """A non-negative integer count, or None."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+        return None
+    return int(value)
+
+
 def extract_fields(record: Optional[dict]) -> Dict[str, Any]:
     """Turn one GraphQL dataset record into column values.
 
@@ -318,15 +361,27 @@ def extract_fields(record: Optional[dict]) -> Dict[str, Any]:
 
     readme_text, readme_urls = clean_readme(snapshot.get("readme"))
     age_min, age_max = _age_bounds(metadata.get("ages"))
+    analytics = snapshot.get("analytics") or {}
+    description = snapshot.get("description")  # None (absent or null) = unknown
     return {
         "readme_text":  readme_text,
         "dx_status":    _clean_line(metadata.get("dxStatus")),
         "study_domain": _clean_line(metadata.get("studyDomain")),
         "study_design": _clean_line(metadata.get("studyDesign")),
+        "species":      _clean_line(metadata.get("species")),
+        "study_longitudinal": _clean_line(metadata.get("studyLongitudinal")),
+        "senior_author": _clean_line(metadata.get("seniorAuthor")),
+        "publish_date": _timestamp(record.get("publishDate")),
+        "on_brainlife": record.get("onBrainlife") if isinstance(record.get("onBrainlife"), bool) else None,
+        "downloads":    _count(analytics.get("downloads")),
+        "views":        _count(analytics.get("views")),
         "age_min":      age_min,
         "age_max":      age_max,
         "size_bytes":   _size_bytes(snapshot),
         "readme_urls":  readme_urls,
+        # None: the record did not include the description (unknown, keep stored rows).
+        "ethics_approvals": (clean_site_names(description.get("EthicsApprovals"))
+                             if isinstance(description, dict) else None),
     }
 
 
@@ -385,7 +440,7 @@ def search_vector_sql() -> List[str]:
 
 async def ensure_columns(session: Any) -> None:
     """Create the crawler-managed columns if they are missing. Caller commits."""
-    for statement in ensure_columns_sql() + search_vector_sql():
+    for statement in ensure_columns_sql() + search_vector_sql() + list(LINK_TABLES_SQL):
         await session.execute(text(statement))
 
 
@@ -399,6 +454,13 @@ _UPDATE_SQL = text(
         dx_status    = COALESCE(:dx_status,    dx_status),
         study_domain = COALESCE(:study_domain, study_domain),
         study_design = COALESCE(:study_design, study_design),
+        species      = COALESCE(:species,      species),
+        study_longitudinal = COALESCE(:study_longitudinal, study_longitudinal),
+        senior_author = COALESCE(:senior_author, senior_author),
+        publish_date = COALESCE(:publish_date, publish_date),
+        on_brainlife = COALESCE(:on_brainlife, on_brainlife),
+        downloads    = COALESCE(:downloads,    downloads),
+        views        = COALESCE(:views,        views),
         age_min      = COALESCE(:age_min,      age_min),
         age_max      = COALESCE(:age_max,      age_max),
         size_bytes   = COALESCE(:size_bytes,   size_bytes),
@@ -423,6 +485,10 @@ async def apply_fields(session: Any, accession_id: str, fields: Dict[str, Any]) 
     params["readme_urls"] = list(fields.get("readme_urls") or []) or None
     params["accession_id"] = accession_id
     result = await session.execute(_UPDATE_SQL, params)
+    # Ethics boards are site evidence (bids_dataset_sites, source 'ethics_board').
+    # Only a record that included the description replaces the stored rows.
+    if fields.get("ethics_approvals") is not None:
+        await replace_sites(session, accession_id, SITE_ETHICS, fields["ethics_approvals"])
     return int(result.rowcount or 0)
 
 

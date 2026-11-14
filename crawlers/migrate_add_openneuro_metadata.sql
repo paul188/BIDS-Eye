@@ -21,6 +21,13 @@ ALTER TABLE bids_datasets
     ADD COLUMN IF NOT EXISTS dx_status    TEXT,              -- uploader-entered diagnosis status, e.g. 'Healthy / Control'
     ADD COLUMN IF NOT EXISTS study_domain TEXT,              -- uploader-entered research topic
     ADD COLUMN IF NOT EXISTS study_design TEXT,              -- uploader-entered design, e.g. 'Longitudinal'
+    ADD COLUMN IF NOT EXISTS species      TEXT,              -- uploader-entered species, e.g. 'Human', 'Mouse'
+    ADD COLUMN IF NOT EXISTS study_longitudinal TEXT,        -- uploader-entered 'Cross-Sectional' / 'Longitudinal' / …
+    ADD COLUMN IF NOT EXISTS senior_author TEXT,             -- uploader-entered senior author
+    ADD COLUMN IF NOT EXISTS publish_date TIMESTAMPTZ,       -- when the dataset went public
+    ADD COLUMN IF NOT EXISTS on_brainlife BOOLEAN,           -- processed on brainlife.io
+    ADD COLUMN IF NOT EXISTS downloads    INTEGER,           -- OpenNeuro download count (latest snapshot)
+    ADD COLUMN IF NOT EXISTS views        INTEGER,           -- OpenNeuro view count (latest snapshot)
     ADD COLUMN IF NOT EXISTS age_min      DOUBLE PRECISION,  -- youngest reported participant age
     ADD COLUMN IF NOT EXISTS age_max      DOUBLE PRECISION,  -- oldest reported participant age
     ADD COLUMN IF NOT EXISTS size_bytes   BIGINT,            -- total size of the latest snapshot

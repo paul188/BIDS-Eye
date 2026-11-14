@@ -138,12 +138,24 @@ def test_sidecar_conditions_stay_hard() -> None:
     assert ut.apply(sql) == sql
 
 
+def test_institution_conditions_stay_hard() -> None:
+    # Loosened to the README, 'Harvard' matched mice from a lab that only
+    # thanked Harvard Medical School for the knockout line.
+    institution = ("(d.institutions && CAST(ARRAY['MGH 7T'] AS TEXT[]) "
+                   "OR d.search_tsv @@ to_tsquery('english', 'harvard:AB'))")
+    sql = BASE.format(where=f"{MODALITY} AND {institution}")
+    assert ut.apply(sql) == sql
+    with_text = BASE.format(where=f"{institution} AND d.search_tsv @@ to_tsquery('english', 'young & children')")
+    rewritten = ut.apply(with_text)
+    assert "'harvard'" not in rewritten and "'children'" in rewritten
+
+
 def test_reasons_name_what_is_missing() -> None:
     sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'young & children')")
     assert "missing: young" in ut.apply(sql)
     scoped = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'language:AB')")
-    assert "only further down in the README" in ut.apply(scoped)
+    assert '"language" appears only further down in the README' in ut.apply(scoped)
 
     synonyms = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', "
                                  "'parkinson:AB | (paralysis:AB <-> agitans:AB)')")
-    assert "only further down in the README" in ut.apply(synonyms)
+    assert '"parkinson" / "paralysis" … appears only further down in the README' in ut.apply(synonyms)

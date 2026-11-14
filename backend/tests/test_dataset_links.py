@@ -1,0 +1,103 @@
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+_CRAWLER = ROOT / "crawlers" / "openneuro-crawler"
+if str(_CRAWLER) not in sys.path:
+    sys.path.insert(0, str(_CRAWLER))
+
+from remote import dataset_links as links  # noqa: E402
+from remote import openneuro_metadata as meta  # noqa: E402
+
+
+def test_pipeline_names_are_normalised() -> None:
+    assert links.normalise_pipeline("fMRIPrep") == "fmriprep"
+    assert links.normalise_pipeline("fmriprep-20.2.3") == "fmriprep"
+    assert links.normalise_pipeline("fmriprep_v23.1.0") == "fmriprep"
+    assert links.normalise_pipeline("freesurfer_subjdir") == "freesurfer"
+    assert links.normalise_pipeline("xcp_d") == "xcpd"
+    # digits without a separator are part of the name
+    assert links.normalise_pipeline("cat12") == "cat12"
+    assert links.normalise_pipeline("SPM12") == "spm12"
+    assert links.normalise_pipeline("fs_stats") == "fs-stats"
+    assert links.normalise_pipeline("") == links.UNSPECIFIED
+
+
+def test_generated_by_reads_current_and_legacy_descriptions() -> None:
+    assert links.generated_by({"GeneratedBy": [{"Name": "fMRIPrep", "Version": "21.0.1"}]}) == ("fMRIPrep", "21.0.1")
+    assert links.generated_by({"GeneratedBy": {"Name": "MRIQC"}}) == ("MRIQC", None)
+    assert links.generated_by({"PipelineDescription": {"Name": "fmriprep", "Version": "1.2"}}) == ("fmriprep", "1.2")
+    assert links.generated_by({"Name": "no pipeline"}) == (None, None)
+    assert links.generated_by(None) == (None, None)
+
+
+def test_site_names_are_cleaned() -> None:
+    assert links.clean_site_names(None) == []
+    assert links.clean_site_names("  IRB of  Wayne State University ") == ["IRB of Wayne State University"]
+    assert links.clean_site_names(["A", "A", "n/a", "", 3, "B"]) == ["A", "B"]
+    assert len(links.clean_site_names(["x" * 900])[0]) == 500
+
+
+def test_migration_file_matches_link_tables() -> None:
+    sql = (ROOT / "crawlers" / "migrate_add_dataset_links.sql").read_text()
+    code_tables = set(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", " ".join(links.TABLES_SQL)))
+    file_tables = set(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", sql))
+    assert code_tables == file_tables == {"bids_derivatives", "bids_dataset_sites"}
+    for table in code_tables:
+        code_cols = set(re.findall(r"^\s+(\w+)\s+[A-Z]", _body(" ".join(links.TABLES_SQL), table), re.M))
+        file_cols = set(re.findall(r"^\s+(\w+)\s+[A-Z]", _body(sql, table), re.M))
+        assert code_cols == file_cols, table
+
+
+def _body(sql: str, table: str) -> str:
+    start = sql.index(f"CREATE TABLE IF NOT EXISTS {table}")
+    body = sql[start:sql.index(")", sql.index("UNIQUE", start))]
+    return body.replace(",", ",\n")
+
+
+def test_metadata_record_gives_new_columns_and_ethics_sites() -> None:
+    record = {
+        "publishDate": "2024-09-20T21:02:46.777Z",
+        "onBrainlife": False,
+        "metadata": {"species": "Mouse", "studyLongitudinal": "Longitudinal", "seniorAuthor": " Xin Yu "},
+        "latestSnapshot": {
+            "description": {"EthicsApprovals": ["MGH IACUC", "MGH IACUC"]},
+            "analytics": {"downloads": 28, "views": 2070},
+        },
+    }
+    fields = meta.extract_fields(record)
+    assert fields["species"] == "Mouse"
+    assert fields["study_longitudinal"] == "Longitudinal"
+    assert fields["senior_author"] == "Xin Yu"
+    assert fields["publish_date"].isoformat() == "2024-09-20T21:02:46.777000+00:00"
+    assert fields["on_brainlife"] is False
+    assert (fields["downloads"], fields["views"]) == (28, 2070)
+    assert fields["ethics_approvals"] == ["MGH IACUC"]
+
+    # No description in the record: unknown, so stored ethics rows must stay.
+    assert meta.extract_fields({"latestSnapshot": {}})["ethics_approvals"] is None
+    assert meta.extract_fields({"latestSnapshot": {"description": None}})["ethics_approvals"] is None
+    assert meta.extract_fields({"latestSnapshot": {"description": {}}})["ethics_approvals"] == []
+    bad = meta.extract_fields({"publishDate": "soon", "onBrainlife": "yes",
+                               "latestSnapshot": {"analytics": {"downloads": -1, "views": True}}})
+    assert bad["publish_date"] is bad["on_brainlife"] is bad["downloads"] is bad["views"] is None
+
+
+def test_backfill_sql_replaces_per_source_and_quotes() -> None:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import backfill_dataset_links as backfill
+
+    found = {
+        links.SOURCE_OPENNEURO_DERIVATIVES: {"ds000001": [links.Derivative(
+            pipeline="fmriprep", location="s3://openneuro-derivatives/fmriprep/ds000001-fmriprep/",
+            pipeline_name="fMRIPrep", pipeline_version="21.0.1", n_subjects=16)]},
+        links.SOURCE_IN_DATASET: {"ds000002": []},
+    }
+    sql = backfill.sql_for(found, ["ds000001", "ds0'02"])
+    assert sql.startswith("BEGIN;") and sql.rstrip().endswith("COMMIT;")
+    assert "x.source = 'in_dataset'" in sql            # an empty list still clears old rows
+    assert "'fMRIPrep', '21.0.1', 'openneuro_derivatives'" in sql
+    assert "'ds0''02'" in sql

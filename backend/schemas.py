@@ -23,6 +23,17 @@ class ParticipantSchema(BaseModel):
     extra: Optional[Dict[str, Any]] = None
 
 
+class ParticipantSummarySchema(BaseModel):
+    """Counts over all of a dataset's participants (the participants list
+    itself is capped)."""
+    total: int
+    diagnoses: Dict[str, int] = {}   # raw diagnosis value → participants
+    female: int = 0
+    male: int = 0
+    age_min: Optional[float] = None
+    age_max: Optional[float] = None
+
+
 class LinkedPaperSchema(BaseModel):
     """The dataset's primary paper, shown when it was checked to report the
     dataset or a larger sample that includes it (services/dataset_description.py)."""
@@ -58,6 +69,7 @@ class DatasetSchema(BaseModel):
     # Computed fields (not direct ORM columns)
     subject_count: Optional[int] = None
     participants: List[ParticipantSchema] = []
+    participant_summary: Optional[ParticipantSummarySchema] = None
     # A passage of the README: the part that matches the search when it has
     # text terms, else the start. Matched words sit between "⟦" and "⟧".
     snippet: Optional[str] = None

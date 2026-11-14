@@ -20,6 +20,7 @@ def test_extract_fields_from_full_record() -> None:
             "dxStatus": "  Parkinson's   Disease ",
             "studyDomain": "Basal Ganglia in Parkinson",
             "studyDesign": "",
+            "species": "Macaque ",
             "ages": [61, 55.5, None, 70, 999, -3, True],
         },
         "latestSnapshot": {
@@ -33,6 +34,7 @@ def test_extract_fields_from_full_record() -> None:
     assert fields["dx_status"] == "Parkinson's Disease"
     assert fields["study_domain"] == "Basal Ganglia in Parkinson"
     assert fields["study_design"] is None
+    assert fields["species"] == "Macaque"
     # implausible ages and booleans are ignored
     assert (fields["age_min"], fields["age_max"]) == (55.5, 70.0)
     assert fields["size_bytes"] == 173691728283
