@@ -37,17 +37,11 @@ certbot/
 # ── Database dumps (data, not source) ─────────────────────────────────────────
 *.dump
 
-# ── Few-shot intermediate artifacts ───────────────────────────────────────────
-backend/few_shot_examples.fixed.json
-
-# ── Model weights ─────────────────────────────────────────────────────────────
-scripts/model_weights/
+# ── Model weights (never commit; one 68 MB adapter is still in old history) ───
 *.safetensors
 *.bin
 *.pt
 *.pth
-adapter_config.json
-adapter_model.*
 
 # ── Jupyter / notebooks ───────────────────────────────────────────────────────
 .ipynb_checkpoints/
@@ -68,23 +62,23 @@ Thumbs.db
 *.bak
 *.orig
 
-# ── Generated indexes (large, rebuilt from DB) ────────────────────────────────
-LLM_preprocessor/metadata_index.json
+# ── Generated indexes (rebuilt from DB) ───────────────────────────────────────
 RAG/name_index.json
 
-# ── Training artefacts ────────────────────────────────────────────────────────
-synthetic_data/results/
-synthetic_data/reports/
-synthetic_data/training.generated.jsonl
-synthetic_data/training.needs_repair.jsonl
-synthetic_data/*.yaml.bak
-synthetic_data/value_mappings\ copy*.yaml
-synthetic_data/unmapped_db_values.yaml.bak
+# ── Embedding cache written by RAG/yaml_to_llamaindex.py ──────────────────────
+RAG/embed_*.npz
+RAG/embed_*.json
+
+# ── Benchmark working data (pools, judging runs, downloads; large) ────────────
+benchmarks/*/work/
+
+# ── UI screenshots taken during development ───────────────────────────────────
+/screenshot_*.png
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 .docker/
 
-# ── Modal ─────────────────────────────────────────────────────────────────────
-.modal/
-RAG/embed_*.npz
-RAG/embed_*.json
+# ── Tool scratch directories ──────────────────────────────────────────────────
+.agents/
+.aws/
+.codex/

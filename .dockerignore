@@ -1,0 +1,49 @@
+# Every image is built with the repository root as its context
+# (see docker-compose*.yml). This file keeps out what no Dockerfile copies,
+# so the context stays small and secrets never reach the build daemon.
+#
+# The Dockerfiles copy: BIDS-SQL/, backend/ (tests included: they run inside
+# the image), LLM_preprocessor/, RAG/, frontend/, crawlers/openneuro-crawler/.
+# Do not exclude any of those.
+
+# Version control and local tooling
+.git
+.gitignore
+.gitmodules
+.vscode
+.idea
+
+# Secrets and machine-local configuration
+.env
+*.env
+**/.env
+!.env.example
+
+# Dependencies and build output that the image builds itself
+**/node_modules
+frontend/dist
+frontend/.vite
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+
+# Local caches
+RAG/embed_*.npz
+RAG/embed_*.json
+
+# Not part of any image
+benchmarks
+reports
+research_notes
+DB Preprocessing
+scripts
+lottery
+nginx
+postgres
+postgres_data
+certbot
+docker-compose*.yml
+/*.md
+/*.png
+**/*.dump
+**/*.log
