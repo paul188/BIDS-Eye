@@ -47,6 +47,7 @@ paper text at all, because it carries weight D.
 from __future__ import annotations
 
 import asyncio
+import itertools
 import logging
 import os
 import re
@@ -63,8 +64,10 @@ if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
 from text_terms import (  # noqa: E402
     MODE_ALL,
     MODE_LOOSE,
+    MODE_NEAR,
     MODE_SHORT,
     MODES,
+    NEAR_DISTANCE,
     Term,
     Word,
     format_text_match,
@@ -86,7 +89,7 @@ RANK_WEIGHTS = "{0.05, 0.4, 0.6, 1.0}"
 # 32 scales the rank into 0..1 (rank / (rank + 1)), the range RAG scores use.
 RANK_NORMALIZATION = 32
 
-_SCOPE_LABEL = {MODE_ALL: "", MODE_LOOSE: "", MODE_SHORT: ":AB"}
+_SCOPE_LABEL = {MODE_ALL: "", MODE_LOOSE: "", MODE_SHORT: ":AB", MODE_NEAR: ""}
 _NAME_LABEL = ":A"
 
 _TEXT_MATCH_RE = re.compile(
@@ -224,6 +227,38 @@ def _all_words_query(term: Term, label: str = "") -> str:
     return " & ".join(_word_query(word, label) for word in term)
 
 
+# A 'near' term of more words than this needs only all of its words: the
+# number of word orders and gaps to spell out grows too fast.
+NEAR_MAX_WORDS = 4
+
+
+def _near_query(term: Term, label: str = "") -> str:
+    """The words of *term* close together.
+
+    tsquery has only exact distances (`a <2> b`: b two positions after a), so
+    every allowed gap is spelled out. Two words may come in either order
+    ("social conflict", "conflict between social groups"); three or four keep
+    their order with gaps up to 2. One word is just that word.
+    """
+    words = [_word_query(word, label) for word in term]
+    if len(words) == 1:
+        return words[0]
+    if len(words) > NEAR_MAX_WORDS:
+        return _all_words_query(term, label)
+    variants: List[str] = []
+    if len(words) == 2:
+        first, second = words
+        for left, right in ((first, second), (second, first)):
+            variants.extend(f"{left} <{gap}> {right}" for gap in range(1, NEAR_DISTANCE + 1))
+    else:
+        for gaps in itertools.product(range(1, 3), repeat=len(words) - 1):
+            phrase = words[0]
+            for word, gap in zip(words[1:], gaps):
+                phrase = f"{phrase} <{gap}> {word}"
+            variants.append(phrase)
+    return "(" + " | ".join(variants) + ")"
+
+
 def _any(queries: Sequence[str]) -> str:
     queries = list(dict.fromkeys(q for q in queries if q))
     if len(queries) == 1:
@@ -302,9 +337,32 @@ def build_filter_tsquery(terms: Sequence[Term], mode: str = MODE_ALL) -> Optiona
     label = _SCOPE_LABEL[mode]
     if mode == MODE_LOOSE:
         queries = [_all_words_query(_loose_core(term), label) for term in terms if term]
+    elif mode == MODE_NEAR:
+        queries = [_near_query(term, label) for term in terms if term]
     else:
         queries = [_all_words_query(term, label) for term in terms if term]
     return _any(queries) or None
+
+
+def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR) -> Optional[List[int]]:
+    """How many datasets match each search term on its own; None when unknown.
+
+    Used to check search terms a language model proposed before they are
+    searched (LLM_preprocessor/preprocess.py, topics). A term with nothing
+    searchable counts 0.
+    """
+    queries = []
+    for alternative in alternatives:
+        terms = parse_alternatives(alternative)
+        queries.append(build_filter_tsquery(terms, mode) if terms else None)
+    asked = [query for query in queries if query]
+    if not asked:
+        return [0] * len(queries)
+    counts = _lookup_counts(asked)
+    if counts is None:
+        return None
+    found = iter(counts)
+    return [next(found) if query else 0 for query in queries]
 
 
 def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL) -> Optional[str]:

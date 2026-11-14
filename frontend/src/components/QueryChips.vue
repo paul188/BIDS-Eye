@@ -38,7 +38,7 @@ function tooltip(f: QueryFilter, isRemoved: boolean): string {
           removedSet.has(f.id)
             ? 'border-border bg-transparent text-muted-soft'
             : 'bg-panel text-ink border-border-input',
-          f.kind === 'text' ? 'border-dashed' : '',
+          f.kind === 'text' || f.kind === 'topic' ? 'border-dashed' : '',
         ]"
         :title="tooltip(f, removedSet.has(f.id))"
       >
@@ -47,7 +47,7 @@ function tooltip(f: QueryFilter, isRemoved: boolean): string {
           <span class="mx-1 text-border-strong" aria-hidden="true">·</span>
           <span class="font-medium">{{ f.label }}</span>
           <span
-            v-if="f.kind !== 'text' && f.text_words.length && !removedSet.has(f.id)"
+            v-if="!['text', 'topic'].includes(f.kind) && f.text_words.length && !removedSet.has(f.id)"
             class="ml-1.5 text-[11px] font-medium text-muted-soft"
           >or in text</span>
         </span>

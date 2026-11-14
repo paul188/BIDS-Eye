@@ -238,3 +238,28 @@ def test_tied_labels_split_the_score_by_how_many_lead_to_a_code() -> None:
     scored = dict(retriever._resolve_yaml_term_scored("suffix", "BOLD signal"))
     assert scored["fmri_bold"] == scored["bold_map"]
     assert 0.4 < scored["fmri_bold"] < 0.5      # half of the 0.95 match
+
+
+def test_short_term_does_not_match_the_start_of_a_construct(monkeypatch: pytest.MonkeyPatch) -> None:
+    # "emo" scored 90 against the construct "emotion", whose only linked task
+    # is meditation_general: "emo studies coauthored by Morgenroth" filtered on
+    # meditation and missed both Emo-FilM datasets.
+    monkeypatch.setattr(retriever, "_embedding_fallback_scored", lambda field, term: [])
+    assert retriever._resolve_via_constructs("emo") == []
+    assert retriever._match_task_term("emo") is None
+    assert _resolve_yaml_term("task", "emo") == []
+    # Five letters and more still find the start of a word.
+    assert "directed_forgetting_task" in _resolve_yaml_term("task", "forgetting")
+
+
+def test_construct_with_few_tasks_counts_only_next_to_a_named_task(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(retriever, "_embedding_fallback_scored", lambda field, term: [])
+    # "instinct" is linked to pavlovian_conditioning alone; alone it is no filter.
+    assert len(retriever._resolve_via_constructs("instinct", fuzzy=False)) < retriever._MIN_CONSTRUCT_TASKS
+    assert _resolve_yaml_term("task", "instinct") == []
+    # "emotion" names the task emotion_general; the thin link only widens it.
+    assert "emotion_general" in _resolve_yaml_term("task", "emotion")
+    # Constructs linked to many tasks are unchanged.
+    assert len(_resolve_yaml_term("task", "decision making")) > 20

@@ -1,0 +1,218 @@
+{"qid": "amb_social_conflict", "acc": "ds000164", "label": "not_relevant", "wrong_sense": true, "reason": "Stroop task, cognitive/response conflict."}
+{"qid": "amb_social_conflict", "acc": "ds000214", "label": "relevant", "wrong_sense": false, "reason": "Cyberball social exclusion task."}
+{"qid": "amb_social_conflict", "acc": "ds001814", "label": "not_relevant", "wrong_sense": true, "reason": "Approach-avoidance decision conflict, not social."}
+{"qid": "amb_social_conflict", "acc": "ds002543", "label": "not_relevant", "wrong_sense": true, "reason": "Response inhibition and conflict-induced slowing; cognitive conflict."}
+{"qid": "amb_social_conflict", "acc": "ds002778", "label": "not_relevant", "wrong_sense": true, "reason": "Parkinson resting EEG; 'conflict' only incidental in data-use note."}
+{"qid": "amb_social_conflict", "acc": "ds003103", "label": "relevant", "wrong_sense": false, "reason": "Couples resolving preference disagreement, conflict-resolving in title."}
+{"qid": "amb_social_conflict", "acc": "ds003509", "label": "not_relevant", "wrong_sense": true, "reason": "Simon conflict task, cognitive conflict."}
+{"qid": "amb_social_conflict", "acc": "ds003518", "label": "not_relevant", "wrong_sense": true, "reason": "Simon conflict task, cognitive conflict."}
+{"qid": "amb_social_conflict", "acc": "ds003791", "label": "relevant", "wrong_sense": false, "reason": "Chemosignal effects on aggression; study domain aggression."}
+{"qid": "amb_social_conflict", "acc": "ds003846", "label": "not_relevant", "wrong_sense": false, "reason": "Prediction error with stimulation; no social conflict."}
+{"qid": "amb_social_conflict", "acc": "ds004146", "label": "not_relevant", "wrong_sense": true, "reason": "Emotional conflict task is cognitive conflict in a twin cohort."}
+{"qid": "amb_social_conflict", "acc": "ds004274", "label": "relevant", "wrong_sense": false, "reason": "Tears block aggression; PSAP game against opponent."}
+{"qid": "amb_social_conflict", "acc": "ds004511", "label": "not_relevant", "wrong_sense": true, "reason": "Deception and cognitive-control conflict resolution task."}
+{"qid": "amb_social_conflict", "acc": "ds004516", "label": "not_relevant", "wrong_sense": true, "reason": "Movie stimuli merely depict bullying/family conflict; incidental."}
+{"qid": "amb_social_conflict", "acc": "ds004532", "label": "not_relevant", "wrong_sense": false, "reason": "Probabilistic selection reinforcement learning; no social conflict."}
+{"qid": "amb_social_conflict", "acc": "ds004580", "label": "not_relevant", "wrong_sense": true, "reason": "Simon conflict task, cognitive conflict."}
+{"qid": "amb_social_conflict", "acc": "ds004627", "label": "not_relevant", "wrong_sense": false, "reason": "Adolescent depression, MID and rest; no social conflict."}
+{"qid": "amb_social_conflict", "acc": "ds004860", "label": "not_relevant", "wrong_sense": true, "reason": "Cognitive conflict in moral judgment N400 task, not interpersonal."}
+{"qid": "amb_social_conflict", "acc": "ds004902", "label": "not_relevant", "wrong_sense": false, "reason": "Sleep deprivation resting EEG."}
+{"qid": "amb_social_conflict", "acc": "ds004909", "label": "not_relevant", "wrong_sense": false, "reason": "Perceptual decision cognitive control task with distractors; not social."}
+{"qid": "amb_social_conflict", "acc": "ds005012", "label": "not_relevant", "wrong_sense": false, "reason": "Monetary incentive delay in adolescents; no social conflict."}
+{"qid": "amb_social_conflict", "acc": "ds005375", "label": "relevant", "wrong_sense": false, "reason": "Cyberball ostracism and personal/group discrimination tasks."}
+{"qid": "amb_social_conflict", "acc": "ds005385", "label": "not_relevant", "wrong_sense": false, "reason": "Resting EEG across lifespan."}
+{"qid": "amb_social_conflict", "acc": "ds005406", "label": "not_relevant", "wrong_sense": false, "reason": "Action observation frequency tagging; no conflict."}
+{"qid": "amb_social_conflict", "acc": "ds005504", "label": "not_relevant", "wrong_sense": false, "reason": "Inhibitory control in children under poverty; no social conflict."}
+{"qid": "amb_social_conflict", "acc": "ds005571", "label": "not_relevant", "wrong_sense": true, "reason": "Expectation of conflict stimuli, go/no-go cognitive control."}
+{"qid": "amb_social_conflict", "acc": "ds006840", "label": "not_relevant", "wrong_sense": true, "reason": "Intention-action conflict in motor control, not social."}
+{"qid": "amb_social_conflict", "acc": "ds007115", "label": "not_relevant", "wrong_sense": true, "reason": "Cognitive conflict between misinformation and attitudes, not interpersonal."}
+{"qid": "amb_cognitive_conflict", "acc": "ds000101", "label": "relevant", "wrong_sense": false, "reason": "Simon task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds000102", "label": "relevant", "wrong_sense": false, "reason": "Eriksen flanker with congruent/incongruent trials."}
+{"qid": "amb_cognitive_conflict", "acc": "ds000164", "label": "relevant", "wrong_sense": false, "reason": "Stroop task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds001751", "label": "relevant", "wrong_sense": false, "reason": "Flanker task in title; cognitive control."}
+{"qid": "amb_cognitive_conflict", "acc": "ds001784", "label": "relevant", "wrong_sense": false, "reason": "Multi-source interference task with interference trials."}
+{"qid": "amb_cognitive_conflict", "acc": "ds001796", "label": "relevant", "wrong_sense": false, "reason": "Flanker task fMRI in bilinguals."}
+{"qid": "amb_cognitive_conflict", "acc": "ds002422", "label": "not_relevant", "wrong_sense": false, "reason": "Arithmetic and rest; no conflict task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds002737", "label": "partial", "wrong_sense": false, "reason": "Cognitive control 'notStroop' task in head-case test; thin."}
+{"qid": "amb_cognitive_conflict", "acc": "ds003452", "label": "partial", "wrong_sense": false, "reason": "DMCC cognitive control tasks; conflict task not explicit in card."}
+{"qid": "amb_cognitive_conflict", "acc": "ds003465", "label": "partial", "wrong_sense": false, "reason": "DMCC cognitive control battery; conflict task not explicit in card."}
+{"qid": "amb_cognitive_conflict", "acc": "ds003707", "label": "not_relevant", "wrong_sense": false, "reason": "Memory interference, not response/stimulus conflict task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds004580", "label": "relevant", "wrong_sense": false, "reason": "Simon task with congruent/incongruent trials."}
+{"qid": "amb_cognitive_conflict", "acc": "ds004859", "label": "relevant", "wrong_sense": false, "reason": "Stroop task iEEG in title."}
+{"qid": "amb_cognitive_conflict", "acc": "ds004860", "label": "not_relevant", "wrong_sense": true, "reason": "Moral judgment conflict, not response/stimulus conflict task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds004883", "label": "relevant", "wrong_sense": false, "reason": "Flanker task ERN versions."}
+{"qid": "amb_cognitive_conflict", "acc": "ds005089", "label": "partial", "wrong_sense": false, "reason": "Selective attention competition task; conflict plausible but card thin."}
+{"qid": "amb_cognitive_conflict", "acc": "ds005166", "label": "not_relevant", "wrong_sense": false, "reason": "Stop-signal inhibitory control, not conflict task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds005237", "label": "relevant", "wrong_sense": false, "reason": "Includes two Stroop task fMRI runs."}
+{"qid": "amb_cognitive_conflict", "acc": "ds005305", "label": "not_relevant", "wrong_sense": false, "reason": "Resting-state EEG; Stroop only a behavioural battery correlate."}
+{"qid": "amb_cognitive_conflict", "acc": "ds005866", "label": "relevant", "wrong_sense": false, "reason": "Flanker task with identical/different flankers."}
+{"qid": "amb_cognitive_conflict", "acc": "ds005868", "label": "relevant", "wrong_sense": false, "reason": "Flanker task with identical/different flankers."}
+{"qid": "amb_cognitive_conflict", "acc": "ds006367", "label": "not_relevant", "wrong_sense": false, "reason": "Memory interference delayed match task, not response conflict."}
+{"qid": "amb_cognitive_conflict", "acc": "ds007022", "label": "partial", "wrong_sense": false, "reason": "Stroop task among behavioural tasks in training study."}
+{"qid": "amb_cognitive_conflict", "acc": "ds007115", "label": "not_relevant", "wrong_sense": true, "reason": "Belief-information conflict in agreement decisions, no conflict task."}
+{"qid": "amb_cognitive_conflict", "acc": "ds007139", "label": "relevant", "wrong_sense": false, "reason": "Flanker task with LRP/ERN."}
+{"qid": "amb_emo_morgenroth", "acc": "ds004872", "label": "relevant", "wrong_sense": false, "reason": "Morgenroth author; Emo-FilM emotion annotations."}
+{"qid": "amb_emo_morgenroth", "acc": "ds004892", "label": "relevant", "wrong_sense": false, "reason": "Morgenroth author; Emo-FilM emotion movie dataset."}
+{"qid": "amb_social_stress", "acc": "ds003483", "label": "not_relevant", "wrong_sense": false, "reason": "Logical reasoning study; no stressor."}
+{"qid": "amb_social_stress", "acc": "ds004094", "label": "not_relevant", "wrong_sense": false, "reason": "Statistical learning and reasoning; no stressor."}
+{"qid": "amb_cortical_inhibition", "acc": "ds005839", "label": "relevant", "wrong_sense": false, "reason": "Spinal GABAergic transmission manipulation, inhibitory neurotransmission."}
+{"qid": "amb_cognitive_control", "acc": "ds000011", "label": "not_relevant", "wrong_sense": false, "reason": "Dual-task memory/distraction study; no control focus"}
+{"qid": "amb_cognitive_control", "acc": "ds001486", "label": "not_relevant", "wrong_sense": true, "reason": "Math development; 'control' only a control stimulus condition"}
+{"qid": "amb_cognitive_control", "acc": "ds002372", "label": "relevant", "wrong_sense": false, "reason": "Stop-signal, gradCPT and executive control tasks"}
+{"qid": "amb_cognitive_control", "acc": "ds002543", "label": "relevant", "wrong_sense": false, "reason": "Response inhibition and conflict-induced slowing"}
+{"qid": "amb_cognitive_control", "acc": "ds002685", "label": "partial", "wrong_sense": false, "reason": "Broad battery includes executive control tasks, not main topic"}
+{"qid": "amb_cognitive_control", "acc": "ds002941", "label": "not_relevant", "wrong_sense": false, "reason": "Math processing; no control content"}
+{"qid": "amb_cognitive_control", "acc": "ds003028", "label": "not_relevant", "wrong_sense": false, "reason": "Math processing; no control content"}
+{"qid": "amb_cognitive_control", "acc": "ds003083", "label": "not_relevant", "wrong_sense": true, "reason": "Math dataset; control only healthy control label"}
+{"qid": "amb_cognitive_control", "acc": "ds003452", "label": "relevant", "wrong_sense": false, "reason": "Dual Mechanisms of Cognitive Control; task switching"}
+{"qid": "amb_cognitive_control", "acc": "ds003465", "label": "relevant", "wrong_sense": false, "reason": "Dual Mechanisms of Cognitive Control; task switching"}
+{"qid": "amb_cognitive_control", "acc": "ds003638", "label": "relevant", "wrong_sense": false, "reason": "Study domain cognitive control; executive tasks"}
+{"qid": "amb_cognitive_control", "acc": "ds004091", "label": "not_relevant", "wrong_sense": false, "reason": "Population receptive field gaze attention; no control"}
+{"qid": "amb_cognitive_control", "acc": "ds004151", "label": "relevant", "wrong_sense": false, "reason": "Inhibitory control, stop-signal task"}
+{"qid": "amb_cognitive_control", "acc": "ds004350", "label": "relevant", "wrong_sense": false, "reason": "Executive functioning battery: n-back, SART, local-global"}
+{"qid": "amb_cognitive_control", "acc": "ds004621", "label": "relevant", "wrong_sense": false, "reason": "Study domain cognitive control; MSIT interference task"}
+{"qid": "amb_cognitive_control", "acc": "ds004636", "label": "partial", "wrong_sense": false, "reason": "Self-regulation construct with executive control tasks"}
+{"qid": "amb_cognitive_control", "acc": "ds004647", "label": "partial", "wrong_sense": false, "reason": "Pavlovian motivational control and working memory load"}
+{"qid": "amb_cognitive_control", "acc": "ds004883", "label": "relevant", "wrong_sense": false, "reason": "Flanker task ERN, conflict task"}
+{"qid": "amb_cognitive_control", "acc": "ds005166", "label": "relevant", "wrong_sense": false, "reason": "Inhibitory control, stop-signal task"}
+{"qid": "amb_cognitive_control", "acc": "ds005270", "label": "relevant", "wrong_sense": false, "reason": "Cognitive control: inhibition, task switching, n-back"}
+{"qid": "amb_cognitive_control", "acc": "ds005429", "label": "not_relevant", "wrong_sense": true, "reason": "Auditory oddball MMN; only healthy control label"}
+{"qid": "amb_cognitive_control", "acc": "ds005455", "label": "relevant", "wrong_sense": false, "reason": "Language control and cognitive control, rule switching"}
+{"qid": "amb_cognitive_control", "acc": "ds005571", "label": "relevant", "wrong_sense": false, "reason": "Study domain cognitive control; go/no-go conflict"}
+{"qid": "amb_cognitive_control", "acc": "ds005754", "label": "relevant", "wrong_sense": false, "reason": "Inhibitory control in youth"}
+{"qid": "amb_cognitive_control", "acc": "ds006018", "label": "not_relevant", "wrong_sense": true, "reason": "Oddball ERP and SES; control only healthy label"}
+{"qid": "amb_cognitive_control", "acc": "ds006040", "label": "partial", "wrong_sense": false, "reason": "gradCPT sustained attention, not explicitly control"}
+{"qid": "amb_cognitive_control", "acc": "ds006148", "label": "not_relevant", "wrong_sense": false, "reason": "Negative BOLD and neurodegeneration; cognitive tests, no control"}
+{"qid": "amb_cognitive_control", "acc": "ds006171", "label": "not_relevant", "wrong_sense": true, "reason": "Visual detection cueing; only healthy control label"}
+{"qid": "amb_cognitive_control", "acc": "ds006240", "label": "relevant", "wrong_sense": false, "reason": "Language switching task, executive control tag, multiple demand"}
+{"qid": "amb_cognitive_control", "acc": "ds007283", "label": "not_relevant", "wrong_sense": false, "reason": "Visual localizers and retinotopy; no control"}
+{"qid": "amb_cognitive_control", "acc": "ds007286", "label": "partial", "wrong_sense": false, "reason": "Stop-signal, n-back among many tasks in phenotyping set"}
+{"qid": "amb_cognitive_control", "acc": "ds007486", "label": "relevant", "wrong_sense": false, "reason": "Stop signal task measuring inhibitory control"}
+{"qid": "amb_motor_control", "acc": "ds002241", "label": "not_relevant", "wrong_sense": true, "reason": "Drawing and object recognition; 'control' objects are baseline"}
+{"qid": "amb_motor_control", "acc": "ds002685", "label": "not_relevant", "wrong_sense": false, "reason": "Broad atlas; finger tapping among many tasks"}
+{"qid": "amb_motor_control", "acc": "ds003342", "label": "relevant", "wrong_sense": false, "reason": "Real grasping of tools, action decoding"}
+{"qid": "amb_motor_control", "acc": "ds003466", "label": "partial", "wrong_sense": false, "reason": "Finger exploration and hand motion, focus on haptic perception"}
+{"qid": "amb_motor_control", "acc": "ds003505", "label": "not_relevant", "wrong_sense": true, "reason": "Visual evoked potentials; motor response only records answers"}
+{"qid": "amb_motor_control", "acc": "ds003690", "label": "not_relevant", "wrong_sense": true, "reason": "Reaction time tasks; button responses only"}
+{"qid": "amb_motor_control", "acc": "ds004044", "label": "relevant", "wrong_sense": false, "reason": "Whole-body movements of toe, finger, jaw, eyes"}
+{"qid": "amb_motor_control", "acc": "ds004362", "label": "relevant", "wrong_sense": false, "reason": "Fist opening/closing movement and imagery"}
+{"qid": "amb_motor_control", "acc": "ds004621", "label": "not_relevant", "wrong_sense": true, "reason": "Cognitive control ERP; simple reaction task as control"}
+{"qid": "amb_motor_control", "acc": "ds004934", "label": "not_relevant", "wrong_sense": true, "reason": "Expectation violation; motor task is response only"}
+{"qid": "amb_motor_control", "acc": "ds005003", "label": "partial", "wrong_sense": false, "reason": "Motor task fMRI in tumor patients for mapping"}
+{"qid": "amb_motor_control", "acc": "ds005127", "label": "not_relevant", "wrong_sense": false, "reason": "Sleep EEG-fMRI; motor task incidental"}
+{"qid": "amb_motor_control", "acc": "ds005239", "label": "relevant", "wrong_sense": false, "reason": "Hand posture mimicry with motion tracking, motor control task"}
+{"qid": "amb_motor_control", "acc": "ds005613", "label": "not_relevant", "wrong_sense": false, "reason": "Language aptitude; finger tapping incidental"}
+{"qid": "amb_motor_control", "acc": "ds005927", "label": "partial", "wrong_sense": false, "reason": "Finger tapping fNIRS, thin sensory-motor card"}
+{"qid": "amb_motor_control", "acc": "ds006035", "label": "partial", "wrong_sense": false, "reason": "Median nerve stimulation with finger lift response"}
+{"qid": "amb_motor_control", "acc": "ds006729", "label": "relevant", "wrong_sense": false, "reason": "Hand function, grip force matching, finger tapping"}
+{"qid": "amb_motor_control", "acc": "ds006780", "label": "not_relevant", "wrong_sense": false, "reason": "Autism oscillations EEG; motor task incidental"}
+{"qid": "amb_motor_control", "acc": "ds007022", "label": "not_relevant", "wrong_sense": false, "reason": "Learning plasticity; finger tapping one of many tasks"}
+{"qid": "amb_motor_control", "acc": "ds007554", "label": "partial", "wrong_sense": false, "reason": "Cognitive-motor tasks with active and passive arm movement"}
+{"qid": "amb_emotion_induction", "acc": "ds000171", "label": "relevant", "wrong_sense": false, "reason": "Emotional music stimuli during fMRI"}
+{"qid": "amb_emotion_induction", "acc": "ds003507", "label": "relevant", "wrong_sense": false, "reason": "Valence-manipulated video clips and music"}
+{"qid": "amb_emotion_induction", "acc": "ds003751", "label": "relevant", "wrong_sense": false, "reason": "Emotional multimedia videos eliciting emotion, EEG"}
+{"qid": "amb_induced_pain", "acc": "ds000138", "label": "relevant", "wrong_sense": false, "reason": "Heat stimulation hyperalgesia, spinal fMRI; no patient focus"}
+{"qid": "amb_induced_pain", "acc": "ds001928", "label": "not_relevant", "wrong_sense": true, "reason": "Fibromyalgia patients, music analgesia at rest; no experimental pain"}
+{"qid": "amb_induced_pain", "acc": "ds002320", "label": "not_relevant", "wrong_sense": false, "reason": "Shock described as unpleasant but not painful"}
+{"qid": "amb_induced_pain", "acc": "ds002608", "label": "partial", "wrong_sense": false, "reason": "Resting-state predicting pain sensitivity; stimulation not on card"}
+{"qid": "amb_induced_pain", "acc": "ds004959", "label": "not_relevant", "wrong_sense": false, "reason": "Animal epilepsy stimulation; no pain"}
+{"qid": "amb_induced_pain", "acc": "ds005016", "label": "partial", "wrong_sense": false, "reason": "Migraine patients and controls with pain scans"}
+{"qid": "amb_induced_pain", "acc": "ds005088", "label": "relevant", "wrong_sense": false, "reason": "Electrical nerve pain 7/10 in healthy adults"}
+{"qid": "amb_induced_pain", "acc": "ds005289", "label": "relevant", "wrong_sense": false, "reason": "Laser pain stimulation in healthy participants"}
+{"qid": "amb_induced_pain", "acc": "ds005293", "label": "relevant", "wrong_sense": false, "reason": "Laser pain stimulation, intensity levels, healthy participants"}
+{"qid": "amb_induced_pain", "acc": "ds005498", "label": "not_relevant", "wrong_sense": false, "reason": "TMS fMRI; no pain stimulation"}
+{"qid": "amb_induced_pain", "acc": "ds005776", "label": "partial", "wrong_sense": false, "reason": "Electrical and thermal stimulation, card thin on pain"}
+{"qid": "amb_induced_pain", "acc": "ds005777", "label": "partial", "wrong_sense": false, "reason": "Electrical stimulation with morphine/placebo; pain not explicit"}
+{"qid": "amb_induced_pain", "acc": "ds005883", "label": "relevant", "wrong_sense": false, "reason": "Thermal pain stimuli in healthy adults"}
+{"qid": "amb_monetary_reward", "acc": "ds000005", "label": "relevant", "wrong_sense": false, "reason": "Mixed gambles task on loss aversion under risk; gambling with gains and losses."}
+{"qid": "amb_monetary_reward", "acc": "ds000009", "label": "partial", "wrong_sense": false, "reason": "Balloon analog risk and delay discounting tasks; money not stated in card."}
+{"qid": "amb_monetary_reward", "acc": "ds000030", "label": "partial", "wrong_sense": false, "reason": "Includes balloon analog risk task; large battery, money not explicit."}
+{"qid": "amb_monetary_reward", "acc": "ds000121", "label": "partial", "wrong_sense": false, "reason": "Reward cue '$' in antisaccade task; monetary nature implied, not stated."}
+{"qid": "amb_monetary_reward", "acc": "ds001167", "label": "relevant", "wrong_sense": false, "reason": "Effort-based gambling task and mixed gambles task."}
+{"qid": "amb_monetary_reward", "acc": "ds001399", "label": "relevant", "wrong_sense": false, "reason": "Incentive (extra payment) trials in cued task switching; reward processing."}
+{"qid": "amb_monetary_reward", "acc": "ds001734", "label": "relevant", "wrong_sense": false, "reason": "Monetary gambling task, mixed gambles under risk."}
+{"qid": "amb_monetary_reward", "acc": "ds001814", "label": "relevant", "wrong_sense": false, "reason": "Choices yield monetary rewards $0.05-$0.95 with shock risk."}
+{"qid": "amb_monetary_reward", "acc": "ds002685", "label": "partial", "wrong_sense": false, "reason": "Huge task battery includes gambling, card task, reward processing; not focused."}
+{"qid": "amb_monetary_reward", "acc": "ds002843", "label": "relevant", "wrong_sense": false, "reason": "Choices between monetary options, delayed and risky, versus $20."}
+{"qid": "amb_monetary_reward", "acc": "ds002989", "label": "partial", "wrong_sense": false, "reason": "Delay discounting bidding; monetary choice likely but card thin."}
+{"qid": "amb_monetary_reward", "acc": "ds003242", "label": "relevant", "wrong_sense": false, "reason": "Includes monetary incentive delay localizer task; main task is craving."}
+{"qid": "amb_monetary_reward", "acc": "ds003568", "label": "relevant", "wrong_sense": false, "reason": "Monetary gambling mood induction task."}
+{"qid": "amb_monetary_reward", "acc": "ds003745", "label": "relevant", "wrong_sense": false, "reason": "Card guessing with monetary gains and losses; trust game."}
+{"qid": "amb_monetary_reward", "acc": "ds003782", "label": "relevant", "wrong_sense": false, "reason": "Effort-based gambling and mixed gambles tasks under risk."}
+{"qid": "amb_monetary_reward", "acc": "ds003858", "label": "relevant", "wrong_sense": false, "reason": "Monetary Incentive Delay task."}
+{"qid": "amb_monetary_reward", "acc": "ds004259", "label": "partial", "wrong_sense": false, "reason": "Numerical risk task; risk-taking, money not stated."}
+{"qid": "amb_monetary_reward", "acc": "ds004295", "label": "relevant", "wrong_sense": false, "reason": "Reversal learning with +10 cent monetary reward."}
+{"qid": "amb_monetary_reward", "acc": "ds004627", "label": "relevant", "wrong_sense": false, "reason": "Monetary incentive delay task listed among tasks."}
+{"qid": "amb_monetary_reward", "acc": "ds004711", "label": "partial", "wrong_sense": false, "reason": "Balloon analog risk and delay discounting; money not stated."}
+{"qid": "amb_monetary_reward", "acc": "ds004917", "label": "partial", "wrong_sense": false, "reason": "Decision-making under risk and ambiguity; outcomes unspecified."}
+{"qid": "amb_monetary_reward", "acc": "ds004920", "label": "relevant", "wrong_sense": false, "reason": "Monetary incentive delay, monetary rewards and punishments."}
+{"qid": "amb_monetary_reward", "acc": "ds005065", "label": "partial", "wrong_sense": false, "reason": "Risky decision-making gambles; monetary stakes not stated."}
+{"qid": "amb_monetary_reward", "acc": "ds005123", "label": "relevant", "wrong_sense": false, "reason": "Doors task, shared reward task with nonsocial reward; monetary implied."}
+{"qid": "amb_monetary_reward", "acc": "ds005166", "label": "not_relevant", "wrong_sense": false, "reason": "Inhibitory control; money only as participant compensation."}
+{"qid": "amb_monetary_reward", "acc": "ds005263", "label": "relevant", "wrong_sense": false, "reason": "Monetary incentive reaching; jackpot reward and robber loss."}
+{"qid": "amb_monetary_reward", "acc": "ds005264", "label": "not_relevant", "wrong_sense": false, "reason": "Resting-state connectivity; no reward task."}
+{"qid": "amb_monetary_reward", "acc": "ds005265", "label": "not_relevant", "wrong_sense": false, "reason": "Approach-avoid with emotional images; no money."}
+{"qid": "amb_monetary_reward", "acc": "ds005266", "label": "not_relevant", "wrong_sense": false, "reason": "Shock escape task; no monetary reward."}
+{"qid": "amb_monetary_reward", "acc": "ds005479", "label": "relevant", "wrong_sense": false, "reason": "fMRI Monetary Incentive Delay task."}
+{"qid": "amb_monetary_reward", "acc": "ds005588", "label": "relevant", "wrong_sense": false, "reason": "Safe versus risky monetary outcomes lottery choices."}
+{"qid": "amb_monetary_reward", "acc": "ds005754", "label": "not_relevant", "wrong_sense": false, "reason": "Inhibitory control batteries; money only as compensation."}
+{"qid": "amb_monetary_reward", "acc": "ds005896", "label": "relevant", "wrong_sense": false, "reason": "MID task among tasks; reward domain."}
+{"qid": "amb_monetary_reward", "acc": "ds005901", "label": "relevant", "wrong_sense": false, "reason": "MID task among tasks; reward domain."}
+{"qid": "amb_monetary_reward", "acc": "ds007026", "label": "partial", "wrong_sense": false, "reason": "Risky decision making under stress; money not stated."}
+{"qid": "amb_monetary_reward", "acc": "ds007387", "label": "relevant", "wrong_sense": false, "reason": "Monetary incentive delay task listed."}
+{"qid": "amb_monetary_reward", "acc": "ds007388", "label": "relevant", "wrong_sense": false, "reason": "Monetary incentive delay task listed."}
+{"qid": "amb_monetary_reward", "acc": "ds007486", "label": "relevant", "wrong_sense": false, "reason": "Trust task monetary reward; stop-signal betting $0/$10/$20 gambling."}
+{"qid": "amb_social_reward", "acc": "ds000009", "label": "not_relevant", "wrong_sense": false, "reason": "Self-control tasks; no social reward."}
+{"qid": "amb_social_reward", "acc": "ds000030", "label": "not_relevant", "wrong_sense": false, "reason": "Phenomics battery; no social reward task."}
+{"qid": "amb_social_reward", "acc": "ds001167", "label": "not_relevant", "wrong_sense": true, "reason": "Effort-based gambling; monetary only."}
+{"qid": "amb_social_reward", "acc": "ds001734", "label": "not_relevant", "wrong_sense": true, "reason": "Monetary gambling task only."}
+{"qid": "amb_social_reward", "acc": "ds001882", "label": "partial", "wrong_sense": false, "reason": "Money choices for self or other; social context, not social reward."}
+{"qid": "amb_social_reward", "acc": "ds001883", "label": "partial", "wrong_sense": false, "reason": "Risky money choices for self or other; social context, not social reward."}
+{"qid": "amb_social_reward", "acc": "ds002685", "label": "partial", "wrong_sense": false, "reason": "Battery with social tasks and reward processing; unfocused."}
+{"qid": "amb_social_reward", "acc": "ds002738", "label": "not_relevant", "wrong_sense": false, "reason": "Reward learning task; no social reward indicated."}
+{"qid": "amb_social_reward", "acc": "ds002843", "label": "not_relevant", "wrong_sense": true, "reason": "Monetary delay and risk choices only."}
+{"qid": "amb_social_reward", "acc": "ds002989", "label": "not_relevant", "wrong_sense": false, "reason": "Delay discounting; no social reward."}
+{"qid": "amb_social_reward", "acc": "ds003242", "label": "relevant", "wrong_sense": false, "reason": "Compares social interaction cues with food cues in craving."}
+{"qid": "amb_social_reward", "acc": "ds003745", "label": "relevant", "wrong_sense": false, "reason": "Social reward; card task with shared gains and losses with partners."}
+{"qid": "amb_social_reward", "acc": "ds003782", "label": "not_relevant", "wrong_sense": true, "reason": "Effort-based gambling; monetary only."}
+{"qid": "amb_social_reward", "acc": "ds004097", "label": "not_relevant", "wrong_sense": true, "reason": "MID monetary task only; no social condition."}
+{"qid": "amb_social_reward", "acc": "ds004259", "label": "not_relevant", "wrong_sense": false, "reason": "Numerical risk task; no social reward."}
+{"qid": "amb_social_reward", "acc": "ds004627", "label": "not_relevant", "wrong_sense": true, "reason": "Monetary incentive delay only; no social condition."}
+{"qid": "amb_social_reward", "acc": "ds004711", "label": "not_relevant", "wrong_sense": false, "reason": "Risk and discounting tasks; no social reward."}
+{"qid": "amb_social_reward", "acc": "ds004917", "label": "not_relevant", "wrong_sense": false, "reason": "Risk and ambiguity decisions; no social reward."}
+{"qid": "amb_social_reward", "acc": "ds004920", "label": "relevant", "wrong_sense": false, "reason": "Social and nonsocial reward tasks compared; social doors, shared reward."}
+{"qid": "amb_social_reward", "acc": "ds005027", "label": "not_relevant", "wrong_sense": true, "reason": "Monetary incentive delay only."}
+{"qid": "amb_social_reward", "acc": "ds005123", "label": "relevant", "wrong_sense": false, "reason": "Social and nonsocial reward processing; social doors, shared reward."}
+{"qid": "amb_social_reward", "acc": "ds006105", "label": "not_relevant", "wrong_sense": true, "reason": "Skewed gambling task; monetary only."}
+{"qid": "amb_social_reward", "acc": "ds006576", "label": "not_relevant", "wrong_sense": false, "reason": "Memory and sleep study; no social reward."}
+{"qid": "amb_social_reward", "acc": "ds006707", "label": "relevant", "wrong_sense": false, "reason": "Shared reward social task alongside MID."}
+{"qid": "amb_social_reward", "acc": "ds007026", "label": "not_relevant", "wrong_sense": false, "reason": "Risky decision making; no social reward."}
+{"qid": "amb_cognitive_load", "acc": "ds000115", "label": "partial", "wrong_sense": false, "reason": "N-back working memory; load manipulation not stated in card."}
+{"qid": "amb_cognitive_load", "acc": "ds000229", "label": "not_relevant", "wrong_sense": false, "reason": "Flavor conditioning; no cognitive load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds000231", "label": "not_relevant", "wrong_sense": true, "reason": "Caloric loads of beverages, not cognitive load."}
+{"qid": "amb_cognitive_load", "acc": "ds001399", "label": "relevant", "wrong_sense": false, "reason": "Cued task switching; cognitive control load, incongruent versus congruent."}
+{"qid": "amb_cognitive_load", "acc": "ds001784", "label": "partial", "wrong_sense": false, "reason": "MSIT interference versus control trials; load not explicit."}
+{"qid": "amb_cognitive_load", "acc": "ds002316", "label": "relevant", "wrong_sense": false, "reason": "N-back with load N adjusted to performance."}
+{"qid": "amb_cognitive_load", "acc": "ds002837", "label": "not_relevant", "wrong_sense": false, "reason": "Movie viewing; no load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds003176", "label": "partial", "wrong_sense": false, "reason": "Internal versus external attention demands; mental load mentioned."}
+{"qid": "amb_cognitive_load", "acc": "ds003465", "label": "partial", "wrong_sense": false, "reason": "Sternberg and task switching; load manipulation not stated."}
+{"qid": "amb_cognitive_load", "acc": "ds003620", "label": "relevant", "wrong_sense": false, "reason": "Varies cognitive task demands, motor demands, environmental complexity."}
+{"qid": "amb_cognitive_load", "acc": "ds003655", "label": "relevant", "wrong_sense": false, "reason": "Sternberg with 3 load levels (5,6,7 letters) and manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds003838", "label": "relevant", "wrong_sense": false, "reason": "Digit span with 5, 9, 13 digits; cognitive load."}
+{"qid": "amb_cognitive_load", "acc": "ds004194", "label": "not_relevant", "wrong_sense": false, "reason": "Visual ECoG; no load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds004569", "label": "not_relevant", "wrong_sense": false, "reason": "Naturalistic movie viewing; no load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds004587", "label": "not_relevant", "wrong_sense": false, "reason": "Illusion difficulty varied; perceptual difficulty, not load."}
+{"qid": "amb_cognitive_load", "acc": "ds004647", "label": "relevant", "wrong_sense": false, "reason": "Working memory load affecting instrumental learning."}
+{"qid": "amb_cognitive_load", "acc": "ds004752", "label": "relevant", "wrong_sense": false, "reason": "Sternberg task with set size varying across trials."}
+{"qid": "amb_cognitive_load", "acc": "ds005166", "label": "not_relevant", "wrong_sense": false, "reason": "Inhibitory control tasks; no load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds005270", "label": "partial", "wrong_sense": false, "reason": "N-back, task switching, go/no-go; load not explicit."}
+{"qid": "amb_cognitive_load", "acc": "ds005620", "label": "not_relevant", "wrong_sense": false, "reason": "Propofol sedation and dreaming; no load."}
+{"qid": "amb_cognitive_load", "acc": "ds005754", "label": "not_relevant", "wrong_sense": false, "reason": "Inhibitory control batteries; no load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds006240", "label": "partial", "wrong_sense": false, "reason": "Language switching with multiple-demand localizer; load unclear."}
+{"qid": "amb_cognitive_load", "acc": "ds006533", "label": "not_relevant", "wrong_sense": false, "reason": "Stroke lesion numeracy; no load manipulation."}
+{"qid": "amb_cognitive_load", "acc": "ds006720", "label": "relevant", "wrong_sense": false, "reason": "Working memory load of one versus three intervals."}
+{"qid": "amb_cognitive_load", "acc": "ds006721", "label": "not_relevant", "wrong_sense": false, "reason": "Ultrasound brain temperature; no cognitive load."}
+{"qid": "amb_cognitive_load", "acc": "ds006979", "label": "relevant", "wrong_sense": false, "reason": "Visual working memory with 2 or 3 item set sizes."}
+{"qid": "amb_cognitive_load", "acc": "ds007081", "label": "relevant", "wrong_sense": false, "reason": "Working memory with expected extra-load versus low-load conditions."}
+{"qid": "amb_cognitive_load", "acc": "ds007446", "label": "partial", "wrong_sense": false, "reason": "Multiple-demand visual working memory localizer; load not described."}
+{"qid": "amb_cognitive_load", "acc": "ds007554", "label": "relevant", "wrong_sense": false, "reason": "Hierarchical cognitive tasks, n-back, cognitive load ratings."}

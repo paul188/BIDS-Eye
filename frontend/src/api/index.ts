@@ -54,7 +54,9 @@ export interface TextToSQLResult {
 export interface QueryFilter {
   /** Position in the original query ("w0", "h0"); pass back to refine. */
   id: string
-  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'field' | 'other'
+  /** 'topic': a qualified subject searched as one unit; 'sense': the meanings it
+   *  excludes (id = topic id + "n"; removing it removes only the exclusion). */
+  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'field' | 'topic' | 'sense' | 'other'
   field: string
   label: string
   negated: boolean

@@ -1,0 +1,415 @@
+{
+ "snapshot_date": "2026-11-14",
+ "judged_by": "LLM (Claude Sonnet), blind to which run returned a dataset",
+ "note": "Pool: first 20 results of 3 baseline runs and 4 topic runs per question (production image 0598ab78, faac8e4 search code). Recall is relative to this pool. wrong_sense: about the meaning not asked for.",
+ "queries": {
+  "amb_social_conflict": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds000214",
+    "ds003103",
+    "ds003791",
+    "ds004274",
+    "ds005375"
+   ],
+   "partially_relevant": [],
+   "not_relevant": [
+    "ds000164",
+    "ds001814",
+    "ds002543",
+    "ds002778",
+    "ds003509",
+    "ds003518",
+    "ds003846",
+    "ds004146",
+    "ds004511",
+    "ds004516",
+    "ds004532",
+    "ds004580",
+    "ds004627",
+    "ds004860",
+    "ds004902",
+    "ds004909",
+    "ds005012",
+    "ds005385",
+    "ds005406",
+    "ds005504",
+    "ds005571",
+    "ds006840",
+    "ds007115"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds000164",
+    "ds001814",
+    "ds002543",
+    "ds002778",
+    "ds003509",
+    "ds003518",
+    "ds004146",
+    "ds004511",
+    "ds004516",
+    "ds004580",
+    "ds004860",
+    "ds005571",
+    "ds006840",
+    "ds007115"
+   ]
+  },
+  "amb_cognitive_conflict": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds000101",
+    "ds000102",
+    "ds000164",
+    "ds001751",
+    "ds001784",
+    "ds001796",
+    "ds004580",
+    "ds004859",
+    "ds004883",
+    "ds005237",
+    "ds005866",
+    "ds005868",
+    "ds007139"
+   ],
+   "partially_relevant": [
+    "ds002737",
+    "ds003452",
+    "ds003465",
+    "ds005089",
+    "ds007022"
+   ],
+   "not_relevant": [
+    "ds002422",
+    "ds003707",
+    "ds004860",
+    "ds005166",
+    "ds005305",
+    "ds006367",
+    "ds007115"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds004860",
+    "ds007115"
+   ]
+  },
+  "amb_emo_morgenroth": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds004872",
+    "ds004892"
+   ],
+   "partially_relevant": [],
+   "not_relevant": [],
+   "unsure": [],
+   "wrong_sense": []
+  },
+  "amb_social_stress": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [],
+   "partially_relevant": [],
+   "not_relevant": [
+    "ds003483",
+    "ds004094"
+   ],
+   "unsure": [],
+   "wrong_sense": []
+  },
+  "amb_cortical_inhibition": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds005839"
+   ],
+   "partially_relevant": [],
+   "not_relevant": [],
+   "unsure": [],
+   "wrong_sense": []
+  },
+  "amb_cognitive_control": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds002372",
+    "ds002543",
+    "ds003452",
+    "ds003465",
+    "ds003638",
+    "ds004151",
+    "ds004350",
+    "ds004621",
+    "ds004883",
+    "ds005166",
+    "ds005270",
+    "ds005455",
+    "ds005571",
+    "ds005754",
+    "ds006240",
+    "ds007486"
+   ],
+   "partially_relevant": [
+    "ds002685",
+    "ds004636",
+    "ds004647",
+    "ds006040",
+    "ds007286"
+   ],
+   "not_relevant": [
+    "ds000011",
+    "ds001486",
+    "ds002941",
+    "ds003028",
+    "ds003083",
+    "ds004091",
+    "ds005429",
+    "ds006018",
+    "ds006148",
+    "ds006171",
+    "ds007283"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds001486",
+    "ds003083",
+    "ds005429",
+    "ds006018",
+    "ds006171"
+   ]
+  },
+  "amb_motor_control": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds003342",
+    "ds004044",
+    "ds004362",
+    "ds005239",
+    "ds006729"
+   ],
+   "partially_relevant": [
+    "ds003466",
+    "ds005003",
+    "ds005927",
+    "ds006035",
+    "ds007554"
+   ],
+   "not_relevant": [
+    "ds002241",
+    "ds002685",
+    "ds003505",
+    "ds003690",
+    "ds004621",
+    "ds004934",
+    "ds005127",
+    "ds005613",
+    "ds006780",
+    "ds007022"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds002241",
+    "ds003505",
+    "ds003690",
+    "ds004621",
+    "ds004934"
+   ]
+  },
+  "amb_emotion_induction": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds000171",
+    "ds003507",
+    "ds003751"
+   ],
+   "partially_relevant": [],
+   "not_relevant": [],
+   "unsure": [],
+   "wrong_sense": []
+  },
+  "amb_induced_pain": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds000138",
+    "ds005088",
+    "ds005289",
+    "ds005293",
+    "ds005883"
+   ],
+   "partially_relevant": [
+    "ds002608",
+    "ds005016",
+    "ds005776",
+    "ds005777"
+   ],
+   "not_relevant": [
+    "ds001928",
+    "ds002320",
+    "ds004959",
+    "ds005498"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds001928"
+   ]
+  },
+  "amb_monetary_reward": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds000005",
+    "ds001167",
+    "ds001399",
+    "ds001734",
+    "ds001814",
+    "ds002843",
+    "ds003242",
+    "ds003568",
+    "ds003745",
+    "ds003782",
+    "ds003858",
+    "ds004295",
+    "ds004627",
+    "ds004920",
+    "ds005123",
+    "ds005263",
+    "ds005479",
+    "ds005588",
+    "ds005896",
+    "ds005901",
+    "ds007387",
+    "ds007388",
+    "ds007486"
+   ],
+   "partially_relevant": [
+    "ds000009",
+    "ds000030",
+    "ds000121",
+    "ds002685",
+    "ds002989",
+    "ds004259",
+    "ds004711",
+    "ds004917",
+    "ds005065",
+    "ds007026"
+   ],
+   "not_relevant": [
+    "ds005166",
+    "ds005264",
+    "ds005265",
+    "ds005266",
+    "ds005754"
+   ],
+   "unsure": [],
+   "wrong_sense": []
+  },
+  "amb_social_reward": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds003242",
+    "ds003745",
+    "ds004920",
+    "ds005123",
+    "ds006707"
+   ],
+   "partially_relevant": [
+    "ds001882",
+    "ds001883",
+    "ds002685"
+   ],
+   "not_relevant": [
+    "ds000009",
+    "ds000030",
+    "ds001167",
+    "ds001734",
+    "ds002738",
+    "ds002843",
+    "ds002989",
+    "ds003782",
+    "ds004097",
+    "ds004259",
+    "ds004627",
+    "ds004711",
+    "ds004917",
+    "ds005027",
+    "ds006105",
+    "ds006576",
+    "ds007026"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds001167",
+    "ds001734",
+    "ds002843",
+    "ds003782",
+    "ds004097",
+    "ds004627",
+    "ds005027",
+    "ds006105"
+   ]
+  },
+  "amb_cognitive_load": {
+   "method": "judged",
+   "source": "ambiguity",
+   "type": null,
+   "relevant": [
+    "ds001399",
+    "ds002316",
+    "ds003620",
+    "ds003655",
+    "ds003838",
+    "ds004647",
+    "ds004752",
+    "ds006720",
+    "ds006979",
+    "ds007081",
+    "ds007554"
+   ],
+   "partially_relevant": [
+    "ds000115",
+    "ds001784",
+    "ds003176",
+    "ds003465",
+    "ds005270",
+    "ds006240",
+    "ds007446"
+   ],
+   "not_relevant": [
+    "ds000229",
+    "ds000231",
+    "ds002837",
+    "ds004194",
+    "ds004569",
+    "ds004587",
+    "ds005166",
+    "ds005620",
+    "ds005754",
+    "ds006533",
+    "ds006721"
+   ],
+   "unsure": [],
+   "wrong_sense": [
+    "ds000231"
+   ]
+  }
+ }
+}

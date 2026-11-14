@@ -78,6 +78,8 @@ _VOCAB_MISS_HINT_RE = re.compile(
     r"For free-text search use:\s*(.+?)(?=\s*\])",
     re.IGNORECASE | re.DOTALL,
 )
+# A topic filter line of the augmented question (preprocess.py, _topic_condition).
+_TOPIC_LINE_RE = re.compile(r'^\s*topic "[^"\n]*": (?P<condition>.+)$', re.MULTILINE)
 _TEXT_MATCH_CALL_RE = re.compile(
     r"\btext_match\s*\(\s*'([^']*)'\s*(?:,\s*'[^']*'\s*)?\)",
     re.IGNORECASE,
@@ -220,6 +222,7 @@ class SqlRewriteService:
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._guard_json_number_casts(sql)
         sql = self._inject_vocab_miss(sql, augmented_question)
+        sql = self._inject_topics(sql, augmented_question)
         tiered = _uncertain_tier.enabled()
         # With the tier on, paper text is evidence for the second tier only;
         # confirmed results match on the dataset's own text.
@@ -658,6 +661,30 @@ class SqlRewriteService:
         combined = " AND ".join(missing)
         log.info("Injecting VOCABULARY MISS text filter: %s", combined)
         return self._and_into_where(cleaned, combined)
+
+    def _inject_topics(self, sql: str, augmented_question: str) -> str:
+        """Add a topic's filter if the model left it out.
+
+        A topic is copied when its first text_match() (the user's own phrase)
+        is in the SQL. Otherwise the whole condition is ANDed in: without it
+        the search would ignore the subject the question is about.
+        """
+        present = {
+            tuple(sorted(str(t) for t in _parse_alternatives(m.group(1))))
+            for m in _TEXT_MATCH_CALL_RE.finditer(sql)
+        }
+        for line in _TOPIC_LINE_RE.finditer(augmented_question):
+            condition = line.group("condition").strip()
+            first = _TEXT_MATCH_CALL_RE.search(condition)
+            if first is None:
+                continue
+            key = tuple(sorted(str(t) for t in _parse_alternatives(first.group(1))))
+            if key in present:
+                continue
+            log.info("Injecting topic filter the model left out: %s", condition)
+            sql = self._and_into_where(sql, condition)
+            present.add(key)
+        return sql
 
     def _and_into_where(self, sql: str, condition: str) -> str:
         """AND *condition* onto the outer WHERE, keeping the existing filter intact."""

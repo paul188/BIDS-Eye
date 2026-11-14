@@ -21,6 +21,12 @@ without another language-model call (routers/query.py, /query/refine).
 
 Chip ids are positions ("w0", "w1", "h0") in the query they were read from;
 they are only meaningful together with that query.
+
+A topic condition (LLM_preprocessor/preprocess.py, _topic_condition) gives
+two chips: the subject ("Topic · social conflict") and, when the condition
+excludes other meanings of the word, those meanings ("Not meant · stroop
++5") with the id of the topic plus "n" ("w0n"). Removing the second chip
+removes only the exclusion.
 """
 
 from __future__ import annotations
@@ -72,6 +78,10 @@ _MODALITY_LABELS = {
 _ACRONYMS = {"adhd", "asd", "ptsd", "ocd", "mci", "als", "tbi", "mdd", "bpd", "hiv", "ms", "rbd", "pd"}
 _POSSESSIVE_RE = re.compile(r"\b(alzheimer|parkinson|huntington|tourette|crohn|asperger)s\b", re.I)
 _TS_LABEL_RE = re.compile(r":[A-Za-z*]+")
+# Exact word distances written by 'near' text searches (text_search._near_query).
+_TS_DISTANCE_RE = re.compile(r"<\d+>")
+# Suffix of the chip id that stands for a topic's excluded meanings.
+EXCLUSION_SUFFIX = "n"
 _TS_WORD_RE = re.compile(r"[A-Za-z0-9][\w'-]*")
 
 _FIELD_COLUMNS = {
@@ -132,17 +142,46 @@ def _literals_for(node, column_names: Iterable[str]) -> List[str]:
     return list(dict.fromkeys(values))
 
 
-def _tsqueries(node) -> List[str]:
-    """The query strings of every to_tsquery(...) in the condition."""
+def _under_not(node, root) -> bool:
+    """True if *node* sits inside a NOT below *root*."""
+    current = node.parent
+    while current is not None and current is not root:
+        if isinstance(current, exp.Not):
+            return True
+        current = current.parent
+    return False
+
+
+def _tsqueries(node, negated: Optional[bool] = None) -> List[str]:
+    """The query strings of every to_tsquery(...) in the condition.
+
+    *negated*: None for all, False for those outside a NOT inside the
+    condition, True for those inside one.
+    """
     queries = []
     for call in node.find_all(exp.Anonymous, exp.Func):
         name = (call.name if isinstance(call, exp.Anonymous) else call.sql_name()).lower()
         if name != "to_tsquery":
             continue
+        if negated is not None and _under_not(call, node) != negated:
+            continue
         literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
         if literals:
             queries.append(literals[-1].this)
     return queries
+
+
+def _outer_parentheses_removed(text: str) -> str:
+    text = text.strip()
+    while text.startswith("(") and text.endswith(")"):
+        depth = 0
+        for index, char in enumerate(text):
+            depth += char == "("
+            depth -= char == ")"
+            if depth == 0 and index < len(text) - 1:
+                return text
+        text = text[1:-1].strip()
+    return text
 
 
 def _split_top_level(query: str, sep: str) -> List[str]:
@@ -166,6 +205,10 @@ def tsquery_phrases(query: str) -> List[str]:
     query = _TS_LABEL_RE.sub("", query)
     phrases = []
     for alternative in _split_top_level(query, "|"):
+        if _TS_DISTANCE_RE.search(alternative):
+            # A 'near' term spells out every word order and gap; the first is the term.
+            alternative = _split_top_level(_outer_parentheses_removed(alternative), "|")[0]
+            alternative = _TS_DISTANCE_RE.sub(" ", alternative)
         words = [w for w in _TS_WORD_RE.findall(alternative)]
         if words:
             phrases.append(" ".join(words))
@@ -310,7 +353,9 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         node = node.this
 
     phrases: List[str] = []
-    for query in _tsqueries(node):
+    # Words inside a NOT of the condition are what it excludes, not what it
+    # searches for (a topic's unwanted meanings; see describe_exclusion).
+    for query in _tsqueries(node, negated=False):
         phrases.extend(tsquery_phrases(query))
     # Older plans search the description with ILIKE instead of full text.
     phrases.extend(_literals_for(node, ["description_text", "readme_text", "readme"]))
@@ -339,6 +384,16 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         names = [_humanize_code(d) for d in diagnoses]
         label = names[0] + (f" +{len(names) - 1}" if len(names) > 1 else "")
         return chip("diagnosis", "Diagnosis", label, codes_detail("diagnosis", names))
+
+    if _is_topic(node):
+        names = [_humanize_code(t) for t in _literals_for(node, ["task"])]
+        searched = ", ".join(phrases[:10]) + ("…" if len(phrases) > 10 else "")
+        detail = f"One subject, its words close together. Searched as: {searched}."
+        if names:
+            detail += " " + codes_detail("task", names)
+        return QueryFilter(id=chip_id, kind="topic", field="Topic",
+                           label=phrases[0] if phrases else (names[0] if names else "topic"),
+                           negated=negated, text_words=phrases, detail=detail)
 
     tasks = _literals_for(node, ["task"])
     if tasks:
@@ -389,6 +444,53 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
                        negated=negated, detail=sql)
 
 
+def _is_topic(node) -> bool:
+    """A topic condition: a 'near' search, or a search that excludes other meanings."""
+    if any(_TS_DISTANCE_RE.search(q) for q in _tsqueries(node, negated=False)):
+        return True
+    return bool(_tsqueries(node, negated=True)) and bool(_tsqueries(node, negated=False))
+
+
+def describe_exclusion(node, chip_id: str) -> Optional[QueryFilter]:
+    """The meanings a topic condition excludes, as a chip of their own; None if none."""
+    while isinstance(node, exp.Paren):
+        node = node.this
+    if isinstance(node, exp.Not) or not _is_topic(node):
+        return None
+    excluded: List[str] = []
+    for query in _tsqueries(node, negated=True):
+        excluded.extend(tsquery_phrases(query))
+    excluded = list(dict.fromkeys(excluded))
+    if not excluded:
+        return None
+    label = ", ".join(excluded[:2]) + (f" +{len(excluded) - 2}" if len(excluded) > 2 else "")
+    shown = ", ".join(excluded[:12]) + ("…" if len(excluded) > 12 else "")
+    return QueryFilter(
+        id=chip_id + EXCLUSION_SUFFIX, kind="sense", field="Not meant", label=label,
+        detail=(f"Other meanings of the word, ruled out by the question: {shown}. "
+                "Datasets that match the topic only alongside these come after the others. "
+                "Remove to treat them like the rest."),
+    )
+
+
+def _drop_exclusions(node):
+    """*node* without the NOT parts that sit inside it: (A AND NOT B) → A."""
+    for not_node in list(node.find_all(exp.Not)):
+        if not_node is node:
+            continue
+        child = not_node
+        parent = child.parent
+        while isinstance(parent, exp.Paren):
+            child, parent = parent, parent.parent
+        if isinstance(parent, exp.And):
+            other = parent.right if parent.left is child else parent.left
+            if parent is node:
+                node = other
+            else:
+                parent.replace(other)
+    return node
+
+
 # ── Whole query ───────────────────────────────────────────────────────────────
 
 def _flatten_and(node) -> list:
@@ -427,6 +529,9 @@ def describe(sql: Optional[str]) -> List[QueryFilter]:
     for chip_id, node in _conditions(tree):
         try:
             chips.append(describe_condition(node, chip_id))
+            exclusion = describe_exclusion(node, chip_id)
+            if exclusion is not None:
+                chips.append(exclusion)
         except Exception as exc:  # one odd condition must not lose the others
             log.debug("query_filters: could not describe %s (%s)", node, exc)
             text = node.sql(dialect="postgres")
@@ -447,13 +552,16 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
     tree = _parse(sql)
     if tree is None:
         return None
+    exclusions = {i[:-len(EXCLUSION_SUFFIX)] for i in drop if i.endswith(EXCLUSION_SUFFIX)}
     for prefix, clause in (("w", "where"), ("h", "having")):
         node = tree.args.get(clause)
         if node is None:
             continue
         parts = _flatten_and(node.this)
-        kept = [p for i, p in enumerate(parts) if f"{prefix}{i}" not in drop]
-        if len(kept) == len(parts):
+        relaxed = [_drop_exclusions(p) if f"{prefix}{i}" in exclusions else p
+                   for i, p in enumerate(parts)]
+        kept = [p for i, p in enumerate(relaxed) if f"{prefix}{i}" not in drop]
+        if len(kept) == len(parts) and all(a is b for a, b in zip(relaxed, parts)):
             continue
         if not kept:
             tree.set(clause, None)
@@ -468,7 +576,7 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
 
 # ── Highlighting ──────────────────────────────────────────────────────────────
 
-_HIGHLIGHT_KINDS = {"diagnosis", "modality", "task", "text", "field"}
+_HIGHLIGHT_KINDS = {"diagnosis", "modality", "task", "text", "field", "topic"}
 _WORD_RE = re.compile(r"[A-Za-z0-9]+")
 
 

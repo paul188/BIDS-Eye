@@ -43,12 +43,13 @@ Requires:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sys
 import textwrap
 from enum import Enum
 from pathlib import Path
-from typing import Any, Collection, Dict, List, Literal, Optional, Union
+from typing import Any, Collection, Dict, List, Literal, Optional, Sequence, Union
 
 from pydantic import BaseModel, Field
 
@@ -64,12 +65,17 @@ from join_registry import (
 )
 from text_terms import (
     MODE_LOOSE as _MODE_LOOSE,
+    MODE_NEAR as _MODE_NEAR,
     MODE_SHORT as _MODE_SHORT,
     diagnosis_alternatives as _diagnosis_alternatives,
     format_text_match as _format_text_match,
     format_task_text_match as _format_task_text_match,
+    split_words as _split_words,
 )
 from institution_index import text_alternatives as _institution_text_alternatives
+import senses as _senses
+
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Schema
@@ -215,6 +221,32 @@ class ScanRequirement(BaseModel):
     )
 
 
+class Topic(BaseModel):
+    """
+    What the datasets should be about, with the words that fix its meaning.
+
+    "social conflict" is not "conflict": the qualifier "social" selects one
+    meaning of the head word "conflict". A topic keeps the two together, so
+    the search never looks for the head word alone, and lists the other
+    meanings so that datasets about them move down.
+    """
+    phrase: str = Field(description="The subject in standard words, abbreviations and clipped "
+                                    "words written out: 'social conflict', 'emotion'")
+    typed: str = Field(default="", description="The words as the user typed them: 'social conflicts', 'emo'")
+    head: str = Field(description="The noun the qualifiers modify: 'conflict'")
+    qualifiers: List[str] = Field(default_factory=list,
+                                  description="Words that select the meaning of the head: ['social']")
+    gloss: str = Field(default="", description="One line saying which meaning is meant")
+    alternatives: List[str] = Field(
+        default_factory=list,
+        description="Up to 8 phrases a dataset description would use for exactly this meaning: "
+                    "synonyms, narrower terms, named paradigms. Never the head word alone.")
+    not_meant: List[str] = Field(
+        default_factory=list,
+        description="Other meanings of the head word that the qualifiers rule out, as words a "
+                    "dataset description would use for them. Empty when the head has one meaning.")
+
+
 class QueryPlan(BaseModel):
     """
     Complete structured representation of a user query.
@@ -238,6 +270,13 @@ class QueryPlan(BaseModel):
     scan_requirements: List[ScanRequirement] = Field(
         default_factory=list,
         description="Each entry is one modality/task constraint on the dataset's files"
+    )
+
+    # ── Subject matter ────────────────────────────────────────────────────────
+    topics: List[Topic] = Field(
+        default_factory=list,
+        description="Subjects whose meaning depends on a qualifier ('social conflict') or that "
+                    "the user abbreviated ('emo'). See the Topics section of the instructions.",
     )
 
     # ── Dataset-level text filters ────────────────────────────────────────────
@@ -363,6 +402,18 @@ class ScoredFilter(BaseModel):
     score: float
 
 
+class ResolvedTopic(BaseModel):
+    """A Topic after the sense inventory, the vocabulary and the catalogue checked it."""
+    topic: Topic
+    sense: Optional[str] = None             # sense picked in RAG/senses.yaml
+    codes: List[str] = Field(default_factory=list)          # task codes
+    scores: Dict[str, float] = Field(default_factory=dict)  # code → match score
+    alternatives: List[str] = Field(default_factory=list)   # searched, best first
+    dropped: Dict[str, str] = Field(default_factory=dict)   # alternative → why not searched
+    not_meant: List[str] = Field(default_factory=list)
+    condition: Optional[str] = None         # the filter line handed to the SQL model
+
+
 class AugmentedQueryPlan(BaseModel):
     """
     QueryPlan + resolved canonical codes from the RAG layer.
@@ -371,6 +422,7 @@ class AugmentedQueryPlan(BaseModel):
     plan: QueryPlan
     resolved: List[ResolvedTerms] = Field(default_factory=list)
     scored_filters: List[ScoredFilter] = Field(default_factory=list)
+    topics: List[ResolvedTopic] = Field(default_factory=list)
     augmented_question: str = Field(
         description="The original question with canonical DB values injected as context"
     )
@@ -481,6 +533,55 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "fMRI datasets with n-back"
           → scan_requirements: [{scan_terms:["fMRI","n-back"]}]
             description_search: null   ← no qualitative modifier
+
+    ── Topics: a word whose meaning a qualifier fixes ──────────────────────────
+    Many words mean different things in different studies. When the user
+    qualifies such a word so that only one meaning fits, put the subject in
+    `topics` and NOT in scan_terms or description_search. The qualifier stays
+    bound to its word: it is never searched apart from it, and the word is
+    never searched without it. Also use a topic when the user abbreviates or
+    clips the subject's word; write it out in `phrase`, keep the typed form
+    in `typed`.
+
+    A plain task, paradigm or modality without such a qualifier ("n-back",
+    "resting state", "EEG") stays in scan_terms. A property word ("complex",
+    "naturalistic", "pediatric") stays in description_search. A diagnosis
+    stays in diagnosis_terms.
+
+    Fill every topic:
+      phrase        the subject in standard words, abbreviations written out
+      typed         the words as typed
+      head          the noun the qualifiers modify
+      qualifiers    the words that select the meaning
+      gloss         one line naming the meaning
+      alternatives  up to 8 phrases a dataset description would use for
+                    exactly this meaning: synonyms, narrower terms, named
+                    paradigms or tests. Never the head word alone, never a
+                    phrase that also fits another meaning.
+      not_meant     the other meanings of the head word in neuroscience that
+                    the qualifier rules out, as the words a description would
+                    use for them (technical terms, task names); [] if none
+
+    Examples:
+      "prism adaptation experiments"
+          → topics: [{phrase: "prism adaptation", typed: "prism adaptation",
+                      head: "adaptation", qualifiers: ["prism"],
+                      gloss: "adapting reaching or pointing to a visual shift
+                              induced by prism goggles",
+                      alternatives: ["prism adaptation", "prismatic adaptation",
+                                     "prism goggles", "visuomotor adaptation to prisms"],
+                      not_meant: ["repetition suppression", "fMRI adaptation",
+                                  "contrast adaptation", "dark adaptation"]}]
+            scan_requirements: []
+      "circ rhythm fMRI"
+          → topics: [{phrase: "circadian rhythm", typed: "circ rhythm",
+                      head: "rhythm", qualifiers: ["circadian"],
+                      gloss: "the roughly 24-hour cycle of sleep, wakefulness and physiology",
+                      alternatives: ["circadian", "diurnal variation", "time of day",
+                                     "sleep-wake cycle", "melatonin"],
+                      not_meant: ["theta rhythm", "alpha rhythm", "musical rhythm",
+                                  "cardiac rhythm"]}]
+            scan_requirements: [{scan_terms: ["fMRI"]}]
 
     ── Participant terms ───────────────────────────────────────────────────────
     Put diagnosis / condition strings in ParticipantGroup.diagnosis_terms.
@@ -728,6 +829,290 @@ def _build_scored_filters(
     return out
 
 
+# ---------------------------------------------------------------------------
+# Topics: a qualified subject, searched as one unit
+# ---------------------------------------------------------------------------
+
+# Alternatives taken from the language model, and searched in total.
+_TOPIC_MAX_LLM_ALTERNATIVES = 8
+_TOPIC_MAX_ALTERNATIVES = 16
+_TOPIC_MAX_CODES = 20
+
+
+def _topic_max_matches() -> int:
+    """An alternative from the language model that more datasets match is too broad.
+
+    90 is about 5% of the 1,721 datasets of 2026-11. Alternatives from
+    RAG/senses.yaml are curated and exempt.
+    """
+    try:
+        return int(os.getenv("TOPIC_MAX_ALTERNATIVE_MATCHES", "90"))
+    except ValueError:
+        return 90
+
+
+def _stem(part: str) -> str:
+    if len(part) > 4 and part.endswith("ies"):
+        return part[:-3] + "y"
+    if len(part) > 3 and part.endswith("s") and not part.endswith("ss"):
+        return part[:-1]
+    return part
+
+
+def _word_set(text: str) -> frozenset:
+    """Content words of *text*, plural folded: "social conflicts" → {social, conflict}."""
+    return frozenset(_stem(part) for word in _split_words(text or "") for part in word)
+
+
+def _count_topic_matches(alternatives: List[str]) -> Optional[List[int]]:
+    """Datasets matching each alternative, from the backend's full-text search; None if unknown."""
+    try:
+        from services import text_search  # backend/services; absent outside the API
+    except Exception:
+        return None
+    try:
+        return text_search.count_matches(alternatives, _MODE_NEAR)
+    except Exception as exc:  # a check must never break a search
+        log.warning("Topic alternative check failed (%s) — searching them unchecked", exc)
+        return None
+
+
+def _is_ambiguity_topic(topic: Topic) -> bool:
+    """A topic the search treats as one: its head has senses, or the user abbreviated it.
+
+    On the 167 development questions of 2026-11-14 the language model also
+    made topics of plain subjects ("sign language processing", "gambling
+    choices") and listed unwanted meanings for nearly all of them; searching
+    those as topics lost recall (47% → 38% on the 24 such questions). The
+    gains on the ambiguity questions came from heads in RAG/senses.yaml and
+    from abbreviations ("emo").
+    """
+    phrase = topic.phrase or topic.typed
+    if _senses.senses_of(topic.head or phrase):
+        return True
+    return bool(topic.typed) and bool(_word_set(topic.typed)) \
+        and _word_set(topic.typed) != _word_set(phrase)
+
+
+def _keep_ambiguity_topics(plan: QueryPlan) -> None:
+    """Hand every other topic back to the scan-term path it had before topics existed."""
+    kept: List[Topic] = []
+    for topic in plan.topics:
+        if _is_ambiguity_topic(topic):
+            kept.append(topic)
+            continue
+        term = topic.phrase or topic.typed
+        if term and not any(term in r.scan_terms for r in plan.scan_requirements):
+            plan.scan_requirements.append(ScanRequirement(scan_terms=[term]))
+    plan.topics = kept
+
+
+def _detach_topic_terms(plan: QueryPlan) -> None:
+    """Remove scan terms and description words that only repeat a topic.
+
+    The topic searches them as one unit; a scan term "conflict" next to the
+    topic "social conflict" would bring the head word back on its own.
+    """
+    names = [_word_set(name) for t in plan.topics for name in (t.phrase, t.typed) if name]
+    names = [n for n in names if n]
+    if not names:
+        return
+
+    def covered(term: str) -> bool:
+        words = _word_set(term)
+        return bool(words) and any(words <= name for name in names)
+
+    for requirement in plan.scan_requirements:
+        requirement.scan_terms = [t for t in requirement.scan_terms if not covered(t)]
+    plan.scan_requirements = [r for r in plan.scan_requirements if r.scan_terms]
+    if plan.description_search and covered(plan.description_search):
+        plan.description_search = None
+
+
+def _topic_codes(
+    topic: Topic, pick: Optional["_senses.SensePick"], not_meant: List[str], retriever: Any,
+) -> Dict[str, float]:
+    """Task codes for the whole phrase, never for the head word alone.
+
+    The vocabulary also matches a phrase through one of its words: "cortical
+    inhibition" reached the construct inhibition and with it stop-signal and
+    go/no-go tasks. With qualifiers: when the phrase gives everything the
+    head word alone gives, those codes came through the head and are
+    dropped; what the qualifier added stays. A phrase that gives fewer or
+    other codes than the head ("spatial memory" vs "memory") was narrowed by
+    its qualifier and keeps them. The picked sense's own codes come after.
+    """
+    codes: Dict[str, float] = {}
+    phrase = topic.phrase or topic.typed
+
+    def lookup(term: str) -> Dict[str, float]:
+        if retriever is None or not hasattr(retriever, "retrieve_for_field_multi_scored"):
+            return {}
+        try:
+            found = retriever.retrieve_for_field_multi_scored("task", [term])
+        except Exception as exc:
+            log.warning("Topic vocabulary lookup failed for %r (%s)", term, exc)
+            return {}
+        return {code: float(score) for pairs in found.values() for code, score in pairs}
+
+    codes = lookup(phrase)
+    head = (topic.head or "").strip()
+    if codes and topic.qualifiers and head and _word_set(head) != _word_set(phrase):
+        head_codes = lookup(head)
+        if head_codes and set(head_codes) <= set(codes):
+            codes = {code: score for code, score in codes.items() if code not in head_codes}
+    if pick is not None:
+        for code in pick.tasks:
+            codes.setdefault(code, 1.0)
+    excluded = set(pick.excluded_tasks) if pick is not None else set()
+    # "simon" among the unwanted meanings removes simon_task.
+    unwanted_words = {next(iter(w)) for w in map(_word_set, not_meant) if len(w) == 1}
+    codes = {
+        code: score for code, score in codes.items()
+        if code not in excluded and not (set(code.lower().split("_")) & unwanted_words)
+    }
+    codes = dict(list(codes.items())[:_TOPIC_MAX_CODES])
+    if codes and retriever is not None and hasattr(retriever, "db_verify_codes"):
+        live, _miss = retriever.db_verify_codes("task", list(codes))
+        codes = {code: codes[code] for code in live}
+    return codes
+
+
+def _topic_phrase_terms(topic: Topic) -> List[str]:
+    """The user's own subject: the phrase, and the typed form when it differs ("emo")."""
+    terms = [topic.phrase or topic.typed]
+    if topic.typed and _word_set(topic.typed) and _word_set(topic.typed) != _word_set(terms[0]):
+        terms.append(topic.typed)
+    return [t for t in terms if t]
+
+
+def _topic_condition(resolved: ResolvedTopic) -> Optional[str]:
+    """One filter for a topic:
+
+        EXISTS (task codes)
+        OR text_match('<phrase>', 'near')
+        OR ((text_match('<alternatives of several words>', 'near')
+             OR text_match('<one-word alternatives>', 'short'))
+            AND NOT text_match('<not meant>', 'near'))
+
+    The phrase comes first: the uncertain tier relaxes only the first text
+    search of a topic (services/uncertain_tier.py, relax_text_condition).
+
+    The phrase is the user's own words and needs no guard. An alternative can
+    also occur in a text about another meaning ("conflict resolution task" in
+    a Stroop study); such a dataset fails this condition and the uncertain
+    tier keeps it as probable (services/uncertain_tier.py).
+    """
+    parts: List[str] = []
+    if resolved.codes:
+        values = ", ".join(f"'{c}'" for c in resolved.codes)
+        task = f"o2.task = {values}" if len(resolved.codes) == 1 else f"o2.task IN ({values})"
+        parts.append(f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {task})")
+    phrase_match = _format_text_match(_topic_phrase_terms(resolved.topic), _MODE_NEAR)
+    if phrase_match:
+        parts.append(phrase_match)
+    # A one-word alternative is searched in the short fields only: anywhere in
+    # a README, "aggression" also matched "the defacing was quite aggressive"
+    # and an aggression questionnaire. Several words must stand together.
+    phrases = [a for a in resolved.alternatives if len(_split_words(a)) > 1]
+    words = [a for a in resolved.alternatives if len(_split_words(a)) == 1]
+    alternative_parts = [m for m in (_format_text_match(phrases, _MODE_NEAR),
+                                     _format_text_match(words, _MODE_SHORT)) if m]
+    alternative_match = None
+    if len(alternative_parts) == 1:
+        alternative_match = alternative_parts[0]
+    elif alternative_parts:
+        alternative_match = "(" + " OR ".join(alternative_parts) + ")"
+    if alternative_match:
+        guard = _format_text_match(resolved.not_meant, _MODE_NEAR)
+        parts.append(f"({alternative_match} AND NOT {guard})" if guard else alternative_match)
+    if not parts:
+        return None
+    return parts[0] if len(parts) == 1 else "(" + " OR ".join(parts) + ")"
+
+
+def resolve_topic(
+    topic: Topic,
+    retriever: Any = None,
+    count_matches: Any = _count_topic_matches,
+) -> ResolvedTopic:
+    """Check a topic against the sense inventory, the vocabulary and the catalogue.
+
+    - RAG/senses.yaml: a qualifier that picks a sense of the head adds that
+      sense's phrases and task codes and excludes the other senses.
+    - Alternatives are dropped when they are only the head word or a
+      qualifier, name an excluded meaning, match no dataset, or (when the
+      language model proposed them) match too many to say anything.
+    - Task codes come from the whole phrase and the picked sense.
+    """
+    phrase = (topic.phrase or topic.typed).strip()
+    qualifiers = list(topic.qualifiers)
+    pick = _senses.pick_sense(topic.head or phrase, qualifiers, phrase=phrase)
+    not_meant = list(dict.fromkeys(
+        [n for n in topic.not_meant if n.strip()] + (pick.not_meant if pick else [])))
+    not_meant_sets = [w for w in map(_word_set, not_meant) if w]
+
+    base = _word_set(topic.head)
+    for qualifier in qualifiers:
+        base |= _word_set(qualifier)
+    own = {_word_set(t) for t in _topic_phrase_terms(topic)}
+
+    dropped: Dict[str, str] = {}
+    kept: List[tuple] = []          # (alternative, curated)
+    seen: set = set()
+    candidates = [(a, True) for a in (pick.alternatives if pick else [])]
+    candidates += [(a, False) for a in topic.alternatives[:_TOPIC_MAX_LLM_ALTERNATIVES]]
+    for alternative, curated in candidates:
+        words = _word_set(alternative)
+        if not words or words in seen or words in own:
+            continue
+        seen.add(words)
+        # Never the head word alone; a qualifier alone ("social") only when
+        # senses.yaml lists it as a phrase of the sense ("GABA").
+        if words <= base and (not curated or words <= _word_set(topic.head)):
+            dropped[alternative] = "only the head word or a qualifier"
+        elif any(n <= words for n in not_meant_sets):
+            dropped[alternative] = "names a meaning the search excludes"
+        else:
+            kept.append((alternative, curated))
+
+    counts = count_matches([a for a, _ in kept]) if (kept and count_matches) else None
+    if counts is not None and len(counts) == len(kept):
+        limit = _topic_max_matches()
+        checked = []
+        for (alternative, curated), count in zip(kept, counts):
+            if count == 0:
+                dropped[alternative] = "no dataset uses it"
+            elif count > limit and not curated:
+                dropped[alternative] = f"too common ({count} datasets)"
+            else:
+                checked.append((alternative, curated))
+        kept = checked
+
+    codes = _topic_codes(topic, pick, not_meant, retriever)
+    resolved = ResolvedTopic(
+        topic=topic,
+        sense=pick.sense.name if (pick and pick.sense) else None,
+        codes=list(codes),
+        scores=codes,
+        alternatives=[a for a, _ in kept][:_TOPIC_MAX_ALTERNATIVES],
+        dropped=dropped,
+        not_meant=not_meant,
+    )
+    resolved.condition = _topic_condition(resolved)
+    log.info(
+        "Topic %r: sense=%s codes=%s alternatives=%s dropped=%s not_meant=%s",
+        phrase, resolved.sense, resolved.codes, resolved.alternatives, dropped, not_meant,
+    )
+    return resolved
+
+
+def resolve_topics(plan: QueryPlan, retriever: Any = None,
+                   count_matches: Any = _count_topic_matches) -> List[ResolvedTopic]:
+    return [resolve_topic(t, retriever, count_matches)
+            for t in plan.topics if (t.phrase or t.typed).strip()]
+
+
 def augment_with_rag(
     plan: QueryPlan,
     rag_results: Dict[str, Dict[str, List[str]]],
@@ -735,6 +1120,7 @@ def augment_with_rag(
     db_miss_terms: Optional[Dict[str, List[str]]] = None,
     scores: Optional[Dict[str, Dict[str, float]]] = None,
     available_columns: Collection[str] = (),
+    topics: Optional[List[ResolvedTopic]] = None,
 ) -> AugmentedQueryPlan:
     """
     Combine a QueryPlan with RAG results to produce an AugmentedQueryPlan.
@@ -769,13 +1155,24 @@ def augment_with_rag(
             continue  # SCAN is internal; resolved results use specific field names
         resolved.append(ResolvedTerms(field=field, term_to_codes=term_map))
 
+    topics = list(topics or [])
+    scored_filters = _build_scored_filters(rag_results, scores or {})
+    seen = {(f.field, f.code) for f in scored_filters}
+    for topic in topics:
+        for code in topic.codes:
+            if ("task", code) not in seen:
+                seen.add(("task", code))
+                scored_filters.append(
+                    ScoredFilter(field="task", code=code, score=topic.scores.get(code, 1.0)))
+
     aug = AugmentedQueryPlan(
         plan=plan,
         resolved=resolved,
-        scored_filters=_build_scored_filters(rag_results, scores or {}),
+        scored_filters=scored_filters,
+        topics=topics,
         augmented_question=_build_augmented_question(
             plan, resolved, unresolved_terms or {}, db_miss_terms or {},
-            available_columns,
+            available_columns, topics,
         ),
     )
     return aug
@@ -875,6 +1272,7 @@ def _build_augmented_question(
     unresolved_terms: Optional[Dict[str, List[str]]] = None,
     db_miss_terms: Optional[Dict[str, List[str]]] = None,
     available_columns: Collection[str] = (),
+    topics: Sequence[ResolvedTopic] = (),
 ) -> str:
     """
     Inject resolved canonical codes into the natural-language summary.
@@ -903,7 +1301,8 @@ def _build_augmented_question(
     if (not resolved and not plan.description_search and not plan.name_search
             and not size_conds and not plan.institution_terms
             and not plan.excluded_institution_terms
-            and not unresolved_terms and not db_miss_terms):
+            and not unresolved_terms and not db_miss_terms
+            and not any(t.condition for t in topics)):
         return plan.natural_language_summary
 
     _SCAN_FIELDS = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
@@ -1040,6 +1439,12 @@ def _build_augmented_question(
                     f'  scan "{term}": {condition}'
                 )
 
+    # Topics: the qualified subject as one condition (see _topic_condition).
+    for topic in topics:
+        if topic.condition:
+            label = (topic.topic.phrase or topic.topic.typed).replace('"', "").replace("'", "")
+            context_lines.append(f'  topic "{label}": {topic.condition}')
+
     context_lines.extend(non_scan_lines)
 
     # Institutions: an exact filter on d.institutions, or a text search when
@@ -1162,15 +1567,12 @@ def run_pipeline(
     retrieve_for_field_multi() calls otherwise.
     """
     plan = preprocess_query(query, api_key=api_key)
+    _keep_ambiguity_topics(plan)
+    _detach_topic_terms(plan)
+    topics = resolve_topics(plan, retriever)
 
     if retriever is None:
-        return AugmentedQueryPlan(
-            plan=plan,
-            resolved=[],
-            augmented_question=_build_augmented_question(
-                plan, [], available_columns=available_columns
-            ),
-        )
+        return augment_with_rag(plan, {}, available_columns=available_columns, topics=topics)
 
     rag_requests = build_rag_requests(plan)
     rag_results: Dict[str, Dict[str, List[str]]] = {}
@@ -1283,7 +1685,7 @@ def run_pipeline(
     return augment_with_rag(
         plan, rag_results, unresolved_terms=unresolved,
         db_miss_terms=db_miss_terms, scores=rag_scores,
-        available_columns=available_columns,
+        available_columns=available_columns, topics=topics,
     )
 
 

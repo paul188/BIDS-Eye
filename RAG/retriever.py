@@ -165,6 +165,21 @@ _GENERIC_IMAGING_TERMS = {
 # was raised for the same reason.
 _MIN_FUZZY_SCORE = 88
 
+# A term shorter than this may not stand for the start of a longer word in the
+# task field or the construct path: "emo" scored 90 against "emotion" and
+# became the construct emotion. Such a term must match whole words there.
+# Longer terms still match the start of a word ("trauma" finds
+# "post-traumatic").
+_MIN_PREFIX_TERM = 5
+
+# A construct linked to fewer task codes than this does not stand for the
+# construct: bids_to_ca_map.json links "emotion" and "anxiety" to the
+# meditation task alone, so "emo studies" filtered on meditation_general and
+# found nothing. Such a link still widens a term that also names a task, but
+# on its own it is ignored; the term goes on to fuzzy matching and, if that
+# misses too, becomes a text search.
+_MIN_CONSTRUCT_TASKS = 3
+
 # Codes that never narrow a search. entities_and_processing_keys is a bucket
 # for BIDS bookkeeping files (participants, channels, coordsystem, masks, ...)
 # that almost every dataset has, so a filter on it returns everything: "reward
@@ -295,7 +310,7 @@ def _embedding_fallback(field: str, term: str) -> List[str]:
 # These mirror the logic in RAG_postprocess.py but accept plain strings instead
 # of UserQueryEntities, and return a list of codes for a single term.
 
-def _aligned_to_words(term: str, label: str) -> bool:
+def _aligned_to_words(term: str, label: str, whole_words: bool = False) -> bool:
     """False if one string sits inside the other only part-way through a word.
 
     WRatio scores containment at 90 even inside a word: "als" in "cerebral
@@ -303,13 +318,15 @@ def _aligned_to_words(term: str, label: str) -> bool:
     - A label inside the term must cover whole words of the term.
     - The term inside a label must start at a word, but may end mid-word, so
       "t1" still finds "t1w" and "trauma" still finds "post-traumatic".
+    - With *whole_words*, the term inside a label must also end at a word:
+      "emo" no longer finds "emotion".
     Strings where neither contains the other (typos, spelling variants) are
     not affected. Both strings are expected in _fuzzy_form.
     """
     short, long = sorted((term, label), key=len)
     if short not in long:
         return True
-    must_end_at_word = short == label
+    must_end_at_word = whole_words or short == label
     for m in re.finditer(re.escape(short), long):
         starts = m.start() == 0 or not long[m.start() - 1].isalnum()
         ends = m.end() == len(long) or not long[m.end()].isalnum()
@@ -378,6 +395,8 @@ def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
     A named core does not get 4 and 5: "theory of mind task" is also listed
     under the whole social-cognition group, which is not what was asked.
     Only when none of 1 to 5 exists does a fuzzy construct match count.
+    A construct linked to fewer than _MIN_CONSTRUCT_TASKS tasks counts only
+    next to codes from 1 to 4, never alone.
     Returns None when nothing matched, so the caller goes on to fuzzy matching.
     """
     cat_leaves  = leaf_codes_db.get("task", {})
@@ -420,14 +439,18 @@ def _match_task_term(core: str) -> Optional[List[tuple[str, float]]]:
     for group in scaffold_groups:
         for code in group:
             codes.setdefault(code, 1.0)
+    construct: Dict[str, float] = {}
     for spelling in spellings:
         hits = _resolve_via_constructs(spelling, fuzzy=False)
         if hits:
-            for code, score in hits:
-                codes.setdefault(code, score)
+            construct = dict(hits)
             break
-    if not codes:
-        codes.update(_resolve_via_constructs(core))
+    if not codes and not construct:
+        construct = dict(_resolve_via_constructs(core))
+    if not codes and len(construct) < _MIN_CONSTRUCT_TASKS:
+        return None
+    for code, score in construct.items():
+        codes.setdefault(code, score)
     return list(codes.items()) or None
 
 
@@ -524,12 +547,13 @@ def _resolve_via_constructs(term: str, fuzzy: bool = True) -> List[tuple[str, fl
             # scored 85.5 and returned 51 unrelated tasks), and containment
             # must line up with words.
             processed = _fuzzy_form(term_lower)
+            whole_words = len(processed) < _MIN_PREFIX_TERM
             results = [
                 hit for hit in _process.extract(
                     term_lower, all_targets.keys(), scorer=_fuzz.WRatio,
                     processor=_fuzzy_form, score_cutoff=_MIN_FUZZY_SCORE, limit=None,
                 )
-                if _aligned_to_words(processed, _fuzzy_form(hit[0]))
+                if _aligned_to_words(processed, _fuzzy_form(hit[0]), whole_words)
             ]
             if results:
                 best_label = results[0][0]
@@ -671,6 +695,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
         Strings are compared in _fuzzy_form.
         """
         processed = _fuzzy_form(query)
+        whole_words = field == "task" and len(processed) < _MIN_PREFIX_TERM
         hits = _process.extract(
             query, all_targets.keys(), scorer=_fuzz.WRatio,
             processor=_fuzzy_form,
@@ -678,7 +703,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
         )
         return [
             hit for hit in hits
-            if _aligned_to_words(processed, _fuzzy_form(hit[0]))
+            if _aligned_to_words(processed, _fuzzy_form(hit[0]), whole_words)
         ][:20]
 
     results = fuzzy_hits(term_lower)

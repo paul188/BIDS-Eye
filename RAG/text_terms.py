@@ -24,6 +24,11 @@ Placeholder grammar
                   loose  every text field; only the rarest words of each term
                          are required (as many as still match a few
                          datasets), the others only raise the rank
+                  near   every text field; the words of each term must stand
+                         close together (NEAR_DISTANCE positions, either order
+                         for two words), so "social conflict" does not match a
+                         README that says "social" in one place and "conflict"
+                         in another
 
 Only [a-z0-9 |-] ever appears inside the quotes, so the placeholder survives
 being copied by a language model and can be inlined into SQL safely.
@@ -39,7 +44,14 @@ from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 MODE_ALL = "all"
 MODE_SHORT = "short"
 MODE_LOOSE = "loose"
-MODES = (MODE_ALL, MODE_SHORT, MODE_LOOSE)
+MODE_NEAR = "near"
+MODES = (MODE_ALL, MODE_SHORT, MODE_LOOSE, MODE_NEAR)
+
+# Largest gap between neighbouring words of a 'near' term, counted in word
+# positions: "conflicts in social settings" puts "social" two positions after
+# "conflict" ("in" keeps its position). 3 also matched "social cognition.
+# Simon conflict task": a full stop does not separate positions.
+NEAR_DISTANCE = 2
 
 # A word is a list of alphanumeric parts: "n-back" → ["n", "back"].
 Word = List[str]

@@ -1,0 +1,92 @@
+# Ambiguity questions: a word with several meanings in this catalogue, and a
+# qualifier that selects one of them. Written 2026-11-14 for the qualified
+# topics work (reports/Qualified topics plan.md).
+#
+# What they measure: whether the search returns the meaning that was asked
+# for (precision, wrong-sense rate) without losing the datasets that use other
+# words for it (recall over the judged pool).
+#
+# Caveats:
+#   - The heads are the ones in RAG/senses.yaml, so these questions test the
+#     mechanism, not how it generalises. The held-out split of queries.yaml
+#     checks that.
+#   - None of these questions may appear in a prompt or a few-shot example.
+#   - Ground truth: ambiguity_truth.json, judged over the union of what the
+#     compared runs returned plus a keyword pool. Recall is relative to that
+#     pool.
+#
+# Format as queries.yaml (eval_recall.py run --queries ambiguity_queries.yaml).
+# `wrong_sense_if` says which datasets count as the meaning not asked for.
+
+queries:
+  - id: amb_social_conflict
+    source: ambiguity
+    question: "give me all datasets that deal specifically with social conflicts"
+    relevant_if: "The study is about conflict, hostility, aggression, exclusion or discrimination between people or groups (interpersonal, couple, family or intergroup conflict), e.g. couples resolving a disagreement, provocation-aggression paradigms, ostracism or group discrimination tasks."
+    wrong_sense_if: "Conflict means cognitive/response conflict (Stroop, Simon, flanker, interference), decision or approach-avoidance conflict, or the word is used incidentally."
+
+  - id: amb_cognitive_conflict
+    source: ambiguity
+    question: "studies of cognitive conflict between competing responses"
+    relevant_if: "Participants perform a task that creates response or stimulus conflict (Stroop, Simon, flanker, conflict monitoring, interference control)."
+    wrong_sense_if: "Social, interpersonal or decision conflict, or a study that only mentions conflict incidentally."
+
+  - id: amb_emo_morgenroth
+    source: ambiguity
+    question: "give me all emo studies coauthored by Morgenroth"
+    relevant_if: "Elenor Morgenroth is an author and the study is about emotion."
+    wrong_sense_if: "Not about emotion."
+
+  - id: amb_cognitive_control
+    source: ambiguity
+    question: "datasets on cognitive control"
+    relevant_if: "The study is about cognitive or executive control: inhibitory control, task switching, proactive/reactive control, conflict tasks, or control is a main topic."
+    wrong_sense_if: "'Control' only refers to healthy control participants, control conditions, or motor control."
+
+  - id: amb_motor_control
+    source: ambiguity
+    question: "motor control experiments"
+    relevant_if: "The study is about the control of movement: reaching, grasping, grip force, posture, gait, motor adaptation, finger or hand movements as the object of study."
+    wrong_sense_if: "Only cognitive control, or control groups, or a motor response used just to record answers."
+
+  - id: amb_monetary_reward
+    source: ambiguity
+    question: "studies with monetary rewards"
+    relevant_if: "Participants can win or lose money in the task (monetary incentive delay, gambling, monetary reward learning or choice)."
+    wrong_sense_if: "Only social, food or other non-monetary rewards."
+
+  - id: amb_social_reward
+    source: ambiguity
+    question: "social reward processing"
+    relevant_if: "Rewards are social (approval, praise, smiles, social feedback, shared rewards with a partner), or the study compares social with non-social reward."
+    wrong_sense_if: "Only monetary or primary rewards, with no social reward condition."
+
+  - id: amb_induced_pain
+    source: ambiguity
+    question: "experimentally induced pain in healthy volunteers"
+    relevant_if: "Painful stimulation (heat, pressure, electrical, cold) is applied during the experiment, in participants who are not pain patients (or not only patients)."
+    wrong_sense_if: "Only chronic or clinical pain patients without experimental pain, or pain empathy/observation without the participant receiving pain."
+
+  - id: amb_social_stress
+    source: ambiguity
+    question: "psychosocial stress induction"
+    relevant_if: "A stressor based on social evaluation is applied (Trier Social Stress Test, Montreal Imaging Stress Task, public speaking, negative social evaluation)."
+    wrong_sense_if: "Only questionnaire measures of life or chronic stress, or physical stressors without social evaluation."
+
+  - id: amb_cognitive_load
+    source: ambiguity
+    question: "studies manipulating cognitive load"
+    relevant_if: "The task varies cognitive, working-memory or perceptual load across conditions."
+    wrong_sense_if: "Load in another sense (viral load, physical load) or no load manipulation."
+
+  - id: amb_emotion_induction
+    source: ambiguity
+    question: "emotion induction with films or music"
+    relevant_if: "Emotions or moods are induced in participants with film clips, movies or music."
+    wrong_sense_if: "Emotion recognition of faces, emotion regulation only, or film viewing without an emotional manipulation."
+
+  - id: amb_cortical_inhibition
+    source: ambiguity
+    question: "GABA and cortical inhibition"
+    relevant_if: "The study measures neural inhibition: GABA (e.g. MR spectroscopy), intracortical inhibition with TMS (SICI, LICI), or inhibitory neurotransmission."
+    wrong_sense_if: "Only behavioural response inhibition (stop-signal, go/no-go) without a neural-inhibition measure."

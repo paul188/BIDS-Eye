@@ -166,14 +166,72 @@ def _rarest_parts(parts: List[str]) -> List[str]:
     return [part for i, part in enumerate(parts) if i in chosen]
 
 
+# Exact word distances (`a <2> b`), written only by 'near' text searches;
+# `<->` inside a hyphenated word is not one of them.
+_DISTANCE_RE = re.compile(r"<\d+>")
+
+
+def _top_level_or(query: str) -> List[str]:
+    """Split a tsquery on the | signs outside parentheses."""
+    parts, depth, current = [], 0, ""
+    for char in query:
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        if char == "|" and depth == 0:
+            parts.append(current.strip())
+            current = ""
+        else:
+            current += char
+    parts.append(current.strip())
+    return [part for part in parts if part]
+
+
+def _strip_parentheses(query: str) -> str:
+    query = query.strip()
+    while query.startswith("(") and query.endswith(")"):
+        depth = 0
+        for index, char in enumerate(query):
+            depth += char == "("
+            depth -= char == ")"
+            if depth == 0 and index < len(query) - 1:
+                return query
+        query = query[1:-1].strip()
+    return query
+
+
+def relax_near(query: str) -> Optional[str]:
+    """A 'near' search with its words anywhere instead of close together.
+
+    "(social <1> conflict | … | conflict <2> social) | aggression"
+    → "(social & conflict) | aggression". Never fewer words: the qualifier
+    is what makes "social conflict" more than "conflict". None when the
+    query has no word distances.
+    """
+    if not _DISTANCE_RE.search(query):
+        return None
+    alternatives = []
+    for alternative in _top_level_or(query):
+        if _DISTANCE_RE.search(alternative):
+            first = _top_level_or(_strip_parentheses(alternative))[0]
+            alternative = "(" + re.sub(r"\s*<\d+>\s*", " & ", first) + ")"
+        alternatives.append(alternative)
+    return " | ".join(dict.fromkeys(alternatives))
+
+
 def relax_tsquery(query: str) -> Optional[str]:
     """The weaker form of a tsquery: its rarer half, anywhere in the text.
 
     "young & children" → "children" ("young" is a modifier, never kept alone);
     "evaluated & resective & surgery" → "resective & surgery";
-    "language:AB" → "language" (the README counts too).
+    "language:AB" → "language" (the README counts too);
+    a 'near' search → all its words anywhere (relax_near).
     None when relaxing changes nothing.
     """
+    near = relax_near(query)
+    if near is not None:
+        return near
     unscoped = _LABEL_RE.sub("", query)
     parts = [f"({p})" if ("|" in p and not p.startswith("(")) else p
              for p in _top_level_and(unscoped)]
@@ -182,7 +240,7 @@ def relax_tsquery(query: str) -> Optional[str]:
 
 
 def query_words(query: str) -> List[str]:
-    words = _WORD_RE.findall(_LABEL_RE.sub("", query).replace("<->", " "))
+    words = _WORD_RE.findall(re.sub(r"<(?:-|\d+)>", " ", _LABEL_RE.sub("", query)))
     return list(dict.fromkeys(words))
 
 
@@ -192,10 +250,42 @@ def _negated_spans(sql: str) -> List[Tuple[int, int]]:
 
 
 _README_ONLY = "\x00readme"
+# Markers for the two weaker forms of a topic search (preprocess.py, topics):
+# its words anywhere instead of together, and a match on a meaning the
+# question excluded. Each is followed by the words, e.g. "\x00apart social conflict".
+_APART = "\x00apart"
+_EXCLUDED = "\x00excluded"
+
+
+def _marked_terms(words: List[str], marker: str) -> List[str]:
+    return list(dict.fromkeys(
+        t for w in words if w.startswith(marker) for t in w[len(marker):].split() if t))
+
+
+def _shown(terms: List[str], limit: int = 3) -> str:
+    return ", ".join(terms[:limit]) + (" …" if len(terms) > limit else "")
 
 
 def partial_reason(words: List[str]) -> str:
     """Card text for a probable text match."""
+    apart = _marked_terms(words, _APART)
+    excluded = _marked_terms(words, _EXCLUDED)
+    words = [w for w in words if not w.startswith((_APART, _EXCLUDED))]
+    # One text serves every dataset at this level, so the topic's two weaker
+    # forms are named as alternatives: either may be why a dataset is here.
+    loose = []
+    if apart:
+        loose.append(f"the words {_shown(apart)} occur, but not together")
+    if excluded:
+        loose.append(f"a related term occurs next to a meaning the search excludes "
+                     f"({_shown(excluded)})")
+    reasons = [", or ".join(loose)] if loose else []
+    if words or not reasons:
+        reasons.append(_text_reason(words))
+    return "; ".join(reasons)
+
+
+def _text_reason(words: List[str]) -> str:
     missing = [w for w in words if not w.startswith(_README_ONLY)]
     if not missing:
         # _README_ONLY + the words whose scope was widened, e.g. "\x00readme harvard".
@@ -221,16 +311,41 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
     spans = _negated_spans(sql)
     words: List[str] = []
     relaxed_atoms: List[str] = []
-    for match in _TSQUERY_RE.finditer(sql):
-        inside_not = match.group("negated") or any(s < match.start() < e for s, e in spans)
-        if inside_not:
+    matches = list(_TSQUERY_RE.finditer(sql))
+
+    def negated(match: re.Match) -> bool:
+        return bool(match.group("negated")) or any(s < match.start() < e for s, e in spans)
+
+    # A topic search excludes the meanings it does not want:
+    #   phrase OR (alternatives AND NOT unwanted meanings).
+    # Dropping that NOT is a weaker form too, so a dataset that matches an
+    # alternative and also an unwanted meaning moves down instead of out.
+    excluded_words = [w for m in matches if negated(m) for w in query_words(m.group("query"))]
+    # In a topic condition (a 'near' search or such an exclusion) only the
+    # first text search, the user's own phrase, has a weaker form of its
+    # words. The alternatives that follow are what the phrase was widened
+    # with; loosening them too ("interpersonal & conflict" anywhere) brought
+    # back what the phrase was meant to exclude.
+    topic = bool(excluded_words) or any(_DISTANCE_RE.search(m.group("query")) for m in matches)
+    first = True
+    for match in matches:
+        if negated(match):
             continue
-        relaxed = relax_tsquery(match.group("query"))
+        query = match.group("query")
+        relaxed = relax_tsquery(query) if (first or not topic) else None
+        first = False
         if relaxed is None:
-            continue
-        dropped = set(query_words(match.group("query"))) - set(query_words(relaxed))
-        # No word dropped: only the scope was widened, to the whole README.
-        words.extend(sorted(dropped) or [f"{_README_ONLY} {' '.join(query_words(relaxed))}"])
+            if not excluded_words:
+                continue
+            relaxed = query
+            words.append(f"{_EXCLUDED} {' '.join(excluded_words)}")
+        elif relax_near(query) is not None:
+            apart = [w for part in _top_level_or(relaxed) if "&" in part for w in query_words(part)]
+            words.append(f"{_APART} {' '.join(apart)}")
+        else:
+            dropped = set(query_words(query)) - set(query_words(relaxed))
+            # No word dropped: only the scope was widened, to the whole README.
+            words.extend(sorted(dropped) or [f"{_README_ONLY} {' '.join(query_words(relaxed))}"])
         relaxed_atoms.append(f"{match.group('alias')}.{match.group('column')} @@ "
                              f"TO_TSQUERY('english', '{relaxed}')")
     if not relaxed_atoms:
