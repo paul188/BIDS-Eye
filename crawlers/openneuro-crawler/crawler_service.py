@@ -15,6 +15,10 @@ Configuration (environment variables):
     CRAWL_INTERVAL_HOURS   How often to restart the full cycle (default: 1)
     CRAWL_DELAY_SECONDS    Sleep between consecutive datasets (default: 30)
 
+After indexing, a cycle runs the post-crawl steps for the datasets it indexed
+(post_crawl.py): paper lookup, then a one-sentence description from each
+primary paper's abstract. See post_crawl.py for their switches.
+
 The crawler state dict is module-level so FastAPI can import and expose it:
     from crawler_service import crawler_state
 """
@@ -79,14 +83,17 @@ def _load_accessions() -> list[str]:
 
 # ─── Crawl logic ───────────────────────────────────────────────────────────────
 
-async def _crawl_one(accession_id: str, delay_seconds: int) -> None:
-    """Index a single dataset, honouring the concurrency semaphore."""
+async def _crawl_one(accession_id: str, delay_seconds: int) -> bool:
+    """Index a single dataset, honouring the concurrency semaphore.
+    True when it was indexed."""
+    indexed = False
     async with _crawl_semaphore:
         crawler_state["current_accession"] = accession_id
         log.info("[crawler] Indexing %s …", accession_id)
         try:
             from remote.openneuro import index_openneuro
             await index_openneuro(accession_id)
+            indexed = True
             crawler_state["indexed_count"] += 1
             print(
                 f"[DONE] {accession_id} | "
@@ -112,6 +119,7 @@ async def _crawl_one(accession_id: str, delay_seconds: int) -> None:
         if delay_seconds > 0:
             log.debug("[crawler] Sleeping %ds before next dataset …", delay_seconds)
             await asyncio.sleep(delay_seconds)
+    return indexed
 
 
 async def run_crawl_cycle() -> None:
@@ -141,11 +149,16 @@ async def run_crawl_cycle() -> None:
     crawler_state["last_run_started"] = datetime.now(timezone.utc).isoformat()
     log.info("[crawler] Starting crawl cycle: %d dataset(s)", len(accessions))
 
+    indexed: list[str] = []
     try:
         for accession_id in accessions:
             if accession_id in crawler_state["queue"]:
                 crawler_state["queue"].remove(accession_id)
-            await _crawl_one(accession_id, delay)
+            if await _crawl_one(accession_id, delay):
+                indexed.append(accession_id)
+        # Papers and paper summaries for what was just indexed. Never raises.
+        from post_crawl import run_post_crawl
+        await run_post_crawl(indexed)
     finally:
         crawler_state["running"] = False
         crawler_state["queue"] = []
