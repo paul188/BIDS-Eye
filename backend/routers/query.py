@@ -508,6 +508,10 @@ async def query_datasets(
     try:
         async with session.begin_nested():
             session.add(UserQuery(github_login=_auth["sub"], question=body.question))
+        # The savepoint only protects the response from a failed insert. Without
+        # this commit the row is rolled back when the session closes (get_db
+        # never commits), which left user_queries empty from June 2026 on.
+        await session.commit()
     except Exception:
         pass  # stale/legacy JWT sub not in users table — don't crash the response
 
