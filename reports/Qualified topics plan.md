@@ -461,9 +461,28 @@ music", or requires a word like "manipulating"; such parses return 0. The
 same question gives different parses between runs, so single runs move by
 ±8 points on small question sets.
 
+### Held-out check (commit bc44114, 2026-11-14)
+
+Run once, averages only, per `benchmarks/recall/held_out_questions.txt`.
+Baseline: production image 96c719ec (its search files identical to
+bc44114^); topics: the same image with the bc44114 files. 56 scorable
+questions, no fallbacks or errors in either run.
+
+| | Baseline | Topics |
+|---|---|---|
+| Recall | 48% | 52% |
+| Recall@20 | 44% | 48% |
+| nDCG@10 | 42% | 47% |
+| Precision | 67% | 68% |
+| Questions with nothing found | 20 | 16 |
+
+Paired: recall@20 +4.3 points (95% bootstrap −2.2 to +10.5), nDCG@20 +5.1
+(−1.5 to +11.3); better on 10 questions, worse on 3. The direction matches
+the development and ambiguity results; the interval still includes zero.
+
 ### Not done yet
 
 - A full 167-question run with the final rule (only the 24 affected
-  questions were rerun), and the held-out check before deploying.
+  questions were rerun).
 - Stage 5 (profiles, gloss embedding, re-ranker): needs approval to send
   metadata to Gemini or an embedding API.
