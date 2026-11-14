@@ -1,0 +1,20 @@
+# Secret scanning rules for BIDS-Eye.
+# Used by CI (.github/workflows/ci.yml) and, when gitleaks is installed
+# locally, by the pre-commit hook (.githooks/pre-commit).
+#
+# The default gitleaks rules cover API keys and tokens (Google/Gemini,
+# Anthropic, GitHub, AWS, private keys, ...). The rule below adds what they
+# miss: server runbooks pasted into the repository.
+#
+# To accept one line on purpose, end it with the comment  gitleaks:allow
+
+title = "BIDS-Eye"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "ssh-to-raw-ip"
+description = "ssh/scp/rsync command addressed to user@<IP address>"
+regex = '''\b(?:ssh|scp|sftp|rsync)\b[^\n]{0,200}?\b[A-Za-z0-9._-]+@(?:\d{1,3}\.){3}\d{1,3}\b'''
+keywords = ["ssh", "scp", "sftp", "rsync"]

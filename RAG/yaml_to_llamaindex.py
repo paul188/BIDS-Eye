@@ -2,14 +2,13 @@ import hashlib
 import json
 import re as _re
 from collections import defaultdict
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
 try:
-    import numpy as _np
+    import numpy as _np  # noqa: F401  (availability probe)
     _NUMPY_OK = True
 except ImportError:
     _NUMPY_OK = False

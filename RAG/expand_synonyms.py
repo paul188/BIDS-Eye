@@ -622,7 +622,7 @@ def main() -> None:
     if not anthropic_key and not gemini_key:
         sys.exit("Error: set ANTHROPIC_API_KEY or GEMINI_API_KEY before running.")
 
-    provider = f"Claude Sonnet" if anthropic_key else f"Gemini ({args.gemini_model})"
+    provider = "Claude Sonnet" if anthropic_key else f"Gemini ({args.gemini_model})"
     print(f"LLM backend : {provider}")
     print(f"Mode        : {args.mode}")
 

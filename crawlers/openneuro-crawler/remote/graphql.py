@@ -22,7 +22,7 @@ import asyncio
 import logging
 from uuid import uuid4
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from db.db import async_session_maker

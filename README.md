@@ -140,6 +140,28 @@ RAG/                         Vocabulary (value_mappings.yaml) and term-to-code r
 LLM_preprocessor/            Intent parsing and the shared LLM client
 ```
 
+## Checks
+
+Every push to `main` and every pull request runs [`.github/workflows/ci.yml`](./.github/workflows/ci.yml):
+a secret scan (gitleaks, rules in [`.gitleaks.toml`](./.gitleaks.toml)), ruff's pyflakes rules,
+the backend tests, Semgrep (new findings only) and the frontend build.
+
+A pre-commit hook stops secrets and server access details before they are committed.
+Enable it once per clone:
+
+```bash
+git submodule update --init      # BIDS-SQL, needed by the backend and its tests
+git config core.hooksPath .githooks
+```
+
+Run the backend tests locally (no database needed):
+
+```bash
+cd backend
+METADATA_DB_NAME=x METADATA_DB_USER=x METADATA_DB_PASSWORD=x METADATA_DB_HOST=localhost \
+  python -m pytest -q tests
+```
+
 ## API Surface
 
 The backend exposes endpoints for:

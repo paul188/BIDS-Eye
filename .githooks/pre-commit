@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Stops a commit that would add a secret or a server runbook.
+#
+# Enable once per clone:   git config core.hooksPath .githooks
+# Skip for one commit:     git commit --no-verify
+# Accept one line:         end it with the comment  gitleaks:allow
+#
+# Needs only git and grep. If gitleaks is installed it runs as well, with the
+# rules in .gitleaks.toml; CI runs the same rules on every push.
+
+set -u
+
+# name<TAB>extended regex, checked against the lines a commit adds
+RULES=$(cat <<'EOF'
+private key block	-----BEGIN [A-Z ]*PRIVATE KEY-----
+ssh to a raw IP address	(^|[^A-Za-z0-9_])(ssh|scp|sftp|rsync)[[:space:]][^#]*[A-Za-z0-9._-]+@([0-9]{1,3}\.){3}[0-9]{1,3}
+Google / Gemini API key	AIza[0-9A-Za-z_-]{35}
+Anthropic API key	sk-ant-[A-Za-z0-9_-]{20,}
+GitHub token	(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{50,})
+AWS access key id	AKIA[0-9A-Z]{16}
+EOF
+)
+
+found=0
+
+# Files that should never be committed, whatever they contain.
+while IFS= read -r -d '' path; do
+    case "$(basename "$path")" in
+        .env|*.pem|id_rsa|id_ed25519|id_ecdsa|*_key)
+            echo "pre-commit: refusing to commit '$path' (looks like a secret or key file)" >&2
+            found=1 ;;
+    esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+# Lines the commit adds.
+while IFS= read -r -d '' path; do
+    added=$(git diff --cached -U0 --no-color --diff-filter=ACMR -- "$path" \
+            | grep -a '^+' | grep -a -v '^+++' | grep -a -v 'gitleaks:allow' || true)
+    [ -n "$added" ] || continue
+    while IFS=$'\t' read -r name regex; do
+        [ -n "$regex" ] || continue
+        if printf '%s\n' "$added" | grep -a -E -q -e "$regex"; then
+            count=$(printf '%s\n' "$added" | grep -a -E -c -e "$regex")
+            echo "pre-commit: $path adds $count line(s) matching: $name" >&2
+            found=1
+        fi
+    done <<< "$RULES"
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if command -v gitleaks >/dev/null 2>&1; then
+    if ! gitleaks git --pre-commit --staged --redact --no-banner >&2; then
+        found=1
+    fi
+fi
+
+if [ "$found" -ne 0 ]; then
+    cat >&2 <<'EOF'
+
+Commit stopped: the staged changes look like they contain a secret or server
+access details. Remove them, or keep them in a file that is not tracked.
+If a line is a false alarm, end it with the comment  gitleaks:allow
+(or commit once with --no-verify).
+EOF
+    exit 1
+fi
+exit 0

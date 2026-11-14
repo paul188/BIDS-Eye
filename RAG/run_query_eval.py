@@ -10,7 +10,6 @@ Runs a curated set of queries against the local API and reports:
 """
 
 import json, time, sys, re, urllib.request, urllib.error
-from datetime import datetime
 
 API = "http://localhost:8000/api/query"
 
@@ -519,7 +518,6 @@ def evaluate(q_spec, response):
 
     sql = (response.get("translation") or {}).get("sql", "")
     count = len(response.get("datasets", []))
-    message = response.get("message", "")
 
     # Zero result check
     if q_spec["expected_min"] > 0 and count == 0:
