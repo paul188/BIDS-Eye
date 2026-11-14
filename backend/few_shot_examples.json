@@ -615,7 +615,7 @@
     },
     {
       "question": "Find datasets with at least 25 healthy volunteer participants.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'healthy_volunteer' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 25",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_volunteer') >= 25",
       "pattern": "healthy_volunteer_count",
       "meta": {
         "datatype": [],
@@ -626,13 +626,12 @@
         ]
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
       "question": "Show datasets with more than 10 female participants diagnosed with autism spectrum disorder.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'autism_spectrum_disorder' AND p.sex = 'female' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 10 LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'autism_spectrum_disorder' AND p2.sex = 'female') > 10",
       "pattern": "participant_count_threshold",
       "meta": {
         "datatype": [],
@@ -643,8 +642,7 @@
         ]
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
@@ -999,7 +997,7 @@
     },
     {
       "question": "Which datasets have at least 5 male participants who are ambidextrous or mixed-handed?",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.handedness = 'ambidextrous' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'male' AND p2.handedness = 'ambidextrous') >= 5",
       "pattern": "participant_attribute_count",
       "meta": {
         "datatype": [],
@@ -1008,8 +1006,7 @@
         "diagnosis": []
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
@@ -1070,7 +1067,7 @@
     },
     {
       "question": "Find datasets with more female than male participants",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id GROUP BY d.id HAVING (SELECT COUNT(*) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'female') > (SELECT COUNT(*) FROM bids_participants p3 WHERE p3.dataset_id = d.id AND p3.sex = 'male')",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(*) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'female') > (SELECT COUNT(*) FROM bids_participants p3 WHERE p3.dataset_id = d.id AND p3.sex = 'male')",
       "pattern": "more_female",
       "meta": {
         "datatype": [],
@@ -1079,8 +1076,7 @@
         "diagnosis": []
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
@@ -2239,7 +2235,7 @@
     },
     {
       "question": "Which studies include participants with ancestry information recorded?",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.extra->>'ethnicity' IS NOT NULL GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'ethnicity' IS NOT NULL) GROUP BY d.id",
       "pattern": "json_attribute_filter",
       "meta": {
         "datatype": [],
@@ -2248,7 +2244,7 @@
         "diagnosis": []
       },
       "structure": [
-        "participant_join",
+        "exists",
         "json"
       ]
     },
@@ -2512,7 +2508,7 @@
   "metadata_query": [
     {
       "question": "List all datasets that include information about the participant's education level in the metadata.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.extra->>'education_years' IS NOT NULL GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'education_years' IS NOT NULL) GROUP BY d.id",
       "pattern": "metadata_query",
       "meta": {
         "datatype": [],
@@ -2521,13 +2517,13 @@
         "diagnosis": []
       },
       "structure": [
-        "participant_join",
+        "exists",
         "json"
       ]
     },
     {
       "question": "Which datasets include participants who reported concerns about their eating habits?",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.extra->>'concern_dieting' IS NOT NULL GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'concern_dieting' IS NOT NULL) GROUP BY d.id",
       "pattern": "participant_metadata_filter",
       "meta": {
         "datatype": [],
@@ -2536,7 +2532,7 @@
         "diagnosis": []
       },
       "structure": [
-        "participant_join",
+        "exists",
         "json"
       ]
     },
@@ -2647,7 +2643,7 @@
     },
     {
       "question": "Show datasets where the MRI manufacturer is specified and participants have a recorded full scale iq.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' IS NOT NULL) AND p.extra->>'iq' IS NOT NULL GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'Manufacturer' IS NOT NULL) AND EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.extra->>'iq' IS NOT NULL) GROUP BY d.id",
       "pattern": "metadata_iq_filter",
       "meta": {
         "datatype": [],
@@ -2657,7 +2653,6 @@
       },
       "structure": [
         "exists",
-        "participant_join",
         "json"
       ]
     }
@@ -2966,7 +2961,7 @@
     },
     {
       "question": "Which datasets have at least 3 male participants with autism spectrum disorder?",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.diagnosis = 'autism_spectrum_disorder' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 3",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'male' AND p2.diagnosis = 'autism_spectrum_disorder') >= 3",
       "pattern": "participant_filter_sex_diagnosis",
       "meta": {
         "datatype": [],
@@ -2977,13 +2972,12 @@
         ]
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
       "question": "Show datasets that have at least 10 male participants diagnosed with anxiety disorder.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis IN ('anxiety_disorder','anxiety_general') AND p.sex = 'male' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 10",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('anxiety_disorder','anxiety_general') AND p2.sex = 'male') >= 10",
       "pattern": "participant_threshold",
       "meta": {
         "datatype": [],
@@ -2995,8 +2989,7 @@
         ]
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
@@ -3017,7 +3010,7 @@
     },
     {
       "question": "List datasets containing at least 3 male participants diagnosed with prosopagnosia.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.diagnosis = 'prosopagnosia' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 3 LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'male' AND p2.diagnosis = 'prosopagnosia') >= 3",
       "pattern": "clinical_participant_count",
       "meta": {
         "datatype": [],
@@ -3028,13 +3021,12 @@
         ]
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
       "question": "Find datasets with more than 10 male participants who are ambidextrous or mixed-handed.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL LEFT JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'male' AND p.handedness = 'ambidextrous' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) > 10",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'male' AND p2.handedness = 'ambidextrous') > 10",
       "pattern": "participant_filter_count",
       "meta": {
         "datatype": [],
@@ -3043,13 +3035,12 @@
         "diagnosis": []
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
       "question": "Show me datasets that include data from female participants with autism spectrum disorder, provided there are at least 5 such participants.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.diagnosis = 'autism_spectrum_disorder' AND p.sex = 'female' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5 LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'autism_spectrum_disorder' AND p2.sex = 'female') >= 5",
       "pattern": "participant_count",
       "meta": {
         "datatype": [],
@@ -3060,13 +3051,12 @@
         ]
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
       "question": "Find datasets with at least 5 female participants who are ambidextrous or mixed-handed.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL JOIN bids_participants p ON p.dataset_id = d.id WHERE p.sex = 'female' AND p.handedness = 'ambidextrous' GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 5 LIMIT 50",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'female' AND p2.handedness = 'ambidextrous') >= 5",
       "pattern": "participant_attribute_count",
       "meta": {
         "datatype": [],
@@ -3075,8 +3065,7 @@
         "diagnosis": []
       },
       "structure": [
-        "having",
-        "participant_join"
+        "having"
       ]
     },
     {
