@@ -226,7 +226,7 @@ def _age_label(node) -> Optional[str]:
 
 
 _SYMBOLS = {exp.GT: ">", exp.GTE: "≥", exp.LT: "<", exp.LTE: "≤", exp.EQ: "="} if exp else {}
-_COUNTED = {"subject": "Subjects", "session": "Sessions", "run": "Runs"}
+_COUNTED = {"subject": "Subjects", "participant_id": "Subjects", "session": "Sessions", "run": "Runs"}
 
 
 def _bound(node, matches) -> Optional[str]:
@@ -245,14 +245,29 @@ def _bound(node, matches) -> Optional[str]:
 
 
 def _count_chip(node) -> Optional[Tuple[str, str]]:
-    """('Subjects', '≥ 40') for COUNT(DISTINCT o.subject) >= 40; also sessions, runs."""
+    """('Subjects', '≥ 40') for COUNT(DISTINCT o.subject) >= 40; also sessions, runs.
+
+    The count may sit inside the compared expression: "at least 20 adolescents"
+    comes back as (SELECT COUNT(DISTINCT p.participant_id) FROM bids_participants
+    p WHERE ... p.age >= 10 AND p.age <= 19) >= 20, and "at least 100
+    participants" as GREATEST(COUNT(DISTINCT o.subject), (SELECT COUNT ...)) >= 100.
+    A count limited to an age range says so: ('Subjects', '≥ 20 aged 10–19').
+    """
     for count in node.find_all(exp.Count):
         columns = [c.name.lower() for c in count.find_all(exp.Column)]
         field_name = next((_COUNTED[c] for c in columns if c in _COUNTED), None)
-        if field_name:
-            label = _bound(node, lambda left: isinstance(left, exp.Count) and left is count)
-            if label:
-                return field_name, label
+        if not field_name:
+            continue
+        label = _bound(node, lambda left: left is count
+                       or any(inner is count for inner in left.find_all(exp.Count)))
+        if not label:
+            continue
+        scope = count.find_ancestor(exp.Select)
+        if scope is not None and scope is not node and scope.find_ancestor(exp.Subquery) is not None:
+            age = _age_label(scope.args.get("where") or scope)
+            if age:
+                label = f"{label} aged {age}"
+        return field_name, label
     return None
 
 

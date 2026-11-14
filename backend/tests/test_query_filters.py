@@ -76,6 +76,28 @@ def test_each_top_level_condition_becomes_one_chip():
     assert chips["h0"].label == "≥ 40"
 
 
+def test_count_of_participants_in_an_age_range_keeps_its_bound():
+    # Live SQL for "identify datasets containing at least 20 adolescents"
+    # (2026-11-14): the chip read "Age · 10–19" and dropped the "≥ 20".
+    sql = (_HEAD + "GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p.participant_id) "
+           "FROM bids_participants AS p WHERE p.dataset_id = d.id "
+           "AND p.age >= 10 AND p.age <= 19) >= 20")
+    chips = _by_id(sql)
+    assert list(chips) == ["h0"]
+    assert chips["h0"].kind == "subjects"
+    assert chips["h0"].field == "Subjects"
+    assert chips["h0"].label == "≥ 20 aged 10–19"
+
+
+def test_count_from_both_sources_keeps_its_bound():
+    sql = (_HEAD + "GROUP BY d.id HAVING GREATEST(COUNT(DISTINCT o.subject), "
+           "(SELECT COUNT(DISTINCT p.participant_id) FROM bids_participants AS p "
+           "WHERE p.dataset_id = d.id)) >= 100")
+    chips = _by_id(sql)
+    assert chips["h0"].field == "Subjects"
+    assert chips["h0"].label == "≥ 100"
+
+
 def test_negated_condition_and_one_sided_age():
     chips = _by_id(_sql(MODALITY, NO_EEG, ADULTS))
     assert chips["w1"].negated is True
