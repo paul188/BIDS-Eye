@@ -92,7 +92,10 @@ _FIELD_COLUMNS = {
     "name": "Name",
     "doi": "DOI",
     "study_design": "Study design",
+    "source_type": "Source",
 }
+# Stored values shown under a friendlier name.
+_FIELD_VALUE_LABELS = {"openneuro": "OpenNeuro", "local": "Local upload"}
 
 
 @dataclass
@@ -427,6 +430,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     for column, field_name in _FIELD_COLUMNS.items():
         values = _literals_for(node, [column])
         if values:
+            values = [_FIELD_VALUE_LABELS.get(v.lower(), v) for v in values]
             return chip("field", field_name, _short_list(values, " or "))
 
     if phrases:
@@ -442,6 +446,66 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     return QueryFilter(id=chip_id, kind="other", field="Condition",
                        label=(sql[:48] + "…") if len(sql) > 48 else sql,
                        negated=negated, detail=sql)
+
+
+# ── Sort order and limit -> one chip ──────────────────────────────────────────
+
+SORT_CHIP_ID = "o0"
+
+# (column, words when descending, words when ascending)
+_SORT_KEYS = (
+    (("subject_count", "subject", "participant_id"), "most participants first", "fewest participants first"),
+    (("size_bytes",), "largest size first", "smallest size first"),
+    (("publish_date",), "newest first", "oldest first"),
+    (("downloads",), "most downloaded first", "least downloaded first"),
+    (("views",), "most viewed first", "least viewed first"),
+    (("name",), "by name, Z–A", "by name"),
+)
+
+
+def _sort_key_label(ordered) -> str:
+    key = ordered.this
+    desc = bool(ordered.args.get("desc"))
+    columns = {c.name.lower() for c in key.find_all(exp.Column)}
+    for names, if_desc, if_asc in _SORT_KEYS:
+        if columns & set(names):
+            return if_desc if desc else if_asc
+    text = key.sql(dialect="postgres")
+    text = (text[:40] + "…") if len(text) > 40 else text
+    return f"by {text}" + (", highest first" if desc else "")
+
+
+def _limit_value(tree) -> Optional[str]:
+    limit = tree.args.get("limit")
+    if limit is None:
+        return None
+    value = limit.args.get("expression") or limit.this
+    return value.this if isinstance(value, exp.Literal) else None
+
+
+def describe_order(tree) -> Optional[QueryFilter]:
+    """('Sorted', 'most participants first · top 1') for the query's ORDER BY and LIMIT.
+
+    "find the largest dataset in openneuro" shows only one dataset; without
+    this chip nothing said it was the top one of a ranking. Removing it shows
+    every matching dataset in the usual order.
+    """
+    order = tree.args.get("order")
+    labels = list(dict.fromkeys(_sort_key_label(o) for o in (order.expressions if order else [])))
+    top = _limit_value(tree)
+    if not labels and top is None:
+        return None
+    if (tree.args.get("where") is None and tree.args.get("having") is None
+            and labels == ["by name"] and top == "200"):
+        return None  # the fallback sample (sql_rewriter.FALLBACK_SQL), not a ranking
+    if labels:
+        field_name, label = "Sorted", ", then ".join(labels[:2])
+        if top is not None:
+            label += f" · top {top}"
+    else:
+        field_name, label = "Limit", f"first {top}"
+    return QueryFilter(id=SORT_CHIP_ID, kind="sort", field=field_name, label=label,
+                       detail="Remove to see every matching dataset, not only the top of this order.")
 
 
 def _is_topic(node) -> bool:
@@ -537,6 +601,13 @@ def describe(sql: Optional[str]) -> List[QueryFilter]:
             text = node.sql(dialect="postgres")
             chips.append(QueryFilter(id=chip_id, kind="other", field="Condition",
                                      label=text[:48], detail=text))
+    try:
+        sort = describe_order(tree)
+    except Exception as exc:
+        log.debug("query_filters: could not describe the order (%s)", exc)
+        sort = None
+    if sort is not None:
+        chips.append(sort)
     return chips
 
 
@@ -552,6 +623,9 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
     tree = _parse(sql)
     if tree is None:
         return None
+    if SORT_CHIP_ID in drop:
+        for key in ("order", "limit", "offset"):
+            tree.set(key, None)
     exclusions = {i[:-len(EXCLUSION_SUFFIX)] for i in drop if i.endswith(EXCLUSION_SUFFIX)}
     for prefix, clause in (("w", "where"), ("h", "having")):
         node = tree.args.get(clause)

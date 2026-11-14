@@ -317,3 +317,28 @@ def test_attach_snippets_without_the_column_does_nothing():
     datasets = [_dataset(1)]
     asyncio.run(query_router._attach_snippets(session, datasets, "x"))
     assert session.calls == [] and datasets[0].snippet is None
+
+
+def test_source_chip_reads_openneuro():
+    chips = _by_id(_sql("d.source_type = 'openneuro'"))
+    assert (chips["w0"].field, chips["w0"].label) == ("Source", "OpenNeuro")
+
+
+def test_order_and_limit_become_one_removable_chip():
+    largest = ("GROUP BY d.id ORDER BY GREATEST(COUNT(DISTINCT o.subject), (SELECT COUNT(DISTINCT "
+               "p.participant_id) FROM bids_participants AS p WHERE p.dataset_id = d.id)) DESC LIMIT 1")
+    sql = _HEAD + "WHERE d.source_type = 'openneuro' " + largest
+    chips = _by_id(sql)
+    assert list(chips) == ["w0", "o0"]
+    assert chips["o0"].kind == "sort"
+    assert (chips["o0"].field, chips["o0"].label) == ("Sorted", "most participants first · top 1")
+
+    by_size = _by_id(_HEAD + "GROUP BY d.id ORDER BY d.size_bytes DESC NULLS LAST LIMIT 3")
+    assert by_size["o0"].label == "largest size first · top 3"
+    assert _by_id(_HEAD + "GROUP BY d.id LIMIT 5")["o0"].label == "first 5"
+    assert "o0" not in _by_id(_sql(TEXT))
+
+    widened = qf.remove(sql, ["o0"])
+    assert "ORDER BY" not in widened and "LIMIT" not in widened
+    assert "source_type" in widened
+    assert qf.remove(sql, ["w0"]).rstrip().endswith("LIMIT 1")

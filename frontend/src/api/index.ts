@@ -55,8 +55,9 @@ export interface QueryFilter {
   /** Position in the original query ("w0", "h0"); pass back to refine. */
   id: string
   /** 'topic': a qualified subject searched as one unit; 'sense': the meanings it
-   *  excludes (id = topic id + "n"; removing it removes only the exclusion). */
-  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'field' | 'topic' | 'sense' | 'other'
+   *  excludes (id = topic id + "n"; removing it removes only the exclusion);
+   *  'sort': the query's ORDER BY / LIMIT (id "o0"; removing it shows every match). */
+  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'field' | 'topic' | 'sense' | 'sort' | 'other'
   field: string
   label: string
   negated: boolean
