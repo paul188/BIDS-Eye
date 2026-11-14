@@ -289,12 +289,33 @@ class SqlRewriteService:
                 "         array_position(CAST(:_rr_top AS uuid[]), page_result.id),\n"
                 f"         {tail}\n"
             )
+        if not order_clause:
+            order_clause = self._stable_page_order(base_sql, ranked)
         sql = (
             f"SELECT * FROM (\n{ordered}\n) AS page_result\n"
             f"{order_clause}"
             "LIMIT :_limit OFFSET :_offset"
         )
         return sql, params
+
+    @staticmethod
+    def _stable_page_order(base_sql: str, ranked: bool) -> str:
+        """The page's ORDER BY when neither the tier nor the re-ranker sets one.
+
+        Postgres does not promise to keep a subquery's order, and LIMIT/OFFSET
+        over an unordered or tied result can repeat or skip rows between
+        pages. So the page orders itself, with the dataset id as the last key.
+        A query whose own top-level ORDER BY the user asked for ("the largest
+        first") keeps that order: re-sorting it here would undo the request.
+        """
+        if ranked:
+            return ("ORDER BY page_result.relevance_score + page_result.text_rank DESC, "
+                    "page_result.subject_count DESC NULLS LAST, page_result.id\n")
+        if _has_top_level_order(base_sql):
+            return ""
+        if "subject_count" in base_sql:
+            return "ORDER BY page_result.subject_count DESC NULLS LAST, page_result.id\n"
+        return "ORDER BY page_result.id\n"
 
     def _normalize_sql(self, sql: str) -> str:
         sql = sql.strip().rstrip(";").strip()
@@ -744,8 +765,19 @@ class SqlRewriteService:
             f"  FROM (\n{base_sql}\n) AS base{text_join}\n"
             ") AS ranked\n"
             "ORDER BY ranked.relevance_score + ranked.text_rank DESC, "
-            "ranked.subject_count DESC NULLS LAST"
+            "ranked.subject_count DESC NULLS LAST, ranked.id"
         )
+
+
+def _has_top_level_order(sql: str) -> bool:
+    """True when the outermost SELECT has its own ORDER BY."""
+    if parse_one is not None:
+        try:
+            return parse_one(sql, read="postgres").args.get("order") is not None
+        except Exception:
+            pass
+    # Without a parse: an ORDER BY after the last closing parenthesis.
+    return re.search(r"\bORDER\s+BY\b", sql[sql.rfind(")") + 1:], re.IGNORECASE) is not None
 
 
 sql_rewrite_service = SqlRewriteService()

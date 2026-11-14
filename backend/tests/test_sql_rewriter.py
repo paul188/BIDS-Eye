@@ -143,3 +143,40 @@ def test_already_guarded_and_non_number_casts_are_left_alone() -> None:
     )
     sql = SERVICE.rewrite_generated_sql(guarded, "q").sql
     assert sql.count("CASE WHEN") == 1
+
+
+def _outer_order(page_sql: str) -> str:
+    """The ORDER BY of the page query itself (after the last subquery)."""
+    tail = page_sql[page_sql.rfind(") AS page_result") + len(") AS page_result"):]
+    return tail.split("LIMIT")[0]
+
+
+def test_every_page_ends_its_order_with_the_dataset_id() -> None:
+    """LIMIT/OFFSET over a tied or unordered result can repeat or skip rows."""
+    base_sql = SERVICE.rewrite_generated_sql(
+        "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "
+        "AND o.subject IS NOT NULL WHERE d.license = 'CC0' GROUP BY d.id",
+        "CC0 datasets",
+    ).sql
+    ranked, _ = build_page_sql(
+        base_sql,
+        scored_filters=[{"field": "task", "code": "resting_state", "score": 1.0}],
+        apply_relevance=True, limit=20, offset=20,
+    )
+    assert _outer_order(ranked).strip().endswith("page_result.id")
+    assert "page_result.relevance_score + page_result.text_rank DESC" in _outer_order(ranked)
+
+    unranked, _ = build_page_sql(base_sql, [], True, 20, 20)
+    assert _outer_order(unranked).strip() == (
+        "ORDER BY page_result.subject_count DESC NULLS LAST, page_result.id"
+    )
+
+
+def test_a_requested_order_is_kept_on_the_page() -> None:
+    base_sql = SERVICE.rewrite_generated_sql(
+        "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "
+        "AND o.subject IS NOT NULL GROUP BY d.id ORDER BY d.size_bytes DESC LIMIT 10",
+        "the ten largest datasets",
+    ).sql
+    page_sql, _ = build_page_sql(base_sql, [], False, 20, 0)
+    assert "ORDER BY" not in _outer_order(page_sql)
