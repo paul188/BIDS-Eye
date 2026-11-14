@@ -72,10 +72,16 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
     "species": ("TEXT", [
         "species as typed by the uploader on OpenNeuro (free text, NULL for about 40%",
         "of datasets, nearly all of them human), e.g. 'Human', 'Mouse', 'Rat', 'Macaque',",
-        "'Monkey', 'Sus scrofa domesticus', 'Phantom'. Use it for animal / non-human questions:",
-        "  mice: d.species ~* '\\m(mouse|mice|mus)\\M'",
-        "  any animal: d.species IS NOT NULL AND d.species !~* '(human|homo sapiens|phantom|synthetic|printed)'",
-        "Do not text_match animal words instead: READMEs of human studies say 'mouse click'.",
+        "'Monkey', 'Nonhunam primates (Macaca mulatta)', 'Sus scrofa domesticus', 'Phantom'.",
+        "Use it for animal / non-human questions, and ALWAYS add the title/description",
+        "fallback for datasets without a species (many animal datasets are unlabelled):",
+        "  mice: (d.species ~* '\\m(mouse|mice|mus)\\M'",
+        "         OR (d.species IS NULL AND text_match('mouse | mice | murine', 'short')))",
+        "  macaques/monkeys: (d.species ~* '(macaque|macaca|monkey|primate)'",
+        "         OR (d.species IS NULL AND text_match('macaque | monkey | rhesus', 'short')))",
+        "  any animal: (d.species !~* '(human|homo sapiens|phantom|synthetic|printed)'",
+        "         OR (d.species IS NULL AND text_match('mouse | mice | rat | rats | macaque | monkey | animal', 'short')))",
+        "Never text_match animal words over the README ('all' mode): human studies say 'mouse click'.",
     ]),
     "study_longitudinal": ("TEXT", [
         "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",
@@ -94,7 +100,8 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "true when the dataset is also available for processing on brainlife.io",
     ]),
     "downloads": ("INTEGER", [
-        "OpenNeuro download count of the latest snapshot; 'most popular' orders by it",
+        "OpenNeuro download count of the latest snapshot (NULL for removed datasets).",
+        "'most popular': ORDER BY d.downloads DESC NULLS LAST (without NULLS LAST, NULL rows come first)",
     ]),
     "views": ("INTEGER", [
         "OpenNeuro page views of the latest snapshot",

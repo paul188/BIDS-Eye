@@ -393,7 +393,10 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     # weaker form would be the name anywhere in the README or a paper, and
     # those mentions are mostly suppliers, software and citations ('kindly
     # provided by … Harvard Medical School', surfer.nmr.mgh.harvard.edu).
-    if "institutions" in columns:
+    # Species likewise: the README of a human study says 'mouse click', and
+    # its title/description fallback for unlabelled datasets is already
+    # part of the condition.
+    if columns & {"institutions", "species"}:
         return None
     # A condition on the outer join's rows (o.datatype …) is about files.
     if _columns_outside_subqueries(node) - {alias, ""}:

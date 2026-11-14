@@ -149,6 +149,11 @@ def test_institution_conditions_stay_hard() -> None:
     rewritten = ut.apply(with_text)
     assert "'harvard'" not in rewritten and "'children'" in rewritten
 
+    species = ("(d.species ~* 'mouse' OR (d.species IS NULL "
+               "AND d.search_tsv @@ to_tsquery('english', 'mouse:AB')))")
+    sql = BASE.format(where=f"{MODALITY} AND {species}")
+    assert ut.apply(sql) == sql
+
 
 def test_reasons_name_what_is_missing() -> None:
     sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'young & children')")
