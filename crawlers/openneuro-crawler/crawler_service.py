@@ -156,7 +156,7 @@ async def run_crawl_cycle() -> None:
                 crawler_state["queue"].remove(accession_id)
             if await _crawl_one(accession_id, delay):
                 indexed.append(accession_id)
-        # Papers and paper summaries for what was just indexed. Never raises.
+        # Papers and dataset descriptions for what was just indexed. Never raises.
         from post_crawl import run_post_crawl
         await run_post_crawl(indexed)
     finally:

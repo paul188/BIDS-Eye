@@ -30,7 +30,7 @@ from deps import get_db
 from routers.auth import require_auth
 from schemas import (
     DatasetSchema,
-    PaperRefSchema,
+    LinkedPaperSchema,
     ParticipantSchema,
     QueryFilterSchema,
     QueryPageRequest,
@@ -39,7 +39,7 @@ from schemas import (
     QueryResponse,
     TextToSQLResult,
 )
-from services import paper_summary, query_filters
+from services import dataset_description, query_filters
 from services import uncertain_tier
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
@@ -323,34 +323,51 @@ async def _attach_snippets(
         dataset.snippet = snippet or None
 
 
-async def _attach_summaries(session: AsyncSession, datasets: list[DatasetSchema]) -> None:
-    """Give each dataset its generated description and the paper it came from
-    (services/paper_summary.py). Its own query, like _attach_snippets; a
-    failure leaves the page without summaries rather than failing it."""
-    if not datasets or not has_display_column("paper_summary"):
+def _paper_url(doi, pmid, pmcid, arxiv_id) -> Optional[str]:
+    if doi:
+        return f"https://doi.org/{doi}"
+    if pmid:
+        return f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+    if pmcid:
+        return f"https://pmc.ncbi.nlm.nih.gov/articles/{pmcid}/"
+    if arxiv_id:
+        return f"https://arxiv.org/abs/{arxiv_id}"
+    return None
+
+
+async def _attach_descriptions(session: AsyncSession, datasets: list[DatasetSchema]) -> None:
+    """The generated summary of a thin README, and the linked paper when it was
+    checked to report the dataset (services/dataset_description.py). Its own
+    query, like _attach_snippets; a failure leaves the page without them."""
+    if not datasets or not (has_display_column("paper_relation")
+                            and has_display_column("dataset_summary")):
         return
     sql = (
-        "SELECT d.id, d.paper_summary, p.title, p.year, p.journal, p.doi, p.pmid, "
-        "       p.pmcid, p.arxiv_id "
+        "SELECT d.id, d.dataset_summary, d.paper_relation->>'relation', "
+        "       p.title, p.year, p.doi, p.pmid, p.pmcid, p.arxiv_id "
         "FROM bids_datasets d "
-        "LEFT JOIN bids_papers p ON p.paper_key = d.paper_summary_meta->>'paper_key' "
-        "WHERE d.id = ANY(:ids) AND d.paper_summary IS NOT NULL"
+        "LEFT JOIN bids_papers p ON p.paper_key = d.paper_relation->>'paper_key' "
+        "     AND (d.paper_relation->>'shown')::boolean "
+        "WHERE d.id = ANY(:ids) "
+        "  AND (d.dataset_summary IS NOT NULL OR (d.paper_relation->>'shown')::boolean)"
     )
     try:
         async with session.begin_nested():
             rows = (await session.execute(text(sql), {"ids": [d.id for d in datasets]})).all()
     except Exception:
-        log.warning("Paper summaries unavailable for this page", exc_info=True)
+        log.warning("Dataset descriptions unavailable for this page", exc_info=True)
         return
     found = {row[0]: row for row in rows}
     for dataset in datasets:
         row = found.get(dataset.id)
-        if row is None or row[2] is None:  # no summary, or its paper is gone
+        if row is None:
             continue
-        dataset.summary = row[1]
-        dataset.summary_paper = PaperRefSchema(
-            title=row[2], year=row[3], journal=row[4],
-            url=paper_summary.paper_url(row[5], row[6], row[7], row[8]))
+        dataset.generated_summary = row[1]
+        relation, title = row[2], row[3]
+        if title and relation in dataset_description.SHOWN_RELATIONS:
+            dataset.linked_paper = LinkedPaperSchema(
+                title=title, year=row[4], url=_paper_url(row[5], row[6], row[7], row[8]),
+                relation=relation, relation_label=dataset_description.RELATION_LABELS[relation])
 
 
 def _highlight_for(cached: CachedQuery) -> Optional[str]:
@@ -413,7 +430,7 @@ async def _run_page(
     )
     datasets = await _rows_to_datasets(session, result.mappings().all())
     await _attach_snippets(session, datasets, _highlight_for(cached))
-    await _attach_summaries(session, datasets)
+    await _attach_descriptions(session, datasets)
     return datasets, total
 
 

@@ -7,17 +7,17 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 (remote/paper_store.enrich: Europe PMC, bioRxiv/medRxiv, arXiv,
                 OpenAlex). Only datasets whose papers were never checked, or
                 were checked more than PAPER_RECHECK_DAYS ago (default 30).
-  2. summaries  a one-sentence description of each dataset from its primary
-                paper's abstract (backend/services/paper_summary.py, the same
-                code as scripts/generate_paper_summaries.py). Only where the
-                summary is missing or was made from another paper or prompt.
-                Needs GEMINI_API_KEY; the abstracts go to Gemini only.
+  2. descriptions  how each primary paper relates to its dataset, and a
+                generated summary where the README is thin
+                (backend/services/dataset_description.py, the same code as
+                scripts/describe_datasets.py). Only what is missing or stale.
+                Needs GEMINI_API_KEY; the text goes to Gemini only.
 
 Environment:
     CRAWL_PAPERS            "false" skips step 1 (default on)
-    CRAWL_PAPER_SUMMARIES   "false" skips step 2 (default on)
+    CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
     PAPER_RECHECK_DAYS      how old a paper lookup may get (default 30)
-    PAPER_SUMMARY_MODEL     Gemini model for step 2 (default gemini-2.5-flash)
+    DATASET_DESCRIPTION_MODEL  Gemini model for step 2 (default gemini-2.5-flash)
 
 Both steps create the tables and columns they write, skip what is already
 done, and never fail the crawl: an error is logged and the next cycle tries
@@ -74,9 +74,9 @@ async def lookup_papers(engine, accessions: Sequence[str]) -> Dict[str, int]:
         return await paper_store.enrich(conn, due)
 
 
-def _summaries_available() -> bool:
+def _descriptions_available() -> bool:
     if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-        log.info("[post-crawl] No GEMINI_API_KEY: paper summaries skipped.")
+        log.info("[post-crawl] No GEMINI_API_KEY: dataset descriptions skipped.")
         return False
     for name in ("backend", "LLM_preprocessor"):
         path = next((root / name for root in _ROOTS if (root / name).is_dir()), None)
@@ -85,21 +85,21 @@ def _summaries_available() -> bool:
     try:
         import llm_client  # noqa: F401
         from google import genai  # noqa: F401  (llm_client imports it only when called)
-        from services import paper_summary  # noqa: F401
+        from services import dataset_description  # noqa: F401
     except ImportError as exc:
-        log.warning("[post-crawl] Paper summaries skipped: %s", exc)
+        log.warning("[post-crawl] Dataset descriptions skipped: %s", exc)
         return False
     return True
 
 
-async def write_summaries(engine, accessions: Sequence[str]) -> Dict[str, int]:
-    """Step 2. Returns written / rejected / failed / up-to-date counts."""
+async def describe(engine, accessions: Sequence[str]) -> Dict[str, int]:
+    """Step 2. Returns the counts of dataset_description.run."""
     from remote import paper_store
-    from services import paper_summary
+    from services import dataset_description
 
     async with engine.begin() as conn:
         await paper_store.ensure_tables(conn)
-    return dict(await paper_summary.run(engine, list(accessions)))
+    return dict(await dataset_description.run(engine, list(accessions)))
 
 
 async def run_post_crawl(accessions: Sequence[str]) -> None:
@@ -116,9 +116,9 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         except Exception as exc:
             log.error("[post-crawl] Paper lookup failed: %s", exc, exc_info=True)
 
-    if _flag("CRAWL_PAPER_SUMMARIES") and _summaries_available():
+    if _flag("CRAWL_DESCRIPTIONS") and _descriptions_available():
         try:
-            stats = await write_summaries(engine, accessions)
-            log.info("[post-crawl] Paper summaries: %s", stats)
+            stats = await describe(engine, accessions)
+            log.info("[post-crawl] Dataset descriptions: %s", stats)
         except Exception as exc:
-            log.error("[post-crawl] Paper summaries failed: %s", exc, exc_info=True)
+            log.error("[post-crawl] Dataset descriptions failed: %s", exc, exc_info=True)

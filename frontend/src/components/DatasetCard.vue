@@ -119,22 +119,14 @@ function markedParts(text: string): { text: string; hit: boolean }[] {
     part.startsWith('⟦') ? { text: part.slice(1, -1), hit: true } : { text: part, hit: false })
 }
 
-// What describes the dataset, best first: the generated summary of its
-// paper, the README passage, the description field.
-const generated = computed(() => !!(props.dataset.summary && props.dataset.summary_paper))
+// What describes the dataset: the README passage; for a thin README, the
+// generated summary instead; the description field when there is neither.
+const generated = computed(() => !!props.dataset.generated_summary)
 const hasDescription = computed(() =>
   generated.value || !!(props.dataset.snippet || props.dataset.description_text))
 
-// "a paper in NeuroImage (2021)"; the full title is the link's tooltip.
-const paperLabel = computed(() => {
-  const paper = props.dataset.summary_paper
-  if (!paper) return ''
-  const where = paper.journal ? `a paper in ${paper.journal}` : 'a linked paper'
-  return paper.year ? `${where} (${paper.year})` : where
-})
-
 const snippet = computed(() => {
-  if (generated.value) return highlighted(props.dataset.summary ?? '')
+  if (generated.value) return highlighted(props.dataset.generated_summary ?? '')
   if (props.dataset.snippet) return markedParts(props.dataset.snippet)
   return highlighted(props.dataset.description_text ?? '')
 })
@@ -206,21 +198,25 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
       <p class="text-sm leading-relaxed text-ink/80 line-clamp-3">
         <template v-for="(part, i) in snippet" :key="i"><strong v-if="part.hit" class="font-semibold text-ink">{{ part.text }}</strong><template v-else>{{ part.text }}</template></template>
       </p>
-      <!-- A generated summary says so, and links the paper it came from: the
-           paper may belong to a related study rather than this dataset. -->
       <p v-if="generated" class="mt-0.5 text-[12px] text-muted-soft">
-        Generated from the abstract of
-        <a
-          v-if="dataset.summary_paper?.url"
-          :href="dataset.summary_paper.url"
-          :title="dataset.summary_paper.title"
-          target="_blank"
-          rel="noopener"
-          class="text-link visited:text-link-visited hover:underline"
-        >{{ paperLabel }}</a>
-        <span v-else :title="dataset.summary_paper?.title">{{ paperLabel }}</span>
+        Generated summary: the dataset's README is short.
       </p>
     </div>
+
+    <!-- The paper, only when checked to report this dataset -->
+    <p v-if="dataset.linked_paper" class="text-[13px] text-muted max-w-3xl">
+      Linked paper:
+      <a
+        v-if="dataset.linked_paper.url"
+        :href="dataset.linked_paper.url"
+        target="_blank"
+        rel="noopener"
+        class="text-link visited:text-link-visited hover:underline"
+      >{{ dataset.linked_paper.title }}</a>
+      <span v-else class="text-ink">{{ dataset.linked_paper.title }}</span>
+      <template v-if="dataset.linked_paper.year"> ({{ dataset.linked_paper.year }})</template>,
+      {{ dataset.linked_paper.relation_label }}
+    </p>
 
     <!-- Who was scanned: same order on every row -->
     <p class="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[13px]">

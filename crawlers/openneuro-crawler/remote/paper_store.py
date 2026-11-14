@@ -94,12 +94,13 @@ DDL: Tuple[str, ...] = (
     "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS papers_checked_at TIMESTAMPTZ",
 )
 
-# One-sentence description from the primary paper's abstract, written by
-# backend/services/paper_summary.py. Kept in sync with
-# crawlers/migrate_add_paper_summaries.sql (backend/tests/test_paper_summary.py).
-SUMMARY_DDL: Tuple[str, ...] = (
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS paper_summary TEXT",
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS paper_summary_meta JSONB",
+# How the primary paper relates to the dataset, and a generated summary for
+# thin READMEs (backend/services/dataset_description.py). Kept in sync with
+# crawlers/migrate_add_dataset_descriptions.sql (backend/tests/test_dataset_description.py).
+DESCRIPTION_DDL: Tuple[str, ...] = (
+    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS paper_relation JSONB",
+    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS dataset_summary TEXT",
+    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS dataset_summary_meta JSONB",
 )
 
 
@@ -118,9 +119,9 @@ PAPER_SEARCH_VECTOR_EXPRESSION = (
 
 
 async def ensure_tables(session: Any) -> None:
-    """Create the paper tables and columns, and the summary columns, if they
-    are missing. Caller commits."""
-    for statement in DDL + SUMMARY_DDL:
+    """Create the paper tables and columns, and the description columns, if
+    they are missing. Caller commits."""
+    for statement in DDL + DESCRIPTION_DDL:
         await session.execute(text(statement))
 
 

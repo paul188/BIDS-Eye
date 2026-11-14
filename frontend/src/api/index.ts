@@ -29,9 +29,10 @@ export interface Dataset {
   participants: Participant[]
   /** README passage: the part matching the search, else the start. Matches sit between ⟦ and ⟧. */
   snippet?: string | null
-  /** One sentence an LLM wrote from the abstract of summary_paper; show it labelled as generated. */
-  summary?: string | null
-  summary_paper?: { title: string; year: number | null; journal: string | null; url: string | null } | null
+  /** 2–3 generated sentences, only where the README is thin; show them labelled as generated. */
+  generated_summary?: string | null
+  /** The primary paper, when it was checked to report this dataset (or a larger sample including it). */
+  linked_paper?: { title: string; year: number | null; url: string | null; relation: string; relation_label: string } | null
 }
 
 export interface TextToSQLResult {

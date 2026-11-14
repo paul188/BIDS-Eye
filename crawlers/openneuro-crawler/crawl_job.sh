@@ -30,7 +30,7 @@ export CRAWL_DELAY_SECONDS=0.5
 
 # ── Activate venv ─────────────────────────────────────────────────────────────
 source $VENV/bin/activate
-pip install --quiet apscheduler pyyaml boto3 requests "google-genai==2.8.0"  # google-genai: post-crawl paper summaries
+pip install --quiet apscheduler pyyaml boto3 requests "google-genai==2.8.0"  # google-genai: post-crawl dataset descriptions
 
 # ── Prepare directories ───────────────────────────────────────────────────────
 mkdir -p $SCRATCH/logs $SCRATCH $BIDS_SQL_CACHE
