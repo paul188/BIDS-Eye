@@ -23,6 +23,14 @@ class ParticipantSchema(BaseModel):
     extra: Optional[Dict[str, Any]] = None
 
 
+class PaperRefSchema(BaseModel):
+    """The paper a generated summary was written from."""
+    title: str
+    year: Optional[int] = None
+    journal: Optional[str] = None
+    url: Optional[str] = None
+
+
 class DatasetSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,6 +59,10 @@ class DatasetSchema(BaseModel):
     # A passage of the README: the part that matches the search when it has
     # text terms, else the start. Matched words sit between "⟦" and "⟧".
     snippet: Optional[str] = None
+    # One sentence written by an LLM from the abstract of summary_paper
+    # (services/paper_summary.py); shown labelled as generated.
+    summary: Optional[str] = None
+    summary_paper: Optional[PaperRefSchema] = None
 
 
 class DatasetListResponse(BaseModel):

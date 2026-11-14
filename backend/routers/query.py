@@ -30,6 +30,7 @@ from deps import get_db
 from routers.auth import require_auth
 from schemas import (
     DatasetSchema,
+    PaperRefSchema,
     ParticipantSchema,
     QueryFilterSchema,
     QueryPageRequest,
@@ -38,7 +39,7 @@ from schemas import (
     QueryResponse,
     TextToSQLResult,
 )
-from services import query_filters
+from services import paper_summary, query_filters
 from services import uncertain_tier
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
@@ -322,6 +323,36 @@ async def _attach_snippets(
         dataset.snippet = snippet or None
 
 
+async def _attach_summaries(session: AsyncSession, datasets: list[DatasetSchema]) -> None:
+    """Give each dataset its generated description and the paper it came from
+    (services/paper_summary.py). Its own query, like _attach_snippets; a
+    failure leaves the page without summaries rather than failing it."""
+    if not datasets or not has_display_column("paper_summary"):
+        return
+    sql = (
+        "SELECT d.id, d.paper_summary, p.title, p.year, p.journal, p.doi, p.pmid, "
+        "       p.pmcid, p.arxiv_id "
+        "FROM bids_datasets d "
+        "LEFT JOIN bids_papers p ON p.paper_key = d.paper_summary_meta->>'paper_key' "
+        "WHERE d.id = ANY(:ids) AND d.paper_summary IS NOT NULL"
+    )
+    try:
+        async with session.begin_nested():
+            rows = (await session.execute(text(sql), {"ids": [d.id for d in datasets]})).all()
+    except Exception:
+        log.warning("Paper summaries unavailable for this page", exc_info=True)
+        return
+    found = {row[0]: row for row in rows}
+    for dataset in datasets:
+        row = found.get(dataset.id)
+        if row is None or row[2] is None:  # no summary, or its paper is gone
+            continue
+        dataset.summary = row[1]
+        dataset.summary_paper = PaperRefSchema(
+            title=row[2], year=row[3], journal=row[4],
+            url=paper_summary.paper_url(row[5], row[6], row[7], row[8]))
+
+
 def _highlight_for(cached: CachedQuery) -> Optional[str]:
     if cached.self_corrected:
         return None
@@ -382,6 +413,7 @@ async def _run_page(
     )
     datasets = await _rows_to_datasets(session, result.mappings().all())
     await _attach_snippets(session, datasets, _highlight_for(cached))
+    await _attach_summaries(session, datasets)
     return datasets, total
 
 
