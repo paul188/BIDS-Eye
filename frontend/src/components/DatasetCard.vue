@@ -119,11 +119,29 @@ function markedParts(text: string): { text: string; hit: boolean }[] {
     part.startsWith('⟦') ? { text: part.slice(1, -1), hit: true } : { text: part, hit: false })
 }
 
-const hasDescription = computed(() => !!(props.dataset.snippet || props.dataset.description_text))
+// What describes the dataset, best first: the generated summary of its
+// paper, the README passage, the description field.
+const generated = computed(() => !!(props.dataset.summary && props.dataset.summary_paper))
+const hasDescription = computed(() =>
+  generated.value || !!(props.dataset.snippet || props.dataset.description_text))
+
+// "a paper in NeuroImage (2021)"; the full title is the link's tooltip.
+const paperLabel = computed(() => {
+  const paper = props.dataset.summary_paper
+  if (!paper) return ''
+  const where = paper.journal ? `a paper in ${paper.journal}` : 'a linked paper'
+  return paper.year ? `${where} (${paper.year})` : where
+})
 
 const snippet = computed(() => {
+  if (generated.value) return highlighted(props.dataset.summary ?? '')
   if (props.dataset.snippet) return markedParts(props.dataset.snippet)
-  const text = props.dataset.description_text ?? ''
+  return highlighted(props.dataset.description_text ?? '')
+})
+
+// *text* with the search words bolded, starting at the sentence of the first
+// match when that lies past what three lines show.
+function highlighted(text: string): { text: string; hit: boolean }[] {
   const pattern = termPattern.value
   if (!text || !pattern) return [{ text, hit: false }]
 
@@ -147,7 +165,7 @@ const snippet = computed(() => {
   }
   if (last < body.length) parts.push({ text: body.slice(last), hit: false })
   return parts
-})
+}
 </script>
 
 <template>
@@ -184,9 +202,25 @@ const snippet = computed(() => {
     </p>
 
     <!-- What the dataset is: the description, at a readable line length -->
-    <p v-if="hasDescription" class="max-w-3xl text-sm leading-relaxed text-ink/80 line-clamp-3">
-      <template v-for="(part, i) in snippet" :key="i"><strong v-if="part.hit" class="font-semibold text-ink">{{ part.text }}</strong><template v-else>{{ part.text }}</template></template>
-    </p>
+    <div v-if="hasDescription" class="max-w-3xl">
+      <p class="text-sm leading-relaxed text-ink/80 line-clamp-3">
+        <template v-for="(part, i) in snippet" :key="i"><strong v-if="part.hit" class="font-semibold text-ink">{{ part.text }}</strong><template v-else>{{ part.text }}</template></template>
+      </p>
+      <!-- A generated summary says so, and links the paper it came from: the
+           paper may belong to a related study rather than this dataset. -->
+      <p v-if="generated" class="mt-0.5 text-[12px] text-muted-soft">
+        Generated from the abstract of
+        <a
+          v-if="dataset.summary_paper?.url"
+          :href="dataset.summary_paper.url"
+          :title="dataset.summary_paper.title"
+          target="_blank"
+          rel="noopener"
+          class="text-link visited:text-link-visited hover:underline"
+        >{{ paperLabel }}</a>
+        <span v-else :title="dataset.summary_paper?.title">{{ paperLabel }}</span>
+      </p>
+    </div>
 
     <!-- Who was scanned: same order on every row -->
     <p class="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[13px]">
