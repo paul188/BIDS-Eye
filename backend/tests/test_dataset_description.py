@@ -119,6 +119,12 @@ def test_check_summary_requires_the_paper_framing_for_paper_facts():
               "healthy controls.")
     assert "copies" in dd.check_summary(copied, _source(), paper_used=True)
     assert "length" in dd.check_summary("fMRI.", _source(), paper_used=False)
+    assert "sources" in dd.check_summary(
+        "README and CATALOGUE describe resting-state fMRI from 65 participants.", _source(), False)
+    assert "sources" in dd.check_summary(
+        "Resting-state fMRI in ds004392 from people with Parkinson's disease.", _source(), False)
+    assert "missing" in dd.check_summary(
+        "Resting-state fMRI from 65 participants; no further details are available.", _source(), False)
 
 
 # ── Planning reruns ───────────────────────────────────────────────────────────

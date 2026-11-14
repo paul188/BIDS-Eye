@@ -51,7 +51,7 @@ from services.readme_profile import quote_in_source
 log = logging.getLogger(__name__)
 
 RELATION_PROMPT_VERSION = "1"
-SUMMARY_PROMPT_VERSION = "1"
+SUMMARY_PROMPT_VERSION = "2"
 DEFAULT_MODEL = os.getenv("DATASET_DESCRIPTION_MODEL", "gemini-2.5-flash")
 FALLBACK_MODEL = "gemini-2.5-flash-lite"
 
@@ -82,6 +82,11 @@ _MODALITIES = {
 _NUMBER_RE = re.compile(r"\d+(?:[.,]\d+)?")
 _WORD_RE = re.compile(r"[a-z0-9]+(?:['’-][a-z0-9]+)*")
 _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9“\"])")
+# A summary describes the data, not the prompt's sources or their gaps.
+_SOURCE_TALK_RE = re.compile(r"\b(?:README|CATALOGUE|catalogue|OpenNeuro dataset)\b")
+_MISSING_TALK_RE = re.compile(
+    r"\b(?:not (?:available|provided|specified|described|given|stated|mentioned)|"
+    r"no (?:further |additional )?(?:details|information))\b", re.I)
 
 
 # ── Sources ───────────────────────────────────────────────────────────────────
@@ -295,11 +300,17 @@ def summary_prompt(source: DatasetSource, use_paper: bool) -> str:
         parts.append(f"[PAPER] that reports this dataset\nTitle: {source.paper.title}\n"
                      f"Abstract: {source.paper.abstract}")
     rules = [
-        "Write 2 or 3 sentences (at most 70 words) saying what this dataset contains: "
-        "who took part, the imaging or recording methods, and the tasks or conditions.",
+        "Write 1 to 3 sentences (at most 70 words) saying what this dataset contains: "
+        "who took part, the imaging or recording methods, and the tasks or conditions. "
+        "If the sources say little, write one short sentence with what is known.",
+        "Start with the content, e.g. \"fMRI and structural MRI from 28 adults performing "
+        "a theory-of-mind task.\" Do not mention README, CATALOGUE, PAPER, the dataset's "
+        "name or its accession number, and never say what is missing or unknown.",
         "Use README and CATALOGUE first.",
         (f"You may add what only the PAPER says, but only in a sentence that starts with "
-         f"\"{PAPER_PREFIX}\". Never mix paper facts into the other sentences."
+         f"\"{PAPER_PREFIX}\", and such a sentence describes what the paper's study did "
+         f"(\"{PAPER_PREFIX} the study also recorded …\"), never what this dataset "
+         f"contains. Never mix paper facts into the other sentences."
          if use_paper else "There is no paper; use only README and CATALOGUE."),
         "Describe the data, not results or conclusions. Leave out what the sources do "
         "not say. Paraphrase; do not copy long phrases.",
@@ -331,6 +342,11 @@ def check_summary(summary: str, source: DatasetSource, paper_used: bool) -> Opti
         return f"length {len(summary)}"
     if PAPER_PREFIX.lower() in summary.lower() and not paper_used:
         return "cites a paper it was not given"
+    talk = _SOURCE_TALK_RE.search(summary)
+    if talk or (source.accession and source.accession.lower() in summary.lower()):
+        return f"talks about its sources ({talk.group(0) if talk else source.accession})"
+    if _MISSING_TALK_RE.search(summary):
+        return "says what is missing"
     dataset_numbers = _numbers(" ".join((source.readme_text(), source.catalogue_text())))
     paper_numbers = _numbers(source.paper_text()) if paper_used else set()
     for sentence in _SENTENCE_RE.split(summary):
