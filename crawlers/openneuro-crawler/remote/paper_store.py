@@ -399,6 +399,9 @@ async def enrich(
     if await _has_tables(session):
         stored = await _stored_counts(session, [d["id"] for d in datasets])
     entries, papers, _ = plan(datasets, paper_fields, fetch, stored_counts=stored, resolved=resolved)
+    if stored or await _has_tables(session):
+        apply_overrides(entries, await load_overrides(session, [d["id"] for d in datasets]),
+                        {d["accession"]: d["id"] for d in datasets})
     stats = summarize(entries, papers)
     if dry_run:
         return stats
@@ -409,6 +412,40 @@ async def enrich(
     for dataset in datasets:
         await write_dataset(session, dataset["id"], entries[dataset["accession"]], papers, paper_ids, parts)
     return stats
+
+
+# A role set by hand or by a later check (scripts/demote_paper_links.py)
+# carries this prefix in role_reason and survives every re-run of enrich().
+OVERRIDE_PREFIX = "override: "
+
+
+async def load_overrides(session: Any, dataset_ids: Sequence[Any]) -> Dict[Tuple[str, str], Tuple[str, str]]:
+    """{(dataset id, paper key): (role, reason)} for overridden links."""
+    statement = text(
+        "SELECT dp.dataset_id::text, p.paper_key, dp.role, dp.role_reason FROM bids_dataset_papers dp "
+        "JOIN bids_papers p ON p.id = dp.paper_id "
+        "WHERE dp.role_reason LIKE :prefix AND dp.dataset_id::text = ANY(:ids)"
+    ).bindparams(bindparam("ids", type_=ARRAY(String)))
+    rows = await session.execute(statement, {"prefix": OVERRIDE_PREFIX + "%",
+                                             "ids": [str(i) for i in dataset_ids]})
+    return {(row[0], row[1]): (row[2], row[3]) for row in rows}
+
+
+def apply_overrides(
+    entries: Dict[str, List[Dict[str, Any]]],
+    overrides: Dict[Tuple[str, str], Tuple[str, str]],
+    dataset_ids: Dict[str, Any],
+) -> int:
+    """Put overridden roles back into freshly planned entries. Returns how many."""
+    applied = 0
+    for accession, dataset_entries_ in entries.items():
+        dataset_id = str(dataset_ids.get(accession))
+        for entry in dataset_entries_:
+            override = overrides.get((dataset_id, entry["key"]))
+            if override:
+                entry["role"], entry["reason"] = override
+                applied += 1
+    return applied
 
 
 async def _has_tables(session: Any) -> bool:

@@ -324,3 +324,11 @@ def test_negated_spans_ignore_parentheses_in_literals() -> None:
     sql = "SELECT 1 WHERE NOT (a = '(x)' OR b) AND (c OR NOT(d))"
     spans = text_search.negated_spans(sql)
     assert [sql[start:end + 1] for start, end in sorted(spans)] == ["(a = '(x)' OR b)", "(d)"]
+
+
+def test_overrides_survive_a_fresh_plan() -> None:
+    entries = {"ds1": [{"key": "doi:10.1/a", "role": "primary", "reason": "only paper", "sources": [], "raw": None}]}
+    overrides = {("uuid-1", "doi:10.1/a"): ("related", store.OVERRIDE_PREFIX + "paper-relation check: tool")}
+    assert store.apply_overrides(entries, overrides, {"ds1": "uuid-1"}) == 1
+    assert entries["ds1"][0]["role"] == "related"
+    assert entries["ds1"][0]["reason"].startswith(store.OVERRIDE_PREFIX)
