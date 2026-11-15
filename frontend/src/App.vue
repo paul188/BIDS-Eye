@@ -273,7 +273,6 @@ onUnmounted(() => {
         <p class="mt-4 text-base text-muted max-w-3xl leading-relaxed">
           Describe the data you need in plain language. The search matches by meaning,
           not by exact keywords or filter fields, so you can put several criteria in one sentence.
-          Each result shows who was scanned, so you can judge the fit at a glance.
         </p>
 
         <div class="mt-8">
