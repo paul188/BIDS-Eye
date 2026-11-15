@@ -136,3 +136,45 @@ the first page in 0 of 26 development questions.
   review above was done by an LLM session and by mechanical checks.
 - In `requests.yaml` the id `qx06_fmriprep_version` carries the MRIQC
   question. The id is kept so that finished runs still join; it is only a key.
+
+## Where the 70 real requests come from, and how to add more
+
+Each entry of `requests.yaml` carries its source (`url`), the request in the
+person's own words (`quote`) and the id used in the research notes (`ref`).
+The notes are in `research_notes/Neuroimaging dataset search criteria/`:
+`forum_requests.md` (the corpus tables and the method note),
+`paper_selection_criteria.md` (papers that state how they chose datasets),
+`user_studies_and_query_logs.md` and `repository_facets.md` (background).
+
+Collected 2026-11-14:
+
+| Source | Requests | How it was searched |
+|---|---|---|
+| NeuroStars | 30 | Discourse JSON search API, about 80 query variants ("looking for dataset", "publicly available EEG", "dataset Alzheimer", "7T dataset", ...); opening posts filtered for request phrasing; raw text from `neurostars.org/raw/<id>/1` |
+| Stack Exchange (Open Data 8, Psychology & Neuroscience 7) | 15 | api.stackexchange.com; Cross Validated and Data Science were searched too and gave nothing used |
+| GitHub issues | 10 | `gh search issues` in meagmohit/EEG-Datasets and OpenNeuroOrg/openneuro |
+| MNE forum | 1 | Discourse search API |
+| Papers (12 by DOI, 2 on arXiv) | 14 | Methods sections that state a dataset search or selection rule |
+
+A request was taken when a person asks for data of a stated kind (44), asks
+for a way to search or filter dataset metadata (12), or a paper states the
+rule by which its datasets were chosen (14). The posts date from 2013 to 2026,
+most from 2019 to 2025.
+
+Not covered: Reddit (not reachable), Twitter/Mastodon, the FSL, SPM and EEGLAB
+mailing lists. The AFNI board returned no request threads. All requests are in
+English. The exact list of the 80 query variants and the threads that were
+read and rejected were not saved, so a second pass over the same forums has to
+de-duplicate by `url`.
+
+To add requests: record `url`, the verbatim `quote` and the date; write the
+`question` in the person's vocabulary; add the criteria to
+`work/gold/spec.py`; build pools, judge and export as described in
+`gold/README.md`. Save the queries used and the rejected threads next to the
+notes this time. New requests should stay out of search development until
+they have been scored once (see below).
+
+All 70 requests have been used to find and fix search defects (2026-11-15), and
+some of their wording appears as examples in the prompts. They are a
+development set from now on: scores on them overstate what the search does on
+requests it has not seen.
