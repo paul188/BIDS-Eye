@@ -1,0 +1,69 @@
+{"query": "qp13_bci_paradigms", "acc": "ds000116", "label": "not_relevant", "reason": "Oddball EEG-fMRI study, but README says EEG component is only on legacy openfmri; OpenNeuro files hold only fMRI and anatomical MRI."}
+{"query": "qp13_bci_paradigms", "acc": "ds000234", "label": "not_relevant", "reason": "ASL MRI with visuomotor finger-tapping block task; no EEG recorded."}
+{"query": "qp13_bci_paradigms", "acc": "ds001419", "label": "not_relevant", "reason": "Single-subject fMRI imagery decoding study; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds002336", "label": "relevant", "reason": "Simultaneous EEG-fMRI during motor imagery neurofeedback; EEG recorded with MIpre/MIpost motor imagery tasks."}
+{"query": "qp13_bci_paradigms", "acc": "ds002382", "label": "not_relevant", "reason": "fMRI spoken word listening/repetition in older adults; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds002685", "label": "not_relevant", "reason": "IBC multi-task fMRI dataset; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds002721", "label": "not_relevant", "reason": "EEG during 12-20 s affective music clips and rest; spectral/connectivity emotion study, no MI, SSVEP, oddball or ERP design."}
+{"query": "qp13_bci_paradigms", "acc": "ds002723", "label": "not_relevant", "reason": "EEG affective music BCI with 60 s music clips; passive affective state decoding, not MI, SSVEP, P300 or an ERP design."}
+{"query": "qp13_bci_paradigms", "acc": "ds002734", "label": "partially_relevant", "reason": "README states preprocessed EEG (EEG_data/EEG_events) shared from simultaneous EEG-fMRI value-based choice task; event-related decision design, not MI/SSVEP/oddball."}
+{"query": "qp13_bci_paradigms", "acc": "ds002776", "label": "not_relevant", "reason": "7T fMRI motor sequence learning with executed finger sequences; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds002893", "label": "relevant", "reason": "EEG with interleaved auditory and visual oddball streams requiring target button presses; oddball ERP paradigm in young and older adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds003190", "label": "relevant", "reason": "EEG P300 paradigm with flashing symbols (cartoon face vs standard flash), 19 participants, BCI-style training files."}
+{"query": "qp13_bci_paradigms", "acc": "ds003452", "label": "not_relevant", "reason": "DMCC cognitive control fMRI benchmark; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds003490", "label": "relevant", "reason": "EEG three-stimulus auditory oddball plus rest in Parkinson patients and controls; oddball P300-type paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds003517", "label": "relevant", "reason": "EEG video game dataset; README says participants also did 2-stim visual oddball with triggers in EEG file, oddball epoching code included."}
+{"query": "qp13_bci_paradigms", "acc": "ds003523", "label": "partially_relevant", "reason": "EEG visual working memory task in mTBI and controls; trial-based cognitive design, oddball paper concerns a different task of same sample."}
+{"query": "qp13_bci_paradigms", "acc": "ds003612", "label": "not_relevant", "reason": "Motor imagery and execution of ball squeezing measured with fMRI only; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds003626", "label": "partially_relevant", "reason": "EEG BCI dataset with cued inner speech, pronounced speech and visualized trials; trial-based event design but not MI, SSVEP or P300."}
+{"query": "qp13_bci_paradigms", "acc": "ds003717", "label": "not_relevant", "reason": "fMRI of visual and audiovisual speech perception; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds003766", "label": "partially_relevant", "reason": "128-channel EEG during food-preference and semantic binary choice trials with ERPs reported; cognitive event-related design, not a BCI paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds003810", "label": "relevant", "reason": "EEG BCI protocol: kinesthetic motor imagery of dominant-hand grasping versus rest, 10 participants."}
+{"query": "qp13_bci_paradigms", "acc": "ds004022", "label": "relevant", "reason": "EEG (plus fNIRS) during cued motor imagery of reach, grasp, lift, twist in orthopedic-impairment patients."}
+{"query": "qp13_bci_paradigms", "acc": "ds004105", "label": "not_relevant", "reason": "EEG during 45-min continuous simulated driving with perturbations and tones for fatigue; no MI, SSVEP, oddball or ERP experiment."}
+{"query": "qp13_bci_paradigms", "acc": "ds004118", "label": "not_relevant", "reason": "EEG during continuous simulated calibration driving with lane perturbations; fatigue study, not MI, SSVEP, oddball or ERP experiment."}
+{"query": "qp13_bci_paradigms", "acc": "ds004120", "label": "not_relevant", "reason": "EEG during long continuous simulated driving for fatigue biomarkers; no MI, SSVEP, oddball or ERP experiment."}
+{"query": "qp13_bci_paradigms", "acc": "ds004122", "label": "not_relevant", "reason": "EEG during continuous simulated driving (speed control) for fatigue; no MI, SSVEP, oddball or ERP experiment."}
+{"query": "qp13_bci_paradigms", "acc": "ds004127", "label": "not_relevant", "reason": "Rat intracranial LFP recordings with whisker air-puff stimulation under anaesthesia; not human EEG, no BCI paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds004196", "label": "partially_relevant", "reason": "EEG (and fMRI) during cued inner-speech word trials for BCI; trial-based event design, not MI, SSVEP or P300."}
+{"query": "qp13_bci_paradigms", "acc": "ds004324", "label": "partially_relevant", "reason": "EEG RSVP of stylized face images studying N170 and emotion ERPs; cognitive ERP experiment, not MI, SSVEP or oddball."}
+{"query": "qp13_bci_paradigms", "acc": "ds004444", "label": "relevant", "reason": "128-channel EEG during sensorimotor-rhythm BCI; paper states participants performed right-hand motor imagery to control it."}
+{"query": "qp13_bci_paradigms", "acc": "ds004447", "label": "relevant", "reason": "BMI-HDEEG dataset 3 of same SMR-BCI data descriptor; EEG during right-hand motor imagery BCI control."}
+{"query": "qp13_bci_paradigms", "acc": "ds004477", "label": "partially_relevant", "reason": "64-channel EEG in trial-based pandemic resource-allocation decisions with marked response events; event-related decision design, none of the three BCI paradigms."}
+{"query": "qp13_bci_paradigms", "acc": "ds004504", "label": "not_relevant", "reason": "Eyes-closed resting-state EEG in Alzheimer, FTD and controls; no task or event-related paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds004517", "label": "partially_relevant", "reason": "EEG during cued auditory imagery of animal/tool sounds for semantic BCI; trial-based event design, not MI, SSVEP or P300."}
+{"query": "qp13_bci_paradigms", "acc": "ds004574", "label": "relevant", "reason": "64-channel EEG during cross-modal oddball task (standard vs oddball visual/auditory pre-cues) in Parkinson patients and controls; oddball-type ERP paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds004579", "label": "partially_relevant", "reason": "EEG during cued interval timing task in Parkinson patients and controls; cue-evoked cognitive design, not one of the three BCI paradigms."}
+{"query": "qp13_bci_paradigms", "acc": "ds004584", "label": "not_relevant", "reason": "Two-minute eyes-open resting-state EEG in Parkinson patients and controls; oddball only mentioned in related paper."}
+{"query": "qp13_bci_paradigms", "acc": "ds004660", "label": "relevant", "reason": "EEG dataset whose only task label in file names is p300 (21 subjects, events files); README gives no further detail."}
+{"query": "qp13_bci_paradigms", "acc": "ds004802", "label": "relevant", "reason": "EEG pilot data with task labels rovingoddball/roddball; oddball-type ERP paradigm, though README gives no task detail."}
+{"query": "qp13_bci_paradigms", "acc": "ds004856", "label": "not_relevant", "reason": "Dallas Lifespan Brain Study with MRI, ASL and PET only; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds004944", "label": "not_relevant", "reason": "Intraoperative ECoG under anaesthesia in epilepsy surgery, no task; BCI2000 is only the file format/software."}
+{"query": "qp13_bci_paradigms", "acc": "ds005028", "label": "relevant", "reason": "EEG P300 speller online typing comparing row-column, checkerboard and combined flashing paradigms, recorded with BCI2000."}
+{"query": "qp13_bci_paradigms", "acc": "ds005166", "label": "not_relevant", "reason": "Inhibitory control tasks with fMRI, eye tracking and behaviour in youth; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds005263", "label": "not_relevant", "reason": "Task fMRI of incentivized reaching; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds005265", "label": "not_relevant", "reason": "Task fMRI of approach-avoid reaching; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds005341", "label": "not_relevant", "reason": "fMRI and diffusion MRI on reading and statistical learning in dyslexia; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds005397", "label": "partially_relevant", "reason": "EEG while viewing staircase images and rating them, analysing cortical evoked responses; cognitive event-related design, not a BCI paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds005429", "label": "relevant", "reason": "EEG with three auditory oddball sequences (Optimum-1, learning-oddball, local-global) evoking MMN and P3b in 15 healthy participants."}
+{"query": "qp13_bci_paradigms", "acc": "ds005540", "label": "not_relevant", "reason": "EEG during long video-induced and imagery-induced emotion trials for affective decoding; no MI, SSVEP, oddball or ERP design."}
+{"query": "qp13_bci_paradigms", "acc": "ds005863", "label": "relevant", "reason": "EEG with ERP CORE tasks including active visual oddball (P3b) and auditory oddball (MMN), 127 young adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds006018", "label": "relevant", "reason": "EEG with ERP CORE-derived visual oddball and auditory oddball tasks (plus flanker, visual search) in 127 young adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds006126", "label": "not_relevant", "reason": "tDCS/TMS motor imagery study, but recordings have only 3 channels and task description says EMG recording; no scalp EEG evident."}
+{"query": "qp13_bci_paradigms", "acc": "ds006480", "label": "relevant", "reason": "EEG with passive and active three-stimulus auditory oddball (standard, target, distractor tones) plus rest in 68 young adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds006623", "label": "not_relevant", "reason": "fMRI and anatomical MRI of mental imagery under propofol sedation; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds006780", "label": "relevant", "reason": "Children's EEG; ASSR task is an active auditory oddball (15% oddball click trains, button response, standard/oddball event codes), plus other ERP tasks."}
+{"query": "qp13_bci_paradigms", "acc": "ds006850", "label": "partially_relevant", "reason": "EEG while rating streetview images, stimulus-onset ERPs (P1, N1, P3, LPP) analysed; cognitive ERP design, not MI, SSVEP or oddball."}
+{"query": "qp13_bci_paradigms", "acc": "ds006866", "label": "partially_relevant", "reason": "64-channel EEG, 240 image trials of emotion watch/reappraise with averaged ERP derivatives; cognitive ERP experiment, not MI, SSVEP or oddball."}
+{"query": "qp13_bci_paradigms", "acc": "ds007022", "label": "not_relevant", "reason": "Longitudinal Braille/music training dataset with fMRI and behaviour only; no EEG."}
+{"query": "qp13_bci_paradigms", "acc": "ds007069", "label": "relevant", "reason": "EEG passive auditory oddball (ERP CORE MMN task) in 281 participants; oddball-type ERP paradigm, though passive MMN rather than P300."}
+{"query": "qp13_bci_paradigms", "acc": "ds007169", "label": "partially_relevant", "reason": "19-channel EEG during letter n-back (1 s stimuli, per-trial event markers) for workload; trial-based cognitive design, not a BCI paradigm."}
+{"query": "qp13_bci_paradigms", "acc": "ds007262", "label": "partially_relevant", "reason": "19-channel EEG during 70 mental arithmetic questions (6 s each, event-marked by difficulty) for workload; trial-based cognitive design, not MI/SSVEP/oddball."}
+{"query": "qp13_bci_paradigms", "acc": "ds007322", "label": "relevant", "reason": "EEG auditory oddball experiment (uploader design: Auditory Oddball, ERP) with smartphone-notification deviants, 57 adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds007554", "label": "relevant", "reason": "EEG-fNIRS dataset with a motor imagery task (imagine right arm movement on beep) among seven tasks, 30 adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds007655", "label": "partially_relevant", "reason": "62-channel EEG during trial-based Morse-code auditory discrimination tasks with event annotations; cognitive event-related design, not MI, SSVEP or oddball."}
+{"query": "qp13_bci_paradigms", "acc": "ds007788", "label": "relevant", "reason": "60-channel EEG in BMI exoskeleton study: motor imagery calibration and closed-loop walk/stop motor imagery control, 7 healthy adults."}
+{"query": "qp13_bci_paradigms", "acc": "ds008081", "label": "relevant", "reason": "EEG dataset of steady-state visual evoked potentials under realistic backgrounds; task label ssvep, 30 subjects."}
+{"query": "qp13_bci_paradigms", "acc": "ds008465", "label": "relevant", "reason": "High-density EEG with imagined versus executed finger writing and vocalization; uploader lists motor imagery and BCI, 32 event-coded conditions."}
+{"query": "qp13_bci_paradigms", "acc": "ds008858", "label": "relevant", "reason": "14-channel Emotiv EEG for MI-BCI cursor control: left-hand and right-hand motor imagery versus rest."}
+{"query": "qp13_bci_paradigms", "acc": "ds008896", "label": "not_relevant", "reason": "Preprocessed resting-state EEG in CLN3 disease and healthy volunteers; no task, P3 is only an electrode name."}

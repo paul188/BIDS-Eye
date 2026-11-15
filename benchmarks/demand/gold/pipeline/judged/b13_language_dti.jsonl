@@ -1,0 +1,108 @@
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000009", "label": "not_relevant", "reason": "Tasks are BART, delay discounting, emotion regulation, stop signal; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000030", "label": "not_relevant", "reason": "CNP tasks: BART, breath hold, paired-associate memory, SCAP, stop signal, task switching, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000031", "label": "relevant", "reason": "MyConnectome has task-language BOLD runs with events plus diffusion MRI in the same single subject."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000113", "label": "relevant", "reason": "Forrest Gump: fMRI while listening to German audio movie narration (story listening); DWI recorded for 20 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000114", "label": "relevant", "reason": "Covert/overt verb generation and overt word repetition fMRI tasks; DWI for all 10 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000117", "label": "not_relevant", "reason": "Only task is face recognition (famous/unfamiliar/scrambled faces); no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000201", "label": "not_relevant", "reason": "Sleep deprivation study: faces, hands, arrows, sleepiness, rest tasks; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000221", "label": "not_relevant", "reason": "Only resting-state fMRI; no task fMRI."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds000244", "label": "relevant", "reason": "IBC: ARCHI standard localizer, RSVP language and HCP language tasks listed; DWI recorded for 12 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001021", "label": "not_relevant", "reason": "NKI sample tasks: breath hold, checkerboard, DMN tracking, moral dilemma, MSIT, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001226", "label": "not_relevant", "reason": "Brain tumour patients with resting-state fMRI only; no task fMRI."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001242", "label": "not_relevant", "reason": "Tasks are fear learning, PPA localizer, spatial detection; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001419", "label": "relevant", "reason": "Single subject imagery fMRI includes language production blocks (e.g. generating animal names); DWI recorded."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001499", "label": "not_relevant", "reason": "BOLD5000: viewing scene images and scene localizer; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001590", "label": "not_relevant", "reason": "Feature discrimination learning tasks and visual localizer; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001595", "label": "not_relevant", "reason": "XCP test dataset with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001771", "label": "not_relevant", "reason": "Voice localizer and speaker identification tasks target voice perception, not language processing."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001796", "label": "not_relevant", "reason": "Bilingualism study but fMRI is only Flanker task and rest; no language task in scanner."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001875", "label": "not_relevant", "reason": "Macaque dataset with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001894", "label": "relevant", "reason": "Auditory/visual word and pseudoword rhyming judgment fMRI tasks in children; DWI for 113 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001907", "label": "not_relevant", "reason": "Attention Network Test and rest in Parkinson's/controls; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001928", "label": "not_relevant", "reason": "Fibromyalgia music study with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds001942", "label": "not_relevant", "reason": "7T auditory sound-presentation experiment and rest probing auditory system; not a language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002080", "label": "not_relevant", "reason": "Post-operative brain tumour data with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002185", "label": "not_relevant", "reason": "Only task is odour perception; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002278", "label": "not_relevant", "reason": "DIVA tasks: arithmetic, emotion rating, localizers, probabilistic selection, Stranger Things viewing, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002307", "label": "not_relevant", "reason": "Mouse dataset with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002330", "label": "not_relevant", "reason": "Creativity study with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002366", "label": "not_relevant", "reason": "Only emotion regulation task runs; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002543", "label": "not_relevant", "reason": "Reinforcement learning, stop signal and face/place mapper tasks; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002620", "label": "not_relevant", "reason": "Only emotion regulation task runs; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002634", "label": "relevant", "reason": "Larynx project: fMRI of overt syllable production, vocalization and articulation (speech production); DWI for 20 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002685", "label": "relevant", "reason": "IBC: tasks include RSVP language, HCP language, covert reading, MathLang; DWI recorded for 13 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002785", "label": "not_relevant", "reason": "AOMIC-PIOP1 tasks: anticipation, emotion matching, faces, gender Stroop, working memory, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002790", "label": "not_relevant", "reason": "AOMIC-PIOP2 tasks: emotion matching, stop signal, working memory, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds002843", "label": "not_relevant", "reason": "Intertemporal choice and risky choice tasks plus rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003011", "label": "not_relevant", "reason": "Travelling human phantoms with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003027", "label": "not_relevant", "reason": "Only resting-state fMRI recorded; no task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003037", "label": "not_relevant", "reason": "Cocaine use disorder rTMS trial with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003097", "label": "not_relevant", "reason": "AOMIC-ID1000 only has movie watching fMRI; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003171", "label": "relevant", "reason": "fMRI during passive listening to an audio clip of the film Taken (spoken narrative) under sedation; DWI for 17."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003346", "label": "not_relevant", "reason": "Cocaine use disorder dataset with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003424", "label": "not_relevant", "reason": "Taste perception task and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003495", "label": "not_relevant", "reason": "Emotion matching task and rest for scanner upgrade comparison; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003604", "label": "relevant", "reason": "Children's auditory sentence (grammar, plausibility) and word (phonology, semantics) judgment fMRI tasks; DWI for 239 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003872", "label": "relevant", "reason": "Reading Brain Project L2: fMRI naturalistic text reading task plus DTI in 56 participants."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003974", "label": "relevant", "reason": "Reading Brain Project L1: fMRI text reading task with eye-tracking plus DTI in 52 participants."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003988", "label": "relevant", "reason": "Reading Brain Project L2: fMRI text reading task plus DTI in 56 participants."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds003989", "label": "not_relevant", "reason": "Anaesthetised macaques with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004024", "label": "not_relevant", "reason": "TMS-EEG study; fMRI tasks are ccPAS, spTMS, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004078", "label": "relevant", "reason": "SMN4Lang: fMRI while listening to 6 hours of naturalistic stories; diffusion MRI for all 12 participants."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004097", "label": "not_relevant", "reason": "Adult ABCD equivalent: MID, n-back, stop signal, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004146", "label": "not_relevant", "reason": "QTAB tasks: emotional conflict, Partly Cloudy movie, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004161", "label": "not_relevant", "reason": "Sheep chronic stress dataset; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004299", "label": "not_relevant", "reason": "Habit learning tasks (training, extinction, reacquisition) and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004498", "label": "not_relevant", "reason": "Single case with motor task and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004513", "label": "not_relevant", "reason": "PET/fMRI/DWI acquired at rest only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004627", "label": "not_relevant", "reason": "Adolescent depression: MID task and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004639", "label": "not_relevant", "reason": "Navigation training study with encoding/retrieval tasks and rest; no language task evident."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004710", "label": "not_relevant", "reason": "7T scanner demo data with a visual task only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004712", "label": "not_relevant", "reason": "Travelling-heads harmonisation with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004737", "label": "not_relevant", "reason": "CS-DSI protocol comparison with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004765", "label": "not_relevant", "reason": "Named language fMRI but only resting-state BOLD recorded; reading measures are behavioural."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004856", "label": "relevant", "reason": "DLBS Words fMRI task: living/non-living semantic judgments on written words; DTI recorded for 464 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004884", "label": "relevant", "reason": "Aphasia Recovery Cohort: picture naming fMRI task (naming40) and DWI in 217 of 230 stroke participants."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004917", "label": "not_relevant", "reason": "Probabilistic decision-making under ambiguity task only; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds004958", "label": "not_relevant", "reason": "FreeSurfer maintenance dataset with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005016", "label": "not_relevant", "reason": "Migraine study: MSIT, pain, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005026", "label": "not_relevant", "reason": "Hearing loss connectome with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005123", "label": "not_relevant", "reason": "Social and nonsocial reward tasks (doors, trust, ultimatum game); no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005134", "label": "not_relevant", "reason": "Sequence test with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005256", "label": "relevant", "reason": "Spacetop includes a task-narratives fMRI task (story narratives) and multi-shell diffusion for 116 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005270", "label": "not_relevant", "reason": "Cognitive control tasks: go/no-go, n-back, letter task switching, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005341", "label": "relevant", "reason": "PREDYS: word reading fMRI task (semantic/syntactic prediction) in dyslexic and typical readers; DWI for 49."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005364", "label": "not_relevant", "reason": "Only reversal learning task; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005402", "label": "not_relevant", "reason": "Mouse model with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005559", "label": "not_relevant", "reason": "Pattern separation tasks with fractal images, localizer, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005577", "label": "relevant", "reason": "Dyslexia study: covert letter fluency, visual rhyme decision and lexical decision fMRI tasks; DWI for all 70 participants."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005613", "label": "relevant", "reason": "NEBULA101: Alice language localizer fMRI task (aliceloc), study domain Language; DWI for 101 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005713", "label": "not_relevant", "reason": "Trigeminal neuralgia with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005752", "label": "not_relevant", "reason": "NIMH volunteers: tasks are movie without dialogue, go/no-go, Hariri faces, oddball, Sternberg, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005849", "label": "unsure", "reason": "DBS dataset has unnamed 'task' runs under stimulation; README gives no task description at all."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005874", "label": "not_relevant", "reason": "Food cue task and rest in motor neuron disease; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005896", "label": "not_relevant", "reason": "Adolescent tasks: faces, MID, n-back, qreact, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005901", "label": "not_relevant", "reason": "Adolescent tasks: faces, MID, n-back, qreact, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds005917", "label": "not_relevant", "reason": "Ketamine study tasks: dot probe, emotion evaluation, face n-back, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006040", "label": "not_relevant", "reason": "EEG-fMRI tasks: checkerboard, gradCPT sustained attention, imagery, rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006072", "label": "not_relevant", "reason": "Psilocybin precision mapping: rest plus unspecified task scans; no language task described."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006131", "label": "not_relevant", "reason": "PAFIN fMRI is movie watching (Bao, Your Friend the Rat) and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006143", "label": "not_relevant", "reason": "MRIQC derivatives of PAFIN only; underlying tasks are movies and rest, no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006148", "label": "relevant", "reason": "BOLD task labels include synonyms, antonyms, picture vocabulary and logical memory (word/verbal tasks); DWI for 240 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006239", "label": "relevant", "reason": "Word reading (meaning, phonology) fMRI tasks with language localizers in children; DWI for 73 subjects."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006391", "label": "not_relevant", "reason": "Multilingual dataset but only resting-state fMRI recorded; no language task fMRI."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006395", "label": "not_relevant", "reason": "Dystonia dataset with finger task and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006503", "label": "not_relevant", "reason": "Single-subject phantom: breath hold, quality-control task, rest, movie; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006592", "label": "not_relevant", "reason": "Only a multi-category visual localizer for face/scene regions; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006663", "label": "not_relevant", "reason": "Mouse dataset with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006692", "label": "not_relevant", "reason": "MRIQC derivatives for Spacetop: QC metrics only, no diffusion or task BOLD images in this dataset."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds006731", "label": "not_relevant", "reason": "Depression study with goal priming task and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007116", "label": "not_relevant", "reason": "Penn LEAD: n-back, rest and rest-with-film; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007182", "label": "not_relevant", "reason": "Autism precision imaging: naturalistic video viewing (news, reality TV) and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007283", "label": "not_relevant", "reason": "Vision dataset: retinotopy bars/wedges, category localizers, motion; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007313", "label": "not_relevant", "reason": "Brain and spinal cord resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007328", "label": "not_relevant", "reason": "Single-subject dense resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007329", "label": "not_relevant", "reason": "Hyperface: face viewing visual memory task and localizer; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007345", "label": "not_relevant", "reason": "Meningioma patients with resting-state fMRI only."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007408", "label": "not_relevant", "reason": "Body and locomotion visual mapping tasks and rest; no language task."}
+{"query": "qf17_language_fmri_and_dti", "acc": "ds007486", "label": "not_relevant", "reason": "Problem gambling: ad viewing, stop signal, trust tasks; no language task."}

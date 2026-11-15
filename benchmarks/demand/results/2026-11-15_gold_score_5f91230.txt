@@ -1,0 +1,82 @@
+run: 5f91230 live image, demand first run | database postgres:5432/bids_sql | 2026-11-14T18:55:04+0000
+
+query                           rel   ret recall lenient  R@20  nDCG  prec unjdg  note
+qf01_bipolar_schizophrenia       12    50   100%    100%   75%   86%   24%     0  
+qf02_eeg_autism_controls_like_abide    2     0     0%      0%    0%    0%     —     0  
+qf04_eeg_autism                   2     3   100%    100%  100%  100%   67%     0  
+qf35_eeg_autism_patients          2     3   100%    100%  100%  100%   67%     0  
+qf03_rest_fmri_alcohol_questionnaires    9     3    22%     17%   22%   34%   67%     0  
+qf05_task_fmri_fast_tr           74   110   100%    100%   75%   89%   67%     0  
+qf06_rest_fmri_healthy_patients  230   576    72%     72%   90%   69%   29%     0  
+qf07_decoding_block_design_sessions   37     0     0%      0%    0%    0%     —     0  
+qf08_tof_swi                     16    15    88%     82%   88%  100%   93%     0  
+qf09_pcasl_physio                 1     1   100%      6%  100%   36%  100%     0  
+qf10_epilepsy_rest_fmri           4    13   100%    100%  100%   63%   31%     0  
+qf11_preprocessed_fmriprep      365    60    15%     16%   95%   97%   88%     0  
+qf12_rest_task_rest_one_day       8   200     0%      5%    0%    6%    0%     0  FALLBACK SAMPLE
+qf13_natural_images_visual_cortex   40     8    15%     12%   30%   71%   75%     0  
+qf14_eeg_alzheimer_and_normal     3   255   100%    100%    0%    0%    1%     0  
+qf33_eeg_alzheimer                3     8   100%     50%  100%   71%   38%     0  
+qf15_rest_fmri                  318   990   100%    100%   75%   78%   32%     1  
+qf16_covid_brain_signals          1     0     0%      0%    0%    0%     —     0  
+qf17_language_fmri_and_dti       22    17    50%     50%   55%   78%   65%     0  
+qf18_preprocessed_fmri_ml       404     7     1%      1%   30%   71%   86%     0  
+qf25_preprocessed_rs_fmri       116   149    32%     35%   60%   82%   25%     0  
+qf19_videos_people_talking       36     0     0%      0%    0%    0%     —     0  
+qf20_schizophrenia_mri_png        0     0      —      0%     —     —     —     0  
+qf21_low_field_paired_3t          1     1   100%    100%  100%  100%  100%     0  
+qf22_diffusion_tumor              7     7    57%     57%   57%   70%   57%     0  
+qf23_fmri_dir_ap_pa_small        58     1     2%      2%    5%   22%  100%     0  
+qf24_fnirs_alzheimer              0     0      —       —     —     —     —     0  
+qf26_fmri_preprocessed_any_design  986    11     1%      1%   55%  100%  100%     0  
+qf27_7t_rest_fmri_mprage          1     0     0%      0%    0%    0%     —     0  
+qf28_preprocessed_fmri_alzheimer    0     0      —      0%     —     —     —     0  
+qf29_simple_visual_task_20_subjects   19     4     5%      2%    5%   11%   25%     0  
+qf30_fmri_emotional_state        48    84    62%     69%   35%   60%   36%     0  
+qf31_brain_networks_phenotype     8     0     0%      0%    0%    0%     —     0  
+qf32_connectomes_consciousness    2     0     0%      0%    0%    0%     —     0  
+qf34_mri_redistributable       1132  1096    96%     95%  100%  100%  100%     0  
+qf36_brain_tumor_classes          4     1    25%      8%   25%   28%  100%     0  
+qf37_tumor_segmentation_ground_truth    4     0     0%      0%    0%    0%     —     0  
+qf38_eeg_depression_labeled       2     4   100%     33%  100%   66%   50%     0  
+qf39_eeg_rest_adult_man_healthy   53    59    19%     19%   40%   56%   17%     0  
+qf40_mri_ct_paired                3    30   100%    100%  100%   37%   10%     0  
+qf41_eeg_digitization             8    24    75%      7%   62%   66%   25%     0  
+qf42_eeg_image_pairs_scenes      12     0     0%      0%    0%    0%     —     0  
+qf43_eeg_emotion_like_deap       11     1     9%      4%    9%   22%  100%     0  
+qf44_flair_min_subjects          13    14   100%    100%  100%  100%   93%     0  
+qx01_fieldmap_effective_echo_spacing  324    13     4%      4%   65%  100%  100%     0  
+qx02_spinal                      29    30    93%     93%  100%  100%   90%     0  
+qx03_male_40yo                   17    18   100%    100%  100%   93%   94%     0  
+qx04_non_siemens                167   167    97%     97%  100%  100%   98%     1  
+qx05_sessions                   166   166   100%     54%  100%  100%  100%     0  
+qx06_fmriprep_version           633    63     8%      8%   90%   64%   84%     0  
+qx07_meeg                       469   472   100%     87%  100%  100%   99%     0  
+qx08_seeg                        41    71    95%     95%   45%   47%   55%     0  
+qx09_female_only                 40    40    82%     82%   75%   86%   82%     0  
+qx10_nhp                         10     0     0%      0%    0%    0%     —     0  
+qx11_bids_filename                3     1     0%      0%    0%    0%    0%     0  
+qx12_metadata_sheet              29    55   100%    100%   55%   50%   53%     0  
+qp01_t1w_and_bold_per_subject   770    21     2%      2%   75%   89%   71%     0  
+qp02_t1w_five_adult_hc          735   592    64%     64%   85%  100%   80%     0  
+qp03_t1w_healthy_children_2_12   26    13    31%     31%   40%   59%   62%     0  
+qp04_3t_mprage_age_5_21_no_pmc  228   339   100%    100%   70%   68%   67%     0  
+qp05_rest_epi_t1w_same_session_tr  123     0     0%      0%    0%    0%     —     0  
+qp06_language_50_healthy_adults_descriptor   15    43    80%     76%   47%   57%   28%     0  
+qp07_isolated_words              37    11     3%      5%    5%   17%    9%     0  
+qp08_eating_disorders_mri         1    12   100%     75%  100%   78%    8%     0  
+qp09_eeg_stress                   0     4      —    100%     —     —    0%     0  
+qp10_task_fmri_with_paper       398     4     0%      0%    5%    9%   25%     0  
+qp11_memory_consolidation        16     0     0%      0%    0%    0%     —     0  
+qp13_bci_paradigms               41    35    44%     31%   70%   65%   51%     0  
+qp14_eeg_200hz_redistributable  378   372    97%     97%  100%  100%   99%     0  
+
+group                     n  recall  lenient   R@20  nDCG@10   prec found none
+other                    65     50%      44%    53%      55%    61%        14
+ALL                      65     50%      44%    53%      55%    61%        14
+
+1 question(s) fell back to the 200-dataset sample.
+No relevant dataset exists for qf20_schizophrenia_mri_png: returned 0 (all false positives)
+No relevant dataset exists for qf24_fnirs_alzheimer: returned 0 (all false positives)
+No relevant dataset exists for qf28_preprocessed_fmri_alzheimer: returned 0 (all false positives)
+No relevant dataset exists for qp09_eeg_stress: returned 4 (all false positives)

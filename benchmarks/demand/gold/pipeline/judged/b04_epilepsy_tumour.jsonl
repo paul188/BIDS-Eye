@@ -1,0 +1,275 @@
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds001529", "label": "not_relevant", "reason": "Mouse resting-state fMRI under anaesthesia; no epilepsy patients, not human."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds001785", "label": "not_relevant", "reason": "Scalp EEG of healthy adults plus iEEG of one epilepsy patient; no fMRI recorded."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds002014", "label": "unsure", "reason": "Single-subject language-task fMRI; paper analysed epilepsy patients but nothing states the shared subject is a patient; no rest run."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds002799", "label": "relevant", "reason": "26 refractory epilepsy patients; README states pre-op resting-state scans, task-rest BOLD recorded alongside es-fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003029", "label": "not_relevant", "reason": "Epilepsy patients but intracranial EEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003078", "label": "not_relevant", "reason": "Epilepsy iEEG with pre/post-surgery T1 only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003374", "label": "not_relevant", "reason": "Epilepsy patients, iEEG and neuron recordings only; BOLD mentioned in paper is not shared."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003468", "label": "not_relevant", "reason": "Resting-state fMRI of IQSEC2 mutant mice; epilepsy only named as gene association, not human patients."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003498", "label": "not_relevant", "reason": "Epilepsy patients but interictal iEEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003555", "label": "not_relevant", "reason": "Paediatric epilepsy scalp EEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003830", "label": "not_relevant", "reason": "Resting-state fMRI of epileptic dogs, not human patients."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003844", "label": "not_relevant", "reason": "Epilepsy intraoperative ECoG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003848", "label": "not_relevant", "reason": "Epilepsy iEEG with T1; the rest label is an iEEG task, no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds003876", "label": "not_relevant", "reason": "Epilepsy interictal iEEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004054", "label": "not_relevant", "reason": "TLE patients with FDG-PET, T1, T2 and T2* maps; no BOLD resting-state or task fMRI time series recorded."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004080", "label": "not_relevant", "reason": "Epilepsy ECoG CCEP recordings only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004100", "label": "not_relevant", "reason": "Epilepsy iEEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004194", "label": "not_relevant", "reason": "Epilepsy ECoG visual tasks with T1; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004199", "label": "not_relevant", "reason": "Epilepsy FCD patients with T1 and FLAIR only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004457", "label": "not_relevant", "reason": "Epilepsy iEEG stimulation data only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004469", "label": "relevant", "reason": "Temporal lobe epilepsy patients (39) and controls with resting-state BOLD (task-resting) plus Sternberg task."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004473", "label": "not_relevant", "reason": "Epilepsy sEEG with anatomical MRI/CT; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004696", "label": "not_relevant", "reason": "Epilepsy iEEG stimulation data only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004752", "label": "not_relevant", "reason": "Epilepsy iEEG and scalp EEG during working memory; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004770", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG during gameplay; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004798", "label": "partially_relevant", "reason": "Movie-watching fMRI recorded before surgery in epilepsy patients (README: 11 patients); only task-movie, no resting-state run."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004944", "label": "not_relevant", "reason": "Epilepsy intraoperative ECoG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004959", "label": "not_relevant", "reason": "fMRI in a mouse model of temporal lobe epilepsy, not human patients."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004977", "label": "not_relevant", "reason": "Epilepsy iEEG CCEP data only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds004993", "label": "not_relevant", "reason": "Epilepsy iEEG with T1; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005169", "label": "not_relevant", "reason": "Epilepsy sEEG stimulation with T1; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005366", "label": "partially_relevant", "reason": "Motor and sensory task fMRI; uploader label lists epilepsy patients among participants; no resting-state run."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005398", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG during sleep only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005415", "label": "not_relevant", "reason": "Epilepsy sEEG with T1/CT; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005448", "label": "not_relevant", "reason": "Epilepsy iEEG stimulation data only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005573", "label": "relevant", "reason": "Resting-state BOLD of 16 paediatric patients with medically refractory epilepsy (paper abstract)."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005602", "label": "not_relevant", "reason": "Epilepsy surgery patients with T1 and FLAIR only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005603", "label": "relevant", "reason": "Pre-surgical rest BOLD; paper cohort is epilepsy and tumour patients, ECS_Results derivative belongs to the epilepsy patients."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005624", "label": "not_relevant", "reason": "Epilepsy sEEG during task only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005670", "label": "not_relevant", "reason": "Resting-state sEEG of two epilepsy patients; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005873", "label": "not_relevant", "reason": "Epilepsy wearable EEG seizure monitoring; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005917", "label": "not_relevant", "reason": "Ketamine study in depression; seizures appear only as exclusion criterion."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds005931", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG during visuomotor game; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds006136", "label": "not_relevant", "reason": "Epilepsy patients, processed iEEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds006253", "label": "not_relevant", "reason": "Epilepsy iEEG decision task only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds006519", "label": "not_relevant", "reason": "Epilepsy sEEG stimulation with T1; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds006905", "label": "not_relevant", "reason": "Children with ADHD/organisational deficits; epilepsy only an exclusion criterion."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds007095", "label": "not_relevant", "reason": "Epilepsy RNS iEEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds007401", "label": "not_relevant", "reason": "Epilepsy patients with T1, FLAIR and diffusion MRI; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds007445", "label": "not_relevant", "reason": "Paediatric focal epilepsy ictal iEEG only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds007501", "label": "not_relevant", "reason": "Adolescent emotion fMRI in community girls; epilepsy only noted for one excluded scan."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds007703", "label": "not_relevant", "reason": "Epilepsy iEEG stimulation data only; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds008462", "label": "not_relevant", "reason": "Drug-resistant epilepsy resting-state MEG with structural MRI; no fMRI."}
+{"query": "qf10_epilepsy_rest_fmri", "acc": "ds008959", "label": "not_relevant", "reason": "Epilepsy iEEG detection task only; no fMRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds000140", "label": "not_relevant", "reason": "Heat-pain regulation fMRI in adults; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds000214", "label": "not_relevant", "reason": "Borderline personality disorder and controls, Cyberball fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds000246", "label": "not_relevant", "reason": "Brainstorm MEG auditory tutorial sample; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds000247", "label": "not_relevant", "reason": "OMEGA resting-state MEG sample of healthy controls; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds001105", "label": "not_relevant", "reason": "Mental-state task fMRI with T1 and fieldmaps; no tumour patients indicated."}
+{"query": "qf22_diffusion_tumor", "acc": "ds001218", "label": "not_relevant", "reason": "Mental-state picture task fMRI; no tumour patients indicated."}
+{"query": "qf22_diffusion_tumor", "acc": "ds001226", "label": "relevant", "reason": "Pre-operative multi-shell HARDI DWI recorded for 11 glioma and 14 meningioma patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds001365", "label": "not_relevant", "reason": "T1 scans for reading-skill individual differences; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds002080", "label": "relevant", "reason": "Post-operative multi-shell DWI recorded for 7 glioma and 12 meningioma patients after resection."}
+{"query": "qf22_diffusion_tumor", "acc": "ds002181", "label": "not_relevant", "reason": "EEG baseline of Bangladeshi children (stunting study); no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds002345", "label": "not_relevant", "reason": "Narratives story-listening fMRI in healthy adults; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds002522", "label": "not_relevant", "reason": "Autism and typically developing adults, visual fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds002791", "label": "not_relevant", "reason": "EEG-only dataset of adults; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds002833", "label": "not_relevant", "reason": "EEG-only picture naming and rest dataset; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds003420", "label": "not_relevant", "reason": "HD-EEG naming and spelling tasks in healthy adults; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds003421", "label": "not_relevant", "reason": "HD-EEG rest and naming tasks in healthy adults; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds003490", "label": "not_relevant", "reason": "EEG oddball and rest in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds003506", "label": "not_relevant", "reason": "EEG reinforcement learning in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds003509", "label": "not_relevant", "reason": "EEG Simon conflict in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004017", "label": "not_relevant", "reason": "EEG literacy learning study; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004114", "label": "not_relevant", "reason": "Rat resting-state fMRI collection; not human tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004116", "label": "not_relevant", "reason": "Rat resting-state fMRI (StandardRat); not human tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004173", "label": "not_relevant", "reason": "T1 scans of 148 healthy adults with motion artefacts; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004217", "label": "not_relevant", "reason": "Healthy adults mental-state fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004226", "label": "not_relevant", "reason": "Social cognition fMRI in adults; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004299", "label": "not_relevant", "reason": "Healthy adults habit-learning multimodal MRI; diffusion present but no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004323", "label": "not_relevant", "reason": "Video-game learning fMRI in 32 adults; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004327", "label": "not_relevant", "reason": "Healthy adults odour-imagery fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004632", "label": "not_relevant", "reason": "Rat experimental stroke DTI; not human, no tumour."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004642", "label": "not_relevant", "reason": "Brain tumour resection patients but intraoperative ECoG only; no MRI or diffusion data."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004717", "label": "relevant", "reason": "42 diffuse glioma patients; README lists DWI, ADC maps recorded for all 42."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004746", "label": "not_relevant", "reason": "Placebo analgesia fMRI in community twin sample; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004770", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG during gameplay; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004856", "label": "not_relevant", "reason": "Healthy ageing lifespan cohort with DTI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds004910", "label": "relevant", "reason": "Multi-echo multi-shell HARDI DWI in neurosurgical patients including glioma, meningioma and CNS lymphoma."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005003", "label": "not_relevant", "reason": "Brain tumour patients but only T1, T2 and task/rest fMRI; no diffusion MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005121", "label": "not_relevant", "reason": "Sleep EEG memory reactivation in healthy adults; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005216", "label": "not_relevant", "reason": "9.4T T1 of healthy volunteers with manual cortical segmentations; no tumour patients or lesion masks."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005237", "label": "not_relevant", "reason": "Psychiatric transdiagnostic sample and controls, fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005256", "label": "not_relevant", "reason": "Healthy adults multimodal fMRI (SpaceTop) with diffusion; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005413", "label": "not_relevant", "reason": "Pain and visual expectation fMRI in adults; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005530", "label": "not_relevant", "reason": "Healthy adults sleep EEG and fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005559", "label": "not_relevant", "reason": "Healthy young adults memory fMRI with diffusion; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005597", "label": "not_relevant", "reason": "Four tumour patients with T1, T2 and task/rest fMRI; no diffusion MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005613", "label": "not_relevant", "reason": "Healthy adults language aptitude study with diffusion; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005713", "label": "not_relevant", "reason": "Primary trigeminal neuralgia patients and controls with DTI; not brain tumour."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005747", "label": "not_relevant", "reason": "7T resting-state fMRI of 90 healthy adults; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds005931", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG visuomotor task; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006021", "label": "not_relevant", "reason": "Healthy adults reading-acquisition fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006111", "label": "not_relevant", "reason": "Healthy adults emotional narratives fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006123", "label": "not_relevant", "reason": "3D printed phantom MRI/CT acquisitions; no patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006179", "label": "not_relevant", "reason": "Healthy adults fMRI localizer; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006211", "label": "not_relevant", "reason": "Adults auditory fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006248", "label": "relevant", "reason": "50 pituitary adenoma patients; diffusion-derived ADC/eADC maps (b=200, b=1000) shared for about 60%, no raw DWI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006318", "label": "unsure", "reason": "Tumour and non-tumour patients; README says anatomical MRI, sequences unspecified; sibling ds006638 lists ADC and DWI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006395", "label": "not_relevant", "reason": "Focal dystonia patients and controls with diffusion; cancer only an exclusion criterion."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006444", "label": "not_relevant", "reason": "Healthy controls MRS reliability with T1; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006638", "label": "relevant", "reason": "Uploader states multi-sequence MRI of brain tumour patients includes ADC and DWI in NIfTI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006692", "label": "not_relevant", "reason": "MRIQC derivatives of healthy-adult SpaceTop dataset; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds006883", "label": "not_relevant", "reason": "Infant awake fMRI (2 and 9 months), healthy; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007045", "label": "not_relevant", "reason": "337 glioblastoma patients with T1, T1ce, T2 and FLAIR only; no diffusion MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007070", "label": "not_relevant", "reason": "fMRIPrep derivatives of healthy-adult SpaceTop dataset; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007212", "label": "not_relevant", "reason": "Chronic lesions from stroke and resections, T1 only with lesion masks; no diffusion MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007345", "label": "relevant", "reason": "Olfactory groove meningioma patients; 64-direction DWI recorded for 54 subjects, pre- and post-operative."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007358", "label": "not_relevant", "reason": "Large field EEG dataset from India and Tanzania; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007401", "label": "not_relevant", "reason": "Epilepsy patients and controls diffusion MRI; no tumour cohort described."}
+{"query": "qf22_diffusion_tumor", "acc": "ds007522", "label": "not_relevant", "reason": "Ageing cohort multimodal MRI (Precision Aging Network); no tumour patients described."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008336", "label": "not_relevant", "reason": "Essential tremor patients, structural and diffusion MRI; no brain tumour."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008447", "label": "not_relevant", "reason": "Healthy adults 7T task fMRI; no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008798", "label": "not_relevant", "reason": "Stroke patients bedside optical tomography (fNIRS); no tumour patients, no MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008807", "label": "not_relevant", "reason": "Synthetic T1CE volumes from a brain metastasis cohort; no diffusion MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008811", "label": "not_relevant", "reason": "Synthetic T1CE volumes from a glioma cohort (BraTS 2021); no diffusion MRI."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008867", "label": "not_relevant", "reason": "EEG soundscape liking study in adults; no MRI, no tumour patients."}
+{"query": "qf22_diffusion_tumor", "acc": "ds008970", "label": "not_relevant", "reason": "5T MRI of eight participants; no tumour diagnosis stated anywhere."}
+{"query": "qf22_diffusion_tumor", "acc": "ds009033", "label": "not_relevant", "reason": "EEG soundscape liking study in adults; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds000140", "label": "not_relevant", "reason": "Heat-pain regulation fMRI in adults; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds000214", "label": "not_relevant", "reason": "Borderline personality disorder and controls, Cyberball fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds000246", "label": "not_relevant", "reason": "Brainstorm MEG auditory tutorial sample; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds000247", "label": "not_relevant", "reason": "OMEGA resting-state MEG sample of healthy controls; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds001105", "label": "not_relevant", "reason": "Mental-state task fMRI with T1 and fieldmaps; no tumour patients indicated."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds001218", "label": "not_relevant", "reason": "Mental-state picture task fMRI; no tumour patients indicated."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds001226", "label": "relevant", "reason": "Glioma and meningioma patients; participants.tsv has \"tumor type & grade\" and tumour location per participant."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds001365", "label": "not_relevant", "reason": "T1 scans for reading-skill individual differences; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds002080", "label": "relevant", "reason": "Post-operative MRI of glioma and meningioma patients; participants.tsv has \"tumor type & grade\" per participant."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds002181", "label": "not_relevant", "reason": "EEG baseline of Bangladeshi children (stunting study); no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds002345", "label": "not_relevant", "reason": "Narratives story-listening fMRI in healthy adults; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds002522", "label": "not_relevant", "reason": "Autism and typically developing adults, visual fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds002791", "label": "not_relevant", "reason": "EEG-only dataset of adults; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds002833", "label": "not_relevant", "reason": "EEG-only picture naming and rest dataset; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds003420", "label": "not_relevant", "reason": "HD-EEG naming and spelling tasks in healthy adults; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds003421", "label": "not_relevant", "reason": "HD-EEG rest and naming tasks in healthy adults; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds003490", "label": "not_relevant", "reason": "EEG oddball and rest in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds003506", "label": "not_relevant", "reason": "EEG reinforcement learning in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds003509", "label": "not_relevant", "reason": "EEG Simon conflict in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004017", "label": "not_relevant", "reason": "EEG literacy learning study; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004114", "label": "not_relevant", "reason": "Rat resting-state fMRI collection; not human tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004116", "label": "not_relevant", "reason": "Rat resting-state fMRI (StandardRat); not human tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004173", "label": "not_relevant", "reason": "T1 scans of 148 healthy adults with motion artefacts; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004217", "label": "not_relevant", "reason": "Healthy adults mental-state fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004226", "label": "not_relevant", "reason": "Social cognition fMRI in adults; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004299", "label": "not_relevant", "reason": "Healthy adults habit-learning multimodal MRI; diffusion present but no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004323", "label": "not_relevant", "reason": "Video-game learning fMRI in 32 adults; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004327", "label": "not_relevant", "reason": "Healthy adults odour-imagery fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004632", "label": "not_relevant", "reason": "Rat experimental stroke DTI; not human, no tumour."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004642", "label": "not_relevant", "reason": "Brain tumour resection patients but intraoperative ECoG only; no MRI or diffusion data."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004717", "label": "relevant", "reason": "Glioma patients with tumor_type, grade, IDH1 and 1p19q columns per participant in participants.tsv."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004746", "label": "not_relevant", "reason": "Placebo analgesia fMRI in community twin sample; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004770", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG during gameplay; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds004910", "label": "relevant", "reason": "Per-participant diagnosis recorded: glioma grades 2-4, meningioma, CNS lymphoma, plus non-tumour lesions and controls."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005003", "label": "partially_relevant", "reason": "T1/T2 and fMRI of 42 brain tumour patients; no tumour type recorded per participant."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005121", "label": "not_relevant", "reason": "Sleep EEG memory reactivation in healthy adults; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005216", "label": "not_relevant", "reason": "9.4T T1 of healthy volunteers with manual cortical segmentations; no tumour patients or lesion masks."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005237", "label": "not_relevant", "reason": "Psychiatric transdiagnostic sample and controls, fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005256", "label": "not_relevant", "reason": "Healthy adults multimodal fMRI (SpaceTop) with diffusion; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005366", "label": "partially_relevant", "reason": "T1 and motor fMRI; uploader lists tumour patients among participants, participant_type column but no tumour type."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005413", "label": "not_relevant", "reason": "Pain and visual expectation fMRI in adults; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005530", "label": "not_relevant", "reason": "Healthy adults sleep EEG and fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005559", "label": "not_relevant", "reason": "Healthy young adults memory fMRI with diffusion; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005597", "label": "partially_relevant", "reason": "T1 and fMRI of four tumour patients; no tumour type recorded per participant."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005603", "label": "partially_relevant", "reason": "Pre-surgical T1/T2/rest fMRI; paper cohort has 7 tumour and 6 epilepsy patients; no tumour type recorded."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005747", "label": "not_relevant", "reason": "7T resting-state fMRI of 90 healthy adults; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds005931", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG visuomotor task; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006021", "label": "not_relevant", "reason": "Healthy adults reading-acquisition fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006111", "label": "not_relevant", "reason": "Healthy adults emotional narratives fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006123", "label": "not_relevant", "reason": "3D printed phantom MRI/CT acquisitions; no patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006179", "label": "not_relevant", "reason": "Healthy adults fMRI localizer; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006211", "label": "not_relevant", "reason": "Adults auditory fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006248", "label": "partially_relevant", "reason": "Multiparametric MRI of a single tumour type (pituitary adenoma); only hormonal activity recorded per participant."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006318", "label": "partially_relevant", "reason": "MRI of tumour (50) and non-tumour cases; label column only tumor/non_tumor, no tumour type."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006444", "label": "not_relevant", "reason": "Healthy controls MRS reliability with T1; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006638", "label": "partially_relevant", "reason": "MRI of tumour and non-tumour cases; label column only tumor/non_tumor, no tumour type."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006692", "label": "not_relevant", "reason": "MRIQC derivatives of healthy-adult SpaceTop dataset; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006871", "label": "not_relevant", "reason": "Healthy adults 7T MP2RAGE/ASL study; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds006883", "label": "not_relevant", "reason": "Infant awake fMRI (2 and 9 months), healthy; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds007045", "label": "partially_relevant", "reason": "MRI of a single tumour type (primary glioblastoma); only MGMT status recorded per participant."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds007070", "label": "not_relevant", "reason": "fMRIPrep derivatives of healthy-adult SpaceTop dataset; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds007345", "label": "partially_relevant", "reason": "Single tumour type (olfactory groove meningioma); grade and morphology columns but no differing tumour types."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds007347", "label": "not_relevant", "reason": "Head and neck cancer pain patients, T1 and EEG; not brain tumour, no masks."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds007358", "label": "not_relevant", "reason": "Large field EEG dataset from India and Tanzania; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds007522", "label": "not_relevant", "reason": "Ageing cohort multimodal MRI (Precision Aging Network); no tumour patients described."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008336", "label": "not_relevant", "reason": "Essential tremor patients, structural and diffusion MRI; no brain tumour."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008447", "label": "not_relevant", "reason": "Healthy adults 7T task fMRI; no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008798", "label": "not_relevant", "reason": "Stroke patients bedside optical tomography (fNIRS); no tumour patients, no MRI."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008807", "label": "partially_relevant", "reason": "Synthetic T1CE volumes modelled on a single tumour type cohort (brain metastases); not real patients, no labels."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008811", "label": "partially_relevant", "reason": "Synthetic T1CE volumes modelled on a single tumour type cohort (glioma); not real patients, no labels."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008867", "label": "not_relevant", "reason": "EEG soundscape liking study in adults; no MRI, no tumour patients."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds008970", "label": "not_relevant", "reason": "5T MRI of eight participants; no tumour diagnosis stated anywhere."}
+{"query": "qf36_brain_tumor_classes", "acc": "ds009033", "label": "not_relevant", "reason": "EEG soundscape liking study in adults; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds000140", "label": "not_relevant", "reason": "Heat-pain regulation fMRI in adults; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds000214", "label": "not_relevant", "reason": "Borderline personality disorder and controls, Cyberball fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds000246", "label": "not_relevant", "reason": "Brainstorm MEG auditory tutorial sample; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds000247", "label": "not_relevant", "reason": "OMEGA resting-state MEG sample of healthy controls; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds001105", "label": "not_relevant", "reason": "Mental-state task fMRI with T1 and fieldmaps; no tumour patients indicated."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds001218", "label": "not_relevant", "reason": "Mental-state picture task fMRI; no tumour patients indicated."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds001226", "label": "relevant", "reason": "derivatives/tumor_masks per patient, README: obtained with manual delineation combined with disconnectome."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds001365", "label": "not_relevant", "reason": "T1 scans for reading-skill individual differences; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds002080", "label": "relevant", "reason": "derivatives/tumor_masks shared, README says manual delineation; note scans are post-operative."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds002181", "label": "not_relevant", "reason": "EEG baseline of Bangladeshi children (stunting study); no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds002345", "label": "not_relevant", "reason": "Narratives story-listening fMRI in healthy adults; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds002522", "label": "not_relevant", "reason": "Autism and typically developing adults, visual fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds002791", "label": "not_relevant", "reason": "EEG-only dataset of adults; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds002833", "label": "not_relevant", "reason": "EEG-only picture naming and rest dataset; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds003420", "label": "not_relevant", "reason": "HD-EEG naming and spelling tasks in healthy adults; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds003421", "label": "not_relevant", "reason": "HD-EEG rest and naming tasks in healthy adults; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds003490", "label": "not_relevant", "reason": "EEG oddball and rest in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds003506", "label": "not_relevant", "reason": "EEG reinforcement learning in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds003509", "label": "not_relevant", "reason": "EEG Simon conflict in Parkinson's patients and controls; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004017", "label": "not_relevant", "reason": "EEG literacy learning study; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004114", "label": "not_relevant", "reason": "Rat resting-state fMRI collection; not human tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004116", "label": "not_relevant", "reason": "Rat resting-state fMRI (StandardRat); not human tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004173", "label": "not_relevant", "reason": "T1 scans of 148 healthy adults with motion artefacts; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004217", "label": "not_relevant", "reason": "Healthy adults mental-state fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004226", "label": "not_relevant", "reason": "Social cognition fMRI in adults; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004299", "label": "not_relevant", "reason": "Healthy adults habit-learning multimodal MRI; diffusion present but no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004323", "label": "not_relevant", "reason": "Video-game learning fMRI in 32 adults; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004327", "label": "not_relevant", "reason": "Healthy adults odour-imagery fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004632", "label": "not_relevant", "reason": "Rat experimental stroke DTI; not human, no tumour."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004642", "label": "not_relevant", "reason": "Brain tumour resection patients but intraoperative ECoG only; no MRI or diffusion data."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004717", "label": "partially_relevant", "reason": "Pre-surgery multi-sequence MRI of 42 glioma patients; no segmentation masks listed."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004746", "label": "not_relevant", "reason": "Placebo analgesia fMRI in community twin sample; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004770", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG during gameplay; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds004910", "label": "partially_relevant", "reason": "T1, FLAIR and DWI of tumour patients; derivatives hold SynthSeg tissue segmentation and pathology images, no tumour masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005003", "label": "partially_relevant", "reason": "MRI of brain tumour patients; no tumour segmentation masks shared."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005121", "label": "not_relevant", "reason": "Sleep EEG memory reactivation in healthy adults; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005216", "label": "not_relevant", "reason": "9.4T T1 of healthy volunteers with manual cortical segmentations; no tumour patients or lesion masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005237", "label": "not_relevant", "reason": "Psychiatric transdiagnostic sample and controls, fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005256", "label": "not_relevant", "reason": "Healthy adults multimodal fMRI (SpaceTop) with diffusion; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005366", "label": "partially_relevant", "reason": "T1 and fMRI including tumour patients per uploader label; no tumour segmentation masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005413", "label": "not_relevant", "reason": "Pain and visual expectation fMRI in adults; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005530", "label": "not_relevant", "reason": "Healthy adults sleep EEG and fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005559", "label": "not_relevant", "reason": "Healthy young adults memory fMRI with diffusion; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005597", "label": "partially_relevant", "reason": "MRI of four tumour patients; no tumour segmentation masks shared."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005603", "label": "partially_relevant", "reason": "Pre-surgical MRI from an epilepsy/tumour cohort; derivatives hold ECS and network results, no tumour masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005747", "label": "not_relevant", "reason": "7T resting-state fMRI of 90 healthy adults; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds005931", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG visuomotor task; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006021", "label": "not_relevant", "reason": "Healthy adults reading-acquisition fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006111", "label": "not_relevant", "reason": "Healthy adults emotional narratives fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006123", "label": "not_relevant", "reason": "3D printed phantom MRI/CT acquisitions; no patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006179", "label": "not_relevant", "reason": "Healthy adults fMRI localizer; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006211", "label": "not_relevant", "reason": "Adults auditory fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006248", "label": "relevant", "reason": "Manual multi-class masks including tumour label, refined by reviewers; derivatives/segmentations for 50 patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006318", "label": "partially_relevant", "reason": "MRI of brain tumour patients with tumour/non-tumour labels; no segmentation masks described."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006444", "label": "not_relevant", "reason": "Healthy controls MRS reliability with T1; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006638", "label": "partially_relevant", "reason": "MRI of brain tumour patients; annotation is a tumour/non-tumour label, no segmentation masks described."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006692", "label": "not_relevant", "reason": "MRIQC derivatives of healthy-adult SpaceTop dataset; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006871", "label": "not_relevant", "reason": "Healthy adults 7T MP2RAGE/ASL study; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds006883", "label": "not_relevant", "reason": "Infant awake fMRI (2 and 9 months), healthy; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds007045", "label": "relevant", "reason": "derivatives/segmentation: SegResNet tumour masks reviewed and corrected by neuroradiologists."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds007070", "label": "not_relevant", "reason": "fMRIPrep derivatives of healthy-adult SpaceTop dataset; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds007345", "label": "partially_relevant", "reason": "Multimodal MRI of meningioma patients; derivatives hold diffusion metrics and tractography, no tumour masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds007347", "label": "not_relevant", "reason": "Head and neck cancer pain patients, T1 and EEG; not brain tumour, no masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds007358", "label": "not_relevant", "reason": "Large field EEG dataset from India and Tanzania; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds007522", "label": "not_relevant", "reason": "Ageing cohort multimodal MRI (Precision Aging Network); no tumour patients described."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008336", "label": "not_relevant", "reason": "Essential tremor patients, structural and diffusion MRI; no brain tumour."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008447", "label": "not_relevant", "reason": "Healthy adults 7T task fMRI; no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008798", "label": "not_relevant", "reason": "Stroke patients bedside optical tomography (fNIRS); no tumour patients, no MRI."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008807", "label": "partially_relevant", "reason": "Synthetic brain metastasis-cohort T1CE volumes; no segmentation masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008811", "label": "partially_relevant", "reason": "Synthetic glioma-cohort T1CE volumes; no segmentation masks."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008867", "label": "not_relevant", "reason": "EEG soundscape liking study in adults; no MRI, no tumour patients."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds008970", "label": "not_relevant", "reason": "5T MRI of eight participants; no tumour diagnosis stated anywhere."}
+{"query": "qf37_tumor_segmentation_ground_truth", "acc": "ds009033", "label": "not_relevant", "reason": "EEG soundscape liking study in adults; no MRI, no tumour patients."}

@@ -1,0 +1,132 @@
+{"query": "qf19_videos_people_talking", "acc": "ds000007", "label": "not_relevant", "reason": "Stop-signal task with spoken and manual responses; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds000113", "label": "relevant", "reason": "studyforrest includes task-movie: 2-hour audiovisual Forrest Gump feature film at 3T fMRI; characters talk on screen."}
+{"query": "qf19_videos_people_talking", "acc": "ds000205", "label": "partially_relevant", "reason": "fMRI of short affect-eliciting audiovisual clips; no evidence the clips show people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds000221", "label": "not_relevant", "reason": "Resting-state fMRI and structural only; 'speech' is a questionnaire name."}
+{"query": "qf19_videos_people_talking", "acc": "ds000232", "label": "partially_relevant", "reason": "fMRI with short silent 3D-animated individual-face video stimuli; no speech or talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds000243", "label": "not_relevant", "reason": "Resting-state fMRI only; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds000253", "label": "not_relevant", "reason": "Action video game players doing an experimental task; 'video' refers to games, not a watched video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds001110", "label": "relevant", "reason": "fMRI while watching Sherlock and Merlin TV episodes (stimuli/Sherlock.m4v, Merlin.mp4); live-action dialogue."}
+{"query": "qf19_videos_people_talking", "acc": "ds001145", "label": "relevant", "reason": "fMRI while watching a complete 25-minute Twilight Zone TV episode (stimuli tz-part1/2.m4v); live-action dialogue."}
+{"query": "qf19_videos_people_talking", "acc": "ds001338", "label": "partially_relevant", "reason": "fMRI while listening to an audio-only narrative (story audio wav); spoken story without video."}
+{"query": "qf19_videos_people_talking", "acc": "ds001430", "label": "not_relevant", "reason": "Object memory task with item repetitions; no video or spoken story."}
+{"query": "qf19_videos_people_talking", "acc": "ds001545", "label": "relevant", "reason": "fMRI while watching clips from live-action film The Grand Budapest Hotel (intact and scrambled), mp4 stimuli included."}
+{"query": "qf19_videos_people_talking", "acc": "ds001769", "label": "relevant", "reason": "Denoised fMRI of the studyforrest audio-visual Forrest Gump movie watching (3T, eight segments)."}
+{"query": "qf19_videos_people_talking", "acc": "ds002168", "label": "not_relevant", "reason": "Mnemonic similarity task with object pictures; no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds002236", "label": "not_relevant", "reason": "Children's word-pair rhyme/spelling/semantic judgement tasks; isolated words, no video or stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds002322", "label": "partially_relevant", "reason": "fMRI while listening to an audiobook chapter of Alice in Wonderland; spoken story, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds002382", "label": "not_relevant", "reason": "Listening to and repeating isolated spoken CVC words; no video, no stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds002425", "label": "partially_relevant", "reason": "fMRI responses to 2,185 short emotion-evoking video clips (visual stimulus); no evidence of visible talking or speech content."}
+{"query": "qf19_videos_people_talking", "acc": "ds002634", "label": "not_relevant", "reason": "Speech/vocalization production tasks mapping larynx motor cortex; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds002684", "label": "partially_relevant", "reason": "Only a name and a 'movie' task: animated film Kung Fu Panda, animal characters, no README confirming speech or human speakers."}
+{"query": "qf19_videos_people_talking", "acc": "ds002687", "label": "not_relevant", "reason": "N-back working memory with reward; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds002741", "label": "partially_relevant", "reason": "fMRI with silent animated head-model videos of facial expression movements; no speech."}
+{"query": "qf19_videos_people_talking", "acc": "ds002841", "label": "partially_relevant", "reason": "fMRI while viewing videos of objects interacting (intuitive physics); video without people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds002843", "label": "not_relevant", "reason": "Delay-discounting and risky-choice tasks plus rest; 'video games' only names the training control."}
+{"query": "qf19_videos_people_talking", "acc": "ds002896", "label": "not_relevant", "reason": "Resting-state fMRI in tinnitus; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds003017", "label": "relevant", "reason": "fMRI while watching the second half of feature film The Grand Budapest Hotel; large cast, live-action dialogue."}
+{"query": "qf19_videos_people_talking", "acc": "ds003095", "label": "relevant", "reason": "fMRI while watching 24 immigration-policy videos: news clips, campaign ads and public speeches (paper abstract)."}
+{"query": "qf19_videos_people_talking", "acc": "ds003136", "label": "partially_relevant", "reason": "Mothers viewed videos of 3-month-old infants (own/other) during fMRI; video without talking speakers."}
+{"query": "qf19_videos_people_talking", "acc": "ds003171", "label": "partially_relevant", "reason": "Passive listening to an audio clip from the movie Taken under sedation; spoken narrative audio only, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds003233", "label": "unsure", "reason": "fMRI while students watched course lecture videos (spoken lectures), but text never says whether the lecturer's face is on screen."}
+{"query": "qf19_videos_people_talking", "acc": "ds003358", "label": "not_relevant", "reason": "Participants played a video game (Asteroid Impact) in the scanner; no watched video of people."}
+{"query": "qf19_videos_people_talking", "acc": "ds003381", "label": "not_relevant", "reason": "Scans for head-pose estimation from eye-tracker video; 'video' is the eye camera, not a stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds003459", "label": "not_relevant", "reason": "Auditory and visual word-pair judgement tasks; isolated words, no video or stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds003481", "label": "not_relevant", "reason": "Pragmatic language tasks with written sentences displayed on screen; no video or spoken stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds003511", "label": "not_relevant", "reason": "Participants overtly recall autobiographical memories in the scanner; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds003524", "label": "relevant", "reason": "fMRI while watching the first two episodes of TV drama Friday Night Lights; live-action dialogue."}
+{"query": "qf19_videos_people_talking", "acc": "ds003542", "label": "not_relevant", "reason": "Semantic judgement with print and speech word stimuli and verbal production; no video or stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds003548", "label": "not_relevant", "reason": "Static photographs of emotional faces (Pictures of Facial Affect); no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds003633", "label": "not_relevant", "reason": "Forrest Gump audio-visual movie but recorded with MEG; only anatomical MRI, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds003688", "label": "relevant", "reason": "fMRI (30 participants) while watching a short audiovisual film with alternating speech and music blocks; speech annotations provided."}
+{"query": "qf19_videos_people_talking", "acc": "ds003717", "label": "relevant", "reason": "fMRI with video recordings of a female actor's head and shoulders speaking single words (visual-only and audiovisual); face visible, clips short."}
+{"query": "qf19_videos_people_talking", "acc": "ds003764", "label": "not_relevant", "reason": "Non-speech auditory category learning with feedback; no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds003834", "label": "not_relevant", "reason": "1-back task on familiar face images; the Grand Budapest movie data are in a separate dataset (ds003017)."}
+{"query": "qf19_videos_people_talking", "acc": "ds003872", "label": "not_relevant", "reason": "Self-paced reading of scientific texts plus rest; no video or spoken stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds003974", "label": "not_relevant", "reason": "Self-paced reading of scientific texts plus rest; no video or spoken stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds004042", "label": "relevant", "reason": "fMRI while watching 10 short cinematic films (~50 min) described as realistic audiovisual narratives, then spoken recall."}
+{"query": "qf19_videos_people_talking", "acc": "ds004086", "label": "not_relevant", "reason": "Recognition memory test for old and new words; no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds004121", "label": "not_relevant", "reason": "EEG-only simulated driving with audio stimuli; no fMRI, no video of people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds004123", "label": "not_relevant", "reason": "EEG-only simulated driving study; no fMRI, no video of people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds004130", "label": "not_relevant", "reason": "Phenotype aggregation example with one anatomical scan; no functional data or video."}
+{"query": "qf19_videos_people_talking", "acc": "ds004146", "label": "partially_relevant", "reason": "fMRI includes passive movie watching task 'partlycloudy' (animated Pixar short for Theory of Mind); animated clip without spoken dialogue."}
+{"query": "qf19_videos_people_talking", "acc": "ds004196", "label": "not_relevant", "reason": "Inner-speech production task with EEG-fMRI; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds004285", "label": "not_relevant", "reason": "Repetition of isolated spoken words in noise; no video, no stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds004301", "label": "not_relevant", "reason": "Listening to 672 isolated Chinese concept words; no video or stories."}
+{"query": "qf19_videos_people_talking", "acc": "ds004323", "label": "not_relevant", "reason": "Participants play Atari-style video games in the scanner; no video of people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds004456", "label": "partially_relevant", "reason": "Mostly speech production tasks; includes Alice language localizer (listening to Alice in Wonderland passages), audio only, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds004467", "label": "relevant", "reason": "fMRI while watching Sesame Street video clips of dialogue and monologue; talking puppet characters on screen, forward and reversed audio."}
+{"query": "qf19_videos_people_talking", "acc": "ds004510", "label": "partially_relevant", "reason": "Silent animated short films (Partly Cloudy, La Luna, Presto, Sintel) and audio-only multispeaker stories; no visible talking people."}
+{"query": "qf19_videos_people_talking", "acc": "ds004542", "label": "partially_relevant", "reason": "fMRI with 250 silent 3-second videos of two people in everyday actions; video without audible talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds004569", "label": "not_relevant", "reason": "Movie clip (The Good, the Bad and the Ugly) recorded with HD-DOT optical tomography; NIfTI files are DOT, not fMRI."}
+{"query": "qf19_videos_people_talking", "acc": "ds004597", "label": "not_relevant", "reason": "Speech sequence production task; no description of any video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds004669", "label": "partially_relevant", "reason": "fMRI during spontaneous spoken dialogue with an interlocutor; heard conversational speech, no video of a speaker described."}
+{"query": "qf19_videos_people_talking", "acc": "ds004718", "label": "partially_relevant", "reason": "Older adults listened to The Little Prince audiobook in Cantonese; spoken story without video."}
+{"query": "qf19_videos_people_talking", "acc": "ds004783", "label": "partially_relevant", "reason": "fMRI while watching a 34-minute dance performance video with vocalizations and movement sounds; no talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds004848", "label": "relevant", "reason": "fMRI while watching audiovisual clips (about 13 min total) from the Game of Thrones TV series; live-action dialogue."}
+{"query": "qf19_videos_people_talking", "acc": "ds004884", "label": "not_relevant", "reason": "Chronic stroke aphasia cohort with picture naming and rest fMRI; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds004957", "label": "not_relevant", "reason": "Naming to auditory definitions; speech production task, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds004993", "label": "not_relevant", "reason": "Intracranial EEG only (movie trailers, TIMIT); no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005040", "label": "partially_relevant", "reason": "fMRI clip-viewing task with short ISIS propaganda video clips; text gives no evidence of visible speakers talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds005050", "label": "partially_relevant", "reason": "fMRI while watching animated videos of fictional wedding rituals; animated clips, no evidence of visible talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds005072", "label": "not_relevant", "reason": "Single-subject test upload with tasks 'love' and rest; no description of any video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds005191", "label": "partially_relevant", "reason": "fMRI while viewing and imagining about 2,180 short video clips for caption decoding; no evidence of visible talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds005237", "label": "not_relevant", "reason": "Rest, Stroop and faces/shapes (Hammer) tasks; 'interview' is the clinical assessment, no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds005261", "label": "not_relevant", "reason": "MEG-only speech sequence learning task; no fMRI, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds005339", "label": "unsure", "reason": "Reading-disability fMRI with print/speech localizers and an undocumented 'story' task; unclear whether spoken stories were heard; no video mentioned."}
+{"query": "qf19_videos_people_talking", "acc": "ds005346", "label": "relevant", "reason": "fMRI (30 participants) watching a 25-minute excerpt of reality TV show with unscripted father-child interactions, with audio."}
+{"query": "qf19_videos_people_talking", "acc": "ds005364", "label": "not_relevant", "reason": "Post-COVID reversal-learning fMRI and diffusion; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds005505", "label": "not_relevant", "reason": "HBN EEG-only release; movie clips (Despicable Me, Wimpy Kid) watched during EEG, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005507", "label": "not_relevant", "reason": "HBN EEG-only release; movie clips watched during EEG, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005509", "label": "not_relevant", "reason": "HBN EEG-only release; movie clips watched during EEG, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005511", "label": "not_relevant", "reason": "HBN EEG-only release; movie clips watched during EEG, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005514", "label": "not_relevant", "reason": "HBN EEG-only release; movie clips watched during EEG, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005516", "label": "not_relevant", "reason": "HBN EEG-only release; movie clips watched during EEG, no fMRI in the dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds005531", "label": "relevant", "reason": "fMRI of six participants watching nine narrative dramas and films (~9 hours: Big Bang Theory, Breaking Bad, Suits etc.)."}
+{"query": "qf19_videos_people_talking", "acc": "ds005551", "label": "partially_relevant", "reason": "fMRI while viewing extended movies of actors performing everyday activities; video of actions, no talking described."}
+{"query": "qf19_videos_people_talking", "acc": "ds005623", "label": "partially_relevant", "reason": "fMRI while listening to 10-minute spoken stories in Chinese and Mongolian; audio only, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds005700", "label": "partially_relevant", "reason": "fMRI with five 30-second emotional Bollywood movie clips (calm, horror, song scenes); no evidence the clips show people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds005713", "label": "not_relevant", "reason": "Resting-state fMRI, structural and DTI in trigeminal neuralgia; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds005752", "label": "not_relevant", "reason": "fMRI is resting-state; the 'movie' task belongs to the MEG battery and its content is not described."}
+{"query": "qf19_videos_people_talking", "acc": "ds005850", "label": "partially_relevant", "reason": "fMRI while listening to 10-minute spoken stories in Chinese and Mongolian; audio only, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds005896", "label": "not_relevant", "reason": "Adolescent cohort with face, MID, n-back and rest tasks; 'interview' refers to recruitment, no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds005917", "label": "not_relevant", "reason": "Ketamine trial with dot-probe, emotion evaluation, n-back and rest; 'interview' is diagnostic, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds006033", "label": "not_relevant", "reason": "Inner speech of displayed words with EEG-fMRI; no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds006110", "label": "unsure", "reason": "Psilocybin multi-echo fMRI with 'movie' and 'series' watching tasks, but the film content is not described anywhere."}
+{"query": "qf19_videos_people_talking", "acc": "ds006128", "label": "not_relevant", "reason": "Vibrotactile fingertip pRF mapping; 'movie aperture' is a stimulus mask, no video of people."}
+{"query": "qf19_videos_people_talking", "acc": "ds006222", "label": "not_relevant", "reason": "EEG-only audiovisual flicker during a vigilance task; no fMRI, no video of people."}
+{"query": "qf19_videos_people_talking", "acc": "ds006240", "label": "not_relevant", "reason": "Bilingual language-switching production with localizers; no README, no evidence of video or story stimuli."}
+{"query": "qf19_videos_people_talking", "acc": "ds006319", "label": "not_relevant", "reason": "fMRI while listening to short natural sound clips and dichotic attention; audio only, not stories, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds006515", "label": "relevant", "reason": "fMRI with audiovisual movie watching (avNorth, avCake) plus audio-only and visual-only naturalistic runs; exact film content not detailed."}
+{"query": "qf19_videos_people_talking", "acc": "ds006578", "label": "relevant", "reason": "Title states passive audiovisual movie presentations; task labels budapest0-5 and gump0-5 indicate Grand Budapest Hotel and Forrest Gump."}
+{"query": "qf19_videos_people_talking", "acc": "ds006654", "label": "partially_relevant", "reason": "7T fMRI while repeatedly watching 5-minute cinematic movie clips presented without sound; silent video."}
+{"query": "qf19_videos_people_talking", "acc": "ds006683", "label": "not_relevant", "reason": "Self-generated repetitive-thought reminder phrases followed by SART; 'interview' is a prior session, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds006736", "label": "unsure", "reason": "fMRI while viewing mathematics/history lecture videos and Instagram Reels; spoken video content likely, but visible speaker faces are not described."}
+{"query": "qf19_videos_people_talking", "acc": "ds006780", "label": "not_relevant", "reason": "EEG-only multi-paradigm dataset in autistic children; no fMRI, no video of people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds006883", "label": "not_relevant", "reason": "Infant awake fMRI pictures task only; the videos task is stated as not yet shared."}
+{"query": "qf19_videos_people_talking", "acc": "ds006945", "label": "partially_relevant", "reason": "fMRI while viewing a 10-minute first-person video of exoskeleton walking; video without any talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds006948", "label": "partially_relevant", "reason": "fMRI movie-watching of a 5.8-minute anxiogenic animated movie (Francis); animated clip, no visible people talking described."}
+{"query": "qf19_videos_people_talking", "acc": "ds007034", "label": "not_relevant", "reason": "7T associative learning with static noise, scene and face images plus a syllable sound; no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds007116", "label": "not_relevant", "reason": "Rest and n-back fMRI; 'restfilm' is one subject's rest run where an undescribed movie played by accident."}
+{"query": "qf19_videos_people_talking", "acc": "ds007272", "label": "not_relevant", "reason": "fMRI of static scene images, written captions and mental imagery; no video or speech."}
+{"query": "qf19_videos_people_talking", "acc": "ds007329", "label": "partially_relevant", "reason": "fMRI of 707 short face video clips and a dynamic face localizer; no evidence of audible talking; Budapest movie runs removed."}
+{"query": "qf19_videos_people_talking", "acc": "ds007353", "label": "not_relevant", "reason": "MEG/EEG with anatomical MRI only; action video clips, no fMRI in this dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds007376", "label": "partially_relevant", "reason": "fMRI multi-task run includes 3-minute blocks of watching a fish tank video; video without any people talking."}
+{"query": "qf19_videos_people_talking", "acc": "ds007384", "label": "partially_relevant", "reason": "fMRIPrep derivatives of hyperface (localizer, visualmemory face video clips); no evidence of audible talking, no Budapest runs."}
+{"query": "qf19_videos_people_talking", "acc": "ds007407", "label": "partially_relevant", "reason": "fMRI while listening twice to an 18-minute podcast narrative (Darkend of the Mall); spoken story, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds007436", "label": "not_relevant", "reason": "Multisensory learning task with abstract visual cues paired with auditory or tactile cues; no video of people."}
+{"query": "qf19_videos_people_talking", "acc": "ds007463", "label": "unsure", "reason": "README says movie viewing in DOT and fMRI, but file task labels are only localizers and the movie content is undescribed."}
+{"query": "qf19_videos_people_talking", "acc": "ds007509", "label": "not_relevant", "reason": "EEG-only vigilance task with audiovisual flicker; no fMRI, no video of people."}
+{"query": "qf19_videos_people_talking", "acc": "ds007523", "label": "not_relevant", "reason": "MEG recordings of Le Petit Prince audiobook listening; no fMRI in this dataset."}
+{"query": "qf19_videos_people_talking", "acc": "ds007544", "label": "relevant", "reason": "fMRI of 41 adults watching 8 audiovisual videos (~30 min) including dialogue-present live-action clips (A Little Reunion, A Little Dilemma)."}
+{"query": "qf19_videos_people_talking", "acc": "ds007738", "label": "not_relevant", "reason": "fNIRS-only cocktail-party attention recordings; no fMRI."}
+{"query": "qf19_videos_people_talking", "acc": "ds007763", "label": "not_relevant", "reason": "MEG of word-by-word reading of newspaper articles; no fMRI, no video."}
+{"query": "qf19_videos_people_talking", "acc": "ds007921", "label": "unsure", "reason": "Meditation fMRI of two yogis with two movie-watching control runs; film not included and its content is not described."}
+{"query": "qf19_videos_people_talking", "acc": "ds008162", "label": "not_relevant", "reason": "Precision drawing motor task and rest fMRI; 'interview' is a questionnaire, no video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds008460", "label": "not_relevant", "reason": "Auditory tonotopy with noise bursts, reduced-FOV fMRI; self-selected silent subtitled movie is only an undocumented distractor, not the stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds008495", "label": "partially_relevant", "reason": "fMRI of 10-second procedurally generated animated agent videos plus point-light and physics clips; animated video without speech."}
+{"query": "qf19_videos_people_talking", "acc": "ds008600", "label": "unsure", "reason": "Title names speech and sign language perception with tasks A and V, but no README; stimulus format (video of signer/speaker) unstated."}
+{"query": "qf19_videos_people_talking", "acc": "ds008727", "label": "unsure", "reason": "Naturalistic movie-watching fMRI (movie1-3, 46 subjects), but the films and their content are not described anywhere."}
+{"query": "qf19_videos_people_talking", "acc": "ds008813", "label": "unsure", "reason": "fMRI includes a 'video free observation' stressor run plus environment image blocks; video content is not described."}
+{"query": "qf19_videos_people_talking", "acc": "ds008861", "label": "not_relevant", "reason": "MEG/EEG with structural MRI only, vowel-like sounds; no fMRI; silent video only a distractor."}
+{"query": "qf19_videos_people_talking", "acc": "ds008898", "label": "not_relevant", "reason": "Single-subject sample with only an odor task and no README; no evidence of any video stimulus."}
+{"query": "qf19_videos_people_talking", "acc": "ds008959", "label": "not_relevant", "reason": "Intracranial EEG only, near-threshold audiovisual detection task in epilepsy patients; no fMRI, no video of people."}

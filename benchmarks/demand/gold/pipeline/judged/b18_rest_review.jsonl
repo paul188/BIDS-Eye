@@ -1,0 +1,100 @@
+{"query": "qf15_rest_fmri", "acc": "ds000102", "label": "not_relevant", "reason": "Only task-flanker BOLD is shared; resting-state appears only in the associated papers' analyses, no rest run in files."}
+{"query": "qf15_rest_fmri", "acc": "ds000115", "label": "not_relevant", "reason": "Files hold only letter 0/1/2-back BOLD runs; the paper's resting-state scans are not part of the dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds000138", "label": "not_relevant", "reason": "Spinal cord fMRI with pre/post heat stimulation tasks; no resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds000200", "label": "not_relevant", "reason": "Single olfactory task with task-rest blocks; \"rest\" refers to block baseline, no resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds000214", "label": "not_relevant", "reason": "Only Cyberball task BOLD; rest refers to 13 s rest blocks within the task."}
+{"query": "qf15_rest_fmri", "acc": "ds000234", "label": "not_relevant", "reason": "ASL during visuomotor block paradigm; resting blocks inside the task, no resting-state fMRI run."}
+{"query": "qf15_rest_fmri", "acc": "ds000244", "label": "not_relevant", "reason": "IBC release 1 files list only task runs (archi, HCP, RSVP, clips, retinotopy); no rest run despite uploader tag \"rest eyes open\"."}
+{"query": "qf15_rest_fmri", "acc": "ds000254", "label": "not_relevant", "reason": "README opens with \"resting state data\" but describes and shares only a bilateral finger-tapping ASL/BOLD run with events."}
+{"query": "qf15_rest_fmri", "acc": "ds000255", "label": "not_relevant", "reason": "Visual image reconstruction tasks; rest means rest periods between image blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds001132", "label": "not_relevant", "reason": "Sherlock movie viewing and free recall runs; resting-state only names an ROI atlas."}
+{"query": "qf15_rest_fmri", "acc": "ds001233", "label": "not_relevant", "reason": "Only task-cuedSFM finger movement runs; \"eyes open at rest\" sentence does not describe a separate resting run."}
+{"query": "qf15_rest_fmri", "acc": "ds001242", "label": "not_relevant", "reason": "Tasks fear learning, PPA localizer, spatial detection; \"resting state\" only in a cited HRV paper title."}
+{"query": "qf15_rest_fmri", "acc": "ds001246", "label": "not_relevant", "reason": "Image perception and imagery runs; rest refers to rest blocks in events."}
+{"query": "qf15_rest_fmri", "acc": "ds001506", "label": "not_relevant", "reason": "Perception and imagery runs; rest refers to rest blocks within runs."}
+{"query": "qf15_rest_fmri", "acc": "ds001525", "label": "not_relevant", "reason": "Localizer and covert repetition tasks; rest refers to 14 s resting blocks inside the block design."}
+{"query": "qf15_rest_fmri", "acc": "ds001597", "label": "not_relevant", "reason": "Only task-cuedMFM multi-finger movement runs with events; \"eyes open at rest\" sentence is not a separate resting run."}
+{"query": "qf15_rest_fmri", "acc": "ds002232", "label": "relevant", "reason": "Caltech rsfMRI dataset; OpenNeuro summary lists task \"rest\" with functional MRI in six hemispherectomy-study controls."}
+{"query": "qf15_rest_fmri", "acc": "ds002237", "label": "not_relevant", "reason": "Tasks loc, prememory, postmemory, rsvp only; no text or file evidence of a resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds002241", "label": "not_relevant", "reason": "Drawing and recognition task runs; rest refers to rest periods at run start and end."}
+{"query": "qf15_rest_fmri", "acc": "ds002311", "label": "not_relevant", "reason": "Tasks loc, MOT, pre/post memory only; no resting-state run in files or text."}
+{"query": "qf15_rest_fmri", "acc": "ds002336", "label": "not_relevant", "reason": "EEG-fMRI neurofeedback and motor imagery runs with 20 s rest/task blocks; no standalone resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds002338", "label": "not_relevant", "reason": "EEG-fMRI neurofeedback runs (MIpre, MIpost, 1dNF, 2dNF) with rest blocks; no standalone resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds002425", "label": "not_relevant", "reason": "Emotion video viewing runs only; rest refers to initial/post rest blocks without stimulus."}
+{"query": "qf15_rest_fmri", "acc": "ds002737", "label": "not_relevant", "reason": "One person's Stroop/notStroop task runs for headcase motion tests; rest refers to 30 s periods between blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds003097", "label": "not_relevant", "reason": "AOMIC-ID1000 holds only task-moviewatching BOLD; resting-state is a collection-level phrase (PIOP datasets), not in this dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds003136", "label": "not_relevant", "reason": "Affect and infant video tasks; rest refers to rest blocks within runs."}
+{"query": "qf15_rest_fmri", "acc": "ds003151", "label": "relevant", "reason": "README: resting-state arterial spin labeling scans shared in perf/ (used for the resting-state connectivity paper), plus n-back BOLD."}
+{"query": "qf15_rest_fmri", "acc": "ds003242", "label": "not_relevant", "reason": "Cue-induced craving and midbrain localizer tasks; rest refers to jittered 2-6 s rest periods."}
+{"query": "qf15_rest_fmri", "acc": "ds003430", "label": "not_relevant", "reason": "Image perception/attention task runs; rest refers to initial and end rest blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds003465", "label": "not_relevant", "reason": "DMCC55B shares four cognitive control tasks; paper says resting-state fMRI will be released later, not in this subset."}
+{"query": "qf15_rest_fmri", "acc": "ds003661", "label": "not_relevant", "reason": "Blurred image viewing tasks; rest refers to initial and post rest blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds003676", "label": "unsure", "reason": "Paper analysed task and resting-state diffusion fMRI/BOLD, but README describes no contents and task labels are opaque acquisition codes."}
+{"query": "qf15_rest_fmri", "acc": "ds003721", "label": "relevant", "reason": "README: an additional 6-minute resting-state scan after film encoding (task-BI) plus 5-minute post-clip rest periods; BOLD shared."}
+{"query": "qf15_rest_fmri", "acc": "ds003993", "label": "not_relevant", "reason": "Image perception runs only; rest refers to initial and post rest blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds004092", "label": "relevant", "reason": "Rat fMRI with task labels rspre and rspost; README says resting state assessed before and after RTX injection."}
+{"query": "qf15_rest_fmri", "acc": "ds004161", "label": "unsure", "reason": "Sheep BOLD under generic task label \"data\", README is a template; resting-state fMRI appears only in a related paper."}
+{"query": "qf15_rest_fmri", "acc": "ds004271", "label": "relevant", "reason": "Experiment 2 (GazeCW/GazeCCW runs) is described as gaze direction effects on resting state data: fixation-only 7-minute runs."}
+{"query": "qf15_rest_fmri", "acc": "ds004285", "label": "not_relevant", "reason": "Word repetition listening task in six runs; fixation instruction only, no resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds004327", "label": "not_relevant", "reason": "Odor smelling and imagery task runs with eyes closed; no resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds004465", "label": "relevant", "reason": "Pigeon fMRI: README describes rs-fMRI acquisitions of 1000-1450 volumes during sleep/wake (task-sleep), uploader design \"Resting-State\"."}
+{"query": "qf15_rest_fmri", "acc": "ds004467", "label": "not_relevant", "reason": "Sesame Street language tasks and localizers; rest refers to 22 s rest blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds004665", "label": "relevant", "reason": "OpenNeuro summary lists task \"Resting State\" with functional MRI; README says resting functional connectivity fMRI acquired in young and old adults."}
+{"query": "qf15_rest_fmri", "acc": "ds005012", "label": "not_relevant", "reason": "Only Monetary Incentive Delay task BOLD is shared; \"resting state scan\" appears only in a participant note."}
+{"query": "qf15_rest_fmri", "acc": "ds005191", "label": "not_relevant", "reason": "Video perception and imagery runs; rest refers to rest blocks in events."}
+{"query": "qf15_rest_fmri", "acc": "ds005194", "label": "not_relevant", "reason": "Flickering visual stimulus with eyes open or closed (checker, open, closed tasks); a visual task, not resting state."}
+{"query": "qf15_rest_fmri", "acc": "ds005263", "label": "not_relevant", "reason": "SKIP incentivized reaching task only; the README places resting-state fMRI in a separate SKIP dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds005265", "label": "not_relevant", "reason": "SKIP approach-avoid task only; resting-state fMRI is a separate SKIP dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds005266", "label": "not_relevant", "reason": "SKIP active escape task only; resting-state fMRI is a separate SKIP dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds005295", "label": "not_relevant", "reason": "VWFA task and localizers; rest refers to 4-8 s fixation periods between trials."}
+{"query": "qf15_rest_fmri", "acc": "ds005783", "label": "not_relevant", "reason": "Navigation video experiment and localizer; \"eyes open\" is a task instruction, no resting run."}
+{"query": "qf15_rest_fmri", "acc": "ds005891", "label": "not_relevant", "reason": "Named \"RSfMRI\" but data are a release-from-suppression object task (fast event-related); no resting-state run."}
+{"query": "qf15_rest_fmri", "acc": "ds006040", "label": "relevant", "reason": "Simultaneous EEG-fMRI; README lists resting state eyes open and closed among tasks, matching task labels eo/ec."}
+{"query": "qf15_rest_fmri", "acc": "ds006110", "label": "relevant", "reason": "PsiConnect: OpenNeuro summary lists task \"rest\" with functional MRI; README says design includes resting-state scans before/after psilocybin."}
+{"query": "qf15_rest_fmri", "acc": "ds006576", "label": "not_relevant", "reason": "BOLD tasks are decision, study, reward, localizer etc.; the \"rest\" label is the EEG nap/quiet-wake session, not fMRI."}
+{"query": "qf15_rest_fmri", "acc": "ds006577", "label": "not_relevant", "reason": "Only task-TAU2 attention task BOLD; README states no resting state imaging data were included."}
+{"query": "qf15_rest_fmri", "acc": "ds006683", "label": "relevant", "reason": "README file layout lists task-restingstate bold alongside task-PDT; OpenNeuro summary lists \"Resting State\" task."}
+{"query": "qf15_rest_fmri", "acc": "ds006736", "label": "relevant", "reason": "README: preTestRest and postTestRest resting-state scans with fixation before and after the iPad task."}
+{"query": "qf15_rest_fmri", "acc": "ds006883", "label": "not_relevant", "reason": "Only infant pictures task shared; README says resting state is being prepared for later release."}
+{"query": "qf15_rest_fmri", "acc": "ds006905", "label": "relevant", "reason": "README: task-fix is a resting-state fixation condition (plus Inscapes and films); paper uses resting-state fMRI."}
+{"query": "qf15_rest_fmri", "acc": "ds006948", "label": "relevant", "reason": "README: multiecho fMRI with pre-movie and post-movie resting-state runs (restpre, restpost) around the movie task."}
+{"query": "qf15_rest_fmri", "acc": "ds007022", "label": "relevant", "reason": "README: preprocessed 10-minute eyes-open resting-state fMRI at six or seven time-points is included alongside task data."}
+{"query": "qf15_rest_fmri", "acc": "ds007036", "label": "relevant", "reason": "OpenNeuro summary lists task \"rest\" with functional MRI; README says 7T protocol includes resting state and task fMRI."}
+{"query": "qf15_rest_fmri", "acc": "ds007048", "label": "not_relevant", "reason": "Only an auditory task (task-audio) multi-echo fMRI; resting-state mentioned only as background in the paper abstract."}
+{"query": "qf15_rest_fmri", "acc": "ds007088", "label": "relevant", "reason": "Penn LEAD fMRIPrep derivatives include preprocessed BOLD timeseries for task labels rest and restfilm besides nback."}
+{"query": "qf15_rest_fmri", "acc": "ds007102", "label": "not_relevant", "reason": "Only task-ffp functional scans; README says the resting-state scans are in another dataset (ds003592)."}
+{"query": "qf15_rest_fmri", "acc": "ds007216", "label": "relevant", "reason": "EEG-fMRI runs of a resting state condition with fixation and intermittent experience sampling (rs-MDES, task-experiencesampling)."}
+{"query": "qf15_rest_fmri", "acc": "ds007276", "label": "relevant", "reason": "README: seven ~10-minute resting-state imaging runs for 8 of 17 subjects; OpenNeuro summary lists task \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds007376", "label": "not_relevant", "reason": "One continuous multi-task run (task-ctask); rest occurs only as 3-minute fixation blocks interleaved with math, memory, video blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds007463", "label": "not_relevant", "reason": "Localizer and movie-viewing tasks in DOT and fMRI; resting-state only mentioned as contrast in the paper abstract."}
+{"query": "qf15_rest_fmri", "acc": "ds007522", "label": "relevant", "reason": "Precision Aging Network: OpenNeuro summary lists task \"rest\" with functional MRI; README refers to resting-state fMRI acquisitions."}
+{"query": "qf15_rest_fmri", "acc": "ds007535", "label": "not_relevant", "reason": "Semantic decision block task for language laterality; rest refers to 24 s resting periods between blocks."}
+{"query": "qf15_rest_fmri", "acc": "ds007544", "label": "relevant", "reason": "README: includes a 6-minute eyes-open resting-state fMRI scan plus movie viewing; OpenNeuro tasks list \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds007637", "label": "relevant", "reason": "README: two runs of open-eye resting-state five-echo fMRI plus n-back; OpenNeuro tasks list \"rest eyes open\"."}
+{"query": "qf15_rest_fmri", "acc": "ds007694", "label": "relevant", "reason": "README: MRI for 139 participants includes resting-state fMRI; OpenNeuro tasks list \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds007761", "label": "not_relevant", "reason": "fMRI tasks are checker localizer and luminance flicker stimulation with eyes closed during sleep-wake; visually stimulated, not resting-state runs."}
+{"query": "qf15_rest_fmri", "acc": "ds007768", "label": "not_relevant", "reason": "FDG-PET and T1w only; \"resting-state\" describes the PET scan, no functional MRI in the dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds007783", "label": "relevant", "reason": "Mouse resting-state fMRI (task-rest_bold) during awake baseline and propofol anesthesia, per README and OpenNeuro summary."}
+{"query": "qf15_rest_fmri", "acc": "ds007806", "label": "not_relevant", "reason": "fMRI task is \"face\"; rest refers to resting MRS blocks, not resting-state fMRI."}
+{"query": "qf15_rest_fmri", "acc": "ds007857", "label": "relevant", "reason": "MiND study README: fMRI includes sensory/motor tasks plus resting state; OpenNeuro tasks list \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds007859", "label": "relevant", "reason": "Longitudinal task-free (resting-state) fMRI in 36 rats across five sessions; OpenNeuro tasks list \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds007862", "label": "not_relevant", "reason": "Orientation-discrimination task and localizer at 7T; \"rest\" is a condition within task scans."}
+{"query": "qf15_rest_fmri", "acc": "ds007908", "label": "relevant", "reason": "README: multi-echo resting-state BOLD (eyes open), up to two ~867 s runs per subject, in MS patients and controls."}
+{"query": "qf15_rest_fmri", "acc": "ds007921", "label": "relevant", "reason": "README: task-yrs is a baseline run of Yogic Resting State, sometimes with Spontaneous Resting State block; N=2 meditators."}
+{"query": "qf15_rest_fmri", "acc": "ds008055", "label": "relevant", "reason": "README: task-rest resting-state fMRI for 108 participants alongside creativity tasks."}
+{"query": "qf15_rest_fmri", "acc": "ds008064", "label": "relevant", "reason": "README lists resting-state fMRI besides goal priming task, pre and post rTMS; OpenNeuro tasks list \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds008110", "label": "relevant", "reason": "README: resting-state fMRI (EPI, TR 2000 ms) in OCD patients with T1w and DTI; OpenNeuro tasks list \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds008162", "label": "relevant", "reason": "README: additional scans included three resting-state runs besides drawing task fMRI; OpenNeuro tasks list \"restingstate\"."}
+{"query": "qf15_rest_fmri", "acc": "ds008174", "label": "relevant", "reason": "README: T1-weighted and resting-state fMRI scans from cervical dystonia patients across four sessions; task \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds008462", "label": "not_relevant", "reason": "Resting-state MEG with structural MRI only; no functional MRI modality in the dataset."}
+{"query": "qf15_rest_fmri", "acc": "ds008579", "label": "relevant", "reason": "GRMPY raw data: OpenNeuro summary lists task \"Resting State\" with functional MRI, alongside n-back and face tasks."}
+{"query": "qf15_rest_fmri", "acc": "ds008765", "label": "relevant", "reason": "README: tasks include rest (resting state) shared as raw two-echo fMRI runs, plus three semantic task runs."}
+{"query": "qf15_rest_fmri", "acc": "ds008792", "label": "not_relevant", "reason": "Only verbal fluency, finger opposition and oddball task runs; eyes-closed periods are baseline blocks within tasks."}
+{"query": "qf15_rest_fmri", "acc": "ds008813", "label": "relevant", "reason": "README: BOLD series include a 6-minute resting state run (basal, stressed, post-intervention states) plus stimulus run; task \"rest\"."}
+{"query": "qf15_rest_fmri", "acc": "ds008847", "label": "not_relevant", "reason": "Title names resting-state, but OpenNeuro summary shows structural MRI only, no tasks; files are behaviour/edge CSV tables."}
+{"query": "qf15_rest_fmri", "acc": "ds008942", "label": "relevant", "reason": "README: task-rest BOLD/VASO images (SS-SI VASO) and resting ASL; OpenNeuro tasks list \"rest\" with functional MRI."}
+{"query": "qf15_rest_fmri", "acc": "ds008970", "label": "relevant", "reason": "README: nine resting-state BOLD runs from eight participants at 5T; uploader fields say resting-state fMRI."}
+{"query": "qf15_rest_fmri", "acc": "ds008987", "label": "relevant", "reason": "Shares cleaned resting-state BOLD derivatives (task-rest_desc-clean_bold) for 40 adults."}
+{"query": "qf15_rest_fmri", "acc": "ds009028", "label": "relevant", "reason": "Awake-mouse BOLD runs all labelled task-rest; README confirms resting-state acquisition without stimulation."}
+{"query": "qf15_rest_fmri", "acc": "ds009057", "label": "relevant", "reason": "Uploader fields: design \"Resting state FMRI\", task \"rest\" for squirrel monkey spinal cord BOLD; README text mentions stimulus-evoked runs."}
+{"query": "qf15_rest_fmri", "acc": "ds009107", "label": "relevant", "reason": "Same PSYCH-REST content: README describes 6-minute resting state BOLD runs plus stimulus run; task \"rest\" listed."}

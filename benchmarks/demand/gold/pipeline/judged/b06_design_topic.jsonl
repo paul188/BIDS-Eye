@@ -1,0 +1,149 @@
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds000031", "label": "partially_relevant", "reason": "Single subject, 108 sessions with a rest run plus tasks; no evidence of rest both before and after a task within a session."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds000138", "label": "not_relevant", "reason": "Spinal fMRI of mechanical stimulation before and after heat sensitization; task runs only, no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds000256", "label": "not_relevant", "reason": "Children scanned at rest with fixation or movie and motion feedback; all runs are rest conditions, no task between rest runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001226", "label": "not_relevant", "reason": "Pre-operative data only, a single resting-state run per subject; no task and no second rest run."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001233", "label": "not_relevant", "reason": "Only the cued finger-movement task (cuedsfm) in pre and post training sessions; no resting-state runs recorded."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001408", "label": "partially_relevant", "reason": "Resting-state fMRI immediately before and after one 30-min EEG neurofeedback or sham session done outside the scanner; no in-scanner task."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001597", "label": "not_relevant", "reason": "Only the cued multi-finger task (cuedmfm) in pre and post training sessions; no resting-state runs recorded."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001839", "label": "not_relevant", "reason": "rest15/rest30 are spinal-stimulation runs with events files beside stand and step runs; no resting-state before and after a task documented."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001907", "label": "partially_relevant", "reason": "Each session has resting scans plus six ANT task runs; paper describes baseline rest before the task, no post-task rest shown."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds001928", "label": "partially_relevant", "reason": "Four rs-fMRI runs before and after 5-min music or pink-noise exposure in one visit; listening itself is not a scanned task."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds002080", "label": "not_relevant", "reason": "Post-operative data only, one resting-state run per subject; no task and no rest pair within a session."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds002241", "label": "not_relevant", "reason": "Drawing and recognition task runs only; no resting-state runs in the dataset."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds002278", "label": "partially_relevant", "reason": "Sessions hold a rest run alongside several tasks (arithmetic, eirt, pst, movie); order and rest before-and-after a task not documented."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds002702", "label": "not_relevant", "reason": "7T visual experiments (floc, ring) only; \"before and after\" refers to fieldmaps, no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds002940", "label": "not_relevant", "reason": "Resting-state only, collected pre- and post-season months apart; no task and not one scanning session."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003171", "label": "relevant", "reason": "Single session: rest and audio-listening task runs at four sedation levels (awake, light, deep, recovery), so rest precedes and follows task runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003242", "label": "not_relevant", "reason": "Cue-induced craving and midbrain localizer tasks only; no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003357", "label": "partially_relevant", "reason": "Resting-state fMRI before and after an 8-week HRV biofeedback training outside the scanner; rest only, sessions weeks apart."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003424", "label": "partially_relevant", "reason": "One session with a resting run and four taste task runs; only one rest run, order not described."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003437", "label": "partially_relevant", "reason": "Each diet session has one resting-state run plus motor and spatial navigation task runs; single rest run per session."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003440", "label": "not_relevant", "reason": "Localizer task runs before and after caffeine; no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003445", "label": "unsure", "reason": "One subject, one session: 2 localizer, 2 eyes-open and 2 eyes-closed rest runs; run order not documented anywhere in the text."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003453", "label": "partially_relevant", "reason": "Resting-state run-1 fasted and run-2 after a glucose or ketone bolus in the same session; drug-like intervention, no task."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003455", "label": "relevant", "reason": "Single subject; each session repeats rest, spatial navigation and motor runs in three blocks (run-004/010/016), so rest precedes and follows tasks."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003495", "label": "unsure", "reason": "Each session has two resting-state acquisitions (mb3, seq) and an emotion-matching task; acquisition order is not described."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds003823", "label": "partially_relevant", "reason": "Rest and emotion-regulation task fMRI in pre and post sessions around a 5-week HRV biofeedback training; no rest-task-rest order shown."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004092", "label": "relevant", "reason": "Rats: one session with resting state before (rspre) and after (rspost) heat stimulation fMRI (task-heat); criterion names no population."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004101", "label": "partially_relevant", "reason": "Resting-state fMRI before and after a course of 15 EEG neurofeedback sessions outside the scanner; rest only, weeks apart."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004109", "label": "relevant", "reason": "Single session with rest1, prelearn1/2, rest2, emolearn, rest3: rest runs before and after learning tasks."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004182", "label": "relevant", "reason": "10-min resting-state scan before and after three runs of magic-trick video encoding in the scanner, one session."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004327", "label": "not_relevant", "reason": "Five odor smell/imagery task runs only; pre/post refers to ratings, no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004467", "label": "not_relevant", "reason": "Language and theory-of-mind task runs only; \"rest\" refers to rest blocks inside task runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004592", "label": "partially_relevant", "reason": "Sessions contain a rest run (rest1, rest2) plus gradCPT and movie runs; one rest per session, no rest after task documented."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004630", "label": "relevant", "reason": "One session: resting state before (restpre), five passive spider-image viewing runs, resting state after (restpost)."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds004663", "label": "not_relevant", "reason": "Commercial clips before and after a TV clip (commpre, tv, commpost); all stimulus runs, no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005237", "label": "unsure", "reason": "One session with four resting-state runs, two Stroop and one faces task run; the order of runs is not stated."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005405", "label": "partially_relevant", "reason": "Resting-state fMRI immediately before and after a ketone or glucose bolus on each day; drug-like intervention, no task."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005464", "label": "relevant", "reason": "One session: pre-encoding rest, learning run 1, rest, learning run 2, post-encoding rest (3 rest and 2 encoding runs)."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005518", "label": "not_relevant", "reason": "Only the narrative listening run is scanned; bidding task before and after, no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005581", "label": "relevant", "reason": "Sessions hold rest, encoding and similarity runs; paper reports increases in post-learning rest connectivity, i.e. rest before and after encoding."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005713", "label": "partially_relevant", "reason": "Resting-state fMRI before surgery and at follow-up after surgery in 64 patients; intervention is surgery, scans months apart, no task."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds005849", "label": "unsure", "reason": "Rest and task runs under DBS off/low/high-frequency stimulation across sessions; no README, run order within a session unknown."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006072", "label": "partially_relevant", "reason": "Rest and task runs in sessions before, during and after psilocybin or methylphenidate; within-session order of rest and task not documented."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006110", "label": "partially_relevant", "reason": "Two sessions before and after psilocybin, each with rest plus meditation, music and movie runs; no rest before-and-after task shown."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006303", "label": "partially_relevant", "reason": "Each session has one 12-min rest run and the threat task (tau1/tau2); task-rest order differs by cohort, single rest run."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006503", "label": "partially_relevant", "reason": "Single subject, 102 sessions with a rest run plus QCT and breath-hold tasks; only one rest run per session evident."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006644", "label": "partially_relevant", "reason": "Resting-state fMRI two days before and after DMT-harmine or placebo at a meditation retreat; drug intervention, no task, different days."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006893", "label": "partially_relevant", "reason": "Rest at baseline and 30 min after intranasal insulin, food-cue task at 40 min; rest-rest-task around a drug, no post-task rest."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006905", "label": "partially_relevant", "reason": "Fixation rest plus film and Inscapes viewing in sessions before and after 10-week skills training outside the scanner."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006948", "label": "relevant", "reason": "One session: pre-movie resting-state, anxiogenic movie run (task-francis), post-movie resting-state; movie fixed between the two rests."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds006952", "label": "partially_relevant", "reason": "Single session with one rest run plus stroop, video and restorative-image runs; no README, rest before and after not shown."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds007022", "label": "partially_relevant", "reason": "README lists resting-state fMRI plus five tasks at each of 6-7 time-points around Braille/music training; one rest per session."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds007116", "label": "unsure", "reason": "Each session has two resting-state runs and one n-back run; run order is not given in README or paper."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds007345", "label": "partially_relevant", "reason": "Resting-state fMRI before and after meningioma surgery (pre and follow-up folders); surgical intervention, no task, separate days."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds007512", "label": "not_relevant", "reason": "Image/caption viewing and imagery task only (coco2); no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds008022", "label": "not_relevant", "reason": "Finger tapping and body localizer tasks before and after amputation; no resting-state runs."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds008064", "label": "partially_relevant", "reason": "Resting-state and goal-priming task fMRI before and after six weeks of rTMS plus psychotherapy; no rest-task-rest order shown."}
+{"query": "qf12_rest_task_rest_one_day", "acc": "ds009055", "label": "not_relevant", "reason": "Milkshake taste task runs before and after diets; no resting-state runs."}
+{"query": "qp11_memory_consolidation", "acc": "ds000168", "label": "relevant", "reason": "fMRI of awake offline processing after paired-associate encoding, tests memory reactivation account; 35 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds000170", "label": "relevant", "reason": "Title states motor skill (memory) consolidation, trained vs untrained sequence fMRI; 183 events files. README gives no further detail."}
+{"query": "qp11_memory_consolidation", "acc": "ds000201", "label": "not_relevant", "reason": "Sleep deprivation effects on emotion, rest and attention tasks; no memory consolidation paradigm."}
+{"query": "qp11_memory_consolidation", "acc": "ds001430", "label": "partially_relevant", "reason": "fMRI of item repetition and source memory test within one session; reactivation at re-exposure, no consolidation or delay question."}
+{"query": "qp11_memory_consolidation", "acc": "ds001454", "label": "relevant", "reason": "Hippocampal replay during post-learning rest, sleep vs wake groups with second session about 12 h later; 384 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds001612", "label": "partially_relevant", "reason": "fMRI of offline replay during rest in reinforcement learning; no events files recorded or listed, empty README."}
+{"query": "qp11_memory_consolidation", "acc": "ds002311", "label": "partially_relevant", "reason": "Word-scene learning with pre/post memory tests and cued reactivation during tracking; partial-retrieval weakening, not consolidation; events present."}
+{"query": "qp11_memory_consolidation", "acc": "ds002773", "label": "relevant", "reason": "Three-day A-B/A-C updating fMRI, final cued recall a day after updating, consolidation discussed; 304 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds003511", "label": "relevant", "reason": "fMRI recall of recent vs remote autobiographical memories testing standard model of systems consolidation; 298 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds003574", "label": "relevant", "reason": "EEG-fMRI of neural reactivation during sleep after game learning, memory test next day; 110 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds003716", "label": "not_relevant", "reason": "Subcortical DMN connectivity map and one ex vivo anatomical scan; 'reactivating' is incidental, no memory task or fMRI data."}
+{"query": "qp11_memory_consolidation", "acc": "ds003721", "label": "relevant", "reason": "Trauma-film fMRI with post-encoding rest scans, reactivation session 24 h later, recall after a week; 108 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds003835", "label": "relevant", "reason": "Videos encoded day 1, reactivated next day in fMRI to study memory updating; rest runs; 239 events files. Reconsolidation-type design."}
+{"query": "qp11_memory_consolidation", "acc": "ds004109", "label": "relevant", "reason": "fMRI with three rest runs around learning, studies rapid neural reactivation and memory integration after emotional learning; 93 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds004182", "label": "relevant", "reason": "Pre/post-encoding rest fMRI, memory tested a week later, uploader lists consolidation; event files shared under derivatives/eventfiles_magictrickwatching."}
+{"query": "qp11_memory_consolidation", "acc": "ds004731", "label": "not_relevant", "reason": "Sleep-dependent consolidation studied with leucine PET and T1w only; no fMRI."}
+{"query": "qp11_memory_consolidation", "acc": "ds005346", "label": "partially_relevant", "reason": "Naturalistic video fMRI followed by 15-min eyes-closed run meant to capture spontaneous replay; no events files recorded."}
+{"query": "qp11_memory_consolidation", "acc": "ds005386", "label": "not_relevant", "reason": "Attention vs expectation preparation task; 'preactivations' keyword incidental, no memory consolidation."}
+{"query": "qp11_memory_consolidation", "acc": "ds005449", "label": "not_relevant", "reason": "Aversive/appetitive conditioning; CS 'reactivating' US patterns is representational analysis, not a consolidation or episodic memory study."}
+{"query": "qp11_memory_consolidation", "acc": "ds005464", "label": "relevant", "reason": "Paired-associate encoding with pre- and post-encoding rest runs to measure offline reactivation; 58 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds005530", "label": "relevant", "reason": "Targeted memory reactivation during REM sleep, fMRI arousal task 48 h later; 60 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds005581", "label": "relevant", "reason": "Systems consolidation study: sequence encoding, post-learning rest connectivity, two sessions; 960 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds005946", "label": "not_relevant", "reason": "EEG metaphor/imagery picture matching; 'Consolidator Grant' is the only keyword hit, no fMRI."}
+{"query": "qp11_memory_consolidation", "acc": "ds006265", "label": "relevant", "reason": "7T fMRI tracking associative memories from learning to 30-min and 24-h retrieval, task-consolidation runs; 60 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds006266", "label": "relevant", "reason": "7T fMRI mapping associative memories from learning to 30-min and 24-h retrieval, consolidation task runs; 60 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds006502", "label": "not_relevant", "reason": "Motor skill consolidation studied with MEG plus T1w only; no fMRI data."}
+{"query": "qp11_memory_consolidation", "acc": "ds006576", "label": "relevant", "reason": "Uploader domain memory consolidation; three fMRI sessions around REM/NREM nap or wake; 1070 events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds007626", "label": "relevant", "reason": "fMRI tracks hippocampal reactivation during 90-s post-encoding delay predicting later memory; task-drm_events.json at root indicates events files."}
+{"query": "qp11_memory_consolidation", "acc": "ds008765", "label": "not_relevant", "reason": "Semantic taxonomic/thematic task in ageing; 'consolidator grant' funding mention only."}
+{"query": "qx02_spinal", "acc": "ds000138", "label": "relevant", "reason": "Spinal fMRI of mechanical hyperalgesia; curators note the dataset consists of spinal cord data."}
+{"query": "qx02_spinal", "acc": "ds001839", "label": "relevant", "reason": "Spinal stimulation stepping/standing dataset; examines effects of spinal stimulation on cortical activation."}
+{"query": "qx02_spinal", "acc": "ds001919", "label": "relevant", "reason": "Spinal Cord MRI Public Database (multi-subject): anatomical and diffusion spinal cord imaging."}
+{"query": "qx02_spinal", "acc": "ds001945", "label": "not_relevant", "reason": "Mouse lemur brain atlas; only hit is 'cerebro-spinal fluid' regions."}
+{"query": "qx02_spinal", "acc": "ds002393", "label": "relevant", "reason": "Spinal Cord MRI Public Database (single-subject): spinal cord imaging across sites."}
+{"query": "qx02_spinal", "acc": "ds002608", "label": "not_relevant", "reason": "Resting-state brain fMRI predicting pain sensitivity; 'supraspinal' in abstract only."}
+{"query": "qx02_spinal", "acc": "ds002734", "label": "not_relevant", "reason": "EEG-fMRI value-based decisions; 'corticospinal excitability' mentioned in passing."}
+{"query": "qx02_spinal", "acc": "ds003029", "label": "not_relevant", "reason": "Epilepsy iEEG dataset; only 'cerebrospinal fluid' channel label mention."}
+{"query": "qx02_spinal", "acc": "ds003325", "label": "not_relevant", "reason": "Mouse brain T1w in ALS-FTD model; hit is 'cortical/dendritic spine loss' in paper, no spinal cord data."}
+{"query": "qx02_spinal", "acc": "ds003521", "label": "not_relevant", "reason": "Naturalistic movie brain fMRI; only 'cerebrospinal fluid' in fMRIPrep boilerplate."}
+{"query": "qx02_spinal", "acc": "ds003684", "label": "not_relevant", "reason": "7T brain fMRI of finger movement planning in motor/somatosensory cortex; nothing about spinal cord."}
+{"query": "qx02_spinal", "acc": "ds003873", "label": "relevant", "reason": "Somatosensory evoked potentials recorded from the human spinal cord to median/tibial nerve stimulation."}
+{"query": "qx02_spinal", "acc": "ds004068", "label": "relevant", "reason": "Spinal cord MRI data (T2w, field maps, z-shimmed EPI) from 48 participants for spinal fMRI methods."}
+{"query": "qx02_spinal", "acc": "ds004169", "label": "not_relevant", "reason": "Twin brain imaging dataset; 'cortico-spinal connections' mentioned only in a related paper abstract."}
+{"query": "qx02_spinal", "acc": "ds004213", "label": "not_relevant", "reason": "Cardiac-aligned brain fMRI; only 'cerebrospinal fluid' mentions."}
+{"query": "qx02_spinal", "acc": "ds004386", "label": "relevant", "reason": "Resting-state spinal cord fMRI in 48 participants; uploader domain 'spinal cord'."}
+{"query": "qx02_spinal", "acc": "ds004388", "label": "relevant", "reason": "Simultaneous EEG and electrospinography: somatosensory evoked potentials in the human spinal cord."}
+{"query": "qx02_spinal", "acc": "ds004389", "label": "relevant", "reason": "Electrospinography with EEG: spinal cord evoked potentials to mixed and sensory nerve stimulation."}
+{"query": "qx02_spinal", "acc": "ds004478", "label": "not_relevant", "reason": "Visual checkerboard EEG-fMRI of cerebrospinal fluid flow in the brain; not spinal cord or spine."}
+{"query": "qx02_spinal", "acc": "ds004484", "label": "not_relevant", "reason": "7T visual checkerboard brain fMRI; 'cerebrospinal fluid' in title only."}
+{"query": "qx02_spinal", "acc": "ds004493", "label": "not_relevant", "reason": "3T visual flicker brain fMRI on cerebrospinal fluid flow; not spinal cord."}
+{"query": "qx02_spinal", "acc": "ds004507", "label": "relevant", "reason": "Spinal cord T2w MRI at three head positions; uploader domain 'Spinal Cord', cord segmentation labels."}
+{"query": "qx02_spinal", "acc": "ds004616", "label": "relevant", "reason": "Spinal cord fMRI during hand-grasp motor task."}
+{"query": "qx02_spinal", "acc": "ds004718", "label": "not_relevant", "reason": "Naturalistic language fMRI/EEG in older adults; only 'cerebrospinal fluid' in preprocessing text."}
+{"query": "qx02_spinal", "acc": "ds004906", "label": "relevant", "reason": "RF shimming in the cervical spinal cord at 7T; uploader domain 'spinal cord', c-spine coil."}
+{"query": "qx02_spinal", "acc": "ds004926", "label": "relevant", "reason": "Task-based spinal cord fMRI (heat pain) in 40 participants; uploader domain 'human spinal cord'."}
+{"query": "qx02_spinal", "acc": "ds004957", "label": "not_relevant", "reason": "Spoken word production brain fMRI denoising; only 'cerebrospinal fluid' noise component mention."}
+{"query": "qx02_spinal", "acc": "ds004974", "label": "relevant", "reason": "Breath-hold fMRI mapping vascular reactivity in the human spinal cord."}
+{"query": "qx02_spinal", "acc": "ds005025", "label": "relevant", "reason": "Traveling Spine 7T coil QA in humans: spine/spinal cord imaging (B1 maps, GRE, labels); title only, empty README."}
+{"query": "qx02_spinal", "acc": "ds005075", "label": "relevant", "reason": "Simultaneous brain and spinal cord resting-state fMRI."}
+{"query": "qx02_spinal", "acc": "ds005090", "label": "relevant", "reason": "Phantom scans for the Traveling Spine 7T spine-coil QA project; spine imaging methods data, title only, no cord tissue."}
+{"query": "qx02_spinal", "acc": "ds005115", "label": "not_relevant", "reason": "Dense-sampling brain MRI of one male; only 'cerebrospinal fluid' volume mention."}
+{"query": "qx02_spinal", "acc": "ds005143", "label": "relevant", "reason": "Spinal cord fMRI segmentation database, multi-site EPI of the cord incl. myelopathy patients."}
+{"query": "qx02_spinal", "acc": "ds005299", "label": "not_relevant", "reason": "Maternal brain anatomical/diffusion MRI across pregnancy; only 'cerebrospinal fluid' mention."}
+{"query": "qx02_spinal", "acc": "ds005307", "label": "relevant", "reason": "Laser-evoked potentials recorded in the human spinal cord and cortex (nociception)."}
+{"query": "qx02_spinal", "acc": "ds005345", "label": "not_relevant", "reason": "Naturalistic language 7T fMRI/EEG; only 'cerebrospinal fluid' in preprocessing description."}
+{"query": "qx02_spinal", "acc": "ds005346", "label": "not_relevant", "reason": "Reality TV viewing fMRI/MEG; only 'cerebrospinal fluid' in tissue segmentation text."}
+{"query": "qx02_spinal", "acc": "ds005360", "label": "not_relevant", "reason": "Menstrual cycle brain T1w/diffusion study; only 'cerebrospinal fluid' volume mention."}
+{"query": "qx02_spinal", "acc": "ds005616", "label": "relevant", "reason": "Whole-spine anatomical MRI and B0 simulations, head-to-torso coverage with spine coils and labels."}
+{"query": "qx02_spinal", "acc": "ds005691", "label": "relevant", "reason": "Epidural recordings from cervical spinal canal studying sensory processing in the human spinal cord."}
+{"query": "qx02_spinal", "acc": "ds005692", "label": "relevant", "reason": "Non-invasive recordings of sensory processing in the human spinal cord; uploader domain 'Physiology of the human spinal cord'."}
+{"query": "qx02_spinal", "acc": "ds005779", "label": "not_relevant", "reason": "EEG-triggered TMS of motor cortex; 'corticospinal tract activation' means motor evoked potentials, no spinal cord data or intervention."}
+{"query": "qx02_spinal", "acc": "ds005839", "label": "relevant", "reason": "Rat brain fMRI testing how enhanced spinal GABAergic tone modulates cerebral pain processing; spinal intervention is the study's manipulation."}
+{"query": "qx02_spinal", "acc": "ds005883", "label": "relevant", "reason": "Simultaneous cortico-spinal fMRI during thermal pain, includes spinal cord activity."}
+{"query": "qx02_spinal", "acc": "ds005884", "label": "relevant", "reason": "Simultaneous cortico-spinal fMRI during hand grasping, includes spinal cord activity."}
+{"query": "qx02_spinal", "acc": "ds006224", "label": "not_relevant", "reason": "Parkinson's brain MRI from PPMI; only 'cerebrospinal fluid' biomarker mention in related paper."}
+{"query": "qx02_spinal", "acc": "ds006347", "label": "relevant", "reason": "Spinal cord T2*-weighted multi-echo GRE navigated dataset; uploader domain 'Spinal Cord'."}
+{"query": "qx02_spinal", "acc": "ds006729", "label": "relevant", "reason": "Simultaneous brain-spinal cord fMRI of hand function, with spinal cord T2w and functional data."}
+{"query": "qx02_spinal", "acc": "ds006944", "label": "relevant", "reason": "One-person corticospinal fMRI for a spinal cord workshop: spinal cord T2w and functional spinal cord data."}
+{"query": "qx02_spinal", "acc": "ds006971", "label": "not_relevant", "reason": "Whole-brain shoulder motor-task fMRI; 'supraspinal brain activity' is the only hit."}
+{"query": "qx02_spinal", "acc": "ds007022", "label": "not_relevant", "reason": "Braille/music training brain fMRI; only 'cerebrospinal fluid' segmentation file mention."}
+{"query": "qx02_spinal", "acc": "ds007067", "label": "relevant", "reason": "7T spine fMRI with motor and rest runs; uploader domain 'Spinal cord MRI'."}
+{"query": "qx02_spinal", "acc": "ds007313", "label": "relevant", "reason": "Brain and spinal cord fMRI and quantitative MRI of a single participant."}
+{"query": "qx02_spinal", "acc": "ds007347", "label": "not_relevant", "reason": "Focused ultrasound midbrain lesioning for cancer pain, brain T1w and EEG; 'supraspinal cordotomy' is historical remark."}
+{"query": "qx02_spinal", "acc": "ds007932", "label": "relevant", "reason": "7T spine fMRI at 1 mm vs 3 mm; uploader domain 'Spinal cord MRI'."}
+{"query": "qx02_spinal", "acc": "ds008020", "label": "not_relevant", "reason": "7T brain PCASL perfusion data; only 'cerebrospinal fluid' tissue class mentions."}
+{"query": "qx02_spinal", "acc": "ds008321", "label": "relevant", "reason": "Spinal cord quantitative susceptibility mapping MRI covering C1-C5 with field and susceptibility maps."}
+{"query": "qx02_spinal", "acc": "ds008784", "label": "relevant", "reason": "Spinal cord fMRI during electrocutaneous finger stimulation with T2w spinal cord images and labels."}
+{"query": "qx02_spinal", "acc": "ds008803", "label": "relevant", "reason": "Lumbosacral spinal cord task fMRI and high-resolution anatomical MRI."}
+{"query": "qx02_spinal", "acc": "ds009010", "label": "relevant", "reason": "Squirrel monkey cervical spinal cord fMRI, uploader labels spine injury and spinal cord; criterion names no population."}
+{"query": "qx02_spinal", "acc": "ds009055", "label": "not_relevant", "reason": "Diet crossover brain taste fMRI; only 'cerebrospinal fluid' nuisance signal mention."}
+{"query": "qx02_spinal", "acc": "ds009057", "label": "relevant", "reason": "Squirrel monkey cervical spinal cord resting-state fMRI in template space; criterion names no population."}

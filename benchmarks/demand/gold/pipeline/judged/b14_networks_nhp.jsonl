@@ -1,0 +1,135 @@
+{"query": "qf31_brain_networks_phenotype", "acc": "ds000031", "label": "not_relevant", "reason": "Raw MRI of one person only; no derivatives folder, no connectivity matrices in the dataset; connectivity only analysed in the paper."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds000117", "label": "not_relevant", "reason": "Raw multimodal face-processing data; connectivity only mentioned as a possible use in the paper; no matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds000201", "label": "not_relevant", "reason": "Derivatives hold EMG, displacement maps, event plots, mosaics, MRIQC; no connectivity matrices or parcellated time series."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds001132", "label": "not_relevant", "reason": "Derivatives hold only a PCC ROI mask; 'correlation matrix' refers to scene-pattern check values, not brain networks."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds001226", "label": "relevant", "reason": "README: derivatives/TVB holds time series, structural and functional connectivity matrices per subject; glioma, meningioma patients and controls."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds001720", "label": "not_relevant", "reason": "Raw mouse resting fMRI only; no README, no derivatives, no connectivity matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds001725", "label": "not_relevant", "reason": "Raw mouse resting fMRI under psilocybin; no derivatives; connectivity only analysed in the paper."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds001810", "label": "not_relevant", "reason": "EEG attentional blink with tDCS; derivatives are rejected-IC and rejected-trial lists; no connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds001875", "label": "not_relevant", "reason": "README: raw plus preprocessed anat/dwi/func scans; the macaque connectome and parcellation are on Zenodo, not in this dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002080", "label": "relevant", "reason": "README: derivatives/TVB holds time series, structural and functional connectivity matrices per subject; post-operative tumour patients and controls."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002330", "label": "not_relevant", "reason": "Raw T1w, DWI and resting fMRI with creativity scores; no derivatives, no connectivity matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002574", "label": "not_relevant", "reason": "Raw pRF retinotopy fMRI of 3 subjects; 'Human Connectome Project' only named in the paper; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002608", "label": "not_relevant", "reason": "Raw T1w and resting fMRI for the RPN-signature; connectome analysed in paper, no matrices or derivatives in dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002647", "label": "not_relevant", "reason": "Raw task fMRI (handgrip, oddball) in women; no connectivity matrices or derivatives shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002674", "label": "not_relevant", "reason": "Raw daily resting fMRI of one woman; network connectivity analysed in papers, no matrices or derivatives in dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002718", "label": "not_relevant", "reason": "EEG face-processing data in EEGLAB format; connectivity only a suggested use in the paper; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002726", "label": "not_relevant", "reason": "Derivatives hold subjects x 308-region cortical thickness tables; covariance network is group-level in paper; no per-participant connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds002837", "label": "not_relevant", "reason": "Derivatives are preprocessed voxelwise movie fMRI, motion and regressors; no connectivity matrices or parcellated time series."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003059", "label": "not_relevant", "reason": "LSD resting fMRI scans only; no derivatives folder, no connectivity matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003216", "label": "not_relevant", "reason": "Layer-fMRI of one main participant; derivatives are motion/BOLD-corrected images and segmentations; no connectivity matrices stated."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003416", "label": "not_relevant", "reason": "Derivatives are PreQual-preprocessed diffusion images only; connectomics was an evaluation in the paper, no matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003452", "label": "not_relevant", "reason": "Derivatives are HCP and fMRIPrep preprocessed task fMRI and event files; 'ConnectomeDB' only names the HCP database."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003465", "label": "not_relevant", "reason": "Derivatives are fMRIPrep output, eprime logs, questionnaires; HCP ConnectomeDB only named for ID mapping; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003505", "label": "relevant", "reason": "README: derivatives/cmp-v3.0.3 holds individual parcellations at 5 scales and corresponding structural connectomes (fibre count, density, FA, MD) per subject."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003592", "label": "not_relevant", "reason": "Raw multi-echo resting fMRI and T1w of young and older adults; no derivatives in dataset; connectome analysed in paper only."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003645", "label": "not_relevant", "reason": "MEG/EEG face-processing recordings with HED annotation; connectivity only a suggested use; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003701", "label": "not_relevant", "reason": "Raw task and resting fMRI of 96 subjects; only conversion code besides scans; no connectivity matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003708", "label": "not_relevant", "reason": "iEEG single-pulse stimulation recordings of one patient, raw and preprocessed voltages; no connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003716", "label": "not_relevant", "reason": "Derivative is one group-level DMN connectivity map (NIfTI) from HCP subjects plus ex vivo MRI; no per-participant matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003775", "label": "not_relevant", "reason": "Resting EEG with cleaned epochs as derivatives; connectivity and graph theory only named as possible analyses."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003823", "label": "not_relevant", "reason": "Derivatives are MRS, FreeSurfer QC and MRIQC tables; functional connectivity was a hypothesis, no matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003871", "label": "not_relevant", "reason": "Raw resting fMRI and T1w of 62 adults; connectome-based modelling done in paper; no matrices in dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds003972", "label": "not_relevant", "reason": "Raw 7T body-motor task fMRI; graph theory only an analysis method in the paper; no matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004080", "label": "not_relevant", "reason": "ECoG single-pulse stimulation recordings; derivatives are averaged CCEP responses and latencies, not connectivity matrices or graphs per participant."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004092", "label": "not_relevant", "reason": "README: raw functional and anatomical rat MRI underlying a graph-theory paper; no matrices or derivatives shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004097", "label": "not_relevant", "reason": "Derivatives described as HCP-style preprocessed volume/surface data and FSL film_gls outputs; no connectivity matrices or parcellated series stated."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004169", "label": "not_relevant", "reason": "Twin MRI; derivatives are FreeSurfer and MRIQC tables; Human Connectome Project only a replication sample in a paper."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004457", "label": "not_relevant", "reason": "iEEG single-pulse stimulation in 5 patients; derivatives are FreeSurfer, ACPC and QC figures; no connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004466", "label": "not_relevant", "reason": "Raw T1w/T2w and resting fMRI of synaesthetes and controls; 'connectome' in title only; no matrices in dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004513", "label": "not_relevant", "reason": "Derivatives hold degree-centrality and energy-cost maps (voxel maps, a degree pickle); README names no connectivity matrices or parcellated series."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004552", "label": "not_relevant", "reason": "README: group-level derivatives only (FC and PET change maps, spreadsheets); no individual connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004696", "label": "not_relevant", "reason": "iEEG single-pulse stimulation; derivatives are electrode positions, FreeSurfer, stats and dMRI for 2 patients; no connectivity matrices described."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004848", "label": "not_relevant", "reason": "Raw movie and localiser fMRI in prosopagnosics and controls; humanconnectome only in a sequence URL; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004856", "label": "not_relevant", "reason": "Derivatives are amyloid/tau/structural summaries, cognition and survey spreadsheets; no connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds004977", "label": "not_relevant", "reason": "iEEG CCEP raw data of 4 patients; derivatives are event annotations and FreeSurfer; no connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005026", "label": "not_relevant", "reason": "Raw T1w, DWI and resting fMRI only, no README or derivatives; connectomes were computed in the paper, not shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005237", "label": "partially_relevant", "reason": "Root folder fMRI_timeseries_clean_denoised_GSR_parcellated holds parcellated time series for psychiatric patients and controls; no connectivity matrices listed."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005263", "label": "not_relevant", "reason": "Raw task fMRI (incentivised reaching); connectivity only mentioned describing a sister resting dataset; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005264", "label": "not_relevant", "reason": "Raw 7T multi-echo resting fMRI for network mapping; no derivatives or connectivity matrices in the dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005265", "label": "not_relevant", "reason": "Raw approach-avoid task fMRI; connectivity only mentioned for a sister dataset; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005266", "label": "not_relevant", "reason": "Raw active-escape task fMRI; connectivity only mentioned for a sister dataset; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005498", "label": "not_relevant", "reason": "Raw concurrent TMS-fMRI scans with clinical columns; 'causal connectome' is the paper's aim; no matrices or derivatives shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005563", "label": "not_relevant", "reason": "Ex vivo diffusion MRI of 7 brains; derivatives hold only arousal-network ROI masks; tractography and graph measures not shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005595", "label": "not_relevant", "reason": "T2w images with perivascular space masks; 'Human Connectome Project' is only the data source name."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005625", "label": "relevant", "reason": "derivatives/connectomix holds participant-level functional connectome results for Schaefer, AAL, Harvard-Oxford atlases; single healthy test participant."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005664", "label": "not_relevant", "reason": "Raw travelling-subject diffusion MRI for harmonisation; HCP only names the protocol; no tractography or matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005687", "label": "unsure", "reason": "Rat anaesthesia rs-fMRI with derivatives pipeline1-3 and an atlas; README never says what they hold, matrices only described in papers."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005699", "label": "relevant", "reason": "derivatives/connectomix holds participant- and group-level functional connectome results for 4 participants; patient/control split is artificial."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds005839", "label": "not_relevant", "reason": "Raw rat resting fMRI in a post-surgical pain model; no derivatives or connectivity matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds006001", "label": "not_relevant", "reason": "Ex vivo brainstem diffusion MRI; derivatives are probabilistic fibre map channels and bundle annotations, not connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds006045", "label": "not_relevant", "reason": "Raw resting fMRI and anatomy of anxious youths; connectome predictive modelling done in paper; no matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds006181", "label": "not_relevant", "reason": "Diffusion MRI of one subject on the 'Connectome 2.0' scanner; derivative is preprocessed DWI only."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds006503", "label": "not_relevant", "reason": "Raw multimodal MRI of one person; 'Connectome' only in the title; no derivatives or matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds006623", "label": "relevant", "reason": "README: derivatives include XCP-D outputs with functional connectivity per subject (four xcp_d output folders) under graded propofol sedation."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds006779", "label": "relevant", "reason": "README: XCP-D derivatives dataset with parcellated time series and Pearson functional connectivity matrices per subject (26 subject folders)."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007100", "label": "not_relevant", "reason": "Raw awake-mouse resting fMRI; functional connectome analysed in paper; no derivatives or matrices shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007182", "label": "unsure", "reason": "README says derivatives/qsirecon holds structural connectomes, but file listing of derivatives/ shows only confounds, mriqc, physio folders."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007286", "label": "relevant", "reason": "README: functional connectivity matrices (derivatives/MC_Shen268, MC_Shen368) and ROI time courses per participant, with diagnosis tables in phenotype/."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007328", "label": "not_relevant", "reason": "Single-subject raw rs-fMRI, T1w, DTI; derivatives are lifestyle logs, QC and head-position tables; no connectivity matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007401", "label": "not_relevant", "reason": "README: OpenNeuro release includes only raw T1w, FLAIR and diffusion scans; the parcellated connectomes are on figshare."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007477", "label": "partially_relevant", "reason": "ICA-denoised resting fNIRS channel time series for a graph-metric reliability study; correlation matrices computed by shared code, not shared themselves."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007606", "label": "not_relevant", "reason": "T1w scans and sociodemographics for anorexia study; connectivity only in a paper abstract; no matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007739", "label": "not_relevant", "reason": "Raw diffusion and T1w scans of 2 subjects from the 'Connectome 2.0' scanner; no tractography or matrices."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007783", "label": "not_relevant", "reason": "Raw mouse rs-fMRI plus code/ scripts that compute connectivity matrices and graph statistics; the matrices themselves are not shared."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007831", "label": "relevant", "reason": "README: dataset includes DTI and derived connectomes for 109 older adults; derivatives/sub-*/dwi folders present."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds007908", "label": "not_relevant", "reason": "Raw multimodal MRI of MS patients and controls; connectivity is the study aim; no derivatives or matrices in dataset."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds008685", "label": "not_relevant", "reason": "Raw twin diffusion MRI; only derivative is a DSI Studio quality table; connectivity heritability is the cited paper."}
+{"query": "qf31_brain_networks_phenotype", "acc": "ds008771", "label": "not_relevant", "reason": "Diffusion microstructure (NEXI) data on the 'Connectome 2.0' scanner; derivatives are preprocessed DWI; no connectivity matrices."}
+{"query": "qx10_nhp", "acc": "ds001132", "label": "not_relevant", "reason": "Sixteen human subjects watched BBC Sherlock and recalled it verbally; no non-human primates."}
+{"query": "qx10_nhp", "acc": "ds001145", "label": "not_relevant", "reason": "24 human subjects watched a Twilight Zone episode; no non-human primates."}
+{"query": "qx10_nhp", "acc": "ds001554", "label": "not_relevant", "reason": "Human narrative-listening fMRI with retrospective duration estimates (23 participants); no non-human primates."}
+{"query": "qx10_nhp", "acc": "ds001875", "label": "relevant", "reason": "README: T1, DWI and resting fMRI from 9 macaques (Macaca mulatta and fascicularis)."}
+{"query": "qx10_nhp", "acc": "ds001882", "label": "not_relevant", "reason": "Human participants (age 20-55) making intertemporal money choices; no non-human primates."}
+{"query": "qx10_nhp", "acc": "ds001883", "label": "not_relevant", "reason": "Human participants (age 23-55) making risky money choices; no non-human primates."}
+{"query": "qx10_nhp", "acc": "ds002345", "label": "not_relevant", "reason": "Uploader species Human; story-listening fMRI of 345 human subjects."}
+{"query": "qx10_nhp", "acc": "ds002372", "label": "not_relevant", "reason": "Single healthy 56-year-old man scanned 30 times; human."}
+{"query": "qx10_nhp", "acc": "ds002380", "label": "not_relevant", "reason": "No species label; 143 T1w subjects, reuploaded for privacy reasons, serum/cortical thickness study; nothing indicates non-human primates."}
+{"query": "qx10_nhp", "acc": "ds002382", "label": "not_relevant", "reason": "Uploader species Human; young and older adult listeners in spoken word fMRI."}
+{"query": "qx10_nhp", "acc": "ds002634", "label": "not_relevant", "reason": "Uploader species Human; 20 human subjects. Macaque/chimpanzee only in the related paper's comparison, not shared here."}
+{"query": "qx10_nhp", "acc": "ds002674", "label": "not_relevant", "reason": "Uploader species Human; single woman densely sampled. Nonhuman primates only mentioned in paper background."}
+{"query": "qx10_nhp", "acc": "ds002702", "label": "not_relevant", "reason": "Uploader species Human; 7T visual fMRI in humans. Nonhuman primates only a passing mention in paper abstract."}
+{"query": "qx10_nhp", "acc": "ds002741", "label": "not_relevant", "reason": "Uploader species Human; 30 human participants viewing animated caricature faces."}
+{"query": "qx10_nhp", "acc": "ds002766", "label": "not_relevant", "reason": "Uploader species Human; three healthy adults wearing arm cast, resting-state fMRI."}
+{"query": "qx10_nhp", "acc": "ds002995", "label": "not_relevant", "reason": "Uploader species Human; human taste fMRI. Monkeys only cited as prior literature."}
+{"query": "qx10_nhp", "acc": "ds003089", "label": "not_relevant", "reason": "Uploader species Human; README says healthy humans. Non-human primates only in paper background."}
+{"query": "qx10_nhp", "acc": "ds003242", "label": "not_relevant", "reason": "Uploader species Human; 40 adult participants in cue-induced craving fMRI."}
+{"query": "qx10_nhp", "acc": "ds003690", "label": "not_relevant", "reason": "Uploader species Human; young and older adults EEG. Monkeys only cited for LC responses."}
+{"query": "qx10_nhp", "acc": "ds003717", "label": "not_relevant", "reason": "Uploader species Human; 60 adult humans in audiovisual speech fMRI."}
+{"query": "qx10_nhp", "acc": "ds003849", "label": "not_relevant", "reason": "Uploader species Human; frontoparietal plasticity in humans, animal models only as background."}
+{"query": "qx10_nhp", "acc": "ds003989", "label": "relevant", "reason": "Uploader species Monkey; README: structural, diffusion and rs-fMRI in 3 female rhesus macaques."}
+{"query": "qx10_nhp", "acc": "ds004097", "label": "not_relevant", "reason": "No species label; README describes 8 adult human participants, an adult equivalent of the ABCD Study."}
+{"query": "qx10_nhp", "acc": "ds004228", "label": "not_relevant", "reason": "Uploader species Human; 4-to-11-year-old children watching a film."}
+{"query": "qx10_nhp", "acc": "ds004265", "label": "relevant", "reason": "Uploader species Macaque; README: macaque monkeys underwent focused ultrasound neuromodulation with fMRI."}
+{"query": "qx10_nhp", "acc": "ds004285", "label": "not_relevant", "reason": "Uploader species Human; participants aged 19-81 in word repetition listening task."}
+{"query": "qx10_nhp", "acc": "ds004498", "label": "not_relevant", "reason": "Uploader species Human; single 13-year-old with perinatal stroke. Macaque only mentioned in related paper abstract."}
+{"query": "qx10_nhp", "acc": "ds004589", "label": "not_relevant", "reason": "Uploader species Human; left- and right-handed human adults in memory fMRI."}
+{"query": "qx10_nhp", "acc": "ds004620", "label": "relevant", "reason": "Uploader species Macaque; README: macaque angiography dataset, 8 TOF-MRA scans plus T1w."}
+{"query": "qx10_nhp", "acc": "ds004654", "label": "not_relevant", "reason": "Uploader species Human; young men with fragile X syndrome and controls, PET."}
+{"query": "qx10_nhp", "acc": "ds004730", "label": "not_relevant", "reason": "Uploader species Human; 10 healthy young males, propofol PET."}
+{"query": "qx10_nhp", "acc": "ds004731", "label": "not_relevant", "reason": "Uploader species Human; 35 human subjects, PET during sleep."}
+{"query": "qx10_nhp", "acc": "ds004733", "label": "not_relevant", "reason": "Uploader species Human; rCPS PET in human subjects across sleep stages."}
+{"query": "qx10_nhp", "acc": "ds004856", "label": "not_relevant", "reason": "Uploader species Human; Dallas Lifespan Brain Study of 464 human adults."}
+{"query": "qx10_nhp", "acc": "ds005047", "label": "not_relevant", "reason": "No species label; README describes human brain fMRI, five male participants aged 26-37 watching facial expression videos."}
+{"query": "qx10_nhp", "acc": "ds005093", "label": "relevant", "reason": "Uploader species Non-Human Primates; README: 11 healthy nonhuman primates with PET and MRS."}
+{"query": "qx10_nhp", "acc": "ds005128", "label": "not_relevant", "reason": "Uploader species Human; 40 participants in a deception signalling fMRI task."}
+{"query": "qx10_nhp", "acc": "ds005143", "label": "not_relevant", "reason": "Uploader species Human; multi-site human spinal cord fMRI with patients and controls."}
+{"query": "qx10_nhp", "acc": "ds005264", "label": "not_relevant", "reason": "Uploader species Human; 7T rest fMRI in human participants. Non-human primates only in paper background."}
+{"query": "qx10_nhp", "acc": "ds005424", "label": "relevant", "reason": "Uploader species baboon; BaBa21 T1w/T2w of 21 baboons across 4 sessions with template."}
+{"query": "qx10_nhp", "acc": "ds005521", "label": "relevant", "reason": "Uploader species Macaque; README: two alert rhesus macaques viewing colour and spatial frequency stimuli in fMRI."}
+{"query": "qx10_nhp", "acc": "ds005619", "label": "not_relevant", "reason": "Uploader species Human; seven healthy human participants. Monkeys only in title as earlier work, no monkey data."}
+{"query": "qx10_nhp", "acc": "ds006010", "label": "not_relevant", "reason": "Uploader species Human; human adults and children fMRI. Non-human primate only in related paper abstract."}
+{"query": "qx10_nhp", "acc": "ds006012", "label": "not_relevant", "reason": "Uploader species Human; human MEG. Non-human primate only in related paper abstract."}
+{"query": "qx10_nhp", "acc": "ds006067", "label": "not_relevant", "reason": "Uploader species Human; 118 participants in think-aloud fMRI."}
+{"query": "qx10_nhp", "acc": "ds006128", "label": "not_relevant", "reason": "No species label; title and paper state human somatosensory cortex, 3 participants at 7T. Monkeys only as comparison."}
+{"query": "qx10_nhp", "acc": "ds006136", "label": "not_relevant", "reason": "Uploader species Human; iEEG from 13 epilepsy patients. Non-human primate only in paper background."}
+{"query": "qx10_nhp", "acc": "ds006491", "label": "not_relevant", "reason": "Uploader species Human; four densely sampled human individuals."}
+{"query": "qx10_nhp", "acc": "ds006721", "label": "relevant", "reason": "Uploader species Monkey; README: subject was a male rhesus macaque, MR thermometry during focused ultrasound."}
+{"query": "qx10_nhp", "acc": "ds006890", "label": "relevant", "reason": "No species label; title and README: wireless ECoG from two Macaca fuscata monkeys."}
+{"query": "qx10_nhp", "acc": "ds007028", "label": "relevant", "reason": "Uploader species nonhuman primates (Macaca mulatta); auditory cortex macaque recordings."}
+{"query": "qx10_nhp", "acc": "ds007185", "label": "not_relevant", "reason": "Uploader species Human; fMRI of curiosity in young children."}
+{"query": "qx10_nhp", "acc": "ds008018", "label": "relevant", "reason": "Uploader species rhesus monkey; 55 macaque TOF-MRA scans with vascular atlases."}
+{"query": "qx10_nhp", "acc": "ds008460", "label": "not_relevant", "reason": "Uploader species Human; 7T human auditory cortex fMRI. Monkey only in a reference title."}
+{"query": "qx10_nhp", "acc": "ds008610", "label": "relevant", "reason": "No species label; README: electrophysiology from macaque VPL thalamus, Macaca fascicularis and Macaca mulatta."}
+{"query": "qx10_nhp", "acc": "ds009010", "label": "relevant", "reason": "Uploader species Squirrel monkey; spinal cord fMRI of squirrel monkeys."}
+{"query": "qx10_nhp", "acc": "ds009057", "label": "relevant", "reason": "Uploader species label: squirrel monkey spinal cord; resting-state spinal cord fMRI of 28 squirrel monkeys."}

@@ -1,0 +1,124 @@
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000030", "label": "relevant", "reason": "participants.tsv: 50 schizophrenia, 49 bipolar disorder, 43 ADHD, 130 controls; MRI plus phenotype files."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000115", "label": "relevant", "reason": "Working-memory fMRI of individuals with schizophrenia, their siblings and controls (paper: 19 schizophrenia patients)."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000116", "label": "not_relevant", "reason": "Healthy EEG-fMRI oddball study; \"bipolar\" refers to electrode pairs only."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000171", "label": "not_relevant", "reason": "Major depressive disorder vs never-depressed controls; participants had no manic episodes."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000214", "label": "not_relevant", "reason": "Borderline personality disorder vs controls; psychotic disorder was an exclusion criterion; schizophrenia only in a reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000246", "label": "not_relevant", "reason": "Brainstorm MEG tutorial sample; \"bipolar\" is ECG/EOG channel type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds000247", "label": "not_relevant", "reason": "OMEGA healthy resting MEG sample; \"bipolar\" is ECG/EOG channel type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds001371", "label": "partially_relevant", "reason": "Adolescents at clinical high risk for psychosis vs controls; no diagnosed schizophrenia or bipolar group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds001408", "label": "not_relevant", "reason": "Healthy participants in neurofeedback study; \"bipolar\" is electrode placement."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds001461", "label": "relevant", "reason": "participants.tsv: 47 schizophrenia (smoking/non-smoking) and 34 healthy controls, resting fMRI."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds001784", "label": "not_relevant", "reason": "DBS patients with MDD (12) and OCD (2); \"bipolar\" is an EOG channel; no bipolar diagnosis."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds001785", "label": "not_relevant", "reason": "Healthy participants and one epilepsy patient; \"bipolar\" refers to EOG electrodes."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds002158", "label": "not_relevant", "reason": "Healthy volunteers in a metacognition EEG-fMRI study; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003011", "label": "not_relevant", "reason": "Travelling human phantoms (4 volunteers) for scanner reliability; schizophrenia only names the parent project."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003029", "label": "not_relevant", "reason": "Epilepsy iEEG multicentre dataset; no bipolar or schizophrenia participants."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003082", "label": "not_relevant", "reason": "Brainstorm auditory mapping sample; \"bipolar\" is ECG/EOG channel type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003498", "label": "not_relevant", "reason": "Epilepsy iEEG with HFO markings; \"bipolar\" is channel referencing."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003555", "label": "not_relevant", "reason": "Paediatric epilepsy EEG; \"bipolar\" is channel referencing."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003690", "label": "not_relevant", "reason": "Healthy young and older adults; \"bipolar\" is ECG electrode setup."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003787", "label": "not_relevant", "reason": "Healthy adults retinotopy dataset; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003944", "label": "relevant", "reason": "First-episode psychosis vs controls EEG; related paper specifies first-episode schizophrenia-spectrum psychosis; SAPS/SANS/BPRS phenotype."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds003947", "label": "relevant", "reason": "Second sample of first-episode psychosis vs controls EEG; paper specifies first-episode schizophrenia-spectrum psychosis."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004000", "label": "relevant", "reason": "Schizophrenia ultimatum-game EEG study: 19 patients with psychosis episodes and 24 controls; uploader domain Schizophrenia."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004101", "label": "not_relevant", "reason": "Nine women with subclinical emotional dysregulation; \"bipolar\" is electrode placement."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004302", "label": "relevant", "reason": "Uploader label Schizophrenia; 46 schizophrenia patients (with/without hallucinations) and 25 controls, fMRI."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004305", "label": "not_relevant", "reason": "Rat LPS neuroinflammation diffusion MRI; no human patients."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004367", "label": "relevant", "reason": "README: individuals with schizophrenia or schizoaffective disorder (DSM-5 SCID) and healthy controls; raw EEG."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004368", "label": "relevant", "reason": "README: individuals with schizophrenia or schizoaffective disorder and healthy controls; preprocessed EEG."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004440", "label": "not_relevant", "reason": "Healthy children and adults retinotopy; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004456", "label": "not_relevant", "reason": "Healthy Polish-English bilinguals; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004489", "label": "not_relevant", "reason": "Healthy volunteers in word-recognition fMRI; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004504", "label": "not_relevant", "reason": "Alzheimer, frontotemporal dementia and healthy EEG; \"bipolar\" is recording montage."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004605", "label": "not_relevant", "reason": "Youth with ADHD, DMDD and healthy volunteers; psychosis and bipolar disorders were exclusion criteria."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004644", "label": "not_relevant", "reason": "Mouse model of Down syndrome; no human patients."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004654", "label": "not_relevant", "reason": "Fragile X syndrome and healthy controls PET; no bipolar or schizophrenia."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004661", "label": "not_relevant", "reason": "Healthy males EEG; \"bipolar\" refers to EOG signals."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004698", "label": "not_relevant", "reason": "Healthy participants retinotopic mapping; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004725", "label": "not_relevant", "reason": "Healthy younger and older adults; schizophrenia only mentioned as background in paper abstract."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004730", "label": "not_relevant", "reason": "Healthy young males PET under propofol; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004731", "label": "not_relevant", "reason": "Healthy subjects PET sleep study; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004733", "label": "not_relevant", "reason": "Healthy subjects PET sleep study; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004789", "label": "not_relevant", "reason": "Epilepsy iEEG free recall; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004809", "label": "not_relevant", "reason": "Epilepsy iEEG categorized free recall; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004837", "label": "relevant", "reason": "Groups: first-episode schizophrenia, first-episode affective psychosis, healthy controls; uploader label Schizophrenia; MEG and T1w."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004840", "label": "not_relevant", "reason": "Burn patients in ICU, music therapy EEG; \"bipolar\" is ECG lead assembly."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004856", "label": "not_relevant", "reason": "Healthy ageing cohort; anti-psychotics only named as exclusion criterion."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds004865", "label": "not_relevant", "reason": "Epilepsy iEEG free recall; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005059", "label": "not_relevant", "reason": "Epilepsy iEEG paired associates; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005073", "label": "relevant", "reason": "Uploader label Schizophrenia; fMRI of people with schizophrenia and bipolar disorder (PANSS, YMRS columns)."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005112", "label": "not_relevant", "reason": "NIMH structural MRI; README gives no diagnoses; schizophrenia appears only in titles of associated papers."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005137", "label": "not_relevant", "reason": "Mouse CXCR4 mutation MRI; no human patients."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005166", "label": "not_relevant", "reason": "Youth with DMDD/ADHD/irritability; schizophrenia was exclusion and appears in KSADS name."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005169", "label": "not_relevant", "reason": "Epilepsy iEEG stimulation; \"bipolar\" is stimulation type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005237", "label": "partially_relevant", "reason": "Transdiagnostic patients with history of affective or psychotic illness (PANSS, YMRS collected); specific diagnoses not stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005398", "label": "not_relevant", "reason": "Paediatric epilepsy iEEG; \"bipolar\" is montage of derivative data."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005411", "label": "not_relevant", "reason": "Epilepsy iEEG free recall; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005489", "label": "not_relevant", "reason": "Epilepsy iEEG free recall with stimulation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005491", "label": "not_relevant", "reason": "Epilepsy iEEG categorized recall with stimulation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005494", "label": "not_relevant", "reason": "Epilepsy iEEG cued recall with stimulation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005522", "label": "not_relevant", "reason": "Epilepsy iEEG spatial navigation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005523", "label": "not_relevant", "reason": "Epilepsy iEEG spatial memory with stimulation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005555", "label": "not_relevant", "reason": "Sleep PSG/EEG dataset; \"bipolar\" is EOG/EMG derivation."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005557", "label": "not_relevant", "reason": "Epilepsy iEEG closed-loop stimulation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005558", "label": "not_relevant", "reason": "Epilepsy iEEG closed-loop stimulation; \"bipolar\" is recording reference."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005754", "label": "not_relevant", "reason": "Youth with DMDD/ADHD/irritability; schizophrenia excluded and appears only in KSADS name."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005795", "label": "not_relevant", "reason": "Healthy participants EEG-fMRI; \"bipolar\" is amplifier type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds005917", "label": "relevant", "reason": "Uploader label includes Bipolar; participants.tsv has 3 bipolar disorder, 33 MDD, 22 healthy; README says BP group included."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006036", "label": "not_relevant", "reason": "Alzheimer, frontotemporal dementia and healthy EEG; \"bipolar\" is recording montage."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006072", "label": "not_relevant", "reason": "Seven healthy volunteers on psilocybin; schizophrenia-spectrum family history was an exclusion."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006131", "label": "not_relevant", "reason": "Adolescents and young adults, affective instability study; no bipolar or schizophrenia diagnosis stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006138", "label": "not_relevant", "reason": "Meta-analysis of resilience literature; one template subject, no patients; diagnoses only in paper abstract."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006182", "label": "not_relevant", "reason": "QSIPrep derivatives of PAFIN; no bipolar or schizophrenia diagnosis stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006303", "label": "not_relevant", "reason": "Paediatric anxiety vs healthy volunteers; psychosis and bipolar disorders were exclusion criteria."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006434", "label": "not_relevant", "reason": "Healthy listeners EEG; \"bipolar\" is electrode montage."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006519", "label": "not_relevant", "reason": "Epilepsy iEEG stimulation; \"bipolar\" is stimulation type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006577", "label": "not_relevant", "reason": "Paediatric anxiety vs healthy volunteers; schizophrenia appears only in KSADS name."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006663", "label": "not_relevant", "reason": "C3ar1 knockout mice; schizophrenia only as background in paper abstract."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006670", "label": "not_relevant", "reason": "C3ar1 knockout mice; schizophrenia only as background in paper abstract."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006777", "label": "not_relevant", "reason": "Autism, siblings and typically developing children EEG; no bipolar or schizophrenia."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006780", "label": "not_relevant", "reason": "Autism, siblings and typically developing children EEG; no bipolar or schizophrenia."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds006948", "label": "not_relevant", "reason": "Youth anxiety vs healthy controls; psychosis and bipolar disorder were exclusionary."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007088", "label": "partially_relevant", "reason": "Penn LEAD derivatives: 52.3% of youth meet psychosis-spectrum criteria; no diagnosed schizophrenia or bipolar group stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007089", "label": "partially_relevant", "reason": "Penn LEAD anatomical derivatives: 52.3% psychosis-spectrum youth; no diagnosed schizophrenia or bipolar group stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007091", "label": "partially_relevant", "reason": "Penn LEAD diffusion derivatives: 52.3% psychosis-spectrum youth; no diagnosed schizophrenia or bipolar group stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007116", "label": "partially_relevant", "reason": "Penn LEAD raw: 52.3% psychosis-spectrum youth aged 8-16; dx_prodromal, dx_psychosis, dx_bp columns exist but counts unknown."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007216", "label": "not_relevant", "reason": "Healthy individuals EEG-fMRI; \"bipolar\" is amplifier type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007402", "label": "partially_relevant", "reason": "Penn LEAD XCP-D derivatives: 52.3% psychosis-spectrum youth; no diagnosed schizophrenia or bipolar group stated."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007486", "label": "not_relevant", "reason": "Gamblers study, 5 healthy controls so far; bipolar disorder and schizophrenia are exclusion criteria."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007522", "label": "not_relevant", "reason": "Ageing cohort; history of psychotic illness was an exclusion."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007523", "label": "not_relevant", "reason": "Healthy MEG listeners; \"bipolar\" refers to EOG/ECG electrodes."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007524", "label": "not_relevant", "reason": "Healthy MEG readers; \"bipolar\" refers to EOG/ECG electrodes."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007591", "label": "not_relevant", "reason": "Three participants speech EEG; \"bipolar\" is channel pair type."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007637", "label": "not_relevant", "reason": "Eight-subject single/multi-echo fMRI pilot; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007694", "label": "partially_relevant", "reason": "Healthy adults split into high and low schizotypy groups; no diagnosed schizophrenia or bipolar."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds007753", "label": "not_relevant", "reason": "Healthy Japanese readers EEG; \"bipolar\" is EOG channel."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds008083", "label": "not_relevant", "reason": "Neurotypical adults without psychiatric diagnoses; psychosis proneness is a questionnaire trait score only."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds008366", "label": "not_relevant", "reason": "Healthy participants visual search fMRI; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds008830", "label": "not_relevant", "reason": "Healthy adults numerosity fMRI; no psychiatric group."}
+{"query": "qf01_bipolar_schizophrenia", "acc": "ds008894", "label": "not_relevant", "reason": "Suicide-risk, depression and healthy groups; schizophrenia was an exclusion; no bipolar diagnosis stated."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds000030", "label": "partially_relevant", "reason": "50 schizophrenia participants with T1w, fMRI and DWI (NIfTI, not PNG/JPG)."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds000115", "label": "partially_relevant", "reason": "T1w and n-back fMRI of individuals with schizophrenia, siblings and controls (NIfTI only)."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds000214", "label": "not_relevant", "reason": "Borderline personality disorder MRI; psychotic disorder excluded; schizophrenia only in a reference."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds001461", "label": "partially_relevant", "reason": "Resting fMRI of 47 schizophrenia patients and 34 controls (NIfTI only, no anatomical)."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds003011", "label": "not_relevant", "reason": "MRI of four healthy travelling phantoms; schizophrenia only names the parent project."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004000", "label": "not_relevant", "reason": "Schizophrenia study but EEG only; no MRI recorded."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004302", "label": "partially_relevant", "reason": "T1w and speech fMRI of 46 schizophrenia patients and 25 controls (NIfTI only)."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004305", "label": "not_relevant", "reason": "Rat diffusion MRI of LPS inflammation; not schizophrenia patients."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004367", "label": "not_relevant", "reason": "Schizophrenia-spectrum patients but raw EEG only; no MRI."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004368", "label": "not_relevant", "reason": "Schizophrenia-spectrum patients but preprocessed EEG only; no MRI."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004725", "label": "not_relevant", "reason": "Healthy adults oxytocin MRI; schizophrenia only background in paper abstract."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds004837", "label": "partially_relevant", "reason": "T1w MRI (60 subjects) alongside MEG in first-episode schizophrenia, affective psychosis and controls."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds005073", "label": "partially_relevant", "reason": "Uploader label Schizophrenia; T1w, T2w and fMRI of people with schizophrenia and bipolar disorder."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds005112", "label": "not_relevant", "reason": "NIMH structural MRI with no diagnoses stated; schizophrenia only in titles of associated papers."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds005166", "label": "not_relevant", "reason": "Youth DMDD/ADHD MRI; schizophrenia excluded and appears only in KSADS name."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds005754", "label": "not_relevant", "reason": "Youth DMDD/ADHD MRI; schizophrenia excluded and appears only in KSADS name."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds005917", "label": "not_relevant", "reason": "MDD, bipolar and healthy MRI; schizophrenia or psychotic disorder was an exclusion criterion."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds006072", "label": "not_relevant", "reason": "Healthy volunteers on psilocybin; schizophrenia-spectrum family history was an exclusion."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds006577", "label": "not_relevant", "reason": "Paediatric anxiety MRI; schizophrenia appears only in KSADS name."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds006663", "label": "not_relevant", "reason": "Mouse C3ar1 knockout MRI; schizophrenia only background in paper abstract."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds006670", "label": "not_relevant", "reason": "Mouse C3ar1 knockout MRI; schizophrenia only background in paper abstract."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds006948", "label": "not_relevant", "reason": "Youth anxiety MRI; schizophrenia only in KSADS name; psychosis excluded."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds007486", "label": "not_relevant", "reason": "Gamblers study with healthy controls; schizophrenia is an exclusion criterion."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds007694", "label": "not_relevant", "reason": "MRI of healthy adults with high/low schizotypy; no people with schizophrenia."}
+{"query": "qf20_schizophrenia_mri_png", "acc": "ds008894", "label": "not_relevant", "reason": "Suicide-risk/depression MEG with structural MRI; schizophrenia was an exclusion."}

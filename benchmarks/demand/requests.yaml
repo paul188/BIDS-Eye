@@ -1,0 +1,322 @@
+# Real dataset requests, turned into search questions.
+#
+# Every entry is something a person actually asked for or stated as a
+# selection rule: a forum post, a feature request, or the dataset-selection
+# criteria in a paper's methods. Sources and verbatim quotes come from
+# research_notes/Neuroimaging dataset search criteria/ (forum_requests.md,
+# paper_selection_criteria.md), collected 2026-11-14.
+#
+# Fields
+#   id        qf = forum request, qx = request for a search capability,
+#             qp = selection criteria stated in a paper
+#   ref       the id used in the research notes (N1…, S1…, X1…) or the paper
+#   url       where it was asked
+#   quote     the request in the person's own words (typos kept)
+#   question  the same need as a search question, in the person's vocabulary.
+#             "open / public" is dropped: everything in the catalogue is open.
+#   criteria  which kinds of constraint the question carries (names below)
+#   in_scope  false when OpenNeuro cannot hold such data (CT, PNG exports…);
+#             a good answer is then "nothing", not a long list
+#   needs     the evidence a correct answer depends on
+#
+# Criteria names (the ranking is in reports/Neuroimaging dataset search criteria.md):
+#   modality, task, rest, stimulus (what was shown or played), design (block,
+#   run order, randomisation), population (a diagnosis or group), healthy,
+#   controls (patients AND a control group), age, sex, species, sample_size,
+#   subgroup_count (a count over a subset of participants), sessions,
+#   derivatives, pipeline (a named pipeline or version), acquisition (field
+#   strength, TR, sequence, voxel size, sampling rate, vendor, phase encoding),
+#   cooccurrence (two kinds of scan in the same subject or session),
+#   auxiliary (physio, electrode positions, stimulus files), amount (duration,
+#   trials, GB), phenotype (a questionnaire or score is shared), labels
+#   (ground truth for machine learning), licence, format, bids_valid, quality,
+#   linked_paper, like_dataset (anchored on a named dataset), region,
+#   exclusion (something must be absent), numeric (a threshold with a number)
+
+requests:
+
+# ── Forum requests (NeuroStars, Stack Exchange, MNE forum, GitHub) ─────────────
+- {id: qf01_bipolar_schizophrenia, ref: N1, url: "https://neurostars.org/t/bipolar-schizophrenia-open-data/350",
+   quote: "Does anyone know of an open dataset for bipolar syndrome or schizophrenia? Having neuroimaging is a plus, but if there's only clinical/behavioural phenotypes is fine as well.",
+   question: "open dataset for bipolar syndrome or schizophrenia",
+   criteria: [population], needs: "diagnosis of participants"}
+- {id: qf02_eeg_autism_controls_like_abide, ref: N2, url: "https://neurostars.org/t/eeg-datasets-for-autism-control/1372",
+   quote: "Are there open eeg datasets for autism subjects vs control similar to them fmri datasets like abide ?",
+   question: "eeg datasets for autism subjects vs control, similar to fmri datasets like abide",
+   criteria: [modality, population, controls, like_dataset], needs: "EEG present; autism group and control group both present"}
+- {id: qf03_rest_fmri_alcohol_questionnaires, ref: N3, url: "https://neurostars.org/t/looking-for-open-fmri-datasets-alcohol-consumptions/3703",
+   quote: "I'm looking for resting-state fMRI data (from healthy controls), which is also comprising information about alcohol consumption, or alcohol dependence questionnaires (AUDIT, ADS, etc....).",
+   question: "resting-state fMRI data from healthy controls with information about alcohol consumption or alcohol dependence questionnaires (AUDIT, ADS)",
+   criteria: [modality, rest, healthy, phenotype], needs: "resting-state fMRI; healthy participants; an alcohol-use measure shared in participants.tsv or phenotype/"}
+- {id: qf04_eeg_autism, ref: N4, url: "https://neurostars.org/t/publicly-available-eeg-data-in-autism/5224",
+   quote: "Anyone know of any publicly available EEG data for subject with autism?",
+   question: "EEG data for subjects with autism",
+   criteria: [modality, population], needs: "EEG present; participants with autism"}
+- {id: qf05_task_fmri_fast_tr, ref: N5, url: "https://neurostars.org/t/fast-tr-open-task-fmri-datasets/5601",
+   quote: "find freely available *task* fMRI data that has a fast TR, ideally lower than 1.0 and ideally a range of TRs.",
+   question: "task fMRI data with a fast TR, ideally lower than 1.0 s",
+   criteria: [modality, task, acquisition, numeric, exclusion], needs: "RepetitionTime of the BOLD runs below 1 s; a task other than rest"}
+- {id: qf06_rest_fmri_healthy_patients, ref: N6, url: "https://neurostars.org/t/where-to-find-healthy-patients-dataset-of-fmri-in-adni-database-and-preprocessing-steps-of-resting-state-fmri-data/5858",
+   quote: "To my Project, I need a resting-state fMRI dataset of Healthy Patients.",
+   question: "resting-state fMRI dataset of Healthy Patients",
+   criteria: [modality, rest, healthy], needs: "resting-state fMRI; healthy participants ('healthy patients' means healthy people)"}
+- {id: qf07_decoding_block_design_sessions, ref: N7, url: "https://neurostars.org/t/inter-subject-decoding-datasets/5965",
+   quote: "I need datasets : with a non-trivial decoding task. (block-design) / with several subjects (at least 4 but many are welcome) / with several sessions per subject (and if possible with additional tasks beyond the decoding one(e.g. localizer, naturalistic, task ; no RS)) / public or not.",
+   question: "fMRI datasets with a non-trivial decoding task in a block design, at least 4 subjects and several sessions per subject, no resting state",
+   criteria: [modality, task, design, sample_size, sessions, exclusion, numeric], needs: "task fMRI with a block design; subject count; more than one session per subject"}
+- {id: qf08_tof_swi, ref: N8, url: "https://neurostars.org/t/open-datasets-with-tof-swi-images/6640",
+   quote: "does anyone know of open datasets with TOF/SWI images (any field strength is fine)?",
+   question: "datasets with TOF or SWI images, any field strength",
+   criteria: [modality], needs: "files with the angio/TOF or SWI suffix"}
+- {id: qf09_pcasl_physio, ref: N8, url: "https://neurostars.org/t/open-datasets-with-tof-swi-images/6640",
+   quote: "if anyone knows of a pcasl dataset with physiological recording (rv/hr) that would also be useful.",
+   question: "pcasl dataset with physiological recording (respiration and heart rate)",
+   criteria: [modality, acquisition, auxiliary], needs: "ASL with pseudo-continuous labelling; _physio files"}
+- {id: qf10_epilepsy_rest_fmri, ref: N9, url: "https://neurostars.org/t/is-there-an-available-open-rs-fmri-epilepsy-dataset/6716",
+   quote: "does somebody know about a dataset of Epilepsy patients with resting-state fMRI?",
+   question: "dataset of Epilepsy patients with resting-state fMRI",
+   criteria: [modality, rest, population], needs: "resting-state fMRI; participants with epilepsy"}
+- {id: qf11_preprocessed_fmriprep, ref: N10, url: "https://neurostars.org/t/open-source-datasets/7155",
+   quote: "I am looking for some open source datasets that have already been preprocessed using fMRIPrep preferably.",
+   question: "datasets that have already been preprocessed using fMRIPrep",
+   criteria: [derivatives, pipeline], needs: "fMRIPrep outputs shared (derivatives folder or OpenNeuro derivatives), not just a mention of the tool"}
+- {id: qf12_rest_task_rest_one_day, ref: N11, url: "https://neurostars.org/t/cant-find-an-open-fmri-dataset-with-rest-task-rest-design/7207",
+   quote: "I tried to find any open fMRI dataset with \"rest-task-rest\" design (scanned in one day). ... The type of task does not matter",
+   question: "fMRI dataset with a rest-task-rest design, scanned in one day; the type of task does not matter",
+   criteria: [modality, rest, task, design, sessions, cooccurrence], needs: "rest runs before and after a task run within one session"}
+- {id: qf13_natural_images_visual_cortex, ref: N12, url: "https://neurostars.org/t/looking-for-public-fmri-datasets-viewing-natural-images/13543",
+   quote: "I'm exploring a public fMRI dataset recording the visual cortex while viewing natural images (maybe preferably single object).",
+   question: "fMRI dataset recording the visual cortex while viewing natural images, preferably single objects",
+   criteria: [modality, stimulus, region], needs: "what the participants saw (README or paper)"}
+- {id: qf14_eeg_alzheimer_and_normal, ref: N13, url: "https://neurostars.org/t/can-someone-tell-me-how-can-i-find-eeg-data-of-normal-alzheimer-patients/14104",
+   quote: "I need EEG data of normal patients as well as those suffering from Alzheimer's disease for my further research.",
+   question: "EEG data of normal patients as well as those suffering from Alzheimer's disease",
+   criteria: [modality, population, controls], needs: "EEG; Alzheimer's group and healthy group both present"}
+- {id: qf15_rest_fmri, ref: N14, url: "https://neurostars.org/t/fmri-datasets-needed-for-research-work/20716",
+   quote: "Need to have datasets for resting state fmri. Can u suggest where can I get it??",
+   question: "datasets for resting state fmri",
+   criteria: [modality, rest], needs: "BOLD runs with a rest task"}
+- {id: qf16_covid_brain_signals, ref: N15, url: "https://neurostars.org/t/is-there-any-publicly-available-data-on-covid-19-related-brain-signals/22254",
+   quote: "is there any publicly available data on people with Covid-19's brain signals (fMRI, EEG, fNIRS...)?",
+   question: "data on people with Covid-19's brain signals (fMRI, EEG, fNIRS)",
+   criteria: [modality, population], needs: "participants who had Covid-19; any functional modality"}
+- {id: qf17_language_fmri_and_dti, ref: N16, url: "https://neurostars.org/t/language-fmri-task-public-datasets/22405",
+   quote: "Could anyone recommend some publicly available databases that would have both task fMRI langauge and DTI data? I'm currently using HCP data",
+   question: "databases that have both task fMRI langauge and DTI data",
+   criteria: [modality, task, cooccurrence], needs: "a language task in fMRI and diffusion MRI in the same dataset (same subjects)"}
+- {id: qf18_preprocessed_fmri_ml, ref: N17, url: "https://neurostars.org/t/need-preprocessed-fmri-dataset/23131",
+   quote: "Can someone share links for preprocessed fMRI datasets for use in machine learning tasks",
+   question: "preprocessed fMRI datasets for use in machine learning tasks",
+   criteria: [modality, derivatives, labels], needs: "preprocessed fMRI outputs shared"}
+- {id: qf19_videos_people_talking, ref: N18, url: "https://neurostars.org/t/fmri-dataset-of-people-watching-others-talking/28089",
+   quote: "Is there any open-source fMRI datasets so that the stimulus is videos of people talking (e.g. having conversations / giving speech / telling stories)? The video should include the face of the speaker. Longer the duration the better.",
+   question: "fMRI datasets where the stimulus is videos of people talking (conversations, speeches, telling stories) with the face of the speaker visible; the longer the better",
+   criteria: [modality, stimulus, amount], needs: "what the participants watched (README or paper); scan duration"}
+- {id: qf20_schizophrenia_mri_png, ref: N19, url: "https://neurostars.org/t/need-preprocessed-dataset-of-schizophrenia/28441", in_scope: false,
+   quote: "Does anyone have or know from where I got preprocessed MRI dataset of Schizophrenia in PNG/JPG/JPEG format? ... (preferably brain extracted data).",
+   question: "preprocessed MRI dataset of Schizophrenia in PNG/JPG format, preferably brain extracted",
+   criteria: [modality, population, derivatives, format], needs: "schizophrenia MRI exists, the PNG/JPG format does not: say so instead of dropping or ignoring the format"}
+- {id: qf21_low_field_paired_3t, ref: N20, url: "https://neurostars.org/t/dataset-lowfield-mri/28588",
+   quote: "I was looking for some available dataset on low-field MRI (<1T is already lowfield for me) paired to something at least 3T. I have found nothing.",
+   question: "low-field MRI (below 1T) paired with scans of the same people at 3T or higher",
+   criteria: [modality, acquisition, cooccurrence, numeric], needs: "MagneticFieldStrength below 1 T and at or above 3 T within one dataset, same subjects"}
+- {id: qf22_diffusion_tumor, ref: N21, url: "https://neurostars.org/t/brain-diffusion-dataset-for-tumor-patient/28641",
+   quote: "Does anyone know where I can get diffusion data for tumor patients?",
+   question: "diffusion data for tumor patients",
+   criteria: [modality, population], needs: "DWI; participants with a brain tumour"}
+- {id: qf23_fmri_dir_ap_pa_small, ref: N22, url: "https://neurostars.org/t/looking-for-test-fmri-data-with-dir-ap-and-dir-pa-scans/29465",
+   quote: "I'm looking for fMRI data that contains both these files (or similar files, the key is dir-AP and dir-PA). ... A smaller dataset is preferable",
+   question: "resting-state fMRI data with both dir-AP and dir-PA scans; a smaller dataset is preferable",
+   criteria: [modality, rest, acquisition, cooccurrence, amount], needs: "the dir entity of the BOLD or fieldmap files; dataset size"}
+- {id: qf24_fnirs_alzheimer, ref: N23, url: "https://neurostars.org/t/requesting-fnirs-datasets-for-alzheimer-s-research/31591",
+   quote: "I am looking for publicly available datasets or guidance on accessing fNIRS data related to Alzheimer's disease.",
+   question: "fNIRS data related to Alzheimer's disease",
+   criteria: [modality, population], needs: "fNIRS; participants with Alzheimer's disease"}
+- {id: qf25_preprocessed_rs_fmri, ref: N24, url: "https://neurostars.org/t/i-need-preprocessed-resting-state-fmri-dataset/31754",
+   quote: "I need already preprocessed rs-fMRI data to conduct MELODIC analyses and retrieve intrinsic connectivity networks.",
+   question: "already preprocessed rs-fMRI data",
+   criteria: [modality, rest, derivatives], needs: "resting-state fMRI; preprocessed outputs shared"}
+- {id: qf26_fmri_preprocessed_any_design, ref: S1, url: "https://psychology.stackexchange.com/questions/3889/open-fmri-data",
+   quote: "Are there any open fMRI datasets available on the internet? Experimental design doesn't matter much ... If the distributed data has been preprocessed (in a standard manner), that would be a big plus.",
+   question: "fMRI datasets, experimental design doesn't matter, preprocessed in a standard manner would be a big plus",
+   criteria: [modality, derivatives], needs: "fMRI; 'a plus' is a preference, not a filter: datasets without derivatives still count"}
+- {id: qf27_7t_rest_fmri_mprage, ref: S2, url: "https://psychology.stackexchange.com/questions/12988/open-access-7t-resting-state-fmri-dataset",
+   quote: "I'm looking for an open access dataset of 7-tesla resting state fMRI images of human subjects. ... I need images that were acquired using MP-RAGE (not MP2-RAGE) sequencing.",
+   question: "7-tesla resting state fMRI of human subjects with anatomical images acquired using MP-RAGE, not MP2-RAGE",
+   criteria: [modality, rest, acquisition, species, exclusion, numeric], needs: "MagneticFieldStrength about 7 T; rest BOLD; T1w sequence name (MPRAGE vs MP2RAGE)"}
+- {id: qf28_preprocessed_fmri_alzheimer, ref: S3, url: "https://psychology.stackexchange.com/questions/16824/where-can-i-find-preprocessed-fmri-data-set-for-alzheimers-disease",
+   quote: "where can i find preprocessed fmri data set for alzheimer's disease",
+   question: "preprocessed fmri data set for alzheimer's disease",
+   criteria: [modality, population, derivatives], needs: "fMRI; Alzheimer's participants; preprocessed outputs shared"}
+- {id: qf29_simple_visual_task_20_subjects, ref: S4, url: "https://psychology.stackexchange.com/questions/19500/task-based-fmri-dataset-with-very-simple-task-e-g-view-stripes",
+   quote: "ideally the dataset would involve very simple visual tasks, like viewing vertical and horizontal stripes. It should have at least 20 Participants and 30 trials per task. It should also be randomized",
+   question: "task-based fMRI dataset with a very simple visual task, like viewing vertical and horizontal stripes, at least 20 participants and 30 trials per task, randomized",
+   criteria: [modality, task, stimulus, design, sample_size, amount, numeric], needs: "stimulus description; subject count; trial counts from events files"}
+- {id: qf30_fmri_emotional_state, ref: S5, url: "https://psychology.stackexchange.com/questions/20526/fmri-datasets-for-emotion-states",
+   quote: "Would there be any open fMRI datasets available that specifically analyse a subjects emotional state? ... Raw or processed data would be fine.",
+   question: "fMRI datasets that specifically analyse a subject's emotional state, raw or processed",
+   criteria: [modality, task], needs: "an emotion task or emotion induction; 'raw or processed' is no filter"}
+- {id: qf31_brain_networks_phenotype, ref: S6, url: "https://psychology.stackexchange.com/questions/25829/brain-network-datasets",
+   quote: "I was looking for datasets for brain networks (structural and functional) for graph analysis. ... It would be great if these brain networks are designed for also tagged with phenotype or disease",
+   question: "brain network datasets (structural and functional connectivity matrices) for graph analysis, tagged with phenotype or disease",
+   criteria: [derivatives, phenotype, population], needs: "connectivity matrices shared as derivatives"}
+- {id: qf32_connectomes_consciousness, ref: S7, url: "https://psychology.stackexchange.com/questions/26095/connectome-datasets-related-to-consciousness",
+   quote: "I'm interested in datasets in the form of functional connectivity networks (in some standard format like .graphml or just adjacency matrices), specifically related to consciousness research such as DoC , sleep, or possibly on mindfulness meditation.",
+   question: "functional connectivity networks (adjacency matrices or .graphml) related to consciousness research such as disorders of consciousness, sleep or mindfulness meditation",
+   criteria: [derivatives, format, population, task], needs: "connectivity matrices shared; topic consciousness / sleep / meditation"}
+- {id: qf33_eeg_alzheimer, ref: S8, url: "https://opendata.stackexchange.com/questions/4813/eeg-data-specifically-for-alzheimers",
+   quote: "Does anyone have any clues on open (or reasonably scrapeable) sources of EEG data, especially from Alzheimer's patients?",
+   question: "EEG data from Alzheimer's patients",
+   criteria: [modality, population], needs: "EEG; participants with Alzheimer's disease"}
+- {id: qf34_mri_redistributable, ref: S9, url: "https://opendata.stackexchange.com/questions/6661/open-source-mri-image-dataset",
+   quote: "in order to do this I need the images to be legally open source so that I'm not distributing images that have copy right restrictions.",
+   question: "MRI images that are legally open source so that I can redistribute them without copyright restrictions",
+   criteria: [modality, licence], needs: "licence field (CC0 / PDDL allow redistribution)"}
+- {id: qf35_eeg_autism_patients, ref: S10, url: "https://opendata.stackexchange.com/questions/12818/where-can-i-find-eeg-database-for-autism-spectrum-disorder-patients",
+   quote: "I am badly in need of EEG data from autism patients. Where can I find such data?",
+   question: "EEG database for autism spectrum disorder patients",
+   criteria: [modality, population], needs: "EEG; participants with autism"}
+- {id: qf36_brain_tumor_classes, ref: S11, url: "https://opendata.stackexchange.com/questions/17703/3d-brain-tumor-datasets-for-classification",
+   quote: "I would like a MRI brain tumor dataset for classification, which contains certain classes from this list (malignant, benign, atypica, pituitary adenoma, ...)",
+   question: "3D MRI brain tumor dataset for classification with tumour type labels (malignant, benign, pituitary adenoma)",
+   criteria: [modality, population, labels], needs: "MRI of tumour patients; tumour type per participant"}
+- {id: qf37_tumor_segmentation_ground_truth, ref: S12, url: "https://opendata.stackexchange.com/questions/17904/free-grayscale-images-dataset-with-ground-truth-to-pre-train-u-net-used-later-in",
+   quote: "This algorithm will segmentate brain tumors and I need a dataset with brain images and ground truth images.",
+   question: "brain tumor MRI with ground truth segmentation masks",
+   criteria: [modality, population, labels, derivatives], needs: "MRI of tumour patients; manual segmentation masks shared"}
+- {id: qf38_eeg_depression_labeled, ref: S13, url: "https://opendata.stackexchange.com/questions/18515/can-i-find-a-dataset-of-eeg-signals-to-classify-a-depression",
+   quote: "I searched a lot about a dataset of EEG signals which can I use to classify a depression? I want a labeled dataset?",
+   question: "labeled dataset of EEG signals to classify depression",
+   criteria: [modality, population, controls, labels], needs: "EEG; a depression group and a comparison group, with the diagnosis per participant"}
+- {id: qf39_eeg_rest_adult_man_healthy, ref: S14, url: "https://opendata.stackexchange.com/questions/18518/human-normal-eeg-relative-power-spectra-during-rest",
+   quote: "Where can I find a open dataset of an adult man healthy/normal EEG Relative Power Spectra Density during rest?",
+   question: "healthy adult male EEG during rest",
+   criteria: [modality, rest, healthy, age, sex], needs: "resting EEG; healthy adult men (sex and age of the same participant)"}
+- {id: qf40_mri_ct_paired, ref: S15, url: "https://opendata.stackexchange.com/questions/20927/mri-ct-paired-open-dataset-for-mri-synthesis-from-ct-using-supervised-learning",
+   quote: "I'm finding MR-CT Paired images ... the most relevant one is this one on Kaggle . But it doesn't have license",
+   question: "paired MRI and CT images of the same subjects with a clear licence",
+   criteria: [modality, cooccurrence, licence], needs: "CT and MRI in the same subjects (rare on OpenNeuro: mostly iEEG electrode-localisation CTs)"}
+- {id: qf41_eeg_digitization, ref: M1, url: "https://mne.discourse.group/t/eeg-digitization-usecase/1872",
+   quote: "Does anyone know about a public dataset that ships EEG data + Digitization ?",
+   question: "dataset that ships EEG data with electrode digitization",
+   criteria: [modality, auxiliary], needs: "_electrodes.tsv / _coordsystem.json files with measured positions"}
+- {id: qf42_eeg_image_pairs_scenes, ref: G1, url: "https://github.com/meagmohit/EEG-Datasets/issues/20",
+   quote: "Which dataset would be more useful to have EEG signal and its image pair collected with different scenes?",
+   question: "EEG recorded while viewing images of different scenes, with the images included",
+   criteria: [modality, stimulus, auxiliary], needs: "visual scene stimuli; stimulus files shared"}
+- {id: qf43_eeg_emotion_like_deap, ref: G2, url: "https://github.com/meagmohit/EEG-Datasets/issues/36",
+   quote: "Out of them I was primarily looking for the eeg to emotion. In which mainly the DEAP.",
+   question: "EEG emotion recognition datasets like DEAP",
+   criteria: [modality, task, like_dataset], needs: "EEG; emotion induction"}
+- {id: qf44_flair_min_subjects, ref: G3, url: "https://github.com/OpenNeuroOrg/openneuro/issues/3504",
+   quote: "@habib61 asked at OHBM whether it was possible to find datasets with FLAIR with specific minimal number of subjects etc.",
+   question: "datasets with FLAIR images from at least 50 subjects",
+   criteria: [modality, sample_size, subgroup_count, numeric], needs: "number of subjects that have a FLAIR file (the threshold of 50 is ours; the request names none)"}
+
+# ── Requests for a search capability (the wished-for search, as a question) ────
+- {id: qx01_fieldmap_effective_echo_spacing, ref: X1, url: "https://neurostars.org/t/intro-to-datalad-searching-through-file-jsons-sidecars/4709",
+   quote: "find data sets (specifically, phase/frequency dsets to use for B0 correction) with certain keys in their JSONs. ... My key of interest is EffectiveEchoSpacing",
+   question: "datasets with fieldmaps for B0 correction whose JSON sidecars contain EffectiveEchoSpacing",
+   criteria: [modality, acquisition], needs: "fmap files; presence of a sidecar key"}
+- {id: qx02_spinal, ref: X2, url: "https://neurostars.org/t/dysfunctional-search-feature-in-openneuro-website/4983",
+   quote: "I entered the string \"spinal\" but there was no result, even though the dataset is called \"Spinal Cord MRI Public Database (Multi-subjects)\"",
+   question: "spinal",
+   criteria: [region], needs: "a single title word"}
+- {id: qx03_male_40yo, ref: X3, url: "https://neurostars.org/t/datalad-search-openneuro/18386",
+   quote: "aggregate some subjects from openneuro with different dataset properties, for example by age, scan type, fieldmaps etc.. ... I search for specific filters (for example male 40yo)",
+   question: "datasets with male participants aged 40 that have fieldmaps",
+   criteria: [age, sex, modality, numeric], needs: "sex and age of the same participant; fmap files"}
+- {id: qx04_non_siemens, ref: X3, url: "https://neurostars.org/t/datalad-search-openneuro/18386",
+   quote: "to list all manufacturers on openneuro",
+   question: "fMRI datasets acquired on a GE or Philips scanner",
+   criteria: [modality, acquisition], needs: "Manufacturer in the sidecars"}
+- {id: qx05_sessions, ref: X9, url: "https://github.com/OpenNeuroOrg/openneuro/issues/2775",
+   quote: "I would like to see 'number of sessions' added as an option in search.",
+   question: "datasets with at least 3 sessions per subject",
+   criteria: [sessions, numeric], needs: "count of ses- folders per subject"}
+- {id: qx06_fmriprep_version, ref: X10, url: "https://github.com/OpenNeuroOrg/openneuro/issues/2811",
+   quote: "Suggested derivative search fields: \"Source or BIDS derivative dataset\", \"fMRIPrep version\", \"MRIQC version\"",
+   question: "datasets with MRIQC derivatives",
+   criteria: [derivatives, pipeline], needs: "derivatives table (pipeline name and version)"}
+- {id: qx07_meeg, ref: X8, url: "https://github.com/OpenNeuroOrg/openneuro/issues/2586",
+   quote: "People might specify that they have an sEEG dataset to be precise, while someone might be searching for an EEG dataset and expect sEEG to be a subset of results. ... M/EEG should also find both MEG and EEG",
+   question: "M/EEG datasets",
+   criteria: [modality], needs: "MEG or EEG"}
+- {id: qx08_seeg, ref: X8, url: "https://github.com/OpenNeuroOrg/openneuro/issues/2586",
+   quote: "People might specify that they have an sEEG dataset to be precise",
+   question: "sEEG datasets",
+   criteria: [modality], needs: "intracranial EEG with depth electrodes"}
+- {id: qx09_female_only, ref: X11, url: "https://github.com/OpenNeuroOrg/openneuro/issues/2921",
+   quote: "If you search by Sex and click 'Male' or 'Female', only a small number of datasets come up. ... most only include the letter 'M' or 'F'.",
+   question: "datasets with only female participants",
+   criteria: [sex, exclusion], needs: "sex of every participant, whatever the coding (F, female, f, 2)"}
+- {id: qx10_nhp, ref: X12, url: "https://github.com/OpenNeuroOrg/openneuro/issues/3904",
+   quote: "Would like see NHP added into species list",
+   question: "NHP datasets",
+   criteria: [species], needs: "species label; NHP = non-human primate"}
+- {id: qx11_bids_filename, ref: X7, url: "https://github.com/OpenNeuroOrg/openneuro/issues/3983",
+   quote: "it would be useful to have a BIDS-aware filename search across all public datasets.",
+   question: "datasets containing files that end in _desc-preproc_bold.nii.gz",
+   criteria: [derivatives, format], needs: "file names inside derivatives"}
+- {id: qx12_metadata_sheet, ref: X5, url: "https://neurostars.org/t/is-there-any-compilation-of-the-metadata-from-most-different-neuro-data-repositories/27562",
+   quote: "The entry would include wherever applicable modality, dataset size, organism, n_subjects, ages, condition(s), duration, brain region, license, authors, paper",
+   question: "human EEG datasets under 10 GB with more than 30 subjects and a linked paper",
+   criteria: [modality, species, amount, sample_size, linked_paper, numeric], needs: "size_bytes; subject count; a primary paper"}
+
+# ── Dataset-selection criteria stated in papers ────────────────────────────────
+- {id: qp01_t1w_and_bold_per_subject, ref: "Esteban 2019 (fMRIPrep)", url: "https://doi.org/10.1038/s41592-018-0235-4",
+   quote: "only datasets including at least one T1-weighted (T1w) and one BOLD per subject run were included",
+   question: "datasets where every subject has at least one T1w and one BOLD run",
+   criteria: [modality, cooccurrence], needs: "per-subject file tree"}
+- {id: qp02_t1w_five_adult_hc, ref: "Fisch 2026 (deepmriprep)", url: "https://doi.org/10.1038/s43588-026-00953-7",
+   quote: "each dataset that contained at least five T1w MRIs from at least five adult HCs was included",
+   question: "datasets with T1w MRI from at least five adult healthy controls",
+   criteria: [modality, healthy, age, subgroup_count, numeric], needs: "count of participants who are healthy AND adult AND have a T1w"}
+- {id: qp03_t1w_healthy_children_2_12, ref: "Fisch 2026 (OpenNeuro-Kids)", url: "https://doi.org/10.1038/s43588-026-00953-7",
+   quote: "each dataset that contained at least 5 T1w MRIs from at least 5 HCs in the age range from 2 to 12 years was included",
+   question: "datasets with T1w MRI from at least 5 healthy controls aged 2 to 12 years",
+   criteria: [modality, healthy, age, subgroup_count, numeric], needs: "count of participants who are healthy AND aged 2–12 AND have a T1w"}
+- {id: qp04_3t_mprage_age_5_21_no_pmc, ref: "Bricout 2026", url: "https://doi.org/10.3389/fnins.2026.1817743",
+   quote: "Includes at least one subject between 5 and 21. Field strength should be three Tesla. Acquisition protocol should be similar to MPRAGE. No prospective motion correction techniques (e.g., vNavs).",
+   question: "3 Tesla MPRAGE datasets with at least one subject between 5 and 21 years old, without prospective motion correction such as vNavs",
+   criteria: [modality, acquisition, age, exclusion, numeric], needs: "MagneticFieldStrength; sequence name; participant ages; absence of vNav/PMC"}
+- {id: qp05_rest_epi_t1w_same_session_tr, ref: "Taylor 2023 (FMRI QC)", url: "https://doi.org/10.3389/fnins.2023.1205928",
+   quote: "Having >12 subjects, each of whom has at least one EPI and one T1w volume in the same session directory. EPI: TR > 1.5 s, all voxel edges < 4.1 mm, number of volumes > 100",
+   question: "resting state collections with more than 12 subjects, each with an EPI and a T1w in the same session, EPI TR above 1.5 s and voxels smaller than 4.1 mm",
+   criteria: [modality, rest, sample_size, cooccurrence, acquisition, numeric], needs: "subject count; per-session file tree; RepetitionTime; voxel size from the NIfTI header"}
+- {id: qp06_language_50_healthy_adults_descriptor, ref: "Rampinini 2025 (NEBULA101)", url: "https://doi.org/10.1038/s41597-024-04357-y",
+   quote: "a search on http://openneuro.org for BIDS-valid MRI raw/derivative datasets with more than 50 healthy adults, including the keyword 'language' and accompanied by a published or pre-registered data descriptor",
+   question: "BIDS-valid MRI datasets on language with more than 50 healthy adults and a published data descriptor",
+   criteria: [modality, task, healthy, age, subgroup_count, bids_valid, linked_paper, numeric], needs: "topic is language (the authors found ds004215 and ds000243 matched the keyword but 'have no relationship with language'); healthy adult count; a linked paper"}
+- {id: qp07_isolated_words, ref: "Denissen 2024 (HED LANG)", url: "https://doi.org/10.1038/s41597-024-04282-0",
+   quote: "We selected fMRI datasets for experiments presenting isolated words.",
+   question: "fMRI datasets for experiments presenting isolated words",
+   criteria: [modality, stimulus], needs: "stimulus description (single words, not sentences or stories)"}
+- {id: qp08_eating_disorders_mri, ref: "Tanaka 2024", url: "https://doi.org/10.1111/pcn.13717",
+   quote: "Search by 'disease name + MRI' in data repositories such as OpenNeuro ... Keywords used for the search were eating disorders, anorexia nervosa, bulimia nervosa, binge-eating disorder, and MRI.",
+   question: "eating disorders MRI",
+   criteria: [modality, population], needs: "participants with anorexia, bulimia or binge-eating disorder"}
+- {id: qp09_eeg_stress, ref: "Chatzaki 2025", url: "https://doi.org/10.3390/s25237108",
+   quote: "For the search on OpenNeuro, the modality of EEG was chosen and combined with the keywords describing the affective condition.",
+   question: "EEG stress",
+   criteria: [modality, task], needs: "EEG; stress induction or stress as the studied state"}
+- {id: qp10_task_fmri_with_paper, ref: "Bowring 2019", url: "https://doi.org/10.1002/hbm.24603",
+   quote: "we vetted the associated publication for each dataset stored in the repository ... selected on the basis that they reported clearly defined regions of brain activation",
+   question: "task fMRI datasets with an associated publication that reports group-level activation results",
+   criteria: [modality, task, linked_paper], needs: "a primary paper linked to the dataset; task fMRI"}
+- {id: qp11_memory_consolidation, ref: "Bartzioka 2026", url: "https://doi.org/10.1016/j.ynirp.2026.100398",
+   quote: "Datasets were selected based on their alignment with the consolidation clusters described above, together with task metadata completeness, preprocessing compatibility, and sufficient sample size.",
+   question: "fMRI datasets on memory consolidation with complete task events and a sufficient sample size",
+   criteria: [modality, task, quality, sample_size], needs: "topic memory consolidation; events files present; subject count"}
+- {id: qp12_normative_healthy, ref: "Isherwood 2021", url: "https://doi.org/10.1371/journal.pone.0248341",
+   quote: "had to be normative, that is, made up of individuals that were reported as healthy at the time of scanning ... a collection of curated images … acquired to be of similar composition",
+   question: "normative MRI databases made up only of healthy individuals",
+   criteria: [modality, healthy, exclusion], needs: "all participants healthy (no patient group)"}
+- {id: qp13_bci_paradigms, ref: "Chevallier 2024 (MOABB)", url: "https://arxiv.org/html/2404.15319v1",
+   quote: "we chose to restrict to three common BCI paradigms, namely MI, ERP, and SSVEP",
+   question: "EEG datasets with motor imagery, ERP or SSVEP paradigms",
+   criteria: [modality, task], needs: "EEG; BCI paradigm (MI = motor imagery)"}
+- {id: qp14_eeg_200hz_redistributable, ref: "Shahi 2026 (EEGDash)", url: "https://arxiv.org/html/2611.06356v1",
+   quote: "Recordings of 10 seconds or less, or sampled below 200 Hz, are skipped ... small brain–computer-interface sets under no-derivatives licences, which forbid a converted copy",
+   question: "EEG datasets sampled at 200 Hz or higher under a licence that allows redistributing converted copies",
+   criteria: [modality, acquisition, licence, numeric], needs: "SamplingFrequency in the EEG sidecars; licence"}

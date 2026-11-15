@@ -1,0 +1,167 @@
+{"query": "qf08_tof_swi", "acc": "ds000113", "label": "relevant", "reason": "Recorded mr_angiography (20 subjects) and mr_venography files; README describes time-of-flight angiography and susceptibility-weighted images."}
+{"query": "qf08_tof_swi", "acc": "ds000221", "label": "partially_relevant", "reason": "112 subjects have gradient-echo magnitude/phase images described as usable for SWI and QSM; no SWI or TOF images recorded."}
+{"query": "qf08_tof_swi", "acc": "ds000224", "label": "relevant", "reason": "Midnight Scan Club: recorded mr_angiography (MRA_whole_brain) and mr_venography in all 10 subjects; README lists four MR angiograms, eight venograms."}
+{"query": "qf08_tof_swi", "acc": "ds000229", "label": "not_relevant", "reason": "Only T1w and BOLD recorded; 'susceptibility-weighted' merely describes the EPI BOLD sequence."}
+{"query": "qf08_tof_swi", "acc": "ds000231", "label": "not_relevant", "reason": "Only T1w and BOLD recorded; 'susceptibility-weighted' merely describes the EPI BOLD sequence."}
+{"query": "qf08_tof_swi", "acc": "ds002274", "label": "not_relevant", "reason": "Layer-fMRI tutorial examples; only a T1w recorded, README mentions no TOF or SWI images."}
+{"query": "qf08_tof_swi", "acc": "ds002278", "label": "relevant", "reason": "Recorded swi (SWI_Images), minimum intensity projection, GRE mag/phase and mr_angiography files in the DIVA dataset."}
+{"query": "qf08_tof_swi", "acc": "ds003424", "label": "not_relevant", "reason": "T1w, DWI, fieldmaps and BOLD only; 'susceptibility-weighted echo planar' refers to the BOLD sequence."}
+{"query": "qf08_tof_swi", "acc": "ds003563", "label": "relevant", "reason": "7T human phantom: recorded ToF files and derivatives/ToF; README lists up to 150 µm time-of-flight angiography."}
+{"query": "qf08_tof_swi", "acc": "ds003949", "label": "relevant", "reason": "Lausanne TOF-MRA aneurysm cohort: mr_angiography (TOF_3D_multi-slab) recorded for all 284 subjects."}
+{"query": "qf08_tof_swi", "acc": "ds004146", "label": "relevant", "reason": "QTAB: recorded swi (SWI_Images, t2_swi3d) and minimum intensity projections for 412 subjects; README lists SWI."}
+{"query": "qf08_tof_swi", "acc": "ds004192", "label": "relevant", "reason": "THINGS-fMRI: recorded mr_angiography (TOF_3D_multi-slab) for 3 subjects; README names Time-of-Flight angiography."}
+{"query": "qf08_tof_swi", "acc": "ds004265", "label": "unsure", "reason": "README headed 'Safety Data (FLAIR/SWI structural images)' for six macaques, but recorded files show only T1w and BOLD; sharing of SWI unconfirmed."}
+{"query": "qf08_tof_swi", "acc": "ds004620", "label": "relevant", "reason": "Macaque angiography dataset: 8 TOF-MRA scans at 3T/7T, mr_angiography recorded for all 8 subjects; criterion names no population."}
+{"query": "qf08_tof_swi", "acc": "ds004712", "label": "relevant", "reason": "ON-Harmony: SWI listed as a modality; recorded SWI/SWAN acquisitions (SWI_0.8x0.8x3mm, FILT_PHA: SWI SWAN) in 20 subjects."}
+{"query": "qf08_tof_swi", "acc": "ds004717", "label": "relevant", "reason": "Glioma dataset: swi (SWIp_fast) recorded for all 42 subjects; README lists SWI among scans."}
+{"query": "qf08_tof_swi", "acc": "ds004962", "label": "relevant", "reason": "Rat stroke dataset at 7T: mr_angiography files recorded for all 28 animals (MRA; README does not name the technique); criterion names no population."}
+{"query": "qf08_tof_swi", "acc": "ds005096", "label": "relevant", "reason": "Royal Brisbane TOF-MRA aneurysm database: mr_angiography (MRA TOF COW) recorded for all 63 patients."}
+{"query": "qf08_tof_swi", "acc": "ds005533", "label": "relevant", "reason": "Recorded swi files (SWI_Images, mIP, 'Ax SWI clinical') in 6 subjects; README lists SWI scans at 3T."}
+{"query": "qf08_tof_swi", "acc": "ds005849", "label": "relevant", "reason": "open-DBS: mr_angiography files (SNAP non-contrast MRA sequence) recorded for all 14 subjects, plus T2*w; not explicitly TOF, README empty."}
+{"query": "qf08_tof_swi", "acc": "ds006445", "label": "unsure", "reason": "README says a clinical T2*-susceptibility-weighted sequence was acquired, but dataset is described as anatomical and diffusion; unclear whether those clinical scans are shared."}
+{"query": "qf08_tof_swi", "acc": "ds006556", "label": "not_relevant", "reason": "TOF here means Tetralogy of Fallot; only T1w and T2w images recorded."}
+{"query": "qf08_tof_swi", "acc": "ds006661", "label": "relevant", "reason": "7T dataset: swi files (SWI_Images, t2_fl3d swi 0.5 iso) recorded for 8 subjects; README says SWI stored in swi directories."}
+{"query": "qf08_tof_swi", "acc": "ds006917", "label": "not_relevant", "reason": "PET and T1w only; TOF refers to time-of-flight PET reconstruction, not angiography."}
+{"query": "qf08_tof_swi", "acc": "ds006949", "label": "relevant", "reason": "Safety MRIs for focused ultrasound: swi files (AX SWI, SWI mIP, GRE SWI) recorded for all 20 subjects."}
+{"query": "qf08_tof_swi", "acc": "ds007195", "label": "relevant", "reason": "Dataset is titled and labelled as an SPIO-enhanced susceptibility-weighted imaging (SWI) sample of a rat brain; no README or file facts beyond that."}
+{"query": "qf08_tof_swi", "acc": "ds008018", "label": "relevant", "reason": "Macaque TOF-MRA dataset: 55 subjects with TOF-MRA in subject folders plus average TOF atlas; criterion names no population."}
+{"query": "qf08_tof_swi", "acc": "ds008020", "label": "not_relevant", "reason": "7T PCASL and MP2RAGE only; TOF appears only as source of derived vessel masks (.mat), TOF images not shared."}
+{"query": "qf08_tof_swi", "acc": "ds008919", "label": "relevant", "reason": "README MRI data section lists TOF and SWI contrasts for all participants; data notes mention per-subject QSM runs kept. OpenNeuro summary lacks file detail."}
+{"query": "qf08_tof_swi", "acc": "ds008942", "label": "relevant", "reason": "README lists sub-XX_ses-XX_TOF.nii.gz, the artery image collected by TOF, for each subject."}
+{"query": "qf08_tof_swi", "acc": "ds008970", "label": "not_relevant", "reason": "README states the additional TOF acquisition is not included in this release; only T1w, T2w, FLAIR, BOLD, DWI."}
+{"query": "qf09_pcasl_physio", "acc": "ds000121", "label": "not_relevant", "reason": "Task BOLD only; 'ASL' refers to the ASL eye tracker, no arterial spin labelling data."}
+{"query": "qf09_pcasl_physio", "acc": "ds000216", "label": "partially_relevant", "reason": "Simultaneous multi-echo pCASL/BOLD resting scans in 7 subjects; no physiological recordings recorded or mentioned."}
+{"query": "qf09_pcasl_physio", "acc": "ds000218", "label": "not_relevant", "reason": "Task BOLD (PRESTO) and T1w only; protocol dump says 'Arterial Spin labeling = no'."}
+{"query": "qf09_pcasl_physio", "acc": "ds000219", "label": "not_relevant", "reason": "Task BOLD (PRESTO) and T1w only; protocol dump says 'Arterial Spin labeling = no'."}
+{"query": "qf09_pcasl_physio", "acc": "ds000234", "label": "partially_relevant", "reason": "Background-suppressed pCASL files in 5 subjects; no physiological recordings recorded or described."}
+{"query": "qf09_pcasl_physio", "acc": "ds000235", "label": "partially_relevant", "reason": "Background-suppressed pCASL files in 4 subjects; no physiological recordings recorded or described."}
+{"query": "qf09_pcasl_physio", "acc": "ds000236", "label": "partially_relevant", "reason": "Background-suppressed pCASL files in 18 elderly subjects; no physiological recordings recorded or described."}
+{"query": "qf09_pcasl_physio", "acc": "ds000240", "label": "partially_relevant", "reason": "PCASL 3D GRASE perfusion (asl_type PCASL) in 63 subjects; no physio files recorded or described."}
+{"query": "qf09_pcasl_physio", "acc": "ds000254", "label": "partially_relevant", "reason": "Simultaneous multi-echo pCASL/BOLD finger-tapping scans in 13 subjects; no physiological recordings recorded or mentioned."}
+{"query": "qf09_pcasl_physio", "acc": "ds001491", "label": "not_relevant", "reason": "Multi-echo task BOLD and T1w only; protocol dump says 'Arterial Spin labeling = no'."}
+{"query": "qf09_pcasl_physio", "acc": "ds003059", "label": "not_relevant", "reason": "Only BOLD and T1w shared; ASL is mentioned only in the paper abstract, no perfusion or physio files."}
+{"query": "qf09_pcasl_physio", "acc": "ds003151", "label": "not_relevant", "reason": "Resting ASL recorded as PASL (asl_type PASL), not pCASL; no physiological recordings."}
+{"query": "qf09_pcasl_physio", "acc": "ds003647", "label": "not_relevant", "reason": "Rat fMRI with multislice FAIR-ASL (pulsed), not pCASL; no physio files recorded."}
+{"query": "qf09_pcasl_physio", "acc": "ds003823", "label": "relevant", "reason": "HRV-ER: pCASL (173 subjects) plus 4961 physio files (pulse, respiration); task labels restASL/trainingMimickingASL indicate physio for the ASL runs."}
+{"query": "qf09_pcasl_physio", "acc": "ds004054", "label": "not_relevant", "reason": "PET-MRI with pulsed ASL (PASL) described; only PET, T1w, T2/T2* maps recorded; no pCASL or physio."}
+{"query": "qf09_pcasl_physio", "acc": "ds004129", "label": "not_relevant", "reason": "Phenotype-only copy of NIMH HRV dataset (one T1w); pCASL appears only in the copied original README, no ASL or physio files."}
+{"query": "qf09_pcasl_physio", "acc": "ds004130", "label": "not_relevant", "reason": "Phenotype aggregation example with one T1w; pCASL only in copied README of the original dataset, no ASL or physio files."}
+{"query": "qf09_pcasl_physio", "acc": "ds004131", "label": "not_relevant", "reason": "Phenotype example with one T1w; pCASL only in copied README of the original dataset, no ASL or physio files."}
+{"query": "qf09_pcasl_physio", "acc": "ds004146", "label": "partially_relevant", "reason": "QTAB: pCASL (ep2d_pcasl, asl_type PCASL) in 413 subjects with M0; no physiological recordings recorded or mentioned."}
+{"query": "qf09_pcasl_physio", "acc": "ds004305", "label": "not_relevant", "reason": "Rat T2w and diffusion MRI only; no ASL or physiological files."}
+{"query": "qf09_pcasl_physio", "acc": "ds004717", "label": "unsure", "reason": "ASL files (Philips ASL_CBF) for 42 glioma patients but labelling type never stated; no physio files, so partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds004856", "label": "partially_relevant", "reason": "Dallas Lifespan: ASL recorded as PCASL in 464 subjects; no physiological recording files recorded or described."}
+{"query": "qf09_pcasl_physio", "acc": "ds004873", "label": "partially_relevant", "reason": "README lists raw pCASL data (acq-epi_asl) per subject; no physiological recordings recorded, only Hct/O2sat values."}
+{"query": "qf09_pcasl_physio", "acc": "ds004962", "label": "unsure", "reason": "Rat ASL files recorded but README never states the labelling scheme; no physio files, so partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds005270", "label": "not_relevant", "reason": "ASL only mentioned as acquired 'if time permitted', type unstated; no perfusion or physio files recorded, only BOLD, T1w, FLAIR, DWI."}
+{"query": "qf09_pcasl_physio", "acc": "ds005296", "label": "not_relevant", "reason": "EEG study of deaf readers; ASL means American Sign Language."}
+{"query": "qf09_pcasl_physio", "acc": "ds005529", "label": "partially_relevant", "reason": "Diffusion-prepared pCASL derived maps (CBF, ATT, kw, M0) for 186 participants; no physiological recordings."}
+{"query": "qf09_pcasl_physio", "acc": "ds005565", "label": "not_relevant", "reason": "EEG priming study with deaf readers; ASL means American Sign Language."}
+{"query": "qf09_pcasl_physio", "acc": "ds005687", "label": "partially_relevant", "reason": "Rat pCASL perfusion (asl_type PCASL); physio files exist only for the resting-state BOLD runs (task-rest_physio), not the ASL scans."}
+{"query": "qf09_pcasl_physio", "acc": "ds005752", "label": "partially_relevant", "reason": "NIMH volunteers: 3D pCASL in 142 subjects; no physiological recording files, physiological measures are clinic vitals only."}
+{"query": "qf09_pcasl_physio", "acc": "ds006131", "label": "partially_relevant", "reason": "PAFIN: PCASL in 49 subjects; respiration belt and pulse oximeter recordings are described for the fMRI runs, not the ASL scan."}
+{"query": "qf09_pcasl_physio", "acc": "ds006148", "label": "unsure", "reason": "ASL files in 252 subjects but README is a template and labelling type is not stated; no physio files, partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds006182", "label": "not_relevant", "reason": "QSIPrep diffusion derivatives only (DWI, T1w); ASL is mentioned only in the parent study's paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds006184", "label": "not_relevant", "reason": "QSIRecon diffusion derivatives only; ASL is mentioned only in the parent study's paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds006185", "label": "not_relevant", "reason": "fMRIPrep BOLD derivatives only (bao, rat, rest); no perfusion files, ASL only in the paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds006188", "label": "partially_relevant", "reason": "ASLPrep derivatives with ASL, CBF and ATT files, asl_type PCASL, 11 subjects; no physiological recordings."}
+{"query": "qf09_pcasl_physio", "acc": "ds006212", "label": "unsure", "reason": "7T ASL shared only as derived CBF/control images, labelling type unstated; pulse recording named in paper but no physio files listed."}
+{"query": "qf09_pcasl_physio", "acc": "ds006744", "label": "unsure", "reason": "Penn LEAD ASLPrep CBF/ATT derivatives; labelling type never stated on card or README; no physio files, partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds006871", "label": "unsure", "reason": "7T ASL shared as derived CBF/control images, labelling type unstated; no physiological recordings, partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds007088", "label": "not_relevant", "reason": "fMRIPrep BOLD derivatives (nback, rest) only; ASL mentioned only in the parent study's paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds007089", "label": "not_relevant", "reason": "sMRIPrep anatomical derivatives only (T1w, T2w, segmentations); ASL only in the parent study's paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds007091", "label": "not_relevant", "reason": "QSIRecon diffusion derivatives only; ASL only in the parent study's paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds007116", "label": "partially_relevant", "reason": "Penn LEAD raw: 3D spiral PCASL in 116 subjects (asl_type PCASL); no physiological recordings recorded or described."}
+{"query": "qf09_pcasl_physio", "acc": "ds007402", "label": "not_relevant", "reason": "XCP-D BOLD derivatives (nback, rest) only; ASL only in the parent study's paper abstract."}
+{"query": "qf09_pcasl_physio", "acc": "ds007522", "label": "unsure", "reason": "PAN: perfusion ASL shared for 1140 adults but labelling type never stated in README; no physio mentioned, partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds007694", "label": "unsure", "reason": "GRACE: arterial spin labelling shared (mri_perfusion) but labelling type unstated in short README; no physio, partial at most."}
+{"query": "qf09_pcasl_physio", "acc": "ds007908", "label": "partially_relevant", "reason": "MS study: 3D TGSE PCASL in perf/ (labelling type PCASL) for 26 of 28; no physiological recordings described."}
+{"query": "qf09_pcasl_physio", "acc": "ds008020", "label": "partially_relevant", "reason": "7T 3D-EPI PCASL acquisitions in 21 subjects; README lists no physiological recordings."}
+{"query": "qf09_pcasl_physio", "acc": "ds008719", "label": "relevant", "reason": "Dual-echo pCASL with recording-gas physio files (per-breath end-tidal PCO2/PO2, RespirAct) for the same runs in 64 participants; respiratory, no cardiac."}
+{"query": "qf09_pcasl_physio", "acc": "ds008942", "label": "unsure", "reason": "7T ASL shared only as derived CBF/control images, labelling type unstated; no physiological recordings listed, partial at most."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds004532", "label": "not_relevant", "reason": "EEG-only reinforcement learning/cabergoline study; 'ultra-low-dose' is a drug dose, no MRI."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds004745", "label": "not_relevant", "reason": "8-channel SSVEP EEG only; 'ultra-low-power' describes the EEG amplifier, no MRI."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds006206", "label": "not_relevant", "reason": "Resting fMRI and MP2RAGE at 10.5 T only; no scans below 1 T."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds006557", "label": "relevant", "reason": "23 healthy adults scanned on Hyperfine 64 mT and GE 3 T; T1w and T2w from both scanners shared."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds007329", "label": "not_relevant", "reason": "Hyperface fMRI at 3 T Siemens only; no low-field MRI."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds007378", "label": "not_relevant", "reason": "FreeSurfer derivatives of the 3 T hyperface study; no low-field MRI."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds007384", "label": "not_relevant", "reason": "fMRIPrep derivatives of the 3 T hyperface study; no low-field MRI."}
+{"query": "qf21_low_field_paired_3t", "acc": "ds007418", "label": "not_relevant", "reason": "Multi-echo GRE at 10.5 T and 7 T with 7 T MP2RAGE; ultra-high field only, nothing below 1 T."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds000113", "label": "not_relevant", "reason": "7 T fMRI is audio-movie stimulation, other tasks are 3 T movie/retinotopy/localizers; no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds001168", "label": "partially_relevant", "reason": "7 T resting-state test-retest fMRI in 22 people; README states structural images used a 3D MP2RAGE sequence."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds001547", "label": "partially_relevant", "reason": "7 T layer VASO/BOLD with task-rest runs in 5 adults; T1w sequence recorded as MP2RAGE."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds001555", "label": "not_relevant", "reason": "7 T with MPRAGE, but functional runs are visual block tasks (attention/no-task flicker); no resting-state fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds001942", "label": "relevant", "reason": "7 T Siemens, task-rest BOLD in session 1, T1w recorded as t1_mprage (tfl3d1) in 10 healthy adults."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds002551", "label": "not_relevant", "reason": "Awake mouse resting fMRI on a Bruker 7 T with T2w RARE anatomy; not human."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds003437", "label": "partially_relevant", "reason": "Paper: 7 T fMRI at 802 ms TR, task-rest runs in 12 adults; T1w sequence not stated anywhere."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds003453", "label": "partially_relevant", "reason": "Paper: 7 T fMRI at 802 ms TR, resting runs in 39 adults; T1w sequence not stated anywhere."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds003455", "label": "partially_relevant", "reason": "Single-person case study with resting runs, same 7 T 802 ms protocol per paper; T1w sequence not stated."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds004125", "label": "not_relevant", "reason": "Mouse fMRI under anaesthesia on a 7 T Bruker scanner; not human."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds004645", "label": "partially_relevant", "reason": "7 T fMRI with 2 resting-state runs in 15 healthy adults; T1w present but its sequence is not stated."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds005233", "label": "not_relevant", "reason": "Resting-state fMRI of anaesthetised bats at 7 T; not human."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds005264", "label": "partially_relevant", "reason": "7 T multi-echo resting-state fMRI in healthy controls; no T1w files recorded and anatomical sequence never stated."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds005345", "label": "partially_relevant", "reason": "7 T with task-rest runs; README says MP-RAGE but recorded T1w sequence is t1_mp2rage_sag_0.7mm UNI, i.e. MP2RAGE."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds005405", "label": "partially_relevant", "reason": "Resting fMRI in 101 adults, TR 802 ms matching the paper's 7 T protocol; field strength and T1w sequence not stated in README."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds005454", "label": "partially_relevant", "reason": "7 T Siemens with task-rest BOLD in 5 adults; T1w recorded as MP2RAGE (UNI, denoised)."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds005747", "label": "partially_relevant", "reason": "7 T resting-state fMRI in 90 healthy adults; T1w recorded as inversion-recovery EPI (T1_EPI_1p1iso), not MPRAGE; README does not name the sequence."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds006212", "label": "partially_relevant", "reason": "7 T resting BOLD/VASO runs (task-rest) in 23 adults; anatomical image is MP2RAGE per README and sequence name."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds006550", "label": "not_relevant", "reason": "7 T task fMRI only (nofeedback, observation, feedback error-monitoring tasks); no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds006616", "label": "not_relevant", "reason": "7 T task fMRI only (THINGS images with fixation task, fLoc, reference EPI); no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds006928", "label": "not_relevant", "reason": "7 T auditory task fMRI (tone sequences, tonotopy) with MP2RAGE; no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007036", "label": "partially_relevant", "reason": "7 T protocol with resting-state fMRI (task rest) in ALS/FTD patients and controls; T1w sequence not stated."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007109", "label": "not_relevant", "reason": "7 T associative-learning task fMRI (WhatOn/WhatOff) with MP2RAGE; no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007354", "label": "not_relevant", "reason": "Natural-image fMRI with a rest task acquired at 5.0 T, not 7 T."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007859", "label": "not_relevant", "reason": "Longitudinal resting fMRI of Wistar rats on a 7 T Bruker scanner; not human."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007862", "label": "not_relevant", "reason": "7 T visual orientation-discrimination task and localizer runs only; no resting-state fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007946", "label": "not_relevant", "reason": "7 T image-viewing fixation task and reference EPI only; no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007953", "label": "not_relevant", "reason": "7 T event-related point-light display task (PLDs) only; no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds007958", "label": "not_relevant", "reason": "Single-subject 7 T GRE/QSM structural data; no fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008020", "label": "not_relevant", "reason": "7 T PCASL perfusion and MP2RAGE only; no resting-state BOLD fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008384", "label": "not_relevant", "reason": "7 T hierarchical decision task (Quantum4S) runs only; no resting-state fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008447", "label": "not_relevant", "reason": "7 T probabilistic learning task runs (pain3, emo3) only; no resting-state fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008460", "label": "not_relevant", "reason": "7 T auditory tonotopy and adaptation task fMRI with MP2RAGE; no resting-state runs."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008599", "label": "not_relevant", "reason": "7 T diffusion MRI with MP2RAGE only; no functional MRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008755", "label": "not_relevant", "reason": "Mouse diffusion MRI on a 7 T Bruker; not human and no fMRI."}
+{"query": "qf27_7t_rest_fmri_mprage", "acc": "ds008898", "label": "not_relevant", "reason": "Single-subject 7 T odor task fMRI only; no resting-state run and no structural modality listed."}
+{"query": "qf40_mri_ct_paired", "acc": "ds001420", "label": "not_relevant", "reason": "[11C]DASB PET with anatomical MRI in 2 people; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds001421", "label": "not_relevant", "reason": "PET and T1w MRI of one individual; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds001705", "label": "not_relevant", "reason": "Simulated PET with T1w MRI; CT is only named as the source of the attenuation map, no CT files shared."}
+{"query": "qf40_mri_ct_paired", "acc": "ds002041", "label": "not_relevant", "reason": "fMRI, T1w and [18F]fallypride PET; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds002898", "label": "not_relevant", "reason": "Simultaneous FDG-PET and fMRI on an MR-PET scanner; no CT images."}
+{"query": "qf40_mri_ct_paired", "acc": "ds003011", "label": "not_relevant", "reason": "T1w, DWI and resting fMRI of travelling phantoms; 'CT' in the paper means cortical thickness."}
+{"query": "qf40_mri_ct_paired", "acc": "ds003029", "label": "not_relevant", "reason": "iEEG recordings only; README states T1 MRI and CT scans were not collected/processed for sharing."}
+{"query": "qf40_mri_ct_paired", "acc": "ds003325", "label": "not_relevant", "reason": "Mouse T1w MRI only; ex vivo CT is mentioned in the paper abstract but no CT files are shared."}
+{"query": "qf40_mri_ct_paired", "acc": "ds003367", "label": "not_relevant", "reason": "Diffusion MRI only; 'abnormal CT scan' is an inclusion criterion, no CT images shared."}
+{"query": "qf40_mri_ct_paired", "acc": "ds003382", "label": "not_relevant", "reason": "Simultaneous FDG-PET/fMRI with T1w, Dixon and UTE on an MR-PET scanner; no CT images."}
+{"query": "qf40_mri_ct_paired", "acc": "ds003397", "label": "not_relevant", "reason": "Simultaneous MRI-PET with T1w, Dixon, UTE; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004054", "label": "not_relevant", "reason": "Simultaneous PET-MRI (FDG-PET, T1w, T2/T2* maps); no CT images."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004169", "label": "not_relevant", "reason": "Twin T1w and fMRI at 4 T; 'CT' in the paper abstract means cortical thickness."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004230", "label": "not_relevant", "reason": "[11C]PS13 PET with blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004327", "label": "not_relevant", "reason": "Odour fMRI and T1w only; 'CT' is the Connecticut state abbreviation (New Haven, CT)."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004401", "label": "not_relevant", "reason": "PET atlas derived from PET and T1w MRI; no CT images."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004473", "label": "relevant", "reason": "sEEG epilepsy patients: ct_scan files recorded in 8 subjects alongside T1w and T2w MRI of the same 8."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004513", "label": "not_relevant", "reason": "PET-MR data (FDG-PET, fMRI, DWI, T1w); low-dose CT only mentioned for attenuation correction in a paper, no CT files."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004654", "label": "not_relevant", "reason": "Leucine PET, blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004730", "label": "not_relevant", "reason": "Leucine PET, blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004731", "label": "not_relevant", "reason": "Leucine PET, blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004733", "label": "not_relevant", "reason": "Leucine PET with polysomnography, blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004856", "label": "not_relevant", "reason": "Dallas Lifespan: MRI, ASL, fMRI and amyloid/tau PET; no CT files recorded and README never mentions CT."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004868", "label": "not_relevant", "reason": "[11C]PS13 PET with blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds004869", "label": "not_relevant", "reason": "[11C]MC1 PET with blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005083", "label": "not_relevant", "reason": "Only SEEG electrode coordinates given in post-operative CT space; neither CT nor MRI images are shared."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005237", "label": "not_relevant", "reason": "MRI and fMRI only; 'CT' is Connecticut (New Haven, CT)."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005360", "label": "not_relevant", "reason": "T1w and diffusion MRI only; 'CT' in the paper means cortical thickness."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005415", "label": "relevant", "reason": "sEEG epilepsy patients: ct_scan files recorded in 13 subjects together with T1w MRI in the same 13."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005483", "label": "not_relevant", "reason": "[11C]PS13 PET and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005619", "label": "not_relevant", "reason": "[18F]SF51 PET with blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005698", "label": "not_relevant", "reason": "PDE4B PET with blood data and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds005849", "label": "relevant", "reason": "DBS patients: ct_scan files recorded in all 14 subjects alongside T1w, T2w, FLAIR and fMRI of the same 14."}
+{"query": "qf40_mri_ct_paired", "acc": "ds006123", "label": "relevant", "reason": "Single 3D-printed phantom (not a living subject) scanned with microCT (ct_scan recorded) and 4.7 T / 3 T MRI; both shared."}
+{"query": "qf40_mri_ct_paired", "acc": "ds006148", "label": "not_relevant", "reason": "MRI, ASL, fMRI and PET recorded; no CT files and the template README never mentions CT."}
+{"query": "qf40_mri_ct_paired", "acc": "ds006533", "label": "not_relevant", "reason": "One normalised structural image per stroke participant, MR or (three cases) CT; no subject has both CT and MRI."}
+{"query": "qf40_mri_ct_paired", "acc": "ds006557", "label": "not_relevant", "reason": "64 mT and 3 T MRI only; 'CT' is Connecticut in the Hyperfine address (Guildford, CT)."}
+{"query": "qf40_mri_ct_paired", "acc": "ds006756", "label": "not_relevant", "reason": "[18F]MK6240 PET and T1w MRI; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds006917", "label": "not_relevant", "reason": "HRRT and NeuroEXPLORER PET with T1w MRI; attenuation correction mentioned but no CT images shared."}
+{"query": "qf40_mri_ct_paired", "acc": "ds007135", "label": "not_relevant", "reason": "[11C]Martinostat PET/MR with T1w, T2w, FLAIR and rest fMRI; no CT images."}
+{"query": "qf40_mri_ct_paired", "acc": "ds007561", "label": "not_relevant", "reason": "UCB-J PET and T1w MRI only; no CT images recorded or mentioned."}
+{"query": "qf40_mri_ct_paired", "acc": "ds007768", "label": "not_relevant", "reason": "FDG-PET acquired on a PET/CT scanner with separate T1w MRI; dataset lists only T1w and PET, no CT images shared."}

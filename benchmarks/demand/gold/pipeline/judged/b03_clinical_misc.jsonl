@@ -1,0 +1,149 @@
+{"query": "qf24_fnirs_alzheimer", "acc": "ds004514", "label": "not_relevant", "reason": "EEG-fNIRS of 12 healthy participants doing imagery tasks; no Alzheimer's, dementia or cognitive-decline group."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds004541", "label": "not_relevant", "reason": "EEG-fNIRS of patients under general anaesthesia for endoscopy; no dementia or cognitive-decline population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds004569", "label": "not_relevant", "reason": "HD-DOT movie viewing in 58 healthy adults 18-76; not Alzheimer's, MCI or a cognitive-decline study."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds004830", "label": "not_relevant", "reason": "fNIRS spatial attention decoding for BCI in 12 participants; no dementia-related population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds004929", "label": "not_relevant", "reason": "fNIRS ball-squeezing in 12 subjects, no clinical information; nothing on Alzheimer's or cognitive decline."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds004973", "label": "not_relevant", "reason": "fNIRS of 20 adults aged 21-46 in automated-driving simulator; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005776", "label": "not_relevant", "reason": "fNIRS pain/finger-tapping study in 11 healthy subjects; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005777", "label": "not_relevant", "reason": "fNIRS morphine versus placebo pain study in 14 subjects; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005929", "label": "not_relevant", "reason": "fNIRS motion-artifact method dataset, 7 subjects; no Alzheimer's or cognitive decline."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005930", "label": "not_relevant", "reason": "fNIRS ball-squeezing HD dataset, 12 subjects, no clinical group."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005935", "label": "not_relevant", "reason": "fNIRS mirror-neuron action observation study in 21 participants; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005963", "label": "not_relevant", "reason": "FRESH motor fNIRS dataset, 10 subjects; no dementia-related population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds005964", "label": "not_relevant", "reason": "FRESH audio fNIRS dataset, 17 subjects; no dementia-related population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006095", "label": "not_relevant", "reason": "EEG only (no fNIRS recorded) of older adults walking; fNIRS only mentioned in paper as other method."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006377", "label": "not_relevant", "reason": "fNIRS of 115 healthy controls on hair and skin signal quality; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006459", "label": "not_relevant", "reason": "fNIRS Stroop in 17 healthy adults aged 19-36; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006460", "label": "not_relevant", "reason": "fNIRS Stroop HD array in 17 healthy adults aged 19-36; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006545", "label": "not_relevant", "reason": "TD-fNIRS test-retest reliability in 49 healthy participants; no dementia or cognitive-decline study."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006673", "label": "not_relevant", "reason": "fNIRS ball squeeze and rest in 17 adults 21-61; no clinical or cognitive-decline group."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006902", "label": "not_relevant", "reason": "fNIRS exercise-induced hypoalgesia in athletes versus non-athletes (mean age ~30); no dementia."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds006903", "label": "not_relevant", "reason": "fNIRS ball squeeze and rest in 17 adults; no clinical or cognitive-decline group."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007420", "label": "not_relevant", "reason": "Multi-distance fNIRS in 12 healthy young adults (18-37); no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007463", "label": "not_relevant", "reason": "VHD-DOT and fMRI validation in 8 healthy controls; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007473", "label": "not_relevant", "reason": "HD-DOT movie viewing in 5 participants; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007477", "label": "not_relevant", "reason": "Resting fNIRS test-retest in 18 healthy subjects; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007554", "label": "not_relevant", "reason": "EEG-fNIRS cognitive-motor tasks in 30 healthy adults aged 21-40; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007714", "label": "partially_relevant", "reason": "fNIRS visual stimulation, uploader study domain \"Dementia\"; no README, Alzheimer's diagnosis not stated, so dementia only."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007719", "label": "unsure", "reason": "fNIRS resting data, no labels and empty README; name suggests companion of dementia set ds007714 but nothing stated."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007738", "label": "not_relevant", "reason": "Whole-head fNIRS cocktail-party attention in 38 subjects; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007816", "label": "not_relevant", "reason": "HD-DOT and fMRI in six healthy adults viewing movies; no dementia population."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds007990", "label": "not_relevant", "reason": "fNIRS of tinnitus patients and controls; tinnitus is not dementia or cognitive decline."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds008192", "label": "not_relevant", "reason": "fNIRS hyperscanning of healthy community-dwelling younger and older adults on social collaboration; not cognitive decline."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds008544", "label": "not_relevant", "reason": "Mobile DOT sitting/walking dual-task in healthy controls 18-78; no dementia or cognitive-decline focus stated."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds008798", "label": "not_relevant", "reason": "Bedside HD-DOT resting state in 13 stroke patients; stroke recovery, not dementia."}
+{"query": "qf24_fnirs_alzheimer", "acc": "ds008892", "label": "not_relevant", "reason": "EEG and fNIRS auditory attention decoding in participants aged 15-32; no dementia population."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds000223", "label": "not_relevant", "reason": "Temporal-discounting fMRI in healthy subjects; \"Alzheimer\" only in scanner site name (Banner Alzheimer Institute)."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds001747", "label": "not_relevant", "reason": "Resting fMRI of young healthy mono/bilinguals aged 18-29; dementia only mentioned as motivation."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds001890", "label": "not_relevant", "reason": "Resting fMRI of 3xTG-AD transgenic mice; animal model, not people with Alzheimer's, no preprocessed data."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds002134", "label": "not_relevant", "reason": "Optogenetic fMRI in 3xTG-AD mice; animal model, not human Alzheimer's patients."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds002293", "label": "not_relevant", "reason": "Single T1w anatomical scan labelled Alzheimers; no fMRI recorded."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds003463", "label": "not_relevant", "reason": "Manganese-enhanced structural MRI of AD rodent models; no fMRI, not humans."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds003520", "label": "not_relevant", "reason": "Resting fMRI in STZ rat model of Alzheimer's-like pathology; animals, not patients."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds003800", "label": "not_relevant", "reason": "EEG only in elderly with dementia (gamma entrainment); no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds003805", "label": "not_relevant", "reason": "EEG of one healthy young volunteer; no fMRI, no Alzheimer's patient."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004392", "label": "partially_relevant", "reason": "Raw resting fMRI of Parkinson's patients incl. PD-MCI and PD dementia; MCI present, no Alzheimer's, only MRIQC derivatives."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004441", "label": "not_relevant", "reason": "Diffusion MRI of STZ rat model; no fMRI, not humans."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004504", "label": "not_relevant", "reason": "EEG only of Alzheimer's, FTD and healthy subjects; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004598", "label": "not_relevant", "reason": "Hippocampal LFP in TgF344-AD rats; no fMRI, not humans."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004725", "label": "not_relevant", "reason": "Resting fMRI of healthy younger and older adults (oxytocin study); no Alzheimer's, MCI or at-risk group."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004767", "label": "not_relevant", "reason": "Ex vivo 9.4T structural MRI of temporal lobe specimens; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004796", "label": "not_relevant", "reason": "fMRI of healthy middle-aged adults with Alzheimer's risk genes, but raw only; no AD/MCI patients, no preprocessed data."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds004856", "label": "not_relevant", "reason": "Dallas Lifespan healthy adults 21-89 with fMRI and amyloid PET; no Alzheimer's or MCI patients."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds005026", "label": "not_relevant", "reason": "Resting fMRI in age-related hearing loss; dementia only named as risk-factor context."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds005048", "label": "not_relevant", "reason": "EEG only in mild AD, MCI and normal elderly; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds005123", "label": "not_relevant", "reason": "Reward-task fMRI of healthy controls across adult lifespan; no Alzheimer's or MCI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds005892", "label": "partially_relevant", "reason": "Raw resting fMRI of HC, PD-NC and PD-MCI (15 with MCI); no Alzheimer's patients, only MRIQC derivatives."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds006001", "label": "not_relevant", "reason": "Ex vivo diffusion MRI of brainstem; Alzheimer's only mentioned as a validation cohort; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds006023", "label": "not_relevant", "reason": "Resting fMRI of APP-PS1 transgenic mice; animal model, not people."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds006036", "label": "not_relevant", "reason": "EEG only (photic stimulation) of Alzheimer's, FTD and controls; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds006556", "label": "not_relevant", "reason": "Structural MRI of children with Tetralogy of Fallot; \"AD\" is axial diffusivity."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds006663", "label": "not_relevant", "reason": "Mouse C3ar1 knockout MRI with rsfMRI; not Alzheimer's, not human."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds006670", "label": "not_relevant", "reason": "Mouse C3ar1 knockout structural/diffusion MRI; not Alzheimer's, no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007036", "label": "not_relevant", "reason": "7T fMRI across ALS-FTD spectrum and controls; no Alzheimer's or MCI group."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007345", "label": "not_relevant", "reason": "Resting fMRI of olfactory groove meningioma patients; \"AD\" is axial diffusivity."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007427", "label": "not_relevant", "reason": "EEG only of asymptomatic PSEN1-E280A carriers and controls; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007486", "label": "not_relevant", "reason": "Task fMRI of gamblers/non-gamblers aged 19-27; \"ad\" refers to advertisements."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007522", "label": "not_relevant", "reason": "Precision Aging Network resting fMRI of adults 49-80 without memory-loss or dementia diagnosis; raw only."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007561", "label": "not_relevant", "reason": "PET and T1w only of AD, MCI and controls; no fMRI recorded."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds007975", "label": "not_relevant", "reason": "Dissection photographs registered to MRI from an Alzheimer's research centre; no fMRI."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds008826", "label": "not_relevant", "reason": "Paced-breathing intervention in older adults 50-70; Alzheimer's only as risk context, no patients."}
+{"query": "qf28_preprocessed_fmri_alzheimer", "acc": "ds009055", "label": "not_relevant", "reason": "Taste fMRI in young adults on ultra-processed food diets; \"ad\" from ad libitum."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds000030", "label": "not_relevant", "reason": "CNP MRI of healthy, schizophrenia, bipolar and ADHD groups; no eating-disorder group; keyword hit was \"temporal lobes\"."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds000203", "label": "not_relevant", "reason": "fMRI visual imagery/false memory in healthy participants; nothing about eating or weight."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds000213", "label": "partially_relevant", "reason": "fMRI body-image task in 13 overweight versus 13 average-weight young women; overweight/body dissatisfaction, no diagnosed eating disorder."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds000221", "label": "not_relevant", "reason": "Healthy MPI-Leipzig sample; eating questionnaires (TFEQ, YFAS) only part of a broad battery, not study focus."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds000229", "label": "not_relevant", "reason": "Flavor-nutrient conditioning fMRI in healthy-weight subjects; basic carbohydrate reward, not disordered eating or obesity."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds000231", "label": "not_relevant", "reason": "Flavor-nutrient conditioning fMRI in nine healthy normal-weight subjects; not disordered eating or obesity."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds001720", "label": "not_relevant", "reason": "Multi-centre mouse resting-state fMRI; unrelated to eating disorders."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds001926", "label": "not_relevant", "reason": "Hippocampal memory fMRI study; keyword hit was \"temporal and occipital lobes\"."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds001946", "label": "not_relevant", "reason": "Hippocampal predictive-action fMRI in healthy participants; unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds002219", "label": "not_relevant", "reason": "Metaphor reading fMRI in healthy German speakers; unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds002419", "label": "not_relevant", "reason": "Sucralose/carbohydrate beverage study in healthy adults on insulin and taste response; obesity only background motivation."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds002574", "label": "not_relevant", "reason": "7T retinotopic mapping in 3 healthy subjects; unrelated."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds003452", "label": "not_relevant", "reason": "Cognitive control task fMRI benchmark (DMCC); unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds003465", "label": "not_relevant", "reason": "Cognitive control task fMRI in healthy young adults (DMCC55B); unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds003814", "label": "not_relevant", "reason": "Social and spatial reasoning fMRI in 10 healthy adults; keyword hit was \"temporal lobes\"."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds004086", "label": "not_relevant", "reason": "Recognition memory fMRI replication; keyword hit was \"medial temporal lobes\"."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds004169", "label": "not_relevant", "reason": "Queensland twin imaging of healthy young twins; no eating-disorder content."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds004327", "label": "partially_relevant", "reason": "fMRI of odour imagery linked to food craving, food intake and adiposity change in healthy adults; no eating-disorder diagnosis."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds004469", "label": "not_relevant", "reason": "Temporal lobe epilepsy fMRI and controls; unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds004569", "label": "not_relevant", "reason": "HD-DOT/fMRI movie viewing in healthy adults; keyword hit was \"frontal lobes\"."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds005329", "label": "not_relevant", "reason": "Language production fMRI in healthy participants; keyword hit was \"temporal lobes\"."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds005360", "label": "not_relevant", "reason": "Menstrual cycle structural/diffusion MRI in healthy women; nothing on eating or weight."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds005525", "label": "partially_relevant", "reason": "fMRI food-cue task in adults with BMI 25-34.9 under meal-timing misalignment; overweight/energy balance, no eating-disorder diagnosis."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds005602", "label": "not_relevant", "reason": "Structural MRI of epilepsy surgery patients; unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds006663", "label": "not_relevant", "reason": "Mouse C3ar1 knockout MRI; \"ad libitum\" chow only; not human, not eating disorder."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds006670", "label": "not_relevant", "reason": "Mouse C3ar1 knockout MRI; \"ad libitum\" chow only; not human, not eating disorder."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds006683", "label": "not_relevant", "reason": "fMRI repetitive-thought (worry) disengagement task; unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds007606", "label": "relevant", "reason": "BEACON T1w MRI; uploader domain anorexia nervosa, papers describe acute and weight-recovered AN women plus controls."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds007626", "label": "not_relevant", "reason": "Hippocampal reactivation memory fMRI in healthy adults; unrelated to eating."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds007741", "label": "relevant", "reason": "SCAN structural T1w MRI, uploader study domain \"Anorexia Nervosa\" (141 subjects); README empty, no group table."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds008783", "label": "not_relevant", "reason": "Muscle qMRI in masticatory myofascial pain; obesity only as MRI exclusion criterion."}
+{"query": "qp08_eating_disorders_mri", "acc": "ds009055", "label": "partially_relevant", "reason": "fMRI milkshake task after ultra-processed versus unprocessed diets in young adults; intake and eating-without-hunger outcomes, no eating-disorder group."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds000171", "label": "not_relevant", "reason": "Music/nonmusic task fMRI only, no resting-state; alcohol abuse named only as exclusion criterion."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds000174", "label": "not_relevant", "reason": "AUDIT scores are in participants.tsv, but the dataset holds only T1w structural MRI; no resting-state fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds001226", "label": "relevant", "reason": "Resting-state fMRI of 11 healthy controls (plus tumour patients); participants.tsv has current and lifetime alcohol index columns."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds002080", "label": "relevant", "reason": "Resting-state fMRI of 10 healthy controls plus tumour patients; participants.tsv column 'Alcohol use (compared to pre-op)', a relative per-participant measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds002898", "label": "relevant", "reason": "27 healthy controls with resting-state fMRI; participants.tsv holds alcohol_consumption, alcohol_number_drinks and drinking-days columns."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds003037", "label": "not_relevant", "reason": "Resting fMRI of cocaine use disorder patients only; no alcohol-use measure named in README, papers or participants.tsv."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds003136", "label": "not_relevant", "reason": "Task fMRI (affect, infant) only, no resting-state run; alcohol-related questions were removed from the shared data."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds003346", "label": "not_relevant", "reason": "Resting fMRI with healthy controls and cocaine patients, but no alcohol measure stated; participants.tsv lists tobacco and cocaine variables only."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds003382", "label": "relevant", "reason": "10 healthy adults; task-rest BOLD runs besides checkerboard; participants.tsv has alcohol_days_per_week and standard_drinks_per_drinking_day."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004129", "label": "not_relevant", "reason": "Phenotype-only copy of NIMH healthy volunteer set with AUDIT; holds one T1w scan, no resting-state fMRI data."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004130", "label": "not_relevant", "reason": "BIDS phenotype example copy: AUDIT tables present but only one subject with T1w; no resting-state fMRI in dataset."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004131", "label": "not_relevant", "reason": "BIDS phenotype example copy with a single T1w scan; no resting-state fMRI files, README only inherited from ds003982."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004327", "label": "not_relevant", "reason": "Odour smelling/imagery task fMRI only; 'alcohol' appears in an odorant name (phenylethyl alcohol); no rest, no alcohol-use measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004515", "label": "not_relevant", "reason": "EEG reinforcement-learning task in light and heavy drinkers with AUDIT; no fMRI, no resting-state fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004595", "label": "not_relevant", "reason": "EEG three-armed bandit task in hazardous drinkers and controls with AUDIT; EEG only, no resting-state fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004725", "label": "partially_relevant", "reason": "Healthy young and older adults with resting-state fMRI; excessive alcohol drinking only an exclusion criterion, no alcohol measure listed."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004796", "label": "relevant", "reason": "PEARL-Neuro: healthy middle-aged adults, fMRI includes resting-state protocol (task-rest); participants.tsv has an AUDIT column."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds004856", "label": "not_relevant", "reason": "Healthy lifespan resting fMRI, but no alcohol measure among listed surveys; exclusion names substance abuse generally, keyword hit was 'soft drinks'."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005012", "label": "not_relevant", "reason": "Only Monetary Incentive Delay task fMRI is shared (task-mid); no resting-state run and no alcohol measure in the dataset."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005237", "label": "relevant", "reason": "93 healthy comparison participants with six resting-state fMRI runs; Alcohol Tobacco Caffeine Use Questionnaire collected, clinical measures in phenotype folder."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005305", "label": "not_relevant", "reason": "Resting-state EEG only, no fMRI; alcohol addiction named only as exclusion criterion."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005498", "label": "relevant", "reason": "Healthy and depressed participants with task-resting fMRI; participants.tsv has 'Current Alcohol Use' and 'Past Alcohol or Drug Use' columns (meaning undocumented)."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005525", "label": "partially_relevant", "reason": "Resting-state fMRI of 11 screened healthy adults; history of drug and alcohol abuse only an exclusion criterion, no alcohol measure shared."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005752", "label": "relevant", "reason": "NIMH healthy research volunteers with resting-state fMRI (task-rest); AUDIT collected and listed as a phenotype measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005754", "label": "not_relevant", "reason": "Youth resting fMRI, mostly clinical sample; only generic 'substance use within three months' exclusion, alcohol never named, no alcohol measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005896", "label": "not_relevant", "reason": "Healthy adolescents with resting fMRI; parent study surveyed substance use, but no alcohol measure shared or stated available; alcohol only as cue images."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005901", "label": "not_relevant", "reason": "AHDC wave 6 resting fMRI of healthy youth; participants.tsv has age, sex, size, weight only; alcohol appears only as cue-reactivity images."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005907", "label": "not_relevant", "reason": "EEG bandit task in hazardous drinkers and controls with AUDIT; EEG only, no resting-state fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds005917", "label": "partially_relevant", "reason": "Healthy volunteers and MDD patients with resting fMRI; alcohol abuse/dependence only exclusion and screening test, phenotype holds depression scales only."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006072", "label": "not_relevant", "reason": "Healthy volunteers with resting fMRI under psilocybin; only generic 'current substance use disorder' exclusion, alcohol not named, no alcohol measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006303", "label": "not_relevant", "reason": "Youth anxiety patients and healthy volunteers with resting fMRI; exclusion lists generic 'substance use', no alcohol measure or alcohol criterion."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006491", "label": "not_relevant", "reason": "Structural T1w/T2w dense sampling of four individuals; no fMRI; alcohol abuse history mentioned only as absent."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006577", "label": "not_relevant", "reason": "Only task-tau2 fMRI shared, README says no resting-state data included; generic substance-use exclusion, no alcohol measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006721", "label": "not_relevant", "reason": "Monkey MR thermometry field maps under focused ultrasound; no fMRI, 'alcohol' refers to sterilising swabs."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006801", "label": "not_relevant", "reason": "Resting-state EEG only, no fMRI; alcohol mentioned only as pre-session abstinence instruction."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006850", "label": "not_relevant", "reason": "EEG during urban image rating; no fMRI; 'alcohol' refers to skin cleaning before ECG electrodes."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006923", "label": "not_relevant", "reason": "Resting-state EEG of juvenile offenders and controls with an Alcohol column; EEG only, no resting-state fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds006948", "label": "not_relevant", "reason": "Youth anxiety and healthy volunteers with resting fMRI; generic 'substance use' exclusion only, alcohol not named, no alcohol measure."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds007116", "label": "unsure", "reason": "Resting fMRI incl. 27% typically developing youth; item-level 'Substance Use Questionnaire' shared, but text never says it covers alcohol."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds007328", "label": "relevant", "reason": "Single subject labelled Healthy/Control with 85 h resting fMRI; daily alcohol intake log shared in derivatives/alcohol (venlafaxine taper noted)."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds007474", "label": "not_relevant", "reason": "Two-step decision task fMRI in healthy controls; no resting-state run described; alcohol use disorder only an exclusion."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds007615", "label": "not_relevant", "reason": "Resting-state EEG in healthy women with alcohol consumption in lifestyle.tsv; EEG only, no fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds007806", "label": "not_relevant", "reason": "Face-task fMRI and MRS (rest blocks are MRS); no resting-state fMRI; alcohol only as 12-hour abstinence requirement."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds008851", "label": "not_relevant", "reason": "EEG alcohol cue-reactivity in alcohol-dependent men and controls; EEG only, no fMRI."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds008894", "label": "not_relevant", "reason": "MEG dot-probe task with structural MRI; no resting-state fMRI; alcohol dependence only an exclusion criterion."}
+{"query": "qf03_rest_fmri_alcohol_questionnaires", "acc": "ds009028", "label": "not_relevant", "reason": "Awake-mouse resting BOLD; animal data, no human participants and no alcohol measure."}

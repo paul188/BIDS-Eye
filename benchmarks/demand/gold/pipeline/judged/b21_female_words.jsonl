@@ -1,0 +1,169 @@
+{"query": "qx09_female_only", "acc": "ds000157", "label": "relevant", "reason": "participants.tsv 30 rows all female; description says thirty female subjects"}
+{"query": "qx09_female_only", "acc": "ds000213", "label": "relevant", "reason": "participants.tsv 26 rows all female; paper studies overweight and average-weight young women"}
+{"query": "qx09_female_only", "acc": "ds000253", "label": "relevant", "reason": "Title \"Female action video game players\"; participants.tsv 20 rows all female"}
+{"query": "qx09_female_only", "acc": "ds001021", "label": "relevant", "reason": "Single human subject recorded as female in participants.tsv"}
+{"query": "qx09_female_only", "acc": "ds001421", "label": "relevant", "reason": "Single human PET test-retest subject recorded as female in participants.tsv"}
+{"query": "qx09_female_only", "acc": "ds001450", "label": "relevant", "reason": "participants.tsv has 2 rows, both female; no other description"}
+{"query": "qx09_female_only", "acc": "ds001529", "label": "not_relevant", "reason": "Mouse resting-state fMRI under anesthesia; all-female animals, not human"}
+{"query": "qx09_female_only", "acc": "ds001553", "label": "relevant", "reason": "participants.tsv 3 human subjects, all female"}
+{"query": "qx09_female_only", "acc": "ds001566", "label": "relevant", "reason": "Single subject recorded as female in participants.tsv"}
+{"query": "qx09_female_only", "acc": "ds001653", "label": "not_relevant", "reason": "Mouse awake rest fMRI; female animals, not human"}
+{"query": "qx09_female_only", "acc": "ds001928", "label": "relevant", "reason": "participants.tsv 40 rows all female (fibromyalgia patients and matched controls), human"}
+{"query": "qx09_female_only", "acc": "ds002169", "label": "relevant", "reason": "participants.tsv 33 rows all female; no README text"}
+{"query": "qx09_female_only", "acc": "ds002185", "label": "relevant", "reason": "participants.tsv 22 rows all female (women without olfactory bulbs and controls)"}
+{"query": "qx09_female_only", "acc": "ds002278", "label": "relevant", "reason": "participants.tsv 5 rows all female; paper: premenopausal female participants"}
+{"query": "qx09_female_only", "acc": "ds002647", "label": "relevant", "reason": "participants.tsv 91 rows all female; paper on younger and post-menopausal women"}
+{"query": "qx09_female_only", "acc": "ds002674", "label": "relevant", "reason": "README: the single participant is a right-handed Caucasian female, dense-sampled across menstrual cycle"}
+{"query": "qx09_female_only", "acc": "ds002717", "label": "relevant", "reason": "Paper: women with unexplained repeated pregnancy loss versus control women; men only odor donors"}
+{"query": "qx09_female_only", "acc": "ds003043", "label": "relevant", "reason": "participants.tsv 5 rows all female; no male recorded"}
+{"query": "qx09_female_only", "acc": "ds003114", "label": "relevant", "reason": "participants.tsv 49 rows all female; ovarian hormone study, follicular versus luteal phase"}
+{"query": "qx09_female_only", "acc": "ds003136", "label": "relevant", "reason": "participants.tsv 25 rows all female; README: 25 mothers at three months postnatal"}
+{"query": "qx09_female_only", "acc": "ds003148", "label": "not_relevant", "reason": "README: sixty adults, 35 females, so mixed-sex sample"}
+{"query": "qx09_female_only", "acc": "ds003151", "label": "relevant", "reason": "Paper: women on hormonal contraceptives seen twice across the HC cycle; all participants women"}
+{"query": "qx09_female_only", "acc": "ds003216", "label": "unsure", "reason": "participants.tsv lists one female, but dataset has three subject folders; sex of other two not stated"}
+{"query": "qx09_female_only", "acc": "ds003342", "label": "not_relevant", "reason": "Paper: N = 20, 9 females; mixed-sex sample"}
+{"query": "qx09_female_only", "acc": "ds003420", "label": "not_relevant", "reason": "README: 23 volunteers, 12 females and 11 males; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003421", "label": "not_relevant", "reason": "README: 20 volunteers, 10 females and 10 males; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003481", "label": "not_relevant", "reason": "README: 145 participants, 79 females and 66 males; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003565", "label": "not_relevant", "reason": "Paper: 156 participants, 82 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003602", "label": "relevant", "reason": "participants.tsv 118 rows all female; study of childhood sexual abuse and drinking in women (twins)"}
+{"query": "qx09_female_only", "acc": "ds003655", "label": "not_relevant", "reason": "Paper: 156 participants, 82 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003673", "label": "not_relevant", "reason": "README: 27 subjects, 16/11 females/males; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003764", "label": "not_relevant", "reason": "README: RB group 19 of 30 females, II group 22 of 30 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds003770", "label": "relevant", "reason": "participants.tsv 8 rows all female; depression neurofeedback patients"}
+{"query": "qx09_female_only", "acc": "ds003949", "label": "not_relevant", "reason": "Paper: 284 subjects of whom 170 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds004101", "label": "relevant", "reason": "README: 9 female participants, female was an inclusion criterion; participants.tsv all female"}
+{"query": "qx09_female_only", "acc": "ds004161", "label": "not_relevant", "reason": "Sheep chronic stress dataset (species Sheep); female animals, not human"}
+{"query": "qx09_female_only", "acc": "ds004167", "label": "relevant", "reason": "participants.tsv 25 rows all female; same number comparison study as ds004400 (all female)"}
+{"query": "qx09_female_only", "acc": "ds004367", "label": "not_relevant", "reason": "README: patients 16 males, 4 females; controls 15 males, 7 females"}
+{"query": "qx09_female_only", "acc": "ds004368", "label": "not_relevant", "reason": "README: patients 16 males, 4 females; controls 15 males, 7 females"}
+{"query": "qx09_female_only", "acc": "ds004400", "label": "relevant", "reason": "README: twenty-five healthy individuals, all female; participants.tsv records no male"}
+{"query": "qx09_female_only", "acc": "ds004572", "label": "not_relevant", "reason": "README: 52 participants, 39 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds004656", "label": "relevant", "reason": "README: 15 healthy women scanned; participants.tsv 15 rows all female"}
+{"query": "qx09_female_only", "acc": "ds004720", "label": "relevant", "reason": "participants.tsv 2 rows, both female healthy controls"}
+{"query": "qx09_female_only", "acc": "ds004775", "label": "relevant", "reason": "participants.tsv 28 rows all female, human soap-opera viewing fMRI"}
+{"query": "qx09_female_only", "acc": "ds004776", "label": "relevant", "reason": "Single human infant test subject recorded as female in participants.tsv"}
+{"query": "qx09_female_only", "acc": "ds004894", "label": "not_relevant", "reason": "README: 52 participants, 31 females and 21 males; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds004937", "label": "unsure", "reason": "Conflict: participants.tsv records 22 females, but dataset title says study in young men; README gives no sex"}
+{"query": "qx09_female_only", "acc": "ds004973", "label": "not_relevant", "reason": "README: 20 participants, 5 females and 15 males"}
+{"query": "qx09_female_only", "acc": "ds005069", "label": "relevant", "reason": "Single subject recorded as female in participants.tsv (test upload)"}
+{"query": "qx09_female_only", "acc": "ds005072", "label": "relevant", "reason": "Single subject recorded as female in participants.tsv (test upload)"}
+{"query": "qx09_female_only", "acc": "ds005115", "label": "not_relevant", "reason": "README: the single participant is a Caucasian male (28andHe)"}
+{"query": "qx09_female_only", "acc": "ds005138", "label": "relevant", "reason": "participants.tsv 5 rows all female; simulated PET benchmark data, no text on sex"}
+{"query": "qx09_female_only", "acc": "ds005139", "label": "not_relevant", "reason": "README: 27 participants, 10 males and 17 females"}
+{"query": "qx09_female_only", "acc": "ds005262", "label": "not_relevant", "reason": "README: 12 subjects, 7 males and 5 females"}
+{"query": "qx09_female_only", "acc": "ds005299", "label": "relevant", "reason": "README: pilot release is a single nulliparous woman scanned 26 times across pregnancy"}
+{"query": "qx09_female_only", "acc": "ds005360", "label": "relevant", "reason": "participants.tsv 22 rows all female; menstrual cycle study of naturally cycling women"}
+{"query": "qx09_female_only", "acc": "ds005365", "label": "relevant", "reason": "Single subject recorded as female in participants.tsv"}
+{"query": "qx09_female_only", "acc": "ds005383", "label": "not_relevant", "reason": "README: 30 participants, 18 females and 12 males"}
+{"query": "qx09_female_only", "acc": "ds005504", "label": "not_relevant", "reason": "sex not stated in text; 68 children with an unsummarised Sex column, no all-female statement"}
+{"query": "qx09_female_only", "acc": "ds005596", "label": "not_relevant", "reason": "README: 31 participants, 14 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds005895", "label": "not_relevant", "reason": "Rat PET dataset (species Rat); female animals, not human"}
+{"query": "qx09_female_only", "acc": "ds006072", "label": "not_relevant", "reason": "README: seven volunteers, n=3 females; mixed sample"}
+{"query": "qx09_female_only", "acc": "ds006207", "label": "relevant", "reason": "Single human subject recorded as female in participants.tsv"}
+{"query": "qx09_female_only", "acc": "ds006491", "label": "not_relevant", "reason": "README: three females and one male enrolled"}
+{"query": "qx09_female_only", "acc": "ds006729", "label": "not_relevant", "reason": "Paper: 28 volunteers, 14 females and 14 males"}
+{"query": "qx09_female_only", "acc": "ds006815", "label": "relevant", "reason": "participants.tsv 3 rows all female; chronic pain individuals"}
+{"query": "qx09_female_only", "acc": "ds006844", "label": "not_relevant", "reason": "README: 45 parents, fathers sub-01 to sub-21 and mothers sub-22 to sub-45"}
+{"query": "qx09_female_only", "acc": "ds006890", "label": "not_relevant", "reason": "Macaca fuscata ECoG; two female monkeys, not human"}
+{"query": "qx09_female_only", "acc": "ds006893", "label": "relevant", "reason": "README: 15 females with natural menstrual cycles; study in women"}
+{"query": "qx09_female_only", "acc": "ds006944", "label": "not_relevant", "reason": "sex not stated for the single participant; source cohort had 14 females and 14 males"}
+{"query": "qx09_female_only", "acc": "ds006963", "label": "not_relevant", "reason": "Paper: participants 12 males, 20 females"}
+{"query": "qx09_female_only", "acc": "ds007022", "label": "relevant", "reason": "participants.tsv 60 rows all female; paper describes the piano learners as female"}
+{"query": "qx09_female_only", "acc": "ds007606", "label": "relevant", "reason": "Papers: women with anorexia nervosa, weight-recovered women and healthy control women only"}
+{"query": "qx09_female_only", "acc": "ds007615", "label": "relevant", "reason": "README: 69 participants, all female; participants.tsv all female"}
+{"query": "qp07_isolated_words", "acc": "ds000007", "label": "not_relevant", "reason": "Stop-signal fMRI; vocal responses name letters or pseudowords, not real words; inhibition study without word presentation as such."}
+{"query": "qp07_isolated_words", "acc": "ds000107", "label": "relevant", "reason": "fMRI one-back localiser presenting single written words versus objects to identify word-sensitive occipito-temporal regions."}
+{"query": "qp07_isolated_words", "acc": "ds000114", "label": "relevant", "reason": "fMRI language tasks on single words: overt word repetition, overt and covert verb generation."}
+{"query": "qp07_isolated_words", "acc": "ds000164", "label": "relevant", "reason": "fMRI colour-word Stroop task: single colour words shown one per trial; word reading drives the conflict."}
+{"query": "qp07_isolated_words", "acc": "ds000203", "label": "partially_relevant", "reason": "fMRI reality-monitoring memory task; 45 single words shown at encoding only as memory items, imagery/false-memory aim."}
+{"query": "qp07_isolated_words", "acc": "ds000224", "label": "relevant", "reason": "MSC task fMRI includes glasslexical (lexical judgement on single words) and memorywords runs presenting single words."}
+{"query": "qp07_isolated_words", "acc": "ds001228", "label": "not_relevant", "reason": "Collaborative intention-decoding game; 'in other words' is an incidental phrase, no word stimuli."}
+{"query": "qp07_isolated_words", "acc": "ds001229", "label": "partially_relevant", "reason": "Prospective memory fMRI; word series only carries the ongoing memory-load task over face/scene pictures, no word-processing aim."}
+{"query": "qp07_isolated_words", "acc": "ds001299", "label": "not_relevant", "reason": "Number-line marking fMRI on numerical cognition; word probes appear only as a control condition, no word-processing aim."}
+{"query": "qp07_isolated_words", "acc": "ds001745", "label": "partially_relevant", "reason": "Intentional forgetting study-test fMRI; stimuli/wordpool.txt shows word lists used only as memory items."}
+{"query": "qp07_isolated_words", "acc": "ds001894", "label": "relevant", "reason": "fMRI rhyming judgement on single auditory/visual words and nonwords in children; lexical processing aim, stimuli are single words."}
+{"query": "qp07_isolated_words", "acc": "ds002236", "label": "relevant", "reason": "fMRI orthographic, phonological and semantic judgement tasks on sequentially presented single words, visual and auditory."}
+{"query": "qp07_isolated_words", "acc": "ds002311", "label": "partially_relevant", "reason": "Word-scene associates learned; words serve only as memory cues during fMRI visualisation task, memory reactivation aim."}
+{"query": "qp07_isolated_words", "acc": "ds002351", "label": "relevant", "reason": "fMRI lexical decision task (task-ldt) on transposition confusability in visual word recognition."}
+{"query": "qp07_isolated_words", "acc": "ds002382", "label": "relevant", "reason": "fMRI passive listening and repetition of single spoken monosyllabic CVC words in young and older adults."}
+{"query": "qp07_isolated_words", "acc": "ds002424", "label": "not_relevant", "reason": "Verbal and visuospatial working-memory 2-back tasks with letters in ADHD children; lexical-processing paper belongs to another dataset."}
+{"query": "qp07_isolated_words", "acc": "ds002687", "label": "not_relevant", "reason": "Verbal/visuospatial working-memory 2-back tasks with letters and reward; lexical-processing paper describes a different dataset."}
+{"query": "qp07_isolated_words", "acc": "ds002711", "label": "relevant", "reason": "fMRI of reading single happy/sad words and pseudowords paired with emojis; events HH/HS/SS/SH/PS."}
+{"query": "qp07_isolated_words", "acc": "ds002737", "label": "relevant", "reason": "Single-subject fMRI runs of word/colour Stroop: single colour words shown per trial, spoken responses; headcase motion test."}
+{"query": "qp07_isolated_words", "acc": "ds002773", "label": "partially_relevant", "reason": "A-B/A-C word-picture association memory updating fMRI; cue words serve only as memory items."}
+{"query": "qp07_isolated_words", "acc": "ds002837", "label": "not_relevant", "reason": "fMRI while watching full-length movies; no word-presentation experiment."}
+{"query": "qp07_isolated_words", "acc": "ds002879", "label": "relevant", "reason": "fMRI rhyming judgement on single auditory and visual words and nonwords in adults; stimuli are single-word wav/bmp files."}
+{"query": "qp07_isolated_words", "acc": "ds002905", "label": "relevant", "reason": "fMRI of short phrases 1 to 4 words long and matched scrambled word lists; includes single-word and word-list conditions."}
+{"query": "qp07_isolated_words", "acc": "ds003020", "label": "partially_relevant", "reason": "fMRI passive listening to natural narrative stories; words only embedded in stories."}
+{"query": "qp07_isolated_words", "acc": "ds003126", "label": "relevant", "reason": "fMRI reading aloud of 60 single words and 60 pseudohomophones, each presented alone, in children with dyslexia/spelling deficits."}
+{"query": "qp07_isolated_words", "acc": "ds003136", "label": "not_relevant", "reason": "Mothers viewing infant affective videos and labelling adult affective faces; no word-presentation experiment."}
+{"query": "qp07_isolated_words", "acc": "ds003145", "label": "unsure", "reason": "fMRI task-verbgen only; README never says whether verb-generation cues are single words or pictures."}
+{"query": "qp07_isolated_words", "acc": "ds003242", "label": "not_relevant", "reason": "Cue-induced craving fMRI with photographs plus 3-5 word captions; no isolated word presentation or word-processing aim."}
+{"query": "qp07_isolated_words", "acc": "ds003452", "label": "relevant", "reason": "DMCC fMRI includes colour-word Stroop with single words per trial; Sternberg uses word lists as memory sets."}
+{"query": "qp07_isolated_words", "acc": "ds003459", "label": "relevant", "reason": "fMRI auditory and visual spelling, rhyming and meaning judgement tasks on single words in adults and children."}
+{"query": "qp07_isolated_words", "acc": "ds003465", "label": "relevant", "reason": "DMCC55B fMRI includes colour/word Stroop presenting single colour words; Sternberg uses word lists as memory sets."}
+{"query": "qp07_isolated_words", "acc": "ds003481", "label": "relevant", "reason": "Includes task-verbs fMRI: one-back on single motor verbs, mental verbs and pseudo-verbs for lexical-semantic processing; other tasks use sentences."}
+{"query": "qp07_isolated_words", "acc": "ds003569", "label": "relevant", "reason": "Rapid event-related fMRI lexical decision (task-ldt): single visual target stimuli shown 200 ms, visual word recognition aim."}
+{"query": "qp07_isolated_words", "acc": "ds003578", "label": "relevant", "reason": "Primary paper: children's fMRI auditory phonological and semantic word-level judgement tasks; no files recorded, empty README, apparent twin of ds003604."}
+{"query": "qp07_isolated_words", "acc": "ds003604", "label": "relevant", "reason": "fMRI Phon and Sem tasks are auditory word-level sound and meaning judgements in children; Gram/Plaus are sentence tasks."}
+{"query": "qp07_isolated_words", "acc": "ds003717", "label": "relevant", "reason": "fMRI of auditory, visual and audiovisual single spoken words (350 word recordings without carrier phrase)."}
+{"query": "qp07_isolated_words", "acc": "ds003789", "label": "partially_relevant", "reason": "DRM false-memory fMRI; semantically related word lists studied and tested as memory items, memory aim."}
+{"query": "qp07_isolated_words", "acc": "ds003831", "label": "not_relevant", "reason": "Affect regulation with IAPS images; the word FEEL is only an instruction cue."}
+{"query": "qp07_isolated_words", "acc": "ds004073", "label": "relevant", "reason": "fMRI language lateralisation battery with word-level tasks (Word Generation, Word Comprehension, Phonological Decision) beside sentence tasks."}
+{"query": "qp07_isolated_words", "acc": "ds004078", "label": "partially_relevant", "reason": "fMRI and MEG while listening to 6 hours of naturalistic stories; words only within stories."}
+{"query": "qp07_isolated_words", "acc": "ds004086", "label": "partially_relevant", "reason": "fMRI recognition memory test: single old/new words shown as memory items; lexical decision study phase was outside the scanner."}
+{"query": "qp07_isolated_words", "acc": "ds004196", "label": "relevant", "reason": "fMRI (and EEG) inner-speech task on 8 single word stimuli (child, daughter, four, three...), 40 trials each."}
+{"query": "qp07_isolated_words", "acc": "ds004285", "label": "relevant", "reason": "fMRI word repetition task: one spoken word in background noise per trial, repeated back."}
+{"query": "qp07_isolated_words", "acc": "ds004301", "label": "relevant", "reason": "fMRI while participants were presented 672 individual Chinese concept words and thought about each concept."}
+{"query": "qp07_isolated_words", "acc": "ds004302", "label": "relevant", "reason": "fMRI speech perception block design with a spoken word-list condition beside sentences and reversed speech; schizophrenia and controls."}
+{"query": "qp07_isolated_words", "acc": "ds004489", "label": "relevant", "reason": "fMRI lexical decision on single letter strings (real words vs pseudowords) and word localizer; visual word recognition aim."}
+{"query": "qp07_isolated_words", "acc": "ds004510", "label": "partially_relevant", "reason": "fMRI of perceived and imagined continuous speech stories and silent films for language decoding; words only within continuous language."}
+{"query": "qp07_isolated_words", "acc": "ds004544", "label": "unsure", "reason": "fMRI task labels 'words' and 'phrases' suggest word stimuli, but README is empty and no paper describes the stimuli."}
+{"query": "qp07_isolated_words", "acc": "ds004556", "label": "not_relevant", "reason": "Sham neurofeedback bar task; 'control'/'monitor' are only instructional cue words."}
+{"query": "qp07_isolated_words", "acc": "ds004557", "label": "not_relevant", "reason": "Sham neurofeedback bar task; 'control'/'monitor' are only instructional cue words."}
+{"query": "qp07_isolated_words", "acc": "ds004589", "label": "partially_relevant", "reason": "fMRI encoding and recognition memory for words and faces (wordstudy/wordtest); words are memory items, handedness/memory aim."}
+{"query": "qp07_isolated_words", "acc": "ds004594", "label": "relevant", "reason": "fMRI match/non-match judgement on word stimuli (plus faces, numerals, shapes) to assess functional lateralization."}
+{"query": "qp07_isolated_words", "acc": "ds004669", "label": "partially_relevant", "reason": "fMRI during spontaneous natural dialogue; words only within conversational sentences."}
+{"query": "qp07_isolated_words", "acc": "ds004718", "label": "partially_relevant", "reason": "fMRI/EEG listening to The Little Prince in Cantonese, presented sentence by sentence; words within a story."}
+{"query": "qp07_isolated_words", "acc": "ds004765", "label": "not_relevant", "reason": "Only resting-state fMRI; reading measures are behavioural tests outside the scanner."}
+{"query": "qp07_isolated_words", "acc": "ds004856", "label": "relevant", "reason": "DLBS fMRI Words Task: 128 single words shown for living/non-living semantic judgements."}
+{"query": "qp07_isolated_words", "acc": "ds004957", "label": "partially_relevant", "reason": "fMRI naming to auditory definitions: stimuli are spoken definition sentences or scrambled controls, not isolated words."}
+{"query": "qp07_isolated_words", "acc": "ds005003", "label": "not_relevant", "reason": "Presurgical language fMRI in tumour patients; paper names word-stem completion, which presents stems rather than whole words."}
+{"query": "qp07_isolated_words", "acc": "ds005191", "label": "not_relevant", "reason": "fMRI of viewing and imagining videos for caption decoding; stimuli and cues are videos, no word presentation."}
+{"query": "qp07_isolated_words", "acc": "ds005261", "label": "not_relevant", "reason": "MEG only (no fMRI in this dataset); pseudoword production learning task."}
+{"query": "qp07_isolated_words", "acc": "ds005295", "label": "relevant", "reason": "fMRI lexical decision and colour tasks on single words, pseudowords and false fonts; VWFA word localizer."}
+{"query": "qp07_isolated_words", "acc": "ds005329", "label": "partially_relevant", "reason": "fMRI naming to auditory definitions or environmental sounds; verbal stimuli are definition sentences, not isolated words."}
+{"query": "qp07_isolated_words", "acc": "ds005339", "label": "relevant", "reason": "Reading-disability MRI database with print/speech localizer fMRI tasks (fastloc) targeting word reading; stimuli not detailed, story task also present."}
+{"query": "qp07_isolated_words", "acc": "ds005464", "label": "partially_relevant", "reason": "fMRI encoding of word-image pairs for memory reactivation study; words only as memory items."}
+{"query": "qp07_isolated_words", "acc": "ds005489", "label": "not_relevant", "reason": "Intracranial EEG free recall of word lists with stimulation; no fMRI data."}
+{"query": "qp07_isolated_words", "acc": "ds005491", "label": "not_relevant", "reason": "Intracranial EEG categorized free recall of word lists with stimulation; no fMRI data."}
+{"query": "qp07_isolated_words", "acc": "ds005494", "label": "not_relevant", "reason": "Intracranial EEG paired-associates word recall with stimulation; no fMRI data."}
+{"query": "qp07_isolated_words", "acc": "ds005576", "label": "not_relevant", "reason": "7T olfaction fMRI; word labels only give semantic context to odorants, odour representation aim."}
+{"query": "qp07_isolated_words", "acc": "ds005577", "label": "relevant", "reason": "fMRI lexical decision and visual rhyme decision tasks (plus letter fluency) in adults with and without dyslexia."}
+{"query": "qp07_isolated_words", "acc": "ds005597", "label": "not_relevant", "reason": "Presurgical language fMRI in four tumour patients; paper names word-stem completion, stems rather than whole words."}
+{"query": "qp07_isolated_words", "acc": "ds005623", "label": "partially_relevant", "reason": "fMRI listening to 10-minute stories in Chinese and Mongolian; words only within narratives."}
+{"query": "qp07_isolated_words", "acc": "ds005850", "label": "partially_relevant", "reason": "fMRI listening to continuous 10-minute stories in Chinese and Mongolian; words only within narratives."}
+{"query": "qp07_isolated_words", "acc": "ds005894", "label": "partially_relevant", "reason": "Method-of-loci fMRI (encode/item/loci/retrieve); lists of 20 or 40 words serve only as items to remember, memory-binding aim."}
+{"query": "qp07_isolated_words", "acc": "ds006021", "label": "relevant", "reason": "fMRI visual and auditory runs: each trial presents one trained novel word for a semantic category judgement; reading acquisition aim."}
+{"query": "qp07_isolated_words", "acc": "ds006033", "label": "relevant", "reason": "Simultaneous EEG-fMRI inner speech task: 8 single words displayed one per trial, each repeated 40 times."}
+{"query": "qp07_isolated_words", "acc": "ds006239", "label": "relevant", "reason": "Title states fMRI of word reading in children; bold tasks readmean and readphon are word reading judgements, plus localizers."}
+{"query": "qp07_isolated_words", "acc": "ds007022", "label": "relevant", "reason": "fMRI lexical decision on single Polish words versus pseudowords, presented on a tactile Braille display (not visual or spoken)."}
+{"query": "qp07_isolated_words", "acc": "ds007116", "label": "not_relevant", "reason": "fMRI is n-back and resting state only; Penn Word Memory Test is a cognitive battery task outside the scanner."}
+{"query": "qp07_isolated_words", "acc": "ds007275", "label": "partially_relevant", "reason": "fMRI mnemonic similarity task with adjective-noun two-word phrases as memory items; hippocampal pattern separation aim."}
+{"query": "qp07_isolated_words", "acc": "ds007342", "label": "relevant", "reason": "fMRI reading task in L1 and L2 includes lists of single words, beside unrelated sentences and narratives."}
+{"query": "qp07_isolated_words", "acc": "ds007442", "label": "relevant", "reason": "fMRI titled 'Simultaneous cortical responses to multiple written words' with VWFA and localizer tasks; README is a TODO stub, judged from title."}
+{"query": "qp07_isolated_words", "acc": "ds007446", "label": "partially_relevant", "reason": "fMRI holds only Alice-in-Wonderland language localizer (intact versus degraded speech passages) and working-memory localizer; words only within stories."}
+{"query": "qp07_isolated_words", "acc": "ds007468", "label": "relevant", "reason": "fMRI auditory lexical decision task on spoken items, studying sound-to-meaning mappings for concrete and abstract words."}
+{"query": "qp07_isolated_words", "acc": "ds007523", "label": "not_relevant", "reason": "MEG and anatomical MRI only, no fMRI; participants listened to the Le Petit Prince audiobook."}
+{"query": "qp07_isolated_words", "acc": "ds007535", "label": "relevant", "reason": "fMRI semantic decision on visually presented word pairs (same meaning?) versus letter strings; language lateralisation aim, no sentences."}
+{"query": "qp07_isolated_words", "acc": "ds007575", "label": "partially_relevant", "reason": "fMRI true-false judgement on written and spoken statements across knowledge domains; text shows sentence-level stimuli, no isolated-word condition described."}
+{"query": "qp07_isolated_words", "acc": "ds007626", "label": "partially_relevant", "reason": "fMRI encoding of auditory 6-word DRM lists as memory items; hippocampal reactivation and false-memory aim."}
+{"query": "qp07_isolated_words", "acc": "ds007745", "label": "relevant", "reason": "fMRI name-detection task from a paper on orthographic, phonological and semantic representations during single word reading."}
+{"query": "qp07_isolated_words", "acc": "ds007752", "label": "partially_relevant", "reason": "fMRI reading of Japanese newspaper articles shown word by word (RSVP); words are embedded in running text."}
+{"query": "qp07_isolated_words", "acc": "ds007763", "label": "not_relevant", "reason": "MEG and structural MRI only, no fMRI; newspaper articles read word by word."}
+{"query": "qp07_isolated_words", "acc": "ds007816", "label": "relevant", "reason": "Besides movie viewing, HD-DOT and fMRI sessions include a block-design auditory word list localizer (HW runs) presenting spoken words."}
+{"query": "qp07_isolated_words", "acc": "ds007831", "label": "relevant", "reason": "fMRI SemDec is Wilson's Adaptive Language Mapping semantic task on written word pairs; README states visual word recognition aim, not the stimuli."}
+{"query": "qp07_isolated_words", "acc": "ds008792", "label": "not_relevant", "reason": "fMRI verbal fluency with spoken letter cues and silent word generation, finger tapping, letter oddball; no words are presented."}
+{"query": "qp07_isolated_words", "acc": "ds008894", "label": "not_relevant", "reason": "MEG dot-probe with word pairs; only structural MRI besides, no fMRI."}
+{"query": "qp07_isolated_words", "acc": "ds008948", "label": "partially_relevant", "reason": "fMRI 'word' task shows sequences of emotion-laden phrases for valence/arousal judgements; affective-space aim, phrases rather than isolated words."}

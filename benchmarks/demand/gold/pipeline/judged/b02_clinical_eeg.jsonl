@@ -1,0 +1,172 @@
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds000212", "label": "not_relevant", "reason": "ASD and neurotypical adults, but only anatomical and functional MRI recorded; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds001430", "label": "not_relevant", "reason": "fMRI context-memory study in healthy adults; no EEG and no autism group."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds002522", "label": "not_relevant", "reason": "ASD and typically developing adults, but fMRI and T1 only; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds004141", "label": "not_relevant", "reason": "fMRI neurofeedback in healthy adults; autism only mentioned as future clinical target; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds004605", "label": "not_relevant", "reason": "Structural MRI and DTI of youth; autism spectrum disorder is an exclusion criterion; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds005166", "label": "not_relevant", "reason": "fMRI and behaviour in youth; autism diagnosis is an exclusion criterion; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds005234", "label": "not_relevant", "reason": "ASD and typically developing children, but recordings are MEG plus T1; no EEG shared."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds005237", "label": "not_relevant", "reason": "Transdiagnostic fMRI dataset; autism excluded, only a broad autism phenotype questionnaire; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds005664", "label": "not_relevant", "reason": "Diffusion MRI of nine healthy travelling adults for harmonising autism studies; no EEG, no autistic participants."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds005754", "label": "not_relevant", "reason": "Youth fMRI and behaviour; autism diagnosis is an exclusion criterion; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds005876", "label": "not_relevant", "reason": "EEG of healthy adults listening to songs; no autism group, keyword match incidental."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds006269", "label": "not_relevant", "reason": "EEG of Syngap1 heterozygous and wild-type rats; animal model, no human autistic participants."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds006303", "label": "not_relevant", "reason": "fMRI of anxious and healthy youth; autism is an exclusion criterion; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds006564", "label": "not_relevant", "reason": "fMRI film-viewing data with autism trait measures; only functional MRI recorded, no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds006577", "label": "not_relevant", "reason": "fMRI of anxious and healthy youth; autism diagnosis excluded; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds006777", "label": "relevant", "reason": "EEG during audiovisual reaction task; participants.tsv has 55 ASD (ADOS-confirmed), 38 typically developing and 28 siblings."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds006780", "label": "relevant", "reason": "Raw EEG across seven paradigms from 66 ASD, 44 typically developing and 28 sibling children."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds007182", "label": "not_relevant", "reason": "Autistic adults precision imaging with fMRI, diffusion and anatomical MRI only; no EEG."}
+{"query": "qf02_eeg_autism_controls_like_abide", "acc": "ds008495", "label": "not_relevant", "reason": "fMRI of social interaction perception in adults; Autism Quotient collected but not released; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds000212", "label": "not_relevant", "reason": "ASD and neurotypical adults, but only anatomical and functional MRI recorded; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds001430", "label": "not_relevant", "reason": "fMRI context-memory study in healthy adults; no EEG and no autism group."}
+{"query": "qf04_eeg_autism", "acc": "ds002522", "label": "not_relevant", "reason": "ASD and typically developing adults, but fMRI and T1 only; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds004141", "label": "not_relevant", "reason": "fMRI neurofeedback in healthy adults; autism only mentioned as future clinical target; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds004605", "label": "not_relevant", "reason": "Structural MRI and DTI of youth; autism spectrum disorder is an exclusion criterion; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds005166", "label": "not_relevant", "reason": "fMRI and behaviour in youth; autism diagnosis is an exclusion criterion; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds005234", "label": "not_relevant", "reason": "ASD and typically developing children, but recordings are MEG plus T1; no EEG shared."}
+{"query": "qf04_eeg_autism", "acc": "ds005237", "label": "not_relevant", "reason": "Transdiagnostic fMRI dataset; autism excluded, only a broad autism phenotype questionnaire; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds005664", "label": "not_relevant", "reason": "Diffusion MRI of nine healthy travelling adults for harmonising autism studies; no EEG, no autistic participants."}
+{"query": "qf04_eeg_autism", "acc": "ds005754", "label": "not_relevant", "reason": "Youth fMRI and behaviour; autism diagnosis is an exclusion criterion; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds005876", "label": "not_relevant", "reason": "EEG of healthy adults listening to songs; no autism group, keyword match incidental."}
+{"query": "qf04_eeg_autism", "acc": "ds006269", "label": "not_relevant", "reason": "EEG of Syngap1 heterozygous and wild-type rats; animal model, no human autistic participants."}
+{"query": "qf04_eeg_autism", "acc": "ds006303", "label": "not_relevant", "reason": "fMRI of anxious and healthy youth; autism is an exclusion criterion; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds006564", "label": "not_relevant", "reason": "fMRI film-viewing data with autism trait measures; only functional MRI recorded, no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds006577", "label": "not_relevant", "reason": "fMRI of anxious and healthy youth; autism diagnosis excluded; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds006777", "label": "relevant", "reason": "EEG during audiovisual reaction task; participants.tsv has 55 ASD (ADOS-confirmed), 38 typically developing and 28 siblings."}
+{"query": "qf04_eeg_autism", "acc": "ds006780", "label": "relevant", "reason": "Raw EEG across seven paradigms from 66 ASD, 44 typically developing and 28 sibling children."}
+{"query": "qf04_eeg_autism", "acc": "ds007182", "label": "not_relevant", "reason": "Autistic adults precision imaging with fMRI, diffusion and anatomical MRI only; no EEG."}
+{"query": "qf04_eeg_autism", "acc": "ds008495", "label": "not_relevant", "reason": "fMRI of social interaction perception in adults; Autism Quotient collected but not released; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds000212", "label": "not_relevant", "reason": "ASD and neurotypical adults, but only anatomical and functional MRI recorded; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds001430", "label": "not_relevant", "reason": "fMRI context-memory study in healthy adults; no EEG and no autism group."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds002522", "label": "not_relevant", "reason": "ASD and typically developing adults, but fMRI and T1 only; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds004141", "label": "not_relevant", "reason": "fMRI neurofeedback in healthy adults; autism only mentioned as future clinical target; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds004605", "label": "not_relevant", "reason": "Structural MRI and DTI of youth; autism spectrum disorder is an exclusion criterion; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds005166", "label": "not_relevant", "reason": "fMRI and behaviour in youth; autism diagnosis is an exclusion criterion; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds005234", "label": "not_relevant", "reason": "ASD and typically developing children, but recordings are MEG plus T1; no EEG shared."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds005237", "label": "not_relevant", "reason": "Transdiagnostic fMRI dataset; autism excluded, only a broad autism phenotype questionnaire; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds005664", "label": "not_relevant", "reason": "Diffusion MRI of nine healthy travelling adults for harmonising autism studies; no EEG, no autistic participants."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds005754", "label": "not_relevant", "reason": "Youth fMRI and behaviour; autism diagnosis is an exclusion criterion; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds005876", "label": "not_relevant", "reason": "EEG of healthy adults listening to songs; no autism group, keyword match incidental."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds006269", "label": "not_relevant", "reason": "EEG of Syngap1 heterozygous and wild-type rats; animal model, no human autistic participants."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds006303", "label": "not_relevant", "reason": "fMRI of anxious and healthy youth; autism is an exclusion criterion; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds006564", "label": "not_relevant", "reason": "fMRI film-viewing data with autism trait measures; only functional MRI recorded, no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds006577", "label": "not_relevant", "reason": "fMRI of anxious and healthy youth; autism diagnosis excluded; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds006777", "label": "relevant", "reason": "EEG during audiovisual reaction task; participants.tsv has 55 ASD (ADOS-confirmed), 38 typically developing and 28 siblings."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds006780", "label": "relevant", "reason": "Raw EEG across seven paradigms from 66 ASD, 44 typically developing and 28 sibling children."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds007182", "label": "not_relevant", "reason": "Autistic adults precision imaging with fMRI, diffusion and anatomical MRI only; no EEG."}
+{"query": "qf35_eeg_autism_patients", "acc": "ds008495", "label": "not_relevant", "reason": "fMRI of social interaction perception in adults; Autism Quotient collected but not released; no EEG."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds001785", "label": "not_relevant", "reason": "EEG of healthy young adults plus one epilepsy ECoG patient in a tactile detection task; no Alzheimer's or dementia."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds001787", "label": "not_relevant", "reason": "EEG of expert and novice meditators; no Alzheimer's, dementia or MCI participants."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds002293", "label": "not_relevant", "reason": "Uploader label says Alzheimers but the dataset is a single T1 image for FSL tool development; no EEG."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds002814", "label": "not_relevant", "reason": "EEG and fMRI of healthy young adults viewing object categories; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds002893", "label": "not_relevant", "reason": "EEG of cognitively intact young and older adults; dementia scale used only to confirm normal cognition."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds003570", "label": "not_relevant", "reason": "EEG of healthy musicians in a chord oddball task; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds003690", "label": "not_relevant", "reason": "EEG of healthy young and older adults in cued reaction tasks; no Alzheimer's or dementia group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds003710", "label": "not_relevant", "reason": "Longitudinal EEG of healthy infants; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds003800", "label": "partially_relevant", "reason": "EEG of 13 elderly with dementia (uploader label Dementia); Alzheimer's diagnosis not stated for participants, no healthy group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds003805", "label": "not_relevant", "reason": "EEG of one healthy 23-year-old during gamma entrainment; Alzheimer's only as motivation."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds003969", "label": "not_relevant", "reason": "EEG of meditators and controls; no Alzheimer's or dementia participants."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004000", "label": "not_relevant", "reason": "EEG of psychosis patients and healthy controls in ultimatum game; no Alzheimer's."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004105", "label": "not_relevant", "reason": "EEG of healthy adults in simulated driving; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004106", "label": "not_relevant", "reason": "EEG of healthy adults in guard duty vigilance task; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004118", "label": "not_relevant", "reason": "EEG of healthy adults in calibration driving; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004119", "label": "not_relevant", "reason": "EEG of healthy adults in guard duty task; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004120", "label": "not_relevant", "reason": "EEG of healthy adults in baseline driving; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004121", "label": "not_relevant", "reason": "EEG of healthy adults in driving with audio task; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004122", "label": "not_relevant", "reason": "EEG of healthy adults in speed control driving; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004123", "label": "not_relevant", "reason": "EEG of healthy adults in traffic complexity driving; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004166", "label": "not_relevant", "reason": "EEG of healthy young adults in working memory training; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004350", "label": "not_relevant", "reason": "EEG of healthy adults in neurofeedback executive tasks; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004504", "label": "relevant", "reason": "Resting EEG of 36 Alzheimer's disease, 23 frontotemporal dementia and 29 healthy subjects with group column."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004563", "label": "not_relevant", "reason": "EEG of healthy adults with and without vicarious touch; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004574", "label": "partially_relevant", "reason": "EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004579", "label": "partially_relevant", "reason": "EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004580", "label": "partially_relevant", "reason": "EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004584", "label": "partially_relevant", "reason": "Resting EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004598", "label": "not_relevant", "reason": "Hippocampal LFP of TgF344-AD transgenic and wild-type rats; animal model, not people with Alzheimer's."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004796", "label": "not_relevant", "reason": "EEG and fMRI of healthy middle-aged adults with Alzheimer's risk genes; no diagnosed Alzheimer's, MCI or dementia."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds004951", "label": "not_relevant", "reason": "EEG of blind adults reading braille; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds005048", "label": "relevant", "reason": "EEG during 40 Hz stimulation; group column has 16 mild AD, 1 moderate AD, 6 MCI and 10 Normal elderly."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds005385", "label": "not_relevant", "reason": "Resting EEG of healthy adults 20-70; dementia is an exclusion criterion."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006023", "label": "not_relevant", "reason": "fMRI of APP-PS1 transgenic mice; no EEG, not human."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006036", "label": "relevant", "reason": "Photic stimulation EEG of 36 Alzheimer's disease, 23 frontotemporal dementia and 29 healthy controls with group column."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006095", "label": "not_relevant", "reason": "Mobile EEG of healthy older adults walking; MoCA collected but no Alzheimer's or dementia group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006556", "label": "not_relevant", "reason": "Structural MRI of children with Tetralogy of Fallot; no EEG shared, no Alzheimer's."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006777", "label": "not_relevant", "reason": "EEG of autistic and typically developing children; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006780", "label": "not_relevant", "reason": "EEG of autistic, sibling and typically developing children; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds006801", "label": "not_relevant", "reason": "Resting EEG of neurotypical students before and after studying; no Alzheimer's patients."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007169", "label": "not_relevant", "reason": "EEG of healthy adults in n-back workload task; 'AD' only an author initial in references."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007181", "label": "not_relevant", "reason": "Sleep EEG and MRI of zoster neuralgia patients and controls; no Alzheimer's."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007262", "label": "not_relevant", "reason": "EEG of healthy adults in arithmetic workload task; keyword match is an author initial in references."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007427", "label": "not_relevant", "reason": "EEG of asymptomatic PSEN1-E280A carriers and non-carrier controls; all healthy, no diagnosed Alzheimer's, MCI or dementia."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007526", "label": "not_relevant", "reason": "EEG of Parkinson's patients (MoCA at least 21) and controls; no Alzheimer's or dementia group."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007561", "label": "not_relevant", "reason": "Alzheimer's, MCI and normal elderly, but only PET and T1 MRI; no EEG."}
+{"query": "qf14_eeg_alzheimer_and_normal", "acc": "ds007602", "label": "not_relevant", "reason": "Around-ear EEG of healthy speakers for speech decoding; no Alzheimer's patients."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds001785", "label": "not_relevant", "reason": "EEG of healthy young adults plus one epilepsy ECoG patient in a tactile detection task; no Alzheimer's or dementia."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds002293", "label": "not_relevant", "reason": "Uploader label says Alzheimers but the dataset is a single T1 image for FSL tool development; no EEG."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds002893", "label": "not_relevant", "reason": "EEG of cognitively intact young and older adults; dementia scale used only to confirm normal cognition."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds003800", "label": "partially_relevant", "reason": "EEG of 13 elderly with dementia (uploader label Dementia); Alzheimer's diagnosis not stated for participants, no healthy group."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds003805", "label": "not_relevant", "reason": "EEG of one healthy 23-year-old during gamma entrainment; Alzheimer's only as motivation."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004504", "label": "relevant", "reason": "Resting EEG of 36 Alzheimer's disease, 23 frontotemporal dementia and 29 healthy subjects with group column."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004574", "label": "partially_relevant", "reason": "EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004579", "label": "partially_relevant", "reason": "EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004580", "label": "partially_relevant", "reason": "EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004584", "label": "partially_relevant", "reason": "Resting EEG of Parkinson's patients and controls; own paper says patients include PD-MCI and PD dementia; no Alzheimer's group."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004598", "label": "not_relevant", "reason": "Hippocampal LFP of TgF344-AD transgenic and wild-type rats; animal model, not people with Alzheimer's."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds004796", "label": "not_relevant", "reason": "EEG and fMRI of healthy middle-aged adults with Alzheimer's risk genes; no diagnosed Alzheimer's, MCI or dementia."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds005048", "label": "relevant", "reason": "EEG during 40 Hz stimulation; group column has 16 mild AD, 1 moderate AD, 6 MCI and 10 Normal elderly."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds005385", "label": "not_relevant", "reason": "Resting EEG of healthy adults 20-70; dementia is an exclusion criterion."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds006023", "label": "not_relevant", "reason": "fMRI of APP-PS1 transgenic mice; no EEG, not human."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds006036", "label": "relevant", "reason": "Photic stimulation EEG of 36 Alzheimer's disease, 23 frontotemporal dementia and 29 healthy controls with group column."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds006556", "label": "not_relevant", "reason": "Structural MRI of children with Tetralogy of Fallot; no EEG shared, no Alzheimer's."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds007169", "label": "not_relevant", "reason": "EEG of healthy adults in n-back workload task; 'AD' only an author initial in references."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds007262", "label": "not_relevant", "reason": "EEG of healthy adults in arithmetic workload task; keyword match is an author initial in references."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds007427", "label": "not_relevant", "reason": "EEG of asymptomatic PSEN1-E280A carriers and non-carrier controls; all healthy, no diagnosed Alzheimer's, MCI or dementia."}
+{"query": "qf33_eeg_alzheimer", "acc": "ds007561", "label": "not_relevant", "reason": "Alzheimer's, MCI and normal elderly, but only PET and T1 MRI; no EEG."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds001784", "label": "partially_relevant", "reason": "EEG of 12 treatment-resistant MDD (plus 2 OCD) patients with DBS on/off; dx column given but no non-depressed comparison group."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds003474", "label": "relevant", "reason": "Task EEG of 122 students recruited as reliably high (depressed) or low BDI groups; BDI column per participant serves as label."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds003478", "label": "relevant", "reason": "Resting EEG of 122 students with high versus low BDI; participants.tsv gives BDI, HamD and SCID diagnosis per participant."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds004101", "label": "not_relevant", "reason": "Only resting fMRI of nine women with subclinical symptoms after EEG neurofeedback; no EEG recordings shared."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds004840", "label": "partially_relevant", "reason": "EEG of nine burn patients with HADS depression scores at baseline and end; no depression group or comparison group."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds005356", "label": "not_relevant", "reason": "MDD versus control groups but recordings are MEG and T1 only; no EEG shared."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds005555", "label": "not_relevant", "reason": "Sleep PSG and headband EEG of healthy volunteers; no depression group or depression scores described."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds006035", "label": "not_relevant", "reason": "MEG/EEG somatomotor data of five healthy adults; 'depression' only describes the nasion fiducial."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds006563", "label": "not_relevant", "reason": "EEG visual search data of 12 healthy observers; 'classification' refers to ICA components, no depression."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds007216", "label": "partially_relevant", "reason": "Simultaneous EEG-fMRI of 24 healthy adults with PHQ-9 scores in participants.tsv; non-clinical sample, no depressed group."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds007605", "label": "partially_relevant", "reason": "EEG of post-COVID cohort with HADS depression subscore assessed; groups defined by cognitive symptoms, not depression."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds007615", "label": "partially_relevant", "reason": "EEG of 69 healthy women with BDI-II scores in phenotype files; non-clinical sample, no depressed group."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds007827", "label": "partially_relevant", "reason": "EEG of lonely and non-lonely young adults with PHQ-9 totals in participants.tsv; non-clinical, no depression groups."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds008968", "label": "not_relevant", "reason": "EEG of healthy Italian speakers during overt and covert speech; no depression data."}
+{"query": "qf38_eeg_depression_labeled", "acc": "ds009082", "label": "not_relevant", "reason": "EEG lie detection in healthy participants; labels are truth versus lie, no depression."}
+{"query": "qp09_eeg_stress", "acc": "ds003522", "label": "not_relevant", "reason": "EEG oddball and rest in mild TBI and controls; only 'symptomatic distress' questionnaire wording in paper, no stress condition."}
+{"query": "qp09_eeg_stress", "acc": "ds003523", "label": "not_relevant", "reason": "EEG working memory in mild TBI and controls; keyword is 'distress' in a paper abstract, no stress condition or measure."}
+{"query": "qp09_eeg_stress", "acc": "ds004796", "label": "partially_relevant", "reason": "EEG/fMRI of healthy middle-aged adults with psychometrics including stress coping strategies questionnaire; no stress condition."}
+{"query": "qp09_eeg_stress", "acc": "ds005114", "label": "not_relevant", "reason": "EEG cognitive control task in mild TBI and controls; 'distress' only in paper abstract, no stress condition."}
+{"query": "qp09_eeg_stress", "acc": "ds005385", "label": "not_relevant", "reason": "Resting EEG before and after cognitive tasks; 'stress at work' only appears in the cohort protocol abstract."}
+{"query": "qp09_eeg_stress", "acc": "ds005386", "label": "not_relevant", "reason": "fMRI only attention/expectation task; 'stress' is used as a verb in the paper abstract."}
+{"query": "qp09_eeg_stress", "acc": "ds005795", "label": "not_relevant", "reason": "EEG-fMRI category learning; 'stress' is a verb in the abstract and coping questionnaire is only available on request."}
+{"query": "qp09_eeg_stress", "acc": "ds006850", "label": "partially_relevant", "reason": "EEG while rating urban images on nine scales including relaxed-stressful; stress is a rating scale, not an induced or studied state."}
+{"query": "qp09_eeg_stress", "acc": "ds007262", "label": "not_relevant", "reason": "EEG during graded mental arithmetic studied as cognitive workload; no stress induction, labels or measures described."}
+{"query": "qp09_eeg_stress", "acc": "ds007554", "label": "not_relevant", "reason": "EEG-fNIRS cognitive-motor tasks with sleepiness and cognitive load ratings; no stress condition or measure."}
+{"query": "qp09_eeg_stress", "acc": "ds007864", "label": "not_relevant", "reason": "Resting EEG in Parkinson's NeuroEPO trial; 'stress' refers to cellular resilience in the introduction."}
+{"query": "qp09_eeg_stress", "acc": "ds007865", "label": "not_relevant", "reason": "Resting EEG of placebo arm in Parkinson's NeuroEPO trial; 'stress' refers to cellular resilience only."}
+{"query": "qp09_eeg_stress", "acc": "ds008083", "label": "not_relevant", "reason": "EEG perceptual decision task with psychosis-proneness scales; keyword is item 'distress' ratings, not stress."}
+{"query": "qf16_covid_brain_signals", "acc": "ds002278", "label": "not_relevant", "reason": "fMRI of healthy women; COVID-19 only mentioned as the reason data collection stopped."}
+{"query": "qf16_covid_brain_signals", "acc": "ds002837", "label": "not_relevant", "reason": "Movie-watching fMRI of healthy adults; COVID-19 lockdown mentioned only regarding delayed file updates."}
+{"query": "qf16_covid_brain_signals", "acc": "ds004283", "label": "not_relevant", "reason": "Decision-making fMRI of four healthy adults; pandemic mentioned only as a break in acquisition."}
+{"query": "qf16_covid_brain_signals", "acc": "ds004327", "label": "not_relevant", "reason": "Odour imagery fMRI in healthy adults; recent COVID-related smell loss was an exclusion criterion."}
+{"query": "qf16_covid_brain_signals", "acc": "ds004477", "label": "not_relevant", "reason": "EEG during a simulated generic pandemic resource-allocation game in healthy adults; not Covid-19 patients or Covid pandemic effects."}
+{"query": "qf16_covid_brain_signals", "acc": "ds004627", "label": "not_relevant", "reason": "fMRI of adolescents with depression and healthy volunteers; pandemic only in a related symptom-ratings paper, no infected group."}
+{"query": "qf16_covid_brain_signals", "acc": "ds005364", "label": "relevant", "reason": "Task fMRI and diffusion MRI of adults recovering from SARS-CoV-2 infection plus non-COVID controls; uploader label COVID-19, COVID column."}
+{"query": "qf16_covid_brain_signals", "acc": "ds005752", "label": "not_relevant", "reason": "Healthy volunteer MRI/MEG dataset; COVID-19 appears only in a related questionnaire-validation paper abstract."}
+{"query": "qf16_covid_brain_signals", "acc": "ds005896", "label": "not_relevant", "reason": "Adolescent cohort fMRI on violence exposure; COVID only explains scheduling of survey waves, no infected group."}
+{"query": "qf16_covid_brain_signals", "acc": "ds005901", "label": "not_relevant", "reason": "Adolescent cohort fMRI on violence exposure; COVID only explains scheduling of survey waves, no infected group."}
+{"query": "qf16_covid_brain_signals", "acc": "ds006092", "label": "not_relevant", "reason": "Emotional Stroop fMRI on prolonged grief; 'post-pandemic' only in manuscript title, no Covid-infected participants or pandemic manipulation described."}
+{"query": "qf16_covid_brain_signals", "acc": "ds006777", "label": "not_relevant", "reason": "EEG of autistic children; COVID-19 mentioned only because masking prevented some ADOS assessments."}
+{"query": "qf16_covid_brain_signals", "acc": "ds006780", "label": "not_relevant", "reason": "EEG of autistic children; COVID-19 mentioned only because masking prevented some ADOS assessments."}
+{"query": "qf16_covid_brain_signals", "acc": "ds006945", "label": "not_relevant", "reason": "Motor imagery EEG-fMRI of five healthy adults; pandemic only paused data collection."}
+{"query": "qf16_covid_brain_signals", "acc": "ds007115", "label": "partially_relevant", "reason": "fMRI of healthy young adults evaluating COVID-19 vaccine misinformation; pandemic topic, no infected participant group."}
+{"query": "qf16_covid_brain_signals", "acc": "ds007216", "label": "not_relevant", "reason": "EEG-fMRI of healthy adults; recent COVID-19 symptoms were an exclusion criterion."}
+{"query": "qf16_covid_brain_signals", "acc": "ds007605", "label": "relevant", "reason": "EEG during cognitive tasks in 97 adults with PCR-confirmed past SARS-CoV-2 infection, with and without post-COVID symptoms."}
+{"query": "qf16_covid_brain_signals", "acc": "ds007823", "label": "relevant", "reason": "EEG of 87 COVID-19 patients and 86 controls per uploader labels and group counts."}
+{"query": "qf16_covid_brain_signals", "acc": "ds008082", "label": "relevant", "reason": "Resting EEG of 87 COVID-19 survivors and 86 healthy close-contact controls."}

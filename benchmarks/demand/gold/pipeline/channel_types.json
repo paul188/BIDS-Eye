@@ -1,0 +1,200 @@
+{
+ "ds004551": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 384
+  },
+  "groups": {
+   "n/a": 384
+  }
+ },
+ "ds004770": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 361
+  },
+  "groups": {
+   "n/a": 361
+  }
+ },
+ "ds004859": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 364
+  },
+  "groups": {
+   "n/a": 364
+  }
+ },
+ "ds005007": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 210
+  },
+  "groups": {
+   "n/a": 210
+  }
+ },
+ "ds005545": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 384
+  },
+  "groups": {
+   "n/a": 384
+  }
+ },
+ "ds005931": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 384
+  },
+  "groups": {
+   "n/a": 384
+  }
+ },
+ "ds006107": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 366
+  },
+  "groups": {
+   "n/a": 366
+  }
+ },
+ "ds006233": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 406
+  },
+  "groups": {
+   "n/a": 406
+  }
+ },
+ "ds006234": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 384
+  },
+  "groups": {
+   "n/a": 384
+  }
+ },
+ "ds006910": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 384
+  },
+  "groups": {
+   "n/a": 384
+  }
+ },
+ "ds006914": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 406
+  },
+  "groups": {
+   "n/a": 406
+  }
+ },
+ "ds007118": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 366
+  },
+  "groups": {}
+ },
+ "ds007119": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 368
+  },
+  "groups": {}
+ },
+ "ds007120": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 278
+  },
+  "groups": {}
+ },
+ "ds002844": null,
+ "ds003078": {
+  "subjects_read": 0,
+  "types": {},
+  "groups": {}
+ },
+ "ds004624": {
+  "subjects_read": 0,
+  "types": {},
+  "groups": {}
+ },
+ "ds004977": {
+  "subjects_read": 3,
+  "types": {
+   "SEEG": 706,
+   "ECG": 3,
+   "MISC": 51,
+   "EEG": 18
+  },
+  "groups": {
+   "n/a": 778
+  }
+ },
+ "ds006392": {
+  "subjects_read": 0,
+  "types": {},
+  "groups": {}
+ },
+ "ds006253": {
+  "subjects_read": 3,
+  "types": {
+   "SEEG": 366
+  },
+  "groups": {}
+ },
+ "ds003498": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 154
+  },
+  "groups": {}
+ },
+ "ds004457": {
+  "subjects_read": 3,
+  "types": {
+   "SEEG": 439,
+   "EEG": 63,
+   "ECG": 3
+  },
+  "groups": {
+   "n/a": 505
+  }
+ },
+ "ds004696": {
+  "subjects_read": 3,
+  "types": {
+   "SEEG": 607,
+   "EEG": 39,
+   "ECG": 3
+  },
+  "groups": {
+   "n/a": 649
+  }
+ },
+ "ds002799": {
+  "subjects_read": 3,
+  "types": {
+   "ECOG": 6
+  },
+  "groups": {}
+ },
+ "ds007095": {
+  "subjects_read": 3,
+  "types": {
+   "DBS": 6
+  },
+  "groups": {}
+ }
+}

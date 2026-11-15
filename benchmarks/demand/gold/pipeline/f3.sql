@@ -1,0 +1,32 @@
+WITH a AS (
+  SELECT dataset_id,
+    array_agg(DISTINCT datatype) FILTER (WHERE datatype IS NOT NULL) all_datatypes,
+    array_agg(DISTINCT task) FILTER (WHERE task IS NOT NULL) tasks,
+    array_agg(DISTINCT lower(substring(filename from 'task-([A-Za-z0-9]+)'))) FILTER (WHERE filename ~ 'task-') raw_tasks,
+    array_agg(DISTINCT round((other_entities->>'SamplingFrequency')::numeric,1)) FILTER (WHERE suffix='eeg' AND other_entities->>'SamplingFrequency' ~ '^[0-9.]+$') eeg_sfreq,
+    array_agg(DISTINCT round((other_entities->>'SamplingFrequency')::numeric,1)) FILTER (WHERE suffix='intracranial_eeg' AND other_entities->>'SamplingFrequency' ~ '^[0-9.]+$') ieeg_sfreq,
+    max((other_entities->>'SEEGChannelCount')::numeric) FILTER (WHERE other_entities->>'SEEGChannelCount' ~ '^[0-9]+$') seeg_ch,
+    max((other_entities->>'ECOGChannelCount')::numeric) FILTER (WHERE other_entities->>'ECOGChannelCount' ~ '^[0-9]+$') ecog_ch,
+    count(*) FILTER (WHERE filename ~ '_electrodes\.tsv$' AND datatype='electroencephalography') n_eeg_electrodes,
+    count(*) FILTER (WHERE filename ~ '_coordsystem\.json$' AND datatype='electroencephalography') n_eeg_coordsystem,
+    count(*) FILTER (WHERE filename ~ '_electrodes\.tsv$') n_electrodes,
+    count(*) FILTER (WHERE filename ~ '_headshape') n_headshape,
+    count(*) FILTER (WHERE suffix='physiological_recordings') n_physio,
+    array_agg(DISTINCT datatype) FILTER (WHERE suffix='physiological_recordings') physio_datatypes,
+    array_agg(DISTINCT other_entities->>'recording') FILTER (WHERE suffix='physiological_recordings' AND other_entities->>'recording' IS NOT NULL) physio_recording,
+    count(*) FILTER (WHERE filename ~* 'eyetrack') n_eyetrack,
+    count(*) FILTER (WHERE suffix='task_events') n_events,
+    count(*) FILTER (WHERE suffix='task_events' AND other_entities->>'stim_file' IS NOT NULL) n_events_stimfile,
+    count(*) FILTER (WHERE filename ~ 'desc-preproc_bold\.nii') n_desc_preproc_bold,
+    array_agg(DISTINCT substring(path from '/openneuro/ds[0-9]+/([^/]+)/')) FILTER (WHERE path !~ '/openneuro/ds[0-9]+/sub-' AND path ~ '/openneuro/ds[0-9]+/[^/]+/') top_dirs,
+    array_agg(DISTINCT substring(path from '/openneuro/ds[0-9]+/derivatives?/([^/]+)')) FILTER (WHERE path ~ '/openneuro/ds[0-9]+/derivatives?/') deriv_dirs,
+    array_agg(DISTINCT filename) FILTER (WHERE path ~ '/openneuro/ds[0-9]+/phenotype/') phenotype_files,
+    array_agg(DISTINCT other_entities->>'EEGReference') FILTER (WHERE other_entities->>'EEGReference' IS NOT NULL) eeg_ref,
+    array_agg(DISTINCT left(other_entities->>'TaskDescription',200)) FILTER (WHERE other_entities->>'TaskDescription' IS NOT NULL) task_desc
+  FROM bids_objects GROUP BY 1)
+SELECT json_build_object('acc', d.accession_id, 'all_datatypes', a.all_datatypes, 'tasks', a.tasks, 'raw_tasks', a.raw_tasks, 'eeg_sfreq', a.eeg_sfreq, 'ieeg_sfreq', a.ieeg_sfreq,
+  'seeg_ch', a.seeg_ch, 'ecog_ch', a.ecog_ch, 'n_eeg_electrodes', a.n_eeg_electrodes, 'n_eeg_coordsystem', a.n_eeg_coordsystem, 'n_electrodes', a.n_electrodes,
+  'n_headshape', a.n_headshape, 'n_physio', a.n_physio, 'physio_datatypes', a.physio_datatypes, 'physio_recording', a.physio_recording, 'n_eyetrack', a.n_eyetrack,
+  'n_events', a.n_events, 'n_events_stimfile', a.n_events_stimfile, 'n_desc_preproc_bold', a.n_desc_preproc_bold, 'top_dirs', a.top_dirs, 'deriv_dirs', a.deriv_dirs,
+  'phenotype_files', a.phenotype_files[1:60], 'eeg_ref', a.eeg_ref[1:5], 'task_desc', a.task_desc[1:8])
+FROM bids_datasets d LEFT JOIN a ON a.dataset_id=d.id;

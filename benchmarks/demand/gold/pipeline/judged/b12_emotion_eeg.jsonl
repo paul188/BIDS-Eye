@@ -1,0 +1,92 @@
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds001784", "label": "partially_relevant", "reason": "Cognitive-control MSIT in DBS patients; IAPS valence pictures only as brief distractors, no emotion ratings; emotional stimuli perceived, not a recognition paradigm."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002720", "label": "not_relevant", "reason": "Tempo-control BCI: motor imagery to speed or slow music; no emotion induction or affect ratings despite the music-emotion domain label."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002721", "label": "relevant", "reason": "EEG from 31 adults listening to film-score clips targeting emotional states, with reported induced emotional responses."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002722", "label": "relevant", "reason": "EEG, GSR, ECG while listening to music clips targeting affective states, with reported valence and arousal."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002723", "label": "relevant", "reason": "EEG during affective music BCI; music induces target emotional states, reported valence and arousal values included."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002724", "label": "relevant", "reason": "EEG while listening to music clips targeting affective states over 3 sessions, with reported valence and arousal."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002725", "label": "relevant", "reason": "Joint EEG-fMRI during music chosen to evoke affective responses; participants continuously self-reported felt affect."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds002778", "label": "not_relevant", "reason": "Resting-state EEG in Parkinson's disease on/off medication; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003004", "label": "relevant", "reason": "High-density EEG during guided imagery inducing 15 named emotion states (joy, sadness, anger...); emotion labels per period."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003374", "label": "partially_relevant", "reason": "Intracranial amygdala recordings (not scalp EEG) while viewing fearful-face video sequences vs landscapes; emotional face perception, no ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003474", "label": "partially_relevant", "reason": "Probabilistic selection EEG in high/low depression students; BDI and STAI scores only, no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003505", "label": "not_relevant", "reason": "VEPs to faces vs scrambled faces and motion; faces not emotional, no affect measures."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003690", "label": "not_relevant", "reason": "Auditory cued reaction-time tasks in young and older adults; arousal means noradrenergic alertness, not emotion."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003739", "label": "not_relevant", "reason": "Perturbed beam-walking balance EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003751", "label": "relevant", "reason": "DENS: EEG, ECG, EMG while watching emotional videos, with valence, arousal, dominance and emotion-category self-ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003753", "label": "not_relevant", "reason": "Reinforcement-learning task; 'affective feedback' only named, no emotion induction or emotion ratings described."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003768", "label": "not_relevant", "reason": "Simultaneous EEG-fMRI at rest and during sleep; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003822", "label": "not_relevant", "reason": "Reinforcement-learning task with affective feedback; README describes no emotion induction or emotion labels."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds003846", "label": "not_relevant", "reason": "VR reach-to-tap visuo-haptic prediction-error EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004040", "label": "not_relevant", "reason": "Trance channeling vs rest EEG; no emotion induction or labels."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004101", "label": "not_relevant", "reason": "Resting-state fMRI only; EEG was the neurofeedback intervention, no EEG data or emotion task."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004105", "label": "not_relevant", "reason": "Simulated driving with auditory cues for fatigue research; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004106", "label": "not_relevant", "reason": "Guard-duty sustained vigilance EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004118", "label": "not_relevant", "reason": "Calibration driving EEG for fatigue prediction; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004119", "label": "not_relevant", "reason": "Guard-duty ID badge vigilance EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004120", "label": "not_relevant", "reason": "Baseline simulated driving EEG for fatigue; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004121", "label": "not_relevant", "reason": "Mind-wandering simulated driving EEG; no emotion induction or labels."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004122", "label": "not_relevant", "reason": "Speed-control simulated driving EEG for fatigue; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004123", "label": "not_relevant", "reason": "Traffic-complexity simulated driving EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004148", "label": "partially_relevant", "reason": "Resting and cognitive-state EEG with emotion and mental-health questionnaire measures; no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004194", "label": "not_relevant", "reason": "Visual ECoG with pattern and category localiser tasks; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004315", "label": "partially_relevant", "reason": "Sad vs neutral mood manipulation done separately before EEG; EEG covers only the reinforcement-learning task, with BDI; no emotion ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004317", "label": "partially_relevant", "reason": "Sad vs happy mood manipulation before training blocks, but EEG is a reinforcement-learning task with group labels and BDI only."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004324", "label": "partially_relevant", "reason": "RSVP of stylized emotional faces for ERP-based emotion detection; emotional face perception, no induction ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004347", "label": "not_relevant", "reason": "Symmetry vs random pattern discrimination; affect inferred from facial EMG, no emotion induction or ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004362", "label": "not_relevant", "reason": "Motor movement and imagery EEG (PhysioNet); no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004367", "label": "not_relevant", "reason": "Random-dot motion confidence task in schizophrenia; 'schizoaffective' is a diagnosis, no emotion task."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004368", "label": "not_relevant", "reason": "Preprocessed random-dot confidence EEG in schizophrenia; no emotion task."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004457", "label": "not_relevant", "reason": "Intracranial single-pulse electrical stimulation; emotion only named as limbic function."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004460", "label": "not_relevant", "reason": "Full-body vs joystick rotation EEG and motion capture; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004515", "label": "not_relevant", "reason": "Alcohol-imagery reinforcement learning in drinkers; BDI is an incidental covariate, no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004582", "label": "partially_relevant", "reason": "Masked angry vs neutral face primes before real/fake face judgement; emotional face perception, no emotion ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004625", "label": "not_relevant", "reason": "Walking over uneven terrain EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004626", "label": "partially_relevant", "reason": "Dot-probe with social-threat cues in lonely vs non-lonely adults; threat-stimulus perception, no induction or ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004696", "label": "not_relevant", "reason": "Intracranial single-pulse stimulation of limbic circuitry; no emotion task."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004718", "label": "not_relevant", "reason": "Le Petit Prince story listening EEG/fMRI in older Cantonese speakers; no emotion labels."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004784", "label": "not_relevant", "reason": "Phantom-head EEG for artifact removal; not human emotion data."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004796", "label": "not_relevant", "reason": "Dementia-risk cohort with MSIT, Sternberg, rest; mood/BDI scores among many phenotype columns, incidental."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004837", "label": "not_relevant", "reason": "MEG mismatch negativity in first-episode psychosis; no EEG, no emotion task."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds004902", "label": "partially_relevant", "reason": "Resting EEG after normal sleep vs sleep deprivation with PANAS mood scores; affect questionnaire only, no induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds005345", "label": "not_relevant", "reason": "Multi-talker Le Petit Prince listening EEG/fMRI; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds005385", "label": "not_relevant", "reason": "Resting-state EEG across adult lifespan; affective disorders only an exclusion criterion."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds005530", "label": "not_relevant", "reason": "IAPS pictures rated for arousal with ECG and fMRI only; the EEG is sleep polysomnography, not recorded during emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds005540", "label": "relevant", "reason": "EmoEEG-MC: EEG for emotion decoding with ratings of joy, sadness, fear, disgust, valence, arousal across contexts."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds005795", "label": "not_relevant", "reason": "Auditory category learning EEG-fMRI with feedback; personality traits only on request, no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006095", "label": "not_relevant", "reason": "Older adults walking over uneven terrain EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006466", "label": "not_relevant", "reason": "Oddball and rest under threat of shock as noradrenergic arousal manipulation; no emotion labels or ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006480", "label": "not_relevant", "reason": "Young-adult oddball and rest under threat of shock for arousal; no emotion labels or ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006554", "label": "not_relevant", "reason": "Social observation task (audience vs alone); README is an unfilled template, nothing shows emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006647", "label": "partially_relevant", "reason": "Reading emotion-themed poems rated for being moved, plus PANAS; aesthetic judgement of emotional words, not emotion induction dataset."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006648", "label": "partially_relevant", "reason": "Reading Haiku/Senryu rated for aesthetic appeal and being moved, plus PANAS; emotional words, not emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006761", "label": "not_relevant", "reason": "Rock-Paper-Scissors hyperscanning EEG; 'Affective' only in the journal name."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006780", "label": "not_relevant", "reason": "Autism multi-paradigm EEG; smiling faces only as fixed stimuli in an attention task, no emotion contrast."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006839", "label": "not_relevant", "reason": "Sham neurofeedback with positive/negative feedback valence in VR; no emotion induction or emotion ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006850", "label": "relevant", "reason": "EEG, ECG, EDA while viewing urban images rated on valence, arousal, dominance and stress scales."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006861", "label": "relevant", "reason": "Emotion processing/regulation task: 5 s images watched or reappraised, each rated for arousal and valence; tDCS-EEG."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds006866", "label": "relevant", "reason": "EEG while viewing emotional static images for 5 s, then rating arousal and valence on 9-point scales."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007012", "label": "not_relevant", "reason": "Food-image categorisation EEG; emotion ratings are normative from separate online samples, no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007114", "label": "relevant", "reason": "Fear conditioning with voices paired with aversive noise; EEG plus valence and arousal ratings, emotion study domain."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007172", "label": "partially_relevant", "reason": "Lateralization study with an emotional-faces task (angry, fearful...) among others; face perception, no induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007347", "label": "not_relevant", "reason": "Resting EEG around focused ultrasound mesencephalotomy for cancer pain; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007406", "label": "not_relevant", "reason": "EEG during marketing videos (extreme vs traditional); no emotion labels or ratings described."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007521", "label": "not_relevant", "reason": "Food image processing under hunger vs satiety; no emotion induction or labels."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007609", "label": "partially_relevant", "reason": "Resting-state EEG with STAI trait anxiety and emotional-stability scores; questionnaire only, no induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007615", "label": "not_relevant", "reason": "LDAEP and resting EEG for contraceptive use; BDI-II is a covariate in healthy women, no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007788", "label": "not_relevant", "reason": "Motor-imagery exoskeleton BMI EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007827", "label": "partially_relevant", "reason": "Roving oddball with emotional face stimuli plus valence/arousal/dominance ratings of the faces; face perception, no induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds007955", "label": "partially_relevant", "reason": "EEG and autonomic signals during fear-related emotional word association; emotional words, no emotion ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008003", "label": "partially_relevant", "reason": "Pitch working-memory task in misophonia with aversive trigger vs neutral sound distractors; emotional stimuli incidental, no ratings in EEG task."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008083", "label": "not_relevant", "reason": "Random-dot perceptual decision task and psychosis proneness; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008099", "label": "not_relevant", "reason": "Meat/vegetarian food-word categorisation with EMOTIV; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008115", "label": "not_relevant", "reason": "Frontal EEG during nociceptive procedures in ICU patients; pain monitoring, not emotion."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008701", "label": "relevant", "reason": "MET: EEG during 20 music-listening sessions with SAM valence and arousal ratings per song."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008836", "label": "partially_relevant", "reason": "Vipassana meditation EEG with pre/post Profile of Mood States; affect questionnaire only, no induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008851", "label": "relevant", "reason": "EEG while watching happy and sad videos to evoke emotions, labelled segments; stated purpose is emotion recognition."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008858", "label": "not_relevant", "reason": "Motor-imagery cursor-control BCI with Emotiv headset; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008867", "label": "not_relevant", "reason": "Consumer EEG to two soundscapes with liking ratings only; no emotion labels or valence/arousal ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds008940", "label": "not_relevant", "reason": "Food image meat/vegetarian categorisation EEG; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds009033", "label": "not_relevant", "reason": "Sonic-seasoning soundscapes with liking ratings only; no emotion labels or valence/arousal ratings."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds009081", "label": "not_relevant", "reason": "Balinese dance and balance EEG in dancers vs non-dancers; no emotion content."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds009082", "label": "not_relevant", "reason": "EEG lie detection with truth/lie labels; no emotion induction."}
+{"query": "qf43_eeg_emotion_like_deap", "acc": "ds009097", "label": "not_relevant", "reason": "Resting EEG in dyslexic children before/after neurofeedback; no emotion content."}

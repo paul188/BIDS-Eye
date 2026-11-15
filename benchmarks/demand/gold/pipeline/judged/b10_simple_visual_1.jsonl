@@ -1,0 +1,86 @@
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000001", "label": "not_relevant", "reason": "Balloon Analog Risk Task; risk decision-making, no simple low-level visual stimulus; 16 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000005", "label": "not_relevant", "reason": "Mixed-gambles decision task; not a low-level visual stimulation paradigm."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000008", "label": "not_relevant", "reason": "Stop-signal response inhibition task; no gratings/checkerboard stimulation."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000107", "label": "not_relevant", "reason": "One-back localisers with words, objects, scrambled objects, consonant strings; high-level stimuli, not low-level."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000116", "label": "partially_relevant", "reason": "Visual oddball fMRI with simple red/green circles (200 ms, 125 stimuli per run); only 17 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000205", "label": "partially_relevant", "reason": "Localizer runs include 12 s flickering checkerboard blocks; main task affective videos; only 11 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000219", "label": "not_relevant", "reason": "Flavour pleasantness (taste) task; not visual stimulation."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000232", "label": "not_relevant", "reason": "Individual face exemplars and face localizer; high-level face stimuli, 10 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000244", "label": "partially_relevant", "reason": "IBC task list includes retinotopy and ARCHI standard localizer among many tasks; cohort of 12 participants."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds000255", "label": "partially_relevant", "reason": "Subjects viewed 12x12 flickering contrast patch images (random and shapes); only 2 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001168", "label": "not_relevant", "reason": "Resting-state 7T test-retest only; no visual task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001235", "label": "not_relevant", "reason": "One-back on human-object interaction photographs; high-level images, 12 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001415", "label": "not_relevant", "reason": "Auditory map listening task; not visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001545", "label": "not_relevant", "reason": "Movie clips (Grand Budapest Hotel) viewing; naturalistic, not low-level."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001555", "label": "partially_relevant", "reason": "Block design 8 Hz full-field flickering checkerboard at 7T; only 3 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001747", "label": "not_relevant", "reason": "Resting-state fMRI of mono/bilinguals; no task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001972", "label": "not_relevant", "reason": "Anatomical T1w/T2w only; no functional data."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds001984", "label": "partially_relevant", "reason": "Passive fixation fMRI with random-dot motion-, disparity- and contrast-defined disk; 15 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002236", "label": "not_relevant", "reason": "Word rhyming/spelling/semantic judgement tasks in children; lexical, not low-level visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002295", "label": "partially_relevant", "reason": "7T fMRI with task labels checkerboard and prf (ocular dominance mapper); only 7 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002338", "label": "not_relevant", "reason": "EEG-fMRI motor imagery neurofeedback; not a visual stimulation task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002550", "label": "not_relevant", "reason": "Gabor working-memory task recorded with MEG plus anatomical MRI; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002674", "label": "not_relevant", "reason": "Single-subject resting-state dense sampling; no visual task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002684", "label": "partially_relevant", "reason": "Task labels check and prf, uploader says block/event-related visual tasks; 4 subjects; README empty."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002718", "label": "not_relevant", "reason": "EEG face processing with anatomical MRI only; no fMRI in dataset."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002739", "label": "relevant", "reason": "Random-dot motion direction discrimination with confidence rating during EEG-fMRI; 24 subjects with BOLD."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds002878", "label": "not_relevant", "reason": "Soccer video clips with imagined creative moves; not low-level visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003216", "label": "partially_relevant", "reason": "Protocol-test sessions with flickering checkerboards and tapping for one participant; mainly movie watching; 3 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003382", "label": "partially_relevant", "reason": "Simultaneous fPET/BOLD-fMRI with flickering checkerboard block design; 10 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003424", "label": "not_relevant", "reason": "Taste perception task; not visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003427", "label": "partially_relevant", "reason": "7T fMRI viewing 8 Hz contrast-reversing checkerboard; 4 subject folders (7 in paper)."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003500", "label": "not_relevant", "reason": "Selective attention and go/no-go inhibition tasks with shape arrays in ADHD study; cognitive, not simple viewing."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003645", "label": "not_relevant", "reason": "MEG/EEG face perception with anatomical MRI; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003787", "label": "relevant", "reason": "NYU retinotopy: standard pRF bar mapping fMRI in 44 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003812", "label": "partially_relevant", "reason": "BOLD responses to log-polar sinusoidal grating stimuli in V1; 12 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds003972", "label": "not_relevant", "reason": "7T whole-body motor movement task; not visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004043", "label": "not_relevant", "reason": "Oriented grating attention task recorded with EEG only; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004169", "label": "not_relevant", "reason": "N-back working memory and rest in twins; not low-level visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004192", "label": "partially_relevant", "reason": "THINGS object images plus retinotopic pRF localizer runs; only 3 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004393", "label": "relevant", "reason": "View/imagine trials with oriented Gabors as conditioned stimuli (fear conditioning); 32 subjects with BOLD."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004460", "label": "not_relevant", "reason": "EEG and motion capture rotation task; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004484", "label": "relevant", "reason": "7T fMRI of 20 subjects viewing a 12 Hz flickering radial checkerboard."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004493", "label": "partially_relevant", "reason": "3T fMRI viewing radial checkerboard flickering at 4-40 Hz; 16 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004499", "label": "relevant", "reason": "Block visual-motor task with whole-field 2 Hz flickering checkerboard and digit-cued button presses; 50 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004603", "label": "not_relevant", "reason": "EEG and behaviour only; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004666", "label": "not_relevant", "reason": "Single-subject diffusion MRI denoising data; no task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004698", "label": "partially_relevant", "reason": "Retinotopic pRF mapping with fixed-bar and log-bar stimuli, fixation task; 12 participants."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004744", "label": "not_relevant", "reason": "Diffusion MRI tract annotations; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds004909", "label": "relevant", "reason": "Random dot kinematogram colour/motion decision task plus colour/motion localizers; 29 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005021", "label": "not_relevant", "reason": "Tilt illusion gratings recorded with EEG only; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005115", "label": "not_relevant", "reason": "Single-subject resting-state dense sampling; no visual task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005237", "label": "not_relevant", "reason": "Stroop and faces/shapes matching tasks plus rest; not low-level visual stimulation."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005413", "label": "relevant", "reason": "Participants viewed flickering checkerboards and rated contrast; visuallocalizer task too; 45 participants."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005503", "label": "partially_relevant", "reason": "Includes pRF runs with sweeping textured bar apertures; main stimuli generated images; 6 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005506", "label": "not_relevant", "reason": "HBN EEG release; EEG only, no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005508", "label": "not_relevant", "reason": "HBN EEG release; EEG only, no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005510", "label": "not_relevant", "reason": "HBN EEG release; EEG only, no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005512", "label": "not_relevant", "reason": "HBN EEG release; EEG only, no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005515", "label": "not_relevant", "reason": "HBN EEG release; EEG only, no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005521", "label": "partially_relevant", "reason": "fMRI of checkerboard wedges/rings and colour/spatial-frequency gratings, but only 2 macaques."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005523", "label": "not_relevant", "reason": "Intracranial EEG spatial memory task; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005533", "label": "partially_relevant", "reason": "7T block task with 12 Hz flickering radial checkerboard; only 3 human subjects have fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds005639", "label": "relevant", "reason": "Retinotopic mapping fMRI (bar, wedge-ring, prf task labels) in 49 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006005", "label": "partially_relevant", "reason": "7T fMRI of V1 with visual stimuli oscillating at 0.05-0.2 Hz; 12 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006040", "label": "relevant", "reason": "Simultaneous EEG-fMRI includes 15 Hz checkerboard task besides gradCPT; 28 participants."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006206", "label": "not_relevant", "reason": "Resting-state 10.5T methodological data; no visual task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006472", "label": "not_relevant", "reason": "pRF mapping uses colourful high-level imagery apertures plus category localizer; stimulus not simple low-level."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006512", "label": "partially_relevant", "reason": "Orientation discrimination with attentional cueing and retinotopic mapping stimulus; only 8 participants."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006642", "label": "relevant", "reason": "Retinotopic mapping task (visual patterns, fixation colour-change detection) in 40 participants, besides movie."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006683", "label": "not_relevant", "reason": "Repetitive thought disengagement task with SART; not low-level visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006817", "label": "not_relevant", "reason": "EEG only; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006837", "label": "not_relevant", "reason": "Diffusion and anatomical MRI in glaucoma; no task fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds006926", "label": "relevant", "reason": "Visual-motor task with flickering checkerboard and digits, plus letter oddball; 83 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007022", "label": "not_relevant", "reason": "Braille/music training tasks, n-back, Stroop; no low-level visual stimulation task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007081", "label": "not_relevant", "reason": "EEG working-memory colour report; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007212", "label": "not_relevant", "reason": "Structural MRI with lesion masks; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007353", "label": "not_relevant", "reason": "MEG/EEG action video viewing with T1w only; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007396", "label": "not_relevant", "reason": "Neurofeedback, Hammer faces task and rest; 4 participants; no low-level visual stimulus."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007436", "label": "not_relevant", "reason": "Multisensory reinforcement learning task with audiovisual/tactile cues; not simple visual stimulation."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007792", "label": "not_relevant", "reason": "3D object images and random-dot stereogram objects for shape reconstruction; object stimuli, 5 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds007862", "label": "partially_relevant", "reason": "7T orientation discrimination with sine-wave grating centre/surround stimuli and localizer; 16 subjects."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds008110", "label": "not_relevant", "reason": "Resting-state, structural and DTI in OCD; no task."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds008214", "label": "not_relevant", "reason": "Mouse structural contrast-infusion MRI; no fMRI."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds008447", "label": "not_relevant", "reason": "Probabilistic learning task with visual or somatosensory (emo/pain) stimuli; not low-level stimulation."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds008583", "label": "not_relevant", "reason": "Emotion expression decision task with written scenarios; not low-level visual."}
+{"query": "qf29_simple_visual_task_20_subjects", "acc": "ds008786", "label": "not_relevant", "reason": "fPET and quantitative mqBOLD during visual stimulation; no task fMRI listed, stimulus undescribed, 15 participants."}
