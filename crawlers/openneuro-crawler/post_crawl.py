@@ -3,6 +3,8 @@ post_crawl.py
 -------------
 Steps that run after a crawl cycle, for the datasets the cycle indexed:
 
+  -. summaries  per-dataset summaries of the file table that the search
+                reads (remote/dataset_facets.refresh). No network.
   0. links      derivatives (OpenNeuro's preprocessing bucket and the
                 dataset's own derivatives/ folders) and scanner-header sites
                 (remote/dataset_links.refresh_links). No LLM, public sources only.
@@ -112,6 +114,18 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
     if not accessions:
         return
     from db.db import engine
+
+    # The search reads per-dataset summaries of bids_objects, not the file
+    # table: a dataset whose files changed is found by its new data types
+    # only after this (remote/dataset_facets.py). Always on.
+    try:
+        from remote import dataset_facets
+
+        async with engine.begin() as conn:
+            stats = await dataset_facets.refresh(conn, accessions)
+        log.info("[post-crawl] Dataset summaries: %s", stats)
+    except Exception as exc:
+        log.error("[post-crawl] Dataset summaries failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_LINKS"):
         try:

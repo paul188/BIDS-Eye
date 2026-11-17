@@ -84,6 +84,61 @@ def set_fts(available: bool) -> None:
     _has_fts = bool(available)
 
 
+# Per-dataset summaries of bids_objects (crawlers/migrate_add_dataset_facets.sql).
+# The executed SQL reads them instead of the file table (sql_rewriter._use_summaries).
+FACETS_TABLE = "bids_dataset_facets"
+SUBJECT_COUNT_COLUMN = "n_subjects"
+_has_facets: bool = False
+_has_subject_counts: bool = False
+
+
+def has_dataset_facets() -> bool:
+    """True if bids_dataset_facets exists and covers every dataset that has files."""
+    return _has_facets
+
+
+def has_subject_counts() -> bool:
+    """True if bids_datasets.n_subjects exists and is filled."""
+    return _has_subject_counts
+
+
+def set_summaries(facets: bool, subject_counts: bool) -> None:
+    """Override the detected summary tables (tests)."""
+    global _has_facets, _has_subject_counts
+    _has_facets, _has_subject_counts = bool(facets), bool(subject_counts)
+
+
+async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
+    """Record whether the per-dataset summaries can replace the file table.
+
+    A summary that misses a dataset would hide it from the search, so the
+    facets table counts only when no dataset with files lacks rows in it.
+    """
+    global _has_facets, _has_subject_counts
+    _has_facets = _has_subject_counts = False
+    try:
+        if SUBJECT_COUNT_COLUMN in present:
+            filled = (await connection.execute(text(
+                f"SELECT count({SUBJECT_COUNT_COLUMN}) FROM bids_datasets"))).scalar()
+            _has_subject_counts = bool(filled)
+        exists = (await connection.execute(text(
+            f"SELECT to_regclass('{FACETS_TABLE}') IS NOT NULL"))).scalar()
+        if exists:
+            uncovered = (await connection.execute(text(
+                "SELECT count(*) FROM bids_datasets d "
+                f"WHERE NOT EXISTS (SELECT 1 FROM {FACETS_TABLE} f WHERE f.dataset_id = d.id) "
+                "AND EXISTS (SELECT 1 FROM bids_objects o WHERE o.dataset_id = d.id)"))).scalar()
+            _has_facets = not uncovered
+            if uncovered:
+                log.warning("%s misses %d datasets that have files: not used. Run "
+                            "remote/dataset_facets.py --refresh-all and restart.", FACETS_TABLE, uncovered)
+    except Exception as exc:  # a database without these: search as before
+        log.info("Dataset summaries not usable: %s", exc)
+        _has_facets = _has_subject_counts = False
+    log.info("Dataset summaries: facets table %s, stored subject count %s",
+             "used" if _has_facets else "not used", "used" if _has_subject_counts else "not used")
+
+
 def has_display_column(name: str) -> bool:
     """True if bids_datasets has this display column in the running database."""
     return name in _present_display
@@ -161,6 +216,7 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
     _present_display = frozenset(name for name in DISPLAY_COLUMNS if name in present)
     _has_fts = FTS_COLUMN in present
     _has_paper_fts = _has_fts and PAPER_FTS_COLUMN in present
+    await _detect_summaries(connection, present)
     if _has_paper_fts:
         log.info("Full-text column %s found (used when TEXT_SEARCH_PAPERS is on)", PAPER_FTS_COLUMN)
     log.info(

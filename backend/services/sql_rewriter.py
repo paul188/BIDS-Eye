@@ -49,6 +49,7 @@ from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 
 from services import text_search as _text_search  # noqa: E402
 from services import uncertain_tier as _uncertain_tier  # noqa: E402
+from services import schema_capabilities as _schema_capabilities  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -262,7 +263,7 @@ class SqlRewriteService:
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""
-        base = self._normalize_sql(base_sql)
+        base = self._use_summaries(self._normalize_sql(base_sql))
         return f"SELECT COUNT(*) FROM (\n{base}\n) AS count_result"
 
     def build_page_sql(
@@ -292,7 +293,7 @@ class SqlRewriteService:
             if apply_relevance else base_sql
         )
         ranked = ordered != base_sql
-        ordered = self._normalize_sql(ordered)
+        ordered = self._use_summaries(self._normalize_sql(ordered))
         params: dict[str, Any] = {"_limit": limit, "_offset": offset}
         # Confirmed results first, then the uncertain tier (services/uncertain_tier.py).
         tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
@@ -343,6 +344,145 @@ class SqlRewriteService:
         if "subject_count" in base_sql:
             return "ORDER BY page_result.subject_count DESC NULLS LAST, page_result.id\n"
         return "ORDER BY page_result.id\n"
+
+    # ── Executed SQL: per-dataset summaries instead of the file table ─────────
+    #
+    # Applied to the SQL that runs, never to the stored translation: the
+    # cache, the filter chips and the logs keep the query as it was written.
+
+    _FACET_COLUMNS = frozenset({"dataset_id", "datatype", "suffix", "task"})
+
+    def _use_summaries(self, sql: str) -> str:
+        """Read bids_dataset_facets and bids_datasets.n_subjects where that gives the same rows.
+
+        bids_objects has 2.7 million rows; its distinct (dataset, datatype,
+        suffix, task) combinations are 21,000. A search asked the file table
+        once per result and vocabulary code for its ranking score (40 of 44
+        seconds for "resting-state fMRI") and sorted all of it to count
+        subjects (2 to 4 seconds on every search).
+        """
+        facets = _schema_capabilities.has_dataset_facets()
+        counts = _schema_capabilities.has_subject_counts()
+        if parse_one is None or exp is None or not (facets or counts) or "bids_objects" not in sql:
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+            changed = False
+            for select in list(parsed.find_all(exp.Select)):
+                if counts and self._stored_subject_count(select):
+                    changed = True
+            for select in list(parsed.find_all(exp.Select)):
+                if facets and self._facet_table(select):
+                    changed = True
+            return parsed.sql(dialect="postgres") if changed else sql
+        except Exception as exc:  # the unchanged query is always correct
+            log.warning("Summary rewrite skipped: %s", exc)
+            return sql
+
+    @staticmethod
+    def _own_nodes(select: Any, kind: Any) -> list:
+        """Nodes of *kind* in *select* that are not inside a nested SELECT."""
+        return [n for n in select.find_all(kind)
+                if n is not select and n.find_ancestor(exp.Select) is select]
+
+    def _stored_subject_count(self, select: Any) -> bool:
+        """COUNT(DISTINCT o.subject) over the LEFT JOIN on bids_objects -> d.n_subjects.
+
+        Only when that count is all the join is used for: no other column of
+        the joined files, no other aggregate in the same SELECT.
+        """
+        source = select.args.get("from") or select.args.get("from_")
+        table = source.this if source is not None else None
+        if not isinstance(table, exp.Table) or table.name.lower() != "bids_datasets":
+            return False
+        d = table.alias_or_name
+        joins = select.args.get("joins") or []
+        target = None
+        for join in joins:
+            t = join.this
+            if isinstance(t, exp.Table) and t.name.lower() == "bids_objects" and (join.side or "").upper() == "LEFT":
+                target = join
+                break
+        if target is None:
+            return False
+        o = target.this.alias_or_name
+        on = target.args.get("on")
+        if on is None:
+            return False
+        link = False
+        for part in self._flatten_and(on):
+            text_ = part.sql(dialect="postgres").lower().replace(" ", "")
+            if text_ in (f"{o}.dataset_id={d}.id".lower(), f"{d}.id={o}.dataset_id".lower()):
+                link = True
+            elif text_ not in (f"not{o}.subjectisnull".lower(), f"{o}.subjectisnotnull".lower()):
+                return False
+        if not link:
+            return False
+        # Every other use of the joined files must be COUNT(DISTINCT o.subject).
+        counts = []
+        for column in select.find_all(exp.Column):
+            if column.table != o or column.find_ancestor(exp.Join) is target:
+                continue
+            distinct = column.parent
+            count = distinct.parent if isinstance(distinct, exp.Distinct) else None
+            if (column.name.lower() != "subject" or not isinstance(count, exp.Count)
+                    or len(distinct.expressions) != 1 or count.find_ancestor(exp.Select) is not select):
+                return False
+            counts.append(count)
+        if not counts:
+            return False
+        if any(a not in counts for a in self._own_nodes(select, exp.AggFunc)):
+            return False
+        group = select.args.get("group")
+        grouped = [g.sql(dialect="postgres").lower() for g in (group.expressions if group else [])]
+        if f"{d}.id".lower() not in grouped:
+            return False
+        stored = (
+            f"COALESCE({d}.{_schema_capabilities.SUBJECT_COUNT_COLUMN}, "
+            f"(SELECT COUNT(DISTINCT sc.subject) FROM bids_objects AS sc "
+            f"WHERE sc.dataset_id = {d}.id AND NOT sc.subject IS NULL))"
+        )
+        for count in counts:
+            count.replace(parse_one(stored, read="postgres"))
+        select.set("joins", [j for j in joins if j is not target] or None)
+        if not select.args.get("joins") and grouped == [f"{d}.id".lower()]:
+            # One row per dataset already: no grouping needed, and a HAVING
+            # on the stored number is an ordinary condition.
+            select.set("group", None)
+            having = select.args.get("having")
+            if having is not None:
+                where = select.args.get("where")
+                condition = having.this if where is None else exp.and_(exp.paren(where.this), exp.paren(having.this))
+                select.set("where", exp.Where(this=condition))
+                select.set("having", None)
+        return True
+
+    def _facet_table(self, select: Any) -> bool:
+        """EXISTS / IN subquery on bids_objects that looks only at datatype, suffix, task."""
+        source = select.args.get("from") or select.args.get("from_")
+        table = source.this if source is not None else None
+        if not isinstance(table, exp.Table) or table.name.lower() != "bids_objects":
+            return False
+        if any(select.args.get(k) for k in ("joins", "group", "having", "limit", "order", "distinct")):
+            return False
+        parent = select.parent
+        in_exists = isinstance(parent, exp.Exists)
+        in_list = (isinstance(parent, exp.Subquery) and isinstance(parent.parent, exp.In)
+                   and len(select.expressions) == 1 and isinstance(select.expressions[0], exp.Column)
+                   and select.expressions[0].name.lower() == "dataset_id")
+        if not (in_exists or in_list):
+            return False
+        alias = table.alias_or_name
+        for column in select.find_all(exp.Column):
+            if column.table == alias or not column.table:
+                if column.name.lower() not in self._FACET_COLUMNS:
+                    return False
+        if any(isinstance(n, exp.Star) for n in select.find_all(exp.Star)):
+            return False
+        table.set("this", exp.to_identifier(_schema_capabilities.FACETS_TABLE))
+        if not table.alias:
+            table.set("alias", exp.TableAlias(this=exp.to_identifier("bids_objects")))
+        return True
 
     def _normalize_sql(self, sql: str) -> str:
         sql = sql.strip().rstrip(";").strip()
