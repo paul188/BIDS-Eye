@@ -580,7 +580,10 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
             return chip("field", field_name, values)
 
     if phrases:
-        joiner = " or " if isinstance(node, exp.Or) else " + "
+        # The phrases of one text search are its alternatives ('drawings | art');
+        # only phrases from searches that must all match are joined by "+".
+        one_search = len(_tsqueries(node, negated=False)) == 1
+        joiner = " or " if (isinstance(node, exp.Or) or one_search) else " + "
         label = joiner.join(f"“{p}”" for p in phrases[:2])
         if len(phrases) > 2:
             label += f" +{len(phrases) - 2}"

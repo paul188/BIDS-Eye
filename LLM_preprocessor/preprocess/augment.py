@@ -21,6 +21,7 @@ from text_terms import (
 from institution_index import text_alternatives as _institution_text_alternatives
 import place_index as _place_index
 from cohort_count import placeholder as _patients_placeholder
+import text_formula as _text_formula
 from criteria import species_condition as _species_condition
 from criteria import normalise_age_groups as _normalise_age_groups, age_condition as _age_condition, \
     age_group_label as _age_group_label
@@ -295,6 +296,28 @@ def _matches_too_few(text: str) -> bool:
         return False
     counts = text_search.count_matches([text], _MODE_ALL)
     return bool(counts) and counts[0] is not None and counts[0] < _MIN_TEXT_MATCHES
+
+
+def _formula_matches_too_few(part: "_text_formula.Node") -> bool:
+    """True when fewer than _MIN_TEXT_MATCHES datasets match *part* of a description formula.
+
+    An OR of phrases counts each phrase and adds the counts (an upper bound of
+    the datasets matching any). A part that is no plain text search (one with
+    a NOT inside) is never too few.
+    """
+    alternatives = _text_formula.alternatives(part)
+    if not alternatives:
+        return False
+    if len(alternatives) == 1:
+        return _matches_too_few(alternatives[0])
+    try:
+        text_search = _catalogue.text_search()
+    except ImportError:
+        return False
+    counts = text_search.count_matches(alternatives, _MODE_ALL)
+    if not counts or any(c is None for c in counts):
+        return False
+    return sum(counts) < _MIN_TEXT_MATCHES
 
 
 def _content_words(text: str) -> str:
@@ -731,27 +754,39 @@ def _build_augmented_question(
         description_search = ""
     if description_age_groups:
         description_search = ""  # the age-group line below (RAG/criteria.py)
-    description_text = _content_words(_without_phrases(description_search, plan.request_wishes))
+    # description_search is a small formula ("drawings or art", "memory but
+    # not sleep"; RAG/text_formula.py): its phrases are cleaned one by one and
+    # the operators survive, instead of "or" and "not" being dropped as words.
+    formula = _text_formula.parse_formula(_without_phrases(description_search, plan.request_wishes))
     not_searched = [w for w in plan.request_wishes if w.strip()]
     # Who the participants are is decided by the participant lines, never by
     # a text search for "healthy", "adult" or "male".
     said_healthy = any(_is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
-    kept_words = []
-    for word in description_text.split():
-        bare = word.lower().strip(".,;:()'\"")
-        if bare in _HEALTHY_WORDS and bare not in ("typical", "developing", "control"):
-            said_healthy = True
-        elif not (participant_lines and bare in ("adult", "adults", "male", "female", "males", "females", "men", "women")):
-            kept_words.append(word)
-    description_text = " ".join(kept_words)
+
+    def searched_words(phrase: str) -> str:
+        nonlocal said_healthy
+        kept_words = []
+        for word in _content_words(phrase).split():
+            bare = word.lower().strip(".,;:()'\"")
+            if bare in _HEALTHY_WORDS and bare not in ("typical", "developing", "control"):
+                said_healthy = True
+            elif not (participant_lines and bare in ("adult", "adults", "male", "female", "males", "females", "men", "women")):
+                kept_words.append(word)
+        return " ".join(kept_words)
+
+    formula = _text_formula.map_phrases(formula, searched_words)
     if said_healthy:
         not_searched.append("healthy (most datasets include healthy participants and few record it)")
     context_lines.extend(participant_lines)
     # The words dataset authors use for the same thing ("post-mortem" for
     # "dead people"), already checked against the catalogue
     # (check_description_alternatives). With them the user's own words stay a
-    # filter even when no dataset text says them.
-    other_words = _format_text_match(plan.description_alternatives, _MODE_NEAR) if description_text else None
+    # filter even when no dataset text says them. They stand for the whole
+    # search, so they are used only when it is one text search: a phrase or
+    # phrases joined by OR, not "memory AND NOT sleep".
+    single_search = formula is not None and _text_formula.placeholder(formula) is not None
+    other_words = (_format_text_match(plan.description_alternatives, _MODE_NEAR)
+                   if single_search else None)
     # Other conditions of the question; "[...]" lines are notes, not filters.
     filters_besides_text = bool(
         any(line.startswith("  ") for line in context_lines)
@@ -759,14 +794,22 @@ def _build_augmented_question(
         or unresolved_terms
         or any(g.min_subjects is not None for g in plan.groups)
     )
-    if (description_text and not other_words and filters_besides_text
-            and _matches_too_few(description_text)):
-        # No dataset text says this: as a filter it would only empty the result.
-        # Not when it is the whole question ("bonn", 2026-11-18): without it
-        # there is no condition left and the answer is the entire catalogue.
-        not_searched.append(description_text)
-        description_text = ""
-    description_match = _format_text_match([description_text])
+    if formula is not None and not other_words and filters_besides_text:
+        # A part no dataset text says would only empty the result as a filter.
+        # A NOT part never empties it and stays. Not when the description is
+        # the whole question ("bonn", "datasets with astronauts", "drawings or
+        # art"): without it there is no condition left and the answer is the
+        # entire catalogue; searched, it gives the few datasets that say it, or
+        # an honest empty page.
+        kept_parts = []
+        for part in _text_formula.conjuncts(formula):
+            if not isinstance(part, _text_formula.Not) and _formula_matches_too_few(part):
+                not_searched.append(_text_formula.render(part))
+                continue
+            kept_parts.append(part)
+        formula = _text_formula.And(tuple(kept_parts)) if len(kept_parts) > 1 else (
+            kept_parts[0] if kept_parts else None)
+    description_match = _text_formula.compile_formula(formula)
     if description_match:
         if other_words:
             description_match = f"({description_match} OR {other_words})"

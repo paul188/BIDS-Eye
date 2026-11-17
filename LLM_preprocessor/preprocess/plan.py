@@ -229,7 +229,8 @@ class QueryPlan(BaseModel):
     description_search: Optional[str] = Field(
         default=None,
         description="Keyword for full-text search over the dataset's name, description, "
-                    "study fields and README"
+                    "study fields and README. Alternatives and exclusions as a formula: "
+                    "'drawings OR art', 'memory AND NOT sleep'"
     )
     description_alternatives: List[str] = Field(
         default_factory=list,

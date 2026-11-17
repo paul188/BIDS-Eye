@@ -315,6 +315,19 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
           → scan_requirements: [{scan_terms:["fMRI","n-back"]}]
             description_search: null   ← no qualitative modifier
 
+    description_search is a small formula. Words written next to each other
+    must all occur. Join phrases with OR when the user names alternatives
+    ("X or Y", "X, Y or Z", "either X or Y"), with AND NOT when the user
+    excludes something ("but not Z", "except Z", "without Z"), and use
+    parentheses to group. Keep the user's "or" as OR: never drop it, because
+    words without an operator are all required.
+      "datasets related to drawings or art"
+          → description_search: "drawings OR art"
+      "memory studies but not about sleep"
+          → description_search: "memory AND NOT sleep"
+      "alcohol consumption or alcohol dependence questionnaires"
+          → description_search: "alcohol consumption OR alcohol dependence"
+
     ### 2.1 Other words for description_search
     Users often name a population, a state or a kind of material in everyday
     words, while dataset descriptions use the field's own terms. When
