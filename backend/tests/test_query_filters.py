@@ -342,3 +342,17 @@ def test_order_and_limit_become_one_removable_chip():
     assert "ORDER BY" not in widened and "LIMIT" not in widened
     assert "source_type" in widened
     assert qf.remove(sql, ["w0"]).rstrip().endswith("LIMIT 1")
+
+
+def test_count_of_patients_with_a_diagnosis_says_patients():
+    # "datasets with at least 25 frontotemporal dementia patients" (2026-11-17):
+    # the chip read "Subjects: ≥ 25", but the count is of the 23 FTD patients,
+    # not of the 88 participants.
+    import cohort_count
+
+    count = cohort_count.confirmed_sql(["frontotemporal_dementia"], 25)
+    chips = _by_id(_HEAD + f"WHERE {count} GROUP BY d.id")
+    chip = chips["w0"]
+    assert (chip.kind, chip.field, chip.label) == ("count", "Patients", "≥ 25 with Frontotemporal dementia")
+    count = cohort_count.confirmed_sql(["parkinsons_disease", "de_novo_parkinsons"], 40)
+    assert _by_id(_HEAD + f"WHERE {count} GROUP BY d.id")["w0"].label == "≥ 40 with Parkinson's disease +1"

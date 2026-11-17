@@ -290,6 +290,27 @@ def _bound(node, matches) -> Optional[str]:
     return None
 
 
+def _patients_label(node) -> Optional[str]:
+    """'≥ 25 with Frontotemporal dementia' for "at least N patients with X" (RAG/cohort_count.py).
+
+    That count is of the participants who have the diagnosis; the subject
+    count chip called it "Subjects: ≥ 25" although the datasets had 88.
+    """
+    sql = node.sql(dialect="postgres")
+    if "cohort_n" not in sql:
+        return None
+    try:
+        import cohort_count
+    except ImportError:  # the RAG package is not on the path
+        return None
+    parsed = cohort_count.parse_expanded(sql)
+    if parsed is None:
+        return None
+    codes, minimum = parsed
+    names = [_humanize_code(code) for code in codes]
+    return f"≥ {minimum} with {names[0]}" + (f" +{len(names) - 1}" if len(names) > 1 else "")
+
+
 def _count_chip(node) -> Optional[Tuple[str, str]]:
     """('Subjects', '≥ 40') for COUNT(DISTINCT o.subject) >= 40; also sessions, runs.
 
@@ -377,6 +398,12 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
             return f"Coded {noun}: {names[0]}."
         shown = ", ".join(names[:8]) + ("…" if len(names) > 8 else "")
         return f"Any of {len(names)} coded {noun}s: {shown}."
+
+    patients = _patients_label(node)
+    if patients:
+        # Not "subjects": the result cards would emphasise the dataset's subject count.
+        return chip("count", "Patients", patients,
+                    "Participants recorded with the diagnosis in the dataset's participant list.")
 
     count = _count_chip(node)
     if count:
