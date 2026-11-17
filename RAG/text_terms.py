@@ -254,6 +254,78 @@ def _lookup_strings(code: str) -> List[Tuple[str, float]]:
         return []
 
 
+# Words a diagnosis term may carry beyond the label it matched: which course,
+# severity, age or certainty, or what kind of record, not which disease
+# ("chronic stroke" is still stroke). Used by RAG/retriever.py and
+# diagnosis_qualifier below.
+DIAGNOSIS_COURSE_WORDS = frozenset({
+    "chronic", "acute", "subacute", "early", "late", "onset", "mild", "moderate",
+    "severe", "first", "episode", "recurrent", "remitted", "remission", "current",
+    "past", "lifetime", "treatment", "resistant", "refractory", "drug", "naive",
+    "medicated", "unmedicated", "untreated", "newly", "diagnosed", "diagnosis",
+    "childhood", "adult", "adults", "adolescent", "adolescents", "pediatric",
+    "paediatric", "juvenile", "young", "older", "elderly", "life", "idiopathic",
+    "sporadic", "familial", "probable", "possible", "suspected", "clinical", "type",
+    "disease", "disorder", "syndrome", "condition", "illness", "with", "without",
+    "and", "of", "the", "in", "a", "people", "person", "group", "groups",
+    "post", "pre", "high", "low", "functioning", "brain", "cerebral",
+    "data", "dataset", "datasets", "recording", "recordings", "file", "files",
+    "participants", "patients", "patient", "subjects", "individuals", "cohort",
+})
+
+
+def _diagnosis_word(word: str) -> str:
+    """'parkinson's' → 'parkinson', 'dementias' → 'dementia' (for comparing words only)."""
+    word = word.replace("\u2019", "'")
+    if word.endswith("'s"):
+        word = word[:-2]
+    if len(word) > 4 and word.endswith("s") and not word.endswith("ss"):
+        word = word[:-1]
+    return word
+
+
+_IGNORED_DIAGNOSIS_WORDS = frozenset(_diagnosis_word(w) for w in DIAGNOSIS_COURSE_WORDS)
+
+
+def diagnosis_words(text: str) -> set:
+    """The words of a diagnosis string that can name a disease."""
+    words = re.sub(r"[-_/(),]+", " ", (text or "").lower()).split()
+    return {_diagnosis_word(w) for w in words} - _IGNORED_DIAGNOSIS_WORDS
+
+
+def diagnosis_qualifier(
+    term: str,
+    codes: Sequence[str],
+    lookup: Optional[Callable[[str], List[Tuple[str, float]]]] = None,
+) -> List[str]:
+    """Words of *term* that name the disease but occur in no label or synonym of *codes*.
+
+    "Lewy body dementia" resolves to the dementia group (Alzheimer's, MCI,
+    Parkinson's MCI): its label sits inside the term. None of those codes says
+    "lewy" or "body", so the dataset text must, or every Alzheimer's dataset
+    answers the question. Empty when the codes cover every such word, or when
+    the vocabulary is not available (then the codes are trusted as before).
+    """
+    lookup = lookup or _lookup_strings
+    wanted = diagnosis_words(term)
+    if not wanted or not codes:
+        return []
+    covered: set = set()
+    found = False
+    for code in codes:
+        strings = lookup(code)
+        found = found or bool(strings)
+        for string, _weight in strings:
+            covered |= diagnosis_words(string)
+        covered |= diagnosis_words(code)
+    if not found:
+        return []
+    order = [_diagnosis_word(w) for w in re.sub(r"[-_/(),]+", " ", term.lower()).split()]
+    # A number alone ("type 2") matches nearly every text.
+    return [w for w in dict.fromkeys(order)
+            if w in wanted and w not in covered and not w.isdigit()]
+
+
 def diagnosis_alternatives(
     term_to_codes: Dict[str, Sequence[str]],
     lookup: Optional[Callable[[str], List[Tuple[str, float]]]] = None,

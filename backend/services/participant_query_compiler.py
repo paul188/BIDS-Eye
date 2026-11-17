@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from cohort_count import placeholder as patients_placeholder
-from text_terms import MODE_SHORT, diagnosis_alternatives, format_text_match
+from text_terms import MODE_ALL, MODE_SHORT, diagnosis_alternatives, diagnosis_qualifier, format_text_match
 
 
 _CODE_RE = re.compile(r"^[a-z0-9_]+$")
@@ -178,7 +178,22 @@ def _group_condition(group: Any, resolved: Dict[str, List[str]]) -> Optional[str
                 codes.append(code)
 
     parts: List[str] = []
-    if codes:
+    qualifiers = {term: diagnosis_qualifier(term, codes_) for term, codes_ in term_map.items()}
+    if any(qualifiers.values()):
+        # A term whose codes miss one of its disease words ("Lewy body
+        # dementia" → the dementia codes) needs those words in the dataset
+        # text: each such term is its own alternative (text_terms.diagnosis_qualifier).
+        for term, words in qualifiers.items():
+            code_sql = ", ".join(_sql_string(code) for code in term_map[term])
+            part = ("(EXISTS (SELECT 1 FROM bids_participants p_cohort "
+                    "WHERE p_cohort.dataset_id = d.id "
+                    f"AND p_cohort.diagnosis IN ({code_sql}))")
+            text = format_text_match(diagnosis_alternatives({term: term_map[term]}), MODE_SHORT)
+            part += f" OR {text})" if text else ")"
+            if words:
+                part = f"({part} AND {format_text_match([' '.join(words)], MODE_ALL)})"
+            parts.append(part)
+    elif codes:
         code_sql = ", ".join(_sql_string(code) for code in codes)
         parts.append(
             "EXISTS (SELECT 1 FROM bids_participants p_cohort "

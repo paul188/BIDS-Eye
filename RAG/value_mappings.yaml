@@ -3137,6 +3137,61 @@ diagnosis:
       weight: 0.8
     - term: neurocognitive disorder
       weight: 0.85
+  aphasia:
+    label: aphasia
+    standard_code: aphasia
+    broader:
+    - neurological
+    description: Aphasia, mostly after stroke. Added 2026-11-17 next to
+      frontotemporal_dementia, whose primary progressive aphasia synonyms would
+      otherwise take a plain "aphasia" by fuzzy containment.
+    synonyms:
+    - aphasia
+    - aphasic
+    - aphasic patients
+    - post-stroke aphasia
+    - poststroke aphasia
+    - stroke aphasia
+    - aphasia after stroke
+    - chronic aphasia
+  frontotemporal_dementia:
+    label: frontotemporal dementia
+    standard_code: frontotemporal_dementia
+    broader:
+    - degenerative_dementia
+    - neurodegenerative
+    description: Frontotemporal dementia and the frontotemporal lobar degeneration
+      spectrum (behavioural variant, semantic and nonfluent primary progressive
+      aphasia, FTD with motor neuron disease). Primary progressive aphasia is listed
+      here as a whole; its logopenic variant is usually Alzheimer pathology. Added
+      2026-11-17, when "frontotemporal dementia" resolved to the dementia group
+      (Alzheimer's, MCI, Parkinson's MCI).
+    synonyms:
+    - frontotemporal dementia
+    - frontotemporal dementias
+    - fronto-temporal dementia
+    - ftd
+    - bvftd
+    - behavioral variant frontotemporal dementia
+    - behavioural variant frontotemporal dementia
+    - behavioral variant ftd
+    - behavioural variant ftd
+    - frontotemporal lobar degeneration
+    - ftld
+    - pick's disease
+    - pick disease
+    - semantic dementia
+    - semantic variant primary progressive aphasia
+    - svppa
+    - nonfluent variant primary progressive aphasia
+    - non-fluent variant primary progressive aphasia
+    - nfvppa
+    - progressive nonfluent aphasia
+    - primary progressive aphasia
+    - ppa
+    - als-ftd
+    - ftd-als
+    - frontotemporal dementia with motor neuron disease
   alzheimers_disease:
     label: Alzheimer's disease
     standard_code: alzheimers_disease

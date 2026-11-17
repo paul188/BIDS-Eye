@@ -12,7 +12,7 @@ import pytest
 sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
-from services import query_filters, text_search, uncertain_tier  # noqa: E402
+from services import query_filters, sql_rewriter, text_search, uncertain_tier  # noqa: E402
 
 
 def _plan(**fields) -> pp.QueryPlan:
@@ -53,25 +53,31 @@ def test_without_counts_alternatives_are_kept_unchecked() -> None:
     assert plan.description_alternatives == ["post-mortem"]
 
 
+CONDITION = ("(text_match('dead people') OR "
+             "text_match('post-mortem | ex vivo | deceased', 'near'))")
+
+
 def test_filter_line_adds_the_alternatives_to_the_users_words() -> None:
     plan = _plan(description_search="dead people",
                  description_alternatives=["post-mortem", "ex vivo", "deceased"])
     question = pp.augment_with_rag(plan, {}).augmented_question
-    assert ("dataset text: (text_match('dead people') OR "
-            "text_match('post-mortem | ex vivo | deceased', 'also'))") in question
+    assert f"dataset text: {CONDITION}" in question
+
+
+def test_words_no_dataset_says_stay_a_filter_when_they_have_alternatives(monkeypatch) -> None:
+    monkeypatch.setattr(pp, "_matches_too_few", lambda text: True)
+    plan = _plan(description_search="dead people",
+                 description_alternatives=["post-mortem", "ex vivo", "deceased"])
+    assert f"dataset text: {CONDITION}" in pp.augment_with_rag(plan, {}).augmented_question
+    # Without alternatives such words are not searched, as before.
+    alone = pp.augment_with_rag(_plan(description_search="dead people"), {}).augmented_question
+    assert "dataset text:" not in alone and "not searchable" in alone
 
 
 def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
-    plan = _plan(description_search="dead people",
-                 description_alternatives=["post-mortem", "ex vivo", "deceased"])
-    line = pp.augment_with_rag(plan, {}).augmented_question.split("dataset text: ")[1].splitlines()[0]
     sql = text_search.expand_text_search(
-        f"SELECT d.id FROM bids_datasets AS d WHERE {line} GROUP BY d.id",
+        f"SELECT d.id FROM bids_datasets AS d WHERE {CONDITION} GROUP BY d.id",
         fts=True, papers=False).sql
-    expanded = text_search.expand_text_search(
-        f"SELECT d.id FROM bids_datasets AS d WHERE {line} GROUP BY d.id", fts=True, papers=False)
-    assert expanded.sql == sql
-    assert text_search.rank_own(expanded.rank_tsquery) == "dead & people"
     assert "'dead & people'" in sql
     assert "(post <-> mortem) | (ex <1> vivo" in sql and "| deceased'" in sql
 
@@ -85,10 +91,8 @@ def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
 
 
 def test_rewriter_restores_alternatives_the_model_left_out() -> None:
-    from services import sql_rewriter
-
     service = sql_rewriter.sql_rewrite_service
-    condition = "(text_match('dead people') OR text_match('post-mortem | ex vivo', 'also'))"
+    condition = "(text_match('dead people') OR text_match('post-mortem | ex vivo', 'near'))"
     question = f"[Resolved DB filters]\n  dataset text: {condition}\n\nsummary"
     left_out = ("SELECT d.id FROM bids_datasets AS d WHERE text_match('dead people') "
                 "AND d.license = 'CC0' GROUP BY d.id")

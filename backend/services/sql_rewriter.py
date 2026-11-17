@@ -1389,6 +1389,42 @@ class SqlRewriteService:
         log.info("Injecting VOCABULARY MISS text filter: %s", combined)
         return self._and_into_where(cleaned, combined)
 
+    def _restore_description_alternatives(self, sql: str, augmented_question: str) -> str:
+        """Put back the other words of a description search the model left out.
+
+        The 'dataset text:' line can read
+            (text_match('dead people') OR text_match('post-mortem | ex vivo', 'near'))
+        (preprocess.py, check_description_alternatives). A model that copied
+        only the first search would find what the user's own words find,
+        which for "dead people" is nothing; one that left the line out, or
+        wrote it its own way (dropped as invented), would ignore what the
+        question is about. Then the whole condition is ANDed in.
+        """
+        line = _DESCRIPTION_LINE_RE.search(augmented_question)
+        if line is None:
+            return sql
+        condition = line.group("condition").strip()
+        calls = list(_TEXT_MATCH_CALL_RE.finditer(condition))
+        if len(calls) != 2:
+            return sql
+
+        def key(match: re.Match) -> tuple:
+            return tuple(sorted(str(t) for t in _parse_alternatives(match.group(1))))
+
+        own, others = key(calls[0]), key(calls[1])
+        in_sql = list(_TEXT_MATCH_CALL_RE.finditer(sql))
+        if any(key(m) == others for m in in_sql):
+            return sql
+        for match in in_sql:
+            if key(match) != own:
+                continue
+            if re.search(r"\bNOT\s*$", sql[:match.start()], re.IGNORECASE):
+                continue
+            log.info("Restoring description alternatives the model left out: %s", condition)
+            return sql[:match.start()] + condition + sql[match.end():]
+        log.info("Injecting the description search the model left out: %s", condition)
+        return self._and_into_where(sql, condition)
+
     def _inject_topics(self, sql: str, augmented_question: str) -> str:
         """Add a topic's filter if the model left it out.
 
