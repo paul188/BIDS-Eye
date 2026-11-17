@@ -1085,6 +1085,7 @@ _SEX_VALUES = {
     "female": ("female", "f"), "f": ("female", "f"), "women": ("female", "f"), "woman": ("female", "f"),
 }
 _ADULT_AGE = 18
+_ONLY_RE = re.compile(r"\b(?:only|exclusively|solely|all[- ](?:female|male|women|men))\b", re.IGNORECASE)
 
 
 def _participant_conditions(plan: QueryPlan) -> List[str]:
@@ -1133,7 +1134,15 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
             ]
 
     if len(all_sexes) == 1:
-        lines.append(f"  participant sex: {rows}LOWER(p2.sex) IN ({next(iter(all_sexes))}))")
+        values = next(iter(all_sexes))
+        condition = f"{rows}LOWER(p2.sex) IN ({values}))"
+        if _ONLY_RE.search(plan.natural_language_summary or ""):
+            # "Only female participants": every participant row says so. A sex
+            # recorded for part of the participants is no evidence.
+            condition += (" AND NOT EXISTS (SELECT 1 FROM bids_participants p3 "
+                          "WHERE p3.dataset_id = d.id AND (p3.sex IS NULL "
+                          f"OR LOWER(p3.sex) NOT IN ({values})))")
+        lines.append(f"  participant sex: {condition}")
     lows = [g.age_min for g in plan.groups if g.age_min is not None]
     highs = [g.age_max for g in plan.groups if g.age_max is not None]
     low = min(lows) if lows else None

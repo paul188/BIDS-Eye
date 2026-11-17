@@ -157,3 +157,13 @@ def test_a_stated_age_and_sex_describe_one_participant():
 def test_more_request_words():
     assert preprocess._content_words("analyse emotional state") == "emotional state"
     assert preprocess._content_words("BIDS-valid language") == "language"
+
+
+def test_only_one_sex_means_every_participant():
+    plan = preprocess.QueryPlan.model_validate({
+        "natural_language_summary": "Find datasets containing only female participants.",
+        "query_family": "participant_filter", "groups": [{"group_name": "a", "sex": ["female"]}],
+    })
+    (line,) = preprocess._participant_conditions(plan)
+    assert "LOWER(p2.sex) IN ('female', 'f'))" in line
+    assert "NOT EXISTS (SELECT 1 FROM bids_participants p3 WHERE p3.dataset_id = d.id AND (p3.sex IS NULL" in line

@@ -40,14 +40,14 @@ RESOLVED = _resolved(schizophrenia=SCZ, healthy_controls=HC, adhd=["adhd"])
 
 
 def test_two_groups_are_two_requirements() -> None:
-    result = pqc.compile_plan(_plan(["schizophrenia"], ["healthy controls"]), RESOLVED)
+    result = pqc.compile_plan(_plan(["schizophrenia"], ["ADHD"]), RESOLVED)
     assert result.sql is not None and result.reason == ""
     sql = result.sql
     assert sql.startswith("SELECT {{COLS}}\nFROM bids_datasets d\n")
     assert sql.endswith("GROUP BY d.id")
     assert sql.count("EXISTS (SELECT 1 FROM bids_participants p_cohort") == 2
     assert "p_cohort.diagnosis IN ('schizophrenia', 'schizophrenia_with_avh')" in sql
-    assert "p_cohort.diagnosis IN ('healthy_control', 'healthy_volunteer')" in sql
+    assert "p_cohort.diagnosis IN ('adhd')" in sql
     assert ") AND (" in sql
     # Each cohort keeps its own short-field text fallback.
     assert sql.count("text_match(") == 2
@@ -75,7 +75,7 @@ def test_terms_match_whatever_their_case() -> None:
 
 
 def test_scan_conditions_come_from_the_augmented_question() -> None:
-    plan = _plan(["schizophrenia"], ["healthy controls"],
+    plan = _plan(["schizophrenia"], ["ADHD"],
                  scan_requirements=[ScanRequirement(scan_terms=["fMRI"])])
     augmented = _augmented("  diagnosis: (EXISTS (...) OR text_match('x', 'short'))",
                            f'  scan "fMRI": {FMRI_LINE}')
@@ -87,42 +87,91 @@ def test_scan_conditions_come_from_the_augmented_question() -> None:
 
 
 @pytest.mark.parametrize("plan, augmented, reason", [
-    (_plan(), None, "no diagnosis group"),
-    (_plan([]), None, "no diagnosis group"),
-    (_plan(["schizophrenia"], []), None, "group without diagnosis terms"),
-    (_plan(["schizophrenia"], ["unknown illness"]), None, "diagnosis term not resolved"),
-    (_plan(["schizophrenia"], description_search="pediatric"), None, "plan field description_search"),
+    (_plan(), None, "nothing to filter"),
+    (_plan([]), None, "nothing to filter"),
     (_plan(["schizophrenia"], result_limit=10), None, "plan field result_limit"),
-    (_plan(["schizophrenia"], min_sessions=2), None, "plan field min_sessions"),
+    (_plan(["schizophrenia"], order_by="size_gb"), None, "plan field order_by"),
+    (_plan(["schizophrenia"], license_search="cc0"), None, "plan field license_search"),
     (_plan(["schizophrenia"], scan_requirements=[ScanRequirement(scan_terms=["EEG"], required=False)]),
      _augmented('  scan "EEG": EXISTS (...)'), "scan requirement is negated or per subject"),
     (_plan(["schizophrenia"], scan_requirements=[ScanRequirement(scan_terms=["EEG"], same_subject=True)]),
      _augmented('  scan "EEG": EXISTS (...)'), "scan requirement is negated or per subject"),
     (_plan(["schizophrenia"], scan_requirements=[ScanRequirement(scan_terms=["EEG"])]),
      _augmented("  diagnosis: (...)"), "scan requirement without a resolved condition"),
-    (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)", "  dataset size: d.size_bytes < 5"),
-     "filter line not supported: dataset size: d.size_bytes < 5"),
+    (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)", "  institution: d.x = 1"),
+     "filter line not supported: institution: d.x = 1"),
     (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)") + "\n[VOCABULARY MISS — x]",
-     "augmented question has VOCABULARY MISS"),
+     "vocabulary miss not understood"),
+    (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)", "  [DB MISS — x]"), "augmented question has DB MISS"),
 ])
-def test_everything_else_is_declined_with_a_reason(plan, augmented, reason) -> None:
+def test_what_needs_interpretation_is_declined_with_a_reason(plan, augmented, reason) -> None:
     result = pqc.compile_plan(plan, RESOLVED, augmented)
     assert result.sql is None
     assert result.reason == reason
 
 
-def test_group_constraints_other_than_diagnosis_are_declined() -> None:
+def test_group_fields_without_a_filter_line_are_declined() -> None:
     plan = _plan(["schizophrenia"])
-    plan.groups[0].age_max = 17
-    assert pqc.compile_plan(plan, RESOLVED).reason == "group field age_max"
-    plan = _plan(["schizophrenia"])
-    plan.groups[0].sex = ["female"]
-    assert pqc.compile_plan(plan, RESOLVED).reason == "group field sex"
+    plan.groups[0].handedness = ["left"]
+    assert pqc.compile_plan(plan, RESOLVED).reason == "group field handedness"
+
+
+def test_complete_filter_lines_are_anded_without_a_diagnosis_group() -> None:
+    plan = _plan(scan_requirements=[ScanRequirement(scan_terms=["fMRI"])], species=["primate"])
+    augmented = _augmented(
+        f'  scan "fMRI": {FMRI_LINE}',
+        "  species (complete, no other species condition): d.species ~* 'macaque'",
+        "  participant sex: EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND LOWER(p2.sex) IN ('male', 'm'))",
+        "  dataset text: text_match('reward')",
+        "  dataset size: d.size_bytes <= 10",
+        "  not searchable (add NO condition for these): for machine learning",
+        "  subject count: HAVING COUNT(DISTINCT o.subject) >= 20 [apply this HAVING clause on the outer query, not in a subquery]",
+    )
+    sql = pqc.compile_plan(plan, [], augmented).sql
+    assert sql is not None
+    assert FMRI_LINE in sql and "d.species ~* 'macaque'" in sql and "LOWER(p2.sex)" in sql
+    assert "text_match('reward')" in sql and "d.size_bytes <= 10" in sql
+    assert "machine learning" not in sql
+    assert sql.endswith("GROUP BY d.id\nHAVING COUNT(DISTINCT o.subject) >= 20")
+
+
+def test_healthy_groups_add_no_condition() -> None:
+    sql = pqc.compile_plan(_plan(["schizophrenia"], ["healthy controls"]), RESOLVED,
+                           _augmented("  diagnosis: (...)")).sql
+    assert sql.count("p_cohort.diagnosis IN") == 1 and "healthy" not in sql
+
+
+def test_a_diagnosis_the_vocabulary_does_not_know_is_searched_in_its_group() -> None:
+    augmented = _augmented("  diagnosis: (...)") + (
+        "\n[VOCABULARY MISS — these terms are not in the known concept vocabulary: diagnosis: "
+        "'bipolar syndrome'. Do NOT filter bids_participants.diagnosis or bids_objects.task/datatype/suffix "
+        "for these terms — those columns store canonical codes, not free text. For free-text search use: "
+        "text_match('bipolar syndrome', 'loose')]")
+    sql = pqc.compile_plan(_plan(["bipolar syndrome", "schizophrenia"], operator="OR"), RESOLVED, augmented).sql
+    assert "OR text_match('bipolar syndrome', 'short'))" in sql
+    assert "'loose'" not in sql   # not ANDed as its own condition
+
+
+def test_recorded_facts_replace_their_words() -> None:
+    plan = _plan(description_search="fMRIPrep", doi_required=True, min_sessions=3)
+    sql = pqc.compile_plan(plan, [], _augmented("  dataset text: text_match('fmriprep')")).sql
+    assert "dv.pipeline IN ('fmriprep')" in sql and "text_match" not in sql
+    assert "dp.role = 'primary'" in sql
+    assert "HAVING COUNT(DISTINCT s.session) < 3" in sql
+    vocabulary = _augmented() + (
+        "\n[VOCABULARY MISS — these terms are not in the known concept vocabulary: scan: 'MRIQC derivatives'. "
+        "Do NOT filter bids_participants.diagnosis or bids_objects.task/datatype/suffix for these terms — "
+        "those columns store canonical codes, not free text. For free-text search use: "
+        "text_match('mriqc derivatives', 'loose')]")
+    plan = _plan(scan_requirements=[ScanRequirement(scan_terms=["MRIQC derivatives"])])
+    assert "dv.pipeline IN ('mriqc')" in pqc.compile_plan(plan, [], vocabulary).sql
 
 
 def test_a_code_that_is_not_a_plain_code_is_never_written_into_sql() -> None:
     resolved = _resolved(schizophrenia=["schizophrenia", "x') OR 1=1 --"])
     result = pqc.compile_plan(_plan(["schizophrenia"]), resolved)
+    assert result.sql is None and result.reason == "diagnosis term not resolved"
+    result = pqc.compile_plan(_plan(["x') OR 1=1 --"]), RESOLVED)
     assert result.sql is None and result.reason == "diagnosis term not resolved"
 
 
