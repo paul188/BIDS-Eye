@@ -46,6 +46,7 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
+import cohort_count as _cohort_count  # noqa: E402
 
 from services import text_search as _text_search  # noqa: E402
 from services import uncertain_tier as _uncertain_tier  # noqa: E402
@@ -136,6 +137,10 @@ _PARTICIPANTS_COUNT_WHERE_RE = re.compile(
     re.IGNORECASE | re.DOTALL,
 )
 
+
+# The filter line of "at least N patients with X" (LLM_preprocessor/preprocess.py).
+_PATIENTS_LINE_RE = re.compile(
+    r"^  patients \([^)\n]*\): (patients_with\('[a-z0-9_, ]+'\) >= \d+)\s*$", re.MULTILINE)
 
 _SQL_END_MARKER_RE = re.compile(r"\[/SQL\]|\[SQL\]|```", re.IGNORECASE)
 
@@ -241,12 +246,17 @@ class SqlRewriteService:
         # (suffix = 'bold'): correct it or drop its condition.
         sql, value_fixes = _catalogue_values.check_sql(sql)
         sql = self._rewrite_participant_count_to_having(sql)
+        sql = self._participants_join_to_subject_count(sql)
         sql = self._drop_healthy_filters(sql)
         sql = self._decorrelate_grouped_exists(sql)
         sql = self._guard_json_number_casts(sql)
         sql = self._drop_invented_text_filters(sql, augmented_question)
         sql = self._inject_vocab_miss(sql, augmented_question)
         sql = self._inject_topics(sql, augmented_question)
+        # "At least N patients with X": patients_with(...) >= N becomes a count of
+        # the participants known to have the diagnosis (RAG/cohort_count.py).
+        sql = self._inject_patient_counts(sql, augmented_question)
+        sql = _cohort_count.expand(sql)
         tiered = _uncertain_tier.enabled()
         relaxed_sql = None
         without_text = self._without_text_only_filters(sql)
@@ -805,6 +815,124 @@ class SqlRewriteService:
                 flags=re.IGNORECASE | re.DOTALL,
             )
         return sql
+
+    def _inject_patient_counts(self, sql: str, augmented_question: str) -> str:
+        """Put the patient count of the filter lines into the query, whatever the model wrote.
+
+        The filter line `patients (…): patients_with('<codes>') >= N` is the
+        whole condition. The model usually writes its own count instead
+        (a subquery counting bids_participants rows with the diagnosis), which
+        only sees coded rows: its comparison is removed, the placeholder is
+        ANDed in. A changed prompt would shift the SQL of unrelated questions;
+        this does not.
+        """
+        wanted = list(dict.fromkeys(
+            m.group(1) for m in _PATIENTS_LINE_RE.finditer(augmented_question or "")))
+        if not wanted or parse_one is None or exp is None:
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+            if not isinstance(parsed, exp.Select):
+                return sql
+            for clause, node_type in (("where", exp.Where), ("having", exp.Having)):
+                holder = parsed.args.get(clause)
+                if holder is None:
+                    continue
+                kept = [part for part in self._flatten_and(holder.this)
+                        if not self._is_diagnosis_count(part)]
+                if len(kept) == len(self._flatten_and(holder.this)):
+                    continue
+                if kept:
+                    parsed.set(clause, node_type(this=exp.and_(*[exp.paren(k.copy()) for k in kept])))
+                else:
+                    parsed.set(clause, None)
+            sql = parsed.sql(dialect="postgres")
+        except Exception as exc:
+            log.warning("Could not remove the model's patient count: %s", exc)
+        present = {" ".join(m.group(0).lower().split()) for m in _cohort_count.PLACEHOLDER_RE.finditer(sql)}
+        for condition in wanted:
+            if " ".join(condition.lower().split()) not in present:
+                sql = self._and_into_where(sql, condition)
+        return sql
+
+    @staticmethod
+    def _is_diagnosis_count(node: Any) -> bool:
+        """A comparison of a count of bids_participants rows that have a diagnosis."""
+        while isinstance(node, exp.Paren):
+            node = node.this
+        if not isinstance(node, (exp.GTE, exp.GT, exp.EQ, exp.LTE, exp.LT)):
+            return False
+        for side in (node.this, node.expression):
+            while isinstance(side, exp.Paren):
+                side = side.this
+            if not isinstance(side, exp.Subquery):
+                continue
+            inner = side.this
+            if not isinstance(inner, exp.Select) or inner.find(exp.Count) is None:
+                continue
+            tables = {t.name.lower() for t in inner.find_all(exp.Table)}
+            columns = {c.name.lower() for c in inner.find_all(exp.Column)}
+            if tables == {"bids_participants"} and "diagnosis" in columns:
+                return True
+        return False
+
+    def _participants_join_to_subject_count(self, sql: str) -> str:
+        """JOIN bids_participants only to count them -> the dataset's subject count.
+
+        "Datasets with at least 100 participants": the model joins
+        bids_participants next to the file join and writes HAVING
+        COUNT(DISTINCT p.participant_id) >= 100. The two joins multiply (every
+        file row times every participant row): on production the sort filled
+        the disk after 70 seconds. The size of a dataset is its subject count,
+        as in the other count rewrite above; a third of the datasets has no
+        participant rows at all. Left alone when the query reads any other
+        column of the joined participants (a count of filtered participants).
+        """
+        if parse_one is None or exp is None or "bids_participants" not in sql.lower():
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+            select = parsed if isinstance(parsed, exp.Select) else parsed.find(exp.Select)
+            source = select.args.get("from") or select.args.get("from_")
+            table = source.this if source is not None else None
+            if not isinstance(table, exp.Table) or table.name.lower() != "bids_datasets":
+                return sql
+            d = table.alias_or_name.lower()
+            joins = list(select.args.get("joins") or [])
+            target = next((j for j in joins if isinstance(j.this, exp.Table)
+                           and j.this.name.lower() == "bids_participants"), None)
+            if target is None:
+                return sql
+            p = target.this.alias_or_name.lower()
+            on = target.args.get("on")
+            link = on.sql(dialect="postgres").lower().replace(" ", "") if on is not None else ""
+            if link not in (f"{p}.dataset_id={d}.id", f"{d}.id={p}.dataset_id"):
+                return sql
+            counts = []
+            for column in select.find_all(exp.Column):
+                if (column.table or "").lower() != p or column.find_ancestor(exp.Join) is target:
+                    continue
+                if column.find_ancestor(exp.Select) is not select:
+                    return sql  # a subquery reads the joined participants
+                count = column.find_ancestor(exp.Count)
+                if column.name.lower() != "participant_id" or count is None:
+                    return sql
+                counts.append(count)
+            if not counts:
+                return sql
+            files = next((j.this.alias_or_name for j in joins if isinstance(j.this, exp.Table)
+                          and j.this.name.lower() == "bids_objects"), None)
+            subjects = (f"COUNT(DISTINCT {files}.subject)" if files else
+                        f"(SELECT COUNT(DISTINCT cnt_o.subject) FROM bids_objects AS cnt_o "
+                        f"WHERE cnt_o.dataset_id = {table.alias_or_name}.id)")
+            for count in {id(c): c for c in counts}.values():
+                count.replace(parse_one(subjects, read="postgres"))
+            select.set("joins", [j for j in joins if j is not target])
+            log.info("Rewrote the count over joined bids_participants to the subject count")
+            return parsed.sql(dialect="postgres")
+        except Exception as exc:  # the unchanged query is still the model's
+            log.warning("Participants-join rewrite skipped: %s", exc)
+            return sql
 
     def _drop_healthy_filters(self, sql: str) -> str:
         """Remove conditions that require a recorded healthy diagnosis.

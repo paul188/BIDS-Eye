@@ -529,6 +529,9 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     # A condition on the outer join's rows (o.datatype …) is about files.
     if _columns_outside_subqueries(node) - {alias, ""}:
         return None
+    counted = _patient_count(sql, alias)
+    if counted is not None:
+        return counted
     kinds = []
     if columns & {"age", "age_min", "age_max"}:
         kinds.append("age")
@@ -564,6 +567,35 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
             reason_possible="", paper=paper,
         )
     return None
+
+
+def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
+    """"At least N participants with the diagnosis" (RAG/cohort_count.py).
+
+    Confirmed when that many are coded or labelled with it. Uncertain when the
+    dataset does not record who has the diagnosis and is large enough to hold
+    them. Excluded when its participant rows show fewer.
+    """
+    try:
+        import cohort_count
+    except ImportError:  # the RAG package is not on the path
+        return None
+    parsed = cohort_count.parse_expanded(sql)
+    if parsed is None:
+        return None
+    codes, minimum = parsed
+    stored = None
+    try:
+        from services import schema_capabilities
+        if schema_capabilities.has_subject_counts():
+            stored = f"COALESCE({alias}.{schema_capabilities.SUBJECT_COUNT_COLUMN}, 0)"
+    except ImportError:
+        pass
+    return SoftCondition(
+        sql=sql, kind="patient_count",
+        probable=cohort_count.unknown_sql(codes, minimum, alias, subject_count=stored), known=None,
+        reason_probable=cohort_count.REASON_UNKNOWN, reason_possible="",
+    )
 
 
 # ── Rewrite ───────────────────────────────────────────────────────────────────

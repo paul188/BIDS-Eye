@@ -75,6 +75,7 @@ from text_terms import (
     split_words as _split_words,
 )
 from institution_index import text_alternatives as _institution_text_alternatives
+from cohort_count import placeholder as _patients_placeholder
 import senses as _senses
 
 log = logging.getLogger(__name__)
@@ -1694,12 +1695,35 @@ def _build_augmented_question(
     if size_conds:
         context_lines.append("  dataset size: " + " AND ".join(size_conds))
 
-    # Emit min_subjects as a HAVING hint using the total subject count.
-    # "at least N participants with X" → HAVING COUNT(DISTINCT o.subject) >= N
-    # (subject_count in SELECT is computed over all subjects, not just diagnosed ones —
-    #  which matches what users see in the UI and expect as "dataset size").
+    # "At least N patients with X": count the participants who have the
+    # diagnosis (RAG/cohort_count.py), one line per group. The backend expands
+    # the placeholder; a dataset that does not record who has the diagnosis
+    # goes to the uncertain tier instead of counting all its subjects.
+    diagnosis_codes = {
+        term.lower().strip(): codes
+        for r in resolved if r.field == RAGField.DIAGNOSIS
+        for term, codes in r.term_to_codes.items()
+    }
+    counted_groups = set()
+    for index, group in enumerate(plan.groups):
+        if group.min_subjects is None:
+            continue
+        codes = [code for term in group.diagnosis_terms
+                 if not _is_healthy_term(term)
+                 for code in diagnosis_codes.get(term.lower().strip(), [])]
+        count = _patients_placeholder(codes, group.min_subjects)
+        if count:
+            counted_groups.add(index)
+            context_lines.append(
+                f"  patients (at least {group.min_subjects} participants with this diagnosis; "
+                f"complete, add no other count of participants or subjects): {count}"
+            )
+
+    # A minimum without a diagnosis is the size of the dataset: a HAVING hint
+    # on the total subject count ("datasets with at least 50 participants").
     min_subjects_values = [
-        g.min_subjects for g in plan.groups if g.min_subjects is not None
+        g.min_subjects for i, g in enumerate(plan.groups)
+        if g.min_subjects is not None and i not in counted_groups
     ]
     if min_subjects_values:
         n = max(min_subjects_values)
