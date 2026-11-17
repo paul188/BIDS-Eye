@@ -52,7 +52,7 @@ export interface TextToSQLResult {
 
 /** One condition of the search, as the backend read it from the generated SQL. */
 export interface QueryFilter {
-  /** Position in the original query ("w0", "h0"); pass back to refine. */
+  /** Position in the original query ("w0", "h0"). */
   id: string
   /** 'topic': a qualified subject searched as one unit; 'sense': the meanings it
    *  excludes (id = topic id + "n"; removing it removes only the exclusion);
@@ -140,10 +140,6 @@ export const api = {
 
   queryPage: (queryId: string, page: number, pageSize: number) =>
     post<QueryResponse>('/query/page', { query_id: queryId, page, page_size: pageSize }),
-
-  /** Re-run a search without some of its filters: no LLM call, not rate-limited. */
-  refine: (queryId: string, remove: string[], pageSize: number) =>
-    post<QueryResponse>('/query/refine', { query_id: queryId, remove, page_size: pageSize }),
 
   crawlerStatus: () =>
     get<CrawlerStatus>('/crawler/status'),

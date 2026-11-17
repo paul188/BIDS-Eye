@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from './stores/chat'
 import { RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
@@ -63,6 +63,22 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const inputBar = ref<InstanceType<typeof InputBar> | null>(null)
 const drawerOpen = ref(false)
 
+// The latest question's box above its results is the search field.
+const lastUserId = computed(() => {
+  const users = store.currentMessages.filter(m => m.role === 'user')
+  return users.length ? users[users.length - 1].id : null
+})
+function setQueryBar(el: unknown) {
+  if (el) inputBar.value = el as InstanceType<typeof InputBar>
+}
+
+// The search field holds the conversation's latest question.
+function latestQuestion(): string {
+  const id = lastUserId.value
+  return store.currentMessages.find(m => m.id === id)?.content ?? ''
+}
+watch(() => store.currentId, () => { input.value = latestQuestion() }, { immediate: true })
+
 const SUGGESTIONS = [
   { tag: 'Clinical',   text: 'Datasets with at least 40 Parkinson\'s patients' },
   { tag: 'Clinical',   text: 'Show datasets with Alzheimer\'s disease participants' },
@@ -73,7 +89,7 @@ const SUGGESTIONS = [
 async function submit() {
   const q = input.value.trim()
   if (!q || rateLimitedUntil.value) return
-  input.value = ''
+  input.value = q
   // sendQuestion pushes the user message + loading bubble synchronously, then
   // awaits the API. Scroll the new question to the top *before* the answer lands
   // so the user isn't pushed down and never has to scroll back up.
@@ -99,6 +115,15 @@ function scrollQuestionToTop() {
   last?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+// Clicking an earlier question copies it into the latest search box, the search field.
+function editQuestion(q: string) {
+  input.value = q
+  nextTick(() => {
+    inputBar.value?.focus({ preventScroll: true })
+    scrollQuestionToTop()
+  })
+}
+
 function useSuggestion(s: string) {
   input.value = s
   nextTick(() => inputBar.value?.focus())
@@ -111,6 +136,7 @@ function selectConversation(id: number) {
 
 function startNewConversation() {
   store.newConversation()
+  input.value = ''
   drawerOpen.value = false
   nextTick(() => inputBar.value?.focus())
 }
@@ -175,7 +201,6 @@ onUnmounted(() => {
       <button class="flex items-center gap-2.5 select-none" title="New search" @click="startNewConversation">
         <LogoMark :size="26" />
         <span class="text-[17px] font-semibold tracking-tight text-ink">BIDS-Eye</span>
-        <span class="hidden lg:inline text-sm text-muted-soft ml-1">Open neuroimaging dataset search</span>
       </button>
 
       <div class="flex-1" />
@@ -207,8 +232,8 @@ onUnmounted(() => {
       <div v-if="drawerOpen" class="fixed inset-0 z-30 bg-ink/20" @click="drawerOpen = false" />
     </transition>
     <aside
-      class="fixed top-0 left-0 z-40 h-full w-72 bg-panel border-r border-border shadow-xl flex flex-col transition-transform duration-200"
-      :class="drawerOpen ? 'translate-x-0' : '-translate-x-full'"
+      class="fixed top-0 left-0 z-40 h-full w-72 bg-panel border-r border-border flex flex-col transition-[transform,visibility] duration-200"
+      :class="drawerOpen ? 'translate-x-0 shadow-xl visible' : '-translate-x-full invisible'"
     >
       <div class="flex items-center justify-between px-4 h-14 border-b border-border">
         <span class="text-sm font-semibold text-ink">Search history</span>
@@ -262,43 +287,50 @@ onUnmounted(() => {
     <!-- ── Main ───────────────────────────────────────────────────────── -->
     <main ref="messagesContainer" class="flex-1 overflow-y-auto">
 
-      <!-- Start page: the search box sits in the page, not at the bottom -->
+      <!-- Start page: the search box in the same column and style as above the
+           results, so it stays in place when the first results come in. -->
       <div
         v-if="!store.currentMessages.length"
-        class="max-w-5xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16"
+        class="max-w-6xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16"
       >
-        <h1 class="font-serif text-[2rem] sm:text-[2.5rem] leading-[1.15] text-ink">
-          Find BIDS datasets on OpenNeuro, using semantic search.
-        </h1>
-        <p class="mt-4 text-base text-muted max-w-3xl leading-relaxed">
-          Describe the data you need in plain language. The search matches by meaning,
-          not by exact keywords or filter fields, so you can put several criteria in one sentence.
-        </p>
+        <div class="max-w-4xl">
+          <h1 class="text-[1.875rem] sm:text-[2.375rem] font-semibold tracking-tight leading-[1.15] text-ink">
+            Find BIDS datasets on OpenNeuro, using semantic search.
+          </h1>
+          <p class="mt-4 text-base text-muted max-w-3xl leading-relaxed">
+            Describe the data you need in plain language. The search matches by meaning,
+            not by exact keywords or filter fields, so you can put several criteria in one sentence.
+          </p>
 
-        <div class="mt-8">
-          <InputBar
-            ref="inputBar"
-            v-model="input"
-            large
-            :rate-limited-until="rateLimitedUntil"
-            :countdown="countdownDisplay"
-            placeholder="e.g. resting-state fMRI in adolescents with ADHD"
-            @submit="submit"
-          />
-        </div>
+          <div class="mt-8">
+            <InputBar
+              ref="inputBar"
+              v-model="input"
+              :rate-limited-until="rateLimitedUntil"
+              :countdown="countdownDisplay"
+              placeholder="e.g. resting-state fMRI in adolescents with ADHD"
+              @submit="submit"
+            />
+          </div>
 
-        <div class="mt-12">
-          <p class="text-sm font-medium text-ink mb-3">Try one of these</p>
-          <div class="grid sm:grid-cols-2 gap-3">
-            <button
-              v-for="s in SUGGESTIONS"
-              :key="s.text"
-              class="group text-left px-4 py-3.5 rounded-xl border border-border bg-panel hover:border-accent/40 hover:bg-accent-soft/40 transition-colors flex flex-col gap-1.5"
-              @click="useSuggestion(s.text)"
-            >
-              <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-soft">{{ s.tag }}</span>
-              <span class="text-sm text-ink leading-snug group-hover:text-accent">{{ s.text }}</span>
-            </button>
+          <div class="mt-10">
+            <p class="text-sm font-medium text-ink mb-3">Try one of these</p>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <button
+                v-for="s in SUGGESTIONS"
+                :key="s.text"
+                class="group text-left flex items-start gap-3 px-4 py-3.5 rounded-xl border border-border bg-panel hover:border-border-input hover:shadow-sm transition"
+                @click="useSuggestion(s.text)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="mt-0.5 flex-shrink-0 text-muted-soft group-hover:text-ink" aria-hidden="true">
+                  <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+                </svg>
+                <span class="flex flex-col gap-1">
+                  <span class="text-[15px] font-medium text-ink leading-snug">{{ s.text }}</span>
+                  <span class="text-xs text-muted-soft">{{ s.tag }}</span>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -309,28 +341,22 @@ onUnmounted(() => {
           v-for="msg in store.currentMessages"
           :key="msg.id"
           :message="msg"
-        />
+          @edit="editQuestion"
+        >
+          <template v-if="msg.id === lastUserId" #query>
+            <InputBar
+              :ref="setQueryBar"
+              v-model="input"
+              :rate-limited-until="rateLimitedUntil"
+              :countdown="countdownDisplay"
+              placeholder="Describe the datasets you need"
+              @submit="submit"
+            />
+          </template>
+        </MessageBubble>
       </div>
     </main>
 
-    <!-- ── Follow-up input, once there are results ────────────────────── -->
-    <div
-      v-if="store.currentMessages.length"
-      class="flex-shrink-0 border-t border-border bg-surface pt-3 pb-3"
-    >
-      <div class="max-w-6xl mx-auto px-4 sm:px-8">
-        <div class="max-w-4xl">
-          <InputBar
-            ref="inputBar"
-            v-model="input"
-            :rate-limited-until="rateLimitedUntil"
-            :countdown="countdownDisplay"
-            placeholder="Ask a new question"
-            @submit="submit"
-          />
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 

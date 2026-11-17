@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import type { Dataset, QueryFilter } from '../api'
 import DatasetCard from './DatasetCard.vue'
 import { highlightTerms as highlightTermsOf } from '../highlight'
 
 const props = defineProps<{
   datasets: Dataset[]
-  sql: string | null
   total?: number
   page?: number
   pageSize?: number
@@ -17,8 +16,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ (e: 'page-change', page: number): void }>()
-
-const showSql = ref(false)
 
 const activeFilters = computed(() => {
   const removed = new Set(props.removedFilters ?? [])
@@ -68,44 +65,29 @@ function go(page: number) {
     </div>
     <p v-else class="text-muted text-sm py-4">No datasets found.</p>
 
-    <!-- Pagination controls -->
+    <!-- Pagination: centred under the results column (as wide as the search box) -->
     <div
       v-if="showPagination"
-      class="flex items-center justify-between gap-3 text-sm text-muted mt-5"
+      class="max-w-4xl w-full flex items-center justify-center gap-3 sm:gap-4 text-sm text-muted mt-8"
     >
-      <span class="tabular-nums">
-        Page {{ currentPage }} of {{ pageCount }} · {{ total }} datasets
+      <button
+        class="px-3 py-1.5 rounded-lg border border-border bg-panel hover:text-accent hover:border-accent/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        :disabled="loading || currentPage <= 1"
+        @click="go(currentPage - 1)"
+      >
+        ← Previous
+      </button>
+      <span class="tabular-nums text-center">
+        Page {{ currentPage }} of {{ pageCount }}<span class="hidden sm:inline"> · {{ total }} datasets</span>
       </span>
-      <div class="flex items-center gap-2">
-        <button
-          class="px-3 py-1.5 rounded-lg border border-border bg-panel hover:text-accent hover:border-accent/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          :disabled="loading || currentPage <= 1"
-          @click="go(currentPage - 1)"
-        >
-          ← Previous
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-lg border border-border bg-panel hover:text-accent hover:border-accent/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          :disabled="loading || currentPage >= pageCount"
-          @click="go(currentPage + 1)"
-        >
-          Next →
-        </button>
-      </div>
+      <button
+        class="px-3 py-1.5 rounded-lg border border-border bg-panel hover:text-accent hover:border-accent/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        :disabled="loading || currentPage >= pageCount"
+        @click="go(currentPage + 1)"
+      >
+        Next →
+      </button>
     </div>
 
-    <!-- SQL toggle (for development / transparency) -->
-    <div v-if="sql" class="mt-4">
-      <button
-        class="text-xs text-muted-soft hover:text-accent transition-colors"
-        @click="showSql = !showSql"
-      >
-        {{ showSql ? '▾ Hide SQL' : '▸ Show generated SQL' }}
-      </button>
-      <pre
-        v-if="showSql"
-        class="mt-2 text-xs bg-panel-soft border border-border rounded-lg p-3 overflow-x-auto text-ink font-mono whitespace-pre-wrap"
-      >{{ sql }}</pre>
-    </div>
   </div>
 </template>

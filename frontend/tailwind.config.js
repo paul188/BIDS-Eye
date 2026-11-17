@@ -31,6 +31,13 @@ export default {
         'warn-ink':     '#7f5300',
         'danger-bg':    '#fbe9e7',
         'danger-ink':   '#a8261d',
+        // "Understood as" chips: filled, so they stand apart from the result
+        // text. Teal for structured filters, violet for words matched in the
+        // dataset text. Labels pass AA on their fill.
+        'chip-bg':        '#d7efe9',
+        'chip-ink':       '#1d5b51',
+        'chip-text-bg':   '#ece4f6',
+        'chip-text-ink':  '#64317f',
       },
     },
   },

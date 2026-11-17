@@ -16,14 +16,10 @@ export interface Message {
   page?: number
   pageSize?: number
   pageLoading?: boolean
-  // Filter chips: how the question was understood. `originalQueryId` is the
-  // query the chips were read from; refining always starts from it, so a
-  // removed chip can be put back. `queryId` is whatever is shown now.
+  // Filter chips: how the question was understood (display only).
   filters?: QueryFilter[]
-  originalQueryId?: string | null
+  // Set only on searches saved when chips could still be removed.
   removedFilters?: string[]
-  refining?: boolean
-  refineError?: string | null
 }
 
 export interface Conversation {
@@ -173,8 +169,6 @@ export const useChatStore = defineStore('chat', () => {
           page: response.page,
           pageSize: response.page_size,
           filters: response.filters ?? [],
-          originalQueryId: response.query_id,
-          removedFilters: [],
         }
         // Seed page 1 in the cache and preload page 2 in the background.
         _cacheSet(loadingId, response.page ?? 1, response.datasets)
@@ -245,59 +239,6 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  function _findMessage(messageId: number): Message | undefined {
-    for (const c of conversations.value) {
-      const msg = c.messages.find(m => m.id === messageId)
-      if (msg) return msg
-    }
-    return undefined
-  }
-
-  /** Remove a filter chip, or put a removed one back, and re-run the search. */
-  async function toggleFilter(messageId: number, chipId: string) {
-    const msg = _findMessage(messageId)
-    if (!msg || !msg.originalQueryId || msg.refining) return
-    const current = msg.removedFilters ?? []
-    const removed = current.includes(chipId)
-      ? current.filter(id => id !== chipId)
-      : [...current, chipId]
-    await _refine(msg, messageId, removed)
-  }
-
-  async function resetFilters(messageId: number) {
-    const msg = _findMessage(messageId)
-    if (!msg || !msg.originalQueryId || msg.refining || !msg.removedFilters?.length) return
-    await _refine(msg, messageId, [])
-  }
-
-  async function _refine(msg: Message, messageId: number, removed: string[]) {
-    msg.refining = true
-    msg.refineError = null
-    try {
-      const response = await api.refine(msg.originalQueryId!, removed, msg.pageSize ?? 20)
-      // Pages cached for the previous filter set no longer apply.
-      _pageCache.delete(messageId)
-      msg.removedFilters = removed
-      msg.datasets = response.datasets
-      msg.queryId = response.query_id
-      msg.total = response.total
-      msg.page = response.page
-      msg.pageSize = response.page_size
-      msg.content = response.message
-      msg.sql = response.translation?.sql ?? msg.sql
-      _cacheSet(messageId, response.page ?? 1, response.datasets)
-      _preloadNeighbors(messageId, msg, response.page ?? 1)
-    } catch (err) {
-      const text = err instanceof Error ? err.message : String(err)
-      msg.refineError = text.startsWith('410')
-        ? 'This search has expired. Ask the question again to change its filters.'
-        : `Could not change the filters: ${text}`
-    } finally {
-      msg.refining = false
-      _save()
-    }
-  }
-
   async function refreshCrawlerStatus() {
     try {
       crawlerStatus.value = await api.crawlerStatus()
@@ -315,8 +256,6 @@ export const useChatStore = defineStore('chat', () => {
     crawlerStatus,
     sendQuestion,
     loadPage,
-    toggleFilter,
-    resetFilters,
     refreshCrawlerStatus,
     newConversation,
     switchConversation,
