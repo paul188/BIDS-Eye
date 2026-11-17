@@ -296,6 +296,12 @@ class QueryPlan(BaseModel):
         description="Keyword for full-text search over the dataset's name, description, "
                     "study fields and README"
     )
+    description_alternatives: List[str] = Field(
+        default_factory=list,
+        description="Up to 8 other words or phrases a dataset description would use for "
+                    "description_search, when researchers call it something else than the "
+                    "user did. [] when description_search is null or already the usual word."
+    )
     license_search: Optional[str] = Field(
         default=None,
         description="License string to search for, e.g. 'CC0', 'PDDL'"
@@ -564,6 +570,31 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "fMRI datasets with n-back"
           → scan_requirements: [{scan_terms:["fMRI","n-back"]}]
             description_search: null   ← no qualitative modifier
+
+    ── Other words for description_search ──────────────────────────────────────
+    Users often name a population, a state or a kind of material in everyday
+    words, while dataset descriptions use the field's own terms. When
+    description_search is such a word, list in description_alternatives up to
+    8 words or phrases a dataset author would write for exactly the same
+    thing: the technical term, its spelling variants (hyphenated and joined),
+    close synonyms, and the expression a methods section uses for such
+    material or recordings (Latin and technical expressions count: "ex vivo",
+    "in vitro"). Keep each to one or two words: every word of an alternative
+    must occur in the description, so "microgravity" finds more than
+    "microgravity exposure in humans". Each one must by itself identify the
+    thing: no general word ("participants", "brain", "study") added or alone,
+    and nothing broader than what the user asked for. Leave it [] whenever
+    description_search is null.
+
+    Examples:
+      "datasets with astronauts"
+          → description_search: "astronauts"
+            description_alternatives: ["spaceflight", "space flight",
+                "cosmonauts", "microgravity", "space station"]
+      "people who work nights"
+          → description_search: "night work"
+            description_alternatives: ["shift work", "night shift",
+                "shift workers", "night-shift"]
 
     ── Topics: a word whose meaning a qualifier fixes ──────────────────────────
     Many words mean different things in different studies. When the user
@@ -1032,6 +1063,55 @@ def _detach_topic_terms(plan: QueryPlan) -> None:
     plan.scan_requirements = [r for r in plan.scan_requirements if r.scan_terms]
     if plan.description_search and covered(plan.description_search):
         plan.description_search = None
+
+
+_DESCRIPTION_MAX_ALTERNATIVES = 8
+
+
+def check_description_alternatives(plan: QueryPlan,
+                                   count_matches: Any = _count_topic_matches) -> Dict[str, str]:
+    """Keep the other words for description_search that are worth searching.
+
+    "dead people" found nothing: the datasets say "post-mortem" and "ex vivo"
+    (2026-11-15). The language model lists such words in
+    description_alternatives; like a topic's alternatives they are dropped
+    when they only repeat the user's words, match no dataset, or match too
+    many to say anything (_topic_max_matches). Without counts (outside the
+    backend) they are kept unchecked.
+
+    Changes plan.description_alternatives in place; returns what was dropped
+    and why.
+    """
+    dropped: Dict[str, str] = {}
+    own = _word_set(plan.description_search or "")
+    if not own:
+        plan.description_alternatives = []
+        return dropped
+    kept: List[str] = []
+    seen: set = set()
+    for alternative in plan.description_alternatives[:_DESCRIPTION_MAX_ALTERNATIVES]:
+        words = _word_set(alternative)
+        if not words or words in seen or words == own:
+            continue
+        seen.add(words)
+        kept.append(alternative)
+    counts = count_matches(kept) if (kept and count_matches) else None
+    if counts is not None and len(counts) == len(kept):
+        limit = _topic_max_matches()
+        checked = []
+        for alternative, count in zip(kept, counts):
+            if count == 0:
+                dropped[alternative] = "no dataset uses it"
+            elif count > limit:
+                dropped[alternative] = f"too common ({count} datasets)"
+            else:
+                checked.append(alternative)
+        kept = checked
+    if kept or dropped:
+        log.info("Description search %r: alternatives=%s dropped=%s",
+                 plan.description_search, kept, dropped)
+    plan.description_alternatives = kept
+    return dropped
 
 
 def _topic_codes(
@@ -1675,12 +1755,19 @@ def _build_augmented_question(
     if said_healthy:
         not_searched.append("healthy (most datasets include healthy participants and few record it)")
     context_lines.extend(participant_lines)
-    if description_text and _matches_too_few(description_text):
+    # The words dataset authors use for the same thing ("post-mortem" for
+    # "dead people"), already checked against the catalogue
+    # (check_description_alternatives). With them the user's own words stay a
+    # filter even when no dataset text says them.
+    other_words = _format_text_match(plan.description_alternatives, _MODE_NEAR) if description_text else None
+    if description_text and not other_words and _matches_too_few(description_text):
         # No dataset text says this: as a filter it would only empty the result.
         not_searched.append(description_text)
         description_text = ""
     description_match = _format_text_match([description_text])
     if description_match:
+        if other_words:
+            description_match = f"({description_match} OR {other_words})"
         context_lines.append(f"  dataset text: {description_match}")
     if not_searched:
         context_lines.append(
@@ -1815,6 +1902,7 @@ def run_pipeline(
     _keep_ambiguity_topics(plan)
     _detach_topic_terms(plan)
     topics = resolve_topics(plan, retriever)
+    check_description_alternatives(plan)
 
     if retriever is None:
         return augment_with_rag(plan, {}, available_columns=available_columns, topics=topics)
