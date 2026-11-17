@@ -5,6 +5,8 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
 
   -. summaries  per-dataset summaries of the file table that the search
                 reads (remote/dataset_facets.refresh). No network.
+  -. groups     participant diagnoses from a group column and participants.json
+                (remote/participant_groups.run). OpenNeuro's public S3 only.
   0. links      derivatives (OpenNeuro's preprocessing bucket and the
                 dataset's own derivatives/ folders) and scanner-header sites
                 (remote/dataset_links.refresh_links). No LLM, public sources only.
@@ -19,6 +21,7 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 Needs GEMINI_API_KEY; the text goes to Gemini only.
 
 Environment:
+    CRAWL_PARTICIPANT_GROUPS "false" skips decoding participant groups (default on)
     CRAWL_LINKS             "false" skips step 0 (default on)
     CRAWL_PAPERS            "false" skips step 1 (default on)
     CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
@@ -126,6 +129,20 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         log.info("[post-crawl] Dataset summaries: %s", stats)
     except Exception as exc:
         log.error("[post-crawl] Dataset summaries failed: %s", exc, exc_info=True)
+
+    # Participant diagnoses from a group column and its participants.json
+    # Levels ("F" = "Frontotemporal Dementia Group"; remote/participant_groups.py).
+    # Only datasets without any coded diagnosis. Reads OpenNeuro's public S3.
+    if _flag("CRAWL_PARTICIPANT_GROUPS"):
+        try:
+            from remote import participant_groups
+
+            async with engine.begin() as conn:
+                reports = await participant_groups.run(conn, accessions, apply=True)
+            log.info("[post-crawl] Participant groups decoded: %d datasets, %d rows",
+                     len(reports), sum(r["written"] for r in reports))
+        except Exception as exc:
+            log.error("[post-crawl] Participant groups failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_LINKS"):
         try:
