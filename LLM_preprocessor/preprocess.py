@@ -793,35 +793,65 @@ _ADULT_AGE = 18
 
 
 def _participant_conditions(plan: QueryPlan) -> List[str]:
-    """Fixed SQL for the sex and age the plan asks for, one condition each.
+    """Fixed SQL for the sex and age the plan asks for.
 
     Written here, not by the SQL model: the model wrote the same request as
     three different conditions in three runs (sex, age and diagnosis on one
     participants row; a text search for "healthy & adult"; an age test on the
     dataset), with 0, 23 and 177 results.
+
+    "Adults" without a number is a property of the sample: it excludes only
+    datasets whose recorded ages are all below 18 (most datasets record no
+    ages, and 193 such datasets are correct answers of one real request).
+    A stated age with a stated sex ("male, 40 years old") describes one
+    person: both must hold for the same participant where the dataset lists
+    ages per participant. As two separate conditions the request returned 65
+    datasets instead of 18.
     """
+    def number(x: float) -> str:
+        return str(int(x)) if float(x).is_integer() else str(x)
+
+    def sex_values(group: ParticipantGroup) -> Optional[str]:
+        wanted = {_SEX_VALUES[v.lower().strip()] for v in group.sex if v.lower().strip() in _SEX_VALUES}
+        return ", ".join(f"'{v}'" for v in next(iter(wanted))) if len(wanted) == 1 else None
+
+    rows = "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND "
+    all_sexes = {s for s in (sex_values(g) for g in plan.groups) if s}
     lines: List[str] = []
-    wanted = {_SEX_VALUES[v.lower().strip()] for g in plan.groups for v in g.sex
-              if v.lower().strip() in _SEX_VALUES}
-    if len(wanted) == 1:
-        values = ", ".join(f"'{v}'" for v in next(iter(wanted)))
-        lines.append(
-            "  participant sex: EXISTS (SELECT 1 FROM bids_participants p2 "
-            f"WHERE p2.dataset_id = d.id AND LOWER(p2.sex) IN ({values}))"
-        )
+
+    # One person with a stated sex and age.
+    for group in plan.groups:
+        low, high = group.age_min, group.age_max
+        values = sex_values(group)
+        stated = (low is not None or high is not None) and not (low == _ADULT_AGE and high is None)
+        if values and stated and len(all_sexes) == 1:
+            per_person = " AND ".join(
+                ([f"p2.age >= {number(low)}"] if low is not None else [])
+                + ([f"p2.age <= {number(high)}"] if high is not None else []))
+            dataset_level = " AND ".join(
+                ([f"d.age_max >= {number(low)}"] if low is not None else [])
+                + ([f"d.age_min <= {number(high)}"] if high is not None else []))
+            return [
+                f"  participant sex and age: ({rows}LOWER(p2.sex) IN ({values}) AND {per_person}) "
+                f"OR (NOT {rows}p2.age IS NOT NULL) "
+                f"AND {rows}LOWER(p2.sex) IN ({values})) AND {dataset_level}))"
+            ]
+
+    if len(all_sexes) == 1:
+        lines.append(f"  participant sex: {rows}LOWER(p2.sex) IN ({next(iter(all_sexes))}))")
     lows = [g.age_min for g in plan.groups if g.age_min is not None]
     highs = [g.age_max for g in plan.groups if g.age_max is not None]
     low = min(lows) if lows else None
     high = max(highs) if highs else None
-    if low is None and high is None:
-        said = " ".join([plan.description_search or ""]
-                        + [t for g in plan.groups for t in g.diagnosis_terms]).lower()
-        if re.search(r"\badults?\b", said):
-            low = _ADULT_AGE
-    def number(x: float) -> str:
-        return str(int(x)) if float(x).is_integer() else str(x)
-    rows = "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND "
-    if low is not None and high is not None:
+    said = " ".join([plan.description_search or ""]
+                    + [t for g in plan.groups for t in g.diagnosis_terms]).lower()
+    adults = (low is None and high is None and re.search(r"\badults?\b", said)) or (
+        low == _ADULT_AGE and high is None)
+    if adults:
+        lines.append(
+            f"  participant age: ({rows}p2.age >= {_ADULT_AGE}) OR d.age_max >= {_ADULT_AGE} "
+            f"OR (d.age_min IS NULL AND d.age_max IS NULL AND NOT {rows}p2.age IS NOT NULL)))")
+    elif low is not None and high is not None:
         lines.append(f"  participant age: ({rows}p2.age >= {number(low)} AND p2.age <= {number(high)}) "
                      f"OR (d.age_min <= {number(high)} AND d.age_max >= {number(low)}))")
     elif low is not None:
@@ -1666,7 +1696,7 @@ def _build_augmented_question(
     kept_words = []
     for word in description_text.split():
         bare = word.lower().strip(".,;:()'\"")
-        if bare in _HEALTHY_WORDS and bare not in ("typical", "developing", "control", "controls"):
+        if bare in _HEALTHY_WORDS and bare not in ("typical", "developing", "control"):
             said_healthy = True
         elif not (participant_lines and bare in ("adult", "adults", "male", "female", "males", "females", "men", "women")):
             kept_words.append(word)

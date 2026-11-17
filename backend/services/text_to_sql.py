@@ -264,7 +264,7 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "Never generate `p.diagnosis != 'healthy_volunteer'` based only on those words. "
         "'Healthy', 'normal', 'controls' add NO condition at all (no diagnosis filter, no "
         "text_match): most datasets include healthy participants and few record it. "
-        "If a 'participant sex:' or 'participant age:' line is present, copy it verbatim as its "
+        "If a 'participant sex:', 'participant age:' or 'participant sex and age:' line is present, copy it verbatim as its "
         "own AND condition and write no other condition on sex or age; never combine sex, age "
         "and diagnosis in one EXISTS (that demands one participants row with all three, and "
         "most datasets record only some of them).\n"

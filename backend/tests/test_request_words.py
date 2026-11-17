@@ -117,26 +117,41 @@ def test_healthy_terms_are_not_looked_up_as_a_diagnosis():
 def test_sex_and_age_are_written_by_preprocessing():
     plan = preprocess.QueryPlan.model_validate({
         "natural_language_summary": "healthy adult male EEG during rest", "query_family": "participant_filter",
-        "description_search": "healthy adult",
+        "description_search": "healthy adult controls",
         "groups": [{"group_name": "a", "sex": ["male"]}],
     })
     lines = preprocess._participant_conditions(plan)
     assert lines == [
         "  participant sex: EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
         "AND LOWER(p2.sex) IN ('male', 'm'))",
+        # adults: only datasets whose recorded ages are all below 18 are excluded
         "  participant age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
-        "AND p2.age >= 18) OR d.age_max >= 18)",
+        "AND p2.age >= 18) OR d.age_max >= 18 OR (d.age_min IS NULL AND d.age_max IS NULL AND NOT "
+        "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.age IS NOT NULL)))",
     ]
     question = preprocess._build_augmented_question(plan, [])
     assert "text_match" not in question and "participant sex:" in question
     assert "not searchable (add NO condition for these): healthy" in question
-    both = preprocess.QueryPlan.model_validate({
+    children = preprocess.QueryPlan.model_validate({
         "natural_language_summary": "x", "query_family": "comparison_query",
         "groups": [{"group_name": "a", "sex": ["male"], "age_min": 2, "age_max": 12}, {"group_name": "b", "sex": ["female"]}],
     })
-    assert preprocess._participant_conditions(both) == [
+    assert preprocess._participant_conditions(children) == [
         "  participant age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
         "AND p2.age >= 2 AND p2.age <= 12) OR (d.age_min <= 12 AND d.age_max >= 2))"]
+
+
+def test_a_stated_age_and_sex_describe_one_participant():
+    plan = preprocess.QueryPlan.model_validate({
+        "natural_language_summary": "male, 40 years old", "query_family": "participant_filter",
+        "groups": [{"group_name": "a", "sex": ["male"], "age_min": 40, "age_max": 40}],
+    })
+    assert preprocess._participant_conditions(plan) == [
+        "  participant sex and age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+        "AND LOWER(p2.sex) IN ('male', 'm') AND p2.age >= 40 AND p2.age <= 40) "
+        "OR (NOT EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.age IS NOT NULL) "
+        "AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND LOWER(p2.sex) IN ('male', 'm')) "
+        "AND d.age_max >= 40 AND d.age_min <= 40))"]
 
 
 def test_more_request_words():

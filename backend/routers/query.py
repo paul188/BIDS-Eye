@@ -165,6 +165,8 @@ async def _deprecations_for(
 
 # Below this many results a free-text-only condition is dropped (see below).
 _MIN_RESULTS = 3
+# ... and only when what is left without it still narrows the catalogue.
+_MAX_RELAXED_RESULTS = 300
 
 
 async def _count_with_base_correction(
@@ -196,7 +198,10 @@ async def _count_with_base_correction(
             except Exception:
                 await session.rollback()
                 relaxed_total = 0
-            if relaxed_total > total:
+            # Without the phrase the search must still be a search: 990 or
+            # 1,400 datasets in no useful order (0 correct answers among the
+            # first 20 in every measured case) are no better than none.
+            if total < relaxed_total <= _MAX_RELAXED_RESULTS:
                 cached.base_sql = cached.relaxed_sql
                 cached.relaxed = True
                 cached.filter_sql = None
