@@ -148,94 +148,17 @@ def test_tier_still_applies_after_a_chip_is_removed(monkeypatch):
     sqlglot.parse_one(tiered, read="postgres")
 
 
-# ── /query/refine ─────────────────────────────────────────────────────────────
+# ── Chips are display only ────────────────────────────────────────────────────
 
-class _Result:
-    def __init__(self, scalar=None):
-        self._scalar = scalar
-
-    def scalar(self):
-        return self._scalar
-
-    def mappings(self):
-        return self
-
-    def all(self):
-        return []
-
-
-class _Session:
-    def __init__(self):
-        self.statements = []
-
-    async def execute(self, statement, params=None):
-        self.statements.append(str(statement))
-        return _Result(scalar=3)
-
-    async def rollback(self):
-        pass
-
-
-def test_refine_reruns_the_cached_query_without_the_removed_conditions(monkeypatch):
+def test_filters_cannot_be_changed_through_the_api():
+    """The page shows the chips without remove buttons; the API has no
+    endpoint that re-runs a search without some of them either."""
     import routers.query as query_router
-    from schemas import QueryRefineRequest
-    from services.query_cache import CachedQuery, query_cache
 
-    async def no_rows(session, raw):
-        return []
-
-    monkeypatch.setattr(query_router, "_rows_to_datasets", no_rows)
-    monkeypatch.delenv("UNCERTAIN_TIER", raising=False)
-
-    def llm_must_not_run(*args, **kwargs):
-        raise AssertionError("refine must not call a language model")
-
-    monkeypatch.setattr(query_router, "_correct_sql_with_gemini", llm_must_not_run)
-    monkeypatch.setattr(query_router, "rerank_candidates", llm_must_not_run)
-
-    sql = _sql(DIAGNOSIS, MODALITY, TEXT)
-    original_id = query_cache.put(CachedQuery(
-        base_sql=sql, params={}, scored_filters=[], apply_relevance=False,
-        filter_sql=sql, rerank_done=True,
-        rerank_ordered=[str(UUID(int=1))],
-    ))
-
-    session = _Session()
-    response = asyncio.run(query_router.query_refine(
-        QueryRefineRequest(query_id=original_id, remove=["w0"]), session, {"sub": "tester"}))
-
-    assert response.total == 3
-    assert response.query_id != original_id
-    # The chips are the original's, so the page can show the removed one struck out.
-    assert [f.id for f in response.filters] == ["w0", "w1", "w2"]
-
-    refined = query_cache.get(response.query_id)
-    assert response.translation.sql == refined.base_sql
-    assert "parkinsons_disease" not in refined.base_sql
-    assert "functional_mri" in refined.base_sql
-    assert refined.rerank_ordered == [str(UUID(int=1))]
-    # The original stays usable, so chips can be put back.
-    assert query_cache.get(original_id).base_sql == sql
-    assert all("parkinsons_disease" not in s for s in session.statements)
-
-
-def test_refine_is_refused_for_self_corrected_queries():
-    import pytest
-    from fastapi import HTTPException
-
-    import routers.query as query_router
-    from schemas import QueryRefineRequest
-    from services.query_cache import CachedQuery, query_cache
-
-    sql = _sql(MODALITY)
-    query_id = query_cache.put(CachedQuery(
-        base_sql=sql, params={}, scored_filters=[], apply_relevance=False,
-        filter_sql=sql, self_corrected=True,
-    ))
-    with pytest.raises(HTTPException) as raised:
-        asyncio.run(query_router.query_refine(
-            QueryRefineRequest(query_id=query_id, remove=["w0"]), _Session(), {"sub": "t"}))
-    assert raised.value.status_code == 400
+    paths = {route.path for route in query_router.router.routes}
+    assert "/query" in paths and "/query/page" in paths
+    assert "/query/refine" not in paths
+    assert not hasattr(query_router, "query_refine")
 
 
 # ── README excerpts ───────────────────────────────────────────────────────────

@@ -35,13 +35,11 @@ from schemas import (
     ParticipantSummarySchema,
     QueryFilterSchema,
     QueryPageRequest,
-    QueryRefineRequest,
     QueryRequest,
     QueryResponse,
     TextToSQLResult,
 )
 from services import catalogue_values, dataset_description, interpretation_store, query_filters
-from services import uncertain_tier
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
 from services.rerank import rerank_candidates, settings as rerank_settings, should_rerank
@@ -494,6 +492,13 @@ async def _run_page(
     return datasets, total
 
 
+# Searches running now, by (user, normalised question). The frontend sends a
+# question only once while it runs; this is the same rule on the server, for
+# double submits, retries and second tabs. One uvicorn process serves the API
+# (backend/Dockerfile), so a dict in memory sees every request.
+_in_flight: dict[tuple[str, str], asyncio.Future] = {}
+
+
 @router.post("", response_model=QueryResponse)
 async def query_datasets(
     body: QueryRequest,
@@ -503,7 +508,42 @@ async def query_datasets(
     """
     Submit a natural-language question and receive the first page of matching
     BIDS datasets, plus a ``query_id`` for paging through the rest.
+
+    The same question from the same user while it is still running does not
+    start a second search: it gets the running search's answer (or error),
+    without another language-model call and without using a daily search.
     """
+    key = (_auth.get("sub", ""), interpretation_store.normalize(body.question))
+    running = _in_flight.get(key)
+    if running is not None:
+        try:
+            return await asyncio.shield(running)
+        except asyncio.CancelledError:
+            if running.cancelled():
+                raise HTTPException(status_code=503, detail="The same search was interrupted. Please try again.")
+            raise
+
+    answer: asyncio.Future = asyncio.get_running_loop().create_future()
+    # Marks an error as seen when no second request was waiting for it.
+    answer.add_done_callback(lambda f: f.cancelled() or f.exception())
+    _in_flight[key] = answer
+    try:
+        response = await _answer_question(body, session, _auth)
+    except asyncio.CancelledError:
+        answer.cancel()
+        raise
+    except BaseException as exc:
+        answer.set_exception(exc)
+        raise
+    else:
+        answer.set_result(response)
+        return response
+    finally:
+        _in_flight.pop(key, None)
+
+
+async def _answer_question(body: QueryRequest, session: AsyncSession, _auth: dict) -> QueryResponse:
+    """One search: daily limit, translation, first page, logging."""
     await _enforce_rate_limit(session, _auth.get("sub", ""))
     page, page_size = _clamp_page(1, _DEFAULT_PAGE_SIZE)
     # The same question gets the same translation every time (the models that
@@ -616,74 +656,6 @@ async def query_page(
         translation=None,
         datasets=datasets,
         query_id=body.query_id,
-        total=total,
-        page=page,
-        page_size=page_size,
-        has_more=(page * page_size) < total,
-    )
-
-
-@router.post("/refine", response_model=QueryResponse)
-async def query_refine(
-    body: QueryRefineRequest,
-    session: Annotated[AsyncSession, Depends(get_db)],
-    _auth: Annotated[dict, Depends(require_auth)],
-):
-    """Re-run a translated query without some of its conditions.
-
-    *remove* names chips of the original query (its ``filters``). The
-    conditions are dropped from the cached query (services/query_filters.py),
-    so no language model runs and the daily limit is not charged. The answer
-    carries a new ``query_id`` for paging; the original stays valid, so the
-    user can put chips back by refining the original again.
-    """
-    original = query_cache.get(body.query_id)
-    if original is None:
-        raise HTTPException(
-            status_code=410,
-            detail="This search has expired. Please run the query again.",
-        )
-    if original.self_corrected or not original.filter_sql:
-        raise HTTPException(status_code=400, detail="This search has no filters to change.")
-
-    filter_sql = query_filters.remove(original.filter_sql, body.remove)
-    if filter_sql is None:
-        raise HTTPException(status_code=400, detail="Could not change the filters of this search.")
-    base_sql = uncertain_tier.apply(filter_sql) if uncertain_tier.enabled() else filter_sql
-
-    cached = CachedQuery(
-        base_sql=base_sql,
-        params=original.params,
-        scored_filters=original.scored_filters,
-        apply_relevance=original.apply_relevance,
-        rank_tsquery=original.rank_tsquery,
-        explanation=original.explanation,
-        # Keep the original re-ranking instead of asking the LLM again.
-        rerank_done=True,
-        rerank_ordered=list(original.rerank_ordered),
-        rerank_demoted=list(original.rerank_demoted),
-        filter_sql=filter_sql,
-    )
-    # Count here rather than in _run_page, whose error path asks Gemini to fix
-    # the SQL: dropping AND conditions from a working query should not fail,
-    # and if it does, the user should hear so instead of waiting on an LLM.
-    try:
-        result = await session.execute(text(build_count_sql(base_sql)), cached.params)
-        cached.total = int(result.scalar() or 0)
-    except Exception:
-        await session.rollback()
-        raise HTTPException(status_code=400, detail="Could not run the search without these filters.")
-    query_id = query_cache.put(cached)
-
-    page, page_size = _clamp_page(1, body.page_size)
-    datasets, total = await _run_page(session, query_id, cached, "", page, page_size)
-    return QueryResponse(
-        message=_found_message(total),
-        # The SQL that ran, for the "Show generated SQL" panel.
-        translation=TextToSQLResult(sql=base_sql, explanation=original.explanation),
-        filters=_filters_for(original),
-        datasets=datasets,
-        query_id=query_id,
         total=total,
         page=page,
         page_size=page_size,
