@@ -265,17 +265,14 @@ onUnmounted(() => {
       <!-- Start page: the search box sits in the page, not at the bottom -->
       <div
         v-if="!store.currentMessages.length"
-        class="max-w-3xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16"
+        class="max-w-5xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16"
       >
-        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent mb-4">
-          OpenNeuro · BIDS datasets
-        </p>
         <h1 class="font-serif text-[2rem] sm:text-[2.5rem] leading-[1.15] text-ink">
-          Describe the data your study needs.
+          Find BIDS datasets on OpenNeuro, using semantic search.
         </h1>
-        <p class="mt-4 text-base text-muted max-w-xl leading-relaxed">
-          Name a diagnosis, a sample size, a modality or a task, in your own words.
-          Each result shows who was scanned, so you can judge the fit at a glance.
+        <p class="mt-4 text-base text-muted max-w-3xl leading-relaxed">
+          Describe the data you need in plain language. The search matches by meaning,
+          not by exact keywords or filter fields, so you can put several criteria in one sentence.
         </p>
 
         <div class="mt-8">
@@ -307,7 +304,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Results thread -->
-      <div v-else class="thread max-w-5xl mx-auto px-4 sm:px-8 pt-8 pb-10 flex flex-col">
+      <div v-else class="thread max-w-6xl mx-auto px-4 sm:px-8 pt-8 pb-10 flex flex-col">
         <MessageBubble
           v-for="msg in store.currentMessages"
           :key="msg.id"
@@ -321,8 +318,8 @@ onUnmounted(() => {
       v-if="store.currentMessages.length"
       class="flex-shrink-0 border-t border-border bg-surface pt-3 pb-3"
     >
-      <div class="max-w-5xl mx-auto px-4 sm:px-8">
-        <div class="max-w-3xl">
+      <div class="max-w-6xl mx-auto px-4 sm:px-8">
+        <div class="max-w-4xl">
           <InputBar
             ref="inputBar"
             v-model="input"

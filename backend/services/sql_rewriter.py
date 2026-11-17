@@ -25,7 +25,7 @@ import re
 import sys
 from dataclasses import dataclass, field as _field
 from pathlib import Path
-from typing import Any, Iterable, Optional, Sequence
+from typing import Any, Iterable, Mapping, Optional, Sequence
 
 # Make project-local modules importable regardless of working directory.
 _ROOT = Path(__file__).resolve().parents[2]
@@ -83,6 +83,8 @@ _VOCAB_MISS_HINT_RE = re.compile(
 )
 # A topic filter line of the augmented question (preprocess.py, _topic_condition).
 _TOPIC_LINE_RE = re.compile(r'^\s*topic "[^"\n]*": (?P<condition>.+)$', re.MULTILINE)
+# The description search with its other words (preprocess.py, 'dataset text:').
+_DESCRIPTION_LINE_RE = re.compile(r"^\s*dataset text: (?P<condition>\(.+\))\s*$", re.MULTILINE)
 _TEXT_MATCH_CALL_RE = re.compile(
     r"\btext_match\s*\(\s*'([^']*)'\s*(?:,\s*'[^']*'\s*)?\)",
     re.IGNORECASE,
@@ -136,6 +138,14 @@ _PARTICIPANTS_COUNT_WHERE_RE = re.compile(
     r"(>=|>|<=|<|=)\s*(\d+)",
     re.IGNORECASE | re.DOTALL,
 )
+# The same plain count (all participants of the dataset, no condition) anywhere,
+# e.g. in HAVING; not when already the second argument of the GREATEST below.
+_PARTICIPANTS_COUNT_SUBQUERY_RE = re.compile(
+    r"(?<!GREATEST\(COUNT\(DISTINCT o\.subject\), )"
+    r"\(\s*SELECT\s+COUNT\s*\(\s*(?:DISTINCT\s+\w+\.participant_id|\*)\s*\)\s+"
+    r"FROM\s+bids_participants\s+(?:AS\s+)?\w+\s+WHERE\s+\w+\.dataset_id\s*=\s*d\.id\s*\)",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 # The filter line of "at least N patients with X" (LLM_preprocessor/preprocess.py).
@@ -168,7 +178,8 @@ class RewriteResult:
     """Normalized SQL plus what later stages need to run and rank it."""
     sql: str
     params: dict[str, Any]
-    # Full-text query that ranks the result; None without text terms.
+    # What ranks the result by its text (services/text_search.rank_expression);
+    # None without text terms.
     rank_tsquery: Optional[str] = None
     # The query before the uncertain tier wraps it: its WHERE conditions are
     # the filter chips (services/query_filters.py). Equals sql without the tier.
@@ -230,12 +241,18 @@ class SqlRewriteService:
             return sql if had_marker else sql.split("\n\n")[0].strip()
         return _FALLBACK_SQL
 
-    def rewrite_generated_sql(self, raw_sql: str, augmented_question: str) -> RewriteResult:
+    def rewrite_generated_sql(self, raw_sql: str, augmented_question: str,
+                              word_forms: Optional[Mapping[str, Sequence[str]]] = None,
+                              ) -> RewriteResult:
         """Normalize raw LLM output into executable SQL plus bind parameters.
 
         The method intentionally returns a structured result instead of mutating
         the caller's state. That keeps the translation pipeline easy to cache and
         makes the rewrite behavior testable in isolation.
+
+        *word_forms*: the forms decided for words of this question
+        (RAG/word_forms.py); text search then requires them
+        (services/text_search.py, TEXT_SEARCH_EXACT).
         """
         sql = self.extract_sql(raw_sql)
         sql = self._rewrite_projection(sql)
@@ -247,12 +264,17 @@ class SqlRewriteService:
         sql, value_fixes = _catalogue_values.check_sql(sql)
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._participants_join_to_subject_count(sql)
+        # Any other join of bids_participants next to the file join multiplies
+        # the two tables: its conditions become subqueries.
+        sql = self._participants_join_to_subqueries(sql)
         sql = self._drop_healthy_filters(sql)
         sql = self._decorrelate_grouped_exists(sql)
         sql = self._guard_json_number_casts(sql)
+        sql = self._case_insensitive_sex(sql)
         sql = self._drop_invented_text_filters(sql, augmented_question)
         sql = self._inject_vocab_miss(sql, augmented_question)
         sql = self._inject_topics(sql, augmented_question)
+        sql = self._restore_description_alternatives(sql, augmented_question)
         # "At least N patients with X": patients_with(...) >= N becomes a count of
         # the participants known to have the diagnosis (RAG/cohort_count.py).
         sql = self._inject_patient_counts(sql, augmented_question)
@@ -267,7 +289,8 @@ class SqlRewriteService:
                 relaxed_sql = _uncertain_tier.apply(relaxed_sql)
         # With the tier on, paper text is evidence for the second tier only;
         # confirmed results match on the dataset's own text.
-        expanded = _text_search.expand_text_search(sql, papers=False if tiered else None)
+        expanded = _text_search.expand_text_search(
+            sql, papers=False if tiered else None, exact_forms=word_forms)
         sql = expanded.sql
         filter_sql = sql
         if tiered:
@@ -752,6 +775,49 @@ class SqlRewriteService:
             parent = parent.parent
         return False
 
+    # p.sex = 'female', p2.sex IN ('F', 'female'), p.sex <> 'male' — never an
+    # expression already wrapped in LOWER(...) or UPPER(...).
+    _SEX_EQ_RE = re.compile(r"(?<![\w.(])(\w+\.sex)\s*(=|<>|!=)\s*'([^']*)'", re.IGNORECASE)
+    _SEX_IN_RE = re.compile(r"(?<![\w.(])(\w+\.sex)\s+(NOT\s+IN|IN)\s*\(([^()]*)\)", re.IGNORECASE)
+    _SEX_SYNONYMS = {"f": ("female", "f"), "m": ("male", "m"), "female": ("female", "f"), "male": ("male", "m")}
+
+    @classmethod
+    def _sex_values(cls, literal: str) -> list[str]:
+        value = literal.strip().lower()
+        return list(cls._SEX_SYNONYMS.get(value, (value,)))
+
+    def _case_insensitive_sex(self, sql: str) -> str:
+        """Compare participant sex without regard to case or abbreviation.
+
+        participants.tsv values reach the database as typed: 'female' for most
+        datasets, but 'Female' in 48 and 'FEMALE' in 4 (2026-11-14), so
+        p.sex = 'female' missed 42 of the datasets OpenNeuro's sex filter
+        finds. Each equality or IN list on a sex column becomes LOWER(col)
+        compared with lower-case values, 'f'/'m' and 'female'/'male' standing
+        for each other.
+        """
+        def values_sql(values: list[str]) -> str:
+            return ", ".join("'" + v.replace("'", "''") + "'" for v in dict.fromkeys(values))
+
+        def eq(m: re.Match) -> str:
+            values = self._sex_values(m.group(3))
+            negated = m.group(2) != "="
+            if len(values) == 1:
+                return f"LOWER({m.group(1)}) {'<>' if negated else '='} {values_sql(values)}"
+            return f"LOWER({m.group(1)}) {'NOT IN' if negated else 'IN'} ({values_sql(values)})"
+
+        def in_list(m: re.Match) -> str:
+            literals = re.findall(r"'((?:[^']|'')*)'", m.group(3))
+            if not literals or re.sub(r"'(?:[^']|'')*'|[\s,]", "", m.group(3)):
+                return m.group(0)  # not a plain list of string literals
+            values = [v for lit in literals for v in self._sex_values(lit.replace("''", "'"))]
+            return f"LOWER({m.group(1)}) {m.group(2).upper()} ({values_sql(values)})"
+
+        rewritten = self._SEX_IN_RE.sub(in_list, self._SEX_EQ_RE.sub(eq, sql))
+        if rewritten != sql:
+            log.info("Made sex comparisons case-insensitive")
+        return rewritten
+
     def _rewrite_task_ilike_concepts(self, sql: str) -> str:
         """Replace vague `task ILIKE '%term%'` patterns with precise task IN lists.
 
@@ -777,6 +843,115 @@ class SqlRewriteService:
 
         return _TASK_ILIKE_CONCEPT_RE.sub(_expand, sql)
 
+    @staticmethod
+    def _ancestors(node: Any, root: Any) -> list:
+        """The nodes between *node* (exclusive) and *root* (inclusive)."""
+        found = []
+        current = node.parent
+        while current is not None:
+            found.append(current)
+            if current is root:
+                break
+            current = current.parent
+        return found
+
+    def _participants_join_to_subqueries(self, sql: str) -> str:
+        """Replace a JOIN of bids_participants next to bids_objects by subqueries.
+
+        "datasets with at least 100 children aged 12 or younger" came back as
+            FROM bids_datasets d LEFT JOIN bids_objects o ... LEFT JOIN bids_participants p
+            WHERE p.age <= 12 GROUP BY d.id HAVING COUNT(DISTINCT p.participant_id) >= 100
+        which pairs every participant with every file of the dataset. On
+        2026-11-14 one such query wrote temporary files until the server's disk
+        was full ("No space left on device"), failing every other write too.
+
+        The join goes; the participant conditions of its ON and of WHERE become
+            EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND <conditions>)
+        and every aggregate over the participant columns (COUNT, AVG …) becomes
+        the same aggregate in a correlated subquery with those conditions.
+        Left alone when a condition mixes participant and other columns, or a
+        participant column is used outside an aggregate in HAVING/ORDER BY.
+        """
+        if parse_one is None or exp is None or not re.search(r"\bJOIN\s+bids_participants\b", sql, re.IGNORECASE):
+            return sql
+        try:
+            select = parse_one(sql, read="postgres")
+        except Exception:
+            return sql
+        if not isinstance(select, exp.Select):
+            return sql
+        joins = select.args.get("joins") or []
+        part = [j for j in joins if isinstance(j.this, exp.Table) and j.this.name.lower() == "bids_participants"]
+        if len(part) != 1 or not any(isinstance(j.this, exp.Table) and j.this.name.lower() == "bids_objects"
+                                     for j in joins):
+            return sql
+        from_ = select.args.get("from_") or select.args.get("from")
+        if from_ is None or not isinstance(from_.this, exp.Table):
+            return sql
+        d_alias = from_.this.alias_or_name
+        join = part[0]
+        p_alias = join.this.alias_or_name
+
+        def own_columns(node) -> list:
+            # Columns of this query level; a subquery may reuse the alias p for its own table.
+            return [c for c in node.find_all(exp.Column)
+                    if not any(isinstance(a, (exp.Subquery, exp.Exists)) for a in self._ancestors(c, node))]
+
+        def tables(node) -> set:
+            return {c.table for c in own_columns(node)}
+
+        link = None
+        conditions = []
+        on = join.args.get("on")
+        for conj in (self._flatten_and(on) if on is not None else []):
+            sql_text = conj.sql(dialect="postgres").replace(" ", "").lower()
+            if sql_text in (f"{p_alias}.dataset_id={d_alias}.id", f"{d_alias}.id={p_alias}.dataset_id"):
+                link = conj
+            elif tables(conj) <= {p_alias}:
+                conditions.append(conj)
+            else:
+                return sql
+        if link is None:
+            return sql
+        where = select.args.get("where")
+        kept = []
+        for conj in (self._flatten_and(where.this) if where is not None else []):
+            used = tables(conj)
+            if p_alias in used:
+                if used != {p_alias}:
+                    return sql
+                conditions.append(conj)
+            else:
+                kept.append(conj)
+
+        def scoped(inner: str) -> str:
+            cond = " AND ".join([f"{p_alias}.dataset_id = {d_alias}.id"]
+                                + [c.sql(dialect="postgres") for c in conditions])
+            return f"(SELECT {inner} FROM bids_participants AS {p_alias} WHERE {cond})"
+
+        for key in ("having", "order"):
+            part_node = select.args.get(key)
+            if part_node is None:
+                continue
+            for agg in [a for a in part_node.find_all(exp.AggFunc)
+                        if not any(isinstance(x, (exp.Subquery, exp.Exists)) for x in self._ancestors(a, part_node))]:
+                if tables(agg) == {p_alias}:
+                    agg.replace(parse_one(scoped(agg.sql(dialect="postgres")), read="postgres"))
+            if p_alias in tables(part_node):
+                return sql
+        if any(p_alias in tables(projection) for projection in select.expressions):
+            return sql
+
+        select.set("joins", [j for j in joins if j is not join])
+        if conditions:
+            kept.append(parse_one(f"EXISTS {scoped('1')}", read="postgres"))
+        if kept:
+            select.set("where", exp.Where(this=self._combine_and(kept)))
+        else:
+            select.set("where", None)
+        log.info("Replaced the bids_participants join next to bids_objects by subqueries")
+        return select.sql(dialect="postgres")
+
     def _rewrite_participant_count_to_having(self, sql: str) -> str:
         """Move correlated bids_participants COUNT from WHERE to HAVING on o.subject.
 
@@ -786,7 +961,7 @@ class SqlRewriteService:
         """
         m = _PARTICIPANTS_COUNT_WHERE_RE.search(sql)
         if not m:
-            return sql
+            return self._participant_count_in_having(sql)
         op = m.group(1)
         n = m.group(2)
         log.info(
@@ -1165,6 +1340,27 @@ class SqlRewriteService:
             return parsed.sql(dialect="postgres")
         except Exception:
             return sql
+    @staticmethod
+    def _participant_count_in_having(sql: str) -> str:
+        """Count a dataset's participants from both sources in HAVING.
+
+        "at least 100 participants" came back as
+            HAVING (SELECT COUNT(DISTINCT p.participant_id) FROM bids_participants AS p
+                    WHERE p.dataset_id = d.id) >= 100
+        which counts only participants.tsv rows: ds000158 (217 subject folders,
+        no participants rows) counted as 0, and 22 of the 156 datasets
+        OpenNeuro's subject-count filter finds were missing. The larger of
+        the two counts is the dataset's size.
+        """
+        having = re.search(r"\bHAVING\b", sql, re.IGNORECASE)
+        if not having:
+            return sql
+        tail = _PARTICIPANTS_COUNT_SUBQUERY_RE.sub(
+            lambda m: f"GREATEST(COUNT(DISTINCT o.subject), {m.group(0)})", sql[having.start():])
+        if tail == sql[having.start():]:
+            return sql
+        log.info("Counted participants from participants.tsv and subject folders in HAVING")
+        return sql[:having.start()] + tail
 
     def _inject_vocab_miss(self, sql: str, augmented_question: str) -> str:
         """Add the free-text filter for unresolved vocabulary terms if the model left it out.
@@ -1217,6 +1413,39 @@ class SqlRewriteService:
             present.add(key)
         return sql
 
+    def _restore_description_alternatives(self, sql: str, augmented_question: str) -> str:
+        """Put back the other words of a description search the model left out.
+
+        The 'dataset text:' line can read
+            (text_match('dead people') OR text_match('post-mortem | ex vivo', 'also'))
+        (preprocess.py, check_description_alternatives). A model that copied
+        only the first search would find what the user's own words find,
+        which for "dead people" is nothing.
+        """
+        line = _DESCRIPTION_LINE_RE.search(augmented_question)
+        if line is None:
+            return sql
+        condition = line.group("condition").strip()
+        calls = list(_TEXT_MATCH_CALL_RE.finditer(condition))
+        if len(calls) != 2:
+            return sql
+
+        def key(match: re.Match) -> tuple:
+            return tuple(sorted(str(t) for t in _parse_alternatives(match.group(1))))
+
+        own, others = key(calls[0]), key(calls[1])
+        in_sql = list(_TEXT_MATCH_CALL_RE.finditer(sql))
+        if any(key(m) == others for m in in_sql):
+            return sql
+        for match in in_sql:
+            if key(match) != own:
+                continue
+            if re.search(r"\bNOT\s*$", sql[:match.start()], re.IGNORECASE):
+                continue
+            log.info("Restoring description alternatives the model left out: %s", condition)
+            return sql[:match.start()] + condition + sql[match.end():]
+        return sql
+
     def _and_into_where(self, sql: str, condition: str) -> str:
         """AND *condition* onto the outer WHERE, keeping the existing filter intact."""
         if parse_one is not None and exp is not None:
@@ -1248,7 +1477,9 @@ class SqlRewriteService:
         relevance_score  sum of the RAG scores of the canonical codes the
                          dataset really has (structured match)
         text_rank        0..1 full-text rank of the dataset text against the
-                         question's free-text terms (services/text_search.py)
+                         question's free-text terms (services/text_search.py);
+                         far below 0 for a dataset that matches only the
+                         other words of a search, not the user's own
 
         Datasets are ordered by the sum, so a dataset with a diagnosis row and
         the term in its title beats one with only either, and a dataset that
@@ -1277,7 +1508,8 @@ class SqlRewriteService:
             field_cols[field] = col_info
             rows.append(f"('{field}', '{code}', {float(score):.4f})")
 
-        use_text_rank = _text_search.is_safe_tsquery(rank_tsquery)
+        text_rank = _text_search.rank_expression("ft", rank_tsquery)
+        use_text_rank = text_rank is not None
         if not rows and not use_text_rank:
             return sql
 
@@ -1307,9 +1539,7 @@ class SqlRewriteService:
         text_rank_expr = "0"
         text_join = ""
         if use_text_rank:
-            text_rank_expr = _text_search.text_rank_expression(
-                f"ft.{_text_search.FTS_COLUMN}", rank_tsquery  # type: ignore[arg-type]
-            )
+            text_rank_expr = text_rank  # type: ignore[assignment]
             text_join = "\n  LEFT JOIN bids_datasets ft ON ft.id = base.id"
 
         # ORDER BY cannot add two output aliases in the same SELECT, hence the
@@ -1345,8 +1575,10 @@ def extract_sql(raw: str) -> str:
     return sql_rewrite_service.extract_sql(raw)
 
 
-def rewrite_generated_sql(raw_sql: str, augmented_question: str) -> RewriteResult:
-    return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question)
+def rewrite_generated_sql(raw_sql: str, augmented_question: str,
+                          word_forms: Optional[Mapping[str, Sequence[str]]] = None,
+                          ) -> RewriteResult:
+    return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, word_forms)
 
 
 def build_count_sql(base_sql: str) -> str:

@@ -8,6 +8,15 @@ COPY backend/                          /app/backend/
 COPY LLM_preprocessor/                 /app/LLM_preprocessor/
 COPY RAG/                              /app/RAG/
 
+# The commit this image is built from, stored with every cached translation
+# (services/translation_store.py: code_commit). Either pass
+# --build-arg BIDSEYE_COMMIT=<hash>, or have a file DEPLOYED_COMMIT in the
+# build context (the deploy writes it before building). The file is optional:
+# constraints.txt is named only so that the COPY has a source without it.
+ARG BIDSEYE_COMMIT=""
+ENV BIDSEYE_COMMIT=${BIDSEYE_COMMIT}
+COPY backend/constraints.txt DEPLOYED_COMMIT* /app/
+
 # Every pip call is constrained to the pinned versions in constraints.txt so
 # that a rebuild yields the same environment (see the comment in that file).
 ENV PIP_CONSTRAINT=/app/backend/constraints.txt

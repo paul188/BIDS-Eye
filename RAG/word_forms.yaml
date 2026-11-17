@@ -1,0 +1,116 @@
+# Word forms that full-text search must not merge (RAG/word_forms.py).
+#
+# The search matches a word by its stem, so "depression" also finds
+# "depressive". Some stems merge words that mean different things: "severe"
+# and "several", "ageing" and "age". For those, a search for one word requires
+# the forms listed with it.
+#
+# exact    groups of forms that mean the same. A search for any of them
+#          (or its plural or singular) matches these forms only.
+#            forms     the forms that count
+#            excludes  what the stem also matches and the search must not;
+#                      documentation, checked by backend/tests/test_word_forms.py
+#            why       one line
+# stemmed  groups whose stem is right although the catalogue's counts look
+#          like a collision. Listed so the language model is not asked each time.
+#
+# This list wins over the language model's choice for the same word, and it
+# also covers words the question did not contain (vocabulary synonyms,
+# alternatives the model wrote).
+#
+# Keep entries to what the catalogue and the field say: a stem that merges
+# unrelated words, seen in scripts/mine_word_forms.py. Do not add a word
+# because a benchmark question needs it (benchmarks/recall/held_out_questions.txt).
+# When unsure, leave the word out: the language model then decides per question.
+
+exact:
+  - forms: [ageing, aging]
+    excludes: [age, ages, aged]
+    why: "growing old, not any mention of an age"
+  - forms: [severe, severely, severity]
+    excludes: [several]
+    why: "'several' shares the stem"
+  - forms: [weight, weights]
+    excludes: [weighted, weighting]
+    why: "body weight, not T1-weighted images"
+  - forms: [structural, structurally]
+    excludes: [structure, structures, structured]
+    why: "structural imaging, not the Brain Imaging Data Structure every README names"
+  - forms: [function, functions, functioning]
+    excludes: [functional, functionally]
+    why: "a function (executive, cognitive), not functional MRI"
+  - forms: [lateral, laterally, laterality, lateralization, lateralized]
+    excludes: [later]
+    why: "'later' shares the stem"
+  - forms: [organ, organs]
+    excludes: [organization, organized, organizing]
+    why: "a body organ, not how the files are organized"
+  - forms: [subjective, subjectively]
+    excludes: [subject, subjects, subjected]
+    why: "subjective reports, not the subjects of a study"
+  - forms: [objective, objectives, objectively]
+    excludes: [object, objects]
+    why: "an aim or an objective measure, not objects shown"
+  - forms: [object, objects]
+    excludes: [objective, objectives, objectively]
+    why: "objects shown or recognised, not a study's objective"
+  - forms: [personality]
+    excludes: [person, persons, personal, personalized, personally]
+    why: "personality, not a person or personal data"
+  - forms: [experience, experiences]
+    excludes: [experiment, experiments]
+    why: "what someone experiences, not the experiment"
+  - forms: [comprehension]
+    excludes: [comprehensive, comprehensively]
+    why: "understanding language, not a comprehensive dataset"
+  - forms: [identity, identities]
+    excludes: [identical, identically]
+    why: "identity (of a face, a person), not identical parameters"
+  - forms: [medication, medications]
+    excludes: [medical, medically]
+    why: "drugs taken, not the medical centre"
+  - forms: [formation]
+    excludes: [format, formats, formatted, formatting]
+    why: "hippocampal or memory formation, not the file format"
+  - forms: [selective, selectively, selectivity]
+    excludes: [selected, selection, select, selecting]
+    why: "selective attention or tuning, not selected participants"
+  - forms: [dependence, dependency]
+    excludes: [dependent, depending, depends, depend]
+    why: "substance dependence, not level-dependent signals or dependent variables"
+  - forms: [hand, hands]
+    excludes: [handed]
+    why: "the hand, not right-handed participants"
+  - forms: [localizer, localizers]
+    excludes: [local, localization, localized, localize]
+    why: "a functional localizer scan, not local or localized"
+  - forms: [direction, directions, directional]
+    excludes: [direct, directly, directed]
+    why: "direction of motion or phase encoding, not direct or directly"
+  - forms: [positive, positively, positivity]
+    excludes: [position, positions, positioned, positioning]
+    why: "positive valence or findings, not head position"
+  - forms: [position, positions, positioned, positioning]
+    excludes: [positive, positively, positivity]
+    why: "where something is, not positive"
+  - forms: [meaning, meanings]
+    excludes: [mean, means]
+    why: "semantic meaning, not the mean age"
+  - forms: [liking, liked]
+    excludes: [like, likely]
+    why: "liking (reward), not 'like' or 'likely'"
+  - forms: [ad]
+    excludes: [added, adding]
+    why: "AD (Alzheimer's disease), not 'added'"
+  - forms: [internal, internally]
+    excludes: [international, internationally]
+    why: "'international' shares the stem"
+
+stemmed:
+  - [music, musical, musically]
+  - [cognition, cognitive, cognitively]
+  - [emotion, emotions, emotional, emotionally]
+  - [behavior, behaviors, behavioral, behaviorally]
+  - [behaviour, behaviours, behavioural, behaviourally]
+  - [depression, depressive, depressed]
+  - [electrophysiology, electrophysiological]

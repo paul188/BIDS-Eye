@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Dataset } from '../api'
+import { isHit, termPattern as patternFor } from '../highlight'
 
 const props = withDefaults(defineProps<{
   dataset: Dataset
@@ -124,17 +125,9 @@ function factClass(kind: string): string {
 // what three lines show, start at the sentence that contains it.
 const SNIPPET_START_LIMIT = 220
 
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-const termPattern = computed(() => {
-  const terms = [...new Set(props.terms.map(t => t.trim()).filter(Boolean))]
-    .sort((a, b) => b.length - a.length)
-  if (!terms.length) return null
-  // Prefix match, so "parkinson" also marks "Parkinson's" and "parkinsonism".
-  return new RegExp(`\\b(?:${terms.map(escapeRegExp).join('|')})[\\w'’-]*`, 'gi')
-})
+// Pairs only side by side; "parkinson" also marks "Parkinson's" and
+// "parkinsonism" (highlight.ts).
+const termPattern = computed(() => patternFor(props.terms))
 
 // The backend marks README matches with ⟦ ⟧ (Postgres ts_headline, so
 // stemming is right: "resting" also marks "rest").
@@ -176,7 +169,7 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
   for (const match of body.matchAll(pattern)) {
     const at = match.index ?? 0
     if (at > last) parts.push({ text: body.slice(last, at), hit: false })
-    parts.push({ text: match[0], hit: true })
+    parts.push({ text: match[0], hit: isHit(match, props.terms) })
     last = at + match[0].length
   }
   if (last < body.length) parts.push({ text: body.slice(last), hit: false })

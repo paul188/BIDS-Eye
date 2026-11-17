@@ -24,7 +24,7 @@ function onResetFilters() {
   <!-- The question, shown as the heading of its results -->
   <section v-if="message.role === 'user'" data-role="user" class="scroll-mt-6">
     <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-soft mb-2">Search</p>
-    <h2 class="font-serif text-[1.375rem] sm:text-[1.625rem] leading-snug text-ink max-w-3xl break-words">
+    <h2 class="font-serif text-[1.375rem] sm:text-[1.625rem] leading-snug text-ink max-w-4xl break-words">
       {{ message.content }}
     </h2>
   </section>
@@ -61,7 +61,7 @@ function onResetFilters() {
         @toggle="onToggleFilter"
         @reset="onResetFilters"
       />
-      <p v-if="message.content" class="text-sm text-muted max-w-3xl leading-relaxed">
+      <p v-if="message.content" class="text-sm text-muted max-w-4xl leading-relaxed">
         {{ message.content }}
       </p>
       <DatasetList

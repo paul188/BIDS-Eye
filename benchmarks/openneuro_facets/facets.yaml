@@ -1,0 +1,117 @@
+# OpenNeuro search-page filters, one entry per filter selection.
+#
+# `openneuro` is the DatasetSearchInput the OpenNeuro search page sends to
+# advancedSearch (see build-search-query.ts in OpenNeuroOrg/openneuro).
+# `question` is how a user would ask BIDS-Eye for the same thing.
+# `check` says how a dataset is judged correct for the question
+# (used by compare.py to decide who is right when the two disagree).
+queries:
+  # ── single filters: modality ──────────────────────────────────────────────
+  - {id: mod_mri,  question: "MRI datasets",  openneuro: {modality: mri},  check: {modality: [mri]}}
+  - {id: mod_pet,  question: "PET datasets",  openneuro: {modality: pet},  check: {modality: [pet]}}
+  - {id: mod_eeg,  question: "EEG datasets",  openneuro: {modality: eeg},  check: {modality: [eeg]}}
+  - {id: mod_ieeg, question: "intracranial EEG datasets", openneuro: {modality: ieeg}, check: {modality: [ieeg]}}
+  - {id: mod_meg,  question: "MEG datasets",  openneuro: {modality: meg},  check: {modality: [meg]}}
+  - {id: mod_nirs, question: "fNIRS datasets", openneuro: {modality: nirs}, check: {modality: [nirs]}}
+  - {id: mod_func, question: "functional MRI datasets", openneuro: {modality: Functional}, check: {modality: [func]}}
+  - {id: mod_dwi,  question: "diffusion MRI datasets", openneuro: {modality: Diffusion}, check: {modality: [dwi]}}
+  - {id: mod_asl,  question: "ASL perfusion datasets", openneuro: {modality: Perfusion}, check: {modality: [perf]}}
+
+  # ── species ───────────────────────────────────────────────────────────────
+  - {id: sp_rat,   question: "rat datasets",   openneuro: {species: Rat},   check: {species: rat}}
+  - {id: sp_mouse, question: "mouse datasets", openneuro: {species: Mouse}, check: {species: mouse}}
+  - {id: sp_other, question: "datasets from animals other than rats and mice", openneuro: {species: Other}, check: {species: other_animal}}
+
+  # ── diagnosis ─────────────────────────────────────────────────────────────
+  - {id: dx_healthy, question: "datasets of healthy controls", openneuro: {diagnosis: "Healthy / Control"}, check: {diagnosis: healthy}}
+  - {id: dx_scz,  question: "schizophrenia datasets", openneuro: {diagnosis: Schizophrenia}, check: {diagnosis: schizophrenia}}
+  - {id: dx_adhd, question: "ADHD datasets", openneuro: {diagnosis: "ADD/ADHD"}, check: {diagnosis: adhd}}
+  - {id: dx_ad,   question: "Alzheimer's disease datasets", openneuro: {diagnosis: Alzheimers}, check: {diagnosis: alzheimer}}
+
+  # ── study structure (OpenNeuro calls it "Section") ────────────────────────
+  - {id: sec_long,  question: "longitudinal datasets", openneuro: {studyStructure: Longitudinal}, check: {section: longitudinal}}
+  - {id: sec_cross, question: "cross-sectional datasets", openneuro: {studyStructure: Cross-Sectional}, check: {section: cross}}
+
+  # ── sex ───────────────────────────────────────────────────────────────────
+  - {id: sex_female, question: "datasets that include female participants", openneuro: {sex: Female}, check: {sex: F}}
+
+  # ── age of participants ───────────────────────────────────────────────────
+  - {id: age_child,  question: "datasets with children aged 12 or younger", openneuro: {ageRange: [0, 12]}, check: {age: [0, 12]}}
+  - {id: age_teen,   question: "datasets with adolescents aged 13 to 17", openneuro: {ageRange: [13, 17]}, check: {age: [13, 17]}}
+  - {id: age_old,    question: "datasets with participants aged 65 or older", openneuro: {ageRange: [65, null]}, check: {age: [65, null]}}
+  - {id: age_young,  question: "datasets with participants aged 18 to 30", openneuro: {ageRange: [18, 30]}, check: {age: [18, 30]}}
+
+  # ── number of participants ────────────────────────────────────────────────
+  - {id: n_100,  question: "datasets with at least 100 participants", openneuro: {subjectCountRange: [100, null]}, check: {subjects: [100, null]}}
+  - {id: n_500,  question: "datasets with at least 500 participants", openneuro: {subjectCountRange: [500, null]}, check: {subjects: [500, null]}}
+  - {id: n_le5,  question: "datasets with 5 or fewer participants", openneuro: {subjectCountRange: [null, 5]}, check: {subjects: [0, 5]}}
+
+  # ── task ──────────────────────────────────────────────────────────────────
+  - {id: task_rest,   question: "resting-state datasets", openneuro: {tasks: [rest]}, check: {task: rest}}
+  - {id: task_nback,  question: "n-back task datasets", openneuro: {tasks: [nback]}, check: {task: nback}}
+  - {id: task_stop,   question: "stop-signal task datasets", openneuro: {tasks: [stopsignal]}, check: {task: stopsignal}}
+  - {id: task_flank,  question: "flanker task datasets", openneuro: {tasks: [flanker]}, check: {task: flanker}}
+  - {id: task_faces,  question: "face perception task datasets", openneuro: {tasks: [faces]}, check: {task: faces}}
+  - {id: task_movie,  question: "movie watching datasets", openneuro: {tasks: [movie]}, check: {task: movie}}
+  - {id: task_sleep,  question: "sleep datasets", openneuro: {tasks: [sleep]}, check: {task: sleep}}
+  - {id: task_odd,    question: "oddball task datasets", openneuro: {tasks: [oddball]}, check: {task: oddball}}
+  - {id: task_gonogo, question: "go/no-go task datasets", openneuro: {tasks: [gonogo]}, check: {task: gonogo}}
+  - {id: task_motor,  question: "motor task datasets", openneuro: {tasks: [motor]}, check: {task: motor}}
+  - {id: task_mid,    question: "monetary incentive delay task datasets", openneuro: {tasks: [mid]}, check: {task: mid}}
+
+  # ── study domain ──────────────────────────────────────────────────────────
+  - {id: dom_memory,  question: "memory research datasets", openneuro: {studyDomains: [Memory]}, check: {domain: memory}}
+  - {id: dom_lang,    question: "language research datasets", openneuro: {studyDomains: [Language]}, check: {domain: language}}
+  - {id: dom_vision,  question: "vision research datasets", openneuro: {studyDomains: [Vision]}, check: {domain: vision}}
+  - {id: dom_epi,     question: "epilepsy datasets", openneuro: {studyDomains: [Epilepsy]}, check: {domain: epilepsy}}
+  - {id: dom_rl,      question: "reinforcement learning datasets", openneuro: {studyDomains: [Reinforcement Learning]}, check: {domain: reinforcement learning}}
+  - {id: dom_pd,      question: "Parkinson's disease datasets", openneuro: {studyDomains: ["Parkinson's Disease"]}, check: {domain: parkinson}}
+
+  # ── PET details ───────────────────────────────────────────────────────────
+  - {id: pet_fdg,     question: "FDG PET datasets", openneuro: {modality: pet, tracerNames: [FDG]}, check: {tracer: fdg}}
+  - {id: pet_pib,     question: "PiB amyloid PET datasets", openneuro: {modality: pet, tracerNames: [PiB]}, check: {tracer: pib}}
+  - {id: pet_c11,     question: "PET datasets with a carbon-11 tracer", openneuro: {modality: pet, tracerRadionuclides: [C11]}, check: {tracer: c11}}
+  - {id: pet_siemens, question: "PET datasets acquired on a Siemens scanner", openneuro: {modality: pet, scannerManufacturers: [Siemens]}, check: {pet_manufacturer: siemens}}
+  - {id: pet_ge,      question: "PET datasets acquired on a GE scanner", openneuro: {modality: pet, scannerManufacturers: [GE]}, check: {pet_manufacturer: ge}}
+
+  # ── date, author ──────────────────────────────────────────────────────────
+  - {id: date_12m,    question: "datasets published in the last 12 months", openneuro: {dateRange: Last 12 months}, check: {published_within_days: 365}}
+  - {id: auth_poldrack, question: "datasets by Russell Poldrack", openneuro: {authors: [Poldrack]}, check: {author: poldrack}}
+
+  # ── combinations: modality × other filter ────────────────────────────────
+  - {id: c_mri_rat,     question: "MRI datasets of rats", openneuro: {modality: mri, species: Rat}, check: {modality: [mri], species: rat}}
+  - {id: c_mri_mouse,   question: "MRI datasets of mice", openneuro: {modality: mri, species: Mouse}, check: {modality: [mri], species: mouse}}
+  - {id: c_eeg_rat,     question: "EEG recordings from rats", openneuro: {modality: eeg, species: Rat}, check: {modality: [eeg], species: rat}}
+  - {id: c_mri_ad,      question: "MRI datasets of Alzheimer's patients", openneuro: {modality: mri, diagnosis: Alzheimers}, check: {modality: [mri], diagnosis: alzheimer}}
+  - {id: c_mri_scz,     question: "MRI datasets of schizophrenia patients", openneuro: {modality: mri, diagnosis: Schizophrenia}, check: {modality: [mri], diagnosis: schizophrenia}}
+  - {id: c_eeg_healthy, question: "EEG datasets of healthy participants", openneuro: {modality: eeg, diagnosis: "Healthy / Control"}, check: {modality: [eeg], diagnosis: healthy}}
+  - {id: c_mri_long,    question: "longitudinal MRI datasets", openneuro: {modality: mri, studyStructure: Longitudinal}, check: {modality: [mri], section: longitudinal}}
+  - {id: c_eeg_long,    question: "longitudinal EEG datasets", openneuro: {modality: eeg, studyStructure: Longitudinal}, check: {modality: [eeg], section: longitudinal}}
+  - {id: c_eeg_child,   question: "EEG datasets with children aged 12 or younger", openneuro: {modality: eeg, ageRange: [0, 12]}, check: {modality: [eeg], age: [0, 12]}}
+  - {id: c_mri_old,     question: "MRI datasets with participants aged 65 or older", openneuro: {modality: mri, ageRange: [65, null]}, check: {modality: [mri], age: [65, null]}}
+  - {id: c_meg_child,   question: "MEG datasets with children", openneuro: {modality: meg, ageRange: [0, 12]}, check: {modality: [meg], age: [0, 12]}}
+  - {id: c_mri_rest,    question: "resting-state fMRI datasets", openneuro: {modality: mri, tasks: [rest]}, check: {modality: [func], task: rest}}
+  - {id: c_eeg_rest,    question: "resting-state EEG datasets", openneuro: {modality: eeg, tasks: [rest]}, check: {modality: [eeg], task: rest}}
+  - {id: c_meg_rest,    question: "resting-state MEG datasets", openneuro: {modality: meg, tasks: [rest]}, check: {modality: [meg], task: rest}}
+  - {id: c_eeg_odd,     question: "EEG oddball datasets", openneuro: {modality: eeg, tasks: [oddball]}, check: {modality: [eeg], task: oddball}}
+  - {id: c_mri_nback,   question: "fMRI datasets with an n-back task", openneuro: {modality: mri, tasks: [nback]}, check: {modality: [func], task: nback}}
+  - {id: c_eeg_sleep,   question: "sleep EEG datasets", openneuro: {modality: eeg, tasks: [sleep]}, check: {modality: [eeg], task: sleep}}
+  - {id: c_mri_100,     question: "MRI datasets with at least 100 participants", openneuro: {modality: mri, subjectCountRange: [100, null]}, check: {modality: [mri], subjects: [100, null]}}
+  - {id: c_eeg_100,     question: "EEG datasets with at least 100 participants", openneuro: {modality: eeg, subjectCountRange: [100, null]}, check: {modality: [eeg], subjects: [100, null]}}
+  - {id: c_ieeg_dom_epi, question: "intracranial EEG datasets on epilepsy", openneuro: {modality: ieeg, studyDomains: [Epilepsy]}, check: {modality: [ieeg], domain: epilepsy}}
+  - {id: c_dwi_old,     question: "diffusion MRI datasets with participants aged 65 or older", openneuro: {modality: Diffusion, ageRange: [65, null]}, check: {modality: [dwi], age: [65, null]}}
+
+  # ── combinations without modality ─────────────────────────────────────────
+  - {id: c_healthy_old, question: "datasets of healthy older adults aged 65 or older", openneuro: {diagnosis: "Healthy / Control", ageRange: [65, null]}, check: {diagnosis: healthy, age: [65, null]}}
+  - {id: c_mouse_long,  question: "longitudinal mouse datasets", openneuro: {species: Mouse, studyStructure: Longitudinal}, check: {species: mouse, section: longitudinal}}
+  - {id: c_child_100,   question: "datasets with at least 100 children aged 12 or younger", openneuro: {ageRange: [0, 12], subjectCountRange: [100, null]}, check: {age: [0, 12], subjects: [100, null]}}
+
+  # ── three filters ─────────────────────────────────────────────────────────
+  - {id: c3_mri_rest_100,     question: "resting-state fMRI datasets with at least 100 participants", openneuro: {modality: mri, tasks: [rest], subjectCountRange: [100, null]}, check: {modality: [func], task: rest, subjects: [100, null]}}
+  - {id: c3_eeg_healthy_child, question: "EEG datasets of healthy children aged 12 or younger", openneuro: {modality: eeg, diagnosis: "Healthy / Control", ageRange: [0, 12]}, check: {modality: [eeg], diagnosis: healthy, age: [0, 12]}}
+  - {id: c3_mri_long_old,     question: "longitudinal MRI datasets with participants aged 65 or older", openneuro: {modality: mri, studyStructure: Longitudinal, ageRange: [65, null]}, check: {modality: [mri], section: longitudinal, age: [65, null]}}
+  - {id: c3_pet_ad,           question: "PET datasets of Alzheimer's patients", openneuro: {modality: pet, diagnosis: Alzheimers}, check: {modality: [pet], diagnosis: alzheimer}}
+  - {id: c3_mri_female_long,  question: "longitudinal MRI datasets that include female participants", openneuro: {modality: mri, studyStructure: Longitudinal, sex: Female}, check: {modality: [mri], section: longitudinal, sex: F}}
+
+  # ── from a real user question (bids-eye-39, 2026-11-14) ──────────────────
+  - {id: u_rodent_long, question: "find datasets with mouse or rats. And that are longitudinal", openneuro: [{species: Mouse, studyStructure: Longitudinal}, {species: Rat, studyStructure: Longitudinal}], check: {species: rodent, section: longitudinal}}

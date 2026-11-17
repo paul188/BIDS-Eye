@@ -97,6 +97,63 @@ def test_real_few_shot_pool_never_yields_readme_or_institutions_when_hidden() ->
             assert "institutions" not in example["sql"]
 
 
+def test_example_tokens_normalize_irregular_clinical_plurals() -> None:
+    for singular, plural in (
+        ("metastasis", "metastases"),
+        ("diagnosis", "diagnoses"),
+        ("analysis", "analyses"),
+        ("psychosis", "psychoses"),
+        ("child", "children"),
+    ):
+        assert text_to_sql._example_tokens(singular) == text_to_sql._example_tokens(plural)
+
+
+def test_exact_pool_family_precedes_legacy_alias() -> None:
+    pool = {"metadata_query": [], "json_query": [], "subject_multimodal_query": []}
+    assert text_to_sql._family_key("metadata_query", pool) == "metadata_query"
+    assert text_to_sql._family_key("subject_multimodal", pool) == "subject_multimodal_query"
+    # A future family with no explicit few-shot bucket still receives lexical,
+    # intent and query-shape ranking instead of failing exact-family matching.
+    assert text_to_sql._family_key("future_family", pool) == "future_family"
+
+
+def test_empty_query_metadata_does_not_invent_intent_categories() -> None:
+    empty_codes = {field: set() for field in ("datatype", "task", "diagnosis", "suffix")}
+    intents = text_to_sql._intent_features(
+        "datasets mentioning 7 Tesla scanners", "description_search", empty_codes
+    )
+    assert {"acquisition", "field_strength"} <= intents
+    assert "clinical" not in intents
+    assert "task" not in intents
+    assert "modality" not in intents
+
+
+def test_full_sql_prompt_budget_drops_only_whole_lower_ranked_examples(monkeypatch) -> None:
+    monkeypatch.setattr(constants, "build_schema_ddl", lambda _columns: "schema")
+    monkeypatch.setattr(text_to_sql, "_available_columns", lambda: set())
+    captured = {}
+
+    def fake_llm(prompt, **kwargs):
+        captured["prompt"] = prompt
+        captured["system"] = kwargs["system"]
+        return ("SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o "
+                "ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id")
+
+    monkeypatch.setattr(text_to_sql, "llm_generate", fake_llm)
+    examples = [
+        {"question": f"query-{i}-" + ("x" * 20_000),
+         "sql": "SELECT {{COLS}} FROM bids_datasets d GROUP BY d.id"}
+        for i in range(3)
+    ]
+    text_to_sql._gemini_sql_generation("current request", "offline", examples)
+    prompt = captured["prompt"]
+    assert len(prompt) + len(captured["system"]) <= text_to_sql._SQL_PROMPT_CHAR_BUDGET
+    assert prompt.count("[QUESTION]") == prompt.count("[/QUESTION]")
+    assert prompt.count("[SQL]") == prompt.count("[/SQL]")
+    assert prompt.index("<current_request>") > prompt.index("<examples")
+    assert "current request" in prompt
+
+
 def test_disease_fallback_grows_with_available_columns() -> None:
     assert caps.disease_text_columns() == ["name", "description_text"]
     caps.set_available_columns({"dx_status", "study_domain", "readme_text"})

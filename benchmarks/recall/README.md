@@ -11,6 +11,8 @@ Measures how many of the relevant datasets a search actually returns.
 | `corrections.jsonl` | Labels changed after review, with reason and who decided; `merge_judgments.py` applies them last. |
 | `paired_uncertain_run.py` | Runs each question once and its SQL twice, with and without the uncertain tier. |
 | `paired_papers_run.py` | Runs each question once and its SQL twice, with and without paper text in the text filters. |
+| `paired_alternatives_run.py` | Runs each question once and its SQL once per variant: without the other words for a description search ("post-mortem" for "dead people"), with them, and with lower limits on how common such a word may be. |
+| `compare_alternatives.py` | Compares those variants: recall@20, nDCG@10 and @20 with a bootstrap interval, plus whole-list recall and precision. |
 | `build_pool.py` | Builds the candidate pool of each question from a database snapshot. |
 | `merge_judgments.py` | Turns judge output into `ground_truth.json` and `judgments.jsonl`. |
 | `eval_recall.py` | `run`: sends every question through the deployed search code. `score`: compares the result with the ground truth. |

@@ -144,7 +144,8 @@ def test_with_the_tier_an_unrecorded_count_is_uncertain_and_a_smaller_one_is_out
     assert "cohort_k.diagnosis IS NULL" in sql
     assert cohort_count.REASON_UNKNOWN in sql
     # Not confirmed and not unknown is excluded: the count has no "possible" branch.
-    assert re.search(r"cohort_n.*?>= 40\) THEN 0 WHEN \(.*?cohort_k.*?\) THEN 1 ELSE 9 END", sql)
+    state = re.search(r"CASE WHEN ev\.confirmed_(\d) THEN 0 WHEN ev\.probable_\1 THEN 1 ELSE 9 END", sql)
+    assert state, "no confirmed / uncertain / excluded state for the count"
 
 
 def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():

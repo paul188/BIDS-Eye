@@ -1,0 +1,304 @@
+# Easy searches: one or two plain criteria, as people type them on a dataset
+# catalogue. The values are the common ones on OpenNeuro (its search filters:
+# modality, diagnosis, task, species, age, sex, number of participants, study
+# design, scanner, author, date).
+#
+# `check` reads a dataset's own labels (see ../openneuro_facets/compare.py and
+# score_easy.py). Every dataset that passes it must be among the results.
+# `strict: true` also requires every result to pass it; set only where the
+# labels are complete enough for that (modality, species, size, author, year).
+# No `check`: the search is recorded, and judged by a person.
+queries:
+  # ── modality, one word ────────────────────────────────────────────────────
+  - {id: e_mod_fmri,        question: "fMRI datasets", check: {modality: [func]}, strict: true}
+  - {id: e_mod_fmri_with,   question: "datasets with fMRI", check: {modality: [func]}, strict: true}
+  - {id: e_mod_fmri_long,   question: "functional magnetic resonance imaging data", check: {modality: [func]}, strict: true}
+  - {id: e_mod_bold,        question: "BOLD fMRI", check: {modality: [func]}, strict: true}
+  - {id: e_mod_mri,         question: "show me all MRI datasets", check: {modality: [mri]}, strict: true}
+  - {id: e_mod_anat,        question: "structural MRI datasets", check: {modality: [anat]}, strict: true}
+  - {id: e_mod_anat2,       question: "anatomical MRI", check: {modality: [anat]}, strict: true}
+  - {id: e_mod_t1,          question: "T1-weighted MRI datasets"}
+  - {id: e_mod_t2,          question: "datasets with T2-weighted images"}
+  - {id: e_mod_flair,       question: "FLAIR datasets"}
+  - {id: e_mod_dwi,         question: "DWI datasets", check: {modality: [dwi]}, strict: true}
+  - {id: e_mod_dti,         question: "DTI datasets", check: {modality: [dwi]}, strict: true}
+  - {id: e_mod_diffusion,   question: "diffusion-weighted imaging", check: {modality: [dwi]}, strict: true}
+  - {id: e_mod_eeg,         question: "EEG", check: {modality: [eeg]}, strict: true}
+  - {id: e_mod_eeg_all,     question: "what are the EEG datasets?", check: {modality: [eeg]}, strict: true}
+  - {id: e_mod_eeg_long,    question: "electroencephalography datasets", check: {modality: [eeg]}, strict: true}
+  - {id: e_mod_meg,         question: "MEG data", check: {modality: [meg]}, strict: true}
+  - {id: e_mod_meg_long,    question: "magnetoencephalography datasets", check: {modality: [meg]}, strict: true}
+  - {id: e_mod_ieeg,        question: "iEEG datasets", check: {modality: [ieeg]}, strict: true}
+  - {id: e_mod_ecog,        question: "ECoG datasets"}
+  - {id: e_mod_seeg,        question: "stereo EEG recordings"}
+  - {id: e_mod_pet,         question: "PET imaging datasets", check: {modality: [pet]}, strict: true}
+  - {id: e_mod_pet_long,    question: "positron emission tomography", check: {modality: [pet]}, strict: true}
+  - {id: e_mod_nirs,        question: "fNIRS data", check: {modality: [nirs]}, strict: true}
+  - {id: e_mod_nirs2,       question: "near-infrared spectroscopy datasets", check: {modality: [nirs]}, strict: true}
+  - {id: e_mod_asl,         question: "arterial spin labeling datasets", check: {modality: [perf]}, strict: true}
+  - {id: e_mod_asl2,        question: "ASL datasets", check: {modality: [perf]}, strict: true}
+  - {id: e_mod_mrs,         question: "MR spectroscopy datasets", check: {modality: [mrs]}, strict: true}
+  - {id: e_mod_motion,      question: "motion capture datasets", check: {modality: [motion]}, strict: true}
+  - {id: e_mod_fmap,        question: "datasets with field maps", check: {modality: [fmap]}, strict: true}
+  - {id: e_mod_swi,         question: "susceptibility-weighted imaging datasets"}
+  - {id: e_mod_physio,      question: "datasets with physiological recordings"}
+  - {id: e_mod_eyetrack,    question: "datasets with eye tracking"}
+
+  # ── two modalities ────────────────────────────────────────────────────────
+  - {id: e_mm_anat_func,    question: "Find datasets with both structural and functional MRI", check: {modality_all: [anat, func]}, strict: true}
+  - {id: e_mm_eeg_fmri,     question: "datasets with both EEG and fMRI", check: {modality_all: [eeg, func]}, strict: true}
+  - {id: e_mm_meg_mri,      question: "datasets with MEG and structural MRI", check: {modality_all: [meg, anat]}, strict: true}
+  - {id: e_mm_pet_mri,      question: "datasets with PET and MRI", check: {modality_all: [pet, mri]}, strict: true}
+  - {id: e_mm_dwi_func,     question: "datasets with diffusion MRI and fMRI", check: {modality_all: [dwi, func]}, strict: true}
+  - {id: e_mm_ieeg_mri,     question: "intracranial EEG datasets that also have MRI", check: {modality_all: [ieeg, mri]}, strict: true}
+  - {id: e_mm_eeg_or_meg,   question: "EEG or MEG datasets", check: {modality: [eeg, meg]}, strict: true}
+
+  # ── diagnosis ─────────────────────────────────────────────────────────────
+  - {id: e_dx_scz,          question: "datasets with schizophrenia patients", check: {diagnosis: schizophrenia}}
+  - {id: e_dx_depression,   question: "depression datasets", check: {diagnosis: depression}}
+  - {id: e_dx_mdd,          question: "major depressive disorder", check: {diagnosis: depression}}
+  - {id: e_dx_autism,       question: "autism datasets", check: {diagnosis: autism}}
+  - {id: e_dx_asd,          question: "datasets with ASD participants", check: {diagnosis: autism}}
+  - {id: e_dx_adhd,         question: "datasets with ADHD", check: {diagnosis: adhd}}
+  - {id: e_dx_pd,           question: "Parkinson's disease", check: {diagnosis: parkinson}}
+  - {id: e_dx_pd_patients,  question: "datasets with Parkinson's patients", check: {diagnosis: parkinson}}
+  - {id: e_dx_ad,           question: "Show datasets with Alzheimer's disease participants", check: {diagnosis: alzheimer}}
+  - {id: e_dx_dementia,     question: "dementia datasets"}
+  - {id: e_dx_mci,          question: "mild cognitive impairment"}
+  - {id: e_dx_epilepsy,     question: "epilepsy patients", check: {diagnosis: epilepsy}}
+  - {id: e_dx_stroke,       question: "stroke datasets", check: {diagnosis: stroke}}
+  - {id: e_dx_bipolar,      question: "bipolar disorder datasets", check: {diagnosis: bipolar}}
+  - {id: e_dx_ms,           question: "multiple sclerosis", check: {diagnosis: ms}}
+  - {id: e_dx_tbi,          question: "traumatic brain injury datasets", check: {diagnosis: tbi}}
+  - {id: e_dx_concussion,   question: "concussion datasets"}
+  - {id: e_dx_dyslexia,     question: "dyslexia", check: {diagnosis: dyslexia}}
+  - {id: e_dx_anxiety,      question: "anxiety disorder datasets", check: {diagnosis: anxiety}}
+  - {id: e_dx_ptsd,         question: "PTSD datasets"}
+  - {id: e_dx_ocd,          question: "obsessive-compulsive disorder"}
+  - {id: e_dx_pain,         question: "chronic pain patients", check: {diagnosis: chronic_pain}}
+  - {id: e_dx_fibro,        question: "fibromyalgia", check: {diagnosis: fibromyalgia}}
+  - {id: e_dx_tumor,        question: "datasets with brain tumor patients"}
+  - {id: e_dx_glioma,       question: "glioma datasets"}
+  - {id: e_dx_aphasia,      question: "aphasia datasets"}
+  - {id: e_dx_alcohol,      question: "alcohol use disorder"}
+  - {id: e_dx_addiction,    question: "addiction datasets"}
+  - {id: e_dx_migraine,     question: "migraine"}
+  - {id: e_dx_tinnitus,     question: "tinnitus datasets"}
+  - {id: e_dx_insomnia,     question: "insomnia"}
+  - {id: e_dx_blind,        question: "datasets with blind participants"}
+  - {id: e_dx_deaf,         question: "datasets with deaf participants"}
+  - {id: e_dx_healthy,      question: "healthy controls", check: {diagnosis: healthy}}
+  - {id: e_dx_healthy_vol,  question: "datasets with healthy volunteers only"}
+  - {id: e_dx_patients,     question: "clinical datasets with patients"}
+  - {id: e_dx_psychiatric,  question: "psychiatric disorders"}
+  - {id: e_dx_neurodegen,   question: "neurodegenerative disease datasets"}
+
+  # ── task ──────────────────────────────────────────────────────────────────
+  - {id: e_task_rest,       question: "resting state", check: {task: rest}}
+  - {id: e_task_rest_fmri,  question: "List all resting-state fMRI datasets", check: {modality: [func], task: rest}}
+  - {id: e_task_rest_data,  question: "rest fMRI data", check: {modality: [func], task: rest}}
+  - {id: e_task_eyes_closed, question: "eyes-closed resting state", check: {task: eyes_closed}}
+  - {id: e_task_eyes_open,  question: "eyes-open resting state", check: {task: eyes_open}}
+  - {id: e_task_nback,      question: "n-back", check: {task: nback}}
+  - {id: e_task_wm,         question: "working memory task datasets", check: {task: working_memory}}
+  - {id: e_task_stroop,     question: "Stroop task", check: {task: stroop}}
+  - {id: e_task_flanker,    question: "datasets with a flanker task", check: {task: flanker}}
+  - {id: e_task_gonogo,     question: "go/no-go", check: {task: gonogo}}
+  - {id: e_task_stop,       question: "stop signal task", check: {task: stopsignal}}
+  - {id: e_task_simon,      question: "Simon task datasets", check: {task: simon}}
+  - {id: e_task_switch,     question: "task switching datasets", check: {task: switching}}
+  - {id: e_task_oddball,    question: "oddball paradigm", check: {task: oddball}}
+  - {id: e_task_motor,      question: "motor task", check: {task: motor}}
+  - {id: e_task_tapping,    question: "finger tapping datasets", check: {task: tapping}}
+  - {id: e_task_movie,      question: "movie watching", check: {task: movie}}
+  - {id: e_task_naturalistic, question: "naturalistic viewing datasets", check: {task: movie}}
+  - {id: e_task_story,      question: "story listening datasets", check: {task: story}}
+  - {id: e_task_speech,     question: "speech perception datasets", check: {task: speech}}
+  - {id: e_task_music,      question: "music listening", check: {task: music}}
+  - {id: e_task_auditory,   question: "auditory task datasets"}
+  - {id: e_task_sleep,      question: "sleep recordings", check: {task: sleep}}
+  - {id: e_task_faces,      question: "face perception", check: {task: faces}}
+  - {id: e_task_emotion,    question: "emotion task datasets", check: {task: emotion}}
+  - {id: e_task_reward,     question: "reward task datasets", check: {task: reward}}
+  - {id: e_task_gambling,   question: "gambling task", check: {task: gambling}}
+  - {id: e_task_mid,        question: "monetary incentive delay", check: {task: mid}}
+  - {id: e_task_decision,   question: "decision-making tasks", check: {task: decision}}
+  - {id: e_task_rl,         question: "reinforcement learning task datasets"}
+  - {id: e_task_language,   question: "language task datasets"}
+  - {id: e_task_reading,    question: "reading task", check: {task: reading}}
+  - {id: e_task_naming,     question: "picture naming", check: {task: naming}}
+  - {id: e_task_retinotopy, question: "retinotopy datasets", check: {task: retinotopy}}
+  - {id: e_task_localizer,  question: "functional localizer datasets", check: {task: localizer}}
+  - {id: e_task_visual,     question: "visual stimulation datasets"}
+  - {id: e_task_encoding,   question: "memory encoding task", check: {task: encoding}}
+  - {id: e_task_memory,     question: "memory task datasets"}
+  - {id: e_task_tom,        question: "theory of mind", check: {task: tom}}
+  - {id: e_task_pain,       question: "pain stimulation datasets", check: {task: pain}}
+  - {id: e_task_imagery,    question: "mental imagery", check: {task: imagery}}
+  - {id: e_task_arithmetic, question: "mental arithmetic task", check: {task: arithmetic}}
+  - {id: e_task_breath,     question: "breath-hold task", check: {task: breath_hold}}
+  - {id: e_task_attention,  question: "attention task datasets"}
+  - {id: e_task_any,        question: "task-based fMRI datasets"}
+
+  # ── species ───────────────────────────────────────────────────────────────
+  - {id: e_sp_mouse,        question: "mouse", check: {species: mouse}, strict: true}
+  - {id: e_sp_mice,         question: "datasets recorded in mice", check: {species: mouse}, strict: true}
+  - {id: e_sp_rat,          question: "rat data", check: {species: rat}, strict: true}
+  - {id: e_sp_rodent,       question: "rodent datasets", check: {species: rodent}, strict: true}
+  - {id: e_sp_monkey,       question: "monkey datasets", check: {species: monkey}}
+  - {id: e_sp_macaque,      question: "macaque", check: {species: macaque}}
+  - {id: e_sp_nhp,          question: "non-human primate datasets", check: {species: monkey}}
+  - {id: e_sp_animal,       question: "animal datasets", check: {species: animal}}
+  - {id: e_sp_human,        question: "human datasets"}
+
+  # ── age ───────────────────────────────────────────────────────────────────
+  - {id: e_age_children,    question: "datasets with children", check: {age: [0, 12]}}
+  - {id: e_age_kids,        question: "pediatric datasets", check: {age: [0, 12]}}
+  - {id: e_age_infants,     question: "infant datasets", check: {age: [0, 1]}}
+  - {id: e_age_newborn,     question: "newborn datasets"}
+  - {id: e_age_teens,       question: "adolescents", check: {age: [13, 17]}}
+  - {id: e_age_under18,     question: "datasets with participants under 18", check: {age: [0, 17]}}
+  - {id: e_age_young,       question: "young adults", check: {age: [18, 30]}}
+  - {id: e_age_range,       question: "participants aged 18 to 35", check: {age: [18, 35]}}
+  - {id: e_age_older,       question: "older adults", check: {age: [65, null]}}
+  - {id: e_age_elderly,     question: "elderly participants", check: {age: [65, null]}}
+  - {id: e_age_over60,      question: "datasets with participants over 60", check: {age: [61, null]}}
+  - {id: e_age_lifespan,    question: "lifespan datasets"}
+  - {id: e_age_aging,       question: "aging datasets"}
+  - {id: e_age_develop,     question: "developmental datasets"}
+
+  # ── sex ───────────────────────────────────────────────────────────────────
+  - {id: e_sex_female,      question: "datasets with female participants", check: {sex: F}}
+  - {id: e_sex_female_only, question: "datasets with only female participants"}
+  - {id: e_sex_male_only,   question: "datasets with only male participants"}
+  - {id: e_sex_both,        question: "datasets with both male and female participants"}
+
+  # ── number of participants ────────────────────────────────────────────────
+  - {id: e_n_50,            question: "datasets with at least 50 participants", check: {subjects: [50, null]}, strict: true}
+  - {id: e_n_100,           question: "datasets with more than 100 subjects", check: {subjects: [101, null]}, strict: true}
+  - {id: e_n_200,           question: "at least 200 participants", check: {subjects: [200, null]}, strict: true}
+  - {id: e_n_1000,          question: "datasets with over 1000 participants", check: {subjects: [1001, null]}, strict: true}
+  - {id: e_n_single,        question: "single-subject datasets", check: {subjects: [1, 1]}, strict: true}
+  - {id: e_n_small,         question: "datasets with fewer than 10 participants", check: {subjects: [1, 9]}, strict: true}
+  - {id: e_n_between,       question: "datasets with between 20 and 50 participants", check: {subjects: [20, 50]}, strict: true}
+  - {id: e_n_largest,       question: "largest datasets by number of participants"}
+  - {id: e_n_large,         question: "large datasets"}
+
+  # ── study design ──────────────────────────────────────────────────────────
+  - {id: e_des_long,        question: "longitudinal studies", check: {section: longitudinal}}
+  - {id: e_des_cross,       question: "cross-sectional studies", check: {section: cross}}
+  - {id: e_des_sessions,    question: "datasets with multiple sessions"}
+  - {id: e_des_retest,      question: "test-retest datasets"}
+  - {id: e_des_multisite,   question: "multi-site datasets"}
+  - {id: e_des_twins,       question: "twin studies"}
+  - {id: e_des_intervention, question: "datasets with an intervention or treatment"}
+
+  # ── scanner and acquisition ───────────────────────────────────────────────
+  - {id: e_scan_7t,         question: "7 Tesla datasets"}
+  - {id: e_scan_7t_short,   question: "7T fMRI"}
+  - {id: e_scan_3t,         question: "3T MRI datasets"}
+  - {id: e_scan_15t,        question: "datasets scanned at 1.5T"}
+  - {id: e_scan_siemens,    question: "datasets acquired on a Siemens scanner"}
+  - {id: e_scan_ge,         question: "GE scanner datasets"}
+  - {id: e_scan_philips,    question: "Philips scanner"}
+  - {id: e_scan_prisma,     question: "datasets acquired on a Siemens Prisma"}
+  - {id: e_scan_multiecho,  question: "multi-echo fMRI datasets"}
+  - {id: e_scan_fast_tr,    question: "fMRI datasets with a TR below 1 second"}
+  - {id: e_scan_hd_eeg,     question: "high-density EEG datasets"}
+
+  # ── PET ───────────────────────────────────────────────────────────────────
+  - {id: e_pet_fdg,         question: "FDG PET", check: {tracer: fdg}}
+  - {id: e_pet_amyloid,     question: "amyloid PET datasets"}
+  - {id: e_pet_tau,         question: "tau PET"}
+  - {id: e_pet_dopamine,    question: "dopamine PET datasets"}
+  - {id: e_pet_c11,         question: "carbon-11 PET tracers", check: {tracer: c11}}
+
+  # ── author, date, popularity, licence ─────────────────────────────────────
+  - {id: e_au_poldrack,     question: "datasets by Russell Poldrack", check: {author: poldrack}, strict: true}
+  - {id: e_au_milham,       question: "datasets from Michael Milham", check: {author: milham}, strict: true}
+  - {id: e_au_delorme,      question: "Arnaud Delorme datasets", check: {author: delorme}, strict: true}
+  - {id: e_au_satterthwaite, question: "datasets by Satterthwaite", check: {author: satterthwaite}, strict: true}
+  - {id: e_au_cavanagh,     question: "datasets authored by James Cavanagh", check: {author: cavanagh}, strict: true}
+  - {id: e_au_kamitani,     question: "Kamitani lab datasets", check: {author: kamitani}}
+  - {id: e_date_2024,       question: "datasets published in 2024", check: {published_year: [2024, 2024]}, strict: true}
+  - {id: e_date_since2023,  question: "datasets published since 2023", check: {published_year: [2023, null]}, strict: true}
+  - {id: e_date_before2019, question: "datasets published before 2019", check: {published_year: [null, 2018]}, strict: true}
+  - {id: e_date_newest,     question: "newest datasets"}
+  - {id: e_pop_downloads,   question: "most downloaded datasets"}
+  - {id: e_pop_views,       question: "most viewed datasets"}
+  - {id: e_lic_cc0,         question: "CC0 licensed datasets"}
+  - {id: e_deriv_any,       question: "datasets with derivatives"}
+  - {id: e_deriv_fmriprep,  question: "datasets with fMRIPrep derivatives"}
+  - {id: e_deriv_freesurfer, question: "datasets with FreeSurfer outputs"}
+  - {id: e_paper,           question: "datasets with a linked publication"}
+
+  # ── modality with a diagnosis ─────────────────────────────────────────────
+  - {id: e_c_fmri_scz,      question: "fMRI datasets with schizophrenia patients", check: {modality: [func], diagnosis: schizophrenia}}
+  - {id: e_c_fmri_dep,      question: "fMRI in depression", check: {modality: [func], diagnosis: depression}}
+  - {id: e_c_fmri_autism,   question: "fMRI autism", check: {modality: [func], diagnosis: autism}}
+  - {id: e_c_fmri_adhd,     question: "ADHD fMRI datasets", check: {modality: [func], diagnosis: adhd}}
+  - {id: e_c_fmri_ad,       question: "functional MRI in Alzheimer's disease", check: {modality: [func], diagnosis: alzheimer}}
+  - {id: e_c_mri_ad,        question: "structural MRI of Alzheimer's patients", check: {modality: [anat], diagnosis: alzheimer}}
+  - {id: e_c_mri_ms,        question: "MRI datasets of multiple sclerosis patients", check: {modality: [mri], diagnosis: ms}}
+  - {id: e_c_mri_stroke,    question: "MRI datasets of stroke patients", check: {modality: [mri], diagnosis: stroke}}
+  - {id: e_c_dwi_adhd,      question: "datasets with diffusion imaging in ADHD", check: {modality: [dwi], diagnosis: adhd}}
+  - {id: e_c_eeg_pd,        question: "EEG datasets with Parkinson's patients", check: {modality: [eeg], diagnosis: parkinson}}
+  - {id: e_c_eeg_epi,       question: "EEG epilepsy", check: {modality: [eeg], diagnosis: epilepsy}}
+  - {id: e_c_ieeg_epi,      question: "intracranial EEG in epilepsy patients", check: {modality: [ieeg], diagnosis: epilepsy}}
+  - {id: e_c_eeg_dep,       question: "EEG datasets of depression", check: {modality: [eeg], diagnosis: depression}}
+  - {id: e_c_eeg_scz,       question: "EEG schizophrenia datasets", check: {modality: [eeg], diagnosis: schizophrenia}}
+  - {id: e_c_eeg_autism,    question: "EEG datasets with autistic participants", check: {modality: [eeg], diagnosis: autism}}
+  - {id: e_c_meg_healthy,   question: "MEG datasets of healthy adults", check: {modality: [meg], diagnosis: healthy}}
+  - {id: e_c_pet_pd,        question: "PET datasets of Parkinson's disease", check: {modality: [pet], diagnosis: parkinson}}
+  - {id: e_c_asl_autism,    question: "datasets containing ASL in patients with autism", check: {modality: [perf], diagnosis: autism}}
+
+  # ── modality with a task ──────────────────────────────────────────────────
+  - {id: e_c_eeg_rest,      question: "resting EEG", check: {modality: [eeg], task: rest}}
+  - {id: e_c_meg_rest,      question: "MEG resting state", check: {modality: [meg], task: rest}}
+  - {id: e_c_fmri_nback,    question: "n-back fMRI", check: {modality: [func], task: nback}}
+  - {id: e_c_fmri_stroop,   question: "fMRI Stroop datasets", check: {modality: [func], task: stroop}}
+  - {id: e_c_eeg_stroop,    question: "EEG Stroop", check: {modality: [eeg], task: stroop}}
+  - {id: e_c_eeg_oddball,   question: "EEG oddball", check: {modality: [eeg], task: oddball}}
+  - {id: e_c_eeg_sleep,     question: "sleep EEG", check: {modality: [eeg], task: sleep}}
+  - {id: e_c_fmri_movie,    question: "fMRI datasets with movie watching", check: {modality: [func], task: movie}}
+  - {id: e_c_fmri_motor,    question: "motor task fMRI", check: {modality: [func], task: motor}}
+  - {id: e_c_fmri_faces,    question: "fMRI face perception", check: {modality: [func], task: faces}}
+  - {id: e_c_fmri_reward,   question: "reward fMRI datasets", check: {modality: [func], task: reward}}
+  - {id: e_c_fmri_pain,     question: "pain fMRI", check: {modality: [func], task: pain}}
+  - {id: e_c_fmri_retino,   question: "fMRI retinotopic mapping", check: {modality: [func], task: retinotopy}}
+  - {id: e_c_meg_auditory,  question: "MEG auditory datasets"}
+  - {id: e_c_ieeg_memory,   question: "intracranial EEG memory tasks"}
+  - {id: e_c_eeg_motor_img, question: "EEG motor imagery"}
+  - {id: e_c_eeg_erp,       question: "ERP datasets"}
+  - {id: e_c_eeg_bci,       question: "brain-computer interface datasets"}
+  - {id: e_c_fmri_language, question: "language fMRI datasets"}
+  - {id: e_c_fmri_music,    question: "fMRI music", check: {modality: [func], task: music}}
+
+  # ── modality with age, species or size ────────────────────────────────────
+  - {id: e_c_fmri_children, question: "fMRI datasets with children", check: {modality: [func], age: [0, 12]}}
+  - {id: e_c_dwi_children,  question: "diffusion MRI in children", check: {modality: [dwi], age: [0, 12]}}
+  - {id: e_c_eeg_infants,   question: "infant EEG", check: {modality: [eeg], age: [0, 1]}}
+  - {id: e_c_mri_infants,   question: "infant MRI datasets", check: {modality: [mri], age: [0, 1]}}
+  - {id: e_c_mri_older,     question: "MRI of older adults", check: {modality: [mri], age: [65, null]}}
+  - {id: e_c_fmri_teens,    question: "adolescent fMRI", check: {modality: [func], age: [13, 17]}}
+  - {id: e_c_fmri_mouse,    question: "mouse fMRI", check: {modality: [func], species: mouse}, strict: true}
+  - {id: e_c_mri_rat,       question: "rat MRI", check: {modality: [mri], species: rat}, strict: true}
+  - {id: e_c_fmri_monkey,   question: "monkey fMRI", check: {modality: [func], species: monkey}}
+  - {id: e_c_fmri_100,      question: "fMRI datasets with at least 100 participants", check: {modality: [func], subjects: [100, null]}, strict: true}
+  - {id: e_c_eeg_50,        question: "EEG datasets with more than 50 subjects", check: {modality: [eeg], subjects: [51, null]}, strict: true}
+  - {id: e_c_dwi_100,       question: "large diffusion datasets with over 100 participants", check: {modality: [dwi], subjects: [101, null]}, strict: true}
+  - {id: e_c_fmri_long,     question: "longitudinal fMRI", check: {modality: [func], section: longitudinal}}
+  - {id: e_c_fmri_size,     question: "Find datasets with functional and structural MRI with a size no larger than 5GB"}
+
+  # ── other pairs and patients counted ──────────────────────────────────────
+  - {id: e_c_rest_scz,      question: "resting-state fMRI in schizophrenia", check: {modality: [func], task: rest, diagnosis: schizophrenia}}
+  - {id: e_c_rest_dep,      question: "resting state depression", check: {task: rest, diagnosis: depression}}
+  - {id: e_c_rest_older,    question: "resting-state fMRI in older adults", check: {modality: [func], task: rest, age: [65, null]}}
+  - {id: e_c_healthy_child, question: "healthy children", check: {diagnosis: healthy, age: [0, 12]}}
+  - {id: e_c_scz_controls,  question: "schizophrenia patients and healthy controls"}
+  - {id: e_c_pd_controls,   question: "Parkinson's patients and controls"}
+  - {id: e_cnt_pd40,        question: "Datasets with at least 40 Parkinson's patients"}
+  - {id: e_cnt_ad50,        question: "find fMRI datasets with at least 50 Alzheimer's patients"}
+  - {id: e_cnt_epi20,       question: "find fMRI datasets with at least 20 patients with focal epilepsy"}
+  - {id: e_cnt_scz30,       question: "datasets with more than 30 schizophrenia patients"}
+  - {id: e_cnt_children100, question: "datasets with at least 100 children"}

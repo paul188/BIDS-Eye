@@ -124,6 +124,13 @@ SEARCH_VECTOR_EXPRESSION = (
     "translate(coalesce(readme_text, ''), '/', ' ')), 'D')"
 )
 
+# The same vector without stemming, for searched words that must match in
+# the form they were asked for: with the stemmer, "ageing" also finds "age"
+# (crawlers/migrate_add_exact_search.sql, backend/services/text_search.py).
+EXACT_SEARCH_COLUMN = "search_tsv_exact"
+EXACT_SEARCH_VECTOR_EXPRESSION = SEARCH_VECTOR_EXPRESSION.replace(
+    "'english'::regconfig", "'simple'::regconfig")
+
 # Selection shared by every query in this module.
 METADATA_SELECTION = """
     publishDate onBrainlife
@@ -438,9 +445,25 @@ def search_vector_sql() -> List[str]:
     ]
 
 
+def exact_search_vector_sql() -> List[str]:
+    """Idempotent DDL for the unstemmed full-text column and its index.
+
+    Must run after search_vector_sql(), which adds the columns the expression
+    reads. A changed definition is applied by
+    crawlers/migrate_add_exact_search.sql, which recreates the column.
+    """
+    return [
+        f"ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS {EXACT_SEARCH_COLUMN} tsvector "
+        f"GENERATED ALWAYS AS ({EXACT_SEARCH_VECTOR_EXPRESSION}) STORED",
+        f"CREATE INDEX IF NOT EXISTS idx_bids_datasets_{EXACT_SEARCH_COLUMN} "
+        f"ON bids_datasets USING GIN ({EXACT_SEARCH_COLUMN})",
+    ]
+
+
 async def ensure_columns(session: Any) -> None:
     """Create the crawler-managed columns if they are missing. Caller commits."""
-    for statement in ensure_columns_sql() + search_vector_sql() + list(LINK_TABLES_SQL):
+    for statement in (ensure_columns_sql() + search_vector_sql() + exact_search_vector_sql()
+                      + list(LINK_TABLES_SQL)):
         await session.execute(text(statement))
 
 

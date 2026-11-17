@@ -19,7 +19,7 @@ import logging
 import os
 import re
 from datetime import date, datetime, timedelta, timezone
-from typing import Annotated, Optional, Sequence
+from typing import Annotated, Collection, Optional, Sequence
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -41,8 +41,9 @@ from schemas import (
     TextToSQLResult,
 )
 from services import catalogue_values, dataset_description, interpretation_store, query_filters
-from services import uncertain_tier
+from services import query_guard, uncertain_tier
 from services.query_cache import CachedQuery, query_cache
+from services import translation_store
 from services.schema_capabilities import has_display_column
 from services.rerank import rerank_candidates, settings as rerank_settings, should_rerank
 from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
@@ -167,6 +168,15 @@ async def _deprecations_for(
 _MIN_RESULTS = 3
 # ... and only when what is left without it still narrows the catalogue.
 _MAX_RELAXED_RESULTS = 300
+async def _guarded_count(session: AsyncSession, base_sql: str, params: dict) -> int:
+    """COUNT of a generated query behind the guards of services/query_guard.py:
+    per-transaction limits, then the static and plan checks (QueryRefused)."""
+    await query_guard.apply_limits(session)
+    count_sql = build_count_sql(base_sql)
+    if base_sql != _FALLBACK_SQL:
+        await query_guard.vet(session, base_sql, count_sql, params)
+    result = await session.execute(text(count_sql), params)
+    return int(result.scalar() or 0)
 
 
 async def _count_with_base_correction(
@@ -179,10 +189,7 @@ async def _count_with_base_correction(
     persisted back to the cache so later page turns reuse the corrected base.
     """
     try:
-        result = await session.execute(
-            text(build_count_sql(cached.base_sql)), cached.params
-        )
-        total = int(result.scalar() or 0)
+        total = await _guarded_count(session, cached.base_sql, cached.params)
         if total < _MIN_RESULTS and cached.relaxed_sql and not cached.relaxed:
             # An empty or nearly empty page is the worst answer: search once
             # more without the free-text-only conditions and say so. This is
@@ -190,13 +197,12 @@ async def _count_with_base_correction(
             # the other filters: a phrase that leaves fewer than _MIN_RESULTS
             # of them is not used as a filter. The text rank still puts the
             # datasets that do contain the words first.
+            # In a savepoint: a refused or failing fallback must not undo the
+            # count above or the transaction's limits.
             try:
-                relaxed = await session.execute(
-                    text(build_count_sql(cached.relaxed_sql)), cached.params
-                )
-                relaxed_total = int(relaxed.scalar() or 0)
+                async with session.begin_nested():
+                    relaxed_total = await _guarded_count(session, cached.relaxed_sql, cached.params)
             except Exception:
-                await session.rollback()
                 relaxed_total = 0
             # Without the phrase the search must still be a search: 990 or
             # 1,400 datasets in no useful order (0 correct answers among the
@@ -227,23 +233,18 @@ async def _count_with_base_correction(
             cached.params = {}
             cached.self_corrected = True
             query_cache.update(query_id, cached)
-            result = await session.execute(text(build_count_sql(_FALLBACK_SQL)))
-            return int(result.scalar() or 0)
+            return await _guarded_count(session, _FALLBACK_SQL, {})
         cached.base_sql = corrected
         cached.self_corrected = True
         query_cache.update(query_id, cached)
         try:
-            result = await session.execute(
-                text(build_count_sql(cached.base_sql)), cached.params
-            )
-            return int(result.scalar() or 0)
+            return await _guarded_count(session, cached.base_sql, cached.params)
         except Exception:
             await session.rollback()
             cached.base_sql = _FALLBACK_SQL
             cached.params = {}
             query_cache.update(query_id, cached)
-            result = await session.execute(text(build_count_sql(_FALLBACK_SQL)))
-            return int(result.scalar() or 0)
+            return await _guarded_count(session, _FALLBACK_SQL, {})
 
 
 async def _rerank_once(
@@ -337,11 +338,70 @@ def _cut_at_word(text_: str, limit: int) -> str:
     return cut.rstrip(" ,;:") + " …"
 
 
+_MARK_RE = re.compile(f"({SNIPPET_START}[^{SNIPPET_STOP}]*{SNIPPET_STOP})")
+_SNIPPET_WORD_RE = re.compile(r"[A-Za-z0-9]+")
+# The Postgres stems of a text, space-separated.
+_LEXEMES_SQL = "array_to_string(tsvector_to_array(to_tsvector('english', {})), ' ')"
+
+
+def keep_justified_marks(headline: str, mark_lexemes: Sequence[str],
+                         terms: Sequence[tuple], term_lexemes: dict,
+                         exact: Collection[str] = ()) -> str:
+    """*headline* with only the marks that *terms* justify.
+
+    ts_headline marks every query word in the passage, also a word of a
+    pair whose partner is elsewhere ("structure" for "structural MRI").
+    A pair's words keep their marks only next to each other, with at most
+    one word between ("Parkinson's disease"). *mark_lexemes* holds the stems
+    of each mark in order, *term_lexemes* those of each term word.
+
+    *exact*: term words that only count as written. The search was limited
+    to these word forms ("ageing"), so a mark on another word with the same
+    stem ("age") goes.
+    """
+    parts = _MARK_RE.split(headline)
+    marks = [i for i, part in enumerate(parts) if part.startswith(SNIPPET_START)]
+    if len(marks) != len(mark_lexemes):
+        return headline
+    stems = [set(lexemes.split()) for lexemes in mark_lexemes]
+
+    def matches(index: int, word: str) -> bool:
+        if word.lower() in exact:
+            written = re.split(r"['’]", parts[marks[index]][1:-1].lower())[0]
+            return written == word.lower()
+        if not stems[index] & term_lexemes.get(word.lower(), set()):
+            return False
+        # A two-letter acronym only in capitals: "MS", not "500 ms".
+        return not (len(word) == 2 and word.isupper()) or \
+            parts[marks[index]][1:-1].startswith(word)
+
+    keep = set()
+    for k in range(len(marks)):
+        for term in terms:
+            if len(term) == 1:
+                if matches(k, term[0]):
+                    keep.add(k)
+            elif k + 1 < len(marks) and matches(k, term[0]) and matches(k + 1, term[1]):
+                gap = "".join(parts[marks[k] + 1:marks[k + 1]])
+                if len(_SNIPPET_WORD_RE.findall(gap)) <= 1:
+                    keep.update((k, k + 1))
+    for k, i in enumerate(marks):
+        if k not in keep:
+            parts[i] = parts[i][1:-1]
+    return "".join(parts)
+
+
 async def _attach_snippets(
-    session: AsyncSession, datasets: list[DatasetSchema], highlight: Optional[str]
+    session: AsyncSession, datasets: list[DatasetSchema], terms: Optional[Sequence[tuple]],
+    exact: Collection[str] = (),
 ) -> None:
-    """Give each dataset a README excerpt: the passages matching *highlight*
-    (an OR tsquery, services/query_filters.highlight_tsquery), or the start.
+    """Give each dataset a README excerpt: the passages matching the highlight
+    *terms* (services/query_filters.highlight_terms), or the start.
+
+    *exact*: the terms that only count as written
+    (query_filters.highlight_exact_words). Where the README has one of them,
+    the excerpt is the passage around it, found without stemming; a passage
+    chosen by stem would show "age" for a search on "ageing".
 
     Read with its own query, like _deprecations_for, so the generated SQL stays
     unchanged and databases without readme_text keep working. A failure leaves
@@ -350,14 +410,30 @@ async def _attach_snippets(
     if not datasets or not has_display_column("readme_text"):
         return
     ids = [d.id for d in datasets]
+    highlight = query_filters.terms_tsquery(terms or ())
+    words = list(dict.fromkeys(w.lower() for term in terms or () for w in term))
+    exact = frozenset(w.lower() for w in exact if _SNIPPET_WORD_RE.fullmatch(w))
     if highlight:
+        # The passage around a word that only counts as written, if there is one.
+        exact_headline = (
+            ", ts_headline('simple', left(readme_text, :chars), "
+            "to_tsquery('simple', :exact_q), :opts) AS hl_exact" if exact else "")
         sql = (
-            "SELECT id, ts_headline('english', left(readme_text, :chars), "
-            "to_tsquery('english', :q), :opts) FROM bids_datasets "
-            "WHERE id = ANY(:ids) AND readme_text IS NOT NULL AND readme_text <> ''"
+            "SELECT h.id, h.hl, "
+            "ARRAY(SELECT " + _LEXEMES_SQL.format("m.t[1]") + " FROM regexp_matches(h.hl, :mark, 'g') "
+            "WITH ORDINALITY AS m(t, n) ORDER BY m.n) AS mark_lexemes, "
+            "ARRAY(SELECT " + _LEXEMES_SQL.format("w.t") + " FROM unnest(CAST(:words AS text[])) "
+            "WITH ORDINALITY AS w(t, n) ORDER BY w.n) AS term_lexemes"
+            + (", h.hl_exact " if exact else " ") +
+            "FROM (SELECT id, ts_headline('english', left(readme_text, :chars), "
+            "to_tsquery('english', :q), :opts) AS hl" + exact_headline + " FROM bids_datasets "
+            "WHERE id = ANY(:ids) AND readme_text IS NOT NULL AND readme_text <> '') AS h"
         )
         params = {"ids": ids, "q": highlight, "opts": _HEADLINE_OPTIONS,
-                  "chars": _SNIPPET_README_CHARS}
+                  "chars": _SNIPPET_README_CHARS, "words": words,
+                  "mark": f"{SNIPPET_START}([^{SNIPPET_STOP}]*){SNIPPET_STOP}"}
+        if exact:
+            params["exact_q"] = " | ".join(sorted(exact))
     else:
         sql = (
             "SELECT id, left(readme_text, :chars) FROM bids_datasets "
@@ -367,7 +443,18 @@ async def _attach_snippets(
     try:
         async with session.begin_nested():
             rows = await session.execute(text(sql), params)
-            found = {row[0]: row[1] for row in rows}
+            found = {}
+            for row in rows:
+                raw = row[1]
+                if highlight and raw:
+                    by_form = row[4] if exact and len(row) > 4 else None
+                    if by_form and SNIPPET_START in by_form:
+                        raw = by_form   # every mark there is a word form asked for
+                    else:
+                        term_lexemes = {w: set(lexemes.split())
+                                        for w, lexemes in zip(words, row[3])}
+                        raw = keep_justified_marks(raw, row[2], terms, term_lexemes, exact)
+                found[row[0]] = raw
     except Exception:
         log.warning("README excerpts unavailable for this page", exc_info=True)
         return
@@ -435,10 +522,17 @@ async def _attach_descriptions(session: AsyncSession, datasets: list[DatasetSche
                 relation=relation, relation_label=dataset_description.RELATION_LABELS[relation])
 
 
-def _highlight_for(cached: CachedQuery) -> Optional[str]:
+def _highlight_for(cached: CachedQuery) -> list[tuple]:
     if cached.self_corrected:
-        return None
-    return query_filters.highlight_tsquery(cached.filter_sql)
+        return []
+    return query_filters.highlight_terms(cached.filter_sql)
+
+
+def _exact_words_for(cached: CachedQuery) -> frozenset:
+    """The highlight words that only count as written (exact word forms)."""
+    if cached.self_corrected:
+        return frozenset()
+    return query_filters.highlight_exact_words(cached.filter_sql)
 
 
 def _filters_for(cached: CachedQuery) -> list[QueryFilterSchema]:
@@ -463,6 +557,22 @@ async def _run_page(
     page: int,
     page_size: int,
 ) -> tuple[list[DatasetSchema], int]:
+    """_run_page_unguarded in one of the few slots for generated SQL."""
+    try:
+        async with query_guard.slot():
+            return await _run_page_unguarded(session, query_id, cached, question, page, page_size)
+    except query_guard.SearchBusy:
+        raise HTTPException(status_code=503, detail="The search is busy. Please try again in a minute.")
+
+
+async def _run_page_unguarded(
+    session: AsyncSession,
+    query_id: str,
+    cached: CachedQuery,
+    question: str,
+    page: int,
+    page_size: int,
+) -> tuple[list[DatasetSchema], int]:
     """Fetch one page for a cached query: total count + the page's datasets.
 
     The COUNT runs first (validating / self-correcting the base SQL); the page
@@ -480,21 +590,45 @@ async def _run_page(
         await _rerank_once(session, query_id, cached, question, total)
 
     offset = (page - 1) * page_size
-    page_sql, extra_params = build_page_sql(
-        cached.base_sql,
-        cached.scored_filters,
-        cached.apply_relevance,
-        page_size,
-        offset,
-        rank_tsquery=cached.rank_tsquery,
-        rerank_ordered=cached.rerank_ordered,
-        rerank_demoted=cached.rerank_demoted,
-    )
-    result = await session.execute(
-        text(page_sql), {**cached.params, **extra_params}
-    )
-    datasets = await _rows_to_datasets(session, result.mappings().all())
-    await _attach_snippets(session, datasets, _highlight_for(cached))
+
+    def page_query(ranked: bool) -> tuple[str, dict]:
+        page_sql, extra_params = build_page_sql(
+            cached.base_sql,
+            cached.scored_filters,
+            cached.apply_relevance and ranked,
+            page_size,
+            offset,
+            rank_tsquery=cached.rank_tsquery if ranked else None,
+            rerank_ordered=cached.rerank_ordered,
+            rerank_demoted=cached.rerank_demoted,
+        )
+        return page_sql, {**cached.params, **extra_params}
+
+    await query_guard.apply_limits(session)
+    rows = None
+    if cached.apply_relevance and not cached.ranking_skipped:
+        # The relevance ranking checks every matched code per dataset and took
+        # 98 s for "MRI datasets" and 174 s for "resting-state datasets"
+        # (2026-11-14) where the unranked page takes 4-9 s. A ranked page gets
+        # a short timeout of its own; past it the user gets the unranked page.
+        page_sql, params = page_query(ranked=True)
+        try:
+            async with session.begin_nested():
+                await session.execute(text(
+                    f"SET LOCAL statement_timeout = '{query_guard.ranked_page_timeout()}'"))
+                rows = (await session.execute(text(page_sql), params)).mappings().all()
+            await query_guard.apply_limits(session)  # the page's timeout outlives its savepoint
+        except Exception as exc:
+            if not query_guard.is_timeout(exc):
+                raise
+            log.warning("Ranked page too slow; serving query %s unranked", query_id)
+            cached.ranking_skipped = True
+            query_cache.update(query_id, cached)
+    if rows is None:
+        page_sql, params = page_query(ranked=False)
+        rows = (await session.execute(text(page_sql), params)).mappings().all()
+    datasets = await _rows_to_datasets(session, rows)
+    await _attach_snippets(session, datasets, _highlight_for(cached), _exact_words_for(cached))
     await _attach_descriptions(session, datasets)
     return datasets, total
 
@@ -524,6 +658,9 @@ async def query_datasets(
             filter_sql=stored.get("filter_sql"), relaxed_sql=stored.get("relaxed_sql"),
         )
     else:
+        # The exact-match store of services/translation_store.py (off unless
+        # TRANSLATION_STORE is set) is asked inside text_to_sql.
+        await translation_store.refresh(session)
         translation = await text_to_sql(body.question)
 
     cached = CachedQuery(
@@ -570,6 +707,16 @@ async def query_datasets(
     # Keep a translation that found something and needed no emergency fallback.
     if stored is None and total > 0 and cached.base_sql != _FALLBACK_SQL:
         await interpretation_store.put(session, body.question, payload, total)
+    # Keep the translation for the next time this question is asked, but only
+    # one that ran as written and found something: a corrected or empty search
+    # should get a fresh attempt.
+    if (translation.store_entry is not None and not cached.self_corrected
+            and cached.base_sql != _FALLBACK_SQL and total > 0):
+        translation.store_entry.final_sql = cached.base_sql
+        translation.store_entry.result_total = total
+        await translation_store.remember(session, translation.store_entry)
+    elif translation.from_store:
+        await translation_store.count_hit(session, body.question)
 
     from models import UserQuery
     try:
@@ -673,8 +820,10 @@ async def query_refine(
     # the SQL: dropping AND conditions from a working query should not fail,
     # and if it does, the user should hear so instead of waiting on an LLM.
     try:
-        result = await session.execute(text(build_count_sql(base_sql)), cached.params)
-        cached.total = int(result.scalar() or 0)
+        async with query_guard.slot():
+            cached.total = await _guarded_count(session, base_sql, cached.params)
+    except query_guard.SearchBusy:
+        raise HTTPException(status_code=503, detail="The search is busy. Please try again in a minute.")
     except Exception:
         await session.rollback()
         raise HTTPException(status_code=400, detail="Could not run the search without these filters.")

@@ -117,6 +117,12 @@ PAPER_SEARCH_VECTOR_EXPRESSION = (
     "translate(coalesce(paper_text, ''), '/', ' ')), 'D')"
 )
 
+# The same vector without stemming (crawlers/migrate_add_exact_search.sql;
+# backend/tests/test_word_forms.py checks the two agree).
+PAPER_EXACT_SEARCH_COLUMN = "search_tsv_exact_papers"
+PAPER_EXACT_SEARCH_VECTOR_EXPRESSION = PAPER_SEARCH_VECTOR_EXPRESSION.replace(
+    "'english'::regconfig", "'simple'::regconfig")
+
 
 async def ensure_tables(session: Any) -> None:
     """Create the paper tables and columns, and the description columns, if

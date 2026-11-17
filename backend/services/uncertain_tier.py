@@ -26,6 +26,11 @@ Only conditions on fields that can be missing (ages, diagnosis, sex) or on
 text can be uncertain. Modality, file types, size and subject counts come
 from the files themselves and stay hard filters, as does anything negated.
 
+"At least N participants with a diagnosis" is its own case (_patient_count):
+confirmed when that many are coded or labelled with it, probable when the
+dataset does not record who has the diagnosis, contradicted when its
+participant rows show fewer.
+
 A dataset is kept when
   - no condition is contradicted,
   - at most MAX_UNSURE conditions are not confirmed, and
@@ -70,12 +75,27 @@ def possible_enabled() -> bool:
     # points of recall, 11% of the judged ones relevant (2026-11-13).
     return os.getenv("UNCERTAIN_POSSIBLE", "false").strip().lower() in ("1", "true", "yes", "on")
 
+def hoist_terms_enabled() -> bool:
+    """Name each tsquery once in a one-row CTE instead of repeating its literal.
+
+    Off unless UNCERTAIN_HOIST_TERMS=true. It shortens cohort SQL by a third,
+    but the planner no longer sees the tsquery as a constant: on the live
+    database (2026-11-15, ten query shapes) two text-led shapes ran 4x faster
+    and one age shape 2x slower; without it every shape ran as before.
+    """
+    return os.getenv("UNCERTAIN_HOIST_TERMS", "false").strip().lower() in ("1", "true", "yes", "on")
+
+
 LEVEL_COLUMN = "uncertain_level"
 REASONS_COLUMN = "uncertain_reasons"
 
+# A stemmed text search, with the guard that may follow it: the word forms
+# the unstemmed vector must contain (services/text_search.py, exact word forms).
 _TSQUERY_RE = re.compile(
     r"(?P<negated>\bNOT\s+)?(?P<alias>\b[A-Za-z_]\w*)\.(?P<column>search_tsv(?:_papers)?)\s+@@\s+"
-    r"TO_TSQUERY\(\s*'english'\s*,\s*'(?P<query>[^']*)'\s*\)",
+    r"TO_TSQUERY\(\s*'english'\s*,\s*'(?P<query>[^']*)'\s*\)"
+    r"(?:\s+AND\s+(?P=alias)\.(?P<guard_column>search_tsv_exact(?:_papers)?)\s+@@\s+"
+    r"TO_TSQUERY\(\s*'simple'\s*,\s*'(?P<guard>[^']*)'\s*\))?",
     re.IGNORECASE,
 )
 _LABEL_RE = re.compile(r":[AB]+\b")
@@ -147,11 +167,30 @@ _NEVER_ALONE = frozenset({
 })
 
 
-def _rarest_parts(parts: List[str]) -> List[str]:
+def guard_for(query: str, guard: Optional[str]) -> Optional[str]:
+    """The part of *guard* that belongs to the words of *query*, without labels.
+
+    A guard has one group per exact word, the asked word first:
+    "(ageing | aging) & weight". A relaxed query that dropped a word drops
+    its group, and searches the whole text, so the labels go.
+    """
+    if not guard:
+        return None
+    words = set(query_words(query))
+    kept = []
+    for group in _top_level_and(_LABEL_RE.sub("", guard)):
+        asked = _WORD_RE.search(group)
+        if asked and asked.group(0) in words:
+            kept.append(group)
+    return " & ".join(kept) or None
+
+
+def _rarest_parts(parts: List[str], guard: Optional[str] = None) -> List[str]:
     """The rarer half of a term's parts (rounded up), in their original order.
 
     Rarity comes from how many datasets contain each part
-    (text_search's frequency lookup); without it, the longest parts.
+    (text_search's frequency lookup); without it, the longest parts. A part
+    with exact word forms (*guard*) is counted in those forms.
     """
     keep = (len(parts) + 1) // 2
     if keep >= len(parts):
@@ -159,7 +198,7 @@ def _rarest_parts(parts: List[str]) -> List[str]:
     counts = None
     try:
         from services import text_search
-        counts = text_search._lookup_counts(parts)  # noqa: SLF001 — shared helper
+        counts = text_search.guarded_counts(parts, [guard_for(part, guard) for part in parts])
     except Exception:  # pragma: no cover — no database available
         counts = None
     if counts and len(counts) == len(parts):
@@ -228,7 +267,7 @@ def relax_near(query: str) -> Optional[str]:
     return " | ".join(dict.fromkeys(alternatives))
 
 
-def relax_tsquery(query: str) -> Optional[str]:
+def relax_tsquery(query: str, guard: Optional[str] = None) -> Optional[str]:
     """The weaker form of a tsquery: its rarer half, anywhere in the text.
 
     "young & children" → "children" ("young" is a modifier, never kept alone);
@@ -243,7 +282,7 @@ def relax_tsquery(query: str) -> Optional[str]:
     unscoped = _LABEL_RE.sub("", query)
     parts = [f"({p})" if ("|" in p and not p.startswith("(")) else p
              for p in _top_level_and(unscoped)]
-    kept = _rarest_parts(parts)
+    kept = _rarest_parts(parts, guard)
     # A word that says nothing alone ("state" from "resting & state",
     # "syndrome", "healthy") is no evidence: no weaker form then.
     if len(kept) < len(parts) and all(k.strip("()") in _MODIFIERS or k.strip("()") in _NEVER_ALONE for k in kept):
@@ -345,7 +384,8 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
         if negated(match):
             continue
         query = match.group("query")
-        relaxed = relax_tsquery(query) if (first or not topic) else None
+        guard = match.group("guard")
+        relaxed = relax_tsquery(query, guard) if (first or not topic) else None
         first = False
         if relaxed is None:
             if not excluded_words:
@@ -359,8 +399,15 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
             dropped = set(query_words(query)) - set(query_words(relaxed))
             # No word dropped: only the scope was widened, to the whole README.
             words.extend(sorted(dropped) or [f"{_README_ONLY} {' '.join(query_words(relaxed))}"])
-        relaxed_atoms.append(f"{match.group('alias')}.{match.group('column')} @@ "
-                             f"TO_TSQUERY('english', '{relaxed}')")
+        atom = (f"{match.group('alias')}.{match.group('column')} @@ "
+                f"TO_TSQUERY('english', '{relaxed}')")
+        # The weaker form still needs the word forms that were asked for:
+        # "ageing" relaxed to its stem would be every README with an age.
+        kept_guard = guard if relaxed == query else guard_for(relaxed, guard)
+        if kept_guard:
+            atom = (f"({atom} AND {match.group('alias')}.{match.group('guard_column')} @@ "
+                    f"TO_TSQUERY('simple', '{kept_guard}'))")
+        relaxed_atoms.append(atom)
     if not relaxed_atoms:
         return None, []
     return " OR ".join(dict.fromkeys(relaxed_atoms)), list(dict.fromkeys(words))
@@ -487,17 +534,27 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
     Labels are dropped: paper text carries the lowest weight, so a search
     scoped to the name and short fields could never reach it.
     """
-    from services.text_search import PAPER_FTS_COLUMN
+    from services import schema_capabilities
+    from services.text_search import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, PAPER_FTS_COLUMN
     spans = _negated_spans(sql)
     atoms = []
     for match in _TSQUERY_RE.finditer(sql):
         if match.group("negated") or any(s < match.start() < e for s, e in spans):
             continue
         query = _LABEL_RE.sub("", match.group("query"))
+        paper = f"{alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')"
+        own = f"{alias}.search_tsv @@ TO_TSQUERY('english', '{query}')"
+        if match.group("guard"):
+            # Exact word forms count in the paper as in the dataset's text.
+            # Without the unstemmed paper vector a paper is no evidence for them.
+            if not schema_capabilities.has_exact_paper_fts():
+                continue
+            guard = _LABEL_RE.sub("", match.group("guard"))
+            paper = f"({paper} AND {alias}.{EXACT_PAPER_FTS_COLUMN} @@ TO_TSQUERY('simple', '{guard}'))"
+            own = f"({own} AND {alias}.{EXACT_FTS_COLUMN} @@ TO_TSQUERY('simple', '{guard}'))"
         # The paper vector also holds the dataset's own text; "only in a
         # paper" means it matches there and not in the dataset's text.
-        atoms.append(f"({alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}') "
-                     f"AND NOT {alias}.search_tsv @@ TO_TSQUERY('english', '{query}'))")
+        atoms.append(f"({paper} AND NOT {own})")
     return " OR ".join(dict.fromkeys(atoms)) or None
 
 
@@ -551,7 +608,12 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
             group_words = age_group_words(*asked_age_range(sql))
             paper = None
             if group_words:
-                vector = "search_tsv_papers" if papers else "search_tsv"
+                # The dataset's own text only. Of 63 datasets without ages whose
+                # only child word was in a paper (live database, 2026-11-17),
+                # about 9 studied children; the rest were adult studies citing
+                # child work (Sherlock, BCIT) and two mouse datasets. Paper-only
+                # matches fall to 'possible' instead.
+                vector = "search_tsv"
                 probable = (f"{alias}.{vector} @@ TO_TSQUERY('english', "
                             f"'{_tsquery_for_words(group_words)}')")
                 reason_probable = "ages not recorded; the description names the age group"
@@ -601,9 +663,12 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
 # ── Rewrite ───────────────────────────────────────────────────────────────────
 
 def _flatten_and(node) -> list:
+    from services.text_search import is_guarded_pair
     if isinstance(node, exp.And):
         return _flatten_and(node.left) + _flatten_and(node.right)
     if isinstance(node, exp.Paren) and isinstance(node.this, exp.And):
+        if is_guarded_pair(node):
+            return [node]   # a text search and its word forms: one condition
         return _flatten_and(node.this)
     return [node]
 
@@ -616,7 +681,7 @@ def _dataset_alias(select) -> Optional[str]:
     return None
 
 
-def apply(sql: str, papers: Optional[bool] = None) -> str:
+def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] = None) -> str:
     """The query with uncertain conditions softened and the two tier columns.
 
     *papers*: let paper text serve as evidence (default: TEXT_SEARCH_PAPERS
@@ -626,6 +691,8 @@ def apply(sql: str, papers: Optional[bool] = None) -> str:
     if papers is None:
         from services import text_search
         papers = text_search.papers_enabled()
+    if hoist_terms is None:
+        hoist_terms = hoist_terms_enabled()
     if sqlglot is None or LEVEL_COLUMN in sql:
         return sql
     try:
@@ -659,43 +726,143 @@ def apply(sql: str, papers: Optional[bool] = None) -> str:
     if not soft:
         return sql
 
+    # Keep the indexed candidate filter, then calculate each evidence channel
+    # once for those candidates. The old wrapper copied the same full-text
+    # expression into the candidate WHERE, the tier CASE, and the paper flag.
     inner = tree.copy()
     keep = " AND ".join([*(f"({h})" for h in hard), *(c.keep_sql() for c in soft)])
     inner.set("where", exp.Where(this=sqlglot.parse_one(keep, read="postgres")))
     inner_sql = inner.sql(dialect="postgres")
 
-    states = ",\n      ".join(
-        [f"{c.state_sql()} AS u{i}" for i, c in enumerate(soft)]
-        + [f"({c.paper}) AS p{i}" for i, c in enumerate(soft) if c.paper])
-    names = [f"us.u{i}" for i in range(len(soft))]
-    unsure = " + ".join(f"(CASE WHEN {n} > 0 THEN 1 ELSE 0 END)" for n in names)
-    evidence = " OR ".join(f"{n} <= 1" for n in names)
+    reserved = sql.lower()
+    def unique_cte_name(base: str) -> str:
+        candidate = base
+        suffix = 2
+        while re.search(rf"\b{re.escape(candidate)}\b", reserved):
+            candidate = f"{base}_{suffix}"
+            suffix += 1
+        return candidate.lower()
+
+    terms_name = unique_cte_name("_qf_tier_terms")
+    terms_alias = unique_cte_name("_qf_q")
+
+    evidence_columns = [f"{alias}.id"]
+    state_cases = []
+    paper_columns = []
+    for i, condition in enumerate(soft):
+        confirmed = f"confirmed_{i}"
+        probable = f"probable_{i}"
+        known = f"known_{i}"
+        paper = f"paper_{i}"
+        evidence_columns.extend((
+            f"({condition.sql}) AS {confirmed}",
+            f"({condition.probable}) AS {probable}" if condition.probable
+            else f"FALSE AS {probable}",
+            f"({condition.known}) AS {known}" if condition.known
+            else f"TRUE AS {known}",
+            f"({condition.paper}) AS {paper}" if condition.paper
+            else f"FALSE AS {paper}",
+        ))
+
+        raw = f"ev.{confirmed}"
+        weak = f"ev.{probable}"
+        recorded = f"ev.{known}"
+        possible = "2" if possible_enabled() else "9"
+        if condition.known is None:
+            state = f"CASE WHEN {raw} THEN 0 WHEN {weak} THEN 1 ELSE 9 END"
+        elif condition.kind == "diagnosis":
+            state = (f"CASE WHEN {raw} THEN 0 WHEN {weak} THEN 1 "
+                     f"WHEN NOT {recorded} THEN {possible} ELSE 9 END"
+                     if possible_enabled() else
+                     f"CASE WHEN {raw} THEN 0 WHEN {weak} THEN 1 ELSE 9 END")
+        else:
+            unknown = f"CASE WHEN {weak} THEN 1 ELSE {possible} END"
+            state = (f"CASE WHEN {raw} THEN 0 WHEN NOT {recorded} "
+                     f"THEN {unknown} ELSE 9 END")
+        state_cases.append(f"{state} AS u{i}")
+        if condition.paper:
+            paper_columns.append(f"ev.{paper} AS p{i}")
+
+    raw_sql = (
+        f"SELECT {', '.join(evidence_columns)}\n"
+        f"FROM bids_datasets AS {alias}"
+    )
+    # Evidence is looked up per candidate row (LATERAL). Two CTEs joined on id
+    # read the same, but the planner then sorts every file row of the
+    # candidates instead of hashing them: 3 s became 5 s on the live database.
+    raw_where = f"\nWHERE {alias}.id = tier_base.id"
+
+    # Full-text predicates are used in the candidate filter and again to label
+    # their evidence level. Hoist identical tsquery values into a one-row CTE;
+    # both stages refer to q.qN instead of copying long synonym lists.
+    tsquery_re = re.compile(
+        r"TO_TSQUERY\(\s*'(?P<config>english|simple)'\s*,\s*'(?P<query>[^']*)'\s*\)",
+        re.IGNORECASE,
+    )
+    query_values = {}
+    for match in tsquery_re.finditer(inner_sql + "\n" + raw_sql):
+        key = (match.group("config").lower(), match.group("query"))
+        query_values.setdefault(key, f"q{len(query_values)}")
+
+    terms_cte = None
+    if query_values and hoist_terms:
+        def replace_tsquery(match: re.Match) -> str:
+            key = (match.group("config").lower(), match.group("query"))
+            return f"{terms_alias}.{query_values[key]}"
+
+        inner_sql = tsquery_re.sub(replace_tsquery, inner_sql)
+        raw_sql = tsquery_re.sub(replace_tsquery, raw_sql)
+        terms_select = ", ".join(
+            f"TO_TSQUERY('{config}', '{query}') AS {column}"
+            for (config, query), column in query_values.items()
+        )
+        terms_cte = f"{terms_name} AS (SELECT {terms_select})"
+
+        # The query CTE is one row; joining it makes its named tsquery values
+        # visible to the indexed candidate WHERE and the evidence expressions.
+        inner_tree = sqlglot.parse_one(inner_sql, read="postgres")
+        query_table = exp.Table(
+            this=exp.to_identifier(terms_name),
+            alias=exp.TableAlias(this=exp.to_identifier(terms_alias)),
+        )
+        joins = list(inner_tree.args.get("joins") or [])
+        joins.append(exp.Join(this=query_table, kind="CROSS"))
+        inner_tree.set("joins", joins)
+        inner_sql = inner_tree.sql(dialect="postgres")
+        raw_sql += f"\nCROSS JOIN {terms_name} AS {terms_alias}"
+    raw_sql += raw_where
+
+    state_sql = (
+        f"SELECT ev.id, {', '.join(state_cases)}"
+        + (f", {', '.join(paper_columns)}" if paper_columns else "")
+        + f"\nFROM (\n{raw_sql}\n) AS ev"
+    )
+
+    names = [f"evidence.u{i}" for i in range(len(soft))]
+    unsure = " + ".join(f"(CASE WHEN {name} > 0 THEN 1 ELSE 0 END)" for name in names)
+    evidence = " OR ".join(f"{name} <= 1" for name in names)
     level = f"GREATEST({', '.join(names)})" if len(names) > 1 else names[0]
     reasons = []
     for i, c in enumerate(soft):
         branches = []
         if c.paper:
-            branches.append(f"WHEN us.u{i} = 1 AND us.p{i} THEN {_sql_literal(PAPER_REASON)}")
+            branches.append(f"WHEN evidence.u{i} = 1 AND evidence.p{i} THEN {_sql_literal(PAPER_REASON)}")
         if c.reason_probable:
-            branches.append(f"WHEN us.u{i} = 1 THEN {_sql_literal(c.reason_probable)}")
+            branches.append(f"WHEN evidence.u{i} = 1 THEN {_sql_literal(c.reason_probable)}")
         if c.reason_possible:
-            branches.append(f"WHEN us.u{i} = 2 THEN {_sql_literal(c.reason_possible)}")
+            branches.append(f"WHEN evidence.u{i} = 2 THEN {_sql_literal(c.reason_possible)}")
         if branches:
             reasons.append(f"CASE {' '.join(branches)} END")
     reasons_sql = (f"NULLIF(CONCAT_WS('; ', {', '.join(reasons)}), '')" if reasons else "NULL")
 
+    with_sql = f"WITH {terms_cte}\n" if terms_cte else ""
     return (
-        f"SELECT tier_base.*, ut.{LEVEL_COLUMN}, ut.{REASONS_COLUMN}\n"
+        f"{with_sql}"
+        f"SELECT tier_base.*, {level} AS {LEVEL_COLUMN}, "
+        f"{reasons_sql} AS {REASONS_COLUMN}\n"
         f"FROM (\n{inner_sql}\n) AS tier_base\n"
-        "CROSS JOIN LATERAL (\n"
-        f"  SELECT {level} AS {LEVEL_COLUMN}, {reasons_sql} AS {REASONS_COLUMN},\n"
-        f"         {unsure} AS n_unsure, ({evidence}) AS has_evidence\n"
-        "  FROM (\n"
-        f"    SELECT {states}\n"
-        f"    FROM bids_datasets AS {alias} WHERE {alias}.id = tier_base.id\n"
-        "  ) AS us\n"
-        ") AS ut\n"
-        f"WHERE ut.{LEVEL_COLUMN} < 9 AND ut.n_unsure <= {MAX_UNSURE} AND ut.has_evidence"
+        f"CROSS JOIN LATERAL (\n{state_sql}\n) AS evidence\n"
+        f"WHERE {level} < 9 AND ({unsure}) <= {MAX_UNSURE} AND ({evidence})"
     )
 
 

@@ -3124,6 +3124,28 @@
         "having",
         "ilike"
       ]
+    },
+    {
+      "question": "Find datasets with at least 20 participants aged 18 or younger.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id HAVING (SELECT COUNT(DISTINCT p2.participant_id) FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.age <= 18) >= 20",
+      "pattern": "age_subgroup_count",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "having",
+        "participant_subgroup",
+        "age_filter"
+      ],
+      "assistant_review": {
+        "status": "REVIEW REQUIRED",
+        "proposed_by": "Codex",
+        "source": "New authored example; not taken from the Fable gold set.",
+        "reason": "Verify that age is the recorded participant age in this schema and that unknown ages should not count toward the threshold."
+      }
     }
   ],
   "ranking_query": [
@@ -3238,6 +3260,27 @@
       "structure": [
         "ranking"
       ]
+    },
+    {
+      "question": "Show the 10 most recently published datasets.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id ORDER BY d.publish_date DESC NULLS LAST LIMIT 10",
+      "pattern": "recently_published_top_n",
+      "meta": {
+        "datatype": [],
+        "suffix": [],
+        "task": [],
+        "diagnosis": []
+      },
+      "structure": [
+        "ranking",
+        "publication_date"
+      ],
+      "assistant_review": {
+        "status": "REVIEW REQUIRED",
+        "proposed_by": "Codex",
+        "source": "New authored example; not taken from the Fable gold set.",
+        "reason": "Confirm publish_date is available in production and that this phrasing should rank by OpenNeuro publication date."
+      }
     }
   ],
   "scan_filter": [
