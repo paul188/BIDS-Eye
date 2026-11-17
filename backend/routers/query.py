@@ -40,7 +40,7 @@ from schemas import (
     QueryResponse,
     TextToSQLResult,
 )
-from services import dataset_description, query_filters
+from services import dataset_description, interpretation_store, query_filters
 from services import uncertain_tier
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
@@ -163,6 +163,10 @@ async def _deprecations_for(
     return {row[0]: row[1] for row in rows}
 
 
+# Below this many results a free-text-only condition is dropped (see below).
+_MIN_RESULTS = 3
+
+
 async def _count_with_base_correction(
     session: AsyncSession, query_id: str, cached: CachedQuery, question: str
 ) -> int:
@@ -176,7 +180,32 @@ async def _count_with_base_correction(
         result = await session.execute(
             text(build_count_sql(cached.base_sql)), cached.params
         )
-        return int(result.scalar() or 0)
+        total = int(result.scalar() or 0)
+        if total < _MIN_RESULTS and cached.relaxed_sql and not cached.relaxed:
+            # An empty or nearly empty page is the worst answer: search once
+            # more without the free-text-only conditions and say so. This is
+            # the check of a free-text phrase against the datasets that match
+            # the other filters: a phrase that leaves fewer than _MIN_RESULTS
+            # of them is not used as a filter. The text rank still puts the
+            # datasets that do contain the words first.
+            try:
+                relaxed = await session.execute(
+                    text(build_count_sql(cached.relaxed_sql)), cached.params
+                )
+                relaxed_total = int(relaxed.scalar() or 0)
+            except Exception:
+                await session.rollback()
+                relaxed_total = 0
+            if relaxed_total > total:
+                cached.base_sql = cached.relaxed_sql
+                cached.relaxed = True
+                cached.filter_sql = None
+                cached.explanation = ((cached.explanation or "").rstrip() +
+                                      " Fewer than three datasets matched every condition, so the"
+                                      " free-text conditions only order the result.").strip()
+                query_cache.update(query_id, cached)
+                return relaxed_total
+        return total
     except Exception as exc:
         # Roll back the aborted transaction before any retry — without this,
         # every subsequent execute on the same session fails with
@@ -477,7 +506,19 @@ async def query_datasets(
     """
     await _enforce_rate_limit(session, _auth.get("sub", ""))
     page, page_size = _clamp_page(1, _DEFAULT_PAGE_SIZE)
-    translation = await text_to_sql(body.question)
+    # The same question gets the same translation every time (the models that
+    # write it are not repeatable): reuse a stored one when there is one.
+    stored = await interpretation_store.get(session, body.question)
+    if stored is not None:
+        translation = TextToSQLResult(
+            sql=stored["sql"], explanation=stored.get("explanation") or "",
+            scored_filters=stored.get("scored_filters") or [],
+            apply_relevance=bool(stored.get("apply_relevance")),
+            params=stored.get("params") or {}, rank_tsquery=stored.get("rank_tsquery"),
+            filter_sql=stored.get("filter_sql"), relaxed_sql=stored.get("relaxed_sql"),
+        )
+    else:
+        translation = await text_to_sql(body.question)
 
     cached = CachedQuery(
         base_sql=translation.sql,
@@ -488,6 +529,8 @@ async def query_datasets(
         explanation=translation.explanation,
         self_corrected=translation.self_corrected,
         filter_sql=translation.filter_sql,
+        relaxed_sql=translation.relaxed_sql,
+        relaxed=bool(stored and stored.get("relaxed")),
     )
     query_id = query_cache.put(cached)
 
@@ -503,6 +546,24 @@ async def query_datasets(
             "reranked": reranked or None,
         }
     )
+
+    payload = {
+        "sql": cached.base_sql, "params": cached.params,
+        "scored_filters": cached.scored_filters, "apply_relevance": cached.apply_relevance,
+        "rank_tsquery": cached.rank_tsquery, "explanation": cached.explanation,
+        "filter_sql": cached.filter_sql,
+        "relaxed_sql": None if cached.relaxed else cached.relaxed_sql,
+        "relaxed": cached.relaxed,
+    }
+    # Every search is recorded for good, whatever it found.
+    await interpretation_store.log_query(
+        session, body.question, payload, total, from_cache=stored is not None,
+        relaxed=cached.relaxed, self_corrected=bool(cached.self_corrected),
+        fallback=cached.base_sql == _FALLBACK_SQL,
+    )
+    # Keep a translation that found something and needed no emergency fallback.
+    if stored is None and total > 0 and cached.base_sql != _FALLBACK_SQL:
+        await interpretation_store.put(session, body.question, payload, total)
 
     from models import UserQuery
     try:

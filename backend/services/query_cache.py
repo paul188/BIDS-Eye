@@ -48,6 +48,10 @@ class CachedQuery:
     # The query before the uncertain tier (services/query_filters.py reads its
     # conditions as chips); None when chips cannot be offered.
     filter_sql: Optional[str] = None
+    # The query without its free-text-only conditions; used once when the full
+    # query finds nothing. *relaxed* says that it replaced base_sql.
+    relaxed_sql: Optional[str] = None
+    relaxed: bool = False
     created_at: float = field(default_factory=time.monotonic)
 
 

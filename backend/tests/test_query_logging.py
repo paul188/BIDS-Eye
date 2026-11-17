@@ -71,8 +71,13 @@ def test_a_search_is_recorded_and_committed(monkeypatch) -> None:
     session = _Session()
     _search(monkeypatch, session, "fMRI datasets with n-back")
 
-    assert [(row.github_login, row.question) for row in session.committed] == [
+    by_user = [row for row in session.committed if type(row).__name__ == "UserQuery"]
+    assert [(row.github_login, row.question) for row in by_user] == [
         ("some-login", "fMRI datasets with n-back")]
+    # The permanent log of every search (models.QueryLog) gets its row too.
+    logged = [row for row in session.committed if type(row).__name__ == "QueryLog"]
+    assert [(row.question, row.total, row.from_cache) for row in logged] == [
+        ("fMRI datasets with n-back", 0, False)]
     assert not session.released, "the row was left in a savepoint and never committed"
 
 

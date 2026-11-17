@@ -204,7 +204,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     )
 
     try:
-        raw = llm_generate(prompt, temperature=0.1, api_key=api_key)
+        raw = llm_generate(prompt, temperature=0.0, api_key=api_key)
         corrected = _rewrite_generated_sql(raw, question).sql
         return corrected if corrected != _FALLBACK_SQL else sql
     except LLMAllFailedError as exc:
@@ -261,7 +261,13 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "3. Participant diagnosis: only add a diagnosis filter if one is explicitly present in "
         "[Resolved DB filters]. Words like 'patients', 'participants', 'subjects' refer to "
         "study participants in general — NOT a diagnosis constraint. "
-        "Never generate `p.diagnosis != 'healthy_volunteer'` based only on those words.\n"
+        "Never generate `p.diagnosis != 'healthy_volunteer'` based only on those words. "
+        "'Healthy', 'normal', 'controls' add NO condition at all (no diagnosis filter, no "
+        "text_match): most datasets include healthy participants and few record it. "
+        "If a 'participant sex:' or 'participant age:' line is present, copy it verbatim as its "
+        "own AND condition and write no other condition on sex or age; never combine sex, age "
+        "and diagnosis in one EXISTS (that demands one participants row with all three, and "
+        "most datasets record only some of them).\n"
         "4. VOCABULARY MISS: If [VOCABULARY MISS] appears, those terms have no canonical code. "
         "Use ONLY the text_match(...) clause shown in that block (copy it verbatim). "
         "Never assign a VOCABULARY MISS term to o.task, o.datatype, o.suffix, or p.diagnosis.\n"
@@ -272,8 +278,15 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "If a 'dataset size: ...' line is present, AND that condition into WHERE verbatim.\n"
         "- Text search: text_match('<keyword>') is a search macro that the system expands into "
         "a full-text predicate over the dataset's name, description, study fields and README. "
-        "It is a boolean condition for WHERE and combines with AND / OR / NOT. Use it for every "
-        "keyword or topic search on dataset text. Use the single most distinctive keyword "
+        "It is a boolean condition for WHERE and combines with AND / OR / NOT. Use it only for "
+        "a subject the DATA must be about and that no line in [Resolved DB filters] already "
+        "covers. Add NO text_match (and no other condition) for: what the asker wants to do with "
+        "the data ('for machine learning', 'for classification', 'to test my pipeline'); wishes "
+        "about quality, difficulty or documentation ('standard', 'simple', 'non-trivial', "
+        "'well documented', 'labeled', 'complete', 'sufficient sample size', 'images included'); "
+        "file formats; what a publication reports; a dataset named only as an example or "
+        "comparison ('like ABIDE', 'similar to DEAP'). Such words describe the request, not the "
+        "dataset text, and a condition on them returns nothing. Use the single most distinctive keyword "
         "(e.g. for 'drinking alcohol' write text_match('alcohol')) — several words in one "
         "term must ALL occur, so add words only when each one is essential. "
         "Separate alternatives with ' | ': text_match('anaesthesia | anesthesia'). "
@@ -285,6 +298,12 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
         "unnest(d.paper_references), scanner strings in other_entities. "
         "Never use text_match or ILIKE on diagnosis, task, datatype, or suffix "
         "(they hold canonical codes).\n"
+        "- Alternatives: data types or groups listed as options ('fMRI, EEG or fNIRS', "
+        "'brain signals (fMRI, EEG, fNIRS)', 'MI, ERP and SSVEP paradigms' as kinds of dataset) "
+        "mean ANY of them: join their conditions with OR. Use AND only when one dataset must "
+        "contain all of them ('simultaneous EEG and fMRI', 'T1w and BOLD for every subject'). "
+        "A modality mentioned only in a comparison ('EEG data, similar to the fMRI collection X') "
+        "is not a filter.\n"
         "- Do NOT add LIMIT unless the question asks for 'top N'.\n"
         "## Required query structure\n"
         "- Only use tables/columns present in the schema.\n"
@@ -404,6 +423,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         # (ts_rank_cd over search_tsv) is silently left out.
         rank_tsquery=rewritten.rank_tsquery,
         filter_sql=rewritten.filter_sql,
+        relaxed_sql=rewritten.relaxed_sql,
     )
 
 

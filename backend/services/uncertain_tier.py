@@ -139,6 +139,13 @@ _MODIFIERS = frozenset({
     "typical", "various", "several", "repeated", "dense", "continuous", "natural",
 })
 
+# Nouns too general to stand for the term they were part of.
+_NEVER_ALONE = frozenset({
+    "state", "resting", "rest", "syndrome", "disease", "disorder", "task", "study", "data", "dataset", "brain",
+    "control", "controls", "subjects", "participants", "patients", "images", "image",
+    "analysis", "results", "design", "level", "group", "type", "related", "based",
+})
+
 
 def _rarest_parts(parts: List[str]) -> List[str]:
     """The rarer half of a term's parts (rounded up), in their original order.
@@ -159,7 +166,8 @@ def _rarest_parts(parts: List[str]) -> List[str]:
         # A modifier ("young", "healthy", "many") is never kept in place of a
         # noun, however rare it happens to be.
         order = sorted(range(len(parts)),
-                       key=lambda i: (parts[i].strip("()") in _MODIFIERS, counts[i], -len(parts[i])))
+                       key=lambda i: (parts[i].strip("()") in _MODIFIERS or parts[i].strip("()") in _NEVER_ALONE,
+                                      counts[i], -len(parts[i])))
     else:
         order = sorted(range(len(parts)), key=lambda i: -len(parts[i]))
     chosen = set(order[:keep])
@@ -235,7 +243,12 @@ def relax_tsquery(query: str) -> Optional[str]:
     unscoped = _LABEL_RE.sub("", query)
     parts = [f"({p})" if ("|" in p and not p.startswith("(")) else p
              for p in _top_level_and(unscoped)]
-    relaxed = " & ".join(_rarest_parts(parts))
+    kept = _rarest_parts(parts)
+    # A word that says nothing alone ("state" from "resting & state",
+    # "syndrome", "healthy") is no evidence: no weaker form then.
+    if len(kept) < len(parts) and all(k.strip("()") in _MODIFIERS or k.strip("()") in _NEVER_ALONE for k in kept):
+        return None
+    relaxed = " & ".join(kept)
     return relaxed if relaxed.replace(" ", "") != query.replace(" ", "") else None
 
 

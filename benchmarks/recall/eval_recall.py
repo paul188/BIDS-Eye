@@ -139,7 +139,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
                 explanation=translation.explanation,
                 self_corrected=translation.self_corrected,
             )
-            for name in ("rank_tsquery",):  # newer versions carry more ranking input
+            for name in ("rank_tsquery", "relaxed_sql"):  # newer versions carry more ranking input
                 if hasattr(translation, name) and hasattr(cached, name):
                     setattr(cached, name, getattr(translation, name))
             query_id = query_cache.put(cached)
@@ -170,6 +170,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
                 returned=[r["accession_id"] or str(r["id"]) for r in rows],
                 fallback=cached.base_sql == FALLBACK_SQL,
                 self_corrected=bool(cached.self_corrected),
+                relaxed=bool(getattr(cached, "relaxed", False)),
                 reranked=len(getattr(cached, "rerank_ordered", None) or []) + len(getattr(cached, "rerank_demoted", None) or []),
                 explanation=translation.explanation,
                 sql=cached.base_sql,

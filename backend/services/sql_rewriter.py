@@ -138,6 +138,16 @@ _PARTICIPANTS_COUNT_WHERE_RE = re.compile(
 _SQL_END_MARKER_RE = re.compile(r"\[/SQL\]|\[SQL\]|```", re.IGNORECASE)
 
 
+
+_HEALTHY_CODES = frozenset({"typically_developing", "neurotypical", "control", "controls", "normal", "normal_control"})
+
+
+def _is_healthy_code(code: str) -> bool:
+    """True for a diagnosis code that only says the participant is healthy."""
+    code = code.strip().lower()
+    return code.startswith("healthy") or code in _HEALTHY_CODES
+
+
 def _cut_at_end_marker(sql: str) -> tuple[str, bool]:
     """Drop a closing [/SQL] tag or code fence and anything after it."""
     m = _SQL_END_MARKER_RE.search(sql)
@@ -156,6 +166,10 @@ class RewriteResult:
     # The query before the uncertain tier wraps it: its WHERE conditions are
     # the filter chips (services/query_filters.py). Equals sql without the tier.
     filter_sql: Optional[str] = None
+    # The same query without its free-text-only conditions, for the case that
+    # the full query finds nothing (routers/query.py); None when there is no
+    # such condition to drop.
+    relaxed_sql: Optional[str] = None
 
 
 class SqlRewriteService:
@@ -220,10 +234,20 @@ class SqlRewriteService:
         sql = self._rewrite_task_ilike_concepts(sql)
         sql = _expand_concept_keys(sql)
         sql = self._rewrite_participant_count_to_having(sql)
+        sql = self._drop_healthy_filters(sql)
+        sql = self._decorrelate_grouped_exists(sql)
         sql = self._guard_json_number_casts(sql)
+        sql = self._drop_invented_text_filters(sql, augmented_question)
         sql = self._inject_vocab_miss(sql, augmented_question)
         sql = self._inject_topics(sql, augmented_question)
         tiered = _uncertain_tier.enabled()
+        relaxed_sql = None
+        without_text = self._without_text_only_filters(sql)
+        if without_text is not None:
+            relaxed_sql = _text_search.expand_text_search(
+                without_text, papers=False if tiered else None).sql
+            if tiered:
+                relaxed_sql = _uncertain_tier.apply(relaxed_sql)
         # With the tier on, paper text is evidence for the second tier only;
         # confirmed results match on the dataset's own text.
         expanded = _text_search.expand_text_search(sql, papers=False if tiered else None)
@@ -234,7 +258,7 @@ class SqlRewriteService:
             # (services/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)
         return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery,
-                             filter_sql=filter_sql)
+                             filter_sql=filter_sql, relaxed_sql=relaxed_sql)
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""
@@ -634,6 +658,238 @@ class SqlRewriteService:
                 flags=re.IGNORECASE | re.DOTALL,
             )
         return sql
+
+    def _drop_healthy_filters(self, sql: str) -> str:
+        """Remove conditions that require a recorded healthy diagnosis.
+
+        1,331 of the 1,718 classified datasets include healthy participants,
+        and 175 record it as a diagnosis. Requiring the record (or the word
+        "healthy" in the text) removed 77 of 230 correct answers of one real
+        request and all 15 of another; not filtering keeps them and lets in
+        the few patient-only datasets. So "healthy" never filters. A list
+        that mixes healthy codes with a disease stays as it is.
+        """
+        if parse_one is None or exp is None or "diagnosis" not in sql.lower():
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+            changed = False
+            for node in list(parsed.find_all(exp.EQ, exp.In)):
+                column = node.this
+                if not isinstance(column, exp.Column) or column.name.lower() != "diagnosis":
+                    continue
+                if isinstance(node, exp.EQ):
+                    values = [node.expression]
+                else:
+                    values = node.expressions
+                    if not values or node.args.get("query") is not None:
+                        continue
+                if not all(isinstance(v, exp.Literal) and v.is_string and _is_healthy_code(v.this)
+                           for v in values):
+                    continue
+                if node.find_ancestor(exp.Not) is not None:
+                    continue  # "no healthy participants" is a real restriction
+                node.replace(exp.true())
+                changed = True
+            if not changed:
+                return sql
+
+            def simplify(node):
+                inner = node.unnest() if isinstance(node, exp.Paren) else node
+                if isinstance(inner, exp.And):
+                    left, right = simplify(inner.left), simplify(inner.right)
+                    if isinstance(left, exp.Boolean) and left.this:
+                        return right
+                    if isinstance(right, exp.Boolean) and right.this:
+                        return left
+                    return exp.and_(left, right)
+                if isinstance(inner, exp.Or):
+                    left, right = simplify(inner.left), simplify(inner.right)
+                    if any(isinstance(side, exp.Boolean) and side.this for side in (left, right)):
+                        return exp.true()
+                    return exp.paren(exp.or_(left, right))
+                if isinstance(inner, exp.Exists):
+                    sub = inner.this
+                    where = sub.args.get("where") if isinstance(sub, exp.Select) else None
+                    if where is not None and not sub.args.get("group"):
+                        rest = simplify(where.this)
+                        # Only the link to the dataset is left: "has any
+                        # participants row" is not what was asked.
+                        if isinstance(rest, exp.Boolean) and rest.this or (
+                                isinstance(rest, exp.EQ)
+                                and all(isinstance(side, exp.Column) for side in (rest.this, rest.expression))):
+                            return exp.true()
+                        where.set("this", rest)
+                    return inner
+                return node
+
+            for where in list(parsed.find_all(exp.Where)):
+                if where.find_ancestor(exp.Exists) is not None:
+                    continue  # handled through its EXISTS
+                rest = simplify(where.this)
+                if isinstance(rest, exp.Boolean) and rest.this:
+                    where.pop()
+                else:
+                    where.set("this", rest)
+            log.info("Dropped the healthy-diagnosis requirement")
+            return parsed.sql(dialect="postgres")
+        except Exception:
+            return sql
+
+    def _decorrelate_grouped_exists(self, sql: str) -> str:
+        """Turn EXISTS (... WHERE x.dataset_id = d.id GROUP BY ... HAVING ...) into d.id IN (...).
+
+        "At least 3 sessions per subject" was written as a NOT EXISTS with a
+        GROUP BY that the database evaluates once per dataset: it ran into the
+        300 s limit and the request fell back to an unfiltered sample. The
+        same test as one grouped subquery over the whole table takes seconds.
+        """
+        if parse_one is None or exp is None or "having" not in sql.lower():
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+            changed = False
+            for node in list(parsed.find_all(exp.Exists)):
+                sub = node.this
+                if not isinstance(sub, exp.Select) or not sub.args.get("group") or not sub.args.get("having"):
+                    continue
+                where = sub.args.get("where")
+                if where is None or sub.args.get("joins"):
+                    continue
+                conjuncts = self._flatten_and(where.this)
+                link = None
+                for c in conjuncts:
+                    if (isinstance(c, exp.EQ) and isinstance(c.this, exp.Column)
+                            and isinstance(c.expression, exp.Column)):
+                        names = {(c.this.table.lower(), c.this.name.lower()),
+                                 (c.expression.table.lower(), c.expression.name.lower())}
+                        inner = [x for x in (c.this, c.expression) if x.name.lower() == "dataset_id"]
+                        if ("d", "id") in names and inner:
+                            link, inner_col = c, inner[0]
+                            break
+                if link is None:
+                    continue
+                rest = [c for c in conjuncts if c is not link]
+                if any(col.table.lower() == "d" for c in rest for col in c.find_all(exp.Column)):
+                    continue
+                if rest:
+                    where.set("this", self._combine_and(rest))
+                else:
+                    where.pop()
+                group = sub.args["group"]
+                group.set("expressions", [inner_col.copy()] + list(group.expressions))
+                sub.set("expressions", [inner_col.copy()])
+                replacement = exp.In(this=exp.column("id", table="d"), query=exp.Subquery(this=sub.copy()))
+                node.replace(replacement)
+                changed = True
+            if not changed:
+                return sql
+            log.info("Rewrote a per-dataset grouped EXISTS into one grouped subquery")
+            return parsed.sql(dialect="postgres")
+        except Exception:
+            return sql
+
+    def _without_text_only_filters(self, sql: str) -> Optional[str]:
+        """*sql* without the top-level AND parts that are free-text searches alone.
+
+        The fallback for an empty result: a free-text condition (words the
+        vocabulary does not know, a descriptive phrase) is the weakest part of
+        a query, and the one that most often matches nothing. Conditions on
+        recorded facts, and text searches that back up such a condition
+        (diagnosis, task, topic), stay. None when nothing can be dropped or
+        nothing would remain.
+        """
+        if parse_one is None or exp is None or "text_match" not in sql.lower():
+            return None
+        try:
+            parsed = parse_one(sql, read="postgres")
+            where = parsed.args.get("where") if isinstance(parsed, exp.Select) else None
+            if where is None:
+                return None
+
+            def parts(node):
+                node = node.unnest() if isinstance(node, exp.Paren) else node
+                if isinstance(node, exp.And):
+                    return parts(node.left) + parts(node.right)
+                return [node]
+
+            def text_only(node) -> bool:
+                node = node.unnest() if isinstance(node, exp.Paren) else node
+                if isinstance(node, exp.Or):
+                    return text_only(node.left) and text_only(node.right)
+                return isinstance(node, exp.Anonymous) and node.name.lower() == "text_match"
+
+            conjuncts = parts(where.this)
+            kept = [c for c in conjuncts if not text_only(c)]
+            if len(kept) == len(conjuncts) or not kept:
+                return None
+            merged = kept[0]
+            for c in kept[1:]:
+                merged = exp.and_(merged, c)
+            parsed.set("where", exp.Where(this=merged))
+            return parsed.sql(dialect="postgres")
+        except Exception:
+            return None
+
+    def _drop_invented_text_filters(self, sql: str, augmented_question: str) -> str:
+        """Remove text conditions the SQL model added on its own.
+
+        Preprocessing decides which words are searched: every text_match() it
+        wants is in the augmented question. The SQL model adds more for words
+        that describe the request ("standard manner", "30 trials per task"),
+        or repeats as text what it already filtered by a table ("mriqc &
+        derivatives" next to the bids_derivatives lookup); such a condition
+        only empties the result. A top-level AND part is dropped when it
+        consists of text_match() calls alone and none of them comes from
+        preprocessing. Mixed parts (a column test OR a text search, as in the
+        species recipes) and negated searches stay, and so does the last
+        remaining condition.
+        """
+        if parse_one is None or exp is None or "text_match" not in sql.lower():
+            return sql
+
+        def key(argument: str) -> tuple:
+            return tuple(sorted(str(term) for term in _parse_alternatives(argument)))
+
+        allowed = {key(m.group(1)) for m in _TEXT_MATCH_CALL_RE.finditer(augmented_question)}
+        try:
+            parsed = parse_one(sql, read="postgres")
+            where = parsed.args.get("where") if isinstance(parsed, exp.Select) else None
+            if where is None:
+                return sql
+
+            def parts(node):
+                node = node.unnest() if isinstance(node, exp.Paren) else node
+                if isinstance(node, exp.And):
+                    return parts(node.left) + parts(node.right)
+                return [node]
+
+            def text_only(node) -> bool:
+                node = node.unnest() if isinstance(node, exp.Paren) else node
+                if isinstance(node, exp.Or):
+                    return text_only(node.left) and text_only(node.right)
+                return isinstance(node, exp.Anonymous) and node.name.lower() == "text_match"
+
+            def invented(node) -> bool:
+                calls = [c for c in node.find_all(exp.Anonymous) if c.name.lower() == "text_match"]
+                arguments = [c.expressions[0].this for c in calls
+                             if c.expressions and isinstance(c.expressions[0], exp.Literal)]
+                return bool(calls) and len(arguments) == len(calls) and all(
+                    key(a) not in allowed for a in arguments)
+
+            conjuncts = parts(where.this)
+            kept = [c for c in conjuncts if not (text_only(c) and invented(c))]
+            if len(kept) == len(conjuncts) or not kept:
+                return sql
+            dropped = [c.sql(dialect="postgres") for c in conjuncts if c not in kept]
+            log.info("Dropped text filters the SQL model invented: %s", "; ".join(dropped))
+            merged = kept[0]
+            for c in kept[1:]:
+                merged = exp.and_(merged, c)
+            parsed.set("where", exp.Where(this=merged))
+            return parsed.sql(dialect="postgres")
+        except Exception:
+            return sql
 
     def _inject_vocab_miss(self, sql: str, augmented_question: str) -> str:
         """Add the free-text filter for unresolved vocabulary terms if the model left it out.

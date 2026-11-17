@@ -45,6 +45,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import sys
 import textwrap
 from enum import Enum
@@ -64,6 +65,7 @@ from join_registry import (
     field_to_db_col as _field_to_db_col,
 )
 from text_terms import (
+    MODE_ALL as _MODE_ALL,
     MODE_LOOSE as _MODE_LOOSE,
     MODE_NEAR as _MODE_NEAR,
     MODE_SHORT as _MODE_SHORT,
@@ -297,6 +299,18 @@ class QueryPlan(BaseModel):
         default=None,
         description="License string to search for, e.g. 'CC0', 'PDDL'"
     )
+    request_wishes: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Phrases of the request that say what the asker wants or intends, not what the "
+            "data contain, and that no dataset text would state: purpose ('for machine "
+            "learning'), quality or difficulty ('standard manner', 'non-trivial', 'very "
+            "simple'), documentation ('labeled', 'well documented', 'images included'), what "
+            "a publication reports, datasets named only for comparison ('like ABIDE'). "
+            "They are shown to the user as not searched. A phrase listed here must not "
+            "appear in any other field."
+        ),
+    )
     doi_required: Optional[bool] = Field(
         default=None,
         description="True = must have a DOI; False = must NOT have a DOI; None = no constraint"
@@ -508,9 +522,25 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     the pipeline runs a full-text search over the dataset's name, description
     and README.
 
+    Words that describe the REQUEST rather than the content of the data go into
+    request_wishes and NOWHERE else (not description_search, name_search,
+    scan_terms or topics). A text search for them returns nothing, because no
+    README contains them:
+      • what the asker wants to do with the data: "for machine learning",
+        "for classification", "to train a model", "to test my pipeline"
+      • wishes about quality, difficulty or documentation: "standard", "simple",
+        "very simple", "non-trivial", "good quality", "well documented",
+        "labeled", "complete", "sufficient sample size", "images included",
+        "ground truth", "in a standard format", "3D"
+      • what a publication reports ("a paper that reports group-level results")
+      • a dataset named only as an example or comparison: "like ABIDE",
+        "similar to DEAP" → nothing (name_search only when the user asks FOR
+        that dataset)
+      • a modality named only in such a comparison ("EEG data similar to the
+        fMRI dataset ABIDE" asks for EEG, not for fMRI)
+    List each such phrase in request_wishes and leave it out of every other field.
+
     Route a word/phrase to description_search when it is:
-      • A difficulty or complexity adjective: "complex", "simple", "basic",
-        "advanced", "demanding", "high-load", "challenging", "easy"
       • A paradigm-style label not tied to a specific task code: "longitudinal",
         "clinical", "ecological", "naturalistic" (when not used as a task name)
       • A population qualifier: "pediatric", "geriatric", "bilingual", "elderly"
@@ -523,10 +553,10 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     Examples:
       "complex motor and cognitive tasks"
           → scan_requirements: [{scan_terms:["motor"]},{scan_terms:["cognitive"]}]
-            description_search: "complex"
-      "demanding attention tasks"
-          → scan_requirements: [{scan_terms:["attention"]}]
-            description_search: "demanding"
+            description_search: null   ← "complex" is a wish, not content
+      "preprocessed fMRI in a standard manner for machine learning"
+          → scan_requirements: [{scan_terms:["fMRI"]}]
+            description_search: "preprocessed"
       "pediatric resting state fMRI"
           → scan_requirements: [{scan_terms:["resting state","fMRI"]}]
             description_search: "pediatric"
@@ -679,7 +709,8 @@ def _call_gemini(prompt: str, api_key: str) -> str:
     raises llm_client.LLMAllFailedError if every tier fails.
     """
     from llm_client import llm_generate
-    return llm_generate(prompt, system=_SYSTEM_PROMPT, temperature=0.1, api_key=api_key)
+    # Temperature 0: the same question should be read the same way every time.
+    return llm_generate(prompt, system=_SYSTEM_PROMPT, temperature=0.0, api_key=api_key)
 
 
 def preprocess_query(
@@ -731,6 +762,74 @@ def preprocess_query(
 # RAG integration helpers
 # ---------------------------------------------------------------------------
 
+# "Healthy" is not searched and not filtered: 1,331 of the 1,718 classified
+# datasets include healthy participants, 175 record it as a diagnosis and
+# about half say it in their text. A condition on it removed a third of the
+# correct answers of the real requests that asked for healthy people.
+_HEALTHY_WORDS = frozenset("""
+    healthy normal control controls neurotypical typical typically developing unaffected
+    nonclinical non-clinical hc td
+""".split())
+_PERSON_WORDS = frozenset("""
+    patients patient participants participant subjects subject people person persons
+    individuals individual volunteers volunteer adults adult children child humans human
+    men women man woman male female males females group groups cohort sample samples and or
+""".split())
+
+
+def _is_healthy_term(term: str) -> bool:
+    """True for a participant term that only says "healthy" ("healthy controls", "normal adults")."""
+    words = re.findall(r"[a-z-]+", (term or "").lower())
+    return (any(w in _HEALTHY_WORDS for w in words)
+            and all(w in _HEALTHY_WORDS or w in _PERSON_WORDS for w in words))
+
+
+_SEX_VALUES = {
+    "male": ("male", "m"), "m": ("male", "m"), "men": ("male", "m"), "man": ("male", "m"),
+    "female": ("female", "f"), "f": ("female", "f"), "women": ("female", "f"), "woman": ("female", "f"),
+}
+_ADULT_AGE = 18
+
+
+def _participant_conditions(plan: QueryPlan) -> List[str]:
+    """Fixed SQL for the sex and age the plan asks for, one condition each.
+
+    Written here, not by the SQL model: the model wrote the same request as
+    three different conditions in three runs (sex, age and diagnosis on one
+    participants row; a text search for "healthy & adult"; an age test on the
+    dataset), with 0, 23 and 177 results.
+    """
+    lines: List[str] = []
+    wanted = {_SEX_VALUES[v.lower().strip()] for g in plan.groups for v in g.sex
+              if v.lower().strip() in _SEX_VALUES}
+    if len(wanted) == 1:
+        values = ", ".join(f"'{v}'" for v in next(iter(wanted)))
+        lines.append(
+            "  participant sex: EXISTS (SELECT 1 FROM bids_participants p2 "
+            f"WHERE p2.dataset_id = d.id AND LOWER(p2.sex) IN ({values}))"
+        )
+    lows = [g.age_min for g in plan.groups if g.age_min is not None]
+    highs = [g.age_max for g in plan.groups if g.age_max is not None]
+    low = min(lows) if lows else None
+    high = max(highs) if highs else None
+    if low is None and high is None:
+        said = " ".join([plan.description_search or ""]
+                        + [t for g in plan.groups for t in g.diagnosis_terms]).lower()
+        if re.search(r"\badults?\b", said):
+            low = _ADULT_AGE
+    def number(x: float) -> str:
+        return str(int(x)) if float(x).is_integer() else str(x)
+    rows = "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND "
+    if low is not None and high is not None:
+        lines.append(f"  participant age: ({rows}p2.age >= {number(low)} AND p2.age <= {number(high)}) "
+                     f"OR (d.age_min <= {number(high)} AND d.age_max >= {number(low)}))")
+    elif low is not None:
+        lines.append(f"  participant age: ({rows}p2.age >= {number(low)}) OR d.age_max >= {number(low)})")
+    elif high is not None:
+        lines.append(f"  participant age: ({rows}p2.age <= {number(high)}) OR d.age_min <= {number(high)})")
+    return lines
+
+
 def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
     """
     Derive the full list of RAGRequests from a QueryPlan.
@@ -771,7 +870,8 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
     }
     for grp in plan.groups:
         real_diagnoses = [t for t in grp.diagnosis_terms
-                          if t.lower().strip() not in _GENERIC_WORDS]
+                          if t.lower().strip() not in _GENERIC_WORDS
+                          and not _is_healthy_term(t)]
         _merge(RAGField.DIAGNOSIS, real_diagnoses)
         _merge(RAGField.TASK,      grp.task_terms)
 
@@ -782,6 +882,10 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
 
     # Merge any extra requests the LLM explicitly set
     for req in plan.rag_requests:
+        if req.field == RAGField.DIAGNOSIS:
+            req = req.model_copy(update={"terms": [t for t in req.terms if not _is_healthy_term(t)]})
+            if not req.terms:
+                continue
         if req.field not in requests:
             requests[req.field] = req.model_copy()
         else:
@@ -1266,6 +1370,61 @@ def _size_conditions(plan: QueryPlan) -> List[str]:
     return conds
 
 
+# Words that describe a request, not a dataset: a text search for them empties
+# the result ("standard & manner" matched 17 of 1,721 datasets and removed 975
+# of 986 correct answers of one real request).
+_REQUEST_WORDS = frozenset("""
+    standard manner simple very trivial non-trivial nontrivial complex basic easy good great nice
+    quality suitable useful appropriate sufficient enough complete completely comprehensive
+    available included including provided labeled labelled annotated documented public open free
+    machine learning deep classification classify training train benchmark benchmarking
+    publication paper reports reported reporting results that which with have has containing
+    contains format formatted dataset datasets data collection collections looking need want
+    similar like ideally preferably possible
+    analyse analyze analyses analyzes analysing analyzing analysed analyzed analysis specifically
+    bids bids-valid bids-compliant valid compliant raw
+""".split())
+
+
+# Words that name a kind of recording, and filler that may accompany them.
+_MODALITY_WORDS = frozenset("""
+    fmri mri smri dmri eeg meg ieeg seeg ecog pet ct bold dwi dti asl fnirs nirs t1 t1w t2 t2w
+    flair swi mra tof anatomical structural functional diffusion perfusion
+    electroencephalography magnetoencephalography neuroimaging imaging
+""".split())
+_SCAN_FILLER_WORDS = frozenset("task based data scan scans images image recordings recording dataset datasets weighted".split())
+
+
+def _without_phrases(text: str, phrases: Sequence[str]) -> str:
+    """*text* with every phrase of *phrases* cut out (case-insensitive)."""
+    for phrase in sorted((p.strip() for p in phrases if p and p.strip()), key=len, reverse=True):
+        text = re.sub(re.escape(phrase), " ", text, flags=re.IGNORECASE)
+    return " ".join(text.split())
+
+
+_MIN_TEXT_MATCHES = 3
+
+
+def _matches_too_few(text: str) -> bool:
+    """True when fewer than _MIN_TEXT_MATCHES datasets contain every word of *text*.
+
+    False when the catalogue cannot be asked (no database): the condition is
+    then kept, as before.
+    """
+    try:
+        from services import text_search
+    except ImportError:
+        return False
+    counts = text_search.count_matches([text], _MODE_ALL)
+    return bool(counts) and counts[0] is not None and counts[0] < _MIN_TEXT_MATCHES
+
+
+def _content_words(text: str) -> str:
+    """*text* without the words that describe the request (see _REQUEST_WORDS)."""
+    kept = [w for w in text.split() if w.lower().strip(".,;:()'\"") not in _REQUEST_WORDS]
+    return " ".join(kept)
+
+
 def _build_augmented_question(
     plan: QueryPlan,
     resolved: List[ResolvedTerms],
@@ -1296,10 +1455,11 @@ def _build_augmented_question(
     Author and funding are listed as exact DB strings.
     """
     size_conds = _size_conditions(plan) if "size_bytes" in available_columns else []
+    participant_lines = _participant_conditions(plan)
     # Unresolved terms count too: their text filter is the only thing that
     # keeps a question like "eye tracking datasets" from returning everything.
     if (not resolved and not plan.description_search and not plan.name_search
-            and not size_conds and not plan.institution_terms
+            and not size_conds and not participant_lines and not plan.institution_terms
             and not plan.excluded_institution_terms
             and not unresolved_terms and not db_miss_terms
             and not any(t.condition for t in topics)):
@@ -1325,8 +1485,28 @@ def _build_augmented_question(
                 if codes:
                     scan_by_term.setdefault(term, {})[r.field] = codes
         elif r.field == RAGField.DIAGNOSIS:
-            if r.all_codes:
-                vals = ", ".join(f"'{c}'" for c in r.all_codes)
+            # Groups the dataset must ALL contain ("Alzheimer's patients and
+            # healthy controls") get one condition each. One IN list over every
+            # group's codes would be satisfied by any single group: every
+            # dataset with healthy controls then answers an Alzheimer's request.
+            cohorts: List[Dict[str, List[str]]] = []
+            if plan.group_operator == "AND":
+                by_lower = {t.lower().strip(): t for t in r.term_to_codes}
+                for grp in plan.groups:
+                    own = {}
+                    for t in grp.diagnosis_terms:
+                        key = by_lower.get(t.lower().strip())
+                        if key and r.term_to_codes.get(key):
+                            own[key] = r.term_to_codes[key]
+                    if own:
+                        cohorts.append(own)
+            if len(cohorts) < 2:
+                cohorts = [r.term_to_codes] if r.all_codes else []
+            for cohort in cohorts:
+                codes = list(dict.fromkeys(c for cs in cohort.values() for c in cs))
+                if not codes:
+                    continue
+                vals = ", ".join(f"'{c}'" for c in codes)
                 exists_sql = (
                     f"EXISTS (SELECT 1 FROM bids_participants p2 "
                     f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
@@ -1335,7 +1515,7 @@ def _build_augmented_question(
                 # user's words and the vocabulary synonyms in name,
                 # description and study fields.
                 text_fallback = _format_text_match(
-                    _diagnosis_alternatives(r.term_to_codes), _MODE_SHORT
+                    _diagnosis_alternatives(cohort), _MODE_SHORT
                 )
                 if text_fallback:
                     exists_sql = f"({exists_sql} OR {text_fallback})"
@@ -1400,6 +1580,22 @@ def _build_augmented_question(
         # emit a single modality EXISTS with OR between datatype and suffix.
         # If the term resolved to ONLY task codes (e.g. "resting state",
         # "working memory"), emit a separate task EXISTS.
+        # A term that names a task ("resting state") must not be satisfied by
+        # a data type it merely resembles: "resting state" fuzzy-matches the
+        # datatype synonyms "resting state fMRI" / "resting-state EEG", and
+        # (datatype IN (fMRI, EEG) OR task IN (rest ...)) is true for every
+        # fMRI and EEG dataset. With task codes present, datatype codes are
+        # dropped; suffix codes stay only when no datatype matched (the
+        # "attention" -> suffix 'att' OR attention tasks case).
+        # A term made only of modality words ("fMRI", "task fMRI", "EEG data")
+        # is the opposite case: it names a data type, and the generic task
+        # code it also matches ('bold_acquisition_general') must not replace it.
+        if task_conds and RAGField.DATATYPE in field_codes:
+            words = [w for w in re.findall(r"[a-z0-9*]+", term.lower()) if w not in _SCAN_FILLER_WORDS]
+            if words and all(w in _MODALITY_WORDS for w in words):
+                task_conds = []
+            else:
+                modality_conds = []
         all_conds = modality_conds + task_conds
         if modality_conds and task_conds:
             # Single OR EXISTS across all fields for this term
@@ -1461,9 +1657,34 @@ def _build_augmented_question(
     # preprocessing LLM routed to description_search / name_search because they
     # can't be resolved to a DB code (e.g. "complex", "pediatric", "demanding").
     # description_search covers name, description, study fields and README.
-    description_match = _format_text_match([plan.description_search or ""])
+    description_text = _content_words(_without_phrases(plan.description_search or "", plan.request_wishes))
+    not_searched = [w for w in plan.request_wishes if w.strip()]
+    # Who the participants are is decided by the participant lines, never by
+    # a text search for "healthy", "adult" or "male".
+    said_healthy = any(_is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
+    kept_words = []
+    for word in description_text.split():
+        bare = word.lower().strip(".,;:()'\"")
+        if bare in _HEALTHY_WORDS and bare not in ("typical", "developing", "control", "controls"):
+            said_healthy = True
+        elif not (participant_lines and bare in ("adult", "adults", "male", "female", "males", "females", "men", "women")):
+            kept_words.append(word)
+            continue
+    description_text = " ".join(kept_words)
+    if said_healthy:
+        not_searched.append("healthy (most datasets include healthy participants and few record it)")
+    context_lines.extend(participant_lines)
+    if description_text and _matches_too_few(description_text):
+        # No dataset text says this: as a filter it would only empty the result.
+        not_searched.append(description_text)
+        description_text = ""
+    description_match = _format_text_match([description_text])
     if description_match:
         context_lines.append(f"  dataset text: {description_match}")
+    if not_searched:
+        context_lines.append(
+            "  not searchable (add NO condition for these): " + "; ".join(dict.fromkeys(not_searched))
+        )
     if plan.name_search:
         context_lines.append(
             f"  dataset name: d.name ILIKE '%{plan.name_search}%'"

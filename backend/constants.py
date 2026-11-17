@@ -82,6 +82,9 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "  any animal: (d.species !~* '(human|homo sapiens|phantom|synthetic|printed)'",
         "         OR (d.species IS NULL AND text_match('mouse | mice | rat | rats | macaque | monkey | animal', 'short')))",
         "Never text_match animal words over the README ('all' mode): human studies say 'mouse click'.",
+        "non-human primates / NHP: (d.species ~* '(macaque|macaca|monkey|primate|marmoset|baboon|chimpanzee)'",
+        "         OR (d.species IS NULL AND text_match('macaque | monkey | rhesus | marmoset | primate | baboon', 'short')))",
+        "  Never search the abbreviation 'NHP' as text.",
     ]),
     "study_longitudinal": ("TEXT", [
         "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",
@@ -182,7 +185,10 @@ CREATE TABLE bids_objects (
                                   --   SoftwareVersions      TEXT  e.g. 'syngo MR E11'
                                   -- Acquisition params:
                                   --   RepetitionTime, EchoTime, FlipAngle, AcquisitionTime
-                                  -- Secondary BIDS entities: acq, echo, dir, space, res
+                                  -- Secondary BIDS entities from the file name: acq, echo, dir, space, res, desc
+                                  --   phase-encoding direction in the name (dir-AP / dir-PA): other_entities->>'dir' = 'AP'
+                                  --   a file-name part such as _desc-preproc_bold: other_entities->>'desc' = 'preproc'
+                                  --     together with the suffix (never a text search for a file name)
                                   -- Extract as text : other_entities->>'Manufacturer'
                                   -- Cast to numeric : (other_entities->>'MagneticFieldStrength')::float
                                   --   (non-numeric values such as 'n/a' are skipped automatically)
@@ -204,6 +210,31 @@ CREATE TABLE bids_participants (
                                 -- Use ->> to extract: p.extra->>'concern_dieting'
 );
 
+CREATE TABLE bids_derivatives (   -- processed outputs that exist for a dataset
+    dataset_id      UUID REFERENCES bids_datasets(id),
+    pipeline        TEXT,         -- lower case: 'fmriprep', 'mriqc', 'xcpd', 'freesurfer', 'fitlins',
+                                  --   'qsiprep', 'aslprep', 'eeglab', 'preprocessed', 'unspecified', ...
+    pipeline_version TEXT,
+    source          TEXT          -- 'in_dataset' (derivatives/ folder) or 'openneuro_derivatives'
+);
+-- Processed / preprocessed data, fMRIPrep, MRIQC, FreeSurfer outputs: ALWAYS this table, never a
+--   text search for 'preprocessed' or a pipeline name (READMEs rarely mention them):
+--   fMRIPrep outputs:   EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep')
+--   MRIQC outputs:      ... AND dv.pipeline = 'mriqc'
+--   preprocessed fMRI:  ... AND dv.pipeline IN ('fmriprep', 'xcpd', 'cpac', 'halfpipe', 'tedana', 'preprocessed')
+--   A request that only PREFERS preprocessed data ("ideally preprocessed") gets no such filter.
+
+CREATE TABLE bids_dataset_papers (  -- papers linked to a dataset
+    dataset_id      UUID REFERENCES bids_datasets(id),
+    paper_id        BIGINT,
+    role            TEXT          -- 'primary' = the paper that describes or first used the dataset;
+                                  --   'related', 'tool', 'reuse'
+);
+-- "has a publication / paper / data descriptor":
+--   EXISTS (SELECT 1 FROM bids_dataset_papers dp WHERE dp.dataset_id = d.id AND dp.role = 'primary')
+--   (d.doi is the DOI of the dataset itself, not of a paper: never use it for this.)
+-- What the publication reports or contains cannot be filtered: add no condition for it.
+
 -- Query conventions:
 -- Always alias: bids_datasets AS d, bids_objects AS o, bids_participants AS p
 -- Begin EXACTLY with: SELECT {{COLS}}   ← literal placeholder; never list columns.
@@ -211,7 +242,11 @@ CREATE TABLE bids_participants (
 --   COUNT(DISTINCT o.subject) AS subject_count) is injected automatically.
 -- Always: LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL
 -- Always: GROUP BY d.id
--- Use EXISTS (...) to filter by file/participant properties (bids_objects, bids_participants only)
+-- Use EXISTS (...) to filter by file/participant properties (bids_objects, bids_participants,
+--   bids_derivatives, bids_dataset_papers)
+-- CT images: o.suffix = 'ct_scan' only. PET ('positron_emission_tomography') is not CT.
+-- "not sequence X" (e.g. MPRAGE but not MP2RAGE): NOT EXISTS (... AND o.suffix = '<code of X>'),
+--   never NOT EXISTS over a whole datatype.
 -- Never use EXISTS to check a column already on bids_datasets — use d.col directly
 -- Keyword search on dataset text: text_match('keyword'). This is a macro; the system
 --   expands it into  d.search_tsv @@ to_tsquery('english', '...')  (search_tsv is a
@@ -222,6 +257,15 @@ CREATE TABLE bids_participants (
 --   For participant counts in HAVING, use correlated subqueries:
 --   HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'male')
 --        > (SELECT COUNT(*) FROM bids_participants p WHERE p.dataset_id = d.id AND p.sex = 'female')
+-- "Every subject has X and Y" (e.g. a T1w image and a BOLD run per subject): compare subjects in
+--   bids_objects, never rows of bids_participants (a third of the datasets has no participants rows):
+--   NOT EXISTS (SELECT 1 FROM bids_objects s WHERE s.dataset_id = d.id AND s.subject IS NOT NULL
+--               AND NOT EXISTS (SELECT 1 FROM bids_objects x WHERE x.dataset_id = d.id
+--                               AND x.subject = s.subject AND x.suffix = 't1_weighted_mri'))
+-- "At least N sessions (or runs) per subject": one grouped subquery over the whole table, never an
+--   EXISTS with GROUP BY per dataset (that runs for minutes):
+--   d.id NOT IN (SELECT s.dataset_id FROM bids_objects s WHERE s.subject IS NOT NULL
+--                GROUP BY s.dataset_id, s.subject HAVING COUNT(DISTINCT s.session) < 3)
 -- Counting convention:
 --   subject_count alias (from the injected projection) → COUNT(DISTINCT o.subject)
 --   HAVING threshold on participant criteria → COUNT(DISTINCT p.participant_id)\

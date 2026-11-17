@@ -104,6 +104,8 @@ class TextToSQLResult(BaseModel):
     # The query before the uncertain tier wraps it, read for the filter chips
     # (services/query_filters.py). Server-side only.
     filter_sql: Optional[str] = Field(default=None, exclude=True)
+    # The query without its free-text-only conditions (empty-result fallback).
+    relaxed_sql: Optional[str] = Field(default=None, exclude=True)
 
 
 class QueryFilterSchema(BaseModel):
