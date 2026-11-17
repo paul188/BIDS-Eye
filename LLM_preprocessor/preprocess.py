@@ -70,6 +70,7 @@ from text_terms import (
     MODE_NEAR as _MODE_NEAR,
     MODE_SHORT as _MODE_SHORT,
     diagnosis_alternatives as _diagnosis_alternatives,
+    diagnosis_qualifier as _diagnosis_qualifier,
     format_text_match as _format_text_match,
     format_task_text_match as _format_task_text_match,
     split_words as _split_words,
@@ -1506,6 +1507,30 @@ def _content_words(text: str) -> str:
     return " ".join(kept)
 
 
+def _diagnosis_condition(term_to_codes: Dict[str, List[str]], qualifier: List[str]) -> Optional[str]:
+    """The diagnosis filter for some terms: coded rows OR the words in the short fields.
+
+    With *qualifier* (text_terms.diagnosis_qualifier) the dataset text must
+    also hold those words: "Lewy body dementia" keeps the dementia codes, but
+    only for datasets that say "Lewy body".
+    """
+    codes = list(dict.fromkeys(c for cs in term_to_codes.values() for c in cs))
+    if not codes:
+        return None
+    vals = ", ".join(f"'{c}'" for c in codes)
+    condition = (
+        f"EXISTS (SELECT 1 FROM bids_participants p2 "
+        f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
+    )
+    # Structured diagnosis rows are sparse: back them up with the user's words
+    # and the vocabulary synonyms in name, description and study fields.
+    text_fallback = _format_text_match(_diagnosis_alternatives(term_to_codes), _MODE_SHORT)
+    if text_fallback:
+        condition = f"({condition} OR {text_fallback})"
+    required = _format_text_match([" ".join(qualifier)], _MODE_ALL) if qualifier else None
+    return f"({condition} AND {required})" if required else condition
+
+
 def _build_augmented_question(
     plan: QueryPlan,
     resolved: List[ResolvedTerms],
@@ -1584,23 +1609,19 @@ def _build_augmented_question(
             if len(cohorts) < 2:
                 cohorts = [r.term_to_codes] if r.all_codes else []
             for cohort in cohorts:
-                codes = list(dict.fromkeys(c for cs in cohort.values() for c in cs))
-                if not codes:
-                    continue
-                vals = ", ".join(f"'{c}'" for c in codes)
-                exists_sql = (
-                    f"EXISTS (SELECT 1 FROM bids_participants p2 "
-                    f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
-                )
-                # Structured diagnosis rows are sparse: back them up with the
-                # user's words and the vocabulary synonyms in name,
-                # description and study fields.
-                text_fallback = _format_text_match(
-                    _diagnosis_alternatives(cohort), _MODE_SHORT
-                )
-                if text_fallback:
-                    exists_sql = f"({exists_sql} OR {text_fallback})"
-                context_lines.append(f'  diagnosis: {exists_sql}')
+                # A term whose codes miss one of its disease words ("Lewy body
+                # dementia" → the dementia group) needs those words in the
+                # dataset text; such terms get a condition of their own.
+                qualifiers = {t: _diagnosis_qualifier(t, cs) for t, cs in cohort.items() if cs}
+                if any(qualifiers.values()):
+                    parts = [_diagnosis_condition({t: cohort[t]}, q) for t, q in qualifiers.items()]
+                    parts = [p for p in parts if p]
+                    condition = (parts[0] if len(parts) == 1
+                                 else "(" + " OR ".join(parts) + ")") if parts else None
+                else:
+                    condition = _diagnosis_condition(cohort, [])
+                if condition:
+                    context_lines.append(f'  diagnosis: {condition}')
         elif r.field == RAGField.INSTITUTION:
             continue  # see _institution_lines()
         else:
@@ -1989,6 +2010,14 @@ def run_pipeline(
             new_term_map: Dict[str, List[str]] = {}
             for term, codes in term_map.items():
                 live, miss = retriever.db_verify_codes(field, codes)
+                if not live and codes and field == RAGField.DIAGNOSIS.value:
+                    # No participant row carries the diagnosis yet, but it is
+                    # known: keep it, so the diagnosis line searches its words
+                    # in the dataset titles and labels. As a DB MISS the SQL
+                    # model was told to use the parent code: "frontotemporal
+                    # dementia" became every dementia (2026-11-17).
+                    new_term_map[term] = codes
+                    continue
                 if miss:
                     db_miss_terms.setdefault(field, []).extend(miss)
                 if live:
