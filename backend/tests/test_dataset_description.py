@@ -364,3 +364,47 @@ def test_crawler_creates_the_same_columns_as_the_migration():
     squash = lambda value: re.sub(r"\s+", "", value)  # noqa: E731
     for statement in paper_store.DESCRIPTION_DDL:
         assert squash(statement) in squash(migration)
+
+
+def test_post_crawl_vacuums_the_file_table_outside_a_transaction(monkeypatch):
+    post_crawl = _post_crawl()
+    statements, options = [], []
+
+    class Connection:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *exc):
+            return False
+
+        async def execution_options(self, **kwargs):
+            options.append(kwargs)
+            return self
+
+        async def execute(self, statement):
+            statements.append(str(statement))
+            if str(statement).startswith("VACUUM") and fail:
+                raise RuntimeError("could not resize shared memory segment")
+
+    engine = types.SimpleNamespace(connect=lambda: Connection())
+    monkeypatch.setitem(sys.modules, "db.db", types.SimpleNamespace(engine=engine))
+    for name in ("CRAWL_LINKS", "CRAWL_PAPERS", "CRAWL_DESCRIPTIONS", "CRAWL_WORD_FORMS"):
+        monkeypatch.setenv(name, "false")
+
+    fail = False
+    asyncio.run(post_crawl.run_post_crawl(["ds1"]))
+    assert options == [{"isolation_level": "AUTOCOMMIT"}]
+    assert statements == ["SET statement_timeout = 0",
+                          "VACUUM (PARALLEL 0, ANALYZE) bids_objects",
+                          "RESET statement_timeout"]
+
+    # A failing vacuum never fails the crawl, and the timeout is restored.
+    fail = True
+    statements.clear()
+    asyncio.run(post_crawl.run_post_crawl(["ds1"]))
+    assert statements[-1] == "RESET statement_timeout"
+
+    monkeypatch.setenv("CRAWL_VACUUM", "false")
+    statements.clear()
+    asyncio.run(post_crawl.run_post_crawl(["ds1"]))
+    assert statements == []
