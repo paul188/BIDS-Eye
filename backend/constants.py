@@ -73,15 +73,22 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "species as typed by the uploader on OpenNeuro (free text, NULL for about 40%",
         "of datasets, nearly all of them human), e.g. 'Human', 'Mouse', 'Rat', 'Macaque',",
         "'Monkey', 'Nonhunam primates (Macaca mulatta)', 'Sus scrofa domesticus', 'Phantom'.",
+        "When the question context has a 'species' line, copy that condition exactly and",
+        "add no other species condition. Without one (older planner), use these recipes.",
         "Use it for animal / non-human questions, and ALWAYS add the title/description",
         "fallback for datasets without a species (many animal datasets are unlabelled):",
         "  mice: (d.species ~* '\\m(mouse|mice|mus)\\M'",
         "         OR (d.species IS NULL AND text_match('mouse | mice | murine', 'short')))",
-        "  macaques/monkeys: (d.species ~* '(macaque|macaca|monkey|primate)'",
-        "         OR (d.species IS NULL AND text_match('macaque | monkey | rhesus', 'short')))",
-        "  any animal: (d.species !~* '(human|homo sapiens|phantom|synthetic|printed)'",
-        "         OR (d.species IS NULL AND text_match('mouse | mice | rat | rats | macaque | monkey | animal', 'short')))",
-        "Never text_match animal words over the README ('all' mode): human studies say 'mouse click'.",
+        "  macaques/monkeys: (d.species ~* '(macaque|macaca|monkey|primate|baboon|marmoset|rhesus|capuchin|cynomolgus)'",
+        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
+        "             AND text_match('macaque | macaca | monkey | rhesus | marmoset | baboon')))",
+        "  any animal: (d.species !~* '(human|homo sapiens|phantom|synthetic|printed|^\\s*(other|n/?a|unknown)\\s*$)'",
+        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
+        "             AND text_match('mouse | mice | rat | rats | macaque | monkey | animal', 'short')))",
+        "A label 'Other', 'n/a' or 'unknown' says nothing: treat it like NULL (text fallback).",
+        "Mouse/rat/any-animal fallbacks stay on title and description ('short'): human READMEs",
+        "say 'mouse click'. Primate words are safe in the README of an unlabelled dataset.",
+        "Never AND an extra text_match of the species word: the species condition is complete.",
     ]),
     "study_longitudinal": ("TEXT", [
         "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",
@@ -180,6 +187,11 @@ CREATE TABLE bids_objects (
                                   --     approximate values (2.89 for 3 T, 6.98 for 7 T): compare with a
                                   --     range, e.g. 7 T → BETWEEN 6.5 AND 7.5, never = 7.0
                                   --   SoftwareVersions      TEXT  e.g. 'syngo MR E11'
+                                  -- PET tracer keys (on PET files):
+                                  --   TracerName          TEXT  e.g. 'FDG', '[11C]PS13', 'UCB-J', 'AV-45 florbetapir'
+                                  --   TracerRadionuclide  TEXT  written 'C11', '11C', '[11C]' or 'C-11': match
+                                  --     every form, e.g. carbon-11 → other_entities->>'TracerRadionuclide' ~* '(c-?11|11c)'
+                                  --     (fluorine-18 → '(f-?18|18f)'). Never search tracers with text_match.
                                   -- Acquisition params:
                                   --   RepetitionTime, EchoTime, FlipAngle, AcquisitionTime
                                   -- Secondary BIDS entities: acq, echo, dir, space, res

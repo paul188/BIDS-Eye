@@ -399,8 +399,8 @@ def test_augmented_question_hands_the_model_text_match_placeholders(monkeypatch)
     monkeypatch.setattr(text_terms, "_lookup_strings", _lookup)
     plan = preprocess.QueryPlan(
         query_family="combined_filter",
-        natural_language_summary="Pediatric epilepsy datasets with eye tracking",
-        description_search="pediatric",
+        natural_language_summary="Bilingual epilepsy datasets with eye tracking",
+        description_search="bilingual",
     )
     resolved = [preprocess.ResolvedTerms(
         field=preprocess.RAGField.DIAGNOSIS, term_to_codes={"epilepsy": ["epilepsy"]}
@@ -412,7 +412,7 @@ def test_augmented_question_hands_the_model_text_match_placeholders(monkeypatch)
         "diagnosis: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
         "AND p2.diagnosis IN ('epilepsy')) OR text_match('epilepsy | seizures | epileptic', 'short'))"
     ) in question
-    assert "dataset text: text_match('pediatric')" in question
+    assert "dataset text: text_match('bilingual')" in question
     assert "For free-text search use: text_match('eye tracking', 'loose')]" in question
     assert "ILIKE '%" not in question
 

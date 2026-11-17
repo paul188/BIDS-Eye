@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
@@ -51,7 +53,7 @@ def test_modality_stays_hard_and_text_becomes_a_tier() -> None:
     # The modality filter is kept as it is; the text filter gets its weaker form.
     assert "o2.datatype = 'functional_mri'" in tiered
     assert "TO_TSQUERY('english', 'children')" in tiered
-    assert "ut.uncertain_level < 9" in tiered
+    assert "evidence.u0 < 9" in tiered
     sqlglot.parse_one(tiered, read="postgres")
 
 
@@ -98,7 +100,7 @@ def test_weaker_form_does_not_repeat_the_file_check() -> None:
     expensive = ("(EXISTS(SELECT 1 FROM bids_objects AS bo WHERE bo.dataset_id = d.id AND bo.task = 'x') "
                  "OR d.search_tsv @@ to_tsquery('english', 'evaluated & resective & surgery'))")
     tiered = ut.apply(BASE.format(where=expensive))
-    weaker = tiered.split("THEN 0 WHEN (", 1)[1].split(") THEN 1", 1)[0]
+    weaker = tiered.split("AS confirmed_0, (", 1)[1].split(") AS probable_0", 1)[0]
     assert weaker == "d.search_tsv @@ TO_TSQUERY('english', 'resective & surgery')"
 
 
@@ -110,7 +112,41 @@ def test_paper_text_is_second_tier_evidence() -> None:
             "AND NOT d.search_tsv @@ TO_TSQUERY('english', 'placebo')") in tiered
     assert ut.PAPER_REASON in tiered
     # Confirmation still uses the dataset's own text.
-    assert "CASE WHEN (d.search_tsv @@ TO_TSQUERY('english', 'placebo')) THEN 0" in tiered
+    assert "(d.search_tsv @@ TO_TSQUERY('english', 'placebo')) AS confirmed_0" in tiered
+    assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN ev.probable_0 THEN 1 ELSE 9 END AS u0" in tiered
+
+
+def test_the_dataset_alias_of_the_query_is_used() -> None:
+    sql = ("SELECT ds.id, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets ds "
+           "LEFT JOIN bids_objects o ON o.dataset_id = ds.id "
+           "WHERE ds.search_tsv @@ to_tsquery('english', 'young & children') GROUP BY ds.id")
+    for hoist in (False, True):
+        tiered = ut.apply(sql, papers=True, hoist_terms=hoist)
+        assert "uncertain_level" in tiered
+        assert "WHERE ds.id = tier_base.id" in tiered
+        assert not re.search(r"\bd\.", tiered)      # no leftover default alias
+
+
+def test_each_condition_is_evaluated_once_per_evidence_kind() -> None:
+    sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'placebo')")
+    tiered = ut.apply(sql, papers=True)
+    # State, reason and filter read the named flags; none repeats the condition.
+    for flag in ("confirmed_0", "probable_0", "paper_0"):
+        assert tiered.count(f"AS {flag}") == 1
+    assert "ELSE 9 ELSE 9" not in tiered and "THEN 9 ELSE 9" not in tiered
+
+
+def test_hoisted_terms_name_each_tsquery_once_and_pass_the_guard() -> None:
+    from services import query_guard
+    sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'placebo')")
+    plain = ut.apply(sql, papers=True, hoist_terms=False)
+    hoisted = ut.apply(sql, papers=True, hoist_terms=True)
+    assert "_qf_tier_terms" not in plain
+    assert hoisted.count("TO_TSQUERY('english', 'placebo')") == 1
+    assert plain.count("TO_TSQUERY('english', 'placebo')") > 3
+    for tiered in (plain, hoisted):
+        sqlglot.parse_one(tiered, read="postgres")
+        assert query_guard.check_static(tiered) is None
 
 
 def test_modifiers_are_not_kept_alone() -> None:

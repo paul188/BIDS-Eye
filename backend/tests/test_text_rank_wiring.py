@@ -41,11 +41,13 @@ def _fake_pipeline(monkeypatch, generated_sql: str, **plan_overrides) -> None:
         natural_language_summary="demo",
         result_limit=None,
         order_by=None,
+        groups=[],
     )
     for name, value in plan_overrides.items():
         setattr(plan, name, value)
     augmented = SimpleNamespace(
         plan=plan, augmented_question="datasets mentioning ketamine", scored_filters=[],
+        resolved=[],
     )
     monkeypatch.setattr(preprocess, "run_pipeline", lambda *args, **kwargs: augmented)
     monkeypatch.setattr(retriever, "MetadataRetriever", lambda *args, **kwargs: None)

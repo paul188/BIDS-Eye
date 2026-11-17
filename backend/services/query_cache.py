@@ -48,6 +48,9 @@ class CachedQuery:
     # The query before the uncertain tier (services/query_filters.py reads its
     # conditions as chips); None when chips cannot be offered.
     filter_sql: Optional[str] = None
+    # True once the relevance-ranked page was too slow (routers/query.py):
+    # every page of this query is then served unranked, in one stable order.
+    ranking_skipped: bool = False
     created_at: float = field(default_factory=time.monotonic)
 
 

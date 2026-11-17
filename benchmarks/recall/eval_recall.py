@@ -163,6 +163,11 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
                     kwargs["rerank_ordered"] = cached.rerank_ordered
                     kwargs["rerank_demoted"] = cached.rerank_demoted
                 page_sql, extra = build_page_sql(**kwargs)
+                # The count set the search's per-transaction limits
+                # (services/query_guard.py). This fetches the whole ranked list,
+                # not one page, to measure recall, so it gets more time; the
+                # site serves a page unranked when ranking is too slow.
+                await session.execute(text("SET LOCAL statement_timeout = '600s'"))
                 rows = (await session.execute(text(page_sql), {**cached.params, **extra})).mappings().all()
                 await session.rollback()
             record.update(

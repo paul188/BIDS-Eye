@@ -34,11 +34,34 @@ class _FakeSession:
     def __init__(self):
         self.rollback_count = 0
         self.execute_calls = 0
+        self.count_calls = 0
+        self.statements = []
+
+    def begin_nested(self):
+        session = self
+
+        class _Savepoint:
+            async def __aenter__(self):
+                return session
+
+            async def __aexit__(self, *exc):
+                return False
+
+        return _Savepoint()
 
     async def execute(self, statement, params=None):
         self.execute_calls += 1
         sql = str(statement)
-        if "COUNT(*)" in sql and self.execute_calls == 1:
+        self.statements.append(sql)
+        if sql.startswith("SET LOCAL"):
+            return _FakeResult()
+        if sql.startswith("EXPLAIN"):
+            return _FakeResult(scalar_value=[{"Plan": {"Node Type": "Aggregate", "Plan Rows": 1}}])
+        if "reltuples" in sql:
+            return _FakeResult(scalar_value=2_700_000)
+        if "COUNT(*)" in sql:
+            self.count_calls += 1
+        if "COUNT(*)" in sql and self.count_calls == 1:
             raise RuntimeError("synthetic database error")
         if "COUNT(*)" in sql:
             return _FakeResult(scalar_value=2)

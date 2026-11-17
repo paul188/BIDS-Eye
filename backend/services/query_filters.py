@@ -34,7 +34,7 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Iterable, List, Optional, Tuple
+from typing import FrozenSet, Iterable, List, Optional, Tuple
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
@@ -155,11 +155,17 @@ def _under_not(node, root) -> bool:
     return False
 
 
-def _tsqueries(node, negated: Optional[bool] = None) -> List[str]:
+# Text search configuration of a guard: the word forms a search requires
+# (services/text_search.py, exact word forms). Everything else is a search.
+_GUARD_CONFIG = "simple"
+
+
+def _tsqueries(node, negated: Optional[bool] = None, guards: bool = False) -> List[str]:
     """The query strings of every to_tsquery(...) in the condition.
 
     *negated*: None for all, False for those outside a NOT inside the
-    condition, True for those inside one.
+    condition, True for those inside one. *guards*: the guards instead of
+    the searches.
     """
     queries = []
     for call in node.find_all(exp.Anonymous, exp.Func):
@@ -169,9 +175,20 @@ def _tsqueries(node, negated: Optional[bool] = None) -> List[str]:
         if negated is not None and _under_not(call, node) != negated:
             continue
         literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
-        if literals:
+        if not literals:
+            continue
+        is_guard = len(literals) > 1 and literals[0].this.lower() == _GUARD_CONFIG
+        if is_guard == guards:
             queries.append(literals[-1].this)
     return queries
+
+
+def guard_forms(node, negated: Optional[bool] = False) -> List[str]:
+    """The word forms the condition's searches require, e.g. ['ageing', 'aging']."""
+    forms = []
+    for query in _tsqueries(node, negated=negated, guards=True):
+        forms.extend(_TS_WORD_RE.findall(_TS_LABEL_RE.sub("", query)))
+    return list(dict.fromkeys(forms))
 
 
 def _outer_parentheses_removed(text: str) -> str:
@@ -247,6 +264,8 @@ def _age_label(node) -> Optional[str]:
                 low = (value, inclusive)
             else:
                 high = (value, inclusive)
+    if low is not None and low[0] <= 0:
+        low = None  # "age > 0" only leaves out placeholder ages (RAG/criteria.py)
     if low is None and high is None:
         # Only the dataset-level bounds (d.age_min / d.age_max).
         columns = {c.name.lower() for c in node.find_all(exp.Column)}
@@ -288,6 +307,34 @@ def _bound(node, matches) -> Optional[str]:
                     and not comparison.expression.is_string:
                 return f"{symbol} {comparison.expression.this}"
     return None
+
+
+def _species_label(node) -> Optional[str]:
+    """The species a d.species condition asks for: 'human', 'mouse', 'any animal'.
+
+    Patterns as written by RAG/criteria.py; the label that says nothing
+    ('other', 'n/a', 'unknown') is no species.
+    """
+    names: List[str] = []
+    seen = False
+    for match in node.find_all(exp.RegexpILike):
+        column = match.this
+        if not (isinstance(column, exp.Column) and column.name.lower() == "species"):
+            continue
+        pattern = str(getattr(match.expression, "this", "") or "")
+        if "unknown" in pattern:
+            continue
+        seen = True
+        if _under_not(match, node):
+            continue
+        first = re.search(r"\(([^|)]+)", pattern)
+        if first:
+            name = re.sub(r"\\[a-zA-Z]|.\?|[\^$*\\]", "", first.group(1)).strip()
+            if name and name not in names:
+                names.append(name)
+    if names:
+        return " or ".join(names)
+    return "any animal" if seen else None
 
 
 def _count_chip(node) -> Optional[Tuple[str, str]]:
@@ -364,13 +411,21 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     phrases.extend(_literals_for(node, ["description_text", "readme_text", "readme"]))
     phrases = list(dict.fromkeys(phrases))
 
+    # Word forms a search is limited to ("ageing", "aging": not every "age").
+    # They are words of the text too, so the page can mark them.
+    forms = guard_forms(node)
+    searched = phrases + [form for form in forms if form not in phrases]
+    forms_note = f"Only these word forms count: {', '.join(forms[:8])}." if forms else ""
+
     def chip(kind: str, field_name: str, label: str, detail: str = "") -> QueryFilter:
         if phrases:
             words = ", ".join(phrases[:6])
             detail = (f"{detail} Or the dataset text mentions: {words}." if detail
                       else f"Also matches datasets whose text mentions: {words}.")
+        if forms_note:
+            detail = f"{detail} {forms_note}".strip()
         return QueryFilter(id=chip_id, kind=kind, field=field_name, label=label,
-                           negated=negated, text_words=phrases, detail=detail)
+                           negated=negated, text_words=searched, detail=detail)
 
     def codes_detail(noun: str, names: List[str]) -> str:
         if len(names) == 1:
@@ -394,9 +449,11 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         detail = f"One subject, its words close together. Searched as: {searched}."
         if names:
             detail += " " + codes_detail("task", names)
+        if forms_note:
+            detail += " " + forms_note
         return QueryFilter(id=chip_id, kind="topic", field="Topic",
                            label=phrases[0] if phrases else (names[0] if names else "topic"),
-                           negated=negated, text_words=phrases, detail=detail)
+                           negated=negated, text_words=searched, detail=detail)
 
     tasks = _literals_for(node, ["task"])
     if tasks:
@@ -413,6 +470,10 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     age = _age_label(node)
     if age:
         return chip("age", "Age", age)
+
+    species = _species_label(node)
+    if species:
+        return chip("field", "Species", species)
 
     sexes = _literals_for(node, ["sex"])
     if sexes:
@@ -439,8 +500,9 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         if len(phrases) > 2:
             label += f" +{len(phrases) - 2}"
         return QueryFilter(id=chip_id, kind="text", field="Text", label=label,
-                           negated=negated, text_words=phrases,
-                           detail=f"The dataset text mentions: {', '.join(phrases[:8])}.")
+                           negated=negated, text_words=searched,
+                           detail=(f"The dataset text mentions: {', '.join(phrases[:8])}. "
+                                   f"{forms_note}").strip())
 
     sql = node.sql(dialect="postgres")
     return QueryFilter(id=chip_id, kind="other", field="Condition",
@@ -558,9 +620,12 @@ def _drop_exclusions(node):
 # ── Whole query ───────────────────────────────────────────────────────────────
 
 def _flatten_and(node) -> list:
+    from services.text_search import is_guarded_pair
     if isinstance(node, exp.And):
         return _flatten_and(node.left) + _flatten_and(node.right)
     if isinstance(node, exp.Paren) and isinstance(node.this, exp.And):
+        if is_guarded_pair(node):
+            return [node]   # a text search and its word forms: one chip
         return _flatten_and(node.this)
     return [node]
 
@@ -654,20 +719,108 @@ _HIGHLIGHT_KINDS = {"diagnosis", "modality", "task", "text", "field", "topic"}
 _WORD_RE = re.compile(r"[A-Za-z0-9]+")
 
 
-def highlight_tsquery(sql: Optional[str]) -> Optional[str]:
-    """An OR tsquery of the words the chips search for, to mark them in a README.
+# Postgres's English stopwords (tsearch_data/english.stop). Inside a phrase
+# query they collapse it: to_tsquery('english', 'scanning <-> of') is 'scan'.
+_STOPWORDS = frozenset("""
+i me my myself we our ours ourselves you your yours yourself yourselves he him
+his himself she her hers herself it its itself they them their theirs
+themselves what which who whom this that these those am is are was were be been
+being have has had having do does did doing a an the and but if or because as
+until while of at by for with about against between into through during before
+after above below to from up down in out on off over under again further then
+once here there when where why how all any both each few more most other some
+such no nor not only own same so than too very s t can will just don should now
+""".split())
 
-    Uses each chip's text words, and the labels of coded chips ("fMRI",
-    "ADHD"), which READMEs often spell out too. None without such words.
+# A highlight term: one word, or two words that count only side by side.
+HighlightTerm = Tuple[str, ...]
+
+
+def _is_acronym(word: str) -> bool:
+    """'MRI', 'fMRI', 'T1w', 'ADHD'; not 'Healthy' or 'Single'."""
+    return any(c.isupper() for c in word[1:]) or (
+        any(c.isdigit() for c in word) and any(c.isalpha() for c in word))
+
+
+def _phrase_terms(phrase: str, acronyms_alone: bool = False) -> List[HighlightTerm]:
+    """Highlight terms of one searched phrase.
+
+    One word stands alone. Several words only count as adjacent pairs:
+    "control participants" alone would mark every "participants", and
+    stemming makes it worse ("subjective" marks "subject", "structural"
+    marks the "Data Structure" of every BIDS README). *acronyms_alone*:
+    acronyms in a coded label ("structural MRI") also stand alone.
     """
-    words: List[str] = []
+    tokens = [w for w in _WORD_RE.findall(phrase) if len(w) > 1 and w.lower() not in _STOPWORDS]
+    if len(tokens) == 1:
+        return [(tokens[0],)]
+    terms: List[HighlightTerm] = [(a.lower(), b.lower()) for a, b in zip(tokens, tokens[1:])]
+    if acronyms_alone:
+        terms.extend((w,) for w in tokens if _is_acronym(w))
+    return terms
+
+
+def highlight_terms(sql: Optional[str]) -> List[HighlightTerm]:
+    """What to mark in a README: the chips' text words, and the labels of
+    coded chips ("fMRI", "ADHD"), which READMEs often spell out too.
+
+    Single words keep their case: a two-letter acronym ("MS", "PD") only
+    counts in capitals, not as "ms" or "pd".
+    """
+    terms: List[HighlightTerm] = []
     for chip in describe(sql):
         if chip.negated or chip.kind not in _HIGHLIGHT_KINDS:
             continue
-        phrases = list(chip.text_words)
+        for phrase in chip.text_words:
+            terms.extend(_phrase_terms(phrase))
         if chip.kind in ("diagnosis", "modality", "task"):
-            phrases.append(re.sub(r"\s\+\d+$", "", chip.label))
-        for phrase in phrases:
-            words.extend(w.lower() for w in _WORD_RE.findall(phrase) if len(w) > 1)
-    words = list(dict.fromkeys(words))
-    return " | ".join(words) or None
+            label = re.sub(r"\s\+\d+$", "", chip.label)
+            for part in re.split(r"\s+or\s+", label):
+                terms.extend(_phrase_terms(part, acronyms_alone=True))
+    seen, unique = set(), []
+    for term in terms:
+        key = tuple(w.lower() for w in term)
+        if key not in seen:
+            seen.add(key)
+            unique.append(term)
+    return unique
+
+
+def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
+    """The words of highlight_terms(sql) that only count as written.
+
+    A search limited to word forms ("ageing", "aging") must not mark what
+    merely shares their stem ("age") in an excerpt.
+    """
+    tree = _parse(sql or "")
+    if tree is None:
+        return frozenset()
+    forms: List[str] = []
+    for _, node in _conditions(tree):
+        inner = node
+        negated = False
+        while isinstance(inner, (exp.Paren, exp.Not)):
+            negated ^= isinstance(inner, exp.Not)
+            inner = inner.this
+        if not negated:
+            forms.extend(guard_forms(inner))
+    return frozenset(forms)
+
+
+def terms_tsquery(terms: Iterable[HighlightTerm]) -> Optional[str]:
+    """An OR tsquery of *terms*; a pair matches side by side or with one
+    word between ("Parkinson's disease", "scanning of one")."""
+    parts = []
+    for term in terms:
+        words = [w.lower() for w in term]
+        if len(words) == 1:
+            parts.append(words[0])
+        else:
+            a, b = words
+            parts.append(f"({a} <-> {b} | {a} <2> {b})")
+    return " | ".join(parts) or None
+
+
+def highlight_tsquery(sql: Optional[str]) -> Optional[str]:
+    """The tsquery that marks *sql*'s highlight terms in a README."""
+    return terms_tsquery(highlight_terms(sql))

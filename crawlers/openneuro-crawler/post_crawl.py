@@ -15,7 +15,10 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 (backend/services/dataset_description.py, the same code as
                 scripts/describe_datasets.py). Only what is missing or stale.
                 Needs GEMINI_API_KEY; the text goes to Gemini only.
-  3. vacuum     VACUUM (ANALYZE) of the file table, bids_objects. A search
+  3. word forms  rebuild bids_word_forms, the catalogue's word forms per stem
+                (backend/services/word_form_store.py). No LLM, no network;
+                the whole catalogue, not only the indexed datasets.
+  4. vacuum     VACUUM (ANALYZE) of the file table, bids_objects. A search
                 counts subjects from an index alone
                 (crawlers/migrate_add_object_indexes.sql); for the rows a
                 crawl wrote that only works again after a vacuum, and
@@ -25,7 +28,8 @@ Environment:
     CRAWL_LINKS             "false" skips step 0 (default on)
     CRAWL_PAPERS            "false" skips step 1 (default on)
     CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
-    CRAWL_VACUUM            "false" skips step 3 (default on)
+    CRAWL_WORD_FORMS        "false" skips step 3 (default on)
+    CRAWL_VACUUM            "false" skips step 4 (default on)
     PAPER_RECHECK_DAYS      how old a paper lookup may get (default 30)
     DATASET_DESCRIPTION_MODEL  Gemini model for step 2 (default gemini-2.5-flash)
 
@@ -112,8 +116,28 @@ async def describe(engine, accessions: Sequence[str]) -> Dict[str, int]:
     return dict(await dataset_description.run(engine, list(accessions)))
 
 
+def _backend_services_available() -> bool:
+    path = next((root / "backend" for root in _ROOTS if (root / "backend").is_dir()), None)
+    if path is not None and str(path) not in sys.path:
+        sys.path.insert(0, str(path))
+    try:
+        from services import word_form_store  # noqa: F401
+    except ImportError as exc:
+        log.warning("[post-crawl] Word forms skipped: %s", exc)
+        return False
+    return True
+
+
+async def refresh_word_forms(engine) -> Dict[str, int]:
+    """Step 3. Returns the counts of word_form_store.refresh."""
+    from services import word_form_store
+
+    async with engine.begin() as conn:
+        return await word_form_store.refresh(conn)
+
+
 async def vacuum_file_table(engine) -> None:
-    """Step 3. Vacuum and analyze bids_objects.
+    """Step 4. Vacuum and analyze bids_objects.
 
     VACUUM cannot run inside a transaction, hence the autocommit connection.
     PARALLEL 0: parallel workers need more shared memory than the postgres
@@ -160,6 +184,13 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
             log.info("[post-crawl] Dataset descriptions: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Dataset descriptions failed: %s", exc, exc_info=True)
+
+    if _flag("CRAWL_WORD_FORMS") and _backend_services_available():
+        try:
+            stats = await refresh_word_forms(engine)
+            log.info("[post-crawl] Word forms: %s", stats)
+        except Exception as exc:
+            log.error("[post-crawl] Word forms failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_VACUUM"):
         try:

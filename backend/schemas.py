@@ -104,6 +104,12 @@ class TextToSQLResult(BaseModel):
     # The query before the uncertain tier wraps it, read for the filter chips
     # (services/query_filters.py). Server-side only.
     filter_sql: Optional[str] = Field(default=None, exclude=True)
+    # True when no model was asked: the question was translated before
+    # (services/translation_store.py).
+    from_store: bool = False
+    # A new translation as a store entry; the router keeps it once the search
+    # ran without correction. Server-side only.
+    store_entry: Optional[Any] = Field(default=None, exclude=True)
 
 
 class QueryFilterSchema(BaseModel):

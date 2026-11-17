@@ -42,6 +42,28 @@ search_tsv:
   - the word counts behind 'loose' terms.
 Terms scoped to the name or the short fields (labels A, AB) cannot match the
 paper text at all, because it carries weight D.
+
+Exact word forms (TEXT_SEARCH_EXACT=true). The 'english' configuration
+matches a word by its stem, and some stems merge words that mean different
+things: "ageing" also finds "age", "weight" finds "T1-weighted". For a word
+whose forms were decided (RAG/word_forms.py), a term also requires one of
+those forms on search_tsv_exact, the same vector without stemming
+(crawlers/migrate_add_exact_search.sql):
+
+    (d.search_tsv @@ to_tsquery('english', 'ageing & mri')
+     AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)'))
+
+Always this shape: the stemmed match, then its guard, in one pair of
+parentheses. The stemmed match keeps the other words and the word distances;
+the guard has one group per exact word, the asked word first, with the same
+weight labels. Whatever reads the SQL afterwards treats the pair as one
+condition (is_guarded_pair): the filter chips, the uncertain tier. A
+placeholder with several alternatives becomes one pair per alternative that
+has an exact word, ORed with the rest. The word counts count such words in
+their forms, and they are ranked on search_tsv_exact: the rank query then
+has two parts, "stemmed#exact" (join_rank, rank_expression), and travels as
+one string like before. With paper text on, the guard reads
+search_tsv_exact_papers.
 """
 
 from __future__ import annotations
@@ -54,7 +76,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Sequence, Tuple
+from typing import Any, Callable, List, Mapping, Optional, Sequence, Tuple
 
 _ROOT = Path(__file__).resolve().parents[2]
 _RAG_DIR = _ROOT / "RAG"
@@ -63,6 +85,7 @@ if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
 
 from text_terms import (  # noqa: E402
     MODE_ALL,
+    MODE_ALSO,
     MODE_LOOSE,
     MODE_NEAR,
     MODE_SHORT,
@@ -75,6 +98,8 @@ from text_terms import (  # noqa: E402
     split_words,
 )
 
+from word_forms import forms_for  # noqa: E402
+
 from services import schema_capabilities  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -83,6 +108,14 @@ TS_CONFIG = "english"
 FTS_COLUMN = "search_tsv"
 PAPER_FTS_COLUMN = schema_capabilities.PAPER_FTS_COLUMN
 PAPERS_ENV = "TEXT_SEARCH_PAPERS"
+# The vectors without stemming, for words that must match in the form asked for.
+EXACT_TS_CONFIG = "simple"
+EXACT_FTS_COLUMN = schema_capabilities.EXACT_FTS_COLUMN
+EXACT_PAPER_FTS_COLUMN = schema_capabilities.EXACT_PAPER_FTS_COLUMN
+EXACT_ENV = "TEXT_SEARCH_EXACT"
+# word → the forms it must match in, as decided for one question
+# (RAG/word_forms.py). The reviewed list there applies without being passed.
+ExactForms = Mapping[str, Sequence[str]]
 # ts_rank_cd weights in the order {D, C, B, A}: README, LLM profile of the
 # README, short fields (incl. conditions the README says were studied), name.
 RANK_WEIGHTS = "{0.05, 0.4, 0.6, 1.0}"
@@ -114,8 +147,9 @@ _SAFE_TSQUERY_RE = re.compile(r"^[a-z0-9 &|()<>:AB-]+$")
 # ── Word frequencies (for 'loose' terms) ──────────────────────────────────────
 
 # Given tsquery strings, returns how many datasets match each one, or None
-# when the answer is not available.
-FrequencyLookup = Callable[[List[str]], Optional[List[int]]]
+# when the answer is not available. A second argument, when given, holds a
+# guard per query (or None): a tsquery the unstemmed vector must match too.
+FrequencyLookup = Callable[..., Optional[List[int]]]
 
 # Until something else is installed, the lookup opens its own short-lived
 # connection (_own_connection_lookup), so every entry point gets frequencies:
@@ -131,6 +165,22 @@ _COUNT_SQL = (
     "FROM unnest(CAST(:queries AS text[])) WITH ORDINALITY AS q(tsq, ord) "
     "ORDER BY q.ord"
 )
+_GUARDED_COUNT_SQL = (
+    f"SELECT (SELECT count(*) FROM bids_datasets d "
+    f"        WHERE d.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', q.tsq) "
+    f"          AND (q.guard IS NULL OR "
+    f"               d.{EXACT_FTS_COLUMN} @@ to_tsquery('{EXACT_TS_CONFIG}', q.guard))) "
+    "FROM unnest(CAST(:queries AS text[]), CAST(:guards AS text[])) "
+    "     WITH ORDINALITY AS q(tsq, guard, ord) "
+    "ORDER BY q.ord"
+)
+
+
+def _count_statement(queries: List[str], guards: Optional[List[Optional[str]]]):
+    """(SQL, parameters) for the counts; the guarded form only when needed."""
+    if guards and any(guards):
+        return _GUARDED_COUNT_SQL, {"queries": queries, "guards": list(guards)}
+    return _COUNT_SQL, {"queries": queries}
 
 
 def set_frequency_lookup(lookup: Optional[FrequencyLookup]) -> None:
@@ -146,7 +196,8 @@ def _on_event_loop() -> bool:
     return True
 
 
-def _own_connection_lookup(queries: List[str]) -> Optional[List[int]]:
+def _own_connection_lookup(queries: List[str],
+                           guards: Optional[List[Optional[str]]] = None) -> Optional[List[int]]:
     """Count with a connection of its own; for callers that installed nothing.
 
     Runs only off the event loop (the translation pipeline runs in a worker
@@ -168,7 +219,8 @@ def _own_connection_lookup(queries: List[str]) -> Optional[List[int]]:
         engine = create_async_engine(app_engine.url, poolclass=NullPool)
         try:
             async with engine.connect() as connection:
-                rows = await connection.execute(text(_COUNT_SQL), {"queries": queries})
+                sql, params = _count_statement(queries, guards)
+                rows = await connection.execute(text(sql), params)
                 return [int(row[0]) for row in rows]
         finally:
             await engine.dispose()
@@ -189,21 +241,21 @@ def make_frequency_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
     """
     from sqlalchemy import text
 
-    statement = text(_COUNT_SQL)
-
-    async def _count(queries: List[str]) -> List[int]:
+    async def _count(queries: List[str], guards: Optional[List[Optional[str]]]) -> List[int]:
         async with engine.connect() as connection:
-            rows = await connection.execute(statement, {"queries": queries})
+            sql, params = _count_statement(queries, guards)
+            rows = await connection.execute(text(sql), params)
             return [int(row[0]) for row in rows]
 
-    def lookup(queries: List[str]) -> Optional[List[int]]:
+    def lookup(queries: List[str],
+               guards: Optional[List[Optional[str]]] = None) -> Optional[List[int]]:
         try:
             asyncio.get_running_loop()
         except RuntimeError:
             pass
         else:
             return None  # called on an event loop: blocking here would deadlock
-        future = asyncio.run_coroutine_threadsafe(_count(queries), loop)
+        future = asyncio.run_coroutine_threadsafe(_count(queries, guards), loop)
         try:
             return future.result(timeout=timeout)
         except Exception as exc:
@@ -215,6 +267,42 @@ def make_frequency_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
 
 
 # ── tsquery building ──────────────────────────────────────────────────────────
+
+def exact_enabled() -> bool:
+    """True when words with decided forms must match in those forms.
+
+    Read on every call, so a one-off container can set the variable.
+    """
+    flag = os.getenv(EXACT_ENV, "false").strip().lower() in ("1", "true", "yes", "on")
+    return flag and schema_capabilities.has_exact_fts()
+
+
+def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple[str, ...]]:
+    """The forms *word* must match in, or None to match it by stem.
+
+    Only plain words: the parts of a compound ("t1-weighted") stay together
+    by adjacency, which already keeps them from matching anything else.
+    """
+    if len(word) != 1 or not exact_enabled():
+        return None
+    return forms_for(word[0], exact_forms)
+
+
+def _form_group(forms: Sequence[str], label: str = "") -> str:
+    labelled = [f"{form}{label}" for form in forms]
+    return labelled[0] if len(labelled) == 1 else "(" + " | ".join(labelled) + ")"
+
+
+def exact_guard(term: Term, label: str = "",
+                exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+    """The query the unstemmed vector must match for *term*; None without exact words.
+
+    One group per exact word, the asked word first: "(ageing | aging) & weight".
+    """
+    groups = [_form_group(forms, label)
+              for forms in (_word_forms(word, exact_forms) for word in term) if forms]
+    return " & ".join(groups) or None
+
 
 def _word_query(word: Word, label: str = "") -> str:
     """One word; the parts of a hyphenated compound must be adjacent."""
@@ -282,12 +370,21 @@ def _is_parenthesised(query: str) -> bool:
 LOOSE_MIN_MATCHES = 3
 
 
-def _lookup_counts(queries: List[str]) -> Optional[List[int]]:
+def _lookup_counts(queries: List[str],
+                   guards: Optional[Sequence[Optional[str]]] = None) -> Optional[List[int]]:
+    """Datasets matching each query; with *guards*, also its unstemmed guard.
+
+    The lookup gets the guards only when there is one, so a lookup that knows
+    nothing of them (tests, older callers) keeps working.
+    """
     lookup = _own_connection_lookup if _frequency_lookup is _OWN_CONNECTION else _frequency_lookup
     if lookup is None:
         return None
     try:
-        counts = lookup(queries)
+        if guards and any(guards):
+            counts = lookup(queries, list(guards))
+        else:
+            counts = lookup(queries)
     except Exception as exc:  # a lookup must never break a search
         log.warning("Word frequency lookup raised (%s) — using the longest word", exc)
         return None
@@ -296,7 +393,15 @@ def _lookup_counts(queries: List[str]) -> Optional[List[int]]:
     return counts
 
 
-def _loose_core(term: Term) -> Term:
+def guarded_counts(queries: List[str],
+                   guards: Sequence[Optional[str]]) -> Optional[List[int]]:
+    """_lookup_counts, passing the guards on only when there is one."""
+    if any(guards):
+        return _lookup_counts(queries, list(guards))
+    return _lookup_counts(queries)
+
+
+def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
     """The words of an unresolved term that a dataset must contain.
 
     Words are taken rarest first, and as many as still leave
@@ -314,7 +419,8 @@ def _loose_core(term: Term) -> Term:
     if len(term) == 1:
         return term
     longest = [max(term, key=lambda word: sum(len(part) for part in word))]
-    counts = _lookup_counts([_word_query(word) for word in term])
+    counts = guarded_counts([_word_query(word) for word in term],
+                            [exact_guard([word], "", exact_forms) for word in term])
     if counts is None:
         return longest
     if any(count == 0 for count in counts):
@@ -324,7 +430,8 @@ def _loose_core(term: Term) -> Term:
     if len(by_rarity) == 1:
         return by_rarity
     prefixes = [by_rarity[:k] for k in range(len(by_rarity), 1, -1)]
-    combined = _lookup_counts([_all_words_query(prefix) for prefix in prefixes])
+    combined = guarded_counts([_all_words_query(prefix) for prefix in prefixes],
+                              [exact_guard(prefix, "", exact_forms) for prefix in prefixes])
     if combined is not None:
         for prefix, count in zip(prefixes, combined):
             if count >= LOOSE_MIN_MATCHES:
@@ -332,11 +439,21 @@ def _loose_core(term: Term) -> Term:
     return by_rarity[:1]
 
 
-def build_filter_tsquery(terms: Sequence[Term], mode: str = MODE_ALL) -> Optional[str]:
-    """tsquery a dataset must match; None when no term is searchable."""
+def _filter_term(term: Term, mode: str, exact_forms: Optional[ExactForms] = None) -> Term:
+    """The words of *term* a dataset must contain: all, or a loose term's core."""
+    return _loose_core(term, exact_forms) if mode == MODE_LOOSE else term
+
+
+def build_filter_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
+                         exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+    """tsquery a dataset must match; None when no term is searchable.
+
+    *exact_forms* only tells a loose term's word counts which forms count.
+    """
     label = _SCOPE_LABEL[mode]
     if mode == MODE_LOOSE:
-        queries = [_all_words_query(_loose_core(term), label) for term in terms if term]
+        queries = [_all_words_query(_loose_core(term, exact_forms), label)
+                   for term in terms if term]
     elif mode == MODE_NEAR:
         queries = [_near_query(term, label) for term in terms if term]
     else:
@@ -344,37 +461,62 @@ def build_filter_tsquery(terms: Sequence[Term], mode: str = MODE_ALL) -> Optiona
     return _any(queries) or None
 
 
-def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR) -> Optional[List[int]]:
+def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR,
+                  exact_forms: Optional[ExactForms] = None) -> Optional[List[int]]:
     """How many datasets match each search term on its own; None when unknown.
 
     Used to check search terms a language model proposed before they are
     searched (LLM_preprocessor/preprocess.py, topics). A term with nothing
-    searchable counts 0.
+    searchable counts 0. A word with decided forms is counted in those forms,
+    as the search will match it.
     """
-    queries = []
+    queries, guards = [], []
     for alternative in alternatives:
         terms = parse_alternatives(alternative)
-        queries.append(build_filter_tsquery(terms, mode) if terms else None)
+        queries.append(build_filter_tsquery(terms, mode, exact_forms) if terms else None)
+        # One guard per query: an alternative of several terms is counted by stem.
+        guards.append(exact_guard(_filter_term(terms[0], mode, exact_forms),
+                                  _SCOPE_LABEL[mode], exact_forms) if len(terms) == 1 else None)
     asked = [query for query in queries if query]
     if not asked:
         return [0] * len(queries)
-    counts = _lookup_counts(asked)
+    counts = guarded_counts(asked, [g for q, g in zip(queries, guards) if q])
     if counts is None:
         return None
     found = iter(counts)
     return [next(found) if query else 0 for query in queries]
 
 
-def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL) -> Optional[str]:
+def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
+                       exact_forms: Optional[ExactForms] = None) -> Optional[str]:
     """tsquery used for ranking: every field counts, whatever the filter scope.
 
     A diagnosis is filtered on the short fields only, but a README that
-    mentions it still moves a matching dataset up.
+    mentions it still moves a matching dataset up. A word with decided forms
+    is left out where it would rank alone: by stem, "ageing" counts every
+    "age" (build_exact_rank_tsquery ranks it). Next to other words of its
+    term it stays, since the term only ranks where all its words meet.
     """
+    def exact(word: Word) -> bool:
+        return bool(_word_forms(word, exact_forms))
+
     if mode == MODE_LOOSE:
-        queries = [_word_query(word) for term in terms for word in term]
+        queries = [_word_query(word) for term in terms for word in term if not exact(word)]
     else:
-        queries = [_all_words_query(term) for term in terms if term]
+        queries = [_all_words_query(term) for term in terms
+                   if term and not all(exact(word) for word in term)]
+    return _any(queries) or None
+
+
+def build_exact_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
+                             exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+    """Ranking query for the unstemmed vector: the words with decided forms."""
+    groups = [[_form_group(forms) for forms in (_word_forms(word, exact_forms) for word in term)
+               if forms] for term in terms]
+    if mode == MODE_LOOSE:
+        queries = [group for term in groups for group in term]
+    else:
+        queries = [" & ".join(term) for term in groups if term]
     return _any(queries) or None
 
 
@@ -383,6 +525,9 @@ def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL) -> Optional[
 @dataclass(slots=True)
 class ExpandedSearch:
     sql: str
+    # What ranks the result: a tsquery for search_tsv, "stemmed#exact" when
+    # words are ranked on search_tsv_exact, or "stemmed#exact#own" when other
+    # words widen a search (join_rank).
     rank_tsquery: Optional[str]
 
 
@@ -445,7 +590,8 @@ def papers_enabled() -> bool:
 
 
 _VECTOR_MATCH_RE = re.compile(
-    rf"(?P<negated>\bNOT\s+)?\b(?P<alias>[A-Za-z_]\w*)\.{FTS_COLUMN}\s+@@\s+to_tsquery\(",
+    rf"(?P<negated>\bNOT\s+)?\b(?P<alias>[A-Za-z_]\w*)\."
+    rf"(?P<column>{FTS_COLUMN}|{EXACT_FTS_COLUMN})\s+@@\s+to_tsquery\(",
     re.IGNORECASE)
 _NOT_BEFORE_RE = re.compile(r"\bNOT\s*$", re.IGNORECASE)
 
@@ -489,22 +635,59 @@ def with_paper_text(sql: str) -> str:
     both from one translation (benchmarks/recall/paired_papers_run.py).
     """
     spans = negated_spans(sql)
+    exact_papers = schema_capabilities.has_exact_paper_fts()
 
     def replace(match: re.Match) -> str:
         if match.group("negated") or _is_negated(match.start(), spans):
             return match.group(0)
-        return f"{match.group('alias')}.{PAPER_FTS_COLUMN} @@ to_tsquery("
+        column = match.group("column")
+        if column == FTS_COLUMN:
+            column = PAPER_FTS_COLUMN
+        elif exact_papers:
+            column = EXACT_PAPER_FTS_COLUMN   # the guard of a match that now reads papers
+        return f"{match.group('alias')}.{column} @@ to_tsquery("
 
     return _VECTOR_MATCH_RE.sub(replace, sql)
 
 
+def _exact_column(column: str) -> str:
+    """The unstemmed twin of a full-text column."""
+    if column == PAPER_FTS_COLUMN and schema_capabilities.has_exact_paper_fts():
+        return EXACT_PAPER_FTS_COLUMN
+    # Without the paper twin the guard reads the dataset's own text: a word
+    # that must match exactly is then not found through a paper alone.
+    return EXACT_FTS_COLUMN
+
+
+_GUARD_RE = re.compile(
+    rf"^\s*[A-Za-z_]\w*\.{EXACT_FTS_COLUMN}(?:_papers)?\s+@@\s+to_tsquery\(\s*'{EXACT_TS_CONFIG}'",
+    re.IGNORECASE)
+
+
+def is_guarded_pair(node: Any) -> bool:
+    """True if the sqlglot *node* is "(stemmed match AND its guard)".
+
+    Code that splits a WHERE clause into its AND conditions keeps such a pair
+    whole: it is one text search, not two (module docstring).
+    """
+    if type(node).__name__ != "Paren" or type(node.this).__name__ != "And":
+        return False
+    try:
+        return _GUARD_RE.match(node.this.right.sql(dialect="postgres")) is not None
+    except Exception:  # an odd node is simply not a pair
+        return False
+
+
 def expand_text_search(
     sql: str, fts: Optional[bool] = None, papers: Optional[bool] = None,
+    exact_forms: Optional[ExactForms] = None,
 ) -> ExpandedSearch:
-    """Replace every text_match() placeholder in *sql* and build the rank query.
+    """Replace every text_match() placeholder in *sql* and build the rank queries.
 
     *fts* and *papers* override the detected database capability and the
-    TEXT_SEARCH_PAPERS switch (tests).
+    TEXT_SEARCH_PAPERS switch (tests). *exact_forms*: the word forms decided
+    for this question; with TEXT_SEARCH_EXACT on, those words and the ones on
+    the reviewed list also need one of their forms (module docstring).
     """
     use_fts = schema_capabilities.has_fts() if fts is None else fts
     use_papers = use_fts and (papers_enabled() if papers is None else papers)
@@ -512,6 +695,10 @@ def expand_text_search(
         sql = convert_long_text_ilike(sql)
     alias = _dataset_alias(sql)
     rank_parts: List[str] = []
+    rank_exact_parts: List[str] = []
+    # The searches that 'also' placeholders widen, and every search so far.
+    own_parts: List[str] = []
+    previous_filter: List[str] = []
     not_groups = negated_spans(sql) if use_papers else []
 
     def replace(match: re.Match) -> str:
@@ -520,19 +707,68 @@ def expand_text_search(
         mode = (match.group("mode") or MODE_ALL).lower()
         if mode not in MODES:
             mode = MODE_ALL
+        # Other words for the search before it: searched like 'near'; a
+        # dataset matching only them ranks below one matching that search.
+        also = mode == MODE_ALSO
+        if also:
+            mode = MODE_NEAR
         terms = parse_alternatives(match.group("terms"))
         if not terms:
             # Nothing searchable ("???"): the term cannot match any dataset.
             return f"{negated}FALSE"
         if not use_fts:
             return negated + _ilike_fallback(terms, mode, alias)
-        query = build_filter_tsquery(terms, mode)
+        if also and not inside_not and previous_filter:
+            own_parts.append(previous_filter[-1])
+        elif not inside_not:
+            own_filter = build_filter_tsquery(
+                [_filter_term(term, mode, exact_forms) for term in terms],
+                MODE_ALL if mode == MODE_LOOSE else mode)
+            if own_filter:
+                previous_filter.append(own_filter)
         if not negated:
-            rank = build_rank_tsquery(terms, mode)
+            rank = build_rank_tsquery(terms, mode, exact_forms)
             if rank:
                 rank_parts.append(rank)
+            rank_exact = build_exact_rank_tsquery(terms, mode, exact_forms)
+            if rank_exact:
+                rank_exact_parts.append(rank_exact)
         column = PAPER_FTS_COLUMN if (use_papers and not inside_not) else FTS_COLUMN
-        return f"{negated}{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
+
+        def atom(query: str) -> str:
+            return f"{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
+
+        if not exact_enabled():
+            return negated + atom(build_filter_tsquery(terms, mode))
+        label = _SCOPE_LABEL[mode]
+        # What each alternative requires (a loose term: its core, counted
+        # once here), and its guard if it has exact words.
+        required = [_filter_term(term, mode, exact_forms) for term in terms]
+        guards = [exact_guard(term, label, exact_forms) for term in required]
+        if not any(guards):
+            return negated + atom(
+                build_filter_tsquery(required, MODE_ALL if mode == MODE_LOOSE else mode))
+        # One pair per alternative with exact words; the others share one
+        # stemmed match, placed where the first of them stood.
+        pieces: List[str] = []
+        plain: List[Term] = []
+        plain_at: Optional[int] = None
+        for term, guard in zip(required, guards):
+            if guard:
+                pieces.append(
+                    f"({atom(build_filter_tsquery([term], MODE_ALL if mode == MODE_LOOSE else mode))}"
+                    f" AND {alias}.{_exact_column(column)} @@ "
+                    f"to_tsquery('{EXACT_TS_CONFIG}', '{guard}'))")
+            else:
+                if plain_at is None:
+                    plain_at = len(pieces)
+                plain.append(term)
+        if plain:
+            pieces.insert(plain_at or 0, atom(
+                build_filter_tsquery(plain, MODE_ALL if mode == MODE_LOOSE else mode)))
+        if len(pieces) == 1:
+            return negated + pieces[0]
+        return negated + "(" + " OR ".join(pieces) + ")"
 
     expanded = _TEXT_MATCH_RE.sub(replace, sql)
 
@@ -546,7 +782,9 @@ def expand_text_search(
                 rank_parts.append(_all_words_query(words, _NAME_LABEL))
 
     rank_tsquery = _any(rank_parts) if (use_fts and rank_parts) else None
-    return ExpandedSearch(sql=expanded, rank_tsquery=rank_tsquery or None)
+    rank_exact = _any(rank_exact_parts) if (use_fts and rank_exact_parts) else None
+    own = _any(list(dict.fromkeys(own_parts))) if (rank_tsquery or rank_exact) and own_parts else None
+    return ExpandedSearch(sql=expanded, rank_tsquery=join_rank(rank_tsquery, rank_exact, own))
 
 
 # Words of a question that say nothing about the datasets wanted.
@@ -577,11 +815,93 @@ def is_safe_tsquery(query: Optional[str]) -> bool:
     return bool(query) and _SAFE_TSQUERY_RE.match(query) is not None
 
 
-def text_rank_expression(vector_sql: str, rank_tsquery: str) -> str:
-    """SQL expression for the 0..1 text rank of one dataset."""
+# Between the parts of a rank query: the tsquery for search_tsv, the one for
+# search_tsv_exact, and the search that 'also' words widen. Not a tsquery
+# character.
+RANK_SEPARATOR = "#"
+# Taken off the text rank of a dataset that matches only the other words
+# ('also') of a search and not the search itself. Every ordering adds the
+# text rank (0..1) to the score of the matched codes (a sum of at most a few
+# dozen scores up to 1), so this puts such a dataset below every dataset
+# that matches the user's own words, and keeps the order among them.
+ALSO_ONLY_PENALTY = 100
+
+
+def join_rank(stemmed: Optional[str], exact: Optional[str],
+              own: Optional[str] = None) -> Optional[str]:
+    """One rank string from its parts; the stemmed query alone as it is."""
+    if own:
+        return f"{stemmed or ''}{RANK_SEPARATOR}{exact or ''}{RANK_SEPARATOR}{own}"
+    if not exact:
+        return stemmed or None
+    return f"{stemmed or ''}{RANK_SEPARATOR}{exact}"
+
+
+def _rank_parts(rank: Optional[str]) -> List[Optional[str]]:
+    parts = (rank or "").split(RANK_SEPARATOR, 2)
+    parts += [""] * (3 - len(parts))
+    return [part if is_safe_tsquery(part) else None for part in parts]
+
+
+def split_rank(rank: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+    """(stemmed, exact) of a rank string; a part is None when absent or unsafe."""
+    stemmed, exact, _own = _rank_parts(rank)
+    return stemmed, exact
+
+
+def rank_own(rank: Optional[str]) -> Optional[str]:
+    """The search that other words widen ('also'); None when there is none."""
+    return _rank_parts(rank)[2]
+
+
+def without_own(rank: Optional[str]) -> Optional[str]:
+    """The rank string without the 'also' part: every match ranks alike."""
+    return join_rank(*split_rank(rank))
+
+
+def rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
+    """SQL for the text rank of the dataset row *alias*; None without a rank.
+
+    0..1; with both parts the raw ranks are added before scaling, as one
+    query over one vector would have done. A dataset that matches only the
+    other words of a search ('also') gets ALSO_ONLY_PENALTY taken off.
+    """
+    expression = _plain_rank_expression(alias, rank)
+    own = rank_own(rank)
+    if expression is None or not own:
+        return expression
+    return (f"({expression} - CASE WHEN {alias}.{FTS_COLUMN} @@ "
+            f"to_tsquery('{TS_CONFIG}', '{own}') THEN 0 ELSE {ALSO_ONLY_PENALTY} END)")
+
+
+def _plain_rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
+    stemmed, exact = split_rank(rank)
+    if exact and not schema_capabilities.has_exact_fts():
+        exact = None
+    if stemmed and not exact:
+        return text_rank_expression(f"{alias}.{FTS_COLUMN}", stemmed)
+    if exact and not stemmed:
+        return text_rank_expression(f"{alias}.{EXACT_FTS_COLUMN}", exact, EXACT_TS_CONFIG)
+    if not stemmed:
+        return None
+    raw = (f"COALESCE(ts_rank_cd('{RANK_WEIGHTS}', {alias}.{FTS_COLUMN}, "
+           f"to_tsquery('{TS_CONFIG}', '{stemmed}'), 0), 0) + "
+           f"COALESCE(ts_rank_cd('{RANK_WEIGHTS}', {alias}.{EXACT_FTS_COLUMN}, "
+           f"to_tsquery('{EXACT_TS_CONFIG}', '{exact}'), 0), 0)")
+    # Normalization 32 of text_rank_expression, applied to the sum.
+    return f"(({raw}) / (({raw}) + 1))"
+
+
+def text_rank_expression(vector_sql: str, rank_tsquery: str, config: str = TS_CONFIG) -> str:
+    """SQL expression for the 0..1 text rank of one dataset.
+
+    *config*: TS_CONFIG for search_tsv, EXACT_TS_CONFIG for search_tsv_exact.
+    """
     if not is_safe_tsquery(rank_tsquery):
         raise ValueError("unsafe rank tsquery")
+    if config not in (TS_CONFIG, EXACT_TS_CONFIG):
+        raise ValueError("unknown text search configuration")
     return (
         f"COALESCE(ts_rank_cd('{RANK_WEIGHTS}', {vector_sql}, "
-        f"to_tsquery('{TS_CONFIG}', '{rank_tsquery}'), {RANK_NORMALIZATION}), 0)"
+        f"to_tsquery('{config}', '{rank_tsquery}'), {RANK_NORMALIZATION}), 0)"
     )

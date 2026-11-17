@@ -241,13 +241,46 @@ def test_refine_is_refused_for_self_corrected_queries():
 # ── README excerpts ───────────────────────────────────────────────────────────
 
 def test_highlight_query_takes_words_of_text_and_coded_chips():
-    query = qf.highlight_tsquery(_sql(DIAGNOSIS, MODALITY, NO_EEG, ADULTS, TEXT))
-    words = query.split(" | ")
-    assert {"parkinson", "parkinsons", "paralysis", "agitans", "fmri", "sleep", "deprivation"} <= set(words)
+    terms = qf.highlight_terms(_sql(DIAGNOSIS, MODALITY, NO_EEG, ADULTS, TEXT))
+    assert {("parkinson",), ("parkinsons",), ("paralysis", "agitans"), ("parkinson", "disease"),
+            ("fMRI",), ("sleep", "deprivation")} == set(terms)
     # Negated chips and ages have nothing to mark.
+    words = qf.highlight_tsquery(_sql(DIAGNOSIS, MODALITY, NO_EEG, ADULTS, TEXT))
     assert "eeg" not in words and "18" not in words
     assert qf.highlight_tsquery(_HEAD + "GROUP BY d.id") is None
     assert qf.highlight_tsquery(None) is None
+
+
+def test_highlight_terms_pair_the_words_of_a_phrase():
+    # "structural" alone stems like "structure" and would mark every
+    # "Brain Imaging Data Structure"; it only counts next to "MRI".
+    mri = ("EXISTS (SELECT 1 FROM bids_files f WHERE f.dataset_id = d.id "
+           "AND f.datatype IN ('anatomical_mri', 'functional_mri', 'diffusion_mri'))")
+    terms = qf.highlight_terms(_sql(mri))
+    assert ("structural", "mri") in terms and ("MRI",) in terms and ("fMRI",) in terms
+    assert ("structural",) not in terms and ("or",) not in terms
+    # Text phrases: pairs without stopwords, single words alone.
+    text = "d.search_tsv @@ to_tsquery('english', '(scanning & of & one & individual) | rest')"
+    terms = qf.highlight_terms(_sql(text))
+    assert terms == [("scanning", "one"), ("one", "individual"), ("rest",)]
+    assert qf.terms_tsquery(terms[:1]) == "(scanning <-> one | scanning <2> one)"
+
+
+def test_keep_justified_marks_drops_pair_words_alone():
+    from routers.query import keep_justified_marks
+    terms = [("structural", "mri"), ("MRI",), ("MS",)]
+    lexemes = {"structural": {"structur"}, "mri": {"mri"}, "ms": {"ms"}}
+    headline = ("Brain Imaging Data ⟦Structure⟧ format; ⟦structural⟧ ⟦MRI⟧ "
+                "of ⟦MS⟧ patients, 500 ⟦ms⟧ trials, ⟦MRI⟧ again")
+    marks = ["structur", "structur", "mri", "ms", "ms", "mri"]
+    assert keep_justified_marks(headline, marks, terms, lexemes) == (
+        "Brain Imaging Data Structure format; ⟦structural⟧ ⟦MRI⟧ "
+        "of ⟦MS⟧ patients, 500 ms trials, ⟦MRI⟧ again")
+    # One word between still counts: "Parkinson's disease".
+    assert keep_justified_marks("⟦Parkinson⟧'s ⟦disease⟧", ["parkinson", "diseas"],
+                                [("parkinson", "disease")],
+                                {"parkinson": {"parkinson"}, "disease": {"diseas"}}) \
+        == "⟦Parkinson⟧'s ⟦disease⟧"
 
 
 def test_clean_snippet_strips_markdown():
@@ -290,20 +323,26 @@ def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
 
     long_start = "Plain README start. " * 30
     session = _SnippetSession([
-        (UUID(int=1), "patients with ⟦Parkinson's⟧ disease … scanned with ⟦fMRI⟧"),
-        (UUID(int=2), long_start),
+        (UUID(int=1), "patients with ⟦Parkinson's⟧ ⟦disease⟧ … scanned with ⟦fMRI⟧ and ⟦disease⟧",
+         ["parkinson", "diseas", "fmri", "diseas"], ["parkinson", "diseas", "fmri"]),
+        (UUID(int=2), long_start, [], ["parkinson", "diseas", "fmri"]),
     ])
     datasets = [_dataset(1), _dataset(2), _dataset(3)]
     caps.set_display_columns({"readme_text"})
     try:
-        asyncio.run(query_router._attach_snippets(session, datasets, "parkinson | fmri"))
+        asyncio.run(query_router._attach_snippets(
+            session, datasets, [("parkinson", "disease"), ("fMRI",)]))
     finally:
         caps.set_display_columns(())
 
     sql, params = session.calls[0]
-    assert "ts_headline" in sql and params["q"] == "parkinson | fmri"
-    # A passage from mid-sentence is marked as an excerpt at both ends.
-    assert datasets[0].snippet == "… patients with ⟦Parkinson's⟧ disease … scanned with ⟦fMRI⟧ …"
+    assert "ts_headline" in sql
+    assert params["q"] == "(parkinson <-> disease | parkinson <2> disease) | fmri"
+    assert params["words"] == ["parkinson", "disease", "fmri"]
+    # A passage from mid-sentence is marked as an excerpt at both ends; the
+    # pair's second word away from its partner is not marked.
+    assert datasets[0].snippet == (
+        "… patients with ⟦Parkinson's⟧ ⟦disease⟧ … scanned with ⟦fMRI⟧ and disease …")
     # No match in the README: ts_headline returns its start, cut at a word.
     assert datasets[1].snippet.endswith(" …") and len(datasets[1].snippet) <= 330
     assert "⟦" not in datasets[1].snippet
@@ -315,7 +354,7 @@ def test_attach_snippets_without_the_column_does_nothing():
 
     session = _SnippetSession([])
     datasets = [_dataset(1)]
-    asyncio.run(query_router._attach_snippets(session, datasets, "x"))
+    asyncio.run(query_router._attach_snippets(session, datasets, [("x",)]))
     assert session.calls == [] and datasets[0].snippet is None
 
 

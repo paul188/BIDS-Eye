@@ -32,7 +32,9 @@ from __future__ import annotations
 
 import json
 import logging
+import contextvars
 import os
+import threading
 import time
 from typing import List, Optional, Sequence
 
@@ -57,6 +59,76 @@ _DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
 
 class LLMAllFailedError(RuntimeError):
     """Raised when every tier in the cascade fails."""
+
+
+# ── token usage ─────────────────────────────────────────────────────────────────
+# Every successful call is logged with its token counts, and added to the list
+# started by start_usage_collection() when there is one, so the cost of one
+# search can be summed per stage. Failed attempts report nothing.
+
+_usage_collector: "contextvars.ContextVar[Optional[list]]" = contextvars.ContextVar(
+    "llm_usage_collector", default=None)
+_last_call = threading.local()
+
+
+def start_usage_collection() -> list:
+    """Collect the usage of every later call in this context; returns the list.
+
+    Each entry: purpose, provider, model, input_tokens (cached ones included),
+    cached_tokens, output_tokens, thinking_tokens, seconds.
+    """
+    collected: list = []
+    _usage_collector.set(collected)
+    return collected
+
+
+def _count(obj, name: str) -> int:
+    value = getattr(obj, name, None)
+    return value if isinstance(value, int) else 0
+
+
+def _note_gemini_usage(resp) -> None:
+    meta = getattr(resp, "usage_metadata", None)
+    if meta is None:
+        return
+    _last_call.usage = {
+        "input_tokens": _count(meta, "prompt_token_count"),
+        "cached_tokens": _count(meta, "cached_content_token_count"),
+        "output_tokens": _count(meta, "candidates_token_count"),
+        "thinking_tokens": _count(meta, "thoughts_token_count"),
+    }
+
+
+def _note_anthropic_usage(resp) -> None:
+    usage = getattr(resp, "usage", None)
+    if usage is None:
+        return
+    cached = _count(usage, "cache_read_input_tokens")
+    _last_call.usage = {
+        # Anthropic reports uncached, cache-read and cache-write input apart.
+        "input_tokens": (_count(usage, "input_tokens") + cached
+                         + _count(usage, "cache_creation_input_tokens")),
+        "cached_tokens": cached,
+        "output_tokens": _count(usage, "output_tokens"),
+        "thinking_tokens": 0,
+    }
+
+
+def _report_usage(purpose: Optional[str], provider: str, model: str, seconds: float) -> None:
+    usage = getattr(_last_call, "usage", None)
+    _last_call.usage = None
+    if not usage:
+        return
+    entry = {"purpose": purpose or "unlabelled", "provider": provider, "model": model,
+             **usage, "seconds": round(seconds, 2)}
+    log.info(
+        "llm usage: purpose=%s model=%s/%s input=%d cached=%d output=%d thinking=%d seconds=%.2f",
+        entry["purpose"], provider, model, entry["input_tokens"], entry["cached_tokens"],
+        entry["output_tokens"], entry["thinking_tokens"], seconds,
+    )
+    collected = _usage_collector.get()
+    if collected is not None:
+        collected.append(entry)
 
 
 class _Tier:
@@ -141,6 +213,7 @@ def _call_gemini(model, prompt, system, temperature, api_key, *, json_schema=Non
     client = genai.Client(api_key=api_key,
                           http_options=types.HttpOptions(timeout=timeout_ms))
     resp = client.models.generate_content(model=model, contents=prompt, config=cfg)
+    _note_gemini_usage(resp)
     return (resp.text or "").strip()
 
 
@@ -160,6 +233,7 @@ def _call_anthropic(model, prompt, system, temperature, accepts_temperature, max
     if accepts_temperature:
         kwargs["temperature"] = temperature
     resp = client.messages.create(**kwargs)
+    _note_anthropic_usage(resp)
     return next((b.text for b in resp.content if b.type == "text"), "").strip()
 
 
@@ -194,6 +268,7 @@ def llm_generate(
     call_timeout: Optional[float] = None,
     budget_seconds: Optional[float] = None,
     use_fallback: bool = True,
+    purpose: Optional[str] = None,
 ) -> str:
     """Run the prompt through the cascade; return the first tier's text response.
 
@@ -206,6 +281,7 @@ def llm_generate(
       call_timeout    seconds per Gemini call
       budget_seconds  wall-clock budget for all Gemini tiers
       use_fallback    False skips the Claude tier
+      purpose         label for the usage log ("intent", "sql", ...)
 
     Raises LLMAllFailedError if every tier fails.
     """
@@ -247,6 +323,8 @@ def llm_generate(
                 continue
         for attempt in range(1, attempts + 1):
             try:
+                _last_call.usage = None
+                call_started = time.monotonic()
                 if tier.provider == "gemini":
                     if not gem_key:
                         raise RuntimeError("no GEMINI_API_KEY/GOOGLE_API_KEY configured")
@@ -263,6 +341,8 @@ def llm_generate(
                     )
                 if text:
                     log.info("llm_generate: %s/%s succeeded", tier.provider, tier.model)
+                    _report_usage(purpose, tier.provider, tier.model,
+                                  time.monotonic() - call_started)
                     return text
                 raise RuntimeError("empty response")
             except Exception as exc:  # noqa: BLE001 — classify below

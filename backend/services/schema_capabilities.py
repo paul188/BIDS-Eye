@@ -20,6 +20,11 @@ also records search_tsv_papers, the same vector plus the text of the papers a
 dataset names (crawlers/migrate_add_paper_search.sql), which text search uses
 when TEXT_SEARCH_PAPERS is on.
 
+Likewise search_tsv_exact and search_tsv_exact_papers, the same vectors
+without stemming, and the table bids_word_forms
+(crawlers/migrate_add_exact_search.sql). Text search uses them when
+TEXT_SEARCH_EXACT is on, for words that must match in the form asked for.
+
 After a migration or backfill, restart the backend to pick up the new state.
 """
 
@@ -84,6 +89,39 @@ def set_fts(available: bool) -> None:
     _has_fts = bool(available)
 
 
+# The two vectors without stemming, and the catalogue's word forms; see
+# crawlers/migrate_add_exact_search.sql.
+EXACT_FTS_COLUMN = "search_tsv_exact"
+EXACT_PAPER_FTS_COLUMN = "search_tsv_exact_papers"
+WORD_FORMS_TABLE = "bids_word_forms"
+_has_exact_fts: bool = False
+_has_exact_paper_fts: bool = False
+_has_word_forms: bool = False
+
+
+def has_exact_fts() -> bool:
+    """True if bids_datasets has the unstemmed full-text column."""
+    return _has_exact_fts
+
+
+def has_exact_paper_fts() -> bool:
+    """True if bids_datasets has the unstemmed column that includes paper text."""
+    return _has_exact_paper_fts
+
+
+def has_word_forms() -> bool:
+    """True if the table of the catalogue's word forms exists."""
+    return _has_word_forms
+
+
+def set_exact_fts(available: bool, papers: bool = False, word_forms: bool = False) -> None:
+    """Override the detected exact-search capabilities (tests)."""
+    global _has_exact_fts, _has_exact_paper_fts, _has_word_forms
+    _has_exact_fts = bool(available)
+    _has_exact_paper_fts = bool(available and papers)
+    _has_word_forms = bool(word_forms)
+
+
 def has_display_column(name: str) -> bool:
     """True if bids_datasets has this display column in the running database."""
     return name in _present_display
@@ -144,6 +182,15 @@ def _non_empty_expression(column: str, sql_type: str) -> str:
     return f"count({column})"
 
 
+async def _table_exists(connection: Any, table: str) -> bool:
+    try:
+        result = await connection.execute(
+            text("SELECT to_regclass(:table) IS NOT NULL"), {"table": table})
+        return bool(result.scalar_one())
+    except Exception:  # an odd connection must not hide the columns found
+        return False
+
+
 async def detect_available_columns(connection: Any) -> FrozenSet[str]:
     """Inspect bids_datasets and return the optional columns that hold data.
 
@@ -158,9 +205,19 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
     )
     present = {row[0] for row in rows}
     global _present_display, _has_fts, _has_paper_fts
+    global _has_exact_fts, _has_exact_paper_fts, _has_word_forms
     _present_display = frozenset(name for name in DISPLAY_COLUMNS if name in present)
     _has_fts = FTS_COLUMN in present
     _has_paper_fts = _has_fts and PAPER_FTS_COLUMN in present
+    _has_exact_fts = _has_fts and EXACT_FTS_COLUMN in present
+    _has_exact_paper_fts = (_has_exact_fts and _has_paper_fts
+                            and EXACT_PAPER_FTS_COLUMN in present)
+    _has_word_forms = _has_exact_fts and await _table_exists(connection, WORD_FORMS_TABLE)
+    if _has_exact_fts:
+        log.info("Unstemmed full-text column %s found%s%s (used when TEXT_SEARCH_EXACT is on)",
+                 EXACT_FTS_COLUMN,
+                 ", with paper text" if _has_exact_paper_fts else "",
+                 ", word forms table present" if _has_word_forms else ", no word forms table")
     if _has_paper_fts:
         log.info("Full-text column %s found (used when TEXT_SEARCH_PAPERS is on)", PAPER_FTS_COLUMN)
     log.info(
@@ -201,6 +258,7 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
 async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
     """Detect and store the state. On any error, assume no optional column."""
     global _available, _present_display, _has_fts, _has_paper_fts
+    global _has_exact_fts, _has_exact_paper_fts, _has_word_forms
     try:
         async with engine.connect() as connection:
             _available = await detect_available_columns(connection)
@@ -210,4 +268,7 @@ async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
         _present_display = frozenset()
         _has_fts = False
         _has_paper_fts = False
+        _has_exact_fts = False
+        _has_exact_paper_fts = False
+        _has_word_forms = False
     return _available

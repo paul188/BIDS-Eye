@@ -1,0 +1,147 @@
+"""Other words for a description search: "dead people" also finds "post-mortem".
+
+The language model lists the words dataset authors use for the user's
+everyday word (QueryPlan.description_alternatives); preprocess.py checks them
+against the catalogue and adds them to the text filter.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+sqlglot = pytest.importorskip("sqlglot")
+
+import preprocess as pp  # noqa: E402
+from services import query_filters, text_search, uncertain_tier  # noqa: E402
+
+
+def _plan(**fields) -> pp.QueryPlan:
+    return pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH,
+                        natural_language_summary="datasets from deceased people", **fields)
+
+
+def _counts(table, default=5):
+    return lambda alternatives: [table.get(a, default) for a in alternatives]
+
+
+@pytest.fixture(autouse=True)
+def _no_database(monkeypatch):
+    monkeypatch.setattr(text_search, "_lookup_counts", lambda queries: None)
+
+
+def test_alternatives_are_checked_against_the_catalogue() -> None:
+    plan = _plan(description_search="dead people",
+                 description_alternatives=["post-mortem", "ex vivo", "People, dead", "cadaver",
+                                           "brain", "ex-vivo", "postmortem"])
+    dropped = pp.check_description_alternatives(
+        plan, _counts({"cadaver": 0, "brain": 900}))
+    # "People, dead" repeats the user's words; "ex-vivo" repeats "ex vivo".
+    assert plan.description_alternatives == ["post-mortem", "ex vivo", "postmortem"]
+    assert dropped == {"cadaver": "no dataset uses it", "brain": "too common (900 datasets)"}
+
+
+def test_without_a_description_search_nothing_is_added() -> None:
+    plan = _plan(description_alternatives=["post-mortem"])
+    pp.check_description_alternatives(plan, _counts({}))
+    assert plan.description_alternatives == []
+    assert "post-mortem" not in pp.augment_with_rag(plan, {}).augmented_question
+
+
+def test_without_counts_alternatives_are_kept_unchecked() -> None:
+    plan = _plan(description_search="dead people", description_alternatives=["post-mortem"] * 3)
+    pp.check_description_alternatives(plan, lambda alternatives: None)
+    assert plan.description_alternatives == ["post-mortem"]
+
+
+def test_filter_line_adds_the_alternatives_to_the_users_words() -> None:
+    plan = _plan(description_search="dead people",
+                 description_alternatives=["post-mortem", "ex vivo", "deceased"])
+    question = pp.augment_with_rag(plan, {}).augmented_question
+    assert ("dataset text: (text_match('dead people') OR "
+            "text_match('post-mortem | ex vivo | deceased', 'also'))") in question
+
+
+def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
+    plan = _plan(description_search="dead people",
+                 description_alternatives=["post-mortem", "ex vivo", "deceased"])
+    line = pp.augment_with_rag(plan, {}).augmented_question.split("dataset text: ")[1].splitlines()[0]
+    sql = text_search.expand_text_search(
+        f"SELECT d.id FROM bids_datasets AS d WHERE {line} GROUP BY d.id",
+        fts=True, papers=False).sql
+    expanded = text_search.expand_text_search(
+        f"SELECT d.id FROM bids_datasets AS d WHERE {line} GROUP BY d.id", fts=True, papers=False)
+    assert expanded.sql == sql
+    assert text_search.rank_own(expanded.rank_tsquery) == "dead & people"
+    assert "'dead & people'" in sql
+    assert "(post <-> mortem) | (ex <1> vivo" in sql and "| deceased'" in sql
+
+    chips = query_filters.describe(sql)
+    assert len(chips) == 1 and chips[0].label == "dead people"
+    assert "post mortem" in chips[0].detail and "ex vivo" in chips[0].detail
+
+    # Only the user's own words get a weaker form, not the alternatives.
+    relaxed, _ = uncertain_tier.relax_text_condition(sql)
+    assert "mortem" not in relaxed and "vivo" not in relaxed
+
+
+def test_rewriter_restores_alternatives_the_model_left_out() -> None:
+    from services import sql_rewriter
+
+    service = sql_rewriter.sql_rewrite_service
+    condition = "(text_match('dead people') OR text_match('post-mortem | ex vivo', 'also'))"
+    question = f"[Resolved DB filters]\n  dataset text: {condition}\n\nsummary"
+    left_out = ("SELECT d.id FROM bids_datasets AS d WHERE text_match('dead people') "
+                "AND d.license = 'CC0' GROUP BY d.id")
+    restored = service._restore_description_alternatives(left_out, question)
+    assert f"WHERE {condition} AND d.license" in restored
+    copied = f"SELECT d.id FROM bids_datasets AS d WHERE {condition} GROUP BY d.id"
+    assert service._restore_description_alternatives(copied, question) == copied
+    plain = "[Resolved DB filters]\n  dataset text: text_match('complex')\n\nsummary"
+    assert service._restore_description_alternatives(left_out, plain) == left_out
+
+
+# ── Ranking: the user's own words first ───────────────────────────────────────
+
+def _rank(condition: str) -> str:
+    return text_search.expand_text_search(
+        f"SELECT d.id FROM bids_datasets AS d WHERE {condition} GROUP BY d.id",
+        fts=True, papers=False).rank_tsquery
+
+
+def test_a_match_on_the_alternatives_only_ranks_below_the_users_words() -> None:
+    rank = _rank("(text_match('test-retest reliability') OR "
+                 "text_match('reproducibility | stability', 'also'))")
+    stemmed, exact = text_search.split_rank(rank)
+    assert "reproducibility" in stemmed and "reliability" in stemmed and exact is None
+    assert text_search.rank_own(rank) == "(test <-> retest) & reliability"
+    expression = text_search.rank_expression("ft", rank)
+    assert expression.endswith(
+        "- CASE WHEN ft.search_tsv @@ to_tsquery('english', '(test <-> retest) & reliability') "
+        f"THEN 0 ELSE {text_search.ALSO_ONLY_PENALTY} END)")
+    # Without the 'also' part every match ranks alike, as a 'near' search does.
+    flat = text_search.without_own(rank)
+    assert flat == stemmed and "CASE" not in text_search.rank_expression("ft", flat)
+
+
+def test_other_searches_rank_as_before() -> None:
+    rank = _rank("text_match('ketamine') AND text_match('social conflict', 'near')")
+    assert text_search.rank_own(rank) is None
+    assert "CASE" not in text_search.rank_expression("ft", rank)
+    # 'also' without a search before it has nothing to rank below.
+    alone = _rank("text_match('post-mortem | ex vivo', 'also')")
+    assert text_search.rank_own(alone) is None
+
+
+def test_the_page_orders_by_the_penalised_rank() -> None:
+    from services import sql_rewriter
+
+    expanded = text_search.expand_text_search(
+        "SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets AS d "
+        "LEFT JOIN bids_objects AS o ON o.dataset_id = d.id WHERE "
+        "(text_match('dead people') OR text_match('ex vivo', 'also')) GROUP BY d.id",
+        fts=True, papers=False)
+    page, _ = sql_rewriter.build_page_sql(
+        base_sql=expanded.sql, scored_filters=[], apply_relevance=True, limit=20, offset=0,
+        rank_tsquery=expanded.rank_tsquery)
+    assert "THEN 0 ELSE 100 END" in page and "AS text_rank" in page
+    assert "relevance_score + page_result.text_rank DESC" in page

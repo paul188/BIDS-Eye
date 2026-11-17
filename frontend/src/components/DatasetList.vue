@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import type { Dataset, QueryFilter } from '../api'
 import DatasetCard from './DatasetCard.vue'
+import { highlightTerms as highlightTermsOf } from '../highlight'
 
 const props = defineProps<{
   datasets: Dataset[]
@@ -19,32 +20,12 @@ const emit = defineEmits<{ (e: 'page-change', page: number): void }>()
 
 const showSql = ref(false)
 
-// Words too common to be worth bolding in a description.
-const STOP_WORDS = new Set([
-  'and', 'or', 'the', 'with', 'of', 'in', 'for', 'on', 'at', 'to', 'a', 'an',
-  'data', 'dataset', 'datasets', 'study', 'task', 'disease', 'disorder', 'patients',
-])
-
 const activeFilters = computed(() => {
   const removed = new Set(props.removedFilters ?? [])
   return (props.filters ?? []).filter(f => !removed.has(f.id) && !f.negated)
 })
 
-const highlightTerms = computed(() => {
-  const words = new Set<string>()
-  for (const f of activeFilters.value) {
-    const phrases = [...f.text_words]
-    // Coded values also show up in descriptions ("fMRI", "EEG", "ADHD").
-    if (['modality', 'diagnosis', 'task'].includes(f.kind)) phrases.push(f.label.replace(/\s\+\d+$/, ''))
-    for (const word of phrases.join(' ').split(/[\s,/]+/)) {
-      const clean = word.replace(/^[“"']+|[”"'.]+$/g, '').replace(/'s$/i, '')
-      if (clean.length < 3 && !/^[A-Z]{2}$/.test(clean)) continue
-      if (STOP_WORDS.has(clean.toLowerCase())) continue
-      words.add(clean)
-    }
-  }
-  return [...words]
-})
+const highlightTerms = computed(() => highlightTermsOf(activeFilters.value))
 
 const emphasisKinds = computed(() => activeFilters.value.map(f => f.kind))
 

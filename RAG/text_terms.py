@@ -29,6 +29,10 @@ Placeholder grammar
                          for two words), so "social conflict" does not match a
                          README that says "social" in one place and "conflict"
                          in another
+                  also   like near, for other words for the text_match it is
+                         ORed with ("post-mortem" for "dead people"): a
+                         dataset that matches only these is ranked below
+                         every dataset that matches the first one
 
 Only [a-z0-9 |-] ever appears inside the quotes, so the placeholder survives
 being copied by a language model and can be inlined into SQL safely.
@@ -45,7 +49,8 @@ MODE_ALL = "all"
 MODE_SHORT = "short"
 MODE_LOOSE = "loose"
 MODE_NEAR = "near"
-MODES = (MODE_ALL, MODE_SHORT, MODE_LOOSE, MODE_NEAR)
+MODE_ALSO = "also"
+MODES = (MODE_ALL, MODE_SHORT, MODE_LOOSE, MODE_NEAR, MODE_ALSO)
 
 # Largest gap between neighbouring words of a 'near' term, counted in word
 # positions: "conflicts in social settings" puts "social" two positions after
