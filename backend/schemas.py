@@ -9,7 +9,8 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from typing_extensions import Annotated
 
 
 class ParticipantSchema(BaseModel):
@@ -128,16 +129,10 @@ class QueryFilterSchema(BaseModel):
     detail: str = ""
 
 
-class QueryRefineRequest(BaseModel):
-    """Re-run a translated query without some of its conditions (no LLM call)."""
-    query_id: str
-    # Chip ids from the original query's `filters`; [] restores the original.
-    remove: List[str] = Field(default_factory=list, max_length=50)
-    page_size: int = 20
-
-
 class QueryRequest(BaseModel):
-    question: str = Field(..., max_length=2000)
+    # The frontend sends nothing blank and at most 2000 characters; the same
+    # rules here, so no search (and no daily search) is spent on whitespace.
+    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
 
 
 class QueryPageRequest(BaseModel):

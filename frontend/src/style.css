@@ -32,9 +32,3 @@ body {
   padding-top: 2.5rem;
   margin-top: 1.5rem;
 }
-
-/* The latest search can always scroll up to the top of the page, even when
-   its results are shorter than the screen (header + search box ≈ 10rem). */
-.thread > [data-role='assistant']:last-child {
-  min-height: calc(100dvh - 10rem);
-}

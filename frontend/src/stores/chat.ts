@@ -100,7 +100,10 @@ export const useChatStore = defineStore('chat', () => {
     persist(conversations.value)
   }
 
+  // An empty page is reused, so History never fills with empty entries.
   function newConversation() {
+    const current = currentConversation.value
+    if (current && !current.messages.length) return
     const c = makeConversation()
     conversations.value.push(c)
     currentId.value = c.id
@@ -123,7 +126,10 @@ export const useChatStore = defineStore('chat', () => {
     _save()
   }
 
+  // Each search is a page of its own, listed in History, as chat apps keep
+  // separate conversations: a new question opens a new page.
   async function sendQuestion(question: string) {
+    if (currentConversation.value?.messages.length) newConversation()
     const conv = currentConversation.value
     if (!conv) return
 

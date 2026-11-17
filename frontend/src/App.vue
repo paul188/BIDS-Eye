@@ -63,6 +63,10 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const inputBar = ref<InstanceType<typeof InputBar> | null>(null)
 const drawerOpen = ref(false)
 
+// History: one entry per search page, newest first; the empty start page is not listed.
+const historyEntries = computed(() =>
+  [...store.conversations].reverse().filter(c => c.messages.length))
+
 // The latest question's box above its results is the search field.
 const lastUserId = computed(() => {
   const users = store.currentMessages.filter(m => m.role === 'user')
@@ -77,7 +81,11 @@ function latestQuestion(): string {
   const id = lastUserId.value
   return store.currentMessages.find(m => m.id === id)?.content ?? ''
 }
-watch(() => store.currentId, () => { input.value = latestQuestion() }, { immediate: true })
+// A new or different page starts at the top.
+watch(() => store.currentId, () => {
+  input.value = latestQuestion()
+  nextTick(() => messagesContainer.value?.scrollTo({ top: 0 }))
+}, { immediate: true })
 
 const SUGGESTIONS = [
   { tag: 'Clinical',   text: 'Datasets with at least 40 Parkinson\'s patients' },
@@ -89,13 +97,14 @@ const SUGGESTIONS = [
 async function submit() {
   const q = input.value.trim()
   if (!q || rateLimitedUntil.value) return
+  // The same question again while it is still loading: nothing to do.
+  const msgs = store.currentMessages
+  const lastIdx = msgs.map(m => m.role).lastIndexOf('user')
+  if (lastIdx !== -1 && msgs[lastIdx].content === q && msgs[lastIdx + 1]?.loading) return
   input.value = q
-  // sendQuestion pushes the user message + loading bubble synchronously, then
-  // awaits the API. Scroll the new question to the top *before* the answer lands
-  // so the user isn't pushed down and never has to scroll back up.
+  // sendQuestion opens a new page with the question and a loading answer
+  // synchronously, then awaits the API.
   const pending = store.sendQuestion(q)
-  await nextTick()
-  scrollQuestionToTop()
   try {
     await pending
   } catch (err) {
@@ -257,9 +266,9 @@ onUnmounted(() => {
       </div>
 
       <div class="flex-1 overflow-y-auto pb-2">
-        <p v-if="!store.conversations.length" class="px-4 py-3 text-xs text-muted">No history yet</p>
+        <p v-if="!historyEntries.length" class="px-4 py-3 text-xs text-muted">No history yet</p>
         <div
-          v-for="conv in [...store.conversations].reverse()"
+          v-for="conv in historyEntries"
           :key="conv.id"
           class="group relative mx-2 mb-0.5"
         >
