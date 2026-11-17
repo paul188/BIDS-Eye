@@ -45,6 +45,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "text_search.py",
     _BACKEND / "services" / "uncertain_tier.py",
     _BACKEND / "services" / "concept_keys.py",
+    _BACKEND / "services" / "catalogue_values.py",
     _BACKEND.parent / "LLM_preprocessor" / "preprocess.py",
     _BACKEND.parent / "LLM_preprocessor" / "llm_client.py",
     _BACKEND.parent / "RAG" / "value_mappings.yaml",

@@ -40,7 +40,7 @@ from schemas import (
     QueryResponse,
     TextToSQLResult,
 )
-from services import dataset_description, interpretation_store, query_filters
+from services import catalogue_values, dataset_description, interpretation_store, query_filters
 from services import uncertain_tier
 from services.query_cache import CachedQuery, query_cache
 from services.schema_capabilities import has_display_column
@@ -508,6 +508,7 @@ async def query_datasets(
     page, page_size = _clamp_page(1, _DEFAULT_PAGE_SIZE)
     # The same question gets the same translation every time (the models that
     # write it are not repeatable): reuse a stored one when there is one.
+    await catalogue_values.refresh_if_stale(session)
     stored = await interpretation_store.get(session, body.question)
     if stored is not None:
         translation = TextToSQLResult(

@@ -424,6 +424,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         rank_tsquery=rewritten.rank_tsquery,
         filter_sql=rewritten.filter_sql,
         relaxed_sql=rewritten.relaxed_sql,
+        value_fixes=rewritten.value_fixes,
     )
 
 

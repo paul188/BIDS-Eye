@@ -23,7 +23,7 @@ from __future__ import annotations
 import logging
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field as _field
 from pathlib import Path
 from typing import Any, Iterable, Optional, Sequence
 
@@ -50,6 +50,7 @@ from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 from services import text_search as _text_search  # noqa: E402
 from services import uncertain_tier as _uncertain_tier  # noqa: E402
 from services import schema_capabilities as _schema_capabilities  # noqa: E402
+from services import catalogue_values as _catalogue_values  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -171,6 +172,8 @@ class RewriteResult:
     # the full query finds nothing (routers/query.py); None when there is no
     # such condition to drop.
     relaxed_sql: Optional[str] = None
+    # Values the catalogue check corrected or dropped (services/catalogue_values.py).
+    value_fixes: list[str] = _field(default_factory=list)
 
 
 class SqlRewriteService:
@@ -234,6 +237,9 @@ class SqlRewriteService:
         sql = self._strip_outer_scan_filters(sql)
         sql = self._rewrite_task_ilike_concepts(sql)
         sql = _expand_concept_keys(sql)
+        # A datatype / suffix / task value no dataset has matches nothing
+        # (suffix = 'bold'): correct it or drop its condition.
+        sql, value_fixes = _catalogue_values.check_sql(sql)
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._drop_healthy_filters(sql)
         sql = self._decorrelate_grouped_exists(sql)
@@ -259,7 +265,8 @@ class SqlRewriteService:
             # (services/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)
         return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery,
-                             filter_sql=filter_sql, relaxed_sql=relaxed_sql)
+                             filter_sql=filter_sql, relaxed_sql=relaxed_sql,
+                             value_fixes=value_fixes)
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""

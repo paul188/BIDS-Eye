@@ -106,6 +106,9 @@ class TextToSQLResult(BaseModel):
     filter_sql: Optional[str] = Field(default=None, exclude=True)
     # The query without its free-text-only conditions (empty-result fallback).
     relaxed_sql: Optional[str] = Field(default=None, exclude=True)
+    # datatype / suffix / task values no dataset has, corrected or dropped
+    # before the query ran (services/catalogue_values.py).
+    value_fixes: List[str] = []
 
 
 class QueryFilterSchema(BaseModel):

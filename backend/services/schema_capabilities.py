@@ -132,6 +132,12 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
             if uncovered:
                 log.warning("%s misses %d datasets that have files: not used. Run "
                             "remote/dataset_facets.py --refresh-all and restart.", FACETS_TABLE, uncovered)
+        # The values generated SQL is checked against (services/catalogue_values.py).
+        from services import catalogue_values
+        if _has_facets:
+            await catalogue_values.load(connection)
+        else:
+            catalogue_values.set_known({})
     except Exception as exc:  # a database without these: search as before
         log.info("Dataset summaries not usable: %s", exc)
         _has_facets = _has_subject_counts = False
