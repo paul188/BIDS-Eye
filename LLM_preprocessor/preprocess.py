@@ -2247,8 +2247,18 @@ def _build_augmented_question(
     # (check_description_alternatives). With them the user's own words stay a
     # filter even when no dataset text says them.
     other_words = _format_text_match(plan.description_alternatives, _MODE_NEAR) if description_text else None
-    if description_text and not other_words and _matches_too_few(description_text):
+    # Other conditions of the question; "[...]" lines are notes, not filters.
+    filters_besides_text = bool(
+        any(line.startswith("  ") for line in context_lines)
+        or plan.name_search or size_conds or design_cond or species_cond or age_cond
+        or unresolved_terms
+        or any(g.min_subjects is not None for g in plan.groups)
+    )
+    if (description_text and not other_words and filters_besides_text
+            and _matches_too_few(description_text)):
         # No dataset text says this: as a filter it would only empty the result.
+        # Not when it is the whole question ("bonn", 2026-11-18): without it
+        # there is no condition left and the answer is the entire catalogue.
         not_searched.append(description_text)
         description_text = ""
     description_match = _format_text_match([description_text])
