@@ -131,3 +131,33 @@ def test_dry_run_writes_nothing_and_apply_writes_each_code_with_its_source() -> 
                                                 "healthy_control"}
     assert all(w["source_key"] == "_diagnosis_from" and w["column"] == "Group" for w in conn.writes)
     assert reports[0]["written"] == 3
+
+
+def test_a_sidecar_that_cannot_be_read_skips_the_dataset() -> None:
+    # Decoding without the sidecar's Levels would write raw values, and a
+    # dataset with any diagnosis is never looked at again.
+    def fetch(accession):
+        raise pg.ParticipantSidecarError("timed out")
+
+    conn = _Connection()
+    assert asyncio.run(pg.run(conn, apply=True, fetch=fetch)) == []
+    assert conn.writes == []
+
+
+def test_fetch_sidecar_tells_missing_from_unreadable(monkeypatch) -> None:
+    import urllib.error
+
+    def urlopen(error):
+        def fail(url, timeout):
+            raise error
+        return fail
+
+    monkeypatch.setattr(pg.urllib.request, "urlopen",
+                        urlopen(urllib.error.HTTPError("u", 404, "Not Found", {}, None)))
+    assert pg.fetch_sidecar("ds004504") is None
+    monkeypatch.setattr(pg.urllib.request, "urlopen", urlopen(urllib.error.URLError("timed out")))
+    with pytest.raises(pg.ParticipantSidecarError):
+        pg.fetch_sidecar("ds004504")
+    monkeypatch.setattr(pg.urllib.request, "urlopen", urlopen(TypeError("a bug")))
+    with pytest.raises(TypeError):
+        pg.fetch_sidecar("ds004504")
