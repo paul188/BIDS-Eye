@@ -514,6 +514,12 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 
     age = _age_label(node)
     if age:
+        # A README naming the age group is evidence too (the uncertain
+        # tier's probable form, services/uncertain_tier.py): its
+        # words are what the page marks for a match on recorded ages.
+        from services.uncertain_tier import age_group_words, asked_age_range
+        group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
+        searched.extend(w for w in group_words if w not in searched)
         return chip("age", "Age", age)
 
     species = _species_label(node)
@@ -695,6 +701,31 @@ def _conditions(tree) -> List[Tuple[str, object]]:
     return found
 
 
+def where_conditions(sql: Optional[str]) -> Tuple[Optional[str], List[Tuple[QueryFilter, object]]]:
+    """The dataset alias and each top-level WHERE condition with its chip.
+
+    For services/match_reasons.py, which evaluates a condition's
+    branches per dataset. HAVING conditions (counts) are left out: the card
+    shows the counts themselves. (None, []) when the SQL cannot be read.
+    """
+    tree = _parse(sql or "")
+    if tree is None:
+        return None, []
+    source = tree.args.get("from") or tree.args.get("from_")
+    table = getattr(source, "this", None)
+    alias = (table.alias_or_name if isinstance(table, exp.Table) and table.name == "bids_datasets"
+             else None)
+    found = []
+    for chip_id, node in _conditions(tree):
+        if not chip_id.startswith("w"):
+            continue
+        try:
+            found.append((describe_condition(node, chip_id), node))
+        except Exception as exc:  # one odd condition must not lose the others
+            log.debug("query_filters: could not describe %s (%s)", node, exc)
+    return alias, found
+
+
 def describe(sql: Optional[str]) -> List[QueryFilter]:
     """One chip per top-level condition; [] when the SQL cannot be read."""
     tree = _parse(sql or "")
@@ -761,7 +792,6 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
 
 # ── Highlighting ──────────────────────────────────────────────────────────────
 
-_HIGHLIGHT_KINDS = {"diagnosis", "modality", "task", "text", "field", "topic"}
 _WORD_RE = re.compile(r"[A-Za-z0-9]+")
 
 
@@ -813,12 +843,17 @@ def highlight_terms(sql: Optional[str]) -> List[HighlightTerm]:
     """What to mark in a README: the chips' text words, and the labels of
     coded chips ("fMRI", "ADHD"), which READMEs often spell out too.
 
+    Every chip that is not negated, whatever its kind: a dataset can match a
+    chip in several ways (recorded ages, coded diagnoses, files, text), and
+    the words of each way are marked where the text has them. An age chip
+    carries its group's words ("infant", "newborn").
+
     Single words keep their case: a two-letter acronym ("MS", "PD") only
     counts in capitals, not as "ms" or "pd".
     """
     terms: List[HighlightTerm] = []
     for chip in describe(sql):
-        if chip.negated or chip.kind not in _HIGHLIGHT_KINDS:
+        if chip.negated:
             continue
         for phrase in chip.text_words:
             terms.extend(_phrase_terms(phrase))

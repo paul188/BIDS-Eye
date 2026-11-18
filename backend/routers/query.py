@@ -39,7 +39,7 @@ from schemas import (
     QueryResponse,
     TextToSQLResult,
 )
-from services import catalogue_values, dataset_description, interpretation_store, query_filters
+from services import catalogue_values, dataset_description, interpretation_store, match_reasons, query_filters
 from services import query_guard
 from services.query_cache import CachedQuery, query_cache
 from services import translation_store
@@ -655,6 +655,8 @@ async def _run_page_unguarded(
     await _attach_snippets(session, datasets, _highlight_for(cached), _exact_words_for(cached),
                            _strengths_for(cached))
     await _attach_descriptions(session, datasets)
+    await match_reasons.attach_match_reasons(
+        session, datasets, None if cached.self_corrected else cached.filter_sql)
     return datasets, total
 
 

@@ -48,10 +48,15 @@ function phraseTerms(phrase: string, acronymsAlone: boolean): string[] {
   return terms
 }
 
-/** The terms of the chips in effect: their text words, and the labels of coded chips. */
+/**
+ * The terms of the chips in effect: their text words, and the labels of coded chips.
+ * Every chip kind counts (an age chip carries its group's words: "infant",
+ * "newborn"); a negated chip does not, its words are what the dataset must not have.
+ */
 export function highlightTerms(filters: QueryFilter[]): string[] {
   const terms = new Map<string, string>()
   for (const f of filters) {
+    if (f.negated) continue
     const found = f.text_words.flatMap(phrase => phraseTerms(phrase, false))
     // Coded values also show up in descriptions ("fMRI", "EEG", "ADHD").
     if (['modality', 'diagnosis', 'task'].includes(f.kind)) {

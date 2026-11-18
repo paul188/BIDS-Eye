@@ -78,6 +78,10 @@ class DatasetSchema(BaseModel):
     # as generated (services/dataset_description.py).
     generated_summary: Optional[str] = None
     linked_paper: Optional[LinkedPaperSchema] = None
+    # Why the dataset matched: for each filter that can match in several
+    # ways, the ways that hold ("Age: 12 of 40 participants aged 4–23
+    # months"). services/match_reasons.py.
+    match_reasons: List[str] = []
 
 
 class DatasetListResponse(BaseModel):
