@@ -342,3 +342,20 @@ def test_order_and_limit_become_one_removable_chip():
     assert "ORDER BY" not in widened and "LIMIT" not in widened
     assert "source_type" in widened
     assert qf.remove(sql, ["w0"]).rstrip().endswith("LIMIT 1")
+
+
+def test_shortened_label_carries_every_value():
+    """A "+N" label must come with the values it stands for, so the user can open them."""
+    rare = (
+        "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+        "AND p2.diagnosis IN ('spinocerebellar_ataxia_type_2', 'huntingtons_disease', "
+        "'rett_syndrome')) OR d.search_tsv @@ to_tsquery('english', 'rare:AB'))"
+    )
+    chips = _by_id(_sql(rare, DIAGNOSIS, TEXT))
+
+    assert chips["w0"].label.endswith(" +2")
+    assert len(chips["w0"].values) == 3
+    assert chips["w0"].values[0] == chips["w0"].label[: -len(" +2")]
+    # Nothing is hidden behind these labels, so there is no list to open.
+    assert chips["w1"].values == []
+    assert chips["w2"].values == []

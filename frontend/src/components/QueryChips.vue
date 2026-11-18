@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { QueryFilter } from '../api'
 
 // How the question was understood: one chip per condition of the query that
@@ -18,6 +18,29 @@ const emit = defineEmits<{
 }>()
 
 const removedSet = computed(() => new Set(props.removed))
+
+// A label that stands for several values ends in "+N". The count is a button
+// that opens the full list under the chips, so nothing searched for is hidden.
+const expanded = ref<Set<string>>(new Set())
+
+function hiddenCount(f: QueryFilter): string | null {
+  if (!f.values?.length) return null
+  return f.label.match(/\s(\+\d+)$/)?.[1] ?? null
+}
+
+function shortLabel(f: QueryFilter): string {
+  return hiddenCount(f) ? f.label.replace(/\s\+\d+$/, '') : f.label
+}
+
+function toggleExpanded(id: string) {
+  const next = new Set(expanded.value)
+  if (!next.delete(id)) next.add(id)
+  expanded.value = next
+}
+
+const openLists = computed(() =>
+  props.filters.filter(f => expanded.value.has(f.id) && hiddenCount(f)),
+)
 
 function tooltip(f: QueryFilter, isRemoved: boolean): string {
   const action = isRemoved ? 'Removed. Click ↺ to put it back.' : ''
@@ -45,7 +68,16 @@ function tooltip(f: QueryFilter, isRemoved: boolean): string {
         <span class="pl-2.5 py-1.5" :class="removedSet.has(f.id) ? 'line-through decoration-1' : ''">
           <span class="text-muted">{{ f.negated ? `No ${f.field.toLowerCase()}` : f.field }}</span>
           <span class="mx-1 text-border-strong" aria-hidden="true">·</span>
-          <span class="font-medium">{{ f.label }}</span>
+          <span class="font-medium">{{ shortLabel(f) }}</span>
+          <button
+            v-if="hiddenCount(f)"
+            type="button"
+            class="ml-1 -my-0.5 px-1 py-0.5 rounded font-medium text-accent hover:bg-panel-soft hover:underline"
+            :aria-expanded="expanded.has(f.id)"
+            :aria-controls="`chip-values-${f.id}`"
+            :title="expanded.has(f.id) ? 'Hide the full list' : `Show all ${f.values!.length}`"
+            @click="toggleExpanded(f.id)"
+          >{{ hiddenCount(f) }}</button>
           <span
             v-if="!['text', 'topic'].includes(f.kind) && f.text_words.length && !removedSet.has(f.id)"
             class="ml-1.5 text-[11px] font-medium text-muted-soft"
@@ -74,6 +106,27 @@ function tooltip(f: QueryFilter, isRemoved: boolean): string {
         Reset filters
       </button>
       <span v-if="busy" class="text-[13px] text-muted" role="status">Searching…</span>
+    </div>
+
+    <div
+      v-for="f in openLists"
+      :id="`chip-values-${f.id}`"
+      :key="f.id"
+      class="rounded-lg border border-border bg-panel px-3 py-2 text-[13px]"
+    >
+      <div class="flex items-baseline justify-between gap-3">
+        <span class="text-muted">
+          {{ f.negated ? `No ${f.field.toLowerCase()}` : f.field }} · any of these {{ f.values!.length }}
+        </span>
+        <button type="button" class="text-accent hover:underline shrink-0" @click="toggleExpanded(f.id)">Hide</button>
+      </div>
+      <ul class="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-1 max-h-48 overflow-y-auto">
+        <li
+          v-for="v in f.values"
+          :key="v"
+          class="rounded-md bg-panel-soft px-1.5 py-0.5 text-ink"
+        >{{ v }}</li>
+      </ul>
     </div>
 
     <p v-if="error" class="text-[13px] text-danger-ink">{{ error }}</p>
