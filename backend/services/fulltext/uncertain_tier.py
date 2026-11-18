@@ -981,7 +981,7 @@ def _file_rows(select, alias: str) -> Optional[Tuple[str, List[str], List[str], 
 
 def _cte_name(select_sql: str) -> str:
     """A stable name for a WITH query; the same lookup in two conditions is one."""
-    return "_qf_sidecar_" + hashlib.sha1(select_sql.encode()).hexdigest()[:10]
+    return "_qf_sidecar_" + hashlib.sha256(select_sql.encode()).hexdigest()[:10]
 
 
 def _file_set(inner: str, files: List[str], columns: set) -> Tuple[str, Optional[Tuple[str, str]]]:
