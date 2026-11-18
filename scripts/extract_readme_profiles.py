@@ -42,6 +42,7 @@ for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
+import yaml  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
@@ -106,14 +107,17 @@ async def _check_schema(conn) -> List[str]:
     return missing
 
 
+# What loading the resolver raises when its files are missing or broken:
+# importing the retriever reads RAG/value_mappings.yaml, and it reads
+# name_index.json (FileNotFoundError is an OSError, JSONDecodeError a ValueError).
+_RESOLVER_ERRORS = (ImportError, OSError, ValueError, yaml.YAMLError)
+
+
 def _code_lookup():
-    """Diagnosis resolver from the search pipeline; None when it cannot load."""
-    try:
-        from retriever import MetadataRetriever
-        retriever = MetadataRetriever(str(_REPO / "RAG" / "name_index.json"))
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Diagnosis resolver unavailable (%s) — facts are stored without codes", exc)
-        return None
+    """Diagnosis resolver from the search pipeline. Raises one of
+    _RESOLVER_ERRORS when it cannot load."""
+    from retriever import MetadataRetriever
+    retriever = MetadataRetriever(str(_REPO / "RAG" / "name_index.json"))
 
     def lookup(term: str):
         scored = retriever.retrieve_for_field_multi_scored("diagnosis", [term])
@@ -217,7 +221,15 @@ async def main() -> int:
         if not todo:
             return 0
 
-        lookup = None if args.no_codes else _code_lookup()
+        # Facts stored without codes count as done (sources_needing_work
+        # compares only the input), so a broken resolver must stop the run
+        # instead of leaving every dataset without codes until --force.
+        try:
+            lookup = None if args.no_codes else _code_lookup()
+        except _RESOLVER_ERRORS as exc:
+            log.error("Diagnosis resolver unavailable (%s). Fix it, or run with --no-codes "
+                      "to store the facts without codes.", exc)
+            return 2
         stats: Counter = Counter()
         roles: Counter = Counter()
         loop = asyncio.get_running_loop()
