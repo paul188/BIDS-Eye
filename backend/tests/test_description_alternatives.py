@@ -85,9 +85,11 @@ def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
     assert len(chips) == 1 and chips[0].label == "dead people"
     assert "post mortem" in chips[0].detail and "ex vivo" in chips[0].detail
 
-    # Only the user's own words get a weaker form, not the alternatives.
+    # Only the user's own words get a weaker form, not the alternatives; and
+    # "people" alone is none (without counts the longer word would be kept).
     relaxed, _ = uncertain_tier.relax_text_condition(sql)
-    assert "mortem" not in relaxed and "vivo" not in relaxed
+    assert relaxed is None or ("mortem" not in relaxed and "vivo" not in relaxed)
+    assert relaxed is None or "'people'" not in relaxed
 
 
 def test_rewriter_restores_alternatives_the_model_left_out() -> None:

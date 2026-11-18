@@ -1766,16 +1766,30 @@ def _size_conditions(plan: QueryPlan) -> List[str]:
 # the result ("standard & manner" matched 17 of 1,721 datasets and removed 975
 # of 986 correct answers of one real request).
 _REQUEST_WORDS = frozenset("""
-    standard manner simple very trivial non-trivial nontrivial complex basic easy good great nice
-    quality suitable useful appropriate sufficient enough complete completely comprehensive
-    available included including provided labeled labelled annotated documented public open free
-    machine learning deep classification classify training train benchmark benchmarking
+    standard manner simple very trivial non-trivial nontrivial complex easy good great nice
+    suitable useful appropriate sufficient enough complete completely comprehensive
+    available included including provided labeled labelled annotated documented public
+    benchmark benchmarking
     publication paper reports reported reporting results that which with have has containing
     contains format formatted dataset datasets data collection collections looking need want
     similar like ideally preferably possible
     analyse analyze analyses analyzes analysing analyzing analysed analyzed analysis specifically
     bids bids-valid bids-compliant valid compliant raw
 """.split())
+# Request words that are also part of what datasets study: "deep brain
+# stimulation", "reward learning", "cognitive training", "sleep quality",
+# "eyes open", "free recall", "basic emotions". Dropped only when no
+# neighbouring word is content ("for training", "open dataset").
+_AMBIGUOUS_REQUEST_WORDS = frozenset("""
+    machine learning deep training train classification classify quality open free basic
+""".split())
+# Whole wish phrases, cut out before single words are looked at.
+_REQUEST_PHRASES_RE = re.compile(
+    r"\b(?:machine[ -]learning|deep[ -]learning|high[ -]quality|good[ -]quality|open[ -]access|"
+    r"open[ -]source|freely available|free to use|publicly available|raw (?:or|and) processed)\b",
+    re.IGNORECASE,
+)
+_FUNCTION_WORDS = frozenset("a an and as at by for from in of on or the to".split())
 
 
 # Words that name a kind of recording, and filler that may accompany them.
@@ -1812,8 +1826,23 @@ def _matches_too_few(text: str) -> bool:
 
 
 def _content_words(text: str) -> str:
-    """*text* without the words that describe the request (see _REQUEST_WORDS)."""
-    kept = [w for w in text.split() if w.lower().strip(".,;:()'\"") not in _REQUEST_WORDS]
+    """*text* without the words that describe the request (see _REQUEST_WORDS).
+
+    A word of _AMBIGUOUS_REQUEST_WORDS stays when a neighbour is content:
+    "deep brain stimulation" keeps "deep", "open data, classification" is "".
+    """
+    words = _REQUEST_PHRASES_RE.sub(" ", text).split()
+    bare = [w.lower().strip(".,;:()'\"") for w in words]
+
+    def content(i: int) -> bool:
+        return (0 <= i < len(bare) and bare[i] not in _REQUEST_WORDS
+                and bare[i] not in _AMBIGUOUS_REQUEST_WORDS and bare[i] not in _FUNCTION_WORDS)
+
+    kept = [
+        word for i, word in enumerate(words)
+        if bare[i] not in _REQUEST_WORDS
+        and (bare[i] not in _AMBIGUOUS_REQUEST_WORDS or content(i - 1) or content(i + 1))
+    ]
     return " ".join(kept)
 # Words around an age group in "datasets with children", "data from kids".
 _AGE_FILLER_WORDS = frozenset((
