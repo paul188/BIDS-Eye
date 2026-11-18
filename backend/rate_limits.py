@@ -18,7 +18,7 @@ Requests are counted per signed-in user, or per client address for the few
 public routes. ADMIN_GITHUB_LOGINS are exempt from the daily search cap only.
 
 Counts live in memory: one uvicorn process serves the API (backend/Dockerfile,
-like the query cache and the in-flight searches in routers/query.py), so a
+like the query cache and the in-flight searches in services/search.py), so a
 dict sees every request (tests/test_single_process.py fails if the Dockerfile or
 a Compose file would start more). A restart starts all counts from zero.
 """

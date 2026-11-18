@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { QueryFilter } from '../src/api/index.ts'
-import { highlightTerms, isHit, termPattern } from '../src/highlight.ts'
+import { fieldStrengths, highlightTerms, isHit, termPattern } from '../src/highlight.ts'
 
 function chip(kind: QueryFilter['kind'], label: string, words: string[], negated = false): QueryFilter {
   return { id: 'w0', kind, field: kind, label, negated, text_words: words, detail: '' }
@@ -50,4 +50,17 @@ test('older-adult words from hyphenated forms mark as a pair', () => {
   const older = chip('age', '60+', ['older%adults', 'elderly'])
   assert.deepEqual(marked('Older adults and elderly participants; older cars.', [older]),
     ['Older adults', 'elderly'])
+})
+
+test('words of the sex and scanner venues are marked; a strength inside a modality chip too', () => {
+  const female = chip('sex', 'female', ['female', 'females', 'women'])
+  assert.deepEqual(marked('22 women and 20 men; female participants.', [female]), ['women', 'female'])
+  const vendor = chip('field', 'recorded', ['ge healthcare', 'general electric', 'signa', 'philips'])
+  assert.deepEqual(marked('A GE Healthcare SIGNA and a Philips Achieva.', [vendor]),
+    ['GE Healthcare', 'SIGNA', 'Philips'])
+  // "7T fMRI" as one condition: labelled by the modality, the strength travels as "7T".
+  const fmri7t = chip('modality', 'fMRI', ['7T'])
+  assert.deepEqual(fieldStrengths([fmri7t]), [7])
+  const pattern = termPattern(highlightTerms([fmri7t]), fieldStrengths([fmri7t]))!
+  assert.deepEqual([...'Scanned at 7 T and 7T; not 17T.'.matchAll(pattern)].map(m => m[0]), ['7 T', '7T'])
 })

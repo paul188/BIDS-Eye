@@ -1,7 +1,7 @@
 """A busy or expired search raised anywhere below the router
 reaches the client as its own status and text through the one handler
 (exceptions/handlers.py), and identical questions sent at the same time over
-HTTP still share one search (routers/query.py ``_in_flight``).
+HTTP still share one search (services/search.py ``_in_flight``).
 
 Needs the backend image (routers.query imports the db package)."""
 from __future__ import annotations
@@ -68,7 +68,7 @@ def test_an_unknown_query_id_is_410_from_the_real_service():
     ],
 )
 def test_each_error_from_the_search_gets_its_answer(monkeypatch, error, status, detail):
-    async def fails(session, question, user):
+    async def fails(session, question):
         raise error
 
     monkeypatch.setattr(search, "answer_question", fails)
@@ -95,7 +95,7 @@ def test_every_search_error_is_a_domain_error():
 def test_identical_questions_over_http_share_one_search(monkeypatch):
     runs: list[str] = []
 
-    async def slow(session, question, user):
+    async def slow(session, question):
         runs.append(question)
         await asyncio.sleep(0.05)
         return _response(len(runs))
@@ -114,4 +114,4 @@ def test_identical_questions_over_http_share_one_search(monkeypatch):
     assert runs == ["drawings or art"]
     assert first.status_code == second.status_code == 200
     assert first.json() == second.json()
-    assert len(query_router._in_flight) == 0
+    assert len(search._in_flight) == 0

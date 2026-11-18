@@ -3,7 +3,9 @@ services/search.py
 ------------------
 A natural-language search from question to result page.
 
-answer_question translates the question once: a stored translation of the
+ask() is the entry point: identical questions running at the same time share
+one search, whoever asked them, and each asker's question is recorded in
+their history. answer_question is that one search. It translates the question once: a stored translation of the
 same question (services/stores/interpretation_store.py) is reused, otherwise the
 Text-To-SQL layer writes one (services/translate/text_to_sql.py). The resulting base
 SELECT is cached under an opaque ``query_id`` (services/stores/query_cache.py), the
@@ -20,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.domain import DomainError
 from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
+from single_flight import SingleFlight
 from services.catalogue import catalogue_values
 from services.stores import interpretation_store
 from services.results import query_filters
@@ -57,10 +60,34 @@ def _worth_storing(cached: CachedQuery, total: int) -> bool:
             and not cached.relaxed)
 
 
-async def answer_question(session: AsyncSession, question: str,
-                          user: Optional[str]) -> QueryResponse:
-    """One search: translation, first page, logging. *user* is the login the
-    search is recorded under in user_queries (none: not recorded).
+# Searches running now, by normalised question. The answer does not depend on
+# who asks (the stored translations in interpretation_store are shared the same
+# way), so a double submit, a retry, a second tab or another user asking the
+# same thing gets the running search's answer without another language-model
+# call. One uvicorn process serves the API (backend/Dockerfile;
+# tests/test_single_process.py keeps it so), so it is kept in memory.
+_in_flight: SingleFlight[QueryResponse] = SingleFlight()
+
+
+async def ask(session: AsyncSession, question: str, user: Optional[str]) -> QueryResponse:
+    """The answer to *question*, from the search for it already running if
+    there is one, and the question recorded in *user*'s history (none: not
+    recorded). A search that fails records nothing.
+
+    Raises query_guard.SearchBusy when no slot for generated SQL frees up.
+    """
+    answer = await _in_flight.run(
+        interpretation_store.normalize(question), lambda: answer_question(session, question)
+    )
+    # Per asker, outside the shared search: everyone who asked gets a row, in
+    # their own request's session.
+    await _record_user_query(session, user, question)
+    return answer
+
+
+async def answer_question(session: AsyncSession, question: str) -> QueryResponse:
+    """One search: translation, first page, logging. The same for every user;
+    ask() records who asked.
 
     Raises query_guard.SearchBusy when no slot for generated SQL frees up.
     """
@@ -123,8 +150,6 @@ async def answer_question(session: AsyncSession, question: str,
     )
     if stored is None and _worth_storing(cached, total):
         await interpretation_store.put(session, question, payload, total)
-
-    await _record_user_query(session, user, question)
 
     return QueryResponse(
         message=_found_message(total),
