@@ -47,7 +47,7 @@ def test_the_same_question_while_it_runs_is_answered_by_the_running_search(monke
     first, second, third = asyncio.run(scenario())
     assert runs == ["drawings or art"]          # one search, one daily search charged
     assert first is second is third
-    assert query_router._in_flight == {}
+    assert len(query_router._in_flight) == 0
 
 
 def test_other_users_and_other_questions_run_their_own_search(monkeypatch):
@@ -85,7 +85,7 @@ def test_an_error_reaches_the_waiting_request_too(monkeypatch):
     results = asyncio.run(scenario())
     assert runs == ["art"]
     assert all(r is limit for r in results)
-    assert query_router._in_flight == {}
+    assert len(query_router._in_flight) == 0
 
 
 @pytest.mark.parametrize("question", ["", "   ", "\n\t"])

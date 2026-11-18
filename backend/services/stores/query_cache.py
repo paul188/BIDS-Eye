@@ -12,7 +12,8 @@ sends a ``query_id``, so the only SQL ever executed is server-generated.
 
 This is a process-local dict with TTL + LRU eviction. It is correct because the
 backend runs a *single* uvicorn worker (see backend/Dockerfile — the CMD has no
-``--workers``; dev uses ``--reload``). If the backend is ever scaled to multiple
+``--workers``; dev uses ``--reload``; tests/test_single_process.py checks the
+Dockerfile and the Compose files for this). If the backend is ever scaled to multiple
 workers/replicas, a query_id created on one worker won't resolve on another —
 replace this with a shared store (Redis, already used by DaRe, or the DB).
 """

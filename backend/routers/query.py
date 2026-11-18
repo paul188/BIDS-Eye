@@ -10,7 +10,6 @@ search per user and question, and the answers for a busy or expired search.
 
 from __future__ import annotations
 
-import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -20,6 +19,7 @@ from deps import get_db
 from rate_limits import Category, rate_limit
 from routers.auth import require_auth
 from schemas import QueryPageRequest, QueryRequest, QueryResponse
+from single_flight import Interrupted, SingleFlight
 from services.stores import interpretation_store
 from services import query_guard, search
 
@@ -31,8 +31,9 @@ _BUSY = "The search is busy. Please try again in a minute."
 # Searches running now, by (user, normalised question). The frontend sends a
 # question only once while it runs; this is the same rule on the server, for
 # double submits, retries and second tabs. One uvicorn process serves the API
-# (backend/Dockerfile), so a dict in memory sees every request.
-_in_flight: dict[tuple[str, str], asyncio.Future] = {}
+# (backend/Dockerfile; tests/test_single_process.py keeps it so), so it is
+# kept in memory (single_flight.py).
+_in_flight: SingleFlight[QueryResponse] = SingleFlight()
 
 
 @router.post("", response_model=QueryResponse, dependencies=[rate_limit(Category.SEARCH)])
@@ -51,32 +52,10 @@ async def query_datasets(
     SEARCH) still counts it, since it ran before this function.
     """
     key = (_auth.get("sub", ""), interpretation_store.normalize(body.question))
-    running = _in_flight.get(key)
-    if running is not None:
-        try:
-            return await asyncio.shield(running)
-        except asyncio.CancelledError:
-            if running.cancelled():
-                raise HTTPException(status_code=503, detail="The same search was interrupted. Please try again.")
-            raise
-
-    answer: asyncio.Future = asyncio.get_running_loop().create_future()
-    # Marks an error as seen when no second request was waiting for it.
-    answer.add_done_callback(lambda f: f.cancelled() or f.exception())
-    _in_flight[key] = answer
     try:
-        response = await _answer_question(body, session, _auth)
-    except asyncio.CancelledError:
-        answer.cancel()
-        raise
-    except BaseException as exc:
-        answer.set_exception(exc)
-        raise
-    else:
-        answer.set_result(response)
-        return response
-    finally:
-        _in_flight.pop(key, None)
+        return await _in_flight.run(key, lambda: _answer_question(body, session, _auth))
+    except Interrupted:
+        raise HTTPException(status_code=503, detail="The same search was interrupted. Please try again.")
 
 
 async def _answer_question(body: QueryRequest, session: AsyncSession, auth: dict) -> QueryResponse:
