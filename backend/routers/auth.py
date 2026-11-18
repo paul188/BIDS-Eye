@@ -89,6 +89,41 @@ async def github_login(request: Request):
     return RedirectResponse(auth_url)
 
 
+def _json(response) -> object:
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
+def _github_login(user_resp) -> str:
+    """The account's login from GitHub's /user answer; '' when GitHub answered with an error.
+
+    An error answer ({"message": "Bad credentials"}) has no login. It used to
+    fall back to "unknown", so every such sign-in shared one account.
+    """
+    data = _json(user_resp) if user_resp.status_code == 200 else None
+    login = data.get("login") if isinstance(data, dict) else None
+    return login.strip() if isinstance(login, str) else ""
+
+
+def _primary_email(emails_resp) -> str | None:
+    """The verified primary address from GitHub's /user/emails answer, else None.
+
+    Without the user:email scope, or on an error, GitHub answers with an
+    object instead of a list; the sign-in then goes on without an address.
+    """
+    data = _json(emails_resp) if emails_resp.status_code == 200 else None
+    if not isinstance(data, list):
+        return None
+    return next(
+        (e["email"] for e in data
+         if isinstance(e, dict) and e.get("primary") and e.get("verified")
+         and isinstance(e.get("email"), str)),
+        None,
+    )
+
+
 @router.get("/github/callback", name="github_callback")
 async def github_callback(request: Request):
     state = request.query_params.get("state", "")
@@ -125,12 +160,10 @@ async def github_callback(request: Request):
             client.get("https://api.github.com/user/emails", headers=gh_headers, timeout=10),
         )
 
-    user_data = user_resp.json()
-    github_login_name: str = user_data.get("login", "unknown")
-    primary_email = next(
-        (e["email"] for e in emails_resp.json() if e.get("primary") and e.get("verified")),
-        None,
-    )
+    github_login_name = _github_login(user_resp)
+    if not github_login_name:
+        raise HTTPException(status_code=502, detail="GitHub did not return the account's login.")
+    primary_email = _primary_email(emails_resp)
 
     github_org = os.getenv("GITHUB_ORG", "").strip()
     if github_org:
