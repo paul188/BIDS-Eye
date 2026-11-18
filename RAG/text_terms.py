@@ -247,10 +247,19 @@ def _vocabulary_strings() -> Dict[str, List[Tuple[str, float]]]:
 
 def _lookup_strings(code: str) -> List[Tuple[str, float]]:
     try:
-        return _vocabulary_strings().get(code, [])
+        curated = _vocabulary_strings().get(code, [])
     except Exception:
         # The vocabulary only widens the search; without it the user's own
         # words still apply.
+        curated = []
+    if curated:
+        return curated
+    # A disease no dataset has yet (RAG/reference_vocabulary.py): its official
+    # terms ("rasmussen" also searches "rasmussen encephalitis").
+    try:
+        import reference_vocabulary
+        return reference_vocabulary.strings(code)
+    except Exception:
         return []
 
 

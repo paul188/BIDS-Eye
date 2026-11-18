@@ -67,6 +67,7 @@ from typing import Any, Dict, List, Optional
 
 from rapidfuzz import fuzz as _fuzz
 from rapidfuzz import process as _process
+from rapidfuzz.distance import Levenshtein as _Levenshtein
 
 log = logging.getLogger(__name__)
 
@@ -89,6 +90,7 @@ from yaml_to_llamaindex import (
 )
 from join_registry import field_to_db_col as _field_to_db_col
 import institution_index as _institution_index
+import reference_vocabulary as _reference
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -687,7 +689,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
             del all_targets[k]
 
     if not all_targets:
-        return []
+        return _reference_or_embedding(field, term)
 
     def fuzzy_hits(query: str) -> list:
         """Top 20 usable labels for *query*, best first.
@@ -708,7 +710,7 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
 
     results = fuzzy_hits(term_lower)
     if not results:
-        return _embedding_fallback_scored(field, term)
+        return _reference_or_embedding(field, term)
 
     # 100 means the strings are identical once separators are normalised
     # ("resting-state eyes open" / "resting state eyes-open"). Treat that as an
@@ -752,9 +754,67 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     return [(code, part * best_score / 100.0) for code, part in ranked]
 
 
+def _reference_or_embedding(field: str, term: str) -> List[tuple[str, float]]:
+    """A diagnosis the curated vocabulary lacks: the official one (MeSH), then embeddings.
+
+    RAG/reference_vocabulary.py knows diseases no dataset has yet. Its code
+    finds no participant rows, but the diagnosis line also searches the
+    concept's official terms in the dataset text, and the chip names it
+    ("rasmussen" -> Rasmussen syndrome, not a text search for "rasmussen").
+    """
+    if field == "diagnosis":
+        official = _reference.match("diagnosis", term)
+        if official:
+            return official
+    return _embedding_fallback_scored(field, term)
+
+
 def _resolve_yaml_term(field: str, term: str) -> List[str]:
     """Resolve one term against the YAML knowledge base for *field* (codes only)."""
     return [code for code, _ in _resolve_yaml_term_scored(field, term)]
+
+
+# ── Author names ───────────────────────────────────────────────────────────────
+
+# Words around a name that are not part of it ("the Poldrack lab").
+_NOT_NAME_WORDS = frozenset({
+    "lab", "labs", "laboratory", "group", "team", "et", "al", "dr", "prof",
+    "professor", "the", "and", "of", "von", "van", "der", "de", "da", "di", "le", "la",
+})
+
+
+def _name_words(text: str) -> List[str]:
+    import unicodedata
+    text = unicodedata.normalize("NFKD", text or "").encode("ascii", "ignore").decode().lower()
+    return [w for w in re.findall(r"[a-z]+", text) if w not in _NOT_NAME_WORDS]
+
+
+def _same_name(typed: str, name: str) -> bool:
+    """One word of a name: equal, or one letter apart in words of five letters or more.
+
+    The first letter must agree: "Williams" is not "Gwilliams".
+    """
+    if typed == name:
+        return True
+    return (min(len(typed), len(name)) >= 5 and typed[0] == name[0]
+            and _Levenshtein.distance(typed, name, score_cutoff=1) <= 1)
+
+
+def _same_person(term: str, author: str) -> bool:
+    """Every name the user typed is a name of *author*; a typed initial starts one.
+
+    "Friston" and "K. Friston" find "Karl J. Friston"; "Poldrak" finds
+    "Russell A. Poldrack" (one letter). "Rasmussen" does not find "Rasmus
+    Sinn": no name of that author is Rasmussen.
+    """
+    typed = _name_words(term)
+    names = _name_words(author)
+    full = [w for w in typed if len(w) > 1]
+    if not full or not names:
+        return False
+    if not all(any(_same_name(w, n) for n in names) for w in full):
+        return False
+    return all(any(n.startswith(w) for n in names) for w in typed if len(w) == 1)
 
 
 # ── Main retriever class ───────────────────────────────────────────────────────
@@ -793,6 +853,45 @@ class MetadataRetriever:
         """
         index = _institution_index.get_index(self._names.get("institutions", []))
         return index.resolve(term)
+
+    # ------------------------------------------------------------------
+    def known_concept(self, term: str) -> Optional[tuple[str, str]]:
+        """(field, label) when *term* is exactly the name of a disease or task; else None.
+
+        Exact only: a label or synonym of the curated vocabulary, or a term of
+        the official one (RAG/reference_vocabulary.py, which also knows a
+        surname that names one disease: "rasmussen"). No fuzzy matching, since
+        this decides whether a name is a person at all.
+        """
+        key = _normalize_term(term)
+        for field in ("diagnosis", "task"):
+            for variant in _plural_variants(key):
+                if variant in display_codes_db.get(field, {}) or variant in group_display_db.get(field, {}):
+                    return field, term.strip()
+            official = _reference.match(field, term)
+            if official:
+                found = _reference.entry(field, official[0][0]) or {}
+                return field, found.get("label") or term.strip()
+        return None
+
+    # ------------------------------------------------------------------
+    def _resolve_name(self, field: str, term: str, limit: int) -> List[tuple[str, float]]:
+        """Exact DB names for an author or funder *term*, with scores 0.0-1.0.
+
+        An author must carry every name the user typed (_same_person): the
+        word-set similarity alone accepted 'Rasmus Sinn' for "rasmussen"
+        (2026-11-18), a different surname that shares six letters.
+        """
+        candidates = self._names.get(_NAME_FIELD_KEY[field], [])
+        if not candidates:
+            return []
+        matches = _process.extract(
+            term, candidates, scorer=_fuzz.token_set_ratio,
+            limit=None if field == "author" else limit, score_cutoff=_NAME_THRESHOLD,
+        )
+        if field == "author":
+            matches = [m for m in matches if _same_person(term, m[0])]
+        return [(m[0], m[1] / 100.0) for m in matches[:limit]]
 
     # ------------------------------------------------------------------
     def db_verify_codes(
@@ -913,17 +1012,7 @@ class MetadataRetriever:
             return [name for name, _ in self._resolve_institution(term)][:n_results]
 
         if field in _NAME_FIELDS:
-            candidates = self._names.get(_NAME_FIELD_KEY[field], [])
-            if not candidates:
-                return []
-            results = _process.extract(
-                term,
-                candidates,
-                scorer=_fuzz.token_set_ratio,
-                limit=n_results,
-                score_cutoff=_NAME_THRESHOLD,
-            )
-            return [r[0] for r in results]
+            return [name for name, _ in self._resolve_name(field, term, n_results)]
 
         return []
 
@@ -995,18 +1084,7 @@ class MetadataRetriever:
             elif field == _INSTITUTION_FIELD:
                 scored = self._resolve_institution(term)
             elif field in _NAME_FIELDS:
-                candidates = self._names.get(_NAME_FIELD_KEY[field], [])
-                if candidates:
-                    matches = _process.extract(
-                        term,
-                        candidates,
-                        scorer=_fuzz.token_set_ratio,
-                        limit=n_results_per_term,
-                        score_cutoff=_NAME_THRESHOLD,
-                    )
-                    scored = [(r[0], r[1] / 100.0) for r in matches]
-                else:
-                    scored = []
+                scored = self._resolve_name(field, term, n_results_per_term)
             else:
                 scored = []
             if scored:
