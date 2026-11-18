@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 from uuid import UUID
 
+from sqlalchemy.exc import ProgrammingError
+
 import routers.query as query_router
 from schemas import DatasetSchema, TextToSQLResult
 from services.results import dataset_cards
@@ -64,7 +66,7 @@ class _FakeSession:
         if "COUNT(*)" in sql:
             self.count_calls += 1
         if "COUNT(*)" in sql and self.count_calls == 1:
-            raise RuntimeError("synthetic database error")
+            raise ProgrammingError("SELECT COUNT(*)", {}, Exception("synthetic database error"))
         if "COUNT(*)" in sql:
             return _FakeResult(scalar_value=2)
         if "page_result" in sql:
