@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import type { Dataset, QueryFilter } from '../api'
 import DatasetCard from './DatasetCard.vue'
-import { highlightTerms as highlightTermsOf } from '../highlight'
+import { fieldStrengths, highlightTerms as highlightTermsOf } from '../highlight'
 
 const props = defineProps<{
   datasets: Dataset[]
@@ -23,6 +23,7 @@ const activeFilters = computed(() => {
 })
 
 const highlightTerms = computed(() => highlightTermsOf(activeFilters.value))
+const strengths = computed(() => fieldStrengths(activeFilters.value))
 
 const emphasisKinds = computed(() => activeFilters.value.map(f => f.kind))
 
@@ -60,7 +61,7 @@ function go(page: number) {
           it filters on (for example participant ages). Each card says what could
           not be checked.
         </div>
-        <DatasetCard :dataset="ds" :terms="highlightTerms" :emphasis="emphasisKinds" />
+        <DatasetCard :dataset="ds" :terms="highlightTerms" :strengths="strengths" :emphasis="emphasisKinds" />
       </template>
     </div>
     <p v-else class="text-muted text-sm py-4">No datasets found.</p>

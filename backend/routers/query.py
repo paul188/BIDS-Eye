@@ -390,9 +390,20 @@ def keep_justified_marks(headline: str, mark_lexemes: Sequence[str],
     return "".join(parts)
 
 
+def mark_pattern(headline: str, pattern: Optional[re.Pattern]) -> str:
+    """*headline* with every match of *pattern* outside a mark marked too."""
+    if pattern is None:
+        return headline
+    parts = _MARK_RE.split(headline)
+    for i, part in enumerate(parts):
+        if not part.startswith(SNIPPET_START):
+            parts[i] = pattern.sub(lambda m: f"{SNIPPET_START}{m.group(0)}{SNIPPET_STOP}", part)
+    return "".join(parts)
+
+
 async def _attach_snippets(
     session: AsyncSession, datasets: list[DatasetSchema], terms: Optional[Sequence[tuple]],
-    exact: Collection[str] = (),
+    exact: Collection[str] = (), strengths: Sequence[float] = (),
 ) -> None:
     """Give each dataset a README excerpt: the passages matching the highlight
     *terms* (services/query_filters.highlight_terms), or the start.
@@ -402,6 +413,10 @@ async def _attach_snippets(
     the excerpt is the passage around it, found without stemming; a passage
     chosen by stem would show "age" for a search on "ageing".
 
+    *strengths*: field strengths in tesla (query_filters.highlight_field_strengths).
+    Postgres words only steer the passage towards them ("1.5T" is the word
+    "1.5" there); the marks come from query_filters.field_strength_pattern.
+
     Read with its own query, like _deprecations_for, so the generated SQL stays
     unchanged and databases without readme_text keep working. A failure leaves
     the page without excerpts rather than failing it.
@@ -409,7 +424,9 @@ async def _attach_snippets(
     if not datasets or not has_display_column("readme_text"):
         return
     ids = [d.id for d in datasets]
-    highlight = query_filters.terms_tsquery(terms or ())
+    strength_pattern = query_filters.field_strength_pattern(strengths)
+    highlight = " | ".join(q for q in (query_filters.terms_tsquery(terms or ()),
+                                       query_filters.field_strength_tsquery(strengths)) if q)
     words = list(dict.fromkeys(w.lower() for term in terms or () for w in term))
     exact = frozenset(w.lower() for w in exact if _SNIPPET_WORD_RE.fullmatch(w))
     if highlight:
@@ -452,7 +469,8 @@ async def _attach_snippets(
                     else:
                         term_lexemes = {w: set(lexemes.split())
                                         for w, lexemes in zip(words, row[3])}
-                        raw = keep_justified_marks(raw, row[2], terms, term_lexemes, exact)
+                        raw = keep_justified_marks(raw, row[2], terms or (), term_lexemes, exact)
+                    raw = mark_pattern(raw, strength_pattern)
                 found[row[0]] = raw
     except Exception:
         log.warning("README excerpts unavailable for this page", exc_info=True)
@@ -525,6 +543,13 @@ def _highlight_for(cached: CachedQuery) -> list[tuple]:
     if cached.self_corrected:
         return []
     return query_filters.highlight_terms(cached.filter_sql)
+
+
+def _strengths_for(cached: CachedQuery) -> list[float]:
+    """Field strengths (tesla) to mark in the README excerpts."""
+    if cached.self_corrected:
+        return []
+    return query_filters.highlight_field_strengths(cached.filter_sql)
 
 
 def _exact_words_for(cached: CachedQuery) -> frozenset:
@@ -627,7 +652,8 @@ async def _run_page_unguarded(
         page_sql, params = page_query(ranked=False)
         rows = (await session.execute(text(page_sql), params)).mappings().all()
     datasets = await _rows_to_datasets(session, rows)
-    await _attach_snippets(session, datasets, _highlight_for(cached), _exact_words_for(cached))
+    await _attach_snippets(session, datasets, _highlight_for(cached), _exact_words_for(cached),
+                           _strengths_for(cached))
     await _attach_descriptions(session, datasets)
     return datasets, total
 

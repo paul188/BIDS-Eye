@@ -796,10 +796,13 @@ def _phrase_terms(phrase: str, acronyms_alone: bool = False) -> List[HighlightTe
     stemming makes it worse ("subjective" marks "subject", "structural"
     marks the "Data Structure" of every BIDS README). *acronyms_alone*:
     acronyms in a coded label ("structural MRI") also stand alone.
+
+    A digit stays as part of a pair ("7 tesla", "2 back"), never alone.
     """
-    tokens = [w for w in _WORD_RE.findall(phrase) if len(w) > 1 and w.lower() not in _STOPWORDS]
+    tokens = [w for w in _WORD_RE.findall(phrase)
+              if (len(w) > 1 or w.isdigit()) and w.lower() not in _STOPWORDS]
     if len(tokens) == 1:
-        return [(tokens[0],)]
+        return [(tokens[0],)] if len(tokens[0]) > 1 else []
     terms: List[HighlightTerm] = [(a.lower(), b.lower()) for a, b in zip(tokens, tokens[1:])]
     if acronyms_alone:
         terms.extend((w,) for w in tokens if _is_acronym(w))
@@ -851,6 +854,95 @@ def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
         if not negated:
             forms.extend(guard_forms(inner))
     return frozenset(forms)
+
+
+# ── Field strength in the text ────────────────────────────────────────────────
+#
+# A field-strength chip is a number range on the sidecar key
+# MagneticFieldStrength ("6.5–7.5"); it has no words to mark. READMEs write
+# the strength as "7T", "7 T", "7-Tesla", "3.0T", "1.5 Tesla". These are the
+# strengths scanners are sold at; a range marks the ones inside it.
+
+FIELD_STRENGTH_FIELD = "Magnetic field strength"
+NOMINAL_TESLA = (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 4.7, 7.0, 9.4, 10.5, 11.7, 14.0)
+_NUMBER = r"\d+(?:\.\d+)?"
+_RANGE_LABEL_RE = re.compile(rf"^({_NUMBER})–({_NUMBER})$")
+_BOUND_LABEL_RE = re.compile(rf"^(=|≥|>|≤|<) ({_NUMBER})$")
+# A searched phrase that is itself a strength: "7T", "7 tesla", "7tesla".
+_STRENGTH_PHRASE_RE = re.compile(rf"^\s*({_NUMBER})\s*-?\s*(?:t|tesla)\s*$", re.IGNORECASE)
+
+
+def _strengths_of_label(label: str) -> List[float]:
+    found = _RANGE_LABEL_RE.match(label)
+    if found:
+        low, high = float(found.group(1)), float(found.group(2))
+        return [t for t in NOMINAL_TESLA if low <= t <= high]
+    found = _BOUND_LABEL_RE.match(label)
+    if not found:
+        return []
+    symbol, value = found.group(1), float(found.group(2))
+    if symbol == "=":
+        return [value]
+    keep = {"≥": value.__le__, ">": value.__lt__, "≤": value.__ge__, "<": value.__gt__}[symbol]
+    return [t for t in NOMINAL_TESLA if keep(t)]
+
+
+def highlight_field_strengths(sql: Optional[str]) -> List[float]:
+    """The field strengths (tesla) to mark in a dataset's text: those of a
+    field-strength chip, and searched phrases that name one ("7 tesla")."""
+    strengths: List[float] = []
+    for chip in describe(sql):
+        if chip.negated:
+            continue
+        if chip.field == FIELD_STRENGTH_FIELD:
+            strengths.extend(_strengths_of_label(chip.label))
+        for phrase in chip.text_words:
+            found = _STRENGTH_PHRASE_RE.match(phrase)
+            if found:
+                strengths.append(float(found.group(1)))
+    return list(dict.fromkeys(strengths))
+
+
+def _tesla_number(value: float) -> str:
+    """The pattern of one strength's number: 7 also as "7.0", 1.5 also as "1,5"."""
+    whole, _, fraction = f"{value:g}".partition(".")
+    if not fraction:
+        return rf"{whole}(?:\.0+)?"
+    return rf"{whole}[.,]{fraction}0*"
+
+
+def field_strength_pattern(strengths: Iterable[float]) -> Optional["re.Pattern[str]"]:
+    """Where a text names one of *strengths*: "7T", "7 T", "7-Tesla", "7.0T".
+
+    Not inside another number ("17T", "0.7T"), a BIDS label ("ses-7T"), a
+    word starting with T ("7 T1w images", "3 The") or a gradient spec
+    ("200 T/m/s"). Spaces include the thin ones some READMEs use. Checked on
+    the 1,720 OpenNeuro READMEs of 2026-11: no false matches found.
+    """
+    numbers = [_tesla_number(v) for v in sorted(set(strengths), reverse=True)]
+    if not numbers:
+        return None
+    space = "[ \u00a0\u2009\u202f]?"
+    return re.compile(rf"(?<![\w.,/-])(?:{'|'.join(numbers)}){space}-?{space}"
+                      rf"(?:T|[Tt]esla|TESLA)(?![\w/])")
+
+
+def field_strength_tsquery(strengths: Iterable[float]) -> Optional[str]:
+    """Postgres words for the strengths, to pick the README passage.
+
+    The english parser keeps "7T" and "7Tesla" as one word; "T" is a
+    stopword, so "1.5T" and "7 T" become the bare number. A decimal strength
+    is therefore searched as its number; field_strength_pattern decides what
+    is marked.
+    """
+    parts = []
+    for value in dict.fromkeys(strengths):
+        number = f"{value:g}"
+        if "." in number:
+            parts.append(number)
+        else:
+            parts.append(f"{number}t | {number}tesla | {number} <-> tesla")
+    return " | ".join(parts) or None
 
 
 def terms_tsquery(terms: Iterable[HighlightTerm]) -> Optional[str]:
