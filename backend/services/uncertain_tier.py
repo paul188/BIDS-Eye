@@ -52,8 +52,16 @@ from __future__ import annotations
 import logging
 import os
 import re
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
+
+_RAG_DIR = Path(__file__).resolve().parents[2] / "RAG"
+if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
+    sys.path.insert(0, str(_RAG_DIR))
+
+from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS  # noqa: E402
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
@@ -152,19 +160,41 @@ def _top_level_and(query: str) -> List[str]:
     return [part for part in parts if part]
 
 
-# Words that qualify the thing searched for rather than name it.
-_MODIFIERS = frozenset({
-    "young", "old", "older", "healthy", "many", "few", "single", "multiple", "different",
-    "large", "small", "high", "low", "new", "long", "short", "early", "late", "normal",
-    "typical", "various", "several", "repeated", "dense", "continuous", "natural",
-})
+# Words that qualify the thing searched for rather than name it, and nouns
+# too general to stand for the term they were part of (RAG/text_terms.py).
+_MODIFIERS = MODIFIER_WORDS
+_NEVER_ALONE = NEVER_ALONE_WORDS
 
-# Nouns too general to stand for the term they were part of.
-_NEVER_ALONE = frozenset({
-    "state", "resting", "rest", "syndrome", "disease", "disorder", "task", "study", "data", "dataset", "brain",
-    "control", "controls", "subjects", "participants", "patients", "images", "image",
-    "analysis", "results", "design", "level", "group", "type", "related", "based",
-})
+# A shortened term that dropped a content word is evidence only when what is
+# left is rare: at most this many datasets (about 1% of the 1,721) contain it.
+# "consolidation" from "memory consolidation" (10) or "resective & surgery"
+# (7) still stand for the term; "imagery" from "motor imagery" (42),
+# "recognition" from "emotion recognition" (52) or "cortex" from "visual
+# cortex" (142) do not (live database, 2026-11-17).
+RELAXED_MAX_MATCHES = 17
+
+
+def _says_nothing(part: str) -> bool:
+    """A tsquery part that is only a modifier or a too-general noun."""
+    bare = part.strip("()")
+    return bare in _MODIFIERS or bare in _NEVER_ALONE
+
+
+def _rare_enough(kept: List[str], guard: Optional[str]) -> bool:
+    """Whether the shortened term matches few enough datasets to stand for the whole.
+
+    True when the catalogue cannot be asked (no database): the shortening
+    then stays as it was.
+    """
+    query = " & ".join(kept)
+    try:
+        from services import text_search
+        counts = text_search.guarded_counts([query], [guard_for(query, guard)])
+    except Exception:  # pragma: no cover — no database available
+        counts = None
+    if not counts:
+        return True
+    return counts[0] <= RELAXED_MAX_MATCHES
 
 
 def guard_for(query: str, guard: Optional[str]) -> Optional[str]:
@@ -205,8 +235,7 @@ def _rarest_parts(parts: List[str], guard: Optional[str] = None) -> List[str]:
         # A modifier ("young", "healthy", "many") is never kept in place of a
         # noun, however rare it happens to be.
         order = sorted(range(len(parts)),
-                       key=lambda i: (parts[i].strip("()") in _MODIFIERS or parts[i].strip("()") in _NEVER_ALONE,
-                                      counts[i], -len(parts[i])))
+                       key=lambda i: (_says_nothing(parts[i]), counts[i], -len(parts[i])))
     else:
         order = sorted(range(len(parts)), key=lambda i: -len(parts[i]))
     chosen = set(order[:keep])
@@ -285,8 +314,15 @@ def relax_tsquery(query: str, guard: Optional[str] = None) -> Optional[str]:
     kept = _rarest_parts(parts, guard)
     # A word that says nothing alone ("state" from "resting & state",
     # "syndrome", "healthy") is no evidence: no weaker form then.
-    if len(kept) < len(parts) and all(k.strip("()") in _MODIFIERS or k.strip("()") in _NEVER_ALONE for k in kept):
+    if len(kept) < len(parts) and all(_says_nothing(k) for k in kept):
         return None
+    # Dropping a content word ("visual & cortex" → "cortex") needs a rare
+    # remainder; dropping only general words ("emotional & state" →
+    # "emotional") does not. Otherwise every word stays and only the scope
+    # widens.
+    dropped = [p for p in parts if p not in kept]
+    if dropped and not all(_says_nothing(p) for p in dropped) and not _rare_enough(kept, guard):
+        kept = parts
     relaxed = " & ".join(kept)
     return relaxed if relaxed.replace(" ", "") != query.replace(" ", "") else None
 

@@ -90,7 +90,9 @@ from text_terms import (  # noqa: E402
     MODE_NEAR,
     MODE_SHORT,
     MODES,
+    MODIFIER_WORDS,
     NEAR_DISTANCE,
+    NEVER_ALONE_WORDS,
     Term,
     Word,
     format_text_match,
@@ -401,6 +403,11 @@ def guarded_counts(queries: List[str],
     return _lookup_counts(queries)
 
 
+def _says_nothing(word: Word) -> bool:
+    """A word that cannot stand for a term alone: a modifier or a general noun."""
+    return len(word) == 1 and (word[0] in MODIFIER_WORDS or word[0] in NEVER_ALONE_WORDS)
+
+
 def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
     """The words of an unresolved term that a dataset must contain.
 
@@ -414,19 +421,23 @@ def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
     answer a different question ("cell"), so then every word is required and
     the term honestly matches nothing.
 
+    A general word ("syndrome", "task", "healthy") comes after every other
+    word, however rare: "bipolar syndrome" keeps "bipolar", although this
+    catalogue has "syndrome" in fewer datasets (11 against 43).
+
     With no frequencies available, the longest word, as the ILIKE search did.
     """
     if len(term) == 1:
         return term
-    longest = [max(term, key=lambda word: sum(len(part) for part in word))]
+    longest = [max(term, key=lambda word: (not _says_nothing(word), sum(len(part) for part in word)))]
     counts = guarded_counts([_word_query(word) for word in term],
                             [exact_guard([word], "", exact_forms) for word in term])
     if counts is None:
         return longest
     if any(count == 0 for count in counts):
         return term
-    present = sorted((count, index) for index, count in enumerate(counts))
-    by_rarity = [term[index] for _, index in present]
+    present = sorted((_says_nothing(term[index]), count, index) for index, count in enumerate(counts))
+    by_rarity = [term[index] for _, _, index in present]
     if len(by_rarity) == 1:
         return by_rarity
     prefixes = [by_rarity[:k] for k in range(len(by_rarity), 1, -1)]
