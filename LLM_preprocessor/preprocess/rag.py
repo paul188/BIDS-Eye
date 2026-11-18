@@ -157,7 +157,7 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
 
     # Participant groups — strip generic demographic words before RAG resolution
     # so that "patients" / "participants" never resolves to unknown_diagnosis
-    _GENERIC_WORDS = {
+    generic_words = {
         "patients", "patient", "participants", "participant",
         "subjects", "subject", "people", "person",
         "individuals", "individual", "volunteers", "volunteer",
@@ -166,7 +166,7 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
     }
     for grp in plan.groups:
         real_diagnoses = [t for t in grp.diagnosis_terms
-                          if t.lower().strip() not in _GENERIC_WORDS
+                          if t.lower().strip() not in generic_words
                           and not _is_healthy_term(t)]
         _merge(RAGField.DIAGNOSIS, real_diagnoses)
         _merge(RAGField.TASK,      grp.task_terms)

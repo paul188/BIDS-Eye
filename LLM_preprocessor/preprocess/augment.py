@@ -493,8 +493,8 @@ def _build_augmented_question(
             and not any(t.condition for t in topics)):
         return plan.natural_language_summary
 
-    _SCAN_FIELDS = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
-    _FIELD_ORDER  = (RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK)
+    scan_fields = {RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK}
+    field_order = (RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK)
 
     # Group scan codes by source term: term → {RAGField: [codes]}
     scan_by_term: Dict[str, Dict[RAGField, List[str]]] = {}
@@ -508,7 +508,7 @@ def _build_augmented_question(
     }
 
     for r in resolved:
-        if r.field in _SCAN_FIELDS:
+        if r.field in scan_fields:
             for term, codes in r.term_to_codes.items():
                 if codes:
                     scan_by_term.setdefault(term, {})[r.field] = codes
@@ -598,7 +598,7 @@ def _build_augmented_question(
         modality_conds: List[str] = []   # datatype + suffix codes
         task_conds: List[str] = []       # task codes
 
-        for field in _FIELD_ORDER:
+        for field in field_order:
             if field not in field_codes:
                 continue
             codes = field_codes[field]
@@ -841,7 +841,7 @@ def _build_augmented_question(
         # term's most distinctive word anywhere in its text (README included);
         # the other words only move it up in the ranking.
         text_suggestions = []
-        for field, terms in unresolved_terms.items():
+        for terms in unresolved_terms.values():
             for term in terms:
                 suggestion = _format_text_match([term], _MODE_LOOSE)
                 if suggestion and suggestion not in text_suggestions:

@@ -223,11 +223,11 @@ def _call_anthropic(model, prompt, system, temperature, accepts_temperature, max
     # response must not push the request past Cloudflare's ~100s limit.
     timeout_s = float(os.getenv("ANTHROPIC_CALL_TIMEOUT_SECONDS", "20"))
     client = anthropic.Anthropic(timeout=timeout_s, max_retries=0)  # reads ANTHROPIC_API_KEY from env
-    kwargs = dict(
-        model=model,
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    kwargs = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "messages": [{"role": "user", "content": prompt}],
+    }
     if system:
         kwargs["system"] = system
     if accepts_temperature:

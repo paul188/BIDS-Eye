@@ -150,16 +150,16 @@ def _parse_flat(
     # Uses a sentinel to detect back-edges (cycles introduced by CA PARTOF edges)
     # and returns [] for any node that is currently being computed, breaking the
     # cycle without raising RecursionError.
-    _COMPUTING = object()
+    computing = object()
     _cache: Dict[str, object] = {}
 
     def _all_codes(key: str) -> List[str]:
         cached = _cache.get(key)
-        if cached is _COMPUTING:
+        if cached is computing:
             return []          # cycle detected — skip this back-edge
         if cached is not None:
             return cached      # type: ignore[return-value]
-        _cache[key] = _COMPUTING
+        _cache[key] = computing
         v = concepts.get(key, {})
         codes: List[str] = []
         if "standard_code" in v:

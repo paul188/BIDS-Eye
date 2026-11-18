@@ -244,7 +244,7 @@ def tsquery_phrases(query: str) -> List[str]:
             # A 'near' term spells out every word order and gap; the first is the term.
             alternative = _split_top_level(_outer_parentheses_removed(alternative), "|")[0]
             alternative = _TS_DISTANCE_RE.sub(" ", alternative)
-        words = [w for w in _TS_WORD_RE.findall(alternative)]
+        words = _TS_WORD_RE.findall(alternative)
         if words:
             phrases.append(" ".join(words))
     return list(dict.fromkeys(phrases))
@@ -385,7 +385,7 @@ def _count_chip(node) -> Optional[Tuple[str, str]]:
         field_name = next((_COUNTED[c] for c in columns if c in _COUNTED), None)
         if not field_name:
             continue
-        label = _bound(node, lambda left: left is count
+        label = _bound(node, lambda left, count=count: left is count
                        or any(inner is count for inner in left.find_all(exp.Count)))
         if not label:
             continue

@@ -91,7 +91,7 @@ def test_an_institution_is_also_found_through_its_ror_name() -> None:
     # "datasets from the University of Bonn": no scan names it, its ethics committee does.
     place_index.set_places(PLACES + [("institution", "University of Bonn")])
     question = pp.augment_with_rag(_plan(institution_terms=["University of Bonn"]), {}).augmented_question
-    line = next(l for l in question.splitlines() if l.startswith('  institution "University of Bonn"'))
+    line = next(ln for ln in question.splitlines() if ln.startswith('  institution "University of Bonn"'))
     assert "sp.institution = ANY(ARRAY['University of Bonn']::text[])" in line
     sql = ("SELECT d.id FROM bids_datasets AS d WHERE " + line.split(": ", 1)[1] + " GROUP BY d.id")
     expanded = text_search.expand_text_search(sql, fts=True, papers=False).sql

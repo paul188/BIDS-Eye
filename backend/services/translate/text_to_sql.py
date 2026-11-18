@@ -63,7 +63,7 @@ _STOPWORDS = {
     "a","an","the","and","or","in","of","to","for","with","that","this",
     "is","are","do","does","me","my","i","all","any","no","not","from",
     "by","be","at","on","as","it","its","have","has","had","give","show",
-    "find","list","which","what","how","get","tell","want","give","please",
+    "find","list","which","what","how","get","tell","want","please",
     "can","could","would","datasets","dataset","data",
 }
 
