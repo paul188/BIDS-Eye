@@ -1,0 +1,6 @@
+# Findings gitleaks reports that are not secrets, by fingerprint
+# (commit:file:rule:line). For a new line, prefer ending it with  gitleaks:allow
+#
+# key = "healthy_children_5" if child else "healthy_adults_5": a dictionary key
+# in the gold benchmark, matched by the generic-api-key rule.
+d781d3826f598767912aa9cf08eff261dd0ec1c3:benchmarks/demand/gold/pipeline/assemble.py:generic-api-key:90
