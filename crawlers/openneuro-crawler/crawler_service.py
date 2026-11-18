@@ -18,9 +18,6 @@ Configuration (environment variables):
 After indexing, a cycle runs the post-crawl steps for the datasets it indexed
 (post_crawl.py): paper lookup, then a one-sentence description from each
 primary paper's abstract. See post_crawl.py for their switches.
-
-The crawler state dict is module-level so FastAPI can import and expose it:
-    from crawler_service import crawler_state
 """
 
 from __future__ import annotations
@@ -35,7 +32,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 log = logging.getLogger(__name__)
 
-# ─── Shared state (read by FastAPI /api/crawler/status) ───────────────────────
+# ─── Crawl state (progress counters for the log) ──────────────────────────────
 
 crawler_state: dict = {
     "running": False,

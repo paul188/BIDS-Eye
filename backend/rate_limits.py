@@ -9,7 +9,7 @@ A search runs a language-model call and costs money, a page of results runs
 SQL, a page refresh or a status poll costs nearly nothing, so each category
 has its own windows instead of one shared quota:
 
-    LIGHT   120 per minute         /auth/me, /auth/logout, /crawler/status
+    LIGHT   120 per minute         /auth/me, /auth/logout
     LOGIN    10 per minute         /auth/github, /auth/github/callback (call GitHub)
     PAGE     60 per minute         /query/page
     SEARCH   10 per minute and DAILY_MESSAGE_LIMIT (20) per UTC day   POST /query

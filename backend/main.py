@@ -13,7 +13,6 @@ Routes:
   GET  /api/auth/github/callback — OAuth callback; sets JWT and redirects to frontend
   POST /api/auth/logout          — stateless logout
   POST /api/query                — natural-language dataset search (requires JWT)
-  GET  /api/crawler/status       — crawler background service state (requires JWT)
 """
 
 from __future__ import annotations
@@ -129,10 +128,6 @@ from routers.query import router as query_router                   # noqa: E402
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])
-
-if os.getenv("CRAWLER_ENABLED", "false").lower() == "true":
-    from routers.crawler import router as crawler_router           # noqa: E402
-    app.include_router(crawler_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 
 @app.get("/health")

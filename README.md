@@ -27,7 +27,7 @@ At a high level, BIDS-Eye does three things:
 | **OpenNeuro demonstrator** | Use OpenNeuro as the primary public-data example for discovery and validation. |
 | **Query transparency** | Surface the generated SQL so users can inspect how a result was produced. |
 | **Conversation UI** | A Vue 3 + Vite frontend provides a chat-style search experience. |
-| **Backend API** | FastAPI endpoints handle auth, query translation, dataset retrieval, and crawler status. |
+| **Backend API** | FastAPI endpoints handle auth, query translation, and dataset retrieval. |
 | **Extensible architecture** | The same approach can be extended to more public BIDS collections or local deployments. |
 
 ## Stack
@@ -126,7 +126,7 @@ If you prefer Docker, use the repository's compose setup instead of running the 
 ## Project Layout
 
 ```text
-backend/                     FastAPI app, auth, query routing, crawler status
+backend/                     FastAPI app, auth, query routing
   services/                  Search pipeline, grouped by stage (see services/__init__.py)
   constants.py               Shared schema + prompt constants
   routers/                   Query, auth, and crawler endpoints
@@ -168,8 +168,7 @@ The backend exposes endpoints for:
 
 - authentication,
 - natural-language dataset queries,
-- dataset result retrieval,
-- crawler status inspection.
+- dataset result retrieval.
 
 See `backend/main.py` and the routers in `backend/routers/` for the current API wiring.
 
