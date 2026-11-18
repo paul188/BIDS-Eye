@@ -10,7 +10,7 @@ import pytest
 from fastapi import HTTPException
 
 import routers.query as query_router
-from services import dataset_cards, query_guard
+from services import dataset_cards, query_guard, readme_snippets
 from services.query_cache import CachedQuery, query_cache
 from services.sql_rewriter import FALLBACK_SQL
 
@@ -134,7 +134,7 @@ def test_page_query_runs_with_limits(monkeypatch) -> None:
         return None
 
     monkeypatch.setattr(dataset_cards, "rows_to_datasets", no_rows)
-    monkeypatch.setattr(query_router, "_attach_snippets", nothing)
+    monkeypatch.setattr(readme_snippets, "attach_snippets", nothing)
     monkeypatch.setattr(dataset_cards, "attach_descriptions", nothing)
     cached = CachedQuery(base_sql=_SAFE, params={}, scored_filters=[], apply_relevance=False, explanation="",
                          rerank_done=True)
@@ -191,7 +191,7 @@ def _no_side_queries(monkeypatch):
         return None
 
     monkeypatch.setattr(dataset_cards, "rows_to_datasets", no_rows)
-    monkeypatch.setattr(query_router, "_attach_snippets", nothing)
+    monkeypatch.setattr(readme_snippets, "attach_snippets", nothing)
     monkeypatch.setattr(dataset_cards, "attach_descriptions", nothing)
 
 

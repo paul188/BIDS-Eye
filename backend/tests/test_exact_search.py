@@ -313,7 +313,7 @@ def test_paper_evidence_needs_the_word_forms_in_the_paper(exact) -> None:
 # ── README excerpts ───────────────────────────────────────────────────────────
 
 def test_marks_of_exact_words_must_be_the_word_as_written() -> None:
-    from routers.query import keep_justified_marks
+    from services.readme_snippets import keep_justified_marks
     headline = "⟦Age⟧ range 60-80; healthy ⟦ageing⟧ and ⟦Aging⟧'s effects, ⟦aged⟧ adults"
     marks = ["age", "age", "age", "age"]
     terms = [("ageing",), ("aging",)]
@@ -343,7 +343,7 @@ class _Session:
 
 
 def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
-    import routers.query as query_router
+    from services import readme_snippets
     from schemas import DatasetSchema
 
     datasets = [DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
@@ -357,7 +357,7 @@ def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
     ])
     caps.set_display_columns({"readme_text"})
     try:
-        asyncio.run(query_router._attach_snippets(
+        asyncio.run(readme_snippets.attach_snippets(
             session, datasets, [("ageing",), ("aging",)], {"ageing", "aging"}))
     finally:
         caps.set_display_columns(())

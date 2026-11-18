@@ -223,7 +223,7 @@ def test_phrase_digits_pair_but_never_stand_alone():
 
 
 def test_attach_snippets_marks_field_strengths():
-    import routers.query as query_router
+    from services import readme_snippets
     from services import schema_capabilities as caps
 
     # ts_headline marked the Postgres words; the pattern decides: "1.5 mm" is no strength.
@@ -234,7 +234,7 @@ def test_attach_snippets_marks_field_strengths():
     datasets = [_dataset(1)]
     caps.set_display_columns({"readme_text"})
     try:
-        asyncio.run(query_router._attach_snippets(session, datasets, [("BOLD",)], (), [1.5]))
+        asyncio.run(readme_snippets.attach_snippets(session, datasets, [("BOLD",)], (), [1.5]))
     finally:
         caps.set_display_columns(())
     assert session.calls[0][1]["q"] == "bold | 1.5"
@@ -242,7 +242,7 @@ def test_attach_snippets_marks_field_strengths():
 
 
 def test_keep_justified_marks_drops_pair_words_alone():
-    from routers.query import keep_justified_marks
+    from services.readme_snippets import keep_justified_marks
     terms = [("structural", "mri"), ("MRI",), ("MS",)]
     lexemes = {"structural": {"structur"}, "mri": {"mri"}, "ms": {"ms"}}
     headline = ("Brain Imaging Data ⟦Structure⟧ format; ⟦structural⟧ ⟦MRI⟧ "
@@ -259,11 +259,11 @@ def test_keep_justified_marks_drops_pair_words_alone():
 
 
 def test_clean_snippet_strips_markdown():
-    import routers.query as query_router
+    from services import readme_snippets
 
     raw = ("# Dataset ⟦Parkinson⟧ study\n![logo](img.png) See [the paper](https://doi.org/x) "
            "and https://openneuro.org.\n| col | col |\n**Bold** text with sub_01 and __init__")
-    assert query_router.clean_snippet(raw) == (
+    assert readme_snippets.clean_snippet(raw) == (
         "Dataset ⟦Parkinson⟧ study See the paper and col col Bold text with sub_01 and init")
 
 
@@ -293,7 +293,7 @@ def _dataset(n: int):
 
 
 def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
-    import routers.query as query_router
+    from services import readme_snippets
     from services import schema_capabilities as caps
 
     long_start = "Plain README start. " * 30
@@ -305,7 +305,7 @@ def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
     datasets = [_dataset(1), _dataset(2), _dataset(3)]
     caps.set_display_columns({"readme_text"})
     try:
-        asyncio.run(query_router._attach_snippets(
+        asyncio.run(readme_snippets.attach_snippets(
             session, datasets, [("parkinson", "disease"), ("fMRI",)]))
     finally:
         caps.set_display_columns(())
@@ -325,11 +325,11 @@ def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
 
 
 def test_attach_snippets_without_the_column_does_nothing():
-    import routers.query as query_router
+    from services import readme_snippets
 
     session = _SnippetSession([])
     datasets = [_dataset(1)]
-    asyncio.run(query_router._attach_snippets(session, datasets, [("x",)]))
+    asyncio.run(readme_snippets.attach_snippets(session, datasets, [("x",)]))
     assert session.calls == [] and datasets[0].snippet is None
 
 

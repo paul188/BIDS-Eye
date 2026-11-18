@@ -51,7 +51,7 @@ _available: FrozenSet[str] = frozenset()
 # existence matters, not how many rows are filled.
 # llm_profile is read by the re-ranker (services/rerank.py); readme_text gives
 # each result its README excerpt; paper_relation and dataset_summary its paper
-# line and generated summary (routers/query.py, _attach_snippets / _attach_descriptions).
+# line and generated summary (services/readme_snippets.py, services/dataset_cards.py).
 DISPLAY_COLUMNS = ("deprecated_reason", "llm_profile", "readme_text", "paper_relation",
                    "dataset_summary")
 _present_display: FrozenSet[str] = frozenset()
