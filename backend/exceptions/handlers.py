@@ -1,15 +1,15 @@
 """
 exceptions/handlers.py
 ----------------------
-Where an error becomes an HTTP response. main.py installs these on the app;
-tests install them on their own small apps.
+Where an error becomes an HTTP response. main.py adds these to the app;
+tests add them to their own small apps.
 
 - DomainError (exceptions/domain.py): the error's own status, ``detail`` and
   headers.
 - Any other exception: a bug or an outage nobody planned an answer for. The
-  client gets DomainError's default 500 and text, never the exception's
-  message. Starlette still raises the exception again after the response is
-  sent, so the server logs it with its traceback as before.
+  client gets UNEXPECTED_STATUS and UNEXPECTED_DETAIL below, never the
+  exception's message. Starlette still raises the exception again after the
+  response is sent, so the server logs it with its traceback as before.
 
 FastAPI's own answers stay as they are: 404/405 for unknown routes and 422
 for a request body that fails validation.
@@ -21,6 +21,9 @@ from fastapi.responses import JSONResponse
 
 from exceptions.domain import DomainError
 
+UNEXPECTED_STATUS = 500
+UNEXPECTED_DETAIL = "The request could not be completed."
+
 
 async def domain_error_response(request: Request, exc: DomainError) -> JSONResponse:
     """The error's answer, in the same ``{"detail": ...}`` body that
@@ -31,12 +34,10 @@ async def domain_error_response(request: Request, exc: DomainError) -> JSONRespo
 
 
 async def unexpected_error_response(request: Request, exc: Exception) -> JSONResponse:
-    """DomainError's default answer for an exception no class planned for."""
-    return JSONResponse(
-        status_code=DomainError.status_code, content={"detail": DomainError.detail}
-    )
+    """The answer for an exception no class planned for."""
+    return JSONResponse(status_code=UNEXPECTED_STATUS, content={"detail": UNEXPECTED_DETAIL})
 
 
-def install_error_handlers(app: FastAPI) -> None:
+def add_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DomainError, domain_error_response)
     app.add_exception_handler(Exception, unexpected_error_response)

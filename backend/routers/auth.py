@@ -15,6 +15,9 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
 
+
+# ── Settings ──────────────────────────────────────────────────────────────────
+
 # The login lives in Starlette's SessionMiddleware (see api_security.py): a
 # signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
 # every /api request; the frontend never sees the value.
@@ -28,7 +31,7 @@ _PLACEHOLDER_SECRETS = ("change-me", "changeme")
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-# ── Errors (answered by exceptions/handlers.py) ──────────────────────────────
+# ── Errors (answered by exceptions/handlers.py) ───────────────────────────────
 
 class NotSignedInError(DomainError):
     """No signed-in session. RequireLoginMiddleware (api_security.py) sends the
@@ -65,6 +68,8 @@ class NotInGitHubOrgError(DomainError):
     status_code = 403
     detail = "Access restricted to members of the required GitHub organization."
 
+
+# ── Session ───────────────────────────────────────────────────────────────────
 
 def session_secret() -> str:
     """The key that signs the session and CSRF cookies. Refuses to run without a real one.
@@ -128,6 +133,8 @@ def require_auth(request: Request) -> dict:
         raise NotSignedInError()
     return user
 
+
+# ── GitHub login ──────────────────────────────────────────────────────────────
 
 def _github_redirect_uri(request: Request) -> str:
     return os.getenv("GITHUB_REDIRECT_URI") or str(request.url_for("github_callback"))
@@ -292,6 +299,8 @@ async def _remember_user(github_login: str, email: str | None) -> None:
         )
         await session.commit()
 
+
+# ── Signed-in user ────────────────────────────────────────────────────────────
 
 @router.get("/me", dependencies=[rate_limit(Category.LIGHT)])
 async def me(user: dict = Depends(require_auth)):

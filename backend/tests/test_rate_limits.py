@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 import rate_limits
-from exceptions.handlers import install_error_handlers
+from exceptions.handlers import add_error_handlers
 from rate_limits import DAY, MINUTE, Category, rate_limit
 
 # Noon UTC on some day: far from both a minute and a day boundary.
@@ -44,7 +44,7 @@ def clock(monkeypatch: pytest.MonkeyPatch) -> list[float]:
 @pytest.fixture
 def client(clock: list[float]) -> TestClient:
     app = FastAPI()
-    install_error_handlers(app)
+    add_error_handlers(app)
     app.add_middleware(_SignedIn)
 
     @app.post("/api/search", dependencies=[rate_limit(Category.SEARCH)])
