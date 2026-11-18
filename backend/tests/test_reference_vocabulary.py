@@ -163,5 +163,5 @@ def test_bare_task_name_becomes_a_scan_term(names: MetadataRetriever) -> None:
 
 def test_reference_files_are_part_of_the_pipeline_version() -> None:
     from services import interpretation_store
-    names_ = {p.name for p in interpretation_store._VERSION_FILES}
+    names_ = {p.name for p in interpretation_store.version_paths()}
     assert {"reference_vocabulary.py", "reference_vocabulary.yaml"} <= names_
