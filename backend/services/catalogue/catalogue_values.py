@@ -56,18 +56,15 @@ _known: Dict[str, FrozenSet[str]] = {}
 _loaded_at: float = 0.0
 
 
-# ── Known values ──────────────────────────────────────────────────────────────
+# ── Loading the known values ──────────────────────────────────────────────────
+# At startup (schema_capabilities) and, at most every REFRESH_SECONDS, before
+# a search (refresh_if_stale).
 
 def set_known(values: Mapping[str, Iterable[str]]) -> None:
     """Replace the known values (load(), tests). Empty: the check is off."""
     global _known, _loaded_at
     _known = {field: frozenset(values.get(field, ())) for field in FIELDS} if values else {}
     _loaded_at = time.monotonic()
-
-
-def enabled() -> bool:
-    """True when known values are loaded and CATALOGUE_VALUE_CHECK is not 'false'."""
-    return bool(_known) and os.getenv(ENV, "true").strip().lower() not in ("false", "0", "no", "off")
 
 
 _LOAD_SQL = " UNION ALL ".join(
@@ -104,6 +101,8 @@ async def refresh_if_stale(session: Any) -> None:
     except Exception as exc:  # the check only removes errors; never fail a search
         log.warning("Could not reload catalogue values (%s)", exc)
 
+
+# ── Looking a value up ────────────────────────────────────────────────────────
 
 def is_known(field: str, value: str) -> bool:
     return value in _known.get(field, frozenset())
@@ -153,6 +152,16 @@ def correction(field: str, value: str) -> List[str]:
 
 
 # ── The check ─────────────────────────────────────────────────────────────────
+# On every translation, from sql_rewriter.
+
+def enabled() -> bool:
+    """True when known values are loaded and CATALOGUE_VALUE_CHECK is not 'false'.
+
+    Without known values every value would look unknown and be dropped, so
+    "nothing loaded" means "do not check".
+    """
+    return bool(_known) and os.getenv(ENV, "true").strip().lower() not in ("false", "0", "no", "off")
+
 
 def _field_of(node: Any) -> Optional[str]:
     if isinstance(node, exp.Column) and node.name.lower() in FIELDS:
