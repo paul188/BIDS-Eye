@@ -1,12 +1,14 @@
 """single_flight.py: one running call per key. The router side (users,
-normalised questions, the 503) is in test_query_in_flight.py."""
+normalised questions) is in test_query_in_flight.py."""
 from __future__ import annotations
 
 import asyncio
+import threading
 
 import pytest
 
-from single_flight import Interrupted, SingleFlight
+import single_flight
+from single_flight import SingleFlight
 
 
 def _slow(runs: list[str], value: str, *, gate: asyncio.Event | None = None, fail: Exception | None = None):
@@ -58,7 +60,28 @@ def test_an_error_reaches_every_waiting_call():
     assert len(flight) == 0
 
 
-def test_a_cancelled_running_call_interrupts_the_waiting_ones():
+def _bounded(scenario):
+    """Run *scenario* and fail, instead of hanging, if it does not end. A loop
+    over an already cancelled future never yields to the event loop, so an
+    asyncio timeout could not stop it; a thread with a join timeout can."""
+    outcome: dict = {}
+
+    def target():
+        try:
+            outcome["value"] = asyncio.run(scenario())
+        except BaseException as exc:
+            outcome["error"] = exc
+
+    thread = threading.Thread(target=target, daemon=True)
+    thread.start()
+    thread.join(timeout=5)
+    assert not thread.is_alive(), "SingleFlight.run() did not end"
+    if "error" in outcome:
+        raise outcome["error"]
+    return outcome["value"]
+
+
+def test_a_waiting_call_runs_it_itself_when_the_running_one_is_cancelled():
     flight: SingleFlight[str] = SingleFlight()
     runs: list[str] = []
     gate = asyncio.Event()
@@ -71,11 +94,94 @@ def test_a_cancelled_running_call_interrupts_the_waiting_ones():
         first.cancel()
         with pytest.raises(asyncio.CancelledError):
             await first
-        with pytest.raises(Interrupted):
-            await second
+        return await second
 
-    asyncio.run(scenario())
+    assert _bounded(scenario) == "b"
+    assert runs == ["a", "b"]
+    assert len(flight) == 0
+
+
+def test_several_waiting_calls_share_one_takeover():
+    flight: SingleFlight[str] = SingleFlight()
+    runs: list[str] = []
+    gate = asyncio.Event()
+
+    async def scenario():
+        first = asyncio.create_task(flight.run("k", _slow(runs, "a", gate=gate)))
+        await asyncio.sleep(0)
+        waiting = [asyncio.create_task(flight.run("k", _slow(runs, v))) for v in "bcd"]
+        await asyncio.sleep(0)
+        first.cancel()
+        return await asyncio.gather(*waiting)
+
+    results = _bounded(scenario)
+    assert runs == ["a", "b"]           # one new run, not three
+    assert results == ["b", "b", "b"]
+    assert len(flight) == 0
+
+
+def test_a_cancelled_waiting_call_does_not_take_over():
+    """Both cancelled together: the waiting call ends cancelled, it does not
+    start the call again."""
+    flight: SingleFlight[str] = SingleFlight()
+    runs: list[str] = []
+    gate = asyncio.Event()
+
+    async def scenario():
+        first = asyncio.create_task(flight.run("k", _slow(runs, "a", gate=gate)))
+        await asyncio.sleep(0)
+        second = asyncio.create_task(flight.run("k", _slow(runs, "b")))
+        await asyncio.sleep(0)
+        second.cancel()
+        first.cancel()
+        for task in (first, second):
+            with pytest.raises(asyncio.CancelledError):
+                await task
+
+    _bounded(scenario)
     assert runs == ["a"]
+    assert len(flight) == 0
+
+
+def test_a_call_that_keeps_finding_a_cancelled_one_stops_waiting():
+    """A cancelled entry left in the dict (run() never leaves one) would make
+    every wait end at once; the cap ends the loop and the call runs itself."""
+    flight: SingleFlight[str] = SingleFlight()
+    runs: list[str] = []
+
+    async def scenario():
+        stale = asyncio.get_running_loop().create_future()
+        stale.cancel()
+        flight._running["k"] = stale
+        return await flight.run("k", _slow(runs, "b"))
+
+    assert _bounded(scenario) == "b"
+    assert runs == ["b"]
+    assert single_flight.MAX_WAITS >= 1
+
+
+def test_a_call_after_the_takeover_waits_for_it():
+    flight: SingleFlight[str] = SingleFlight()
+    runs: list[str] = []
+    gate_a, gate_b = asyncio.Event(), asyncio.Event()
+
+    async def scenario():
+        first = asyncio.create_task(flight.run("k", _slow(runs, "a", gate=gate_a)))
+        await asyncio.sleep(0)
+        second = asyncio.create_task(flight.run("k", _slow(runs, "b", gate=gate_b)))
+        await asyncio.sleep(0)
+        first.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await first
+        await asyncio.sleep(0)
+        assert len(flight) == 1          # the takeover holds the key
+        third = asyncio.create_task(flight.run("k", _slow(runs, "c")))
+        await asyncio.sleep(0)
+        gate_b.set()
+        return await asyncio.gather(second, third)
+
+    assert _bounded(scenario) == ["b", "b"]
+    assert runs == ["a", "b"]
     assert len(flight) == 0
 
 

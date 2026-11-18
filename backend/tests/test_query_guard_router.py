@@ -7,7 +7,6 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from fastapi import HTTPException
 
 import routers.query as query_router
 from services.results import dataset_cards, readme_snippets
@@ -156,7 +155,9 @@ def test_busy_search_answers_503(monkeypatch) -> None:
 
     async def scenario():
         async with query_guard.slot():
-            with pytest.raises(HTTPException) as caught:
+            # The router lets it through; main.py's handler answers 503
+            # (tests/test_domain_errors.py).
+            with pytest.raises(query_guard.SearchBusy) as caught:
                 await query_router.query_page(
                     query_router.QueryPageRequest(query_id=query_id), _Session())
             assert caught.value.status_code == 503

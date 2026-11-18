@@ -22,14 +22,14 @@ def _counting_search(monkeypatch, *, fail_with: Exception | None = None):
     """Replace one search with a slow fake that counts its runs."""
     runs: list[str] = []
 
-    async def fake(body, session, auth):
-        runs.append(body.question)
+    async def fake(session, question, user):
+        runs.append(question)
         await asyncio.sleep(0.05)
         if fail_with is not None:
             raise fail_with
         return _response(len(runs))
 
-    monkeypatch.setattr(query_router, "_answer_question", fake)
+    monkeypatch.setattr(query_router.search, "answer_question", fake)
     return runs
 
 

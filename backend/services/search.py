@@ -18,6 +18,7 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from exceptions.domain import DomainError
 from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
 from services.catalogue import catalogue_values
 from services.stores import interpretation_store
@@ -153,8 +154,11 @@ async def _record_user_query(session: AsyncSession, user: Optional[str], questio
         pass  # stale/legacy JWT sub not in users table — don't crash the response
 
 
-class SearchExpired(Exception):
+class SearchExpired(DomainError):
     """The query_id is no longer in the query cache."""
+
+    status_code = 410
+    detail = "This search has expired. Please run the query again."
 
 
 async def next_page(session: AsyncSession, query_id: str, page: int, page_size: int) -> QueryResponse:

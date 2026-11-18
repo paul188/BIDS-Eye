@@ -122,6 +122,12 @@ from api_security import install_security_middleware               # noqa: E402
 # (see api_security.py). Raises when JWT_SECRET is missing or a placeholder.
 install_security_middleware(app)
 
+from exceptions.handlers import install_domain_error_handler       # noqa: E402
+
+# A busy or expired search (exceptions/domain.py) answers with its
+# own status and text, so the routers catch none of them.
+install_domain_error_handler(app)
+
 # ── Routers ───────────────────────────────────────────────────────────────────
 
 from routers.auth import require_auth, router as auth_router      # noqa: E402

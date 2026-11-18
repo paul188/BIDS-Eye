@@ -51,6 +51,8 @@ import os
 import re
 from typing import Any, AsyncIterator, Optional
 
+from exceptions.domain import DomainError
+
 log = logging.getLogger(__name__)
 
 try:  # optional dependency, as in sql_rewriter
@@ -64,8 +66,11 @@ class QueryRefused(Exception):
     """A generated query that must not run; the message says why."""
 
 
-class SearchBusy(Exception):
+class SearchBusy(DomainError):
     """No slot for a generated query became free in time."""
+
+    status_code = 503
+    detail = "The search is busy. Please try again in a minute."
 
 
 # ── 1. static check ───────────────────────────────────────────────────────────
