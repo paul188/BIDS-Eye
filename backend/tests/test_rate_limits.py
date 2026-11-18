@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import importlib
+import time
+from collections.abc import Iterator
 from datetime import datetime, timezone
 
 import pytest
+import time_machine
 from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
@@ -33,16 +36,15 @@ class _SignedIn:
 
 
 @pytest.fixture
-def clock(monkeypatch: pytest.MonkeyPatch) -> list[float]:
-    now = [NOON]
-    monkeypatch.setattr(rate_limits, "_now", lambda: now[0])
+def clock() -> Iterator[time_machine.Traveller]:
     rate_limits.reset()
-    yield now
+    with time_machine.travel(NOON, tick=False) as traveller:
+        yield traveller
     rate_limits.reset()
 
 
 @pytest.fixture
-def client(clock: list[float]) -> TestClient:
+def client(clock: time_machine.Traveller) -> TestClient:
     app = FastAPI()
     add_error_handlers(app)
     app.add_middleware(_SignedIn)
@@ -74,7 +76,7 @@ def _limit(category: Category, seconds: int) -> int:
     return next(w.limit for w in rate_limits.LIMITS[category] if w.seconds == seconds)
 
 
-def test_categories_have_separate_budgets(client: TestClient, clock: list[float]) -> None:
+def test_categories_have_separate_budgets(client: TestClient, clock: time_machine.Traveller) -> None:
     per_minute = _limit(Category.SEARCH, MINUTE)
     for _ in range(per_minute):
         assert client.post("/api/search", headers=_as("ana")).status_code == 200
@@ -89,7 +91,7 @@ def test_categories_have_separate_budgets(client: TestClient, clock: list[float]
     assert client.get("/api/me", headers=_as("ana")).status_code == 200
     assert client.post("/api/page", headers=_as("ana")).status_code == 200
 
-    clock[0] += MINUTE
+    clock.shift(MINUTE)
     assert client.post("/api/search", headers=_as("ana")).status_code == 200
 
 
@@ -101,25 +103,25 @@ def test_light_requests_get_a_much_larger_budget(client: TestClient) -> None:
     assert client.get("/api/me", headers=_as("ana")).status_code == 429
 
 
-def test_daily_search_cap_resets_at_utc_midnight(client: TestClient, clock: list[float]) -> None:
+def test_daily_search_cap_resets_at_utc_midnight(client: TestClient, clock: time_machine.Traveller) -> None:
     daily = _limit(Category.SEARCH, DAY)
     assert daily == 20
     for i in range(daily):
-        clock[0] = NOON + i * MINUTE  # spread out: the minute window never fills
+        clock.move_to(NOON + i * MINUTE)  # spread out: the minute window never fills
         assert client.post("/api/search", headers=_as("ana")).status_code == 200
 
-    clock[0] = NOON + daily * MINUTE
+    clock.move_to(NOON + daily * MINUTE)
     refused = client.post("/api/search", headers=_as("ana"))
     assert refused.status_code == 429
     detail = refused.json()["detail"]
     assert (detail["window"], detail["limit"]) == ("day", daily)
     assert detail["retry_after"] == "2026-11-19T00:00:00+00:00"
 
-    clock[0] = datetime(2026, 11, 19, 0, 0, 1, tzinfo=timezone.utc).timestamp()
+    clock.move_to(datetime(2026, 11, 19, 0, 0, 1, tzinfo=timezone.utc).timestamp())
     assert client.post("/api/search", headers=_as("ana")).status_code == 200
 
 
-def test_refused_request_uses_nothing(client: TestClient, clock: list[float]) -> None:
+def test_refused_request_uses_nothing(client: TestClient, clock: time_machine.Traveller) -> None:
     per_minute = _limit(Category.SEARCH, MINUTE)
     for _ in range(per_minute):
         client.post("/api/search", headers=_as("ana"))
@@ -131,12 +133,12 @@ def test_refused_request_uses_nothing(client: TestClient, clock: list[float]) ->
 
 
 def test_admins_skip_only_the_daily_cap(
-    client: TestClient, clock: list[float], monkeypatch: pytest.MonkeyPatch
+    client: TestClient, clock: time_machine.Traveller, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(rate_limits, "ADMIN_LOGINS", frozenset({"boss"}))
     daily = _limit(Category.SEARCH, DAY)
     for i in range(daily + 5):
-        clock[0] = NOON + i * MINUTE
+        clock.move_to(NOON + i * MINUTE)
         assert client.post("/api/search", headers=_as("boss")).status_code == 200
 
     per_minute = _limit(Category.SEARCH, MINUTE)
@@ -160,10 +162,10 @@ def test_signed_out_requests_count_per_client_address(client: TestClient) -> Non
     assert client.get("/api/login", headers={"x-real-ip": "198.51.100.7"}).status_code == 200
 
 
-def test_old_windows_are_pruned(client: TestClient, clock: list[float]) -> None:
+def test_old_windows_are_pruned(client: TestClient, clock: time_machine.Traveller) -> None:
     client.get("/api/me", headers=_as("ana"))
-    clock[0] += 2 * MINUTE
-    rate_limits._prune(clock[0])
+    clock.shift(2 * MINUTE)
+    rate_limits._prune(time.time())
     assert ("user:ana", Category.LIGHT, MINUTE) not in rate_limits._counts
 
 

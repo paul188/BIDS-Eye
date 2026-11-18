@@ -87,7 +87,7 @@ jobs:
           pip install -r BIDS-SQL/requirements.txt
           pip install -e BIDS-SQL
           pip install -e backend
-          pip install pytest
+          pip install pytest time-machine
       - name: Run tests
         working-directory: backend
         run: python -m pytest -q tests

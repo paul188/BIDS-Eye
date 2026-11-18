@@ -6,10 +6,12 @@ session cookie and RequireLogin, in front of the real auth router.
 """
 from __future__ import annotations
 
+import time
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
 import pytest
+import time_machine
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
@@ -164,16 +166,23 @@ def test_tampered_cookie_is_rejected(client: TestClient) -> None:
     assert call_with(value[:-2] + ("aa" if not value.endswith("aa") else "bb")) == 401
 
 
-def test_session_ends_after_its_lifetime_even_when_used(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    _login(client)
-    login_time = auth._now()
-    # Still in use (so the cookie keeps being re-issued) but past the cap.
-    monkeypatch.setattr(auth, "_now", lambda: login_time + auth._SESSION_MAX_AGE + 60)
-    assert client.get("/api/protected").status_code == 401
-    monkeypatch.setattr(auth, "_now", lambda: login_time)
-    assert client.get("/api/protected").status_code == 401  # session was cleared
+def test_session_ends_after_its_lifetime_even_when_used(client: TestClient) -> None:
+    half = auth._SESSION_MAX_AGE / 2 + 60
+    with time_machine.travel(time.time(), tick=False) as clock:
+        _login(client)
+        clock.shift(half)
+        assert client.get("/api/protected").status_code == 200
+        clock.shift(half)  # SESSION_DAYS and two minutes after the login
+        assert client.get("/api/protected").status_code == 401
+
+
+@pytest.mark.parametrize("age", [None, auth._SESSION_MAX_AGE + 60])
+def test_a_session_past_its_login_time_is_refused(age: float | None) -> None:
+    """The second guard, without the middleware's own max_age in front of it."""
+    user = {"sub": "octo"} if age is None else {"sub": "octo", "iat": time.time() - age}
+    session = {"user": user}
+    assert auth.session_user(session) is None
+    assert session == {}  # emptied, so the middleware deletes the cookie
 
 
 # ── OAuth state ──────────────────────────────────────────────────────────────
@@ -195,16 +204,13 @@ def test_state_is_single_use(client: TestClient) -> None:
     assert _callback(client, state).status_code == 400
 
 
-def test_wrong_or_expired_state_is_rejected(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_wrong_or_expired_state_is_rejected(client: TestClient) -> None:
     _start_login(client)
     assert _callback(client, "forged").status_code == 400
 
     state = _start_login(client)
-    later = auth._now() + auth._OAUTH_STATE_SECONDS + 1
-    monkeypatch.setattr(auth, "_now", lambda: later)
-    assert _callback(client, state).status_code == 400
+    with time_machine.travel(time.time() + auth._OAUTH_STATE_SECONDS + 1):
+        assert _callback(client, state).status_code == 400
 
 
 def test_login_started_on_other_host_moves_to_callback_host_first(client: TestClient) -> None:

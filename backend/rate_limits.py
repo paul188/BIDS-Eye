@@ -77,10 +77,6 @@ LIMITS: dict[Category, tuple[Window, ...]] = {
 ADMIN_LOGINS = _admin_logins()
 
 
-def _now() -> float:
-    return time.time()
-
-
 class RateLimitError(DomainError, status_code=429, detail={"code": "rate_limit_exceeded"}):
     """A window of the request's category is used up.
 
@@ -124,7 +120,7 @@ class RateLimit:
     async def __call__(self, request: Request) -> None:
         global _calls_since_prune
         client, is_admin = _client(request)
-        now = _now()
+        now = time.time()
         windows = [w for w in LIMITS[self.category] if not (is_admin and w.admins_exempt)]
 
         # Check every window before counting, so a refused request uses nothing.

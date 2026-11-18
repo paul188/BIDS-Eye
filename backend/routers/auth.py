@@ -90,23 +90,22 @@ def session_middleware_options(secret: str) -> dict:
     }
 
 
-def _now() -> float:
-    return time.time()
-
-
 def session_user(session: MutableMapping) -> dict | None:
     """The signed-in user stored in a session, or None.
 
-    SessionMiddleware re-issues the cookie on every response, so its own max_age
-    only limits idle time. The login time stored in the session caps the total
-    lifetime: a copied cookie stops working SESSION_DAYS after the login. An
-    expired session is emptied, which makes the middleware delete the cookie.
+    A session ends SESSION_DAYS after the login however much it is used, so a
+    copied cookie stops working then. SessionMiddleware already ends it: it
+    signs the cookie only when the session changes (Starlette 1.x) and refuses
+    a signature older than max_age. The login time stored in the session keeps
+    the cap should the middleware ever re-sign on every response, as older
+    Starlette did. An expired session is emptied, which makes the middleware
+    delete the cookie.
     """
     user = session.get("user")
     if not isinstance(user, dict) or not user.get("sub"):
         return None
     logged_in_at = user.get("iat")
-    if not isinstance(logged_in_at, (int, float)) or _now() - logged_in_at > _SESSION_MAX_AGE:
+    if not isinstance(logged_in_at, (int, float)) or time.time() - logged_in_at > _SESSION_MAX_AGE:
         session.clear()
         return None
     return user
@@ -149,7 +148,7 @@ async def github_login(request: Request):
         return RedirectResponse(f"{target.scheme}://{target.netloc}{request.url.path}?hop=1")
 
     state = secrets.token_urlsafe(32)
-    request.session["oauth_state"] = {"value": state, "exp": _now() + _OAUTH_STATE_SECONDS}
+    request.session["oauth_state"] = {"value": state, "exp": time.time() + _OAUTH_STATE_SECONDS}
 
     auth_url = (
         "https://github.com/login/oauth/authorize"
@@ -172,7 +171,7 @@ def _take_oauth_state(request: Request, returned: str) -> bool:
     if not isinstance(expected, dict) or not returned:
         return False
     value, exp = expected.get("value"), expected.get("exp")
-    if not isinstance(value, str) or not isinstance(exp, (int, float)) or _now() > exp:
+    if not isinstance(value, str) or not isinstance(exp, (int, float)) or time.time() > exp:
         return False
     return secrets.compare_digest(value, returned)
 
@@ -235,7 +234,7 @@ async def github_callback(request: Request):
     request.session["user"] = {
         "sub": github_login_name,
         "email": primary_email or "",
-        "iat": int(_now()),
+        "iat": int(time.time()),
     }
 
     # Relative on purpose: the cookie was just set on this host, so the app
