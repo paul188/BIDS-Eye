@@ -3,9 +3,9 @@ single_flight.py
 ----------------
 One running call per key: a second call with the same key while the first
 runs does not start another, it waits for the first one's result or error.
-routers/query.py uses it so that a double submit, a retry or a second tab
-gets the running search's answer instead of starting (and paying for) a
-second search.
+services/search.py uses it so that a double submit, a retry, a second tab or
+another user asking the same question gets the running search's answer
+instead of starting (and paying for) a second search.
 
 If the running call is cancelled (in practice only when the server shuts
 down; a client that goes away does not cancel its request), a caller that was

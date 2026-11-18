@@ -2,7 +2,7 @@
 rate limit) reaches the client as its own status and text through the one
 handler (exceptions/handlers.py); any other exception gets DomainError's
 plain 500 without its message; and identical questions sent at the same time
-over HTTP still share one search (routers/query.py ``_in_flight``).
+over HTTP still share one search (services/search.py ``_in_flight``).
 
 Needs the backend image (routers.query imports the db package)."""
 from __future__ import annotations
@@ -70,7 +70,7 @@ def test_an_unknown_query_id_is_410_from_the_real_service():
     ],
 )
 def test_each_error_from_the_search_gets_its_answer(monkeypatch, error, status, detail):
-    async def fails(session, question, user):
+    async def fails(session, question):
         raise error
 
     monkeypatch.setattr(search, "answer_question", fails)
@@ -102,7 +102,7 @@ def test_every_planned_error_is_a_domain_error_with_its_own_answer():
 
 
 def test_an_unexpected_error_is_a_plain_500_without_its_message(monkeypatch):
-    async def crashes(session, question, user):
+    async def crashes(session, question):
         raise RuntimeError("password=hunter2 in the connection string")
 
     monkeypatch.setattr(search, "answer_question", crashes)
@@ -144,7 +144,7 @@ def test_an_error_raised_with_its_own_detail_and_headers_sends_them():
 def test_identical_questions_over_http_share_one_search(monkeypatch):
     runs: list[str] = []
 
-    async def slow(session, question, user):
+    async def slow(session, question):
         runs.append(question)
         await asyncio.sleep(0.05)
         return _response(len(runs))
@@ -163,4 +163,4 @@ def test_identical_questions_over_http_share_one_search(monkeypatch):
     assert runs == ["drawings or art"]
     assert first.status_code == second.status_code == 200
     assert first.json() == second.json()
-    assert len(query_router._in_flight) == 0
+    assert len(search._in_flight) == 0

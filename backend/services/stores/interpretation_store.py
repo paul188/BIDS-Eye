@@ -117,7 +117,7 @@ def normalize(question: str) -> str:
     equality of text, not of meaning: no stopwords, stems or synonyms.
 
     Also the key under which identical running searches are merged
-    (routers/query.py). A change here needs no new pipeline_version: a
+    (services/search.py ask). A change here needs no new pipeline_version: a
     stored row is the translation of its normalised text, whatever form the
     question came in.
     """

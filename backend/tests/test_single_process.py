@@ -5,7 +5,7 @@ memory and are only correct when every request reaches the same process:
 - the query cache (services/stores/query_cache.py): paging a query_id made by
   another process fails,
 - the rate-limit counts (rate_limits.py): each process would count on its own,
-- the searches running now (routers/query.py ``_in_flight``): a repeated
+- the searches running now (services/search.py ``_in_flight``): a repeated
   question on another process would start a second search.
 
 These tests read the Dockerfile and the Compose files and fail when one of them

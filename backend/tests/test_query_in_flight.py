@@ -1,5 +1,6 @@
 """The server-side twins of the search page's guards: one search per question
-while it runs (routers/query.py ``_in_flight``), and no blank questions
+while it runs, whoever asks it (services/search.py ``_in_flight``), with every
+asker recorded in their own history, and no blank questions
 (schemas.QueryRequest)."""
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from pydantic import ValidationError
 import routers.query as query_router
 from rate_limits import RateLimitError
 from schemas import QueryRequest, QueryResponse
+from services import search
 
 
 def _response(total: int) -> QueryResponse:
@@ -18,18 +20,31 @@ def _response(total: int) -> QueryResponse:
                          total=total, page=1, page_size=20, has_more=False)
 
 
-def _counting_search(monkeypatch, *, fail_with: Exception | None = None):
-    """Replace one search with a slow fake that counts its runs."""
-    runs: list[str] = []
+class _Runs(list):
+    """The questions searched for; ``recorded`` is the history, (user, question)."""
 
-    async def fake(session, question, user):
+    def __init__(self) -> None:
+        super().__init__()
+        self.recorded: list[tuple[str, str]] = []
+
+
+def _counting_search(monkeypatch, *, fail_with: Exception | None = None) -> _Runs:
+    """Replace one search with a slow fake that counts its runs, and the
+    history with ``runs.recorded``."""
+    runs = _Runs()
+
+    async def fake(session, question):
         runs.append(question)
         await asyncio.sleep(0.05)
         if fail_with is not None:
             raise fail_with
         return _response(len(runs))
 
-    monkeypatch.setattr(query_router.search, "answer_question", fake)
+    async def record(session, user, question):
+        runs.recorded.append((user, question))
+
+    monkeypatch.setattr(search, "answer_question", fake)
+    monkeypatch.setattr(search, "_record_user_query", record)
     return runs
 
 
@@ -47,21 +62,37 @@ def test_the_same_question_while_it_runs_is_answered_by_the_running_search(monke
     first, second, third = asyncio.run(scenario())
     assert runs == ["drawings or art"]          # one search, one daily search charged
     assert first is second is third
-    assert len(query_router._in_flight) == 0
+    assert len(search._in_flight) == 0
 
 
-def test_other_users_and_other_questions_run_their_own_search(monkeypatch):
+def test_another_user_asking_the_same_question_shares_the_search(monkeypatch):
+    runs = _counting_search(monkeypatch)
+
+    async def scenario():
+        return await asyncio.gather(
+            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
+            query_router.query_datasets(QueryRequest(question="Art?"), None, {"sub": "b"}),
+        )
+
+    first, second = asyncio.run(scenario())
+    assert runs == ["art"]
+    assert first is second
+    # Each asker's own question, in their own history.
+    assert sorted(runs.recorded) == [("a", "art"), ("b", "Art?")]
+    assert len(search._in_flight) == 0
+
+
+def test_other_questions_run_their_own_search(monkeypatch):
     runs = _counting_search(monkeypatch)
 
     async def scenario():
         await asyncio.gather(
             query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
-            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "b"}),
             query_router.query_datasets(QueryRequest(question="music"), None, {"sub": "a"}),
         )
 
     asyncio.run(scenario())
-    assert sorted(runs) == ["art", "art", "music"]
+    assert sorted(runs) == ["art", "music"]
 
 
 def test_asking_again_after_the_search_finished_runs_it_again(monkeypatch):
@@ -78,14 +109,15 @@ def test_an_error_reaches_the_waiting_request_too(monkeypatch):
     async def scenario():
         return await asyncio.gather(
             query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
-            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
+            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "b"}),
             return_exceptions=True,
         )
 
     results = asyncio.run(scenario())
     assert runs == ["art"]
     assert all(r is limit for r in results)
-    assert len(query_router._in_flight) == 0
+    assert runs.recorded == []          # a failed search goes into no history
+    assert len(search._in_flight) == 0
 
 
 @pytest.mark.parametrize("question", ["", "   ", "\n\t"])

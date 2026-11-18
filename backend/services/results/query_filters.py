@@ -316,11 +316,21 @@ def _bound(node, matches) -> Optional[str]:
             low, high = between.args.get("low"), between.args.get("high")
             if isinstance(low, exp.Literal) and isinstance(high, exp.Literal):
                 return f"{low.this}–{high.this}"
+    found = {}
     for cls, symbol in _SYMBOLS.items():
         for comparison in ([node] if isinstance(node, cls) else []) + list(node.find_all(cls)):
             if matches(comparison.this) and isinstance(comparison.expression, exp.Literal) \
                     and not comparison.expression.is_string:
-                return f"{symbol} {comparison.expression.this}"
+                found.setdefault(symbol, comparison.expression.this)
+    # A lower and an upper bound together are a range ("> 6.5 AND < 7.5"):
+    # the first alone read as "> 6.5", and 9.4T and 14T were marked as asked.
+    low = next((found[s] for s in (">", "≥") if s in found), None)
+    high = next((found[s] for s in ("<", "≤") if s in found), None)
+    if low is not None and high is not None:
+        return f"{low}–{high}"
+    for symbol in _SYMBOLS.values():
+        if symbol in found:
+            return f"{symbol} {found[symbol]}"
     return None
 
 
@@ -429,6 +439,25 @@ def _json_key_chip(node) -> Optional[Tuple[str, str]]:
 
 # ── One condition -> one chip ─────────────────────────────────────────────────
 
+def _venue_words(node) -> List[str]:
+    """README words for a condition's recorded fields: the asked sex ("women"),
+    a scanner make or model ("siemens"), a field strength ("7T", also when
+    the chip is labelled by the modality it shares a condition with: the
+    page and highlight_field_strengths read it as a strength). Age words
+    come with the age chip."""
+    from services.fulltext import uncertain_tier as tier
+    words: List[str] = []
+    sex = tier.asked_sex(node)
+    if sex:
+        words.extend(tier.SEX_WORDS[sex])
+    words.extend(f"{strength:g}T" for strength in tier.asked_field_strengths(node))
+    for key in ("Manufacturer", "ManufacturerModelName"):
+        values = tier._key_values(node, key)
+        if values:
+            words.extend(tier.sidecar_words(key, values))
+    return words
+
+
 def describe_condition(node, chip_id: str) -> QueryFilter:
     negated = False
     while isinstance(node, (exp.Paren, exp.Not)):
@@ -449,6 +478,11 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     # They are words of the text too, so the page can mark them.
     forms = guard_forms(node)
     searched = phrases + [form for form in forms if form not in phrases]
+    # Words of the text venues the uncertain tier adds for fields that can be
+    # missing (services/fulltext/uncertain_tier.py): the page marks them.
+    for word in _venue_words(node):
+        if word not in searched:
+            searched.append(word)
     forms_note = f"Only these word forms count: {', '.join(forms[:8])}." if forms else ""
 
     def chip(kind: str, field_name: str, label: Union[str, List[str]], detail: str = "",
@@ -899,7 +933,9 @@ def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
 # strengths scanners are sold at; a range marks the ones inside it.
 
 FIELD_STRENGTH_FIELD = "Magnetic field strength"
-NOMINAL_TESLA = (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 4.7, 7.0, 9.4, 10.5, 11.7, 14.0)
+# The strengths scanners are sold at (defined with the README venue of the
+# uncertain tier, which the translation uses; this module only displays).
+from services.fulltext.uncertain_tier import NOMINAL_TESLA  # noqa: E402
 _NUMBER = r"\d+(?:\.\d+)?"
 _RANGE_LABEL_RE = re.compile(rf"^({_NUMBER})–({_NUMBER})$")
 _BOUND_LABEL_RE = re.compile(rf"^(=|≥|>|≤|<) ({_NUMBER})$")
@@ -938,14 +974,6 @@ def highlight_field_strengths(sql: Optional[str]) -> List[float]:
     return list(dict.fromkeys(strengths))
 
 
-def _tesla_number(value: float) -> str:
-    """The pattern of one strength's number: 7 also as "7.0", 1.5 also as "1,5"."""
-    whole, _, fraction = f"{value:g}".partition(".")
-    if not fraction:
-        return rf"{whole}(?:\.0+)?"
-    return rf"{whole}[.,]{fraction}0*"
-
-
 def field_strength_pattern(strengths: Iterable[float]) -> Optional["re.Pattern[str]"]:
     """Where a text names one of *strengths*: "7T", "7 T", "7-Tesla", "7.0T".
 
@@ -954,12 +982,9 @@ def field_strength_pattern(strengths: Iterable[float]) -> Optional["re.Pattern[s
     ("200 T/m/s"). Spaces include the thin ones some READMEs use. Checked on
     the 1,720 OpenNeuro READMEs of 2026-11: no false matches found.
     """
-    numbers = [_tesla_number(v) for v in sorted(set(strengths), reverse=True)]
-    if not numbers:
-        return None
-    space = "[ \u00a0\u2009\u202f]?"
-    return re.compile(rf"(?<![\w.,/-])(?:{'|'.join(numbers)}){space}-?{space}"
-                      rf"(?:T|[Tt]esla|TESLA)(?![\w/])")
+    from services.fulltext.uncertain_tier import field_strength_regex
+    pattern = field_strength_regex(strengths)
+    return re.compile(pattern) if pattern else None
 
 
 def field_strength_tsquery(strengths: Iterable[float]) -> Optional[str]:
