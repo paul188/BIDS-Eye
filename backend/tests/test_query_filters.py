@@ -334,3 +334,14 @@ def test_topic_chip_text_words_stay_a_list():
     assert isinstance(chip.text_words, list) and "twin studies" in chip.text_words
     assert "Searched as: twin studies" in chip.detail
     QueryFilterSchema(**chip.to_dict())
+
+
+def test_a_shortened_label_keeps_the_full_list():
+    # "Diagnosis · Epilepsy +12" (2026-11-18): the 12 were only in a tooltip.
+    codes = ", ".join(f"'{c}'" for c in ("epilepsy", "focal_epilepsy", "absence_epilepsy"))
+    condition = (f"EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+                 f"AND p2.diagnosis IN ({codes}))")
+    chip = _by_id(_HEAD + f"WHERE {condition} GROUP BY d.id")["w0"]
+    assert chip.label == "Epilepsy +2"
+    assert chip.values == ["Epilepsy", "Focal epilepsy", "Absence epilepsy"]
+    assert _by_id(_sql(DIAGNOSIS))["w0"].values == []  # one diagnosis: nothing hidden

@@ -127,6 +127,8 @@ class QueryFilterSchema(BaseModel):
     negated: bool = False
     text_words: List[str] = []
     detail: str = ""
+    # The full list behind a label shortened to "+N"; [] when nothing is hidden.
+    values: List[str] = []
 
 
 class QueryRequest(BaseModel):
