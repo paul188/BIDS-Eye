@@ -1,4 +1,4 @@
-"""Paired measurement of the uncertain tier (backend/services/uncertain_tier.py).
+"""Paired measurement of the uncertain tier (backend/services/fulltext/uncertain_tier.py).
 
 Each question goes through the search pipeline once with the tier off
 (intent, vocabulary lookup, SQL generation, rewriting, COUNT with
@@ -47,11 +47,11 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         from routers.query import _count_with_base_correction as count_with_base_correction
-    from services.query_cache import CachedQuery, query_cache
-    from services.sql_rewriter import FALLBACK_SQL, build_page_sql
-    from services.text_to_sql import text_to_sql
-    from services.schema_capabilities import has_fts, has_paper_fts, refresh_available_columns
-    from services import text_search
+    from services.stores.query_cache import CachedQuery, query_cache
+    from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
+    from services.translate.text_to_sql import text_to_sql
+    from services.catalogue.schema_capabilities import has_fts, has_paper_fts, refresh_available_columns
+    from services.fulltext import text_search
     try:
         import institution_index
     except ImportError:
@@ -59,7 +59,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
 
     database = f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}"
     started = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    from services import uncertain_tier
+    from services.fulltext import uncertain_tier
     variants = ("tier_off", "tier_on")
     metas = {
         v: {"label": f"{label} | uncertain tier {'ON' if v == 'tier_on' else 'OFF'} (same translation for both)",

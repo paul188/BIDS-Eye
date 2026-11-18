@@ -1,4 +1,4 @@
-"""Paired measurement of exact word forms (backend/services/text_search.py,
+"""Paired measurement of exact word forms (backend/services/fulltext/text_search.py,
 TEXT_SEARCH_EXACT; RAG/word_forms.py).
 
 Each question goes through the search pipeline once, with exact word forms
@@ -53,11 +53,12 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         from routers.query import _count_with_base_correction as count_with_base_correction
-    from services import text_search, text_to_sql as translator
-    from services.query_cache import CachedQuery, query_cache
-    from services.schema_capabilities import (
+    from services.fulltext import text_search
+    from services.translate import text_to_sql as translator
+    from services.stores.query_cache import CachedQuery, query_cache
+    from services.catalogue.schema_capabilities import (
         has_exact_fts, has_fts, has_word_forms, refresh_available_columns)
-    from services.sql_rewriter import FALLBACK_SQL, build_page_sql
+    from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     try:
         import institution_index
     except ImportError:

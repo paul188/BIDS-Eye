@@ -126,7 +126,7 @@ SEARCH_VECTOR_EXPRESSION = (
 
 # The same vector without stemming, for searched words that must match in
 # the form they were asked for: with the stemmer, "ageing" also finds "age"
-# (crawlers/migrate_add_exact_search.sql, backend/services/text_search.py).
+# (crawlers/migrate_add_exact_search.sql, backend/services/fulltext/text_search.py).
 EXACT_SEARCH_COLUMN = "search_tsv_exact"
 EXACT_SEARCH_VECTOR_EXPRESSION = SEARCH_VECTOR_EXPRESSION.replace(
     "'english'::regconfig", "'simple'::regconfig")

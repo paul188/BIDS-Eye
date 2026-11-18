@@ -8,8 +8,8 @@ services/query_guard.py. That validates it: a query the database rejects is
 repaired once by the model (or replaced by FALLBACK_SQL), and a query that
 finds fewer than MIN_RESULTS datasets is re-run without its free-text-only
 conditions. The first page also asks the re-ranker once. Every page then
-applies ordering and LIMIT/OFFSET (services/sql_rewriter.build_page_sql) and
-builds the result cards (services/dataset_cards.py, readme_snippets.py).
+applies ordering and LIMIT/OFFSET (services/translate/sql_rewriter.build_page_sql) and
+builds the result cards (services/results/dataset_cards.py, readme_snippets.py).
 Changes to the query are written back to the query cache, so later pages
 reuse them.
 """
@@ -24,11 +24,12 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
-from services import dataset_cards, query_filters, query_guard, readme_snippets
-from services.query_cache import CachedQuery, query_cache
-from services.rerank import rerank_candidates, settings as rerank_settings, should_rerank
-from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
-from services.text_to_sql import _correct_sql_with_gemini
+from services.results import dataset_cards, query_filters, readme_snippets
+from services import query_guard
+from services.stores.query_cache import CachedQuery, query_cache
+from services.results.rerank import rerank_candidates, settings as rerank_settings, should_rerank
+from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
+from services.translate.text_to_sql import _correct_sql_with_gemini
 
 log = logging.getLogger(__name__)
 

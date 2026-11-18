@@ -25,7 +25,7 @@ def _augmented(available=("species",), **fields) -> str:
 
 
 def _expanded(condition: str) -> str:
-    from services import text_search
+    from services.fulltext import text_search
 
     base = ("SELECT d.id, d.name FROM bids_datasets AS d WHERE "
             "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
@@ -111,7 +111,7 @@ def test_other_words_stay_a_text_search() -> None:
 def test_uncertain_tier_keeps_readme_mentions_as_probable() -> None:
     pytest.importorskip("sqlglot")
     import sqlglot
-    from services import uncertain_tier
+    from services.fulltext import uncertain_tier
 
     sql = _expanded(age_condition(["children"]))
     tree = sqlglot.parse_one(sql, read="postgres")
@@ -131,7 +131,7 @@ def test_uncertain_tier_keeps_readme_mentions_as_probable() -> None:
 def test_filter_chips_say_age_and_species() -> None:
     pytest.importorskip("sqlglot")
     from criteria import species_condition
-    from services import query_filters
+    from services.results import query_filters
 
     chips = [(c.field, c.label) for c in query_filters.describe(_expanded(age_condition(["children"])))]
     assert ("Age", "under 18") in chips and ("Species", "human") in chips
@@ -145,7 +145,7 @@ def test_filter_chips_say_age_and_species() -> None:
 
 def test_compiler_takes_the_age_line() -> None:
     from preprocess import ParticipantGroup, RAGField, ResolvedTerms, QueryPlan
-    from services import participant_query_compiler as pqc
+    from services.translate import participant_query_compiler as pqc
 
     plan = QueryPlan(query_family="description_search", natural_language_summary="x",
                      groups=[ParticipantGroup(group_name="g0", diagnosis_terms=["ADHD"])],

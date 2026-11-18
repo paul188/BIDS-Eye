@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check how each primary paper relates to its dataset, and summarise thin READMEs.
 
-backend/services/dataset_description.py does the work; this runs it over the
+backend/services/indexing/dataset_description.py does the work; this runs it over the
 database:
 
   - paper_relation for every dataset with a primary paper that has an
@@ -49,7 +49,7 @@ for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
 
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
-from services import dataset_description as dd  # noqa: E402
+from services.indexing import dataset_description as dd  # noqa: E402
 
 log = logging.getLogger("describe_datasets")
 

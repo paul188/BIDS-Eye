@@ -277,7 +277,8 @@ def _text_search():
     backend = ROOT / "backend"
     if str(backend) not in sys.path:
         sys.path.insert(0, str(backend))
-    from services import schema_capabilities, text_search
+    from services.catalogue import schema_capabilities
+    from services.fulltext import text_search
     return schema_capabilities, text_search
 
 

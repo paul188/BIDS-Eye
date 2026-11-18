@@ -1,5 +1,5 @@
 // Which words of a search to bold in a dataset's description, and the
-// pattern that finds them. Mirrors backend/services/query_filters.py
+// pattern that finds them. Mirrors backend/services/results/query_filters.py
 // (highlight_terms), which does the same for README excerpts.
 import type { QueryFilter } from './api'
 

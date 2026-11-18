@@ -1,13 +1,13 @@
 """
-services/query_cache.py
------------------------
+services/stores/query_cache.py
+------------------------------
 In-memory store for translated queries, keyed by an opaque ``query_id``.
 
 The Text-To-SQL pipeline (Gemini intent + RAG + SQL generation) is expensive and
 non-deterministic, so we run it once per question and cache the resulting base
 SELECT plus its ranking inputs. Pagination then reuses the cached SQL — only the
 relevance ordering + LIMIT/OFFSET are re-applied per page (see
-``services.sql_rewriter.build_page_sql``). The client never sends SQL back; it
+``services.translate.sql_rewriter.build_page_sql``). The client never sends SQL back; it
 sends a ``query_id``, so the only SQL ever executed is server-generated.
 
 This is a process-local dict with TTL + LRU eviction. It is correct because the
@@ -39,13 +39,13 @@ class CachedQuery:
     apply_relevance: bool
     rank_tsquery: Optional[str] = None
     explanation: Optional[str] = None
-    # LLM re-ranking (services/rerank.py), done once on the first page.
+    # LLM re-ranking (services/results/rerank.py), done once on the first page.
     rerank_done: bool = False
     rerank_ordered: List[str] = field(default_factory=list)
     rerank_demoted: List[str] = field(default_factory=list)
     self_corrected: bool = False
     total: Optional[int] = None
-    # The query before the uncertain tier (services/query_filters.py reads its
+    # The query before the uncertain tier (services/results/query_filters.py reads its
     # conditions as chips); None when chips cannot be offered.
     filter_sql: Optional[str] = None
     # The query without its free-text-only conditions; used once when the full

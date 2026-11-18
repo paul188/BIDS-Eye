@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 
 from constants import build_schema_ddl
-from services.concept_keys import expand_concept_keys, group_codes
-from services.sql_rewriter import SqlRewriteService
+from services.translate.concept_keys import expand_concept_keys, group_codes
+from services.translate.sql_rewriter import SqlRewriteService
 
 
 def test_category_key_becomes_its_codes() -> None:

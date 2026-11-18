@@ -2,7 +2,7 @@
 LLM_preprocessor/llm_client.py
 ------------------------------
 One shared LLM call path for the whole text-to-SQL pipeline, replacing the three
-divergent Gemini cascades in preprocess.py and services/text_to_sql.py.
+divergent Gemini cascades in preprocess.py and services/translate/text_to_sql.py.
 
 `llm_generate()` walks a configurable tier list and returns the first successful
 text response:
@@ -19,7 +19,7 @@ Resilience rules:
     Fable 5 reject `temperature` (400), so the default Claude tier is
     `claude-sonnet-4-6`, which accepts it.
   * If every tier fails, raise `LLMAllFailedError` — callers decide whether to
-    degrade gracefully (see services/text_to_sql.py).
+    degrade gracefully (see services/translate/text_to_sql.py).
 
 Config (env):
   GEMINI_API_KEY / GOOGLE_API_KEY  — Gemini key (also accepted as a call arg)

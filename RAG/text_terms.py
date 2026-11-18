@@ -8,7 +8,7 @@ The SQL model never writes a text predicate itself. It copies a placeholder,
 
     text_match('epilepsy | epileptic | seizure', 'short')
 
-and backend/services/text_search.py expands it into real SQL. This module owns
+and backend/services/fulltext/text_search.py expands it into real SQL. This module owns
 the placeholder: how a user term is split into words, which alternatives a
 diagnosis gets, and how the placeholder is written and read back.
 

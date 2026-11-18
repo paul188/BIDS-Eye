@@ -2,7 +2,7 @@
 
 Covers the sense inventory (RAG/senses.py), topic resolution and its filter
 line (LLM_preprocessor/preprocess.py), the 'near' text search
-(services/text_search.py), its weaker forms in the uncertain tier and the
+(services/fulltext/text_search.py), its weaker forms in the uncertain tier and the
 topic chips. See reports/Qualified topics plan.md.
 """
 
@@ -14,7 +14,8 @@ sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
 import senses  # noqa: E402
-from services import query_filters, text_search, uncertain_tier  # noqa: E402
+from services.results import query_filters  # noqa: E402
+from services.fulltext import text_search, uncertain_tier  # noqa: E402
 from text_terms import parse_alternatives  # noqa: E402
 
 SOCIAL = pp.Topic(
@@ -218,7 +219,7 @@ def test_topic_gives_a_topic_chip_and_a_removable_exclusion() -> None:
 # ── SQL rewriting ─────────────────────────────────────────────────────────────
 
 def test_rewriter_adds_a_topic_the_model_left_out() -> None:
-    from services import sql_rewriter
+    from services.translate import sql_rewriter
 
     condition = pp.resolve_topic(SOCIAL, None, _counts({})).condition
     question = f'[Resolved DB filters]\n  topic "social conflict": {condition}\n\nsummary'

@@ -1,8 +1,8 @@
 """
-services/readme_snippets.py
----------------------------
+services/results/readme_snippets.py
+-----------------------------------
 The README excerpt on each result card: the passages that match the search's
-highlight words (services/query_filters.highlight_terms), or the README's
+highlight words (services/results/query_filters.highlight_terms), or the README's
 start. Matched words are wrapped in SNIPPET_START/SNIPPET_STOP, which READMEs
 do not use, so the page can bold them without HTML.
 """
@@ -17,8 +17,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
-from services import query_filters
-from services.schema_capabilities import has_display_column
+from services.results import query_filters
+from services.catalogue.schema_capabilities import has_display_column
 
 log = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ async def attach_snippets(
     exact: Collection[str] = (), strengths: Sequence[float] = (),
 ) -> None:
     """Give each dataset a README excerpt: the passages matching the highlight
-    *terms* (services/query_filters.highlight_terms), or the start.
+    *terms* (services/results/query_filters.highlight_terms), or the start.
 
     *exact*: the terms that only count as written
     (query_filters.highlight_exact_words). Where the README has one of them,
@@ -132,7 +132,7 @@ async def attach_snippets(
     Postgres words only steer the passage towards them ("1.5T" is the word
     "1.5" there); the marks come from query_filters.field_strength_pattern.
 
-    Read with its own query, like services/dataset_cards.py, so the generated SQL stays
+    Read with its own query, like services/results/dataset_cards.py, so the generated SQL stays
     unchanged and databases without readme_text keep working. A failure leaves
     the page without excerpts rather than failing it.
     """

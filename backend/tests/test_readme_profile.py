@@ -5,7 +5,7 @@ import json
 import pytest
 
 import llm_client
-from services import readme_profile as rp
+from services.indexing import readme_profile as rp
 
 README = (
     "# Bipolar disorder and reward\n"

@@ -144,7 +144,7 @@ def test_the_or_line_is_one_bracketed_unit():
 
 
 def test_the_compiler_takes_the_or_line_as_one_condition():
-    from services.participant_query_compiler import compile_plan
+    from services.translate.participant_query_compiler import compile_plan
     from preprocess import ParticipantGroup
     plan = _plan(ScanRequirement(scan_terms=["EEG"]),
                  ScanRequirement(scan_terms=["grasping", "reaching"], any_of=True))
@@ -161,7 +161,7 @@ def test_the_compiler_takes_the_or_line_as_one_condition():
 
 
 def test_the_compiler_still_declines_what_is_not_a_scan_line():
-    from services.participant_query_compiler import _scan_conditions
+    from services.translate.participant_query_compiler import _scan_conditions
     block = ("[Resolved DB filters — copy each filter expression verbatim into the SQL WHERE clause]\n"
              '  scan any of "a" (alternatives, one is enough): (x)\n')
     assert _scan_conditions(block)[0] is None            # a list of one is not this line
@@ -172,8 +172,8 @@ def test_the_compiler_still_declines_what_is_not_a_scan_line():
 def test_with_full_text_search_a_short_term_is_matched_as_a_word(monkeypatch):
     # "ERP" must not match "interpretation": on a database with search_tsv the
     # text alternative is a word query, not a substring search.
-    from services import schema_capabilities
-    from services.sql_rewriter import rewrite_generated_sql
+    from services.catalogue import schema_capabilities
+    from services.translate.sql_rewriter import rewrite_generated_sql
     monkeypatch.setattr(schema_capabilities, "_has_fts", True)
     plan = _plan(ScanRequirement(scan_terms=["grasping", "ERP"], any_of=True))
     grasping = ResolvedTerms(field=RAGField.TASK, term_to_codes={"grasping": ["grasping_task"]})
@@ -187,7 +187,7 @@ def test_with_full_text_search_a_short_term_is_matched_as_a_word(monkeypatch):
 
 
 def test_the_rewriter_keeps_the_or_between_alternatives():
-    from services.sql_rewriter import rewrite_generated_sql
+    from services.translate.sql_rewriter import rewrite_generated_sql
     plan = _plan(ScanRequirement(scan_terms=["EEG"]),
                  ScanRequirement(scan_terms=["grasping", "juggling"], any_of=True))
     augmented = _build_augmented_question(plan, [EEG, TASKS], unresolved_terms={"scan": ["juggling"]})

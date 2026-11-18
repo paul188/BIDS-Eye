@@ -1,6 +1,6 @@
 """
-services/query_filters.py
--------------------------
+services/results/query_filters.py
+---------------------------------
 Describe the conditions of a generated query as filter chips, and drop the
 ones the user removes.
 
@@ -16,7 +16,7 @@ which becomes {field: "Diagnosis", label: "Parkinson's disease",
 text_words: ["parkinson", "parkinsons"]}.
 
 Removing a chip deletes its condition from the query before the uncertain
-tier is applied (services/uncertain_tier.py), so a refined search runs
+tier is applied (services/fulltext/uncertain_tier.py), so a refined search runs
 without another language-model call (routers/query.py, /query/refine).
 
 Chip ids are positions ("w0", "w1", "h0") in the query they were read from;
@@ -171,7 +171,7 @@ def _under_not(node, root) -> bool:
 
 
 # Text search configuration of a guard: the word forms a search requires
-# (services/text_search.py, exact word forms). Everything else is a search.
+# (services/fulltext/text_search.py, exact word forms). Everything else is a search.
 _GUARD_CONFIG = "simple"
 
 
@@ -286,7 +286,7 @@ def _age_label(node) -> Optional[str]:
         columns = {c.name.lower() for c in node.find_all(exp.Column)}
         if not columns & {"age_min", "age_max"}:
             return None
-        from services.uncertain_tier import asked_age_range
+        from services.fulltext.uncertain_tier import asked_age_range
         lo, hi = asked_age_range(node.sql(dialect="postgres"))
         low = (lo, True) if lo > 0 else None
         high = (hi, True) if hi < 120 else None
@@ -666,7 +666,7 @@ def _drop_exclusions(node):
 # ── Whole query ───────────────────────────────────────────────────────────────
 
 def _flatten_and(node) -> list:
-    from services.text_search import is_guarded_pair
+    from services.fulltext.text_search import is_guarded_pair
     if isinstance(node, exp.And):
         return _flatten_and(node.left) + _flatten_and(node.right)
     if isinstance(node, exp.Paren) and isinstance(node.this, exp.And):

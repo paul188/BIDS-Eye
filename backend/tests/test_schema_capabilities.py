@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 
 import constants
-from services import schema_capabilities as caps
-from services import text_to_sql
+from services.catalogue import schema_capabilities as caps
+from services.translate import text_to_sql
 
 FEW_SHOT_PATH = Path(__file__).resolve().parents[1] / "few_shot_examples.json"
 

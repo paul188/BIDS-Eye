@@ -1,6 +1,6 @@
 """
-services/catalogue_values.py
-----------------------------
+services/catalogue/catalogue_values.py
+--------------------------------------
 Every datatype, suffix and task value in generated SQL, checked against the
 catalogue before the query runs.
 
@@ -93,7 +93,7 @@ async def refresh_if_stale(session: Any) -> None:
 
     Only while the facets table is in use; a failed reload keeps the old values.
     """
-    from services import schema_capabilities
+    from services.catalogue import schema_capabilities
 
     if not schema_capabilities.has_dataset_facets():
         return

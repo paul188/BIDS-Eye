@@ -35,7 +35,7 @@ class User(Base):
 
 
 class QueryInterpretation(Base):
-    """How one question was translated into SQL (services/interpretation_store.py)."""
+    """How one question was translated into SQL (services/stores/interpretation_store.py)."""
 
     __tablename__ = "query_interpretations"
 
@@ -63,7 +63,7 @@ class QueryInterpretation(Base):
 class QueryLog(Base):
     """Every search that was run: the question, its translation and what it found.
 
-    Permanent, unlike services/query_cache.py (in memory, 30 minutes) and
+    Permanent, unlike services/stores/query_cache.py (in memory, 30 minutes) and
     unlike the interpretation cache, which keeps one translation per question
     and none that found nothing. No user is recorded here.
     """
@@ -105,7 +105,7 @@ class UserQuery(Base):
 class QueryTranslation(Base):
     """A question asked before, with what the models made of it.
 
-    Read and written by services/translation_store.py; see there for when an
+    Read and written by services/stores/translation_store.py; see there for when an
     entry is used.
     """
 

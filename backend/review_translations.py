@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Go over the stored translations (services/translation_store.py).
+"""Go over the stored translations (services/stores/translation_store.py).
 
 Run in the backend image, where the database is:
 
@@ -45,8 +45,9 @@ async def _import(args: argparse.Namespace, engine, ts) -> int:
     from services import search_runner as runner
     from sqlalchemy import text
     from db.db import async_session_maker
-    from services import schema_capabilities, text_search, word_form_store
-    from services import text_to_sql as t2s
+    from services.catalogue import schema_capabilities, word_form_store
+    from services.fulltext import text_search
+    from services.translate import text_to_sql as t2s
 
     # What the backend sets up at startup and the rewriter reads.
     try:
@@ -115,7 +116,8 @@ async def _import(args: argparse.Namespace, engine, ts) -> int:
 async def _run(args: argparse.Namespace) -> int:
     import main  # noqa: F401 — sets up the import paths as the app does
     from db.db import engine
-    from services import schema_capabilities, translation_store as ts
+    from services.catalogue import schema_capabilities
+    from services.stores import translation_store as ts
 
     # Outside production the engine logs every statement, which buries the output.
     engine.sync_engine.echo = False

@@ -1,6 +1,6 @@
 """
-services/dataset_description.py
--------------------------------
+services/indexing/dataset_description.py
+----------------------------------------
 Two things the result card shows besides the README passage, both written by
 an LLM from labelled sources and checked before they are stored:
 
@@ -46,7 +46,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple
 
-from services.readme_profile import quote_in_source
+from services.indexing.readme_profile import quote_in_source
 
 log = logging.getLogger(__name__)
 

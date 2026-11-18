@@ -4,9 +4,9 @@ services/search.py
 A natural-language search from question to result page.
 
 answer_question translates the question once: a stored translation of the
-same question (services/interpretation_store.py) is reused, otherwise the
-Text-To-SQL layer writes one (services/text_to_sql.py). The resulting base
-SELECT is cached under an opaque ``query_id`` (services/query_cache.py), the
+same question (services/stores/interpretation_store.py) is reused, otherwise the
+Text-To-SQL layer writes one (services/translate/text_to_sql.py). The resulting base
+SELECT is cached under an opaque ``query_id`` (services/stores/query_cache.py), the
 first page is run (services/search_runner.py), and the search is logged and,
 when it worked, stored for the next time. next_page fetches further pages of
 a cached query without another language-model call.
@@ -19,11 +19,14 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
-from services import catalogue_values, interpretation_store, query_filters, search_runner
-from services import translation_store
-from services.query_cache import CachedQuery, query_cache
-from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
-from services.text_to_sql import text_to_sql
+from services.catalogue import catalogue_values
+from services.stores import interpretation_store
+from services.results import query_filters
+from services import search_runner
+from services.stores import translation_store
+from services.stores.query_cache import CachedQuery, query_cache
+from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
+from services.translate.text_to_sql import text_to_sql
 
 
 def _found_message(total: int) -> str:
@@ -75,7 +78,7 @@ async def answer_question(session: AsyncSession, question: str,
             filter_sql=stored.get("filter_sql"), relaxed_sql=stored.get("relaxed_sql"),
         )
     else:
-        # The exact-match store of services/translation_store.py (off unless
+        # The exact-match store of services/stores/translation_store.py (off unless
         # TRANSLATION_STORE is set) is asked inside text_to_sql.
         await translation_store.refresh(session)
         translation = await text_to_sql(question)

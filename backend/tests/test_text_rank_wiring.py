@@ -13,9 +13,10 @@ import pytest
 
 import preprocess
 import retriever
-from services import schema_capabilities as caps
-from services import text_search, text_to_sql
-from services.sql_rewriter import build_page_sql
+from services.catalogue import schema_capabilities as caps
+from services.fulltext import text_search
+from services.translate import text_to_sql
+from services.translate.sql_rewriter import build_page_sql
 
 BASE = (
     "SELECT {{COLS}} FROM bids_datasets d "

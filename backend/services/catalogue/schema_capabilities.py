@@ -1,6 +1,6 @@
 """
-services/schema_capabilities.py
--------------------------------
+services/catalogue/schema_capabilities.py
+-----------------------------------------
 Which optional bids_datasets columns can the SQL model rely on?
 
 Columns such as readme_text or institutions are added by migrations and filled
@@ -15,7 +15,7 @@ columns exist and are populated. Prompt building then
   - widens the disease text fallback with dx_status / study_domain when present.
 
 The same inspection records whether the full-text column search_tsv exists
-(services/text_search.py). Without it text search falls back to ILIKE. It
+(services/fulltext/text_search.py). Without it text search falls back to ILIKE. It
 also records search_tsv_papers, the same vector plus the text of the papers a
 dataset names (crawlers/migrate_add_paper_search.sql), which text search uses
 when TEXT_SEARCH_PAPERS is on.
@@ -49,9 +49,9 @@ _available: FrozenSet[str] = frozenset()
 
 # Columns the API reads directly (not through generated SQL). For these only
 # existence matters, not how many rows are filled.
-# llm_profile is read by the re-ranker (services/rerank.py); readme_text gives
+# llm_profile is read by the re-ranker (services/results/rerank.py); readme_text gives
 # each result its README excerpt; paper_relation and dataset_summary its paper
-# line and generated summary (services/readme_snippets.py, services/dataset_cards.py).
+# line and generated summary (services/results/readme_snippets.py, services/results/dataset_cards.py).
 DISPLAY_COLUMNS = ("deprecated_reason", "llm_profile", "readme_text", "paper_relation",
                    "dataset_summary")
 _present_display: FrozenSet[str] = frozenset()
@@ -137,8 +137,8 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
             if uncovered:
                 log.warning("%s misses %d datasets that have files: not used. Run "
                             "remote/dataset_facets.py --refresh-all and restart.", FACETS_TABLE, uncovered)
-        # The values generated SQL is checked against (services/catalogue_values.py).
-        from services import catalogue_values
+        # The values generated SQL is checked against (services/catalogue/catalogue_values.py).
+        from services.catalogue import catalogue_values
         if _has_facets:
             await catalogue_values.load(connection)
         else:

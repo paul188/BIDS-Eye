@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import type { QueryFilter } from '../api'
 
 // How the question was understood: one chip per condition of the query that
-// ran (backend services/query_filters.py). Display only; to change the
+// ran (backend services/results/query_filters.py). Display only; to change the
 // search, the user edits the question.
 const props = defineProps<{ filters: QueryFilter[] }>()
 

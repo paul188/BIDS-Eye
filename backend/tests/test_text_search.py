@@ -13,9 +13,10 @@ if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
 import text_terms  # noqa: E402
-from services import schema_capabilities as caps  # noqa: E402
-from services import sql_rewriter, text_search  # noqa: E402
-from services.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
+from services.catalogue import schema_capabilities as caps  # noqa: E402
+from services.translate import sql_rewriter  # noqa: E402
+from services.fulltext import text_search  # noqa: E402
+from services.translate.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
 
 SERVICE = SqlRewriteService()
 BASE = (

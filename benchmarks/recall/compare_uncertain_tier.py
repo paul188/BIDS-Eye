@@ -54,7 +54,7 @@ CASES = (
 def _load_baseline(module_name: str, temp_dir: Path) -> ModuleType:
     """Load the committed tier implementation without replacing the working file."""
     source = subprocess.run(
-        ["git", "show", "HEAD:backend/services/uncertain_tier.py"],
+        ["git", "show", "HEAD:backend/services/fulltext/uncertain_tier.py"],
         cwd=ROOT, check=True, capture_output=True, text=True,
     ).stdout
     path = temp_dir / "uncertain_tier_baseline.py"
@@ -110,7 +110,8 @@ def _remote_capabilities(target: str) -> dict[str, Any]:
     code = r'''import asyncio, json, sys
 sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/RAG"]
 from db.db import engine
-from services import schema_capabilities, text_search
+from services.catalogue import schema_capabilities
+from services.fulltext import text_search
 async def main():
     await schema_capabilities.refresh_available_columns(engine)
     result = {
@@ -130,7 +131,7 @@ asyncio.run(main())
 def _run_remote_live(cases: dict[str, dict[str, Any]], params: dict[str, Any],
                      target: str, timeout: float = 1800) -> None:
     """Plan-check and execute SQL inside the live backend container, read-only."""
-    from services.sql_rewriter import build_count_sql
+    from services.translate.sql_rewriter import build_count_sql
 
     payload = []
     for qid, case in cases.items():
@@ -270,7 +271,7 @@ async def _execute_live(sql: str, params: dict[str, Any], label: str,
     from db.db import async_session_maker, engine
     from sqlalchemy import text
     from services import query_guard
-    from services.sql_rewriter import build_count_sql
+    from services.translate.sql_rewriter import build_count_sql
 
     outer = (
         "SELECT q.id, q.accession_id, q.uncertain_level, q.uncertain_reasons "
@@ -319,7 +320,8 @@ async def _prepare_live_capabilities() -> bool:
         sys.path.insert(0, str(ROOT / "RAG"))
     import main  # noqa: F401
     from db.db import engine
-    from services import schema_capabilities, text_search
+    from services.catalogue import schema_capabilities
+    from services.fulltext import text_search
 
     await schema_capabilities.refresh_available_columns(engine)
     papers = text_search.papers_enabled()
@@ -339,7 +341,8 @@ async def _run_live(cases: dict[str, dict[str, Any]], params: dict[str, Any], la
     import main  # noqa: F401
     from db.db import async_session_maker, engine
     from sqlalchemy import text
-    from services import query_guard, schema_capabilities
+    from services import query_guard
+    from services.catalogue import schema_capabilities
 
     try:
         async with async_session_maker() as session:
@@ -412,8 +415,10 @@ def main_cli() -> int:
 
     sys.path.insert(0, str(BACKEND))
     sys.path.insert(0, str(ROOT / "RAG"))
-    from services import query_guard, schema_capabilities, text_search
-    from services import uncertain_tier as working_tier
+    from services import query_guard
+    from services.catalogue import schema_capabilities
+    from services.fulltext import text_search
+    from services.fulltext import uncertain_tier as working_tier
 
     # Keep SQL generation deterministic and offline in the default mode. The
     # live run still compares exactly these generated statements.
@@ -478,8 +483,8 @@ def main_cli() -> int:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "fixture": str(args.fixture),
-        "baseline": "git HEAD:backend/services/uncertain_tier.py",
-        "working_tree": "backend/services/uncertain_tier.py",
+        "baseline": "git HEAD:backend/services/fulltext/uncertain_tier.py",
+        "working_tree": "backend/services/fulltext/uncertain_tier.py",
         "papers_mode": args.papers,
         "remote_capabilities": remote_capabilities,
         "remote_capability_error": remote_capability_error,

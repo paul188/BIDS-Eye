@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from services.sql_rewriter import SqlRewriteService
+from services.translate.sql_rewriter import SqlRewriteService
 
 SERVICE = SqlRewriteService()
 
@@ -192,12 +192,12 @@ def test_label_guard_survives_the_uncertain_tier_paper_evidence() -> None:
     """The tier ORs paper evidence onto text conditions; a dataset labelled
     'Cross-Sectional' must still be excluded from a longitudinal question."""
     import re as _re
-    from services import uncertain_tier
+    from services.fulltext import uncertain_tier
     augmented = _augmented("longitudinal")
     condition = _re.search(r"  study design: (.+)", augmented).group(1)
     base = ("SELECT d.id FROM bids_datasets AS d LEFT JOIN bids_objects AS o ON o.dataset_id = d.id "
             f"WHERE {condition} GROUP BY d.id")
-    from services.text_search import expand_text_search
+    from services.fulltext.text_search import expand_text_search
     tiered = uncertain_tier.apply(expand_text_search(base, papers=False).sql, papers=True)
     guard = "NOT (COALESCE(d.study_longitudinal, '') ~* 'cross' AND COALESCE(d.study_longitudinal, '') !~* 'longitudinal')"
     where = tiered.split("WHERE", 1)[1]

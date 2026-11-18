@@ -8,9 +8,9 @@ from uuid import UUID
 
 import pytest
 
-from services import rerank
-from services import schema_capabilities as caps
-from services.sql_rewriter import SqlRewriteService, build_page_sql
+from services.results import rerank
+from services.catalogue import schema_capabilities as caps
+from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 
 IDS = [str(UUID(int=i)) for i in range(1, 7)]
 BASE = (

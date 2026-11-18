@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from services import dataset_cards, search
+from services.results import dataset_cards
+from services import search
 from schemas import ParticipantSchema
 
 

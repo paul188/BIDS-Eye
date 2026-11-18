@@ -85,16 +85,16 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker, engine
-    from services.query_cache import CachedQuery, query_cache
-    from services.sql_rewriter import FALLBACK_SQL, build_page_sql
-    from services.text_to_sql import text_to_sql
-    from services.schema_capabilities import refresh_available_columns
+    from services.stores.query_cache import CachedQuery, query_cache
+    from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
+    from services.translate.text_to_sql import text_to_sql
+    from services.catalogue.schema_capabilities import refresh_available_columns
     # Optional pieces: present only in newer versions of the search code. The
     # harness must also run against older versions (e.g. the live one) to
     # measure them on the same questions.
     try:
-        from services.schema_capabilities import has_fts
-        from services import text_search
+        from services.catalogue.schema_capabilities import has_fts
+        from services.fulltext import text_search
     except ImportError:
         has_fts, text_search = (lambda: False), None
     try:

@@ -16,8 +16,8 @@ for _p in ("LLM_preprocessor", "RAG"):
         sys.path.insert(0, str(_ROOT / _p))
 
 import preprocess  # noqa: E402
-from services import text_to_sql as t2s  # noqa: E402
-from services import translation_store as ts  # noqa: E402
+from services.translate import text_to_sql as t2s  # noqa: E402
+from services.stores import translation_store as ts  # noqa: E402
 
 MODEL_SQL = ("SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o "
              "ON o.dataset_id = d.id AND o.subject IS NOT NULL "

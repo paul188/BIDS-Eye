@@ -20,11 +20,11 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 Research Organization Registry (remote/site_places.match_new).
   2. descriptions  how each primary paper relates to its dataset, and a
                 generated summary where the README is thin
-                (backend/services/dataset_description.py, the same code as
+                (backend/services/indexing/dataset_description.py, the same code as
                 scripts/describe_datasets.py). Only what is missing or stale.
                 Needs GEMINI_API_KEY; the text goes to Gemini only.
   3. word forms  rebuild bids_word_forms, the catalogue's word forms per stem
-                (backend/services/word_form_store.py). No LLM, no network;
+                (backend/services/catalogue/word_form_store.py). No LLM, no network;
                 the whole catalogue, not only the indexed datasets.
   4. vacuum     VACUUM (ANALYZE) of the file table, bids_objects. A search
                 counts subjects from an index alone
@@ -110,7 +110,7 @@ def _descriptions_available() -> bool:
     try:
         import llm_client  # noqa: F401
         from google import genai  # noqa: F401  (llm_client imports it only when called)
-        from services import dataset_description  # noqa: F401
+        from services.indexing import dataset_description  # noqa: F401
     except ImportError as exc:
         log.warning("[post-crawl] Dataset descriptions skipped: %s", exc)
         return False
@@ -120,7 +120,7 @@ def _descriptions_available() -> bool:
 async def describe(engine, accessions: Sequence[str]) -> Dict[str, int]:
     """Step 2. Returns the counts of dataset_description.run."""
     from remote import paper_store
-    from services import dataset_description
+    from services.indexing import dataset_description
 
     async with engine.begin() as conn:
         await paper_store.ensure_tables(conn)
@@ -132,7 +132,7 @@ def _backend_services_available() -> bool:
     if path is not None and str(path) not in sys.path:
         sys.path.insert(0, str(path))
     try:
-        from services import word_form_store  # noqa: F401
+        from services.catalogue import word_form_store  # noqa: F401
     except ImportError as exc:
         log.warning("[post-crawl] Word forms skipped: %s", exc)
         return False
@@ -141,7 +141,7 @@ def _backend_services_available() -> bool:
 
 async def refresh_word_forms(engine) -> Dict[str, int]:
     """Step 3. Returns the counts of word_form_store.refresh."""
-    from services import word_form_store
+    from services.catalogue import word_form_store
 
     async with engine.begin() as conn:
         return await word_form_store.refresh(conn)

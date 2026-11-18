@@ -1,6 +1,6 @@
 """
-services/readme_profile.py
---------------------------
+services/indexing/readme_profile.py
+-----------------------------------
 Read a dataset's README once, at index time, and store what it says.
 
 An LLM reads the name, the uploader's study fields and the README and returns
@@ -21,7 +21,7 @@ What search uses (crawlers/migrate_add_readme_profiles.sql):
                                  "bipolar electrodes" or "excluded: bipolar"
   bids_datasets.llm_profile      the profile, indexed below the short fields
                                  and above the README; also what the re-ranker
-                                 reads (services/rerank.py)
+                                 reads (services/results/rerank.py)
   bids_dataset_facts             every fact with role, evidence and, for
                                  conditions, the canonical diagnosis codes
 

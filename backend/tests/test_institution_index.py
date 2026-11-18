@@ -157,8 +157,8 @@ def test_without_the_column_only_text_search_is_used() -> None:
 
 @pytest.mark.parametrize("fts", [False, True])
 def test_array_filter_survives_sql_rewrite(fts: bool) -> None:
-    from services import schema_capabilities as caps
-    from services.sql_rewriter import rewrite_generated_sql
+    from services.catalogue import schema_capabilities as caps
+    from services.translate.sql_rewriter import rewrite_generated_sql
 
     sql = (
         "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "

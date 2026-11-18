@@ -12,7 +12,9 @@ import pytest
 sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
-from services import query_filters, sql_rewriter, text_search, uncertain_tier  # noqa: E402
+from services.results import query_filters  # noqa: E402
+from services.translate import sql_rewriter  # noqa: E402
+from services.fulltext import text_search, uncertain_tier  # noqa: E402
 
 
 def _plan(**fields) -> pp.QueryPlan:
@@ -148,7 +150,7 @@ def test_other_searches_rank_as_before() -> None:
 
 
 def test_the_page_orders_by_the_penalised_rank() -> None:
-    from services import sql_rewriter
+    from services.translate import sql_rewriter
 
     expanded = text_search.expand_text_search(
         "SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets AS d "

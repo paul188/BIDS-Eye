@@ -1,8 +1,8 @@
 """Executed SQL reads the per-dataset summaries instead of the file table (sql_rewriter._use_summaries)."""
 import pytest
 
-from services import schema_capabilities
-from services.sql_rewriter import SqlRewriteService
+from services.catalogue import schema_capabilities
+from services.translate.sql_rewriter import SqlRewriteService
 
 BASE = ("SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets AS d "
         "LEFT JOIN bids_objects AS o ON o.dataset_id = d.id AND NOT o.subject IS NULL ")

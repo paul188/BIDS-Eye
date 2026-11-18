@@ -6,7 +6,7 @@ stays small and dependency-free.
 
 The schema shown to the SQL model is built per request by build_schema_ddl():
 columns in OPTIONAL_DATASET_COLUMNS appear only when the database really has
-them filled (see services/schema_capabilities.py). A column the model is told
+them filled (see services/catalogue/schema_capabilities.py). A column the model is told
 about but that is missing or empty produces failing or empty queries.
 """
 

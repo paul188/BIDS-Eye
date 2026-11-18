@@ -1,4 +1,4 @@
-"""Paper relations and thin-README summaries (services/dataset_description.py),
+"""Paper relations and thin-README summaries (services/indexing/dataset_description.py),
 how the API attaches them, and the crawler's post-crawl step."""
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from uuid import UUID
 
 import pytest
 
-from services import dataset_description as dd
+from services.indexing import dataset_description as dd
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -274,9 +274,9 @@ class _Session:
 
 
 def test_attach_descriptions_shows_the_paper_line_and_summary():
-    from services import dataset_cards
+    from services.results import dataset_cards
     from schemas import DatasetSchema
-    from services import schema_capabilities as caps
+    from services.catalogue import schema_capabilities as caps
 
     def dataset(n):
         return DatasetSchema(id=UUID(int=n), name=f"d{n}", dataset_type="raw",

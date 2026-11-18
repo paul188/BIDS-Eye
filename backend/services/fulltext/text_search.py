@@ -1,13 +1,13 @@
 """
-services/text_search.py
------------------------
+services/fulltext/text_search.py
+--------------------------------
 Full-text search over dataset text.
 
 bids_datasets.search_tsv is a stored tsvector over
     weight A  name
     weight B  dx_status, study_domain, study_design, description_text,
               llm_conditions (studied conditions read from the README)
-    weight C  llm_profile (LLM-written profile, services/readme_profile.py)
+    weight C  llm_profile (LLM-written profile, services/indexing/readme_profile.py)
     weight D  readme_text
 (see crawlers/migrate_add_search_tsv.sql).
 
@@ -22,7 +22,7 @@ only, `word:AB` the short fields, plain `word` everything.
 
 Queries are inlined as literals, not bound as parameters. They consist of
 [a-z0-9] words and tsquery operators only, and a literal survives the sqlglot
-round trips in services/sql_rewriter.py unchanged, which a `:name` parameter
+round trips in services/translate/sql_rewriter.py unchanged, which a `:name` parameter
 does not in every sqlglot version.
 
 On a database without search_tsv the placeholders expand to ILIKE on the short
@@ -78,7 +78,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, List, Mapping, Optional, Sequence, Tuple
 
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[3]
 _RAG_DIR = _ROOT / "RAG"
 if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
     sys.path.insert(0, str(_RAG_DIR))
@@ -102,7 +102,7 @@ from text_terms import (  # noqa: E402
 
 from word_forms import forms_for  # noqa: E402
 
-from services import schema_capabilities  # noqa: E402
+from services.catalogue import schema_capabilities  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -811,7 +811,7 @@ _QUESTION_NOISE = frozenset({
 def keyword_query(question: str) -> Optional[str]:
     """A tsquery that matches any content word of *question*, or None.
 
-    Used when no language model is reachable (services/text_to_sql.py): a
+    Used when no language model is reachable (services/translate/text_to_sql.py): a
     plain keyword search ranked by full-text rank beats an arbitrary sample.
     """
     words = [word for word in split_words(question)

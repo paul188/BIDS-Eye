@@ -43,7 +43,7 @@ def main() -> None:
     import eval_recall
     import preprocess
     from record_run import load_questions
-    from services import text_to_sql as t2s
+    from services.translate import text_to_sql as t2s
 
     recording = json.loads(args.recording.read_text())
     current: dict = {}

@@ -1,4 +1,4 @@
-"""Generated datatype / suffix / task values checked against the catalogue (services/catalogue_values.py)."""
+"""Generated datatype / suffix / task values checked against the catalogue (services/catalogue/catalogue_values.py)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("sqlglot")
 
-from services import catalogue_values as cv  # noqa: E402
+from services.catalogue import catalogue_values as cv  # noqa: E402
 
 KNOWN = {
     "datatype": {"functional_mri", "anatomical_mri"},
@@ -117,7 +117,7 @@ def test_placeholders_of_later_stages_survive() -> None:
 
 
 def test_rewriter_runs_the_check_and_reports_it() -> None:
-    from services.sql_rewriter import rewrite_generated_sql
+    from services.translate.sql_rewriter import rewrite_generated_sql
 
     raw = ("[SQL]\nSELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "
            "WHERE EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'bold') "
@@ -138,7 +138,7 @@ def test_real_vocabulary_knows_the_raw_suffixes(monkeypatch) -> None:
     assert cv.correction("suffix", "T1w") == ["t1_weighted_mri"]
 
 
-# ── Loading with the facets (services/schema_capabilities.py) ─────────────────
+# ── Loading with the facets (services/catalogue/schema_capabilities.py) ─────────────────
 
 class _Result:
     def __init__(self, value=None, rows=()):
@@ -170,7 +170,7 @@ class _Connection:
 
 def _detect(uncovered: int) -> None:
     import asyncio
-    from services import schema_capabilities
+    from services.catalogue import schema_capabilities
 
     asyncio.run(schema_capabilities._detect_summaries(_Connection(uncovered), {"n_subjects"}))
 

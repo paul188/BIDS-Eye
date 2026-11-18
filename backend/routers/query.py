@@ -20,7 +20,8 @@ from deps import get_db
 from rate_limits import Category, rate_limit
 from routers.auth import require_auth
 from schemas import QueryPageRequest, QueryRequest, QueryResponse
-from services import interpretation_store, query_guard, search
+from services.stores import interpretation_store
+from services import query_guard, search
 
 router = APIRouter(prefix="/query", tags=["query"])
 

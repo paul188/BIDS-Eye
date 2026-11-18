@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from services import interpretation_store as store
+from services.stores import interpretation_store as store
 
-_BACKEND = Path(store.__file__).resolve().parents[1]
+_BACKEND = Path(store.__file__).resolve().parents[2]
 _ROOT = _BACKEND.parent
 # Imported by the translation, but they only define the shape of rows and
 # responses (see interpretation_store._VERSION_FILES).
@@ -50,7 +50,7 @@ def test_version_covers_every_backend_module_the_translation_imports():
     """A module the translation reaches but the version ignores would let a
     deploy keep serving translations made by the old code."""
     listed = set(store.version_paths())
-    todo = [_BACKEND / "services" / "text_to_sql.py"] + [
+    todo = [_BACKEND / "services" / "translate" / "text_to_sql.py"] + [
         p for p in store.version_paths() if p.suffix == ".py"]
     reached: set = set()
     while todo:
@@ -65,7 +65,7 @@ def test_version_covers_every_backend_module_the_translation_imports():
 
 def test_version_reads_the_files_the_old_list_missed():
     names = {f"{p.parent.name}/{p.name}" for p in store.version_paths()}
-    assert {"services/participant_query_compiler.py", "RAG/criteria.py", "RAG/cohort_count.py",
+    assert {"translate/participant_query_compiler.py", "RAG/criteria.py", "RAG/cohort_count.py",
             "RAG/senses.yaml", "RAG/word_forms.yaml"} <= names
     assert not any("__pycache__" in str(p) for p in store.version_paths())
 
@@ -104,8 +104,8 @@ def test_a_new_vocabulary_file_changes_the_version(monkeypatch, tmp_path):
 def test_only_a_translation_that_ran_as_written_is_stored(total, fallback, self_corrected,
                                                           relaxed, expected):
     from services import search
-    from services.sql_rewriter import FALLBACK_SQL
-    from services.query_cache import CachedQuery
+    from services.translate.sql_rewriter import FALLBACK_SQL
+    from services.stores.query_cache import CachedQuery
 
     cached = CachedQuery(base_sql=FALLBACK_SQL if fallback else "SELECT 1",
                          params={}, scored_filters=[], apply_relevance=False)

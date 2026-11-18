@@ -1,6 +1,6 @@
 """
-services/uncertain_tier.py
---------------------------
+services/fulltext/uncertain_tier.py
+-----------------------------------
 Keep datasets that a filter cannot check, and show them after the confirmed
 results.
 
@@ -40,7 +40,7 @@ A dataset is kept when
 
 The result gets two columns: uncertain_level (0, 1 or 2: the weakest state)
 and uncertain_reasons (why, for the result card). The page query orders by
-uncertain_level first (services/sql_rewriter.py). Datasets that confirm every
+uncertain_level first (services/translate/sql_rewriter.py). Datasets that confirm every
 condition are exactly the rows the original query returned.
 
 Switched on with UNCERTAIN_TIER=true; the benchmark compares both from one
@@ -57,7 +57,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
-_RAG_DIR = Path(__file__).resolve().parents[2] / "RAG"
+_RAG_DIR = Path(__file__).resolve().parents[3] / "RAG"
 if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
     sys.path.insert(0, str(_RAG_DIR))
 
@@ -98,7 +98,7 @@ LEVEL_COLUMN = "uncertain_level"
 REASONS_COLUMN = "uncertain_reasons"
 
 # A stemmed text search, with the guard that may follow it: the word forms
-# the unstemmed vector must contain (services/text_search.py, exact word forms).
+# the unstemmed vector must contain (services/fulltext/text_search.py, exact word forms).
 _TSQUERY_RE = re.compile(
     r"(?P<negated>\bNOT\s+)?(?P<alias>\b[A-Za-z_]\w*)\.(?P<column>search_tsv(?:_papers)?)\s+@@\s+"
     r"TO_TSQUERY\(\s*'english'\s*,\s*'(?P<query>[^']*)'\s*\)"
@@ -188,7 +188,7 @@ def _rare_enough(kept: List[str], guard: Optional[str]) -> bool:
     """
     query = " & ".join(kept)
     try:
-        from services import text_search
+        from services.fulltext import text_search
         counts = text_search.guarded_counts([query], [guard_for(query, guard)])
     except Exception:  # pragma: no cover — no database available
         counts = None
@@ -227,7 +227,7 @@ def _rarest_parts(parts: List[str], guard: Optional[str] = None) -> List[str]:
         return parts
     counts = None
     try:
-        from services import text_search
+        from services.fulltext import text_search
         counts = text_search.guarded_counts(parts, [guard_for(part, guard) for part in parts])
     except Exception:  # pragma: no cover — no database available
         counts = None
@@ -333,7 +333,7 @@ def query_words(query: str) -> List[str]:
 
 
 def _negated_spans(sql: str) -> List[Tuple[int, int]]:
-    from services import text_search  # local import: text_search imports heavy modules
+    from services.fulltext import text_search  # local import: text_search imports heavy modules
     return text_search.negated_spans(sql)
 
 
@@ -570,8 +570,8 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
     Labels are dropped: paper text carries the lowest weight, so a search
     scoped to the name and short fields could never reach it.
     """
-    from services import schema_capabilities
-    from services.text_search import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, PAPER_FTS_COLUMN
+    from services.catalogue import schema_capabilities
+    from services.fulltext.text_search import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, PAPER_FTS_COLUMN
     spans = _negated_spans(sql)
     atoms = []
     for match in _TSQUERY_RE.finditer(sql):
@@ -684,7 +684,7 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
     codes, minimum = parsed
     stored = None
     try:
-        from services import schema_capabilities
+        from services.catalogue import schema_capabilities
         if schema_capabilities.has_subject_counts():
             stored = f"COALESCE({alias}.{schema_capabilities.SUBJECT_COUNT_COLUMN}, 0)"
     except ImportError:
@@ -699,7 +699,7 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
 # ── Rewrite ───────────────────────────────────────────────────────────────────
 
 def _flatten_and(node) -> list:
-    from services.text_search import is_guarded_pair
+    from services.fulltext.text_search import is_guarded_pair
     if isinstance(node, exp.And):
         return _flatten_and(node.left) + _flatten_and(node.right)
     if isinstance(node, exp.Paren) and isinstance(node.this, exp.And):
@@ -725,7 +725,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     can be uncertain, or when it cannot be parsed.
     """
     if papers is None:
-        from services import text_search
+        from services.fulltext import text_search
         papers = text_search.papers_enabled()
     if hoist_terms is None:
         hoist_terms = hoist_terms_enabled()

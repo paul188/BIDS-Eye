@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from services.sql_rewriter import FALLBACK_SQL, SqlRewriteService, build_count_sql, build_page_sql
+from services.translate.sql_rewriter import FALLBACK_SQL, SqlRewriteService, build_count_sql, build_page_sql
 
 
 SERVICE = SqlRewriteService()
@@ -111,7 +111,7 @@ def test_extract_sql_drops_a_trailing_closing_tag() -> None:
 
 def test_number_casts_of_json_values_cannot_crash_the_query() -> None:
     """'7 Tesla': one sidecar value like 'n/a' used to fail the whole query."""
-    from services import sql_rewriter
+    from services.translate import sql_rewriter
 
     if sql_rewriter.parse_one is None:
         return
@@ -130,7 +130,7 @@ def test_number_casts_of_json_values_cannot_crash_the_query() -> None:
 
 
 def test_already_guarded_and_non_number_casts_are_left_alone() -> None:
-    from services import sql_rewriter
+    from services.translate import sql_rewriter
 
     if sql_rewriter.parse_one is None:
         return

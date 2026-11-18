@@ -1,6 +1,6 @@
 """
-services/text_to_sql.py
------------------------
+services/translate/text_to_sql.py
+---------------------------------
 Text-to-SQL service for BIDS-Eye.
 
 Pipeline:
@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 
 # ── Few-shot pool (loaded once at import time) ────────────────────────────────
 _FEW_SHOT_POOL: Dict[str, List[dict]] = {}
-_FEW_SHOT_PATH = Path(__file__).parent.parent / "few_shot_examples.json"
+_FEW_SHOT_PATH = Path(__file__).resolve().parents[2] / "few_shot_examples.json"
 if _FEW_SHOT_PATH.exists():
     try:
         with open(_FEW_SHOT_PATH) as _f:
@@ -495,7 +495,7 @@ def _format_examples(examples: List[dict], max_chars: Optional[int] = None) -> s
 
 # ── Project-root modules on sys.path ──────────────────────────────────────────
 # Works both locally (BIDS-Eye/) and inside Docker (/app/)
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[3]
 for _mod_dir in (
     _ROOT / "backend",
     _ROOT / "LLM_preprocessor",
@@ -506,15 +506,15 @@ for _mod_dir in (
 
 from schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
-from services.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
-from services.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
-from services.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
-from services import translation_store  # noqa: E402
-from services.schema_capabilities import (  # noqa: E402
+from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
+from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
+from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
+from services.stores import translation_store  # noqa: E402
+from services.catalogue.schema_capabilities import (  # noqa: E402
     available_columns as _available_columns,
     uses_unavailable_column as _uses_unavailable_column,
 )
-from services.participant_query_compiler import (  # noqa: E402
+from services.translate.participant_query_compiler import (  # noqa: E402
     compile_plan as _compile_plan,
 )
 
@@ -566,7 +566,7 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     schema_ddl = build_schema_ddl(_available_columns())
 
     # The model never writes a text predicate itself. It copies or writes
-    # text_match('...') placeholders, which services/text_search.py expands
+    # text_match('...') placeholders, which services/fulltext/text_search.py expands
     # into full-text search (or ILIKE on a database without search_tsv).
     long_text_cols = ["d.description_text"]
     if "readme_text" in _available_columns():
@@ -787,7 +787,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         getattr(augmented_plan, "word_forms", None) or None,
     )
 
-    # Relevance ranking is applied later by services.sql_rewriter.build_page_sql
+    # Relevance ranking is applied later by services.translate.sql_rewriter.build_page_sql
     # so the cached base SELECT can be reused across pages without rebaking the
     # order clause. We still decide *whether* to rank: skip for explicit top-N
     # / user-ordered queries so we don't override the order the user asked for.
@@ -869,9 +869,9 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     full-text rank, so the best matches come first. Without the full-text
     column, or without usable words, the bounded sample as before.
     """
-    from services import text_search
-    from services.schema_capabilities import has_fts
-    from services.sql_rewriter import DEFAULT_DATASET_PROJECTION
+    from services.fulltext import text_search
+    from services.catalogue.schema_capabilities import has_fts
+    from services.translate.sql_rewriter import DEFAULT_DATASET_PROJECTION
 
     query = text_search.keyword_query(question) if has_fts() else None
     if not query:

@@ -37,9 +37,11 @@ async def _check(questions: list, recording: dict | None, out: Path) -> int:
     from db.db import engine
     import llm_client
     import preprocess
-    from services import text_search, translation_store, word_form_store
-    from services import schema_capabilities
-    from services import text_to_sql as t2s
+    from services.fulltext import text_search
+    from services.stores import translation_store
+    from services.catalogue import word_form_store
+    from services.catalogue import schema_capabilities
+    from services.translate import text_to_sql as t2s
 
     # The read-only warm-up of app startup (see eval_recall._run).
     await schema_capabilities.refresh_available_columns(engine)

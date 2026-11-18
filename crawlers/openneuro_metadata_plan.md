@@ -20,7 +20,7 @@ missing, and there is almost no free text to search:
 
 ### Mechanism
 
-`backend/services/schema_capabilities.py` inspects `bids_datasets` once at
+`backend/services/catalogue/schema_capabilities.py` inspects `bids_datasets` once at
 backend startup. An optional column counts as available when it exists **and**
 at least 5% of datasets have a value (`MIN_COVERAGE`). Prompt building uses
 that state in three places:
@@ -244,7 +244,7 @@ ssh $H 'docker tag bids-eye-backend bids-eye-backend:pre-metadata; docker tag bi
 # 2) Ship the files (the server tree is updated by copying, as before).
 rsync -avR \
   backend/constants.py backend/main.py backend/schemas.py backend/routers/query.py \
-  backend/services/text_to_sql.py backend/services/schema_capabilities.py \
+  backend/services/translate/text_to_sql.py backend/services/catalogue/schema_capabilities.py \
   backend/tests/test_schema_capabilities.py backend/tests/test_openneuro_metadata.py \
   backend/tests/test_query_flow.py \
   frontend/src/api/index.ts frontend/src/components/DatasetCard.vue \
@@ -285,7 +285,7 @@ SQL
 ssh $H 'docker logs bids_backend 2>&1 | grep "Optional dataset column" | tail -8'
 
 # The container runs the shipped code.
-ssh $H 'cd /home/BIDS-Eye && for f in backend/constants.py backend/services/schema_capabilities.py backend/services/text_to_sql.py; do
+ssh $H 'cd /home/BIDS-Eye && for f in backend/constants.py backend/services/catalogue/schema_capabilities.py backend/services/translate/text_to_sql.py; do
   [ "$(md5sum < $f)" = "$(docker exec bids_backend md5sum < /app/$f)" ] && echo "MATCH $f" || echo "DIFF  $f"; done'
 ```
 

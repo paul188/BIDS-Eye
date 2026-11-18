@@ -1,12 +1,12 @@
 """
-services/rerank.py
-------------------
+services/results/rerank.py
+--------------------------
 LLM re-ranking of the first result candidates.
 
 The SQL search finds candidates; this step reads them. For a new question the
 top RERANK_CANDIDATES datasets (in the order the SQL ranking gives) are shown
 to an LLM together with the question, each as its profile
-(services/readme_profile.py), or name, study fields and README opening when no
+(services/indexing/readme_profile.py), or name, study fields and README opening when no
 profile exists yet, plus its modalities, tasks and size. The model scores each
 one:
     3  matches every requirement of the question
@@ -52,7 +52,7 @@ from uuid import UUID
 
 from sqlalchemy import text
 
-from services import schema_capabilities
+from services.catalogue import schema_capabilities
 
 log = logging.getLogger(__name__)
 

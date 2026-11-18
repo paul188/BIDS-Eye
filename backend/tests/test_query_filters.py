@@ -1,4 +1,4 @@
-"""Filter chips read from generated SQL, and removing them (services/query_filters.py)."""
+"""Filter chips read from generated SQL, and removing them (services/results/query_filters.py)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from uuid import UUID
 
 import sqlglot
 
-from services import query_filters as qf
+from services.results import query_filters as qf
 
 _HEAD = (
     "SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count "
@@ -140,7 +140,7 @@ def test_remove_with_nothing_or_unknown_ids_keeps_the_query():
 
 
 def test_tier_still_applies_after_a_chip_is_removed(monkeypatch):
-    from services import uncertain_tier
+    from services.fulltext import uncertain_tier
 
     refined = qf.remove(_sql(MODALITY, ADULTS, TEXT), ["w2"])
     tiered = uncertain_tier.apply(refined, papers=False)
@@ -223,8 +223,8 @@ def test_phrase_digits_pair_but_never_stand_alone():
 
 
 def test_attach_snippets_marks_field_strengths():
-    from services import readme_snippets
-    from services import schema_capabilities as caps
+    from services.results import readme_snippets
+    from services.catalogue import schema_capabilities as caps
 
     # ts_headline marked the Postgres words; the pattern decides: "1.5 mm" is no strength.
     session = _SnippetSession([
@@ -242,7 +242,7 @@ def test_attach_snippets_marks_field_strengths():
 
 
 def test_keep_justified_marks_drops_pair_words_alone():
-    from services.readme_snippets import keep_justified_marks
+    from services.results.readme_snippets import keep_justified_marks
     terms = [("structural", "mri"), ("MRI",), ("MS",)]
     lexemes = {"structural": {"structur"}, "mri": {"mri"}, "ms": {"ms"}}
     headline = ("Brain Imaging Data ⟦Structure⟧ format; ⟦structural⟧ ⟦MRI⟧ "
@@ -259,7 +259,7 @@ def test_keep_justified_marks_drops_pair_words_alone():
 
 
 def test_clean_snippet_strips_markdown():
-    from services import readme_snippets
+    from services.results import readme_snippets
 
     raw = ("# Dataset ⟦Parkinson⟧ study\n![logo](img.png) See [the paper](https://doi.org/x) "
            "and https://openneuro.org.\n| col | col |\n**Bold** text with sub_01 and __init__")
@@ -293,8 +293,8 @@ def _dataset(n: int):
 
 
 def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
-    from services import readme_snippets
-    from services import schema_capabilities as caps
+    from services.results import readme_snippets
+    from services.catalogue import schema_capabilities as caps
 
     long_start = "Plain README start. " * 30
     session = _SnippetSession([
@@ -325,7 +325,7 @@ def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
 
 
 def test_attach_snippets_without_the_column_does_nothing():
-    from services import readme_snippets
+    from services.results import readme_snippets
 
     session = _SnippetSession([])
     datasets = [_dataset(1)]

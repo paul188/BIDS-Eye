@@ -1,6 +1,6 @@
 """
-services/dataset_cards.py
--------------------------
+services/results/dataset_cards.py
+---------------------------------
 The datasets of one result page as the cards show them: the catalogue fields
 of the generated query's rows, plus what is read with queries of their own
 (participants and their summary, deprecation notes, the generated summary
@@ -18,8 +18,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
-from services import dataset_description
-from services.schema_capabilities import has_display_column
+from services.indexing import dataset_description
+from services.catalogue.schema_capabilities import has_display_column
 
 log = logging.getLogger(__name__)
 
@@ -136,7 +136,7 @@ def _paper_url(doi, pmid, pmcid, arxiv_id) -> Optional[str]:
 
 async def attach_descriptions(session: AsyncSession, datasets: list[DatasetSchema]) -> None:
     """The generated summary of a thin README, and the linked paper when it was
-    checked to report the dataset (services/dataset_description.py). Its own
+    checked to report the dataset (services/indexing/dataset_description.py). Its own
     query, like deprecations_for; a failure leaves the page without them."""
     if not datasets or not (has_display_column("paper_relation")
                             and has_display_column("dataset_summary")):

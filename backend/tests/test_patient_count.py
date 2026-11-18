@@ -20,8 +20,8 @@ from preprocess import (  # noqa: E402
     ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement,
     _build_augmented_question,
 )
-from services import uncertain_tier  # noqa: E402
-from services.sql_rewriter import rewrite_generated_sql  # noqa: E402
+from services.fulltext import uncertain_tier  # noqa: E402
+from services.translate.sql_rewriter import rewrite_generated_sql  # noqa: E402
 
 PD = ResolvedTerms(field=RAGField.DIAGNOSIS, term_to_codes={
     "Parkinson's disease": ["parkinsons_disease", "de_novo_parkinsons"]})
@@ -158,14 +158,14 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
 
 
 def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
-    from services import schema_capabilities
+    from services.catalogue import schema_capabilities
     monkeypatch.setattr(schema_capabilities, "_has_subject_counts", True)
     soft = uncertain_tier._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
     assert "d.n_subjects" in soft.probable and "bids_objects" not in soft.probable
 
 
 def test_the_filter_chips_can_read_the_query(monkeypatch):
-    from services import query_filters
+    from services.results import query_filters
     monkeypatch.setenv("UNCERTAIN_TIER", "false")
     augmented = _build_augmented_question(_plan(), [PD])
     rewritten = rewrite_generated_sql(MODEL_SQL, augmented)

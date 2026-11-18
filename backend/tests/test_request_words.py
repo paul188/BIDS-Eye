@@ -1,6 +1,6 @@
 """Fixes from the 70-request gold set (benchmarks/demand/results/2026-11-15_failure_causes_5f91230.md)."""
 import preprocess
-from services import uncertain_tier
+from services.fulltext import uncertain_tier
 
 
 def test_request_words_are_not_searched_as_text():
@@ -10,7 +10,7 @@ def test_request_words_are_not_searched_as_text():
 
 
 def test_a_generic_word_is_no_weak_evidence(monkeypatch):
-    from services import text_search
+    from services.fulltext import text_search
     monkeypatch.setattr(text_search, "_lookup_counts", lambda parts: [5 for _ in parts])
     assert uncertain_tier.relax_tsquery("resting:AB & state:AB") is None
     assert uncertain_tier.relax_tsquery("bipolar:AB & syndrome:AB") == "bipolar"
@@ -18,7 +18,7 @@ def test_a_generic_word_is_no_weak_evidence(monkeypatch):
 
 
 def test_text_filters_the_sql_model_invented_are_dropped():
-    from services.sql_rewriter import SqlRewriteService
+    from services.translate.sql_rewriter import SqlRewriteService
     svc = SqlRewriteService.__new__(SqlRewriteService)
     augmented = "[Resolved DB filters]\n  dataset text: text_match('pediatric')\n"
     sql = ("SELECT {{COLS}} FROM bids_datasets AS d WHERE d.license = 'CC0' AND text_match('pediatric') "
@@ -36,7 +36,7 @@ def test_wish_phrases_are_cut_from_the_text_search():
 
 
 def test_free_text_no_dataset_contains_is_not_searched(monkeypatch):
-    from services import text_search
+    from services.fulltext import text_search
     monkeypatch.setattr(text_search, "count_matches", lambda alts, mode: [1 for _ in alts])
     assert preprocess._matches_too_few("adjacency matrices graphml")
     monkeypatch.setattr(text_search, "count_matches", lambda alts, mode: [40 for _ in alts])
@@ -46,7 +46,7 @@ def test_free_text_no_dataset_contains_is_not_searched(monkeypatch):
 
 
 def test_relaxed_query_drops_only_free_text_conditions():
-    from services.sql_rewriter import SqlRewriteService
+    from services.translate.sql_rewriter import SqlRewriteService
     svc = SqlRewriteService.__new__(SqlRewriteService)
     sql = ("SELECT {{COLS}} FROM bids_datasets AS d WHERE d.license = 'CC0' AND text_match('isolated words') "
            "AND (d.species ~* 'macaque' OR text_match('macaque', 'short')) GROUP BY d.id")
@@ -61,7 +61,7 @@ def test_relaxed_query_drops_only_free_text_conditions():
 # --- second round: the four regressions of the two-against-two comparison (2026-11-15) ---
 
 def _svc():
-    from services.sql_rewriter import SqlRewriteService
+    from services.translate.sql_rewriter import SqlRewriteService
     return SqlRewriteService.__new__(SqlRewriteService)
 
 

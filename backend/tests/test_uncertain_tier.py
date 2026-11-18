@@ -6,7 +6,7 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
-from services import text_search, uncertain_tier as ut  # noqa: E402
+from services.fulltext import text_search, uncertain_tier as ut  # noqa: E402
 
 BASE = (
     "SELECT d.id, d.name, d.accession_id, COUNT(DISTINCT o.subject) AS subject_count "
@@ -85,7 +85,7 @@ def test_negated_and_unparseable_queries_are_left_alone() -> None:
 
 
 def test_page_query_puts_the_tier_first() -> None:
-    from services.sql_rewriter import build_page_sql
+    from services.translate.sql_rewriter import build_page_sql
     sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'young & children')")
     page_sql, _ = build_page_sql(ut.apply(sql), [], True, 20, 0, rank_tsquery="young | children")
     assert "ORDER BY page_result.uncertain_level, page_result.relevance_score + page_result.text_rank DESC" in page_sql
@@ -152,7 +152,7 @@ def test_hoisted_terms_name_each_tsquery_once_and_pass_the_guard() -> None:
 
 def test_modifiers_are_not_kept_alone() -> None:
     # Even when "young" is rarer than "children".
-    import services.text_search as ts
+    import services.fulltext.text_search as ts
     original = ts._lookup_counts
     ts._lookup_counts = lambda qs: [{"young": 54, "children": 63}.get(q, 1000) for q in qs]
     try:

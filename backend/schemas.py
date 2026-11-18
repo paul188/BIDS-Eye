@@ -37,7 +37,7 @@ class ParticipantSummarySchema(BaseModel):
 
 class LinkedPaperSchema(BaseModel):
     """The dataset's primary paper, shown when it was checked to report the
-    dataset or a larger sample that includes it (services/dataset_description.py)."""
+    dataset or a larger sample that includes it (services/indexing/dataset_description.py)."""
     title: str
     year: Optional[int] = None
     url: Optional[str] = None
@@ -62,7 +62,7 @@ class DatasetSchema(BaseModel):
     # Set when the dataset is gone from, or flagged deprecated on, its source
     # repository; None for datasets that are fine. Shown as a tag in the UI.
     deprecated_reason: Optional[str] = None
-    # Uncertain tier (services/uncertain_tier.py): 0 or None = every filter
+    # Uncertain tier (services/fulltext/uncertain_tier.py): 0 or None = every filter
     # confirmed, 1 = probably relevant, 2 = possibly relevant; with the reason
     # (e.g. "ages not recorded"). Set only when UNCERTAIN_TIER is on.
     uncertain_level: Optional[int] = None
@@ -75,7 +75,7 @@ class DatasetSchema(BaseModel):
     # text terms, else the start. Matched words sit between "⟦" and "⟧".
     snippet: Optional[str] = None
     # Generated 2-3 sentences, only where the README is thin; shown labelled
-    # as generated (services/dataset_description.py).
+    # as generated (services/indexing/dataset_description.py).
     generated_summary: Optional[str] = None
     linked_paper: Optional[LinkedPaperSchema] = None
 
@@ -97,21 +97,21 @@ class TextToSQLResult(BaseModel):
     # base SELECT can be cached and reused across pages.
     scored_filters: List[Dict[str, Any]] = []
     apply_relevance: bool = False
-    # Full-text query that ranks the result (services/text_search.py); None
+    # Full-text query that ranks the result (services/fulltext/text_search.py); None
     # when the question has no text terms or the database has no search_tsv.
     rank_tsquery: Optional[str] = None
     # Number of first candidates an LLM judged and reordered; None = not re-ranked.
     reranked: Optional[int] = None
     # The query before the uncertain tier wraps it, read for the filter chips
-    # (services/query_filters.py). Server-side only.
+    # (services/results/query_filters.py). Server-side only.
     filter_sql: Optional[str] = Field(default=None, exclude=True)
     # The query without its free-text-only conditions (empty-result fallback).
     relaxed_sql: Optional[str] = Field(default=None, exclude=True)
     # datatype / suffix / task values no dataset has, corrected or dropped
-    # before the query ran (services/catalogue_values.py).
+    # before the query ran (services/catalogue/catalogue_values.py).
     value_fixes: List[str] = []
     # True when no model was asked: the question was translated before
-    # (services/translation_store.py).
+    # (services/stores/translation_store.py).
     from_store: bool = False
     # A new translation as a store entry; the router keeps it once the search
     # ran without correction. Server-side only.

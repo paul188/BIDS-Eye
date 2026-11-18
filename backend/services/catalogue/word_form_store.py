@@ -1,6 +1,6 @@
 """
-services/word_form_store.py
----------------------------
+services/catalogue/word_form_store.py
+-------------------------------------
 The catalogue's word forms: which forms each stem merges, and in how many
 datasets each form occurs.
 
@@ -18,7 +18,7 @@ it decides whether a searched word is worth a closer look
 (RAG/word_forms.py), not what a search returns.
 
 lookup() answers for the words of one question. Like the word counts in
-services/text_search.py it is called from the translation worker thread, so
+services/fulltext/text_search.py it is called from the translation worker thread, so
 the API installs a pooled lookup at startup (make_lookup); other entry points
 (one-off containers, the recall benchmark) open a connection of their own.
 """
@@ -34,9 +34,9 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
 
-from services import schema_capabilities
+from services.catalogue import schema_capabilities
 
-_RAG_DIR = Path(__file__).resolve().parents[2] / "RAG"
+_RAG_DIR = Path(__file__).resolve().parents[3] / "RAG"
 if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
     sys.path.insert(0, str(_RAG_DIR))
 

@@ -21,7 +21,7 @@ Flow:
       │  returns AugmentedQueryPlan with canonical codes filled in
       │
       ▼
-  SQL generation LLM (Gemini, in backend/services/text_to_sql.py)
+  SQL generation LLM (Gemini, in backend/services/translate/text_to_sql.py)
 
 The LLM's job is STRUCTURAL ONLY:
   - Identify which terms are scan-related (put in ScanRequirement.scan_terms)
@@ -967,7 +967,8 @@ def word_evidence(query: str) -> Dict[str, Any]:
     """
     try:
         import word_forms
-        from services import text_search, word_form_store  # backend/services
+        from services.fulltext import text_search  # backend/services
+        from services.catalogue import word_form_store
     except Exception:
         return {}
     try:
@@ -1324,7 +1325,7 @@ def _count_topic_matches(alternatives: List[str],
     counted in those forms, as it will be searched.
     """
     try:
-        from services import text_search  # backend/services; absent outside the API
+        from services.fulltext import text_search  # backend/services; absent outside the API
     except Exception:
         return None
     try:
@@ -1504,12 +1505,12 @@ def _topic_condition(resolved: ResolvedTopic) -> Optional[str]:
             AND NOT text_match('<not meant>', 'near'))
 
     The phrase comes first: the uncertain tier relaxes only the first text
-    search of a topic (services/uncertain_tier.py, relax_text_condition).
+    search of a topic (services/fulltext/uncertain_tier.py, relax_text_condition).
 
     The phrase is the user's own words and needs no guard. An alternative can
     also occur in a text about another meaning ("conflict resolution task" in
     a Stroop study); such a dataset fails this condition and the uncertain
-    tier keeps it as probable (services/uncertain_tier.py).
+    tier keeps it as probable (services/fulltext/uncertain_tier.py).
     """
     parts: List[str] = []
     if resolved.codes:
@@ -1871,7 +1872,7 @@ def _matches_too_few(text: str) -> bool:
     then kept, as before.
     """
     try:
-        from services import text_search
+        from services.fulltext import text_search
     except ImportError:
         return False
     counts = text_search.count_matches([text], _MODE_ALL)
@@ -2030,7 +2031,7 @@ def _build_augmented_question(
     Inject resolved canonical codes into the natural-language summary.
 
     *available_columns* names the optional bids_datasets columns the database
-    has populated (backend/services/schema_capabilities.py). A filter on a
+    has populated (backend/services/catalogue/schema_capabilities.py). A filter on a
     column that is not listed is left out rather than emitted and failing.
 
     Scan-related fields (datatype / suffix / task) are grouped by the source
@@ -2500,7 +2501,7 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
     """
     try:
         import word_forms
-        from services import word_form_store
+        from services.catalogue import word_form_store
         searched = list(dict.fromkeys(
             word for terms in _TEXT_MATCH_WORDS_RE.findall(augmented_question)
             for word in re.findall(r"[a-z]+", terms.lower())))

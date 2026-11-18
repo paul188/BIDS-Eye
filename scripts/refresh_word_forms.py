@@ -4,7 +4,7 @@ scripts/refresh_word_forms.py
 -----------------------------
 Rebuild bids_word_forms: every word form in the datasets' text, the stem the
 search reduces it to, and the number of datasets that contain it
-(backend/services/word_form_store.py). The search uses the table to notice
+(backend/services/catalogue/word_form_store.py). The search uses the table to notice
 words whose stem also matches unrelated words ("ageing" and "age").
 
 The crawler rebuilds the table after each cycle (post_crawl.py). Run this
@@ -36,7 +36,7 @@ sys.path.insert(0, str(_REPO / "backend"))
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
-from services import word_form_store  # noqa: E402
+from services.catalogue import word_form_store  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s  %(message)s",
                     datefmt="%H:%M:%S")

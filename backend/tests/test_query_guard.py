@@ -18,7 +18,7 @@ import pytest
 
 from services import query_guard
 from services.query_guard import QueryRefused, SearchBusy, check_static, largest_step
-from services.sql_rewriter import SqlRewriteService
+from services.translate.sql_rewriter import SqlRewriteService
 
 REWRITER = SqlRewriteService()
 REAL_QUERIES = json.loads((Path(__file__).parent / "data" / "real_search_sql.json").read_text())["queries"]

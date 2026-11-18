@@ -10,9 +10,10 @@ import pytest
 from fastapi import HTTPException
 
 import routers.query as query_router
-from services import dataset_cards, query_guard, readme_snippets, search_runner
-from services.query_cache import CachedQuery, query_cache
-from services.sql_rewriter import FALLBACK_SQL
+from services.results import dataset_cards, readme_snippets
+from services import query_guard, search_runner
+from services.stores.query_cache import CachedQuery, query_cache
+from services.translate.sql_rewriter import FALLBACK_SQL
 
 _SAFE = ("SELECT d.id FROM bids_datasets AS d LEFT JOIN bids_objects AS o ON o.dataset_id = d.id "
          "AND NOT o.subject IS NULL GROUP BY d.id")

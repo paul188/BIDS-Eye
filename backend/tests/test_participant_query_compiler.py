@@ -1,11 +1,11 @@
-"""The deterministic compiler for cohort plans (services/participant_query_compiler.py)."""
+"""The deterministic compiler for cohort plans (services/translate/participant_query_compiler.py)."""
 from __future__ import annotations
 
 import pytest
 
 import preprocess
 from preprocess import ParticipantGroup, QueryFamily, QueryPlan, RAGField, ResolvedTerms, ScanRequirement
-from services import participant_query_compiler as pqc
+from services.translate import participant_query_compiler as pqc
 
 SCZ = ["schizophrenia", "schizophrenia_with_avh"]
 HC = ["healthy_control", "healthy_volunteer"]
@@ -205,8 +205,9 @@ def test_the_wrapper_returns_only_the_sql() -> None:
 
 
 def test_compiled_sql_passes_the_rewriter_and_the_guard() -> None:
-    from services import query_guard, schema_capabilities as caps
-    from services.sql_rewriter import rewrite_generated_sql
+    from services import query_guard
+    from services.catalogue import schema_capabilities as caps
+    from services.translate.sql_rewriter import rewrite_generated_sql
     caps.set_fts(True)
     try:
         plan = _plan(["schizophrenia"], ["healthy controls"],

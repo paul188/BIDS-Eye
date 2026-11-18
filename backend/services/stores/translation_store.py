@@ -1,6 +1,6 @@
 """
-services/translation_store.py
------------------------------
+services/stores/translation_store.py
+------------------------------------
 Translations of questions that were asked before, so the same question does not
 pay for the two model calls again.
 
@@ -9,7 +9,7 @@ Only exact matches: the key is the normalised text of the question
 
 An entry holds what the two model stages produced: the augmented plan
 (stage 1 + 2) and, when the plan was not compiled, the SQL the model wrote. It
-does not hold the final SQL. On a hit ``services.text_to_sql._run_local`` runs
+does not hold the final SQL. On a hit ``services.translate.text_to_sql._run_local`` runs
 the plan compiler, the SQL rewriter and the uncertain tier as for a new
 question, so a change to those applies to stored entries at once.
 
@@ -46,7 +46,7 @@ changed prompt or a new dataset does not undo.
 Entries live in a dict in this process, read from the table
 ``query_translations`` at startup and again every five minutes (so a review
 reaches the running backend), and written there after each stored search. Like
-services/query_cache.py this assumes one backend worker: a second worker would
+services/stores/query_cache.py this assumes one backend worker: a second worker would
 only see entries written before it started.
 
 Switch: TRANSLATION_STORE=true (default off).
@@ -69,16 +69,16 @@ from typing import Any, Dict, List, Optional
 
 log = logging.getLogger(__name__)
 
-_ROOT = Path(__file__).resolve().parents[2]
-_BACKEND = Path(__file__).resolve().parents[1]
+_ROOT = Path(__file__).resolve().parents[3]
+_BACKEND = Path(__file__).resolve().parents[2]
 
 # Everything that decides the plan and the raw SQL of a question. The SQL
 # rewriter and the uncertain tier are not here: they run again on every hit.
 _PIPELINE_DIRS = (_ROOT / "LLM_preprocessor", _ROOT / "RAG")
 _PIPELINE_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 _PIPELINE_FILES = (
-    _BACKEND / "services" / "text_to_sql.py",
-    _BACKEND / "services" / "participant_query_compiler.py",
+    _BACKEND / "services" / "translate" / "text_to_sql.py",
+    _BACKEND / "services" / "translate" / "participant_query_compiler.py",
     _BACKEND / "constants.py",
     _BACKEND / "few_shot_examples.json",
 )
@@ -178,7 +178,7 @@ def pipeline_fingerprint() -> str:
 
 def schema_fingerprint() -> str:
     """Hash of the optional columns and search capabilities of this database."""
-    from services import schema_capabilities as caps
+    from services.catalogue import schema_capabilities as caps
     parts = sorted(caps.available_columns()) + [
         f"fts={caps.has_fts()}", f"paper_fts={caps.has_paper_fts()}",
         f"exact_fts={caps.has_exact_fts()}", f"exact_paper_fts={caps.has_exact_paper_fts()}",

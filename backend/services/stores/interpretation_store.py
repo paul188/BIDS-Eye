@@ -1,6 +1,6 @@
 """
-services/interpretation_store.py
---------------------------------
+services/stores/interpretation_store.py
+---------------------------------------
 Durable record of how each question was translated into SQL.
 
 Why: the translation is made by language models and is not repeatable. The
@@ -36,7 +36,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 
-_BACKEND = Path(__file__).resolve().parent.parent
+_BACKEND = Path(__file__).resolve().parents[2]
 # Every code and vocabulary file of these folders decides what a question is
 # translated into, so all of them count, new ones included (a hand-kept list
 # missed the compiler, criteria.py, cohort_count.py, senses.yaml and
@@ -50,17 +50,17 @@ _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 _VERSION_FILES = (
     _BACKEND / "constants.py",
     _BACKEND / "few_shot_examples.json",
-    _BACKEND / "services" / "catalogue_values.py",
-    _BACKEND / "services" / "concept_keys.py",
-    _BACKEND / "services" / "participant_query_compiler.py",
+    _BACKEND / "services" / "catalogue" / "catalogue_values.py",
+    _BACKEND / "services" / "translate" / "concept_keys.py",
+    _BACKEND / "services" / "translate" / "participant_query_compiler.py",
     _BACKEND / "services" / "query_guard.py",
-    _BACKEND / "services" / "schema_capabilities.py",
-    _BACKEND / "services" / "sql_rewriter.py",
-    _BACKEND / "services" / "text_search.py",
-    _BACKEND / "services" / "text_to_sql.py",
-    _BACKEND / "services" / "translation_store.py",
-    _BACKEND / "services" / "uncertain_tier.py",
-    _BACKEND / "services" / "word_form_store.py",
+    _BACKEND / "services" / "catalogue" / "schema_capabilities.py",
+    _BACKEND / "services" / "translate" / "sql_rewriter.py",
+    _BACKEND / "services" / "fulltext" / "text_search.py",
+    _BACKEND / "services" / "translate" / "text_to_sql.py",
+    _BACKEND / "services" / "stores" / "translation_store.py",
+    _BACKEND / "services" / "fulltext" / "uncertain_tier.py",
+    _BACKEND / "services" / "catalogue" / "word_form_store.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
                 "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE",

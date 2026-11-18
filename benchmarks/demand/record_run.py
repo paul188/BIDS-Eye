@@ -46,7 +46,7 @@ def main() -> None:
     import main as _app  # noqa: F401 — sets up the import paths as the app does
     import eval_recall
     import preprocess
-    from services import text_to_sql as t2s
+    from services.translate import text_to_sql as t2s
 
     recording: dict = {}
     current: dict = {}
@@ -65,7 +65,7 @@ def main() -> None:
         recording[query] = result.model_dump(mode="json", exclude={"topics"})
         recording[query]["usage"] = usage
         try:   # which code made this translation (translation store imports)
-            from services import translation_store
+            from services.stores import translation_store
             recording[query]["code_commit"] = translation_store.code_commit()
         except Exception:
             pass

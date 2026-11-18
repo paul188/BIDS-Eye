@@ -17,7 +17,7 @@ The SQL model, or the plan compiler, writes a placeholder,
     patients_with('parkinsons_disease, de_novo_parkinsons') >= 40
 
 and the backend expands it (expand) into a count over both. The uncertain tier
-(backend/services/uncertain_tier.py) gives the condition three outcomes:
+(backend/services/fulltext/uncertain_tier.py) gives the condition three outcomes:
 
   confirmed     at least N participants are counted
   uncertain     the count cannot be known: the dataset has no participant

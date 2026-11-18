@@ -13,7 +13,7 @@ has already produced a draft query:
   - expanding text_match() placeholders into full-text predicates,
   - wrapping relevance scoring, text ranking and pagination.
 
-The LLM-facing prompt generation stays in ``services.text_to_sql`` so the
+The LLM-facing prompt generation stays in ``services.translate.text_to_sql`` so the
 translation stack has a clean separation between "generate SQL" and "rewrite
 SQL".
 """
@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
 # Make project-local modules importable regardless of working directory.
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[3]
 for _mod_dir in (
     _ROOT / "backend",
     _ROOT / "LLM_preprocessor",
@@ -44,14 +44,14 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
     parse_one = None  # type: ignore[assignment]
 
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
-from services.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
+from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
 
-from services import text_search as _text_search  # noqa: E402
-from services import uncertain_tier as _uncertain_tier  # noqa: E402
-from services import schema_capabilities as _schema_capabilities  # noqa: E402
-from services import catalogue_values as _catalogue_values  # noqa: E402
+from services.fulltext import text_search as _text_search  # noqa: E402
+from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
+from services.catalogue import schema_capabilities as _schema_capabilities  # noqa: E402
+from services.catalogue import catalogue_values as _catalogue_values  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -178,17 +178,17 @@ class RewriteResult:
     """Normalized SQL plus what later stages need to run and rank it."""
     sql: str
     params: dict[str, Any]
-    # What ranks the result by its text (services/text_search.rank_expression);
+    # What ranks the result by its text (services/fulltext/text_search.rank_expression);
     # None without text terms.
     rank_tsquery: Optional[str] = None
     # The query before the uncertain tier wraps it: its WHERE conditions are
-    # the filter chips (services/query_filters.py). Equals sql without the tier.
+    # the filter chips (services/results/query_filters.py). Equals sql without the tier.
     filter_sql: Optional[str] = None
     # The same query without its free-text-only conditions, for the case that
     # the full query finds nothing (services/search_runner.py); None when there is no
     # such condition to drop.
     relaxed_sql: Optional[str] = None
-    # Values the catalogue check corrected or dropped (services/catalogue_values.py).
+    # Values the catalogue check corrected or dropped (services/catalogue/catalogue_values.py).
     value_fixes: list[str] = _field(default_factory=list)
 
 
@@ -252,7 +252,7 @@ class SqlRewriteService:
 
         *word_forms*: the forms decided for words of this question
         (RAG/word_forms.py); text search then requires them
-        (services/text_search.py, TEXT_SEARCH_EXACT).
+        (services/fulltext/text_search.py, TEXT_SEARCH_EXACT).
         """
         sql = self.extract_sql(raw_sql)
         sql = self._rewrite_projection(sql)
@@ -295,7 +295,7 @@ class SqlRewriteService:
         filter_sql = sql
         if tiered:
             # Keep datasets a filter cannot check, as a second tier
-            # (services/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
+            # (services/fulltext/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)
         return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery,
                              filter_sql=filter_sql, relaxed_sql=relaxed_sql,
@@ -323,7 +323,7 @@ class SqlRewriteService:
         query can be reused across pages without rebaking the sort order.
 
         *rerank_ordered* / *rerank_demoted* are dataset ids from the LLM
-        re-ranker (services/rerank.py): the first come first in that order,
+        re-ranker (services/results/rerank.py): the first come first in that order,
         the second last, everything else keeps the relevance order between.
         Their parameters are added after the last sqlglot pass, which would
         otherwise re-render them.
@@ -335,7 +335,7 @@ class SqlRewriteService:
         ranked = ordered != base_sql
         ordered = self._use_summaries(self._normalize_sql(ordered))
         params: dict[str, Any] = {"_limit": limit, "_offset": offset}
-        # Confirmed results first, then the uncertain tier (services/uncertain_tier.py).
+        # Confirmed results first, then the uncertain tier (services/fulltext/uncertain_tier.py).
         tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
         tier_key = f"page_result.{_uncertain_tier.LEVEL_COLUMN}, " if tiered else ""
         order_clause = ""
@@ -1513,7 +1513,7 @@ class SqlRewriteService:
         relevance_score  sum of the RAG scores of the canonical codes the
                          dataset really has (structured match)
         text_rank        0..1 full-text rank of the dataset text against the
-                         question's free-text terms (services/text_search.py);
+                         question's free-text terms (services/fulltext/text_search.py);
                          far below 0 for a dataset that matches only the
                          other words of a search, not the user's own
 

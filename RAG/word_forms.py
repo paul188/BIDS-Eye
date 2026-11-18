@@ -11,9 +11,9 @@ that of "several". A search for the first then returns every dataset with the
 second.
 
 For such a word the search can require the forms that were asked for
-(backend/services/text_search.py writes the condition). This module decides
+(backend/services/fulltext/text_search.py writes the condition). This module decides
 which forms those are. It has no database access; the catalogue's forms come
-in as WordEvidence (backend/services/word_form_store.py).
+in as WordEvidence (backend/services/catalogue/word_form_store.py).
 
 A word's forms are decided by, in this order:
   1. word_forms.yaml, a short reviewed list. It applies to every searched

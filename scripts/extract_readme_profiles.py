@@ -5,7 +5,7 @@ For each dataset the model returns a short profile, the conditions the text
 names with their role (patients, model, controls, excluded, measured,
 mentioned), species, age groups, topics and paradigms, each condition and
 paradigm with a verbatim quote. Quotes are checked against the input; see
-backend/services/readme_profile.py.
+backend/services/indexing/readme_profile.py.
 
 Writes bids_datasets.llm_profile / llm_conditions / llm_profile_meta and
 bids_dataset_facts. A dataset is skipped when its stored profile was made from
@@ -45,7 +45,7 @@ for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
-from services import readme_profile as rp  # noqa: E402
+from services.indexing import readme_profile as rp  # noqa: E402
 
 log = logging.getLogger("extract_readme_profiles")
 

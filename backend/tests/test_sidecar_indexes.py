@@ -15,7 +15,7 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
-from services.sql_rewriter import sql_rewrite_service  # noqa: E402
+from services.translate.sql_rewriter import sql_rewrite_service  # noqa: E402
 
 MIGRATION = Path(__file__).resolve().parents[2] / "crawlers" / "migrate_add_sidecar_indexes.sql"
 KEYS = ("MagneticFieldStrength", "RepetitionTime", "SamplingFrequency")

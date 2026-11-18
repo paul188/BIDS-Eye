@@ -2,7 +2,7 @@
 match as asked, and everything that reads that SQL afterwards (chips, the
 uncertain tier, ranking, README excerpts) plus the intent prompt.
 
-Switched on with TEXT_SEARCH_EXACT; services/text_search.py has the design."""
+Switched on with TEXT_SEARCH_EXACT; services/fulltext/text_search.py has the design."""
 
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ import yaml
 
 import preprocess as pp
 import word_forms
-from services import query_filters as qf
-from services import schema_capabilities as caps
-from services import text_search as ts
-from services import uncertain_tier as ut
-from services import word_form_store
-from services.sql_rewriter import SqlRewriteService, build_page_sql
+from services.results import query_filters as qf
+from services.catalogue import schema_capabilities as caps
+from services.fulltext import text_search as ts
+from services.fulltext import uncertain_tier as ut
+from services.catalogue import word_form_store
+from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from word_forms import WordEvidence
 
 SERVICE = SqlRewriteService()
@@ -313,7 +313,7 @@ def test_paper_evidence_needs_the_word_forms_in_the_paper(exact) -> None:
 # ── README excerpts ───────────────────────────────────────────────────────────
 
 def test_marks_of_exact_words_must_be_the_word_as_written() -> None:
-    from services.readme_snippets import keep_justified_marks
+    from services.results.readme_snippets import keep_justified_marks
     headline = "⟦Age⟧ range 60-80; healthy ⟦ageing⟧ and ⟦Aging⟧'s effects, ⟦aged⟧ adults"
     marks = ["age", "age", "age", "age"]
     terms = [("ageing",), ("aging",)]
@@ -343,7 +343,7 @@ class _Session:
 
 
 def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
-    from services import readme_snippets
+    from services.results import readme_snippets
     from schemas import DatasetSchema
 
     datasets = [DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",

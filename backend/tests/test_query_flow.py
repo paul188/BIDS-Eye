@@ -5,8 +5,9 @@ from uuid import UUID
 
 import routers.query as query_router
 from schemas import DatasetSchema, TextToSQLResult
-from services import dataset_cards, search, search_runner
-from services.query_cache import query_cache
+from services.results import dataset_cards
+from services import search, search_runner
+from services.stores.query_cache import query_cache
 
 
 class _FakeMappingsResult:
@@ -163,7 +164,7 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
 
 
 def test_deprecated_reason_is_attached_only_when_the_column_exists() -> None:
-    from services import schema_capabilities as caps
+    from services.catalogue import schema_capabilities as caps
 
     dataset_id = UUID("00000000-0000-0000-0000-000000000001")
     other_id = UUID("00000000-0000-0000-0000-000000000002")

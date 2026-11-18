@@ -14,7 +14,7 @@ A cycle:
    datasets whose papers were never checked or were checked more than
    `PAPER_RECHECK_DAYS` (30) days ago.
 3. **Descriptions** (`post_crawl.py` →
-   `backend/services/dataset_description.py`): Gemini checks how each
+   `backend/services/indexing/dataset_description.py`): Gemini checks how each
    primary paper relates to its dataset (reports it, a larger sample, a
    related study, a tool paper, unclear), with evidence quotes verified
    against README, catalogue and abstract; the search page shows
