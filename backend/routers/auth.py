@@ -10,6 +10,8 @@ from urllib.parse import quote, urlsplit
 import httpx
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from exceptions.domain import DomainError
@@ -26,7 +28,19 @@ SESSION_DAYS = 7
 _SESSION_MAX_AGE = SESSION_DAYS * 24 * 3600
 _OAUTH_STATE_SECONDS = 10 * 60
 
-_PLACEHOLDER_SECRETS = ("change-me", "changeme")
+
+class AuthSettings(BaseSettings):
+    """Read from the environment when api_security.py builds the middleware."""
+
+    model_config = SettingsConfigDict(str_strip_whitespace=True, hide_input_in_errors=True)
+
+    # Signs the session and CSRF cookies. With a missing or guessable key anyone
+    # who reads the repo could sign a session for any user, so the app refuses
+    # to start without one of at least 32 characters (.env.example's
+    # placeholder is shorter). Generate one with
+    #   python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+    SESSION_SECRET: SecretStr = Field(min_length=32)
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -64,25 +78,10 @@ class NotInGitHubOrgError(
 
 # ── Session ───────────────────────────────────────────────────────────────────
 
-def session_secret() -> str:
-    """The key that signs the session and CSRF cookies. Refuses to run without a real one.
-
-    A missing or placeholder key would let anyone who reads the repo sign a
-    session for any user, so the app must not start instead of falling back.
-    """
-    secret = os.getenv("JWT_SECRET", "").strip()
-    if not secret or secret.lower().startswith(_PLACEHOLDER_SECRETS):
-        raise RuntimeError(
-            "JWT_SECRET is missing or still a placeholder. Set it to a long random value, "
-            'e.g. python3 -c "import secrets; print(secrets.token_urlsafe(64))"'
-        )
-    return secret
-
-
-def session_middleware_options() -> dict:
+def session_middleware_options(secret: str) -> dict:
     """Keyword arguments for SessionMiddleware."""
     return {
-        "secret_key": session_secret(),
+        "secret_key": secret,
         "session_cookie": SESSION_COOKIE,
         "max_age": _SESSION_MAX_AGE,
         "path": "/api",

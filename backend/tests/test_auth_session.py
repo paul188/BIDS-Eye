@@ -12,6 +12,7 @@ import httpx
 import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 import api_security
 from exceptions.handlers import add_error_handlers
@@ -34,7 +35,7 @@ def _github(request: httpx.Request) -> httpx.Response:
 
 
 def _build_app(monkeypatch: pytest.MonkeyPatch, frontend_url: str = "*") -> FastAPI:
-    monkeypatch.setenv("JWT_SECRET", SECRET)
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
     monkeypatch.setenv("FRONTEND_URL", frontend_url)
     monkeypatch.setenv("GITHUB_REDIRECT_URI", CALLBACK)
     monkeypatch.delenv("GITHUB_ORG", raising=False)
@@ -301,13 +302,16 @@ def test_missing_or_placeholder_secret_refuses_to_start(
     monkeypatch: pytest.MonkeyPatch, value: str | None
 ) -> None:
     if value is None:
-        monkeypatch.delenv("JWT_SECRET", raising=False)
+        monkeypatch.delenv("SESSION_SECRET", raising=False)
     else:
-        monkeypatch.setenv("JWT_SECRET", value)
-    with pytest.raises(RuntimeError, match="JWT_SECRET"):
+        monkeypatch.setenv("SESSION_SECRET", value)
+    with pytest.raises(ValidationError, match="SESSION_SECRET") as refused:
         api_security.install_security_middleware(FastAPI())
+    # A rejected value never reaches the logs.
+    if value and value.strip():
+        assert value not in str(refused.value)
 
 
 def test_real_secret_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JWT_SECRET", SECRET)
-    assert auth.session_secret() == SECRET
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    assert auth.AuthSettings().SESSION_SECRET.get_secret_value() == SECRET

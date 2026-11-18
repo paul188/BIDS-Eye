@@ -59,7 +59,7 @@ jobs:
       METADATA_DB_PASSWORD: ci
       METADATA_DB_HOST: localhost
       METADATA_DB_PORT: "5432"
-      JWT_SECRET: ci-only-not-a-secret
+      SESSION_SECRET: ci-only-not-a-secret-ci-only-not-a-secret
       # A scratch database for the tests that need real SQL
       # (tests/test_match_reasons_postgres.py); on its own port so nothing
       # finds it under METADATA_DB_*.

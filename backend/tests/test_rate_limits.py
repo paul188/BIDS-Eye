@@ -169,7 +169,7 @@ def test_old_windows_are_pruned(client: TestClient, clock: list[float]) -> None:
 
 def test_every_api_route_declares_exactly_one_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     """New routes cannot be added without a category: the app is built as in production."""
-    monkeypatch.setenv("JWT_SECRET", "test-secret-" + "x" * 40)
+    monkeypatch.setenv("SESSION_SECRET", "test-secret-" + "x" * 40)
     monkeypatch.setenv("CRAWLER_ENABLED", "true")
     for name in ("METADATA_DB_NAME", "METADATA_DB_USER", "METADATA_DB_PASSWORD", "METADATA_DB_HOST"):
         monkeypatch.setenv(name, "x")
