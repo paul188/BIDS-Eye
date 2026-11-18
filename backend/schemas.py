@@ -114,12 +114,6 @@ class TextToSQLResult(BaseModel):
     # datatype / suffix / task values no dataset has, corrected or dropped
     # before the query ran (services/catalogue/catalogue_values.py).
     value_fixes: List[str] = []
-    # True when no model was asked: the question was translated before
-    # (services/stores/translation_store.py).
-    from_store: bool = False
-    # A new translation as a store entry; the router keeps it once the search
-    # ran without correction. Server-side only.
-    store_entry: Optional[Any] = Field(default=None, exclude=True)
 
 
 class QueryFilterSchema(BaseModel):

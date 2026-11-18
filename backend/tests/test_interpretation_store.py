@@ -18,6 +18,27 @@ def test_questions_that_differ_only_in_form_share_a_key():
     assert store._key("resting state fmri") != store._key("resting state eeg")
 
 
+@pytest.mark.parametrize("a, b", [
+    ("Parkinson’s patients", "parkinson's patients"),        # curly apostrophe
+    ("children 6–12 years", "children 6-12 years"),          # en dash
+    ("resting state fMRI", "resting state fmri"),        # non-breaking space
+    ("resting state f​MRI", "resting state fmri"),       # zero-width space
+    ("Straße", "STRASSE"),                               # casefold, not lower
+])
+def test_forms_of_one_question_share_a_key(a, b):
+    assert store._key(a) == store._key(b)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("datasets with fMRI", "datasets without fMRI"),
+    ("at least 40 patients", "at most 40 patients"),
+    ("fMRI and EEG", "fMRI or EEG"),
+    ("no controls", "controls"),
+])
+def test_different_questions_never_share_a_cache_key(a, b):
+    assert store._key(a) != store._key(b)
+
+
 def test_cache_is_off_by_default(monkeypatch):
     monkeypatch.delenv("INTERPRETATION_CACHE", raising=False)
     assert not store.enabled()

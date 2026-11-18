@@ -22,7 +22,7 @@ GROUPS = {
     "fulltext": ("text_search", "uncertain_tier"),
     "catalogue": ("schema_capabilities", "catalogue_values", "word_form_store"),
     "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),
-    "stores": ("translation_store", "interpretation_store", "query_cache"),
+    "stores": ("interpretation_store", "query_cache"),
     "indexing": ("readme_profile", "dataset_description"),
 }
 

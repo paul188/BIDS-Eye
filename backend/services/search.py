@@ -23,7 +23,6 @@ from services.catalogue import catalogue_values
 from services.stores import interpretation_store
 from services.results import query_filters
 from services import search_runner
-from services.stores import translation_store
 from services.stores.query_cache import CachedQuery, query_cache
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
 from services.translate.text_to_sql import text_to_sql
@@ -78,9 +77,6 @@ async def answer_question(session: AsyncSession, question: str,
             filter_sql=stored.get("filter_sql"), relaxed_sql=stored.get("relaxed_sql"),
         )
     else:
-        # The exact-match store of services/stores/translation_store.py (off unless
-        # TRANSLATION_STORE is set) is asked inside text_to_sql.
-        await translation_store.refresh(session)
         translation = await text_to_sql(question)
 
     cached = CachedQuery(
@@ -126,16 +122,6 @@ async def answer_question(session: AsyncSession, question: str,
     )
     if stored is None and _worth_storing(cached, total):
         await interpretation_store.put(session, question, payload, total)
-    # Keep the translation for the next time this question is asked, but only
-    # one that ran as written and found something: a corrected or empty search
-    # should get a fresh attempt.
-    if (translation.store_entry is not None and not cached.self_corrected
-            and cached.base_sql != _FALLBACK_SQL and total > 0):
-        translation.store_entry.final_sql = cached.base_sql
-        translation.store_entry.result_total = total
-        await translation_store.remember(session, translation.store_entry)
-    elif translation.from_store:
-        await translation_store.count_hit(session, question)
 
     await _record_user_query(session, user, question)
 

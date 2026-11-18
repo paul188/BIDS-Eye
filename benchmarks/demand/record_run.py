@@ -18,11 +18,26 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "recall"))
+
+
+def code_commit(root: Path) -> str:
+    """The commit of the backend under test: the image's (see backend/Dockerfile), else git."""
+    named = os.getenv("BIDSEYE_COMMIT", "").strip()
+    if named:
+        return named
+    deployed = root / "DEPLOYED_COMMIT"
+    if deployed.is_file() and deployed.read_text().split():
+        return deployed.read_text().split()[0]
+    git = subprocess.run(["git", "-C", str(root), "rev-parse", "--short=12", "HEAD"],
+                         capture_output=True, text=True)
+    return git.stdout.strip() or "unknown"
 
 
 def load_questions(path: Path, prefixes: str) -> list:
@@ -66,11 +81,7 @@ def main() -> None:
         result = run_pipeline(query, *a, **k)
         recording[query] = result.model_dump(mode="json", exclude={"topics"})
         recording[query]["usage"] = usage
-        try:   # which code made this translation (translation store imports)
-            from services.stores import translation_store
-            recording[query]["code_commit"] = translation_store.code_commit()
-        except Exception:
-            pass
+        recording[query]["code_commit"] = code_commit(Path(args.backend_dir).parent)
         save()
         return result
 

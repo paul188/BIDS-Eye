@@ -28,6 +28,7 @@ import json
 import logging
 import os
 import re
+import unicodedata
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -58,7 +59,6 @@ _VERSION_FILES = (
     _BACKEND / "services" / "translate" / "sql_rewriter.py",
     _BACKEND / "services" / "fulltext" / "text_search.py",
     _BACKEND / "services" / "translate" / "text_to_sql.py",
-    _BACKEND / "services" / "stores" / "translation_store.py",
     _BACKEND / "services" / "fulltext" / "uncertain_tier.py",
     _BACKEND / "services" / "catalogue" / "word_form_store.py",
 )
@@ -100,10 +100,29 @@ def pipeline_version() -> str:
     return _version
 
 
+_QUOTES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+                        "\u2013": "-", "\u2014": "-"})
+
+
 def normalize(question: str) -> str:
-    """The form under which a question is stored: case, spacing and end punctuation do not matter."""
-    text = re.sub(r"\s+", " ", question.strip().lower())
-    return text.rstrip(" ?.!")
+    """The text two questions must share to count as the same question.
+
+    Case, spacing, the kind of quote marks and dashes, invisible characters
+    (zero-width spaces, soft hyphens, as pasted from PDFs) and punctuation at
+    the end are ignored. Every word and number stays: "with" and "without",
+    "at least 40" and "at most 40" must never share a key. Two questions that
+    share a key get the same stored translation for good, so this is an
+    equality of text, not of meaning: no stopwords, stems or synonyms.
+
+    Also the key under which identical running searches are merged
+    (routers/query.py). A change here needs no new pipeline_version: a
+    stored row is the translation of its normalised text, whatever form the
+    question came in.
+    """
+    text = unicodedata.normalize("NFKC", question or "").translate(_QUOTES)
+    text = "".join(c for c in text if unicodedata.category(c) != "Cf").casefold()
+    text = re.sub(r"\s+", " ", text).strip()
+    return text.rstrip(".?! ").strip()
 
 
 def _key(question: str) -> str:

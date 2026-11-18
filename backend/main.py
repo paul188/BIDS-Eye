@@ -38,7 +38,6 @@ import models     # noqa: E402, F401 — registers backend-only models (message_
 from db.db import create_all_tables, engine  # noqa: E402
 from services.catalogue import schema_capabilities, word_form_store  # noqa: E402
 from services.fulltext import text_search  # noqa: E402
-from services.stores import translation_store  # noqa: E402
 
 _RAG = Path(__file__).resolve().parents[1] / "RAG"
 if str(_RAG) not in sys.path:
@@ -86,13 +85,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         word_form_store.set_lookup(
             word_form_store.make_lookup(engine, asyncio.get_running_loop())
         )
-
-    # Questions translated before (services/stores/translation_store.py); off unless
-    # TRANSLATION_STORE is set.
-    try:
-        await translation_store.load(engine)
-    except Exception as exc:
-        log.warning("Translation store not loaded: %s", exc)
 
     # Optionally run the crawler in-process (useful for single-container dev).
     # In production the crawler runs as its own Docker service.

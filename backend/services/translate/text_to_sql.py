@@ -509,7 +509,6 @@ from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
 from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
-from services.stores import translation_store  # noqa: E402
 from services.catalogue.schema_capabilities import (  # noqa: E402
     available_columns as _available_columns,
     uses_unavailable_column as _uses_unavailable_column,
@@ -715,30 +714,23 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         log.warning("Pipeline modules not importable (%s) — using fallback SQL", exc)
         return TextToSQLResult(sql=_FALLBACK_SQL, explanation=str(exc))
 
-    # A question translated before answers stages 1-3 from the store; the
-    # compiler and the rewriter below run as for a new question.
-    stored, augmented_plan = _stored_translation(question)
-    model_usage = (_start_usage_collection()
-                   if translation_store.enabled() or translation_store.capture_file() else [])
+    # Stage 2 retriever (author / funding name resolution + optional DB back-check)
+    name_index_path = _ROOT / "RAG" / "name_index.json"
+    retriever: Optional[MetadataRetriever] = None
+    if name_index_path.exists():
+        try:
+            retriever = MetadataRetriever(
+                str(name_index_path),
+                db_url=os.getenv("DATABASE_URL"),
+            )
+        except Exception as exc:
+            log.warning("Could not load RAG name index: %s", exc)
 
-    if augmented_plan is None:
-        # Stage 2 retriever (author / funding name resolution + optional DB back-check)
-        name_index_path = _ROOT / "RAG" / "name_index.json"
-        retriever: Optional[MetadataRetriever] = None
-        if name_index_path.exists():
-            try:
-                retriever = MetadataRetriever(
-                    str(name_index_path),
-                    db_url=os.getenv("DATABASE_URL"),
-                )
-            except Exception as exc:
-                log.warning("Could not load RAG name index: %s", exc)
-
-        # Stages 1 + 2
-        augmented_plan = run_pipeline(
-            question, retriever=retriever, api_key=api_key,
-            available_columns=_available_columns(),
-        )
+    # Stages 1 + 2
+    augmented_plan = run_pipeline(
+        question, retriever=retriever, api_key=api_key,
+        available_columns=_available_columns(),
+    )
     augmented_question = augmented_plan.augmented_question
     query_family = augmented_plan.plan.query_family.value
     explanation = augmented_plan.plan.natural_language_summary
@@ -753,18 +745,9 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     compiled = _compile_plan(plan, getattr(augmented_plan, "resolved", None) or [],
                              augmented_question)
     raw_sql = compiled.sql
-    model_sql: Optional[str] = None
-    if (stored is not None and stored.model_sql
-            and stored.status == translation_store.VERIFIED):
-        # A reviewer's SQL stands, also where the plan could be compiled.
-        raw_sql = model_sql = stored.model_sql
-        log.info("SQL path: stored, verified (no model call)")
-    elif raw_sql:
+    if raw_sql:
         log.info("SQL path: compiled (%d participant groups, no SQL generation)",
                  len(plan.groups))
-    elif stored is not None and stored.model_sql:
-        raw_sql = model_sql = stored.model_sql
-        log.info("SQL path: stored (no model call)")
     else:
         # One line per search: which plans the compiler declines, and why,
         # shows what to support next.
@@ -775,7 +758,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
             log.info("Injecting %d few-shot examples for family '%s' (resolved codes: %s)",
                      len(examples), query_family,
                      {k: v for k, v in resolved_codes.items() if v})
-        raw_sql = model_sql = _gemini_sql_generation(augmented_question, api_key, examples)
+        raw_sql = _gemini_sql_generation(augmented_question, api_key, examples)
 
     # Keep LLM generation and SQL rewriting separate: the model emits raw SQL,
     # or the supported typed-plan compiler emits it; the rewrite service then
@@ -798,9 +781,6 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         for f in augmented_plan.scored_filters
     ]
 
-    if stored is None and not _fallback_models(model_usage):
-        translation_store.capture(question, augmented_plan, model_sql)
-
     return TextToSQLResult(
         sql=rewritten.sql,
         explanation=explanation,
@@ -813,51 +793,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         filter_sql=rewritten.filter_sql,
         relaxed_sql=rewritten.relaxed_sql,
         value_fixes=rewritten.value_fixes,
-        from_store=stored is not None and not model_usage,
-        store_entry=_store_entry(question, stored, augmented_plan, model_sql, model_usage),
     )
-
-
-def _start_usage_collection() -> list:
-    from llm_client import start_usage_collection
-    return start_usage_collection()
-
-
-def _store_entry(question: str, stored, augmented_plan, model_sql: Optional[str],
-                 model_usage: list):
-    """The entry to keep for this translation, or None.
-
-    None for a hit that needed no model (nothing new), and for a translation
-    in which a fallback model answered: that one should not stand for a week.
-    """
-    if stored is not None and not model_usage:
-        return None
-    fallback = _fallback_models(model_usage)
-    if fallback:
-        log.info("translation store: not kept, answered by fallback model %s", fallback)
-        return None
-    return translation_store.candidate(question, augmented_plan, model_sql)
-
-
-def _fallback_models(model_usage: list) -> list:
-    """Models other than the first of the cascade that answered in this translation."""
-    from llm_client import _build_cascade
-    cascade = _build_cascade()
-    primary = cascade[0].model if cascade else None
-    return sorted({u["model"] for u in model_usage if u["model"] != primary})
-
-
-def _stored_translation(question: str):
-    """(entry, its plan) for a question translated before, else (None, None)."""
-    stored = translation_store.lookup(question)
-    if stored is None:
-        return None, None
-    try:
-        from preprocess import AugmentedQueryPlan
-        return stored, AugmentedQueryPlan.model_validate(stored.plan)
-    except Exception as exc:  # noqa: BLE001 — an unreadable entry is a miss
-        log.warning("translation store: stored plan not readable (%s)", exc)
-        return None, None
 
 
 # ── Public entry point ─────────────────────────────────────────────────────────
