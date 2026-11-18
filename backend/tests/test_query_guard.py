@@ -5,7 +5,8 @@ On 2026-11-14 one search ("datasets with at least 100 children aged 12 or
 younger") joined every participant with every file and filled the server's
 disk. These tests pin each guard against the families of queries that can do
 that — row explosions, functions without bounds, writes and locks — and pin
-that the real queries users get still pass.
+that the real queries users get still pass. Generated SQL also may read only
+the dataset catalogue, not the app's own tables in the same database.
 """
 
 from __future__ import annotations
@@ -227,6 +228,72 @@ def test_recursive_cte_is_refused() -> None:
 def test_writes_locks_and_batches_are_refused(sql: str, words: str) -> None:
     reason = check_static(sql)
     assert reason is not None and words.lower() in reason.lower(), (sql, reason)
+
+
+# ── only the dataset catalogue ────────────────────────────────────────────────
+# The app's own tables share the database: users (with e-mail addresses),
+# query_log and user_queries (other users' questions). A question can steer the
+# model into reading them, e.g. one character of an address at a time through
+# EXISTS.
+
+def _app_tables() -> list[str]:
+    import models  # backend/models.py: the app's own tables, not the catalogue
+    return sorted({cls.__tablename__ for cls in vars(models).values()
+                   if isinstance(cls, type) and cls.__module__ == "models" and hasattr(cls, "__tablename__")})
+
+
+def test_the_app_tables_are_known() -> None:
+    assert {"users", "query_log", "user_queries", "message_usage"} <= set(_app_tables())
+
+
+@pytest.mark.parametrize("table", _app_tables())
+def test_no_app_table_is_readable(table: str) -> None:
+    sql = (f"SELECT d.id FROM bids_datasets AS d "
+           f"WHERE EXISTS (SELECT 1 FROM {table} AS t WHERE t.github_login LIKE 'a%')")
+    reason = check_static(sql)
+    assert reason is not None and f"table {table} is not part" in reason, reason
+
+
+@pytest.mark.parametrize("sql, table", [
+    ("SELECT d.id FROM bids_datasets AS d WHERE d.name IN (SELECT github_email FROM users)", "users"),
+    ("SELECT d.id FROM bids_datasets AS d JOIN users AS u ON u.github_login = d.name", "users"),
+    ("SELECT d.id FROM bids_datasets AS d WHERE d.id = (SELECT count(*) FROM public.users)", "users"),
+    ('SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM "users" AS u)', "users"),
+    ("WITH u AS (SELECT github_email FROM users) "
+     "SELECT d.id FROM bids_datasets AS d WHERE d.name IN (SELECT github_email FROM u)", "users"),
+    ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM pg_authid AS a)", "pg_authid"),
+    ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_authid AS a)",
+     "pg_catalog.pg_authid"),
+    ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM information_schema.tables AS t)",
+     "information_schema.tables"),
+    ("SELECT d.id FROM other.public.bids_datasets AS d", "other.public.bids_datasets"),
+    # A CTE named like the table counts only where it is visible: this one is
+    # defined in the first subquery, so the second reads the real users table.
+    ("SELECT d.id FROM bids_datasets AS d "
+     "WHERE d.id IN (WITH users AS (SELECT o.dataset_id FROM bids_objects AS o) SELECT dataset_id FROM users) "
+     "AND EXISTS (SELECT 1 FROM users AS u WHERE u.github_email LIKE 'a%')", "users"),
+])
+def test_tables_outside_the_catalogue_are_refused(sql: str, table: str) -> None:
+    reason = check_static(sql)
+    assert reason is not None and f"table {table} is not part" in reason, (sql, reason)
+
+
+@pytest.mark.parametrize("sql", [
+    "SELECT d.id FROM public.bids_datasets AS d",
+    "SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM bids_derivatives AS dv "
+    "WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep')",
+    "SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM bids_dataset_sites AS s "
+    "JOIN bids_site_places AS p ON p.site_id = s.id WHERE s.dataset_id = d.id)",
+    "SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM object_associations AS a "
+    "JOIN bids_objects AS o ON o.id = a.object_id WHERE o.dataset_id = d.id)",
+    # The query's own CTE, even one named like an app table, is not that table.
+    "WITH users AS (SELECT o.dataset_id FROM bids_objects AS o) "
+    "SELECT d.id FROM bids_datasets AS d WHERE d.id IN (SELECT dataset_id FROM users)",
+    "SELECT d.id FROM bids_datasets AS d, LATERAL jsonb_array_elements(d.authors_json) AS e(v)",
+    "SELECT r.a FROM jsonb_to_recordset('[]') AS r(a int)",
+])
+def test_catalogue_tables_and_own_ctes_pass(sql: str) -> None:
+    assert check_static(sql) is None, sql
 
 
 # ── the rewriter and the guard together ───────────────────────────────────────

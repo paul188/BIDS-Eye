@@ -8,7 +8,9 @@ files until the server's disk was full, and every other write failed with it.
 Fixing that one query shape is not enough, so every generated query passes
 four independent guards:
 
-1. check_static(): the SQL must be one plain SELECT; no CROSS or comma joins
+1. check_static(): the SQL must be one plain SELECT that reads only the
+   dataset catalogue (bids_* tables), never the app's own tables such as
+   users or query_log, which share the database; no CROSS or comma joins
    (a LATERAL subquery excepted), no join without a condition, no recursive
    CTE, no functions that sleep, generate rows, build huge strings or touch
    files and server state, and never bids_participants and bids_objects
@@ -84,6 +86,48 @@ _FORBIDDEN_FUNCTIONS = frozenset({
     "pg_file_write", "lo_from_bytea", "lo_put",
 })
 _PER_ROW_TABLES = ("bids_objects", "bids_participants")
+
+# The only tables generated SQL may read: the dataset catalogue, which is the
+# bids_* tables plus object_associations. The app keeps its own tables in the
+# same database (users with their e-mail addresses, other users' questions in
+# query_log and user_queries; backend/models.py), and a question can steer the
+# model into a subquery on them. tests/test_query_guard.py checks that none of
+# the app's tables match this rule.
+_CATALOGUE_PREFIX = "bids_"
+_CATALOGUE_TABLES = frozenset({"object_associations"})
+
+
+def _is_catalogue_table(name: str) -> bool:
+    name = name.lower()
+    return name.startswith(_CATALOGUE_PREFIX) or name in _CATALOGUE_TABLES
+
+
+def _is_visible_cte(table: Any) -> bool:
+    """The table is a CTE of this query or of one that encloses it. A CTE of
+    another subquery does not count: it cannot stand for a real table here."""
+    name = table.name.lower()
+    node = table.parent
+    while node is not None:
+        for value in node.args.values():
+            if isinstance(value, exp.With) and any(cte.alias_or_name.lower() == name for cte in value.expressions):
+                return True
+        node = node.parent
+    return False
+
+
+def _outside_catalogue(root: Any) -> Optional[str]:
+    """The first table this query reads that is not part of the dataset catalogue."""
+    for table in root.find_all(exp.Table):
+        if not isinstance(table.this, exp.Identifier):
+            continue  # a function in FROM (jsonb_to_recordset(...)); _FORBIDDEN_FUNCTIONS covers those
+        schema, catalog = table.db, table.catalog
+        if catalog or schema.lower() not in ("", "public"):
+            return ".".join(part for part in (catalog, schema, table.name) if part)
+        if not schema and _is_visible_cte(table):
+            continue
+        if not _is_catalogue_table(table.name):
+            return table.name
+    return None
 
 
 def _function_name(node: Any) -> str:
@@ -241,6 +285,9 @@ def check_static(sql: str) -> Optional[str]:
                         "participant with every file; use EXISTS or a correlated subquery for participants")
             return ("bids_objects or bids_participants joined more than once in the same query without "
                     "matching the subject; use EXISTS")
+    foreign = _outside_catalogue(root)
+    if foreign is not None:
+        return f"table {foreign} is not part of the dataset catalogue; read only the bids_* tables"
     return None
 
 
