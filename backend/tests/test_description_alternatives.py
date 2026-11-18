@@ -113,8 +113,46 @@ def test_rewriter_restores_alternatives_the_model_left_out() -> None:
     assert f"WHERE {condition} AND d.license" in restored
     copied = f"SELECT d.id FROM bids_datasets AS d WHERE {condition} GROUP BY d.id"
     assert service._restore_description_alternatives(copied, question) == copied
+    # Left out altogether: left alone (the model used a table instead).
+    absent = ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM bids_derivatives AS dv "
+              "WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep') GROUP BY d.id")
+    assert service._restore_description_alternatives(absent, question) == absent
     plain = "[Resolved DB filters]\n  dataset text: text_match('complex')\n\nsummary"
     assert service._restore_description_alternatives(left_out, plain) == left_out
+
+
+# ── Words no dataset says ─────────────────────────────────────────────────────
+
+def _question(monkeypatch, **fields) -> str:
+    monkeypatch.setattr(pp.augment, "_matches_too_few", lambda text: True)
+    return pp.augment_with_rag(_plan(**fields), {}).augmented_question
+
+
+def test_words_that_are_the_whole_question_are_searched_even_when_rare(monkeypatch) -> None:
+    """Not searching them returned the whole catalogue ("datasets with astronauts")."""
+    question = _question(monkeypatch, description_search="astronauts")
+    assert "dataset text: text_match('astronauts')" in question
+    assert "not searchable" not in question
+
+
+def test_an_or_stays_an_or_when_it_is_the_whole_question(monkeypatch) -> None:
+    question = _question(monkeypatch, description_search="drawings or art")
+    line = next(ln for ln in question.splitlines() if "dataset text:" in ln)
+    assert "drawings" in line and "art" in line and "drawings art" not in line
+    assert "not searchable" not in question
+
+
+def test_a_not_alone_does_not_count_as_a_filter(monkeypatch) -> None:
+    question = _question(monkeypatch, description_search="astronauts but not sleep")
+    line = next(ln for ln in question.splitlines() if "dataset text:" in ln)
+    assert "astronauts" in line and "NOT" in line and "sleep" in line
+
+
+def test_rare_words_next_to_another_filter_are_still_not_searched(monkeypatch) -> None:
+    question = _question(monkeypatch, description_search="adjacency matrices graphml",
+                         name_search="connectome")
+    assert "dataset text:" not in question
+    assert "not searchable (add NO condition for these): adjacency matrices graphml" in question
 
 
 # ── Ranking: the user's own words first ───────────────────────────────────────

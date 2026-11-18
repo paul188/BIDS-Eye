@@ -8,11 +8,15 @@ from collections.abc import MutableMapping
 from urllib.parse import quote, urlsplit
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
+
+
+# ── Settings ──────────────────────────────────────────────────────────────────
 
 # The login lives in Starlette's SessionMiddleware (see api_security.py): a
 # signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
@@ -26,6 +30,39 @@ _PLACEHOLDER_SECRETS = ("change-me", "changeme")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+
+# ── Errors (answered by exceptions/handlers.py) ───────────────────────────────
+
+class NotSignedInError(DomainError, status_code=401, detail="Not signed in"):
+    """No signed-in session. RequireLoginMiddleware (api_security.py) sends the
+    same answer before routing, where exception handlers do not reach."""
+
+
+class OAuthStateError(DomainError, status_code=400, detail="Invalid or expired OAuth state."):
+    """GitHub returned a state this browser's session was not given, or it expired."""
+
+
+class GitHubTokenError(
+    DomainError, status_code=400, detail="Failed to obtain access token from GitHub."
+):
+    """GitHub did not exchange the login code for an access token."""
+
+
+class GitHubLoginMissingError(
+    DomainError, status_code=502, detail="GitHub did not return a login name."
+):
+    """GitHub's /user answer had no login name."""
+
+
+class NotInGitHubOrgError(
+    DomainError,
+    status_code=403,
+    detail="Access restricted to members of the required GitHub organization.",
+):
+    """The user is not a member of GITHUB_ORG."""
+
+
+# ── Session ───────────────────────────────────────────────────────────────────
 
 def session_secret() -> str:
     """The key that signs the session and CSRF cookies. Refuses to run without a real one.
@@ -86,9 +123,11 @@ def require_auth(request: Request) -> dict:
     """
     user = getattr(request.state, "user", None) or session_user(request.session)
     if user is None:
-        raise HTTPException(status_code=401, detail="Not signed in")
+        raise NotSignedInError()
     return user
 
+
+# ── GitHub login ──────────────────────────────────────────────────────────────
 
 def _github_redirect_uri(request: Request) -> str:
     return os.getenv("GITHUB_REDIRECT_URI") or str(request.url_for("github_callback"))
@@ -139,12 +178,47 @@ def _take_oauth_state(request: Request, returned: str) -> bool:
     return secrets.compare_digest(value, returned)
 
 
+def _json(response) -> object:
+    """The answer's JSON body, or None when it is not JSON."""
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
+def _github_login(user_resp) -> str:
+    """The account's login from GitHub's /user answer; '' when GitHub answered with an error.
+
+    An error answer ({"message": "Bad credentials"}) has no login.
+    """
+    data = _json(user_resp) if user_resp.status_code == 200 else None
+    login = data.get("login") if isinstance(data, dict) else None
+    return login.strip() if isinstance(login, str) else ""
+
+
+def _primary_email(emails_resp) -> str | None:
+    """The verified primary address from GitHub's /user/emails answer, else None.
+
+    Without the user:email scope, or on an error, GitHub answers with an
+    object instead of a list; the sign-in then goes on without an address.
+    """
+    data = _json(emails_resp) if emails_resp.status_code == 200 else None
+    if not isinstance(data, list):
+        return None
+    return next(
+        (e["email"] for e in data
+         if isinstance(e, dict) and e.get("primary") and e.get("verified")
+         and isinstance(e.get("email"), str)),
+        None,
+    )
+
+
 @router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
 async def github_callback(request: Request):
     code = request.query_params.get("code", "")
 
     if not _take_oauth_state(request, request.query_params.get("state", "")):
-        raise HTTPException(status_code=400, detail="Invalid or expired OAuth state.")
+        raise OAuthStateError()
 
     # Exchange code for GitHub access token
     async with httpx.AsyncClient() as client:
@@ -159,9 +233,10 @@ async def github_callback(request: Request):
             headers={"Accept": "application/json"},
             timeout=15,
         )
-    access_token = token_resp.json().get("access_token")
+    token_data = _json(token_resp)
+    access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
     if not access_token:
-        raise HTTPException(status_code=400, detail="Failed to obtain access token from GitHub.")
+        raise GitHubTokenError(f"token exchange answered {token_resp.status_code}")
 
     gh_headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 
@@ -171,13 +246,10 @@ async def github_callback(request: Request):
             client.get("https://api.github.com/user/emails", headers=gh_headers, timeout=10),
         )
 
-    github_login_name = user_resp.json().get("login")
-    if not isinstance(github_login_name, str) or not github_login_name:
-        raise HTTPException(status_code=502, detail="GitHub did not return a login name.")
-    primary_email = next(
-        (e["email"] for e in emails_resp.json() if e.get("primary") and e.get("verified")),
-        None,
-    )
+    github_login_name = _github_login(user_resp)
+    if not github_login_name:
+        raise GitHubLoginMissingError(f"/user answered {user_resp.status_code}")
+    primary_email = _primary_email(emails_resp)
 
     github_org = os.getenv("GITHUB_ORG", "").strip()
     if github_org:
@@ -188,10 +260,7 @@ async def github_callback(request: Request):
                 timeout=10,
             )
         if membership.status_code != 204:
-            raise HTTPException(
-                status_code=403,
-                detail="Access restricted to members of the required GitHub organization.",
-            )
+            raise NotInGitHubOrgError(f"{github_login_name} not in {github_org}")
 
     await _remember_user(github_login_name, primary_email)
 
@@ -223,6 +292,8 @@ async def _remember_user(github_login: str, email: str | None) -> None:
         )
         await session.commit()
 
+
+# ── Signed-in user ────────────────────────────────────────────────────────────
 
 @router.get("/me", dependencies=[rate_limit(Category.LIGHT)])
 async def me(user: dict = Depends(require_auth)):

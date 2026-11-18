@@ -22,9 +22,12 @@ a dataset:
     2  possible      the field is not recorded and nothing hints either way
     9  contradicted  the dataset records the field and it does not fit
 
-Only conditions on fields that can be missing (ages, diagnosis, sex) or on
-text can be uncertain. Modality, file types, size and subject counts come
-from the files themselves and stay hard filters, as does anything negated.
+Only conditions on fields that can be missing (ages, diagnosis, sex, the
+field strength and scanner make or model in the sidecars) or on text can be
+uncertain. For each, the dataset's own text naming the asked value is the
+probable form: "women", "all-female", "7T", "Siemens". Modality, file
+types, size, subject counts and the other sidecar values come from the
+files themselves and stay hard filters, as does anything negated.
 
 "At least N participants with a diagnosis" is its own case (_patient_count):
 confirmed when that many are coded or labelled with it, probable when the
@@ -49,13 +52,14 @@ translation (benchmarks/recall/paired_uncertain_run.py).
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Iterable, List, Optional, Sequence, Tuple
 
 _RAG_DIR = Path(__file__).resolve().parents[3] / "RAG"
 if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
@@ -522,6 +526,9 @@ class SoftCondition:
     reason_probable: str
     reason_possible: str
     paper: Optional[str] = None  # SQL: the terms match the dataset's paper text
+    # (name, SELECT) sets the condition reads more than once: computed once
+    # as a WITH query (a sidecar lookup scans file metadata; _sidecar).
+    ctes: Tuple[Tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         # Paper evidence is one more weaker form, checked first.
@@ -606,10 +613,10 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     sql = node.sql(dialect="postgres")
     columns = {column.name.lower() for column in node.find_all(exp.Column)}
     # Sidecar values (field strength, echo times …) are recorded with the
-    # files, like the modality, and reading them is slow: evaluating such a
-    # condition a second time for the tier took two minutes on one question.
+    # files. Field strength and scanner make can be missing there and named
+    # in the README instead (_sidecar); the rest stay hard filters.
     if "other_entities" in columns:
-        return None
+        return _sidecar(node, alias)
     # A resolved institution filter is evidence from the scanner headers. Its
     # weaker form would be the name anywhere in the README or a paper, and
     # those mentions are mostly suppliers, software and citations ('kindly
@@ -653,6 +660,10 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
                 probable = (f"{alias}.{vector} @@ TO_TSQUERY('english', "
                             f"'{_tsquery_for_words(group_words)}')")
                 reason_probable = "ages not recorded; the description names the age group"
+        if kind == "sex":
+            text = sex_text_condition(node, alias)
+            if text is not None:
+                probable, reason_probable = text
         return SoftCondition(
             sql=sql, kind=kind, probable=probable, known=_known_sql(kind, alias),
             reason_probable=reason_probable or _REASON[kind],
@@ -665,6 +676,421 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
             reason_possible="", paper=paper,
         )
     return None
+
+
+# ── Participant sex in the text ───────────────────────────────────────────────
+
+# Words a README uses for each sex (stemmed by the english configuration:
+# "females" is "femal", "women" stays). Not "man"/"woman" ("Isle of Man",
+# "a woman's voice" in stimuli) nor "girls"/"boys" (stimuli and children's
+# books as often as participants).
+SEX_WORDS = {"female": ("female", "females", "women"), "male": ("male", "males", "men")}
+_SEX_CODES = {"f": "female", "female": "female", "m": "male", "male": "male"}
+# "Only female participants": "only" and "all" are english stopwords, so a
+# tsquery cannot say it; a regex over the dataset's own text does.
+_ONLY_SEX_RE = (r"(all[- ]?({w})|({w})[- ]only|only ({w})|exclusively ({w})"
+                r"|all (participants|subjects|volunteers) (were|are) ({w}))")
+_ONLY_SEX_WORDS = {"female": "female|females|women", "male": "male|males|men"}
+
+
+def asked_sex(node) -> Optional[str]:
+    """'female' or 'male' when a sex condition asks for one sex, else None."""
+    values = set()
+    for comparison in node.find_all(exp.EQ, exp.In):
+        if not any(c.name.lower() == "sex" for c in comparison.find_all(exp.Column)):
+            continue
+        for literal in comparison.find_all(exp.Literal):
+            if literal.is_string and literal.this.lower() in _SEX_CODES:
+                values.add(_SEX_CODES[literal.this.lower()])
+    return next(iter(values)) if len(values) == 1 else None
+
+
+def _only_one_sex(node) -> bool:
+    """The condition requires every participant row to have the sex
+    (preprocess._participant_conditions: NOT EXISTS a row without it)."""
+    for not_node in node.find_all(exp.Not):
+        inner = not_node.this
+        if isinstance(inner, exp.Exists) and any(
+                c.name.lower() == "sex" for c in inner.find_all(exp.Column)):
+            return True
+    return False
+
+
+def _own_text(alias: str) -> str:
+    """The dataset's own name, description and README as one text."""
+    return (f"(COALESCE({alias}.name, '') || ' ' || COALESCE({alias}.description_text, '') "
+            f"|| ' ' || COALESCE({alias}.readme_text, ''))")
+
+
+def _reads_participant_sex(node) -> bool:
+    return any(t.name.lower() == "bids_participants" for t in node.find_all(exp.Table)) and any(
+        c.name.lower() == "sex" for c in node.find_all(exp.Column))
+
+
+def _keep_only_sex_pairs(nodes: list) -> list:
+    """"Only female participants" as one condition again.
+
+    preprocess writes it as EXISTS(a female row) AND NOT EXISTS(a row that is
+    not female); flattening the ANDs made two conditions, so the tier never
+    saw "only" (the README text for any female counted), and the NOT EXISTS
+    alone held for a dataset with no participant rows at all.
+    """
+    rest = []
+    pairs = {}
+    for node in nodes:
+        bare = node.this if isinstance(node, exp.Paren) else node
+        if isinstance(bare, exp.Not) and isinstance(bare.this, exp.Exists) and _reads_participant_sex(bare):
+            pairs.setdefault("not", node)
+        else:
+            rest.append(node)
+    if "not" not in pairs:
+        return nodes
+    partner = next((n for n in rest if not isinstance(n, exp.Not) and _reads_participant_sex(n)
+                    and asked_sex(n)), None)
+    if partner is None:
+        return nodes
+    joined = exp.Paren(this=exp.And(this=partner.copy(), expression=pairs["not"].copy()))
+    return [joined if n is partner else n for n in rest]
+
+
+def sex_text_condition(node, alias: str) -> Optional[Tuple[str, str]]:
+    """(SQL, reason) for a dataset whose text names the asked sex; None if
+    the condition does not ask for one sex."""
+    sex = asked_sex(node)
+    if sex is None:
+        return None
+    if _only_one_sex(node):
+        pattern = _ONLY_SEX_RE.format(w=_ONLY_SEX_WORDS[sex])
+        return (f"{_own_text(alias)} ~* {_sql_literal(r'(^|[^[:alnum:]_])' + pattern + r'($|[^[:alnum:]_])')}",
+                f"participant sex not recorded; the description says all participants are {sex}")
+    words = " | ".join(SEX_WORDS[sex])
+    return (f"{alias}.search_tsv @@ TO_TSQUERY('english', '{words}')",
+            f"participant sex not recorded; the description names {sex} participants")
+
+
+# ── Scanner metadata in the text ──────────────────────────────────────────────
+
+# Sidecar keys a README states as often as the sidecars do ("acquired on a
+# 3T Siemens Prisma"). Of 1,210 datasets with MRI files on 2026-11-18, 299
+# record no field strength; 52 of them name one in their text. 26 without a
+# recorded manufacturer name it. Echo and repetition times are not here: a
+# README states them in too many forms to read reliably.
+FIELD_STRENGTH_KEY = "MagneticFieldStrength"
+# The strengths scanners are sold at; a range asks for the ones inside it.
+NOMINAL_TESLA = (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 4.7, 7.0, 9.4, 10.5, 11.7, 14.0)
+
+
+def _tesla_number(value: float) -> str:
+    """The pattern of one strength's number: 7 also as "7.0", 1.5 also as "1,5"."""
+    whole, _, fraction = f"{value:g}".partition(".")
+    if not fraction:
+        return rf"{whole}(?:\.0+)?"
+    return rf"{whole}[.,]{fraction}0*"
+
+
+def field_strength_regex(strengths: Iterable[float], postgres: bool = False) -> Optional[str]:
+    """Where a text names one of *strengths*: "7T", "7 T", "7-Tesla", "7.0T".
+
+    Not inside another number ("17T", "0.7T"), a BIDS label ("ses-7T"), a
+    word starting with T ("7 T1w images", "3 The") or a gradient spec
+    ("200 T/m/s"). Spaces include the thin ones some READMEs use.
+
+    Python's re by default (query_filters.field_strength_pattern marks it in
+    excerpts); *postgres*: for Postgres's ~ (POSIX classes, no backslashes),
+    which this tier runs over the dataset's text. Both forms are checked
+    against each other on a real database
+    (tests/test_scanner_sex_venues_postgres.py).
+
+    The Postgres form has plain groups, never "(?:": the query runs through
+    SQLAlchemy's text(), which reads ":7" or ":T" after "?" as a bind
+    parameter and fails the search.
+    """
+    numbers = [_tesla_number(v) for v in sorted(set(strengths), reverse=True)]
+    if not numbers:
+        return None
+    space = "[ \u00a0\u2009\u202f]?"
+    word = "[[:alnum:]_" if postgres else r"[\w"
+    body = "|".join(numbers)
+    group = "(?:"
+    if postgres:
+        body = body.replace(r"\.", "[.]").replace("(?:", "(")
+        group = "("
+    return (rf"(?<!{word}.,/-]){group}{body}){space}-?{space}"
+            rf"{group}T|[Tt]esla|TESLA)(?!{word}/])")
+
+
+def asked_field_strengths(node) -> List[float]:
+    """The nominal strengths a field-strength condition asks for: "> 6.5 AND
+    < 7.5" → [7.0], "= 1.5" → [1.5], "≥ 3" → [3.0, 4.0, …]."""
+    low, high = 0.0, float("inf")
+    low_open = high_open = False
+    exact = None
+    found = False
+    ops = {exp.GT: ">", exp.GTE: ">=", exp.LT: "<", exp.LTE: "<=", exp.EQ: "="}
+    for comparison in node.find_all(exp.GT, exp.GTE, exp.LT, exp.LTE, exp.EQ, exp.Between):
+        if FIELD_STRENGTH_KEY.lower() not in [k.lower() for k in _json_keys(comparison.this)]:
+            continue
+        try:
+            if isinstance(comparison, exp.Between):
+                low = max(low, float(comparison.args["low"].this))
+                high = min(high, float(comparison.args["high"].this))
+                found = True
+                continue
+            right = comparison.expression
+            if not (isinstance(right, exp.Literal) and not right.is_string):
+                continue
+            value = float(right.this)
+        except (KeyError, ValueError, AttributeError):
+            continue
+        found = True
+        op = ops[type(comparison)]
+        if op == "=":
+            exact = value
+        elif op.startswith(">") and value >= low:
+            low, low_open = value, op == ">"
+        elif op.startswith("<") and value <= high:
+            high, high_open = value, op == "<"
+    if not found:
+        return []
+    if exact is not None:
+        return [exact]
+    return [t for t in NOMINAL_TESLA
+            if (t > low if low_open else t >= low) and (t < high if high_open else t <= high)]
+
+
+_TEXT_SIDECAR_KEYS = {"magneticfieldstrength": FIELD_STRENGTH_KEY,
+                      "manufacturer": "Manufacturer",
+                      "manufacturermodelname": "ManufacturerModelName"}
+# Vendor names as a README writes them (tsquery, english configuration).
+_VENDOR_WORDS = {
+    "siemens": "siemens",
+    "philips": "philips",
+    "ge": "(ge <-> healthcare) | (ge <-> medical) | (general <-> electric) | signa | (ge <-> discovery)",
+    "general electric": "(ge <-> healthcare) | (ge <-> medical) | (general <-> electric) | signa",
+    "bruker": "bruker",
+    "canon": "(canon <-> medical) | toshiba",
+    "toshiba": "toshiba | (canon <-> medical)",
+    "hitachi": "hitachi",
+    "united imaging": "(united <-> imaging) | uih",
+}
+_SIDECAR_LABELS = {FIELD_STRENGTH_KEY: "field strength", "Manufacturer": "scanner manufacturer",
+                   "ManufacturerModelName": "scanner model"}
+
+
+def _json_keys(node) -> List[str]:
+    keys = []
+    for extract in node.find_all(exp.JSONExtractScalar, exp.JSONExtract):
+        key = extract.expression
+        name = key.this if isinstance(key, exp.Literal) else key.sql().strip("'$.")
+        keys.append(name)
+    return keys
+
+
+def _key_values(node, key: str) -> List[str]:
+    """String values compared with other_entities ->> *key* ('%GE%' → 'GE')."""
+    values = []
+    for comparison in node.find_all(exp.EQ, exp.In, exp.ILike, exp.Like):
+        if key.lower() not in [k.lower() for k in _json_keys(comparison)]:
+            continue
+        for literal in comparison.find_all(exp.Literal):
+            if literal.is_string and literal.this.lower() != key.lower():
+                value = literal.this.strip("%").strip()
+                if value:
+                    values.append(value)
+    return list(dict.fromkeys(values))
+
+
+def sidecar_words(key: str, values: Sequence[str]) -> List[str]:
+    """Words of a manufacturer or model a README would name ('GE' → 'ge healthcare' …)."""
+    words: List[str] = []
+    for value in values:
+        query = _VENDOR_WORDS.get(value.lower()) if key == "Manufacturer" else None
+        if query:
+            words.extend(re.sub(r"[()]", "", part).replace(" <-> ", " ").strip()
+                         for part in query.split("|"))
+        else:
+            words.append(re.sub(r"[_-]+", " ", value).strip())
+    return [w for w in dict.fromkeys(words) if w]
+
+
+def _value_tsquery(key: str, values: Sequence[str]) -> Optional[str]:
+    parts = []
+    for value in values:
+        query = _VENDOR_WORDS.get(value.lower()) if key == "Manufacturer" else None
+        if query is None:
+            tokens = re.findall(r"[a-z0-9]+", value.lower())
+            if not tokens or (len(tokens) == 1 and len(tokens[0]) < 3):
+                return None   # "GE"-like fragments of unknown makes are no evidence
+            query = " <-> ".join(tokens)
+        parts.append(f"({query})")
+    return " | ".join(parts) or None
+
+
+def _exists_branches(node) -> Optional[list]:
+    """The EXISTS subqueries an OR of them is made of; None for another shape."""
+    while isinstance(node, exp.Paren):
+        node = node.this
+    if isinstance(node, exp.Or):
+        left, right = _exists_branches(node.left), _exists_branches(node.right)
+        return left + right if left is not None and right is not None else None
+    if isinstance(node, exp.Exists) and isinstance(node.this, exp.Select):
+        return [node.this]
+    return None
+
+
+def _and_parts(node) -> list:
+    while isinstance(node, exp.Paren):
+        node = node.this
+    if isinstance(node, exp.And):
+        return _and_parts(node.left) + _and_parts(node.right)
+    return [node]
+
+
+def _file_rows(select, alias: str) -> Optional[Tuple[str, List[str], List[str], set]]:
+    """(inner alias, sidecar parts, file parts, file columns) of
+    EXISTS(SELECT 1 FROM bids_objects x WHERE x.dataset_id = alias.id AND …);
+    None for another shape (a join, a second correlation such as
+    o_high.subject = o_low.subject)."""
+    tables = list(select.find_all(exp.Table))
+    if len(tables) != 1 or tables[0].name.lower() != "bids_objects":
+        return None
+    if select.args.get("joins") or select.args.get("group") or select.args.get("having"):
+        return None
+    inner = tables[0].alias_or_name
+    where = select.args.get("where")
+    if where is None:
+        return None
+    sidecar, files, file_columns, correlated = [], [], set(), False
+    for part in _and_parts(where.this):
+        columns = list(part.find_all(exp.Column))
+        if (isinstance(part, exp.EQ) and {c.table for c in columns} == {inner, alias}
+                and {c.name.lower() for c in columns} == {"dataset_id", "id"}):
+            correlated = True
+            continue
+        if any(c.table not in (inner, "") for c in columns):
+            return None
+        if _json_keys(part):
+            sidecar.append(part.sql(dialect="postgres"))
+        else:
+            files.append(part.sql(dialect="postgres"))
+            file_columns.update(c.name.lower() for c in columns)
+    if not correlated or not sidecar:
+        return None
+    return inner, sidecar, files, file_columns
+
+
+def _cte_name(select_sql: str) -> str:
+    """A stable name for a WITH query; the same lookup in two conditions is one."""
+    return "_qf_sidecar_" + hashlib.sha256(select_sql.encode()).hexdigest()[:10]
+
+
+def _file_set(inner: str, files: List[str], columns: set) -> Tuple[str, Optional[Tuple[str, str]]]:
+    """The datasets with the file part's files: (IN subquery, WITH query or None).
+
+    From bids_dataset_facets when the part reads only datatype, suffix and
+    task (20,926 rows instead of the objects' ~1M; the same summary executed
+    SQL uses, services/translate/sql_rewriter.py), else once from the objects.
+    """
+    where = " AND ".join(f"({p})" for p in files)
+    try:
+        from services.catalogue import schema_capabilities
+        facets = schema_capabilities.has_dataset_facets()
+    except ImportError:  # pragma: no cover
+        facets = False
+    if facets and columns <= {"datatype", "suffix", "task"}:
+        return f"SELECT {inner}.dataset_id FROM bids_dataset_facets AS {inner} WHERE {where}", None
+    select = f"SELECT DISTINCT {inner}.dataset_id FROM bids_objects AS {inner} WHERE {where}"
+    name = _cte_name(select)
+    return f"SELECT dataset_id FROM {name}", (name, select)
+
+
+def _strength_tsquery(strengths: Sequence[float]) -> str:
+    """Indexed words that every text field_strength_regex matches has: the
+    english parser keeps "7T", "7Tesla", "7.0T" as one word and splits "7 T"
+    and "7-Tesla" into the bare number. A prefilter only: the regex decides.
+    Checked against the regex on Postgres (tests/test_scanner_sex_venues_postgres.py)."""
+    words = []
+    for value in strengths:
+        number = f"{value:g}"
+        forms = [number, f"{value:.1f}"]
+        if "." in number:
+            forms.append(number.replace(".", ","))
+        for form in dict.fromkeys(forms):
+            words.extend((form, f"{form}t", f"{form}tesla"))
+    return " | ".join(dict.fromkeys(words))
+
+
+def _sidecar(node, alias: str) -> Optional[SoftCondition]:
+    """A field strength, manufacturer or model condition with its text venue.
+
+    Confirmed: the sidecars hold the value (as asked). Probably relevant: no
+    file of the dataset records the key and its own text names the value, with
+    the condition's file part still required ("7T fMRI": fMRI files). A
+    recorded value that does not fit excludes the dataset, whatever the README
+    says.
+    """
+    keys = {k.lower() for k in _json_keys(node)}
+    if len(keys) != 1 or not keys <= set(_TEXT_SIDECAR_KEYS):
+        return None
+    key = _TEXT_SIDECAR_KEYS[next(iter(keys))]
+    selects = _exists_branches(node)
+    if not selects:
+        return None
+    rows = [_file_rows(s, alias) for s in selects]
+    if any(r is None for r in rows):
+        return None
+    if len({(tuple(r[2])) for r in rows}) > 1:
+        return None   # branches on different files: no single file part
+
+    # Each branch's matching datasets, computed once (the condition is read
+    # in the candidate filter and again for its evidence).
+    ctes = []
+    confirmed = []
+    for inner, sidecar, files, _ in rows:
+        where = " AND ".join(f"({p})" for p in files + sidecar)
+        select = f"SELECT DISTINCT {inner}.dataset_id FROM bids_objects AS {inner} WHERE {where}"
+        name = _cte_name(select)
+        ctes.append((name, select))
+        confirmed.append(f"{alias}.id IN (SELECT dataset_id FROM {name})")
+    inner, _, files, columns = rows[0]
+    file_part = None
+    if files:
+        file_select, file_cte = _file_set(inner, files, columns)
+        file_part = f"{alias}.id IN ({file_select})"
+        if file_cte:
+            ctes.append(file_cte)
+
+    if key == FIELD_STRENGTH_KEY:
+        strengths = asked_field_strengths(node)
+        pattern = field_strength_regex(strengths, postgres=True)
+        if not pattern:
+            return None
+        # The indexed words first: the regex then reads a few hundred texts.
+        text = (f"{alias}.search_tsv @@ TO_TSQUERY('english', {_sql_literal(_strength_tsquery(strengths))}) "
+                f"AND {_own_text(alias)} ~ {_sql_literal(pattern)}")
+        named = " or ".join(f"{s:g} T" for s in strengths)
+    else:
+        values = _key_values(node, key)
+        query = _value_tsquery(key, values) if values else None
+        if not query:
+            return None
+        text = f"{alias}.search_tsv @@ TO_TSQUERY('english', {_sql_literal(query)})"
+        named = " or ".join(values)
+    label = _SIDECAR_LABELS[key]
+    probable = f"({text}) AND ({file_part})" if file_part else text
+    recorded = (f"EXISTS(SELECT 1 FROM bids_objects AS uk WHERE uk.dataset_id = {alias}.id "
+                f"AND NULLIF(TRIM(uk.other_entities ->> '{key}'), '') IS NOT NULL)")
+    # Whether the key is recorded matters only where the text names the value:
+    # checked for those few datasets, not for every candidate (6.6 ms per
+    # dataset on the live objects table, 11 s for one question). The same
+    # states while there is no 'possible' level; with it, every candidate.
+    known = recorded if possible_enabled() else f"(({probable}) AND {recorded})"
+    return SoftCondition(
+        sql=" OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0],
+        kind="sidecar", probable=probable, known=known,
+        reason_probable=f"{label} not in the file metadata; the description names {named}",
+        reason_possible=f"{label} not in the file metadata", ctes=tuple(ctes),
+    )
 
 
 def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
@@ -749,7 +1175,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
 
     hard: List[str] = []
     soft: List[SoftCondition] = []
-    for node in _flatten_and(where.this):
+    for node in _keep_only_sex_pairs(_flatten_and(where.this)):
         condition = None
         try:
             condition = classify(node, alias, papers=papers)
@@ -891,7 +1317,11 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
             reasons.append(f"CASE {' '.join(branches)} END")
     reasons_sql = (f"NULLIF(CONCAT_WS('; ', {', '.join(reasons)}), '')" if reasons else "NULL")
 
-    with_sql = f"WITH {terms_cte}\n" if terms_cte else ""
+    ctes = [f"{name} AS MATERIALIZED ({select})"
+            for name, select in dict.fromkeys(cte for c in soft for cte in c.ctes)]
+    if terms_cte:
+        ctes.insert(0, terms_cte)
+    with_sql = f"WITH {', '.join(ctes)}\n" if ctes else ""
     return (
         f"{with_sql}"
         f"SELECT tier_base.*, {level} AS {LEVEL_COLUMN}, "

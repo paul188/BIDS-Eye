@@ -86,7 +86,7 @@ def test_no_placeholder_without_a_usable_code_or_number(codes, n):
 
 def test_the_filter_line_counts_patients_and_not_all_subjects():
     augmented = _build_augmented_question(_plan(), [PD])
-    line = next(l for l in augmented.splitlines() if l.startswith("  patients ("))
+    line = next(ln for ln in augmented.splitlines() if ln.startswith("  patients ("))
     assert line.endswith("patients_with('parkinsons_disease, de_novo_parkinsons') >= 40")
     assert "add no other count" in line
     assert "COUNT(DISTINCT o.subject)" not in augmented

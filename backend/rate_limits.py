@@ -9,7 +9,7 @@ A search runs a language-model call and costs money, a page of results runs
 SQL, a page refresh or a status poll costs nearly nothing, so each category
 has its own windows instead of one shared quota:
 
-    LIGHT   120 per minute         /auth/me, /auth/logout, /crawler/status
+    LIGHT   120 per minute         /auth/me, /auth/logout
     LOGIN    10 per minute         /auth/github, /auth/github/callback (call GitHub)
     PAGE     60 per minute         /query/page
     SEARCH   10 per minute and DAILY_MESSAGE_LIMIT (20) per UTC day   POST /query
@@ -18,7 +18,7 @@ Requests are counted per signed-in user, or per client address for the few
 public routes. ADMIN_GITHUB_LOGINS are exempt from the daily search cap only.
 
 Counts live in memory: one uvicorn process serves the API (backend/Dockerfile,
-like the query cache and the in-flight searches in routers/query.py), so a
+like the query cache and the in-flight searches in services/search.py), so a
 dict sees every request (tests/test_single_process.py fails if the Dockerfile or
 a Compose file would start more). A restart starts all counts from zero.
 """
@@ -30,7 +30,9 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, Request
+
+from exceptions.domain import DomainError
 
 MINUTE = 60
 DAY = 24 * 3600
@@ -79,6 +81,15 @@ def _now() -> float:
     return time.time()
 
 
+class RateLimitError(DomainError, status_code=429, detail={"code": "rate_limit_exceeded"}):
+    """A window of the request's category is used up.
+
+    ``detail`` says which (code, category, window, limit, retry_after; read by
+    the frontend's class of the same name in api/index.ts) and the
+    Retry-After header when, so both are passed when it is raised.
+    """
+
+
 # (client, category, window seconds) -> (window number, requests counted in it).
 # Fixed windows aligned to the epoch, so the day window resets at UTC midnight.
 _counts: dict[tuple[str, Category, int], tuple[int, int]] = {}
@@ -122,8 +133,8 @@ class RateLimit:
             seen_number, count = _counts.get((client, self.category, window.seconds), (number, 0))
             if seen_number == number and count >= window.limit:
                 reset_at = (number + 1) * window.seconds
-                raise HTTPException(
-                    status_code=429,
+                raise RateLimitError(
+                    f"{client} used {window.limit} {self.category.value} per {window.name}",
                     detail={
                         "code": "rate_limit_exceeded",
                         "category": self.category.value,

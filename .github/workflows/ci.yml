@@ -35,7 +35,7 @@ jobs:
             git --log-opts="$range" --redact --no-banner .
 
   lint:
-    name: Lint (ruff, pyflakes rules)
+    name: Lint (ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -43,9 +43,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ruff==0.16.4
-      # Unused imports and undefined names only. crawlers/, scripts/ and
-      # benchmarks/ can be added once they are clean.
-      - run: ruff check --select F backend LLM_preprocessor RAG
+      # The rules are in ruff.toml. crawlers/, scripts/ and benchmarks/ can be
+      # added once they are clean.
+      - run: ruff check backend LLM_preprocessor RAG
 
   backend-tests:
     name: Backend tests

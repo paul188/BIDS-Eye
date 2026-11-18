@@ -27,7 +27,7 @@ four independent guards:
    time (the server has 2 cores); a request that waits too long gets a
    "busy" error instead of piling up.
 
-A refused query raises QueryRefused. The router treats it like a database
+A refused query raises QueryRefusedError. The router treats it like a database
 error: the SQL goes to self-correction with the reason, and if that fails
 too the user gets the fallback sample.
 
@@ -62,15 +62,14 @@ except Exception:  # pragma: no cover
     parse = None
 
 
-class QueryRefused(Exception):
+class QueryRefusedError(Exception):
     """A generated query that must not run; the message says why."""
 
 
-class SearchBusy(DomainError):
+class SearchBusyError(
+    DomainError, status_code=503, detail="The search is busy. Please try again in a minute."
+):
     """No slot for a generated query became free in time."""
-
-    status_code = 503
-    detail = "The search is busy. Please try again in a minute."
 
 
 # ── 1. static check ───────────────────────────────────────────────────────────
@@ -415,7 +414,7 @@ async def slot() -> AsyncIterator[None]:
     try:
         await asyncio.wait_for(semaphore.acquire(), timeout=wait)
     except asyncio.TimeoutError:
-        raise SearchBusy(f"no search slot free within {wait:.0f}s") from None
+        raise SearchBusyError(f"no search slot free within {wait:.0f}s") from None
     try:
         yield
     finally:
@@ -425,11 +424,11 @@ async def slot() -> AsyncIterator[None]:
 # ── all together ──────────────────────────────────────────────────────────────
 
 async def vet(session: Any, base_sql: str, count_sql: str, params: Optional[dict] = None) -> None:
-    """Raise QueryRefused when the base query must not run (guards 1 and 2)."""
+    """Raise QueryRefusedError when the base query must not run (guards 1 and 2)."""
     reason = check_static(base_sql)
     if reason is None:
         reason = await check_plan(session, count_sql, params)
     if reason is not None:
         log.warning("Refused generated SQL: %s", reason)
-        raise QueryRefused(reason)
+        raise QueryRefusedError(reason)
 

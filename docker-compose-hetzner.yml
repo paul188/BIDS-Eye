@@ -60,8 +60,6 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-      args:
-        VITE_CRAWLER_ENABLED: ${CRAWLER_ENABLED:-false}
     container_name: bids_frontend
     logging: *default-logging
     restart: unless-stopped

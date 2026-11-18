@@ -13,7 +13,6 @@ Routes:
   GET  /api/auth/github/callback — OAuth callback; sets JWT and redirects to frontend
   POST /api/auth/logout          — stateless logout
   POST /api/query                — natural-language dataset search (requires JWT)
-  GET  /api/crawler/status       — crawler background service state (requires JWT)
 """
 
 from __future__ import annotations
@@ -122,11 +121,11 @@ from api_security import install_security_middleware               # noqa: E402
 # (see api_security.py). Raises when JWT_SECRET is missing or a placeholder.
 install_security_middleware(app)
 
-from exceptions.handlers import install_domain_error_handler       # noqa: E402
+from exceptions.handlers import add_error_handlers                 # noqa: E402
 
-# A busy or expired search (exceptions/domain.py) answers with its
-# own status and text, so the routers catch none of them.
-install_domain_error_handler(app)
+# Every expected failure (exceptions/domain.py) answers with its own status
+# and text, so the routers catch none of them; anything else gets a plain 500.
+add_error_handlers(app)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 
@@ -135,10 +134,6 @@ from routers.query import router as query_router                   # noqa: E402
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])
-
-if os.getenv("CRAWLER_ENABLED", "false").lower() == "true":
-    from routers.crawler import router as crawler_router           # noqa: E402
-    app.include_router(crawler_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 
 @app.get("/health")

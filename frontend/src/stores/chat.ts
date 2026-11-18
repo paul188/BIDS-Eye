@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api, RateLimitError, type Dataset, type CrawlerStatus, type QueryFilter } from '../api'
+import { api, RateLimitError, type Dataset, type QueryFilter } from '../api'
 
 export interface Message {
   id: number
@@ -80,7 +80,6 @@ export const useChatStore = defineStore('chat', () => {
   const stored = loadFromStorage()
   const conversations = ref<Conversation[]>(stored.length ? stored : [makeConversation()])
   const currentId = ref<number>(conversations.value[conversations.value.length - 1].id)
-  const crawlerStatus = ref<CrawlerStatus | null>(null)
 
   // Advance _nextId past any IDs already in storage so we never collide
   for (const c of conversations.value) {
@@ -245,12 +244,6 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  async function refreshCrawlerStatus() {
-    try {
-      crawlerStatus.value = await api.crawlerStatus()
-    } catch { /* non-fatal */ }
-  }
-
   function clearMessages() {
     newConversation()
   }
@@ -259,10 +252,8 @@ export const useChatStore = defineStore('chat', () => {
     conversations,
     currentId,
     currentMessages,
-    crawlerStatus,
     sendQuestion,
     loadPage,
-    refreshCrawlerStatus,
     newConversation,
     switchConversation,
     deleteConversation,

@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 import rate_limits
+from exceptions.handlers import add_error_handlers
 from rate_limits import DAY, MINUTE, Category, rate_limit
 
 # Noon UTC on some day: far from both a minute and a day boundary.
@@ -43,6 +44,7 @@ def clock(monkeypatch: pytest.MonkeyPatch) -> list[float]:
 @pytest.fixture
 def client(clock: list[float]) -> TestClient:
     app = FastAPI()
+    add_error_handlers(app)
     app.add_middleware(_SignedIn)
 
     @app.post("/api/search", dependencies=[rate_limit(Category.SEARCH)])
@@ -168,15 +170,12 @@ def test_old_windows_are_pruned(client: TestClient, clock: list[float]) -> None:
 def test_every_api_route_declares_exactly_one_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     """New routes cannot be added without a category: the app is built as in production."""
     monkeypatch.setenv("JWT_SECRET", "test-secret-" + "x" * 40)
-    monkeypatch.setenv("CRAWLER_ENABLED", "true")
     for name in ("METADATA_DB_NAME", "METADATA_DB_USER", "METADATA_DB_PASSWORD", "METADATA_DB_HOST"):
         monkeypatch.setenv(name, "x")
     main = importlib.import_module("main")
-    if not any(r.path.startswith("/api/crawler") for r in main.app.routes):
-        pytest.skip("main was imported earlier without CRAWLER_ENABLED")
 
     api_routes = [r for r in main.app.routes if isinstance(r, APIRoute) and r.path.startswith("/api")]
-    assert len(api_routes) >= 7
+    assert len(api_routes) >= 6
     for route in api_routes:
         limits = [d for d in route.dependencies if isinstance(d.dependency, rate_limits.RateLimit)]
         assert len(limits) == 1, f"{sorted(route.methods)} {route.path} declares {len(limits)} rate limits"

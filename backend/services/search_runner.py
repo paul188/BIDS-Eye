@@ -51,7 +51,7 @@ def clamp_page(page: int, page_size: int) -> tuple[int, int]:
 
 async def guarded_count(session: AsyncSession, base_sql: str, params: dict) -> int:
     """COUNT of a generated query behind the guards of services/query_guard.py:
-    per-transaction limits, then the static and plan checks (QueryRefused)."""
+    per-transaction limits, then the static and plan checks (QueryRefusedError)."""
     await query_guard.apply_limits(session)
     count_sql = build_count_sql(base_sql)
     if base_sql != _FALLBACK_SQL:
@@ -186,7 +186,7 @@ async def run_page(
 ) -> tuple[list[DatasetSchema], int]:
     """_run_page_unguarded in one of the few slots for generated SQL.
 
-    Raises query_guard.SearchBusy when no slot frees up in time.
+    Raises query_guard.SearchBusyError when no slot frees up in time.
     """
     async with query_guard.slot():
         return await _run_page_unguarded(session, query_id, cached, question, page, page_size)

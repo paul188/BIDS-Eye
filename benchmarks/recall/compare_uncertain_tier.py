@@ -291,7 +291,7 @@ async def _execute_live(sql: str, params: dict[str, Any], label: str,
             plan_reason = await query_guard.check_plan(
                 session, build_count_sql(sql), params)
             if plan_reason:
-                raise query_guard.QueryRefused(plan_reason)
+                raise query_guard.QueryRefusedError(plan_reason)
         else:
             await query_guard.vet(session, sql, build_count_sql(sql), params)
         guard_seconds = time.perf_counter() - started
@@ -383,7 +383,7 @@ async def _run_live(cases: dict[str, dict[str, Any]], params: dict[str, Any], la
                 )
                 if bypass_cross_join:
                     item["live"]["static_guard_bypassed_for_diagnostic"] = True
-            except query_guard.QueryRefused as exc:
+            except query_guard.QueryRefusedError as exc:
                 item["live"] = {"status": "refused", "reason": str(exc)}
             except Exception as exc:  # retain per-case diagnostics; keep going
                 item["live"] = {

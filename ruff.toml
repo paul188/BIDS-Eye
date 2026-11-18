@@ -1,0 +1,36 @@
+# Ruff: the Python linter, run by CI (.github/workflows/ci.yml, job "lint")
+# on backend/, LLM_preprocessor/ and RAG/. The VS Code Ruff extension and a
+# local `ruff check backend LLM_preprocessor RAG` read the same rules here.
+#
+# Formatting (`ruff format`, with import sorting "I" and line length "E501")
+# is not on yet: it rewrites most files at once, so it goes in as one commit
+# when the open branches are merged.
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = [
+    "F",   # pyflakes: unused imports, undefined names
+    "E",   # pycodestyle errors (PEP 8)
+    "W",   # pycodestyle warnings (PEP 8)
+    "N",   # pep8-naming: CapWords classes, lowercase functions, exceptions end in "Error"
+    "B",   # flake8-bugbear: common bug patterns
+    "C4",  # flake8-comprehensions: needless list()/dict() calls and comprehensions
+]
+ignore = [
+    "E501",  # line too long: left to the formatter
+    "B905",  # zip() without strict=: adding it changes behaviour, so decide per call
+]
+
+[lint.flake8-bugbear]
+# FastAPI's Depends(...) and friends belong in argument defaults.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Path",
+    "fastapi.Security",
+]

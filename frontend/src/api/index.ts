@@ -84,17 +84,6 @@ export interface QueryResponse {
   has_more: boolean
 }
 
-export interface CrawlerStatus {
-  running: boolean
-  current_accession: string | null
-  queue: string[]
-  last_run_started: string | null
-  last_run_finished: string | null
-  last_error: string | null
-  indexed_count: number
-  error_count: number
-}
-
 // A 429 from the backend's rate limiter (backend/rate_limits.py): which kind
 // of request ran out ('search', 'page', ...), in which window ('minute' or
 // 'day'), and when it may be tried again.
@@ -164,9 +153,6 @@ export const api = {
 
   queryPage: (queryId: string, page: number, pageSize: number) =>
     post<QueryResponse>('/query/page', { query_id: queryId, page, page_size: pageSize }),
-
-  crawlerStatus: () =>
-    get<CrawlerStatus>('/crawler/status'),
 
   // 401 when not signed in: the frontend cannot read the cookie itself.
   me: () =>

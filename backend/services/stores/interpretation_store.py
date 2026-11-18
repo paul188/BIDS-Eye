@@ -49,7 +49,7 @@ _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # it reaches; test_interpretation_store.py checks this list against the
 # imports), and the few-shot examples. models.py and schemas.py are left out:
 # they define the shape of rows and responses, not the translation; so is
-# exceptions/domain.py (query_guard's SearchBusy), which only sets HTTP answers.
+# exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers.
 _VERSION_FILES = (
     _BACKEND / "constants.py",
     _BACKEND / "few_shot_examples.json",
@@ -117,7 +117,7 @@ def normalize(question: str) -> str:
     equality of text, not of meaning: no stopwords, stems or synonyms.
 
     Also the key under which identical running searches are merged
-    (routers/query.py). A change here needs no new pipeline_version: a
+    (services/search.py ask). A change here needs no new pipeline_version: a
     stored row is the translation of its normalised text, whatever form the
     question came in.
     """

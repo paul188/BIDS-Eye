@@ -85,6 +85,34 @@ _VOCAB_MISS_HINT_RE = re.compile(
 _TOPIC_LINE_RE = re.compile(r'^\s*topic "[^"\n]*": (?P<condition>.+)$', re.MULTILINE)
 # The description search with its other words (preprocess/, 'dataset text:').
 _DESCRIPTION_LINE_RE = re.compile(r"^\s*dataset text: (?P<condition>\(.+\))\s*$", re.MULTILINE)
+# Any 'dataset text:' line; a formula ("memory AND NOT sleep") has several parts.
+_ANY_DESCRIPTION_LINE_RE = re.compile(r"^\s*dataset text: (?P<condition>.+?)\s*$", re.MULTILINE)
+
+
+def _top_level_and_parts(condition: str) -> list:
+    """*condition* split on the ANDs outside parentheses and quotes."""
+    parts, depth, quoted, start = [], 0, False, 0
+    i = 0
+    while i < len(condition):
+        char = condition[i]
+        if char == "'":
+            quoted = not quoted
+        elif not quoted and char == "(":
+            depth += 1
+        elif not quoted and char == ")":
+            depth -= 1
+        elif not quoted and depth == 0:
+            joiner = re.match(r"\s+AND\s+", condition[i:], re.IGNORECASE)
+            if joiner:
+                parts.append(condition[start:i].strip())
+                i += joiner.end()
+                start = i
+                continue
+        i += 1
+    parts.append(condition[start:].strip())
+    return [p for p in parts if p]
+
+
 _TEXT_MATCH_CALL_RE = re.compile(
     r"\btext_match\s*\(\s*'([^']*)'\s*(?:,\s*'[^']*'\s*)?\)",
     re.IGNORECASE,
@@ -276,6 +304,7 @@ class SqlRewriteService:
         sql = self._inject_vocab_miss(sql, augmented_question)
         sql = self._inject_topics(sql, augmented_question)
         sql = self._restore_description_alternatives(sql, augmented_question)
+        sql = self._restore_description_formula(sql, augmented_question)
         # "At least N patients with X": patients_with(...) >= N becomes a count of
         # the participants known to have the diagnosis (RAG/cohort_count.py).
         sql = self._inject_patient_counts(sql, augmented_question)
@@ -1438,42 +1467,6 @@ class SqlRewriteService:
         log.info("Injecting VOCABULARY MISS text filter: %s", combined)
         return self._and_into_where(cleaned, combined)
 
-    def _restore_description_alternatives(self, sql: str, augmented_question: str) -> str:
-        """Put back the other words of a description search the model left out.
-
-        The 'dataset text:' line can read
-            (text_match('dead people') OR text_match('post-mortem | ex vivo', 'near'))
-        (preprocess/topics.py, check_description_alternatives). A model that copied
-        only the first search would find what the user's own words find,
-        which for "dead people" is nothing; one that left the line out, or
-        wrote it its own way (dropped as invented), would ignore what the
-        question is about. Then the whole condition is ANDed in.
-        """
-        line = _DESCRIPTION_LINE_RE.search(augmented_question)
-        if line is None:
-            return sql
-        condition = line.group("condition").strip()
-        calls = list(_TEXT_MATCH_CALL_RE.finditer(condition))
-        if len(calls) != 2:
-            return sql
-
-        def key(match: re.Match) -> tuple:
-            return tuple(sorted(str(t) for t in _parse_alternatives(match.group(1))))
-
-        own, others = key(calls[0]), key(calls[1])
-        in_sql = list(_TEXT_MATCH_CALL_RE.finditer(sql))
-        if any(key(m) == others for m in in_sql):
-            return sql
-        for match in in_sql:
-            if key(match) != own:
-                continue
-            if re.search(r"\bNOT\s*$", sql[:match.start()], re.IGNORECASE):
-                continue
-            log.info("Restoring description alternatives the model left out: %s", condition)
-            return sql[:match.start()] + condition + sql[match.end():]
-        log.info("Injecting the description search the model left out: %s", condition)
-        return self._and_into_where(sql, condition)
-
     def _inject_topics(self, sql: str, augmented_question: str) -> str:
         """Add a topic's filter if the model left it out.
 
@@ -1506,6 +1499,12 @@ class SqlRewriteService:
         (preprocess/topics.py, check_description_alternatives). A model that copied
         only the first search would find what the user's own words find,
         which for "dead people" is nothing.
+
+        A model that left the line out is left alone: it usually said the
+        same with a table ("preprocessed using fMRIPrep" → bids_derivatives,
+        "with a paper" → bids_dataset_papers). ANDing the line in anyway
+        (deployed a069533 to 049e939) cut those results on the gold requests:
+        fMRIPrep 345 → 38 datasets, recall 94% → 10%.
         """
         line = _DESCRIPTION_LINE_RE.search(augmented_question)
         if line is None:
@@ -1529,6 +1528,46 @@ class SqlRewriteService:
                 continue
             log.info("Restoring description alternatives the model left out: %s", condition)
             return sql[:match.start()] + condition + sql[match.end():]
+        return sql
+
+    def _restore_description_formula(self, sql: str, augmented_question: str) -> str:
+        """AND back the exclusions of a description formula the model left out.
+
+        A formula line (RAG/text_formula.py) reads, for "memory but not sleep",
+            dataset text: text_match('memory') AND NOT text_match('sleep')
+        Its top-level AND parts are separate conditions. A model that copied
+        only the first would search for memory and keep the sleep studies.
+
+        Only the NOT parts are put back. A positive part the model left out
+        is usually covered by a table it chose instead (fMRIPrep →
+        bids_derivatives); ANDing the text back in emptied such results
+        (gold requests, 2026-11-17: recall 70% → 62–64% with the same
+        fallback for description alternatives). An exclusion cannot replace
+        a table, and putting it back only removes what the user ruled out.
+        """
+        line = _ANY_DESCRIPTION_LINE_RE.search(augmented_question)
+        if line is None:
+            return sql
+        parts = [p for p in _top_level_and_parts(line.group("condition").strip())
+                 if re.match(r"NOT\s+text_match\s*\(", p, re.IGNORECASE)]
+        if not parts:
+            return sql
+
+        def key(argument: str) -> tuple:
+            return tuple(sorted(str(t) for t in _parse_alternatives(argument)))
+
+        def negated_before(text: str, position: int) -> bool:
+            return bool(re.search(r"\bNOT\s*\(?\s*$", text[:position], re.IGNORECASE))
+
+        in_sql = {(key(m.group(1)), negated_before(sql, m.start()))
+                  for m in _TEXT_MATCH_CALL_RE.finditer(sql)}
+        for part in parts:
+            wanted = {(key(m.group(1)), negated_before(part, m.start()))
+                      for m in _TEXT_MATCH_CALL_RE.finditer(part)}
+            if not wanted or wanted <= in_sql:
+                continue
+            log.info("Injecting the exclusion of the description formula the model left out: %s", part)
+            sql = self._and_into_where(sql, part)
         return sql
 
     def _and_into_where(self, sql: str, condition: str) -> str:

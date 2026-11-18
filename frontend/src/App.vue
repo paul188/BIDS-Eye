@@ -3,23 +3,13 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from './stores/chat'
 import { api, RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
-import CrawlerStatusDot from './components/CrawlerStatusDot.vue'
 import LoginView from './components/LoginView.vue'
 import LogoMark from './components/LogoMark.vue'
 import InputBar from './components/InputBar.vue'
 
-const CRAWLER_ENABLED = import.meta.env.VITE_CRAWLER_ENABLED === 'true'
-
 // null until /api/auth/me answers: the session cookie is HttpOnly, so the page
 // can only learn whether it is signed in by asking the backend.
 const isLoggedIn = ref<boolean | null>(null)
-
-function startCrawlerPolling() {
-  if (!CRAWLER_ENABLED) return
-  clearInterval(crawlerInterval)
-  store.refreshCrawlerStatus()
-  crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
-}
 
 async function logout() {
   try {
@@ -28,7 +18,6 @@ async function logout() {
     // Signed out locally either way; the cookie expires on its own.
   }
   isLoggedIn.value = false
-  clearInterval(crawlerInterval)
 }
 
 // ── Rate limiting ──────────────────────────────────────────────────────────────
@@ -166,8 +155,6 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString()
 }
 
-// Poll crawler status every 15 s — only while logged in and crawler is enabled
-let crawlerInterval: ReturnType<typeof setInterval>
 onMounted(() => {
   // Older versions kept the login token in localStorage and in the URL.
   localStorage.removeItem('bids_eye_token')
@@ -178,7 +165,6 @@ onMounted(() => {
   api.me()
     .then(() => {
       isLoggedIn.value = true
-      startCrawlerPolling()
     })
     .catch(() => {
       isLoggedIn.value = false
@@ -186,11 +172,9 @@ onMounted(() => {
 
   window.addEventListener('bids-unauthorized', () => {
     isLoggedIn.value = false
-    clearInterval(crawlerInterval)
   })
 })
 onUnmounted(() => {
-  clearInterval(crawlerInterval)
   clearInterval(countdownInterval)
 })
 </script>
@@ -220,7 +204,6 @@ onUnmounted(() => {
 
       <div class="flex-1" />
 
-      <CrawlerStatusDot v-if="CRAWLER_ENABLED" :status="store.crawlerStatus" />
       <button
         v-if="store.currentMessages.length"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-accent hover:bg-accent-soft transition-colors"

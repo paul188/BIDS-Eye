@@ -328,10 +328,10 @@ class _SnippetSession:
 
     def begin_nested(self):
         class _Nested:
-            async def __aenter__(self_inner):
-                return self_inner
+            async def __aenter__(self):
+                return self
 
-            async def __aexit__(self_inner, *exc):
+            async def __aexit__(self, *exc):
                 return False
         return _Nested()
 

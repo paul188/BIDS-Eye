@@ -84,8 +84,8 @@ def _augmented(term: str, codes: list) -> str:
 
 
 def test_ftd_line_searches_no_alzheimer_or_parkinson_words() -> None:
-    line = next(l for l in _augmented("frontotemporal dementia", ["frontotemporal_dementia"]).splitlines()
-                if l.startswith("  diagnosis:"))
+    line = next(ln for ln in _augmented("frontotemporal dementia", ["frontotemporal_dementia"]).splitlines()
+                if ln.startswith("  diagnosis:"))
     assert "p2.diagnosis IN ('frontotemporal_dementia')" in line
     assert "frontotemporal dementia" in line
     assert "alzheimer" not in line and "parkinson" not in line
@@ -94,8 +94,8 @@ def test_ftd_line_searches_no_alzheimer_or_parkinson_words() -> None:
 
 def test_broader_codes_get_the_missing_words_as_a_required_text() -> None:
     codes = _resolve_yaml_term("diagnosis", "Lewy body dementia")
-    line = next(l for l in _augmented("Lewy body dementia", codes).splitlines()
-                if l.startswith("  diagnosis:"))
+    line = next(ln for ln in _augmented("Lewy body dementia", codes).splitlines()
+                if ln.startswith("  diagnosis:"))
     assert line.endswith("AND text_match('lewy body'))")
     assert "p2.diagnosis IN (" in line
 

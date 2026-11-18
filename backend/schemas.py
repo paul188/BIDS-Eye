@@ -157,13 +157,3 @@ class QueryResponse(BaseModel):
     page_size: int = 20
     has_more: bool = False
 
-
-class CrawlerStatusResponse(BaseModel):
-    running: bool
-    current_accession: Optional[str] = None
-    queue: List[str] = []
-    last_run_started: Optional[str] = None
-    last_run_finished: Optional[str] = None
-    last_error: Optional[str] = None
-    indexed_count: int = 0
-    error_count: int = 0

@@ -27,7 +27,13 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_csrf import CSRFMiddleware
 
-from routers.auth import SESSION_COOKIE, session_middleware_options, session_secret, session_user
+from routers.auth import (
+    SESSION_COOKIE,
+    NotSignedInError,
+    session_middleware_options,
+    session_secret,
+    session_user,
+)
 
 CSRF_COOKIE = "bids_eye_csrf"
 CSRF_HEADER = "x-csrftoken"
@@ -59,7 +65,10 @@ class RequireLoginMiddleware:
             return
         user = session_user(scope["session"])
         if user is None:
-            await JSONResponse({"detail": "Not signed in"}, status_code=401)(scope, receive, send)
+            # Before routing, so exception handlers do not reach here: send
+            # NotSignedInError's answer directly instead of raising it.
+            response = JSONResponse({"detail": NotSignedInError.detail}, status_code=NotSignedInError.status_code)
+            await response(scope, receive, send)
             return
         scope.setdefault("state", {})["user"] = user
         await self.app(scope, receive, send)

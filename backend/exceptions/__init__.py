@@ -1,2 +1,3 @@
-"""Errors the services raise that have a fixed answer for the client
-(exceptions/domain.py)."""
+"""Every error the API answers on purpose (exceptions/domain.py), and the
+handlers that turn them, and any unexpected exception, into a response
+(exceptions/handlers.py)."""

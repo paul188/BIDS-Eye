@@ -99,6 +99,7 @@ from .augment import (  # noqa: E402,F401
     _build_augmented_question,
     _content_words,
     _diagnosis_lines,
+    _formula_matches_too_few,
     _matches_too_few,
     _without_phrases,
     augment_with_rag,

@@ -77,7 +77,7 @@ _THIS_DIR = Path(__file__).parent
 if str(_THIS_DIR) not in sys.path:
     sys.path.insert(0, str(_THIS_DIR))
 
-from yaml_to_llamaindex import (
+from yaml_to_llamaindex import (  # noqa: E402  (after the sys.path line above)
     leaf_db,
     display_db,
     leaf_codes_db,
@@ -88,9 +88,9 @@ from yaml_to_llamaindex import (
     measures_db,
     build_embedding_index,
 )
-from join_registry import field_to_db_col as _field_to_db_col
-import institution_index as _institution_index
-import reference_vocabulary as _reference
+from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
+import institution_index as _institution_index  # noqa: E402
+import reference_vocabulary as _reference  # noqa: E402
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -664,13 +664,13 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     # like "ng" or "dre" would spuriously match unrelated user queries via
     # partial substring scoring (WRatio uses partial_ratio internally).
     # They are still found by the exact-match step above.
-    _MIN_FUZZY_KEY_LEN = 3
+    min_fuzzy_key_len = 3
     all_targets: Dict[str, List[str]] = {}
     for k, v in cat_display.items():
-        if len(k) >= _MIN_FUZZY_KEY_LEN:
+        if len(k) >= min_fuzzy_key_len:
             all_targets[k] = list(v)
     for k, v in cat_group_display.items():
-        if len(k) >= _MIN_FUZZY_KEY_LEN:
+        if len(k) >= min_fuzzy_key_len:
             # Group wins for dual nodes — returning all descendant codes means
             # "working memory" finds every dataset tagged with any working-memory
             # task, not just those using the working_memory_general code itself.
