@@ -13,7 +13,14 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-_SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
+# No fallback: a default secret is public (it is in this repo), so anyone could
+# forge tokens with it. Refuse to start instead of signing with a known key.
+_SECRET = os.getenv("JWT_SECRET", "")
+if not _SECRET:
+    raise RuntimeError(
+        "JWT_SECRET is not set. Put a long random value in .env, e.g. "
+        "`python -c 'import secrets; print(secrets.token_hex(32))'`."
+    )
 _ALGORITHM = "HS256"
 _EXPIRE_DAYS = 7
 
