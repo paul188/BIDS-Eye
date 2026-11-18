@@ -69,9 +69,18 @@ def test_words_no_dataset_says_stay_a_filter_when_they_have_alternatives(monkeyp
     plan = _plan(description_search="dead people",
                  description_alternatives=["post-mortem", "ex vivo", "deceased"])
     assert f"dataset text: {CONDITION}" in pp.augment_with_rag(plan, {}).augmented_question
-    # Without alternatives such words are not searched, as before.
-    alone = pp.augment_with_rag(_plan(description_search="dead people"), {}).augmented_question
+    # Without alternatives such words are not searched next to another filter, as before.
+    alone = pp.augment_with_rag(_plan(description_search="dead people", name_search="brain"),
+                                {}).augmented_question
     assert "dataset text:" not in alone and "not searchable" in alone
+
+
+def test_words_no_dataset_says_stay_when_they_are_the_whole_question(monkeypatch) -> None:
+    # "bonn" (2026-11-18) answered with all 1,721 datasets: its only condition
+    # was dropped as matching too few, which left no condition at all.
+    monkeypatch.setattr(pp, "_matches_too_few", lambda text: True)
+    question = pp.augment_with_rag(_plan(description_search="Bonn"), {}).augmented_question
+    assert "dataset text: text_match('bonn')" in question and "not searchable" not in question
 
 
 def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:

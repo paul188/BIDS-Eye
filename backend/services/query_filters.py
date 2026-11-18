@@ -34,7 +34,7 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import asdict, dataclass, field
-from typing import FrozenSet, Iterable, List, Optional, Tuple
+from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
@@ -93,6 +93,12 @@ _FIELD_COLUMNS = {
     "doi": "DOI",
     "study_design": "Study design",
     "source_type": "Source",
+    # bids_site_places (RAG/place_index.py): the sites' institutions as ROR
+    # names them, and where they are.
+    "institution": "Institution",
+    "city": "Location",
+    "region": "Location",
+    "country": "Location",
 }
 # Stored values shown under a friendlier name.
 _FIELD_VALUE_LABELS = {"openneuro": "OpenNeuro", "local": "Local upload"}
@@ -109,6 +115,9 @@ class QueryFilter:
     # that is only text has kind "text" and these as its label.
     text_words: List[str] = field(default_factory=list)
     detail: str = ""            # longer description for a tooltip
+    # Every value behind a label shortened to "+N", so the page can open the
+    # full list; empty when the label already shows them all.
+    values: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -124,11 +133,17 @@ def _humanize_code(code: str) -> str:
     return words[:1].upper() + words[1:]
 
 
-def _short_list(values: List[str], joiner: str = ", ") -> str:
+def _short_list(values: List[str], joiner: str = ", ", shown: int = _MAX_VALUES_SHOWN) -> str:
     values = list(dict.fromkeys(v for v in values if v))
-    if len(values) <= _MAX_VALUES_SHOWN:
+    if len(values) <= shown:
         return joiner.join(values)
-    return f"{joiner.join(values[:_MAX_VALUES_SHOWN])} +{len(values) - _MAX_VALUES_SHOWN}"
+    return f"{joiner.join(values[:shown])} +{len(values) - shown}"
+
+
+def _hidden(values: List[str], shown: int = _MAX_VALUES_SHOWN) -> List[str]:
+    """All of *values* when a label shows only *shown* of them; [] when none is hidden."""
+    values = list(dict.fromkeys(v for v in values if v))
+    return values if len(values) > shown else []
 
 
 def _literals_for(node, column_names: Iterable[str]) -> List[str]:
@@ -436,7 +451,12 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     searched = phrases + [form for form in forms if form not in phrases]
     forms_note = f"Only these word forms count: {', '.join(forms[:8])}." if forms else ""
 
-    def chip(kind: str, field_name: str, label: str, detail: str = "") -> QueryFilter:
+    def chip(kind: str, field_name: str, label: Union[str, List[str]], detail: str = "",
+             shown: int = _MAX_VALUES_SHOWN) -> QueryFilter:
+        # A list of values becomes "a or b +N", with the full list kept in `values`.
+        values = _hidden(label, shown) if isinstance(label, list) else []
+        if isinstance(label, list):
+            label = _short_list(label, " or ", shown)
         if phrases:
             words = ", ".join(phrases[:6])
             detail = (f"{detail} Or the dataset text mentions: {words}." if detail
@@ -444,7 +464,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         if forms_note:
             detail = f"{detail} {forms_note}".strip()
         return QueryFilter(id=chip_id, kind=kind, field=field_name, label=label,
-                           negated=negated, text_words=searched, detail=detail)
+                           negated=negated, text_words=searched, detail=detail, values=values)
 
     def codes_detail(noun: str, names: List[str]) -> str:
         if len(names) == 1:
@@ -465,13 +485,13 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     diagnoses = _literals_for(node, ["diagnosis", "dx_status"])
     if diagnoses:
         names = [_humanize_code(d) for d in diagnoses]
-        label = names[0] + (f" +{len(names) - 1}" if len(names) > 1 else "")
-        return chip("diagnosis", "Diagnosis", label, codes_detail("diagnosis", names))
+        return chip("diagnosis", "Diagnosis", names, codes_detail("diagnosis", names), shown=1)
 
     if _is_topic(node):
         names = [_humanize_code(t) for t in _literals_for(node, ["task"])]
-        searched = ", ".join(phrases[:10]) + ("…" if len(phrases) > 10 else "")
-        detail = f"One subject, its words close together. Searched as: {searched}."
+        # Not `searched`: that is the word list the page marks (text_words).
+        searched_as = ", ".join(phrases[:10]) + ("…" if len(phrases) > 10 else "")
+        detail = f"One subject, its words close together. Searched as: {searched_as}."
         if names:
             detail += " " + codes_detail("task", names)
         if forms_note:
@@ -484,13 +504,13 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     if tasks:
         # Task concepts expand to dozens of codes; the words read better.
         names = [_humanize_code(t) for t in tasks]
-        label = phrases[0] if phrases else names[0] + (f" +{len(names) - 1}" if len(names) > 1 else "")
-        return chip("task", "Task", label, codes_detail("task", names))
+        return chip("task", "Task", phrases[0] if phrases else names,
+                    codes_detail("task", names), shown=1)
 
     modality_codes = _literals_for(node, ["datatype", "suffix", "modality"])
     if modality_codes:
         labels = [_MODALITY_LABELS.get(c.lower(), _humanize_code(c)) for c in modality_codes]
-        return chip("modality", "Modality", _short_list(labels, " or "))
+        return chip("modality", "Modality", labels)
 
     age = _age_label(node)
     if age:
@@ -503,7 +523,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     sexes = _literals_for(node, ["sex"])
     if sexes:
         names = {"f": "female", "female": "female", "m": "male", "male": "male"}
-        return chip("sex", "Sex", _short_list([names.get(s.lower(), s) for s in sexes], " or "))
+        return chip("sex", "Sex", [names.get(s.lower(), s) for s in sexes])
 
     size = _size_label(node)
     if size:
@@ -517,7 +537,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         values = _literals_for(node, [column])
         if values:
             values = [_FIELD_VALUE_LABELS.get(v.lower(), v) for v in values]
-            return chip("field", field_name, _short_list(values, " or "))
+            return chip("field", field_name, values)
 
     if phrases:
         joiner = " or " if isinstance(node, exp.Or) else " + "
@@ -525,7 +545,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         if len(phrases) > 2:
             label += f" +{len(phrases) - 2}"
         return QueryFilter(id=chip_id, kind="text", field="Text", label=label,
-                           negated=negated, text_words=searched,
+                           negated=negated, text_words=searched, values=_hidden(phrases),
                            detail=(f"The dataset text mentions: {', '.join(phrases[:8])}. "
                                    f"{forms_note}").strip())
 
@@ -618,6 +638,7 @@ def describe_exclusion(node, chip_id: str) -> Optional[QueryFilter]:
     shown = ", ".join(excluded[:12]) + ("…" if len(excluded) > 12 else "")
     return QueryFilter(
         id=chip_id + EXCLUSION_SUFFIX, kind="sense", field="Not meant", label=label,
+        values=_hidden(excluded),
         detail=(f"Other meanings of the word, ruled out by the question: {shown}. "
                 "Datasets that match the topic only alongside these come after the others. "
                 "Remove to treat them like the rest."),

@@ -74,11 +74,14 @@ const drawerOpen = ref(false)
 const historyEntries = computed(() =>
   [...store.conversations].reverse().filter(c => c.messages.length))
 
-// The latest question's box above its results is the search field.
+// The latest question's box above its results is the search field, unless an
+// earlier question was clicked: then that box becomes the field, in place.
 const lastUserId = computed(() => {
   const users = store.currentMessages.filter(m => m.role === 'user')
   return users.length ? users[users.length - 1].id : null
 })
+const editingId = ref<number | null>(null)
+const queryBarId = computed(() => editingId.value ?? lastUserId.value)
 function setQueryBar(el: unknown) {
   if (el) inputBar.value = el as InstanceType<typeof InputBar>
 }
@@ -90,6 +93,7 @@ function latestQuestion(): string {
 }
 // A new or different page starts at the top.
 watch(() => store.currentId, () => {
+  editingId.value = null
   input.value = latestQuestion()
   nextTick(() => messagesContainer.value?.scrollTo({ top: 0 }))
 }, { immediate: true })
@@ -125,21 +129,12 @@ async function submit() {
   }
 }
 
-function scrollQuestionToTop() {
-  const c = messagesContainer.value
-  if (!c) return
-  const users = c.querySelectorAll('[data-role="user"]')
-  const last = users[users.length - 1] as HTMLElement | undefined
-  last?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-// Clicking an earlier question copies it into the latest search box, the search field.
-function editQuestion(q: string) {
-  input.value = q
-  nextTick(() => {
-    inputBar.value?.focus({ preventScroll: true })
-    scrollQuestionToTop()
-  })
+// Clicking an earlier question makes its own box the search field, where it
+// is on the page: no jump to the latest box.
+function editQuestion(id: number) {
+  editingId.value = id
+  input.value = store.currentMessages.find(m => m.id === id)?.content ?? ''
+  nextTick(() => inputBar.value?.focus({ preventScroll: true }))
 }
 
 function useSuggestion(s: string) {
@@ -363,9 +358,9 @@ onUnmounted(() => {
           v-for="msg in store.currentMessages"
           :key="msg.id"
           :message="msg"
-          @edit="editQuestion"
+          @edit="editQuestion(msg.id)"
         >
-          <template v-if="msg.id === lastUserId" #query>
+          <template v-if="msg.id === queryBarId" #query>
             <InputBar
               :ref="setQueryBar"
               v-model="input"

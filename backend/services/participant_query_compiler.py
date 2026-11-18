@@ -49,6 +49,7 @@ _KNOWN_PLAN_FIELDS = frozenset({
     # Written by preprocess.py as complete filter lines, read from there:
     "age_groups", "description_search", "description_alternatives", "request_wishes",
     "species", "study_structure", "max_size_gb", "min_size_gb", "topics", "name_search",
+    "location_terms",
     # Built here (_fixed_conditions):
     "doi_required", "min_sessions",
 })
@@ -266,7 +267,7 @@ _COMPLETE_LINE_RE = re.compile(
     r"|participant sex|participant age|participant sex and age"
     r"|species \(complete, no other species condition\)"
     r"|study design|age group [a-z ]+ \(complete, no other age condition\)"
-    r"|topic \"[^\"]*\"|dataset text|dataset name|dataset size): (?P<condition>.+)$")
+    r"|topic \"[^\"]*\"|location \"[^\"]*\"|dataset text|dataset name|dataset size): (?P<condition>.+)$")
 _HAVING_LINE_RE = re.compile(r"^  subject count: HAVING (?P<condition>.+?)(?: \[.*\])?$")
 _IGNORED_LINE_RE = re.compile(r"^  not searchable \(add NO condition for these\): ")
 _VOCAB_HINT_RE = re.compile(r"For free-text search use: (?P<hint>.+?)\]\s*$", re.MULTILINE)

@@ -64,6 +64,8 @@ export interface QueryFilter {
   /** Words also searched in the dataset text; a "text" chip is only these. */
   text_words: string[]
   detail: string
+  /** Every value behind a label shortened to "+N"; [] when nothing is hidden. */
+  values?: string[]
 }
 
 export interface QueryResponse {
