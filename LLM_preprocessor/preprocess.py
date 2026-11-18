@@ -78,6 +78,7 @@ from text_terms import (
     split_words as _split_words,
 )
 from institution_index import text_alternatives as _institution_text_alternatives
+import place_index as _place_index
 from cohort_count import placeholder as _patients_placeholder
 import senses as _senses
 from criteria import SPECIES_CODES as _SPECIES_CODES, normalise_species as _normalise_species, \
@@ -350,6 +351,12 @@ class QueryPlan(BaseModel):
         default_factory=list,
         description="Institutions the data must NOT come from ('not collected at Stanford' → "
                     "['Stanford']). Never also list them in institution_terms."
+    )
+    location_terms: List[str] = Field(
+        default_factory=list,
+        description="Cities, regions or countries where the data was collected, as written by "
+                    "the user, one per entry, e.g. ['Bonn'], ['Germany'], ['California']. "
+                    "Not an institution ('University of Bonn' → institution_terms)."
     )
 
     # ── Sidecar / JSONB metadata filters ─────────────────────────────────────
@@ -714,13 +721,18 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     an institution: "funded by the NIH" → funding_terms, "acquired at the NIH"
     → institution_terms. Do not also put the institution in description_search.
     "not from Stanford", "excluding MIT data" → excluded_institution_terms.
+    Put a city, region or country where the data was collected in
+    location_terms: "datasets from Germany" → ["Germany"], "Bonn" → ["Bonn"],
+    "scanned in Bavaria" → ["Bavaria"]. A named institution stays an
+    institution even when it contains a place: "University of Bonn" →
+    institution_terms. Do not also put the place in description_search.
     Leave both lists empty when an institution name is part of something else:
       a scale, atlas or template:  "Stanford Sleepiness Scale", "Harvard-Oxford
           atlas", "MNI space", "Montreal Cognitive Assessment" → description_search
       a study or dataset name:     "Human Connectome Project", "Cam-CAN",
           "UK Biobank", "ABIDE" → name_search or description_search
       a person or their lab:       "the Poldrack lab" → author_names ["Poldrack"]
-      a country, region or city:   "datasets from Germany" → description_search
+      a country, region or city:   "datasets from Germany", "Bonn" → location_terms
       a generic word:              "multi-site", "hospital data", "clinical sites"
           → no institution (multi-site is a property, not a place)
 
@@ -1733,19 +1745,60 @@ def _institution_lines(
 
     for term in terms:
         names = list(dict.fromkeys(resolved_names.get(term, []))) if use_column else []
+        # The same institution as ROR names it, from the sites' ethics boards
+        # and scanner names (bids_site_places, RAG/place_index.py).
+        ror_names = _place_index.get_index().institutions(term)
         alternatives = _institution_text_alternatives(term)
-        if names:
-            array = ", ".join("'" + name.replace("'", "''") + "'" for name in names)
-            condition = f"d.institutions && ARRAY[{array}]::text[]"
+        if names or ror_names:
+            parts = []
+            if names:
+                parts.append(f"d.institutions && {_array(names)}")
+            if ror_names:
+                parts.append("EXISTS (SELECT 1 FROM bids_dataset_sites AS s JOIN bids_site_places AS sp "
+                             "ON sp.name_raw = s.name_raw WHERE s.dataset_id = d.id "
+                             f"AND sp.institution = ANY({_array(ror_names)}))")
             text_part = _format_text_match(alternatives, _MODE_SHORT)
             if text_part:
-                condition = f"({condition} OR {text_part})"
+                parts.append(text_part)
+            condition = parts[0] if len(parts) == 1 else "(" + " OR ".join(parts) + ")"
         else:
             condition = _format_text_match(alternatives or [term])
             if not condition:
                 continue
         label = term.replace('"', "'")
         lines.append(f'  institution "{label}": {condition}')
+    return lines
+
+
+def _location_lines(plan: QueryPlan) -> List[str]:
+    """One filter line per city, region or country the user named.
+
+    A place stored in bids_site_places (the sites of bids_dataset_sites,
+    matched to ROR; RAG/place_index.py) becomes a join on the sites, or the
+    place named in the dataset's short text fields:
+        (EXISTS (SELECT 1 FROM bids_dataset_sites AS s JOIN bids_site_places AS sp
+                 ON sp.name_raw = s.name_raw
+                 WHERE s.dataset_id = d.id AND sp.city = 'Bonn')
+         OR text_match('Bonn', 'short'))
+    A place no site is in is searched in the whole dataset text, README
+    included, where labs often say where they scanned.
+    """
+    lines: List[str] = []
+    index = _place_index.get_index()
+    for term in dict.fromkeys(t.strip() for t in plan.location_terms if t and t.strip()):
+        place = index.resolve(term)
+        if place:
+            column, value = place
+            sites = ("EXISTS (SELECT 1 FROM bids_dataset_sites AS s JOIN bids_site_places AS sp "
+                     "ON sp.name_raw = s.name_raw WHERE s.dataset_id = d.id "
+                     f"AND sp.{column} = '{value.replace(chr(39), chr(39) * 2)}')")
+            text_part = _format_text_match(list(dict.fromkeys([term, value])), _MODE_SHORT)
+            condition = f"({sites} OR {text_part})" if text_part else sites
+        else:
+            condition = _format_text_match([term])
+            if not condition:
+                continue
+        lines.append(f'  location "{term.replace(chr(34), chr(39))}": {condition}')
     return lines
 
 
@@ -1985,6 +2038,7 @@ def _build_augmented_question(
             and not design_cond and not species_cond and not age_cond
             and not plan.institution_terms
             and not plan.excluded_institution_terms
+            and not plan.location_terms
             and not unresolved_terms and not db_miss_terms
             and not any(t.condition for t in topics)):
         return plan.natural_language_summary
@@ -2211,6 +2265,7 @@ def _build_augmented_question(
         unresolved_terms.pop(RAGField.INSTITUTION.value, []),
         available_columns,
     ))
+    context_lines.extend(_location_lines(plan))
 
     # Inject free-text hints for qualitative/adjectival terms that the
     # preprocessing LLM routed to description_search / name_search because they

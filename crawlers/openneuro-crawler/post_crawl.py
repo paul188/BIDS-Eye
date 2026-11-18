@@ -10,6 +10,8 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
   0. links      derivatives (OpenNeuro's preprocessing bucket and the
                 dataset's own derivatives/ folders) and scanner-header sites
                 (remote/dataset_links.refresh_links). No LLM, public sources only.
+  -. places    city, region and country of each new site name, from the
+                Research Organization Registry (remote/site_places.match_new).
   1. papers     find and look up the papers each dataset names
                 (remote/paper_store.enrich: Europe PMC, bioRxiv/medRxiv, arXiv,
                 OpenAlex). Only datasets whose papers were never checked, or
@@ -31,6 +33,7 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
 Environment:
     CRAWL_PARTICIPANT_GROUPS "false" skips decoding participant groups (default on)
     CRAWL_LINKS             "false" skips step 0 (default on)
+    CRAWL_SITE_PLACES       "false" skips matching site names to places (default on)
     CRAWL_PAPERS            "false" skips step 1 (default on)
     CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
     CRAWL_WORD_FORMS        "false" skips step 3 (default on)
@@ -201,6 +204,18 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
             log.info("[post-crawl] Derivatives and sites: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Derivatives and sites failed: %s", exc, exc_info=True)
+
+    # Where the sites are: names not matched yet go to ROR once
+    # (remote/site_places.py); questions that name a place read the result.
+    if _flag("CRAWL_SITE_PLACES"):
+        try:
+            from remote import site_places
+
+            async with engine.begin() as conn:
+                stats = await site_places.match_new(conn)
+            log.info("[post-crawl] Site places: %s", stats)
+        except Exception as exc:
+            log.error("[post-crawl] Site places failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_PAPERS"):
         try:

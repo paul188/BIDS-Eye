@@ -43,6 +43,7 @@ _RAG = Path(__file__).resolve().parents[1] / "RAG"
 if str(_RAG) not in sys.path:
     sys.path.insert(0, str(_RAG))
 import institution_index  # noqa: E402
+import place_index  # noqa: E402
 from services.schema_capabilities import has_fts, refresh_available_columns  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -67,6 +68,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # names in questions (RAG/institution_index.py). Falls back to
     # RAG/name_index.json when the column is missing.
     await institution_index.refresh_from_db(engine)
+    # Cities, regions and countries of the sites (bids_site_places), for
+    # place names in questions (RAG/place_index.py).
+    await place_index.refresh_from_db(engine)
 
     # Multi-word free-text terms filter on their rarest word; the count comes
     # from the database and is asked for from the translation worker thread.

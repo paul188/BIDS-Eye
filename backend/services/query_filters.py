@@ -93,6 +93,12 @@ _FIELD_COLUMNS = {
     "doi": "DOI",
     "study_design": "Study design",
     "source_type": "Source",
+    # bids_site_places (RAG/place_index.py): the sites' institutions as ROR
+    # names them, and where they are.
+    "institution": "Institution",
+    "city": "Location",
+    "region": "Location",
+    "country": "Location",
 }
 # Stored values shown under a friendlier name.
 _FIELD_VALUE_LABELS = {"openneuro": "OpenNeuro", "local": "Local upload"}
