@@ -51,6 +51,8 @@ _VERSION_FILES = (
     _BACKEND.parent / "RAG" / "value_mappings.yaml",
     _BACKEND.parent / "RAG" / "retriever.py",
     _BACKEND.parent / "RAG" / "text_terms.py",
+    _BACKEND.parent / "RAG" / "reference_vocabulary.py",
+    _BACKEND.parent / "RAG" / "reference_vocabulary.yaml",
 )
 _version: Optional[str] = None
 

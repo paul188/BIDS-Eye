@@ -76,20 +76,21 @@ def test_possessive_variant_is_tried_for_exact_match() -> None:
 
 
 @pytest.mark.parametrize(
-    "term",
+    "term,official",
     [
-        "Down syndrome",       # used to give west_syndrome_history ("syndrome")
-        "Rett syndrome",
-        "conduct disorder",    # used to give unipolar_depression ("disorder")
-        "cerebral palsy",      # used to give ALS ("als" inside "palsy")
-        "phobia",              # used to give panic_disorder ("agoraphobia")
+        ("Down syndrome", "down_syndrome"),         # used to give west_syndrome_history ("syndrome")
+        ("Rett syndrome", "rett_syndrome"),
+        ("conduct disorder", "conduct_disorder"),   # used to give unipolar_depression ("disorder")
+        ("cerebral palsy", "cerebral_palsy"),       # used to give ALS ("als" inside "palsy")
+        ("phobia", "phobic_disorders"),             # used to give panic_disorder ("agoraphobia")
     ],
 )
-def test_no_code_rather_than_a_wrong_one(term: str) -> None:
-    # An unresolved term falls back to a free-text filter downstream; a wrong
-    # code silently returns datasets about another disease.
-    with pytest.raises(AssertionError, match="embedding fallback"):
-        _resolve_yaml_term("diagnosis", term)
+def test_no_curated_code_of_another_disease(term: str, official: str) -> None:
+    # A wrong code silently returns datasets about another disease. These
+    # diseases are not in the curated vocabulary: they resolve to their own
+    # official concept (RAG/reference_vocabulary.py, MeSH), whose code no
+    # participant row carries; the diagnosis line then searches its terms.
+    assert _resolve_yaml_term("diagnosis", term) == [official]
 
 
 def test_abbreviation_label_must_match_a_whole_word() -> None:

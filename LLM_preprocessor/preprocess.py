@@ -79,6 +79,7 @@ from text_terms import (
 )
 from institution_index import text_alternatives as _institution_text_alternatives
 import place_index as _place_index
+import reference_vocabulary as _reference_vocabulary
 from cohort_count import placeholder as _patients_placeholder
 import senses as _senses
 from criteria import SPECIES_CODES as _SPECIES_CODES, normalise_species as _normalise_species, \
@@ -2486,6 +2487,70 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
                  ", ".join(f"{form} {n}" for form, n in item.forms[:5]))
 
 
+# Words that say a name is a person: "datasets by Huntington", "the Wilson lab".
+_AUTHOR_CUE_RE = re.compile(
+    r"\b(?:by|authors?|authored|lab|labs|laborator(?:y|ies)|team|et\s+al|published|"
+    r"uploaded|contributed|investigators?|researchers?|scientists?|pi)\b",
+    re.IGNORECASE,
+)
+
+
+def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -> None:
+    """Move a name the model took for an author to the disease or task it names.
+
+    "rasmussen" alone was read as an author, and the name lookup then picked
+    "Rasmus Sinn" (2026-11-18). A name that is exactly a known disease or
+    task (curated vocabulary, or MeSH / Cognitive Atlas through
+    RAG/reference_vocabulary.py) is searched as that disease or task, unless
+    the question says it is a person ("by", "lab", "authors" ...) and the
+    catalogue has an author of that name.
+    """
+    if retriever is None or not plan.author_names or not hasattr(retriever, "known_concept"):
+        return
+    says_person = bool(_AUTHOR_CUE_RE.search(question or ""))
+    kept: List[str] = []
+    moved: List[Tuple[str, str, str]] = []          # (name, field, label)
+    for name in plan.author_names:
+        concept = retriever.known_concept(name)
+        if concept is None and not retriever.retrieve_for_field("author", name):
+            # No such author: a misspelt disease surname ("rasmussehn").
+            surname = _reference_vocabulary.near_surname(name)
+            if surname:
+                concept = retriever.known_concept(surname)
+                name = surname if concept else name
+        if concept is None or (says_person and retriever.retrieve_for_field("author", name)):
+            kept.append(name)
+            continue
+        field, label = concept
+        if field == "diagnosis":
+            if not plan.groups:
+                plan.groups.append(ParticipantGroup(group_name="patient_group"))
+            if name not in plan.groups[0].diagnosis_terms:
+                plan.groups[0].diagnosis_terms.append(name)
+        else:
+            plan.scan_requirements.append(ScanRequirement(scan_terms=[name]))
+        moved.append((name, field, label))
+        log.info("Name %r is the %s %r, not an author", name, field, label)
+    if not moved:
+        return
+    plan.author_names = kept
+    if not kept and plan.query_family == QueryFamily.AUTHOR_QUERY:
+        plan.query_family = (QueryFamily.CONCEPT_QUERY if moved[0][1] == "diagnosis"
+                             else QueryFamily.SCAN_FILTER)
+    readings = "; ".join(
+        f"'{name}' is the {'diagnosis' if field == 'diagnosis' else 'task'} {label}, not an author"
+        for name, field, label in moved
+    )
+    summary = plan.natural_language_summary or ""
+    if not kept and re.search(r"\bauthor", summary, re.IGNORECASE):
+        parts = [f"participants with {label}" if field == "diagnosis"
+                 else f"the {label}" + ("" if re.search(r"\b(task|test|paradigm)\b", label, re.I)
+                                       else " task")
+                 for _name, field, label in moved]
+        summary = "Find datasets with " + " and ".join(parts) + "."
+    plan.natural_language_summary = f"{summary} ({readings}.)".strip()
+
+
 def run_pipeline(
     query: str,
     retriever: Any = None,
@@ -2513,6 +2578,7 @@ def run_pipeline(
     else:
         plan = preprocess_query(query, api_key=api_key)
         decided = {}
+    _names_that_are_conditions(plan, query, retriever)
     _keep_ambiguity_topics(plan)
     _detach_topic_terms(plan)
     if decided:
