@@ -7,9 +7,11 @@ const props = withDefaults(defineProps<{
   dataset: Dataset
   /** Words of the active filter chips, to bold in the description. */
   terms?: string[]
+  /** Field strengths (tesla) of the active chips: "7T", "7 Tesla" are bolded too. */
+  strengths?: number[]
   /** Chip kinds in effect (diagnosis, age, subjects, sex): those facts are emphasised. */
   emphasis?: string[]
-}>(), { terms: () => [], emphasis: () => [] })
+}>(), { terms: () => [], strengths: () => [], emphasis: () => [] })
 
 // The backend sends at most this many participants per dataset
 // (_MAX_PARTICIPANTS_PER_DATASET in backend/routers/query.py). Below it the
@@ -127,7 +129,7 @@ const SNIPPET_START_LIMIT = 220
 
 // Pairs only side by side; "parkinson" also marks "Parkinson's" and
 // "parkinsonism" (highlight.ts).
-const termPattern = computed(() => patternFor(props.terms))
+const termPattern = computed(() => patternFor(props.terms, props.strengths))
 
 // The backend marks README matches with ⟦ ⟧ (Postgres ts_headline, so
 // stemming is right: "resting" also marks "rest").

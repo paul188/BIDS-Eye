@@ -31,14 +31,16 @@ function isAcronym(word: string): boolean {
  * as adjacent pairs ("control participants" alone would bold every
  * "participants"). A pair is the two words joined by a space.
  * *acronymsAlone*: acronyms of a coded label ("structural MRI") also stand alone.
+ * A digit stays as part of a pair ("7 tesla", "2 back"), never alone.
  */
 function phraseTerms(phrase: string, acronymsAlone: boolean): string[] {
   const tokens = (phrase.match(WORD_RE) ?? [])
-    .filter(w => w.length > 1 && !STOPWORDS.has(w.toLowerCase()))
+    .filter(w => (w.length > 1 || /^\d$/.test(w)) && !STOPWORDS.has(w.toLowerCase()))
   if (tokens.length === 1) {
     const [word] = tokens
-    if (COMMON_WORDS.has(word.toLowerCase())) return []
-    if (word.length === 2 && !/^[A-Z]{2}$/.test(word)) return []
+    if (word.length < 2 || COMMON_WORDS.has(word.toLowerCase())) return []
+    // Two letters only as an acronym ("MS", not "ms"); with a digit ("7T", "3D") always.
+    if (word.length === 2 && !/^[A-Z]{2}$/.test(word) && !/\d/.test(word)) return []
     return [word]
   }
   const terms = tokens.slice(1).map((word, i) => `${tokens[i]} ${word}`)
@@ -64,6 +66,64 @@ export function highlightTerms(filters: QueryFilter[]): string[] {
   return [...terms.values()]
 }
 
+// ── Field strength ────────────────────────────────────────────────────────
+// Mirrors query_filters.highlight_field_strengths / field_strength_pattern:
+// a field-strength chip is a number range ("6.5–7.5") with no words, while
+// READMEs write "7T", "7 T", "7-Tesla", "3.0T", "1.5 Tesla".
+
+const FIELD_STRENGTH_FIELD = 'Magnetic field strength'
+const NOMINAL_TESLA = [0.5, 1, 1.5, 2, 3, 4, 4.7, 7, 9.4, 10.5, 11.7, 14]
+const NUMBER = '\\d+(?:\\.\\d+)?'
+const RANGE_LABEL_RE = new RegExp(`^(${NUMBER})–(${NUMBER})$`)
+const BOUND_LABEL_RE = new RegExp(`^(=|≥|>|≤|<) (${NUMBER})$`)
+const STRENGTH_PHRASE_RE = new RegExp(`^\\s*(${NUMBER})\\s*-?\\s*(?:t|tesla)\\s*$`, 'i')
+
+function strengthsOfLabel(label: string): number[] {
+  const range = RANGE_LABEL_RE.exec(label)
+  if (range) {
+    const [low, high] = [Number(range[1]), Number(range[2])]
+    return NOMINAL_TESLA.filter(t => low <= t && t <= high)
+  }
+  const bound = BOUND_LABEL_RE.exec(label)
+  if (!bound) return []
+  const value = Number(bound[2])
+  switch (bound[1]) {
+    case '=': return [value]
+    case '≥': return NOMINAL_TESLA.filter(t => t >= value)
+    case '>': return NOMINAL_TESLA.filter(t => t > value)
+    case '≤': return NOMINAL_TESLA.filter(t => t <= value)
+    default: return NOMINAL_TESLA.filter(t => t < value)
+  }
+}
+
+/** Field strengths (tesla) to mark: a field-strength chip's, and searched phrases naming one. */
+export function fieldStrengths(filters: QueryFilter[]): number[] {
+  const found = new Set<number>()
+  for (const f of filters) {
+    if (f.negated) continue
+    if (f.field === FIELD_STRENGTH_FIELD) strengthsOfLabel(f.label).forEach(t => found.add(t))
+    for (const phrase of f.text_words) {
+      const named = STRENGTH_PHRASE_RE.exec(phrase)
+      if (named) found.add(Number(named[1]))
+    }
+  }
+  return [...found]
+}
+
+/** One strength's number: 7 also as "7.0", 1.5 also as "1,5". */
+function teslaNumber(value: number): string {
+  const [whole, fraction] = String(value).split('.')
+  return fraction ? `${whole}[.,]${fraction}0*` : `${whole}(?:\\.0+)?`
+}
+
+/** "7T", "7 T", "7-Tesla"; not "17T", "0.7T", "ses-7T", "7 T1w" or "200 T/m/s". */
+function strengthAlternative(strengths: number[]): string | null {
+  if (!strengths.length) return null
+  const numbers = [...new Set(strengths)].sort((a, b) => b - a).map(teslaNumber)
+  const space = '[ \\u00a0\\u2009\\u202f]?'
+  return `(?<![\\w.,/-])(?:${numbers.join('|')})${space}-?${space}(?:T|[Tt]esla|TESLA)(?![\\w/])`
+}
+
 function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -75,19 +135,23 @@ const SUFFIX = "(?:['’]s|s|es|ed|d|ing|er|ers|ism|ian)?"
 const GAP = '[^\\w.!?;:]+(?:\\w+[^\\w.!?;:]+)?'
 
 /**
- * One pattern for all *terms*, case-insensitive except two-letter acronyms
- * ("MS" but not "500 ms"), which land in group 1: check them with isHit.
+ * One pattern for all *terms* and field *strengths*, case-insensitive except
+ * two-letter acronyms ("MS" but not "500 ms"), which land in group 1: check
+ * them with isHit.
  */
-export function termPattern(terms: string[]): RegExp | null {
+export function termPattern(terms: string[], strengths: number[] = []): RegExp | null {
   const unique = [...new Set(terms.map(t => t.trim()).filter(Boolean))]
-  if (!unique.length) return null
+  const strength = strengthAlternative(strengths)
+  if (!unique.length && !strength) return null
   const short = unique.filter(t => /^[A-Z]{2}$/.test(t))
   const rest = unique.filter(t => !short.includes(t)).sort((a, b) => b.length - a.length)
   const word = (w: string) => escapeRegExp(w) + SUFFIX
   const alternatives = rest.map(t => t.split(' ').map(word).join(GAP))
   // Always a group, so match[1] means the same with or without acronyms.
   const shortGroup = `(${short.length ? short.map(word).join('|') : '(?!)'})`
-  return new RegExp(`\\b(?:${[shortGroup, ...alternatives].join('|')})\\b`, 'gi')
+  const words = `\\b(?:${[shortGroup, ...alternatives].join('|')})\\b`
+  // The strength part has no capturing group, so group 1 stays the acronyms'.
+  return new RegExp(strength ? `${strength}|${words}` : words, 'gi')
 }
 
 /** False for a two-letter acronym written in other case ("ms" for "MS"). */

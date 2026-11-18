@@ -189,6 +189,58 @@ def test_highlight_terms_pair_the_words_of_a_phrase():
     assert qf.terms_tsquery(terms[:1]) == "(scanning <-> one | scanning <2> one)"
 
 
+FIELD_7T = ("EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND "
+            "CAST((bo.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) "
+            "BETWEEN 6.5 AND 7.5)")
+
+
+def test_field_strengths_come_from_the_chip_and_from_searched_phrases():
+    assert qf.highlight_field_strengths(_sql(FIELD_7T)) == [7.0]
+    at_least_3 = FIELD_7T.replace("BETWEEN 6.5 AND 7.5", ">= 3")
+    assert qf.highlight_field_strengths(_sql(at_least_3)) == [3.0, 4.0, 4.7, 7.0, 9.4, 10.5, 11.7, 14.0]
+    assert qf.highlight_field_strengths(_sql(f"NOT {FIELD_7T}")) == []
+    # A typed "7tesla" that stayed a text search names a strength too.
+    text = "d.search_tsv @@ to_tsquery('english', '7tesla | (7 & tesla)')"
+    assert qf.highlight_field_strengths(_sql(text)) == [7.0]
+    assert qf.highlight_field_strengths(_sql(TEXT)) == []
+
+
+def test_field_strength_pattern_finds_the_ways_readmes_write_it():
+    pattern = qf.field_strength_pattern([7.0, 1.5])
+    text = ("at 7T, a 7 Tesla Siemens, 7-Tesla, 7.0T, 7 T scanner, 7TESLA, 1.5T, 1,5 T, "
+            "1.50 Tesla. Not 17T, 0.7T, 7 T1w images, 7 tests, 1.5 mm, 3T, ses-7T, 7 T/m")
+    assert pattern.findall(text) == ["7T", "7 Tesla", "7-Tesla", "7.0T", "7 T", "7TESLA",
+                                     "1.5T", "1,5 T", "1.50 Tesla"]
+    assert pattern.findall("a 7\u2009T and a 7 - T scanner") == ["7\u2009T", "7 - T"]
+    assert qf.field_strength_pattern([]) is None
+    # Postgres keeps "7T" whole; "1.5T" is the word "1.5" there ("T" is a stopword).
+    assert qf.field_strength_tsquery([7.0, 1.5]) == "7t | 7tesla | 7 <-> tesla | 1.5"
+
+
+def test_phrase_digits_pair_but_never_stand_alone():
+    text = "d.search_tsv @@ to_tsquery('english', '(7 & tesla) | 7T | (2 & back) | 7')"
+    assert qf.highlight_terms(_sql(text)) == [("7", "tesla"), ("7T",), ("2", "back")]
+
+
+def test_attach_snippets_marks_field_strengths():
+    import routers.query as query_router
+    from services import schema_capabilities as caps
+
+    # ts_headline marked the Postgres words; the pattern decides: "1.5 mm" is no strength.
+    session = _SnippetSession([
+        (UUID(int=1), "scanned on a ⟦1.5⟧T Siemens with ⟦1.5⟧ mm voxels; ⟦BOLD⟧ runs",
+         ["1.5", "1.5", "bold"], ["bold"]),
+    ])
+    datasets = [_dataset(1)]
+    caps.set_display_columns({"readme_text"})
+    try:
+        asyncio.run(query_router._attach_snippets(session, datasets, [("BOLD",)], (), [1.5]))
+    finally:
+        caps.set_display_columns(())
+    assert session.calls[0][1]["q"] == "bold | 1.5"
+    assert datasets[0].snippet == "… scanned on a ⟦1.5T⟧ Siemens with 1.5 mm voxels; ⟦BOLD⟧ runs …"
+
+
 def test_keep_justified_marks_drops_pair_words_alone():
     from routers.query import keep_justified_marks
     terms = [("structural", "mri"), ("MRI",), ("MS",)]
