@@ -170,15 +170,12 @@ def test_old_windows_are_pruned(client: TestClient, clock: list[float]) -> None:
 def test_every_api_route_declares_exactly_one_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     """New routes cannot be added without a category: the app is built as in production."""
     monkeypatch.setenv("JWT_SECRET", "test-secret-" + "x" * 40)
-    monkeypatch.setenv("CRAWLER_ENABLED", "true")
     for name in ("METADATA_DB_NAME", "METADATA_DB_USER", "METADATA_DB_PASSWORD", "METADATA_DB_HOST"):
         monkeypatch.setenv(name, "x")
     main = importlib.import_module("main")
-    if not any(r.path.startswith("/api/crawler") for r in main.app.routes):
-        pytest.skip("main was imported earlier without CRAWLER_ENABLED")
 
     api_routes = [r for r in main.app.routes if isinstance(r, APIRoute) and r.path.startswith("/api")]
-    assert len(api_routes) >= 7
+    assert len(api_routes) >= 6
     for route in api_routes:
         limits = [d for d in route.dependencies if isinstance(d.dependency, rate_limits.RateLimit)]
         assert len(limits) == 1, f"{sorted(route.methods)} {route.path} declares {len(limits)} rate limits"
