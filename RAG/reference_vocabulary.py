@@ -17,6 +17,7 @@ RAG/text_terms.py only for the synonyms of a code the curated one lacks.
 """
 from __future__ import annotations
 
+import logging
 import re
 import unicodedata
 from functools import lru_cache
@@ -24,6 +25,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import yaml
+
+log = logging.getLogger(__name__)
 
 PATH = Path(__file__).parent / "reference_vocabulary.yaml"
 
@@ -97,8 +100,11 @@ def _index() -> Optional[_Index]:
         with open(PATH, encoding="utf-8") as fh:
             loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
             return _Index(yaml.load(fh, Loader=loader) or {})
-    except OSError:
+    except FileNotFoundError:
         return None   # without the file the search works as before
+    except (OSError, yaml.YAMLError) as exc:
+        log.warning("%s not read (%s); searching without it", PATH.name, exc)
+        return None
 
 
 def match(field: str, term: str) -> List[Tuple[str, float]]:

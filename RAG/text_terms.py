@@ -40,10 +40,13 @@ being copied by a language model and can be inlined into SQL safely.
 
 from __future__ import annotations
 
+import logging
 import re
 import unicodedata
 from functools import lru_cache
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+
+log = logging.getLogger(__name__)
 
 MODE_ALL = "all"
 MODE_SHORT = "short"
@@ -282,9 +285,16 @@ def _vocabulary_strings() -> Dict[str, List[Tuple[str, float]]]:
     """code → [(label or synonym, weight)], the label first.
 
     Reuses the knowledge base the retriever has already parsed; parsing
-    value_mappings.yaml a second time would cost several seconds.
+    value_mappings.yaml a second time would cost several seconds. Without it
+    (empty, cached, so the import is not tried again on every call) the
+    search keeps the user's own words.
     """
-    from yaml_to_llamaindex import display_db, weight_db
+    try:
+        from yaml_to_llamaindex import display_db, weight_db
+    except ImportError as exc:
+        log.warning("curated vocabulary not available (%s); diagnoses are searched "
+                    "without their synonyms", exc)
+        return {}
 
     weights = weight_db.get("diagnosis", {})
     by_code: Dict[str, List[Tuple[str, float]]] = {}
@@ -294,21 +304,14 @@ def _vocabulary_strings() -> Dict[str, List[Tuple[str, float]]]:
 
 
 def _lookup_strings(code: str) -> List[Tuple[str, float]]:
-    try:
-        curated = _vocabulary_strings().get(code, [])
-    except Exception:
-        # The vocabulary only widens the search; without it the user's own
-        # words still apply.
-        curated = []
+    curated = _vocabulary_strings().get(code, [])
     if curated:
         return curated
     # A disease no dataset has yet (RAG/reference_vocabulary.py): its official
-    # terms ("rasmussen" also searches "rasmussen encephalitis").
-    try:
-        import reference_vocabulary
-        return reference_vocabulary.strings(code)
-    except Exception:
-        return []
+    # terms ("rasmussen" also searches "rasmussen encephalitis"). Without its
+    # file, reference_vocabulary answers [].
+    import reference_vocabulary
+    return reference_vocabulary.strings(code)
 
 
 # Words a diagnosis term may carry beyond the label it matched: which course,

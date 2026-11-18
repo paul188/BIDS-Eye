@@ -33,10 +33,13 @@ being copied by a language model.
 
 from __future__ import annotations
 
+import logging
 import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
+
+log = logging.getLogger(__name__)
 
 _VOCABULARY = Path(__file__).resolve().parent / "value_mappings.yaml"
 
@@ -72,11 +75,16 @@ _EXPANDED_RE = re.compile(
 
 @lru_cache(maxsize=1)
 def _vocabulary() -> Dict[str, dict]:
+    """The diagnosis entries of value_mappings.yaml. Without them only coded
+    rows count, so a file that cannot be read is logged, not silent."""
     import yaml
     try:
-        return yaml.safe_load(_VOCABULARY.read_text(encoding="utf-8")).get("diagnosis", {}) or {}
-    except Exception:  # noqa: BLE001 — without the vocabulary only coded rows count
+        data = yaml.safe_load(_VOCABULARY.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        log.warning("cohort count: %s not read (%s); only coded diagnoses are counted",
+                    _VOCABULARY, exc)
         return {}
+    return (data or {}).get("diagnosis") or {}
 
 
 def _clean(label: str) -> str:
