@@ -20,7 +20,8 @@ MODALITY = ("EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id 
 @pytest.fixture(autouse=True)
 def _counts(monkeypatch):
     # Rarity without a database: "children" is rarer than "young".
-    counts = {"young": 300, "children": 120, "evaluated": 500, "resective": 30, "surgery": 90}
+    counts = {"young": 300, "children": 120, "evaluated": 500, "resective": 30, "surgery": 90,
+              "resective & surgery": 7}
     monkeypatch.setattr(text_search, "_lookup_counts", lambda qs: [counts.get(q, 1000) for q in qs])
     monkeypatch.setenv("UNCERTAIN_POSSIBLE", "true")  # the tests cover both levels
 

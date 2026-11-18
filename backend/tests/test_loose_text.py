@@ -1,0 +1,104 @@
+"""A phrase is never shortened to one broad word (search-quality review 2026-11-17, point 1)."""
+import preprocess
+import text_terms
+from services import text_search, uncertain_tier
+
+
+def _counts(table):
+    """A frequency lookup answering from *table* (tsquery → datasets)."""
+    def lookup(queries, guards=None):
+        return [table[q] for q in queries]
+    return lookup
+
+
+# ── uncertain tier: the rarer half must be rare ─────────────────────────────
+
+def test_a_common_remainder_is_no_weak_evidence(monkeypatch):
+    # "visual & cortex" → "cortex" (142 datasets) said 'probable' for any README with "cortex".
+    monkeypatch.setattr(text_search, "_lookup_counts",
+                        _counts({"visual": 600, "cortex": 142}))
+    assert uncertain_tier.relax_tsquery("visual & cortex") is None
+    # The scope still widens when the words stay.
+    assert uncertain_tier.relax_tsquery("visual:AB & cortex:AB") == "visual & cortex"
+
+
+def test_a_rare_remainder_stands_for_the_term(monkeypatch):
+    monkeypatch.setattr(text_search, "_lookup_counts",
+                        _counts({"memory": 400, "consolidation": 10}))
+    assert uncertain_tier.relax_tsquery("memory & consolidation") == "consolidation"
+
+
+def test_dropping_only_general_words_needs_no_rare_remainder(monkeypatch):
+    monkeypatch.setattr(text_search, "_lookup_counts",
+                        _counts({"emotional": 94, "state": 900}))
+    assert uncertain_tier.relax_tsquery("emotional & state") == "emotional"
+
+
+def test_without_counts_the_shortening_stays():
+    text_search.set_frequency_lookup(None)
+    try:
+        assert uncertain_tier.relax_tsquery("memory & consolidation") == "consolidation"
+    finally:
+        text_search.set_frequency_lookup(text_search._OWN_CONNECTION)
+
+
+# ── loose text: a general word is never the one kept ────────────────────────
+
+def test_loose_core_keeps_the_specific_word(monkeypatch):
+    # In the catalogue "syndrome" (11) is rarer than "bipolar" (43); together 1.
+    monkeypatch.setattr(text_search, "_lookup_counts",
+                        _counts({"bipolar": 43, "syndrome": 11, "bipolar & syndrome": 1}))
+    assert text_search._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
+
+
+def test_loose_core_without_counts_skips_the_general_word():
+    text_search.set_frequency_lookup(None)
+    try:
+        assert text_search._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
+    finally:
+        text_search.set_frequency_lookup(text_search._OWN_CONNECTION)
+
+
+# ── diagnosis fallback: "disorder" stays after an everyday word ─────────────
+
+def test_everyday_word_keeps_its_disorder():
+    assert text_terms._core_words("eating disorders") == [["eating"], ["disorders"]]
+    assert text_terms._core_words("sleep disorder") == [["sleep"], ["disorder"]]
+    assert text_terms._core_words("Down syndrome") == [["down"], ["syndrome"]]
+    assert text_terms._core_words("eating disorder patients") == [["eating"], ["disorder"]]
+
+
+def test_disease_name_still_drops_its_generic_word():
+    assert text_terms._core_words("Parkinson's disease") == [["parkinson"]]
+    assert text_terms._core_words("bipolar disorder") == [["bipolar"]]
+    assert text_terms._core_words("post-traumatic stress disorder") == [["post", "traumatic"], ["stress"]]
+    assert text_terms._core_words("epileptic patients") == [["epileptic"]]
+
+
+def test_eating_disorder_alternatives_do_not_search_eating_alone():
+    strings = {"eating_disorder": [("eating disorder", 1.0), ("anorexia nervosa", 0.9),
+                                   ("anorexia", 0.8), ("bulimia", 0.8)]}
+    alternatives = text_terms.diagnosis_alternatives(
+        {"eating disorders": ["eating_disorder"]}, lookup=lambda code: strings.get(code, []))
+    assert "eating" not in alternatives
+    assert "eating disorders" in alternatives or "eating disorder" in alternatives
+    assert "anorexia" in alternatives
+
+
+# ── request words: concept words inside a phrase stay ──────────────────────
+
+def test_request_words_inside_a_concept_stay():
+    assert preprocess._content_words("deep brain stimulation") == "deep brain stimulation"
+    assert preprocess._content_words("reward learning") == "reward learning"
+    assert preprocess._content_words("sleep quality") == "sleep quality"
+    assert preprocess._content_words("eyes open") == "eyes open"
+    assert preprocess._content_words("free recall") == "free recall"
+    assert preprocess._content_words("cognitive training") == "cognitive training"
+
+
+def test_wish_phrases_still_go():
+    assert preprocess._content_words("preprocessed machine learning") == "preprocessed"
+    assert preprocess._content_words("good quality open data") == ""
+    assert preprocess._content_words("classification") == ""
+    assert preprocess._content_words("deep learning") == ""
+    assert preprocess._content_words("very simple randomized") == "randomized"
