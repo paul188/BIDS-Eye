@@ -139,6 +139,8 @@ def main() -> None:
     if recording is not None:
         os.environ.setdefault("GEMINI_API_KEY", "replay-no-model-call")
     sys.path.insert(0, args.backend_dir)
+    from services_layout import use_either_layout  # older backends: flat services/
+    use_either_layout()
     import main as _app  # noqa: F401 — sets up the import paths as the app does
     from record_run import load_questions
 

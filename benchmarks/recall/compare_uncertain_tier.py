@@ -110,8 +110,11 @@ def _remote_capabilities(target: str) -> dict[str, Any]:
     code = r'''import asyncio, json, sys
 sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/RAG"]
 from db.db import engine
-from services.catalogue import schema_capabilities
-from services.fulltext import text_search
+try:
+    from services.catalogue import schema_capabilities
+    from services.fulltext import text_search
+except ImportError:  # backend before services/ was grouped
+    from services import schema_capabilities, text_search
 async def main():
     await schema_capabilities.refresh_available_columns(engine)
     result = {

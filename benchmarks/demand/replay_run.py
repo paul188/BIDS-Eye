@@ -37,6 +37,8 @@ def main() -> None:
     args = parser.parse_args()
 
     sys.path.insert(0, args.backend_dir)
+    from services_layout import use_either_layout  # older backends: flat services/
+    use_either_layout()
     import os
     os.environ.setdefault("GEMINI_API_KEY", "replay-no-model-call")
     import main as _app  # noqa: F401

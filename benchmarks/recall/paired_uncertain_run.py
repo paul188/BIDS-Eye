@@ -38,6 +38,8 @@ ALL_ROWS = 5000
 
 async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: str) -> None:
     sys.path.insert(0, backend_dir)
+    from services_layout import use_either_layout  # older backends: flat services/
+    use_either_layout()
     import main  # noqa: F401  — sets up import paths exactly as the app does
     from settings import settings_obj
     from sqlalchemy import text

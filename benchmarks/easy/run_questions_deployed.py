@@ -13,8 +13,12 @@ async def run():
     import main  # noqa: F401 — import paths as the app sets them
     from sqlalchemy import text
     from db.db import engine
-    from services.translate.text_to_sql import text_to_sql
-    from services.catalogue.schema_capabilities import refresh_available_columns
+    try:
+        from services.translate.text_to_sql import text_to_sql
+        from services.catalogue.schema_capabilities import refresh_available_columns
+    except ImportError:  # backend before services/ was grouped (piped in: no helper)
+        from services.text_to_sql import text_to_sql
+        from services.schema_capabilities import refresh_available_columns
     engine.sync_engine.echo = False
     await refresh_available_columns(engine)
     try:
@@ -23,8 +27,12 @@ async def run():
     except Exception:
         pass
     try:
-        from services.fulltext import text_search
-        from services.catalogue.schema_capabilities import has_fts
+        try:
+            from services.fulltext import text_search
+            from services.catalogue.schema_capabilities import has_fts
+        except ImportError:  # backend before services/ was grouped
+            from services import text_search
+            from services.schema_capabilities import has_fts
         if has_fts():
             text_search.set_frequency_lookup(
                 text_search.make_frequency_lookup(engine, asyncio.get_running_loop()))
