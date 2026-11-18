@@ -15,6 +15,10 @@ Resilience rules:
     (Gemini 503/429/UNAVAILABLE/RESOURCE_EXHAUSTED/DEADLINE/5xx; Anthropic
     RateLimit/Overloaded/InternalServer/Connection/Timeout). On a non-transient
     error (400/401/403) skip straight to the next tier — no wasted retries.
+    Errors are told apart by type (_provider_errors, _gemini_is_transient),
+    not by words in the message. Anything else a call raises (a TypeError
+    after an SDK upgrade, a config the SDK rejects) is a bug and is raised,
+    instead of failing every tier and looking like a provider outage.
   * `temperature` is passed only to tiers that accept it. Claude Opus 4.8/4.7 and
     Fable 5 reject `temperature` (400), so the default Claude tier is
     `claude-sonnet-4-6`, which accepts it.
@@ -59,6 +63,10 @@ _DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
 
 class LLMAllFailedError(RuntimeError):
     """Raised when every tier in the cascade fails."""
+
+
+class _EmptyResponseError(Exception):
+    """A tier answered without text; the next tier is tried."""
 
 
 # ── token usage ─────────────────────────────────────────────────────────────────
@@ -179,12 +187,28 @@ def _build_cascade(models: Optional[Sequence[str]] = None,
 
 # ── provider calls ──────────────────────────────────────────────────────────────
 
-def _gemini_is_transient(err: str) -> bool:
-    e = err.lower()
-    return any(s in e for s in (
-        "503", "unavailable", "429", "resource_exhausted", "rate limit",
-        "deadline", "timeout", "500", "internal", "overloaded",
-    ))
+def _provider_errors() -> tuple:
+    """What a provider call raises when the provider, not the code, fails:
+    an API answer with an error status, an answer the SDK cannot read, a
+    timeout or a broken connection (google-genai raises httpx's own errors;
+    anthropic wraps them in APIConnectionError), or no text."""
+    import anthropic
+    import httpx
+    from google.genai import errors as genai_errors
+    return (genai_errors.APIError, genai_errors.UnknownApiResponseError, httpx.TransportError,
+            anthropic.APIError, _EmptyResponseError)
+
+
+def _gemini_is_transient(exc: Exception) -> bool:
+    """5xx (UNAVAILABLE, INTERNAL, DEADLINE_EXCEEDED), 408, 429
+    (RESOURCE_EXHAUSTED), a timeout or a broken connection."""
+    import httpx
+    from google.genai import errors as genai_errors
+    if isinstance(exc, genai_errors.ServerError):
+        return True
+    if isinstance(exc, genai_errors.APIError):
+        return exc.code in (408, 429)
+    return isinstance(exc, httpx.TransportError)
 
 
 def _call_gemini(model, prompt, system, temperature, api_key, *, json_schema=None,
@@ -307,7 +331,11 @@ def llm_generate(
     # even after the budget is spent: one slow 504 from the first model must
     # not leave the request without an answer. 0 switches this off.
     reserve = float(os.getenv("GEMINI_RESERVE_SECONDS", "12"))
+    expected = _provider_errors()
     for tier in cascade:
+        if tier.provider == "gemini" and not gem_key:
+            failures.append(f"gemini/{tier.model}: no GEMINI_API_KEY/GOOGLE_API_KEY configured")
+            continue
         call_timeout_now = call_timeout
         attempts = tier.max_attempts
         if tier.provider == "gemini" and (time.monotonic() - t0) > gemini_budget:
@@ -326,8 +354,6 @@ def llm_generate(
                 _last_call.usage = None
                 call_started = time.monotonic()
                 if tier.provider == "gemini":
-                    if not gem_key:
-                        raise RuntimeError("no GEMINI_API_KEY/GOOGLE_API_KEY configured")
                     text = _call_gemini(
                         tier.model, prompt, system, temperature, gem_key,
                         json_schema=json_schema, thinking_level=thinking_level,
@@ -344,10 +370,10 @@ def llm_generate(
                     _report_usage(purpose, tier.provider, tier.model,
                                   time.monotonic() - call_started)
                     return text
-                raise RuntimeError("empty response")
-            except Exception as exc:  # noqa: BLE001 — classify below
+                raise _EmptyResponseError("empty response")
+            except expected as exc:  # anything else is a bug and is raised
                 transient = (
-                    _gemini_is_transient(str(exc)) if tier.provider == "gemini"
+                    _gemini_is_transient(exc) if tier.provider == "gemini"
                     else _anthropic_is_transient(exc)
                 )
                 if transient and attempt < attempts:

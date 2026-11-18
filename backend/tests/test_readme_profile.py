@@ -5,6 +5,7 @@ import json
 import pytest
 
 import llm_client
+from google.genai import errors as genai_errors  # noqa: E402
 from services.indexing import readme_profile as rp
 
 README = (
@@ -126,7 +127,7 @@ def test_llm_generate_passes_model_schema_and_thinking(monkeypatch) -> None:
     def fake_gemini(model, prompt, system, temperature, api_key, **kwargs):
         calls.append((model, kwargs))
         if model == "gemini-down":
-            raise RuntimeError("400 invalid model")
+            raise genai_errors.ClientError(400, {"error": {"status": "NOT_FOUND"}})
         return '{"ok": true}'
 
     monkeypatch.setattr(llm_client, "_call_gemini", fake_gemini)
@@ -143,7 +144,8 @@ def test_llm_generate_passes_model_schema_and_thinking(monkeypatch) -> None:
     # use_fallback=False never reaches Claude.
     calls.clear()
     monkeypatch.setattr(llm_client, "_call_gemini",
-                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("400 bad")))
+                        lambda *a, **k: (_ for _ in ()).throw(
+                            genai_errors.ClientError(400, {"error": {"status": "INVALID_ARGUMENT"}})))
     with pytest.raises(llm_client.LLMAllFailedError) as info:
         llm_client.llm_generate("p", api_key="k", models=["gemini-x"], use_fallback=False)
     assert "anthropic" not in str(info.value)
