@@ -68,7 +68,6 @@ from join_registry import (
 from text_terms import (
     MODE_ALL as _MODE_ALL,
     MODE_LOOSE as _MODE_LOOSE,
-    MODE_ALSO as _MODE_ALSO,
     MODE_NEAR as _MODE_NEAR,
     MODE_SHORT as _MODE_SHORT,
     diagnosis_alternatives as _diagnosis_alternatives,
