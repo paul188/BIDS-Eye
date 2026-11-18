@@ -3,85 +3,117 @@ from __future__ import annotations
 import asyncio
 import os
 import secrets
-from datetime import datetime, timedelta, timezone
-from urllib.parse import quote
+import time
+from collections.abc import MutableMapping
+from urllib.parse import quote, urlsplit
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-_SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
-_ALGORITHM = "HS256"
-_EXPIRE_DAYS = 7
+# The login lives in Starlette's SessionMiddleware (see api_security.py): a
+# signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
+# every /api request; the frontend never sees the value.
+SESSION_COOKIE = "bids_eye_session"
+SESSION_DAYS = 7
+_SESSION_MAX_AGE = SESSION_DAYS * 24 * 3600
+_OAUTH_STATE_SECONDS = 10 * 60
+
+_PLACEHOLDER_SECRETS = ("change-me", "changeme")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-_bearer = HTTPBearer()
-
-# In-memory state store for OAuth CSRF protection.
-# Maps state token → expiry timestamp. Single-instance only (fine for this deployment).
-_oauth_states: dict[str, float] = {}
-_STATE_TTL_MINUTES = 10
 
 
-def _make_token(sub: str, email: str = "") -> str:
-    exp = datetime.now(timezone.utc) + timedelta(days=_EXPIRE_DAYS)
-    payload: dict = {"sub": sub, "exp": exp}
-    if email:
-        payload["email"] = email
-    return jwt.encode(payload, _SECRET, algorithm=_ALGORITHM)
+def session_secret() -> str:
+    """The key that signs the session and CSRF cookies. Refuses to run without a real one.
 
-
-def require_auth(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
-) -> dict:
-    try:
-        payload = jwt.decode(
-            credentials.credentials, _SECRET, algorithms=[_ALGORITHM]
+    A missing or placeholder key would let anyone who reads the repo sign a
+    session for any user, so the app must not start instead of falling back.
+    """
+    secret = os.getenv("JWT_SECRET", "").strip()
+    if not secret or secret.lower().startswith(_PLACEHOLDER_SECRETS):
+        raise RuntimeError(
+            "JWT_SECRET is missing or still a placeholder. Set it to a long random value, "
+            'e.g. python3 -c "import secrets; print(secrets.token_urlsafe(64))"'
         )
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-    if not payload.get("sub"):
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return payload
+    return secret
 
 
-def _new_state() -> str:
-    """Generate a fresh CSRF state token and register it with a TTL."""
-    # Prune expired states to keep the dict small
-    now = datetime.now(timezone.utc).timestamp()
-    expired = [k for k, exp in _oauth_states.items() if exp < now]
-    for k in expired:
-        del _oauth_states[k]
-
-    state = secrets.token_urlsafe(24)
-    _oauth_states[state] = (
-        datetime.now(timezone.utc) + timedelta(minutes=_STATE_TTL_MINUTES)
-    ).timestamp()
-    return state
+def session_middleware_options() -> dict:
+    """Keyword arguments for SessionMiddleware."""
+    return {
+        "secret_key": session_secret(),
+        "session_cookie": SESSION_COOKIE,
+        "max_age": _SESSION_MAX_AGE,
+        "path": "/api",
+        "same_site": "lax",
+        "https_only": True,
+    }
 
 
-def _consume_state(state: str) -> bool:
-    """Validate and remove a state token. Returns False if invalid or expired."""
-    expiry = _oauth_states.pop(state, None)
-    if expiry is None:
-        return False
-    return datetime.now(timezone.utc).timestamp() <= expiry
+def _now() -> float:
+    return time.time()
+
+
+def session_user(session: MutableMapping) -> dict | None:
+    """The signed-in user stored in a session, or None.
+
+    SessionMiddleware re-issues the cookie on every response, so its own max_age
+    only limits idle time. The login time stored in the session caps the total
+    lifetime: a copied cookie stops working SESSION_DAYS after the login. An
+    expired session is emptied, which makes the middleware delete the cookie.
+    """
+    user = session.get("user")
+    if not isinstance(user, dict) or not user.get("sub"):
+        return None
+    logged_in_at = user.get("iat")
+    if not isinstance(logged_in_at, (int, float)) or _now() - logged_in_at > _SESSION_MAX_AGE:
+        session.clear()
+        return None
+    return user
+
+
+def require_auth(request: Request) -> dict:
+    """The signed-in user, or 401.
+
+    RequireLoginMiddleware already turns away every /api request without a
+    session and leaves the user in request.state; this hands it to the route.
+    It checks the session itself as well, so a route stays protected even if it
+    is ever mounted outside the middleware's reach.
+    """
+    user = getattr(request.state, "user", None) or session_user(request.session)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Not signed in")
+    return user
+
+
+def _github_redirect_uri(request: Request) -> str:
+    return os.getenv("GITHUB_REDIRECT_URI") or str(request.url_for("github_callback"))
 
 
 @router.get("/github")
 async def github_login(request: Request):
-    client_id = os.getenv("GITHUB_CLIENT_ID", "")
-    redirect_uri = os.getenv(
-        "GITHUB_REDIRECT_URI",
-        str(request.url_for("github_callback")),
-    )
-    state = _new_state()
+    redirect_uri = _github_redirect_uri(request)
+
+    # The OAuth state lives in the session cookie, and cookies belong to one
+    # host. If the login starts on another host than the one GitHub returns to
+    # (www.bidseye.xyz vs bidseye.xyz), restart it on the callback's host first,
+    # or the callback would not see the state. One hop at most.
+    target = urlsplit(redirect_uri)
+    if (
+        target.netloc
+        and target.netloc.lower() != request.headers.get("host", "").lower()
+        and "hop" not in request.query_params
+    ):
+        return RedirectResponse(f"{target.scheme}://{target.netloc}{request.url.path}?hop=1")
+
+    state = secrets.token_urlsafe(32)
+    request.session["oauth_state"] = {"value": state, "exp": _now() + _OAUTH_STATE_SECONDS}
+
     auth_url = (
         "https://github.com/login/oauth/authorize"
-        f"?client_id={quote(client_id)}"
+        f"?client_id={quote(os.getenv('GITHUB_CLIENT_ID', ''))}"
         f"&redirect_uri={quote(redirect_uri, safe='')}"
         f"&scope={quote('read:org user:email')}"
         f"&state={state}"
@@ -89,12 +121,27 @@ async def github_login(request: Request):
     return RedirectResponse(auth_url)
 
 
+def _take_oauth_state(request: Request, returned: str) -> bool:
+    """Whether GitHub returned the state this browser's session was given.
+
+    Single use: the state leaves the session whatever the outcome. Binding it to
+    the session also means a callback link made in someone else's browser
+    cannot sign this browser into their account.
+    """
+    expected = request.session.pop("oauth_state", None)
+    if not isinstance(expected, dict) or not returned:
+        return False
+    value, exp = expected.get("value"), expected.get("exp")
+    if not isinstance(value, str) or not isinstance(exp, (int, float)) or _now() > exp:
+        return False
+    return secrets.compare_digest(value, returned)
+
+
 @router.get("/github/callback", name="github_callback")
 async def github_callback(request: Request):
-    state = request.query_params.get("state", "")
     code = request.query_params.get("code", "")
 
-    if not _consume_state(state):
+    if not _take_oauth_state(request, request.query_params.get("state", "")):
         raise HTTPException(status_code=400, detail="Invalid or expired OAuth state.")
 
     # Exchange code for GitHub access token
@@ -105,10 +152,7 @@ async def github_callback(request: Request):
                 "client_id": os.getenv("GITHUB_CLIENT_ID"),
                 "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
                 "code": code,
-                "redirect_uri": os.getenv(
-                    "GITHUB_REDIRECT_URI",
-                    str(request.url_for("github_callback")),
-                ),
+                "redirect_uri": _github_redirect_uri(request),
             },
             headers={"Accept": "application/json"},
             timeout=15,
@@ -125,8 +169,9 @@ async def github_callback(request: Request):
             client.get("https://api.github.com/user/emails", headers=gh_headers, timeout=10),
         )
 
-    user_data = user_resp.json()
-    github_login_name: str = user_data.get("login", "unknown")
+    github_login_name = user_resp.json().get("login")
+    if not isinstance(github_login_name, str) or not github_login_name:
+        raise HTTPException(status_code=502, detail="GitHub did not return a login name.")
     primary_email = next(
         (e["email"] for e in emails_resp.json() if e.get("primary") and e.get("verified")),
         None,
@@ -146,29 +191,43 @@ async def github_callback(request: Request):
                 detail="Access restricted to members of the required GitHub organization.",
             )
 
+    await _remember_user(github_login_name, primary_email)
+
+    # A fresh session for the new login: nothing from before it carries over.
+    request.session.clear()
+    request.session["user"] = {
+        "sub": github_login_name,
+        "email": primary_email or "",
+        "iat": int(_now()),
+    }
+
+    # Relative on purpose: the cookie was just set on this host, so the app
+    # must open on this host too.
+    return RedirectResponse("/")
+
+
+async def _remember_user(github_login: str, email: str | None) -> None:
     from db.db import async_session_maker
     from models import User
 
     async with async_session_maker() as session:
         await session.execute(
             pg_insert(User)
-            .values(github_login=github_login_name, github_email=primary_email)
+            .values(github_login=github_login, github_email=email)
             .on_conflict_do_update(
                 index_elements=["github_login"],
-                set_={"github_email": primary_email},
+                set_={"github_email": email},
             )
         )
         await session.commit()
 
-    jwt_token = _make_token(sub=github_login_name, email=primary_email or "")
 
-    frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
-    if not frontend_url or frontend_url == "*":
-        frontend_url = str(request.base_url).rstrip("/")
-
-    return RedirectResponse(f"{frontend_url}/?token={jwt_token}")
+@router.get("/me")
+async def me(user: dict = Depends(require_auth)):
+    return {"login": user["sub"]}
 
 
 @router.post("/logout")
-async def logout():
+async def logout(request: Request):
+    request.session.clear()
     return {"ok": True}

@@ -104,20 +104,28 @@ export class RateLimitError extends Error {
 
 const BASE = '/api'
 
-function authHeaders(): Record<string, string> {
-  const token = localStorage.getItem('bids_eye_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+// The login is an HttpOnly session cookie set by the backend: page scripts
+// cannot read it, the browser sends it with every same-origin /api request.
+//
+// CSRF: the backend also sets a readable bids_eye_csrf cookie and rejects any
+// POST from a signed-in browser that does not repeat it in this header. Other
+// sites cannot read our cookies, so they cannot forge the header.
+function csrfHeader(): Record<string, string> {
+  const cookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('bids_eye_csrf='))
+  return cookie ? { 'x-csrftoken': decodeURIComponent(cookie.split('=').slice(1).join('=')) } : {}
 }
 
 function handleUnauthorized() {
-  localStorage.removeItem('bids_eye_token')
   window.dispatchEvent(new CustomEvent('bids-unauthorized'))
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...csrfHeader() },
     body: JSON.stringify(body),
   })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
@@ -130,7 +138,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { headers: authHeaders() })
+  const res = await fetch(`${BASE}${path}`, { credentials: 'same-origin' })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
@@ -145,4 +153,11 @@ export const api = {
 
   crawlerStatus: () =>
     get<CrawlerStatus>('/crawler/status'),
+
+  // 401 when not signed in: the frontend cannot read the cookie itself.
+  me: () =>
+    get<{ login: string }>('/auth/me'),
+
+  logout: () =>
+    post<{ ok: boolean }>('/auth/logout', {}),
 }

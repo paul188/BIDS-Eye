@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 # ── Make BIDS-SQL importable ──────────────────────────────────────────────────
 _BIDS_SQL = Path(__file__).resolve().parents[1] / "BIDS-SQL"
@@ -119,14 +118,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_frontend_url = os.getenv("FRONTEND_URL", "*")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[_frontend_url] if _frontend_url != "*" else ["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from api_security import install_security_middleware               # noqa: E402
+
+# CORS, CSRF, the signed HttpOnly session cookie and login-by-default for /api
+# (see api_security.py). Raises when JWT_SECRET is missing or a placeholder.
+install_security_middleware(app)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 

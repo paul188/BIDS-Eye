@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from './stores/chat'
-import { RateLimitError } from './api'
+import { api, RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
 import CrawlerStatusDot from './components/CrawlerStatusDot.vue'
 import LoginView from './components/LoginView.vue'
@@ -10,19 +10,23 @@ import InputBar from './components/InputBar.vue'
 
 const CRAWLER_ENABLED = import.meta.env.VITE_CRAWLER_ENABLED === 'true'
 
-const isLoggedIn = ref(!!localStorage.getItem('bids_eye_token'))
+// null until /api/auth/me answers: the session cookie is HttpOnly, so the page
+// can only learn whether it is signed in by asking the backend.
+const isLoggedIn = ref<boolean | null>(null)
 
-function onLoggedIn(token: string) {
-  localStorage.setItem('bids_eye_token', token)
-  isLoggedIn.value = true
-  if (CRAWLER_ENABLED) {
-    store.refreshCrawlerStatus()
-    crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
-  }
+function startCrawlerPolling() {
+  if (!CRAWLER_ENABLED) return
+  clearInterval(crawlerInterval)
+  store.refreshCrawlerStatus()
+  crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
 }
 
-function logout() {
-  localStorage.removeItem('bids_eye_token')
+async function logout() {
+  try {
+    await api.logout()
+  } catch {
+    // Signed out locally either way; the cookie expires on its own.
+  }
   isLoggedIn.value = false
   clearInterval(crawlerInterval)
 }
@@ -160,19 +164,21 @@ function relativeTime(iso: string): string {
 // Poll crawler status every 15 s — only while logged in and crawler is enabled
 let crawlerInterval: ReturnType<typeof setInterval>
 onMounted(() => {
-  // Pick up JWT delivered via ?token= after GitHub OAuth redirect
-  const params = new URLSearchParams(window.location.search)
-  const urlToken = params.get('token')
-  if (urlToken) {
-    localStorage.setItem('bids_eye_token', urlToken)
-    isLoggedIn.value = true
+  // Older versions kept the login token in localStorage and in the URL.
+  localStorage.removeItem('bids_eye_token')
+  if (new URLSearchParams(window.location.search).has('token')) {
     history.replaceState({}, '', '/')
   }
 
-  if (CRAWLER_ENABLED && isLoggedIn.value) {
-    store.refreshCrawlerStatus()
-    crawlerInterval = setInterval(() => store.refreshCrawlerStatus(), 15_000)
-  }
+  api.me()
+    .then(() => {
+      isLoggedIn.value = true
+      startCrawlerPolling()
+    })
+    .catch(() => {
+      isLoggedIn.value = false
+    })
+
   window.addEventListener('bids-unauthorized', () => {
     isLoggedIn.value = false
     clearInterval(crawlerInterval)
@@ -185,9 +191,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <LoginView v-if="!isLoggedIn" @logged-in="onLoggedIn" />
+  <LoginView v-if="isLoggedIn === false" />
 
-  <div v-else class="flex flex-col h-full overflow-hidden bg-surface">
+  <div v-else-if="isLoggedIn" class="flex flex-col h-full overflow-hidden bg-surface">
 
     <!-- ── Header bar ─────────────────────────────────────────────────── -->
     <header class="flex items-center gap-2 sm:gap-3 h-14 px-3 sm:px-5 border-b border-border bg-surface/90 backdrop-blur flex-shrink-0">
