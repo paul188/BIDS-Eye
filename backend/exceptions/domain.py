@@ -15,7 +15,11 @@ defined next to that code and without knowing about FastAPI:
                               NotInGitHubOrgError       403
     rate_limits.py            RateLimitError            429
 
-Each class names the status and text the client gets; the one handler in
+Each class names the status and text the client gets on its class line,
+
+    class SearchExpiredError(DomainError, status_code=410, detail="..."):
+
+and the one handler in
 exceptions/handlers.py turns it into that response, so no router catches
 any of them and nothing raises HTTPException. (Any other exception gets the
 handlers' own 500; see handlers.py.)
@@ -33,13 +37,20 @@ from typing import Any
 class DomainError(Exception):
     """An expected failure with a fixed answer for the client.
 
-    The class attributes are the answer. DomainError itself has none: each
-    subclass sets ``status_code`` and ``detail``; ``headers`` is optional.
+    A subclass gives its answer on the class line (``status_code=...,
+    detail=...``); leaving either out is a TypeError when the module is
+    imported, not a wrong answer at the first request. DomainError itself
+    has no answer.
     """
 
     status_code: int
     detail: Any
     headers: dict[str, str] | None = None
+
+    def __init_subclass__(cls, *, status_code: int, detail: Any, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        cls.status_code = status_code
+        cls.detail = detail
 
     def __init__(
         self,

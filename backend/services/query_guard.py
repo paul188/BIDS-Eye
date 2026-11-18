@@ -66,11 +66,10 @@ class QueryRefusedError(Exception):
     """A generated query that must not run; the message says why."""
 
 
-class SearchBusyError(DomainError):
+class SearchBusyError(
+    DomainError, status_code=503, detail="The search is busy. Please try again in a minute."
+):
     """No slot for a generated query became free in time."""
-
-    status_code = 503
-    detail = "The search is busy. Please try again in a minute."
 
 
 # ── 1. static check ───────────────────────────────────────────────────────────
