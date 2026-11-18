@@ -391,7 +391,7 @@ def _model(monkeypatch, answer: dict, schemas: list | None = None) -> list:
             schemas.append(json_schema)
         return json.dumps(answer)
 
-    monkeypatch.setattr(pp, "_call_gemini", call)
+    monkeypatch.setattr(pp.intent, "_call_gemini", call)
     return prompts
 
 

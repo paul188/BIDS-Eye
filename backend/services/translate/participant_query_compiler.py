@@ -1,7 +1,7 @@
 """Deterministic SQL compilation: the model reads the question, code writes the SQL.
 
 The language model extracts the intent into a QueryPlan, RAG resolves its
-terms to codes, and preprocess.py writes most conditions as complete SQL
+terms to codes, and preprocess/ writes most conditions as complete SQL
 lines of the augmented question ("scan", "species", "participant age",
 "dataset text", ...). Asking a second model to AND those lines together added
 variation without adding information: the same request came back as 0, 23 or
@@ -46,7 +46,7 @@ _KNOWN_PLAN_FIELDS = frozenset({
     "query_family", "natural_language_summary",
     "groups", "group_operator", "scan_requirements",
     "order_direction",   # only meaningful with order_by, which must be unset
-    # Written by preprocess.py as complete filter lines, read from there:
+    # Written by preprocess/ as complete filter lines, read from there:
     "age_groups", "description_search", "description_alternatives", "request_wishes",
     "species", "study_structure", "max_size_gb", "min_size_gb", "topics", "name_search",
     "location_terms",
@@ -69,13 +69,13 @@ _UNSUPPORTED_PLAN_FIELDS = (
 )
 
 # Group fields with no filter line. sex, age_min, age_max and min_subjects
-# are written by preprocess.py as "participant ..." / "subject count" lines.
+# are written by preprocess/ as "participant ..." / "subject count" lines.
 _GROUP_DEFAULTS: Tuple[Tuple[str, Any], ...] = (
     ("task_terms", []), ("handedness", []), ("extra_participant_fields", {}),
 )
 
 _FILTER_HEADER = "[Resolved DB filters"
-# A plain scan line, or a list of alternatives that preprocess.py already
+# A plain scan line, or a list of alternatives that preprocess/ already
 # joined with OR into one parenthesised condition ("scan any of ...").
 _SCAN_LINE_RE = re.compile(
     r'^  scan(?: task)? "[^"]*": (?P<condition>.+)$'
@@ -152,7 +152,7 @@ def _group_condition(group: Any, resolved: Dict[str, List[str]]) -> Optional[str
     raw_terms = [str(term).strip() for term in (_value(group, "diagnosis_terms", []) or [])]
     if not raw_terms or any(not term for term in raw_terms):
         return None
-    # "Healthy controls" is not searched and not filtered (preprocess.py,
+    # "Healthy controls" is not searched and not filtered (preprocess/,
     # _is_healthy_term): most datasets include healthy people, few record it.
     raw_terms = [term for term in raw_terms if not _is_healthy_term(term)]
     if not raw_terms:

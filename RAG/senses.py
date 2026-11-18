@@ -7,7 +7,7 @@ Senses of ambiguous topic words, from senses.yaml.
 task or an approach-avoidance conflict. When a question qualifies the word
 ("social conflict"), pick_sense() returns the sense that qualifier selects,
 with the phrases and task codes that stand for it and the words that mark the
-other senses. The topic search (LLM_preprocessor/preprocess.py) adds the
+other senses. The topic search (LLM_preprocessor/preprocess/) adds the
 former and excludes the latter.
 
 The inventory is fixed and small on purpose: it makes the frequent cases

@@ -134,3 +134,10 @@ def test_only_a_translation_that_ran_as_written_is_stored(total, fallback, self_
     cached.self_corrected = self_corrected
     cached.relaxed = relaxed
     assert search._worth_storing(cached, total) is expected
+
+
+def test_version_reads_every_preprocessing_module():
+    """preprocess/ is a package: each of its modules decides the translation,
+    and the version reads folders without recursing into them."""
+    modules = {p for p in (_ROOT / "LLM_preprocessor").rglob("*.py") if "__pycache__" not in p.parts}
+    assert modules and modules <= set(store.version_paths())

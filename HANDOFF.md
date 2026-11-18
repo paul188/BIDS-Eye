@@ -19,7 +19,7 @@ Rollback images exist on the server for every deploy (`bids-eye-backend:pre-live
 
 ## 2. How a search works now
 
-1. **Intent model** (`LLM_preprocessor/preprocess.py`): question → `QueryPlan` (diagnoses per group, scans, tasks, age groups, sex, counts, topics, description text, request wishes …).
+1. **Intent model** (`LLM_preprocessor/preprocess/`): question → `QueryPlan` (diagnoses per group, scans, tasks, age groups, sex, counts, topics, description text, request wishes …).
 2. **Vocabulary** (`RAG/retriever.py`, `RAG/value_mappings.yaml`, `RAG/text_terms.py`): plan terms → codes, plus text fallbacks.
 3. **Compiler** (`backend/services/translate/participant_query_compiler.py`, since f3fd9bb): builds the SQL in code for about 55 of the 70 gold requests. It declines sidecar fields, licences, ordering, result limits, institutions/authors/funding, negated or same-subject scans, contradictions and file names; those go to the **SQL model** (`backend/services/translate/text_to_sql.py`, few-shot examples in `backend/few_shot_examples.json`).
 4. **Rewriter** (`backend/services/translate/sql_rewriter.py`): concept keys, catalogue value check (`catalogue_values.py`), patient counts, participants-join fix, summary tables (`bids_dataset_facets`, `bids_datasets.n_subjects`).
@@ -61,7 +61,7 @@ The first 14 items come from the 2026-11-17 search-quality review (`reports/Text
 
 1. ~~Loose-text sweep~~ — done on `loose-text`, still to port (section 4).
 2. **Keep alternatives; no datatype+suffix OR** (~3 h):
-   - a rare own phrase drops the validated alternatives too (`preprocess.py` near "not searchable"; qf03 returned 354 results);
+   - a rare own phrase drops the validated alternatives too (`preprocess/` near "not searchable"; qf03 returned 354 results);
    - `(datatype='anatomical_mri' OR suffix='mp2rage')` means "any anatomical scan", and is empty when negated (qf27);
    - "CT" resolves to PET through the PET-CT synonyms (qf40).
 3. **Cache hygiene** (~1 h, `interpretation_store.py`):

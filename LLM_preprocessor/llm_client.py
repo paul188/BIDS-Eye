@@ -2,7 +2,7 @@
 LLM_preprocessor/llm_client.py
 ------------------------------
 One shared LLM call path for the whole text-to-SQL pipeline, replacing the three
-divergent Gemini cascades in preprocess.py and services/translate/text_to_sql.py.
+divergent Gemini cascades in preprocess/ and services/translate/text_to_sql.py.
 
 `llm_generate()` walks a configurable tier list and returns the first successful
 text response:

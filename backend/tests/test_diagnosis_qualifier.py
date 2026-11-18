@@ -115,7 +115,7 @@ def test_a_known_diagnosis_without_participant_rows_keeps_its_line(monkeypatch) 
     plan = p.QueryPlan(query_family="concept_query", natural_language_summary="FTD",
                        groups=[p.ParticipantGroup(group_name="g",
                                                   diagnosis_terms=["frontotemporal dementia"])])
-    monkeypatch.setattr(p, "preprocess_query", lambda question, api_key=None: plan)
+    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question, api_key=None: plan)
     augmented = p.run_pipeline("frontotemporal dementia", retriever=Retriever()).augmented_question
     assert "DB MISS" not in augmented
     assert "p2.diagnosis IN ('frontotemporal_dementia')" in augmented

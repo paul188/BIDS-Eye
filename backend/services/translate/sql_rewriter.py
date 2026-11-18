@@ -81,9 +81,9 @@ _VOCAB_MISS_HINT_RE = re.compile(
     r"For free-text search use:\s*(.+?)(?=\s*\])",
     re.IGNORECASE | re.DOTALL,
 )
-# A topic filter line of the augmented question (preprocess.py, _topic_condition).
+# A topic filter line of the augmented question (preprocess/topics.py, _topic_condition).
 _TOPIC_LINE_RE = re.compile(r'^\s*topic "[^"\n]*": (?P<condition>.+)$', re.MULTILINE)
-# The description search with its other words (preprocess.py, 'dataset text:').
+# The description search with its other words (preprocess/, 'dataset text:').
 _DESCRIPTION_LINE_RE = re.compile(r"^\s*dataset text: (?P<condition>\(.+\))\s*$", re.MULTILINE)
 _TEXT_MATCH_CALL_RE = re.compile(
     r"\btext_match\s*\(\s*'([^']*)'\s*(?:,\s*'[^']*'\s*)?\)",
@@ -148,7 +148,7 @@ _PARTICIPANTS_COUNT_SUBQUERY_RE = re.compile(
 )
 
 
-# The filter line of "at least N patients with X" (LLM_preprocessor/preprocess.py).
+# The filter line of "at least N patients with X" (LLM_preprocessor/preprocess/).
 _PATIENTS_LINE_RE = re.compile(
     r"^  patients \([^)\n]*\): (patients_with\('[a-z0-9_, ]+'\) >= \d+)\s*$", re.MULTILINE)
 
@@ -1443,7 +1443,7 @@ class SqlRewriteService:
 
         The 'dataset text:' line can read
             (text_match('dead people') OR text_match('post-mortem | ex vivo', 'near'))
-        (preprocess.py, check_description_alternatives). A model that copied
+        (preprocess/topics.py, check_description_alternatives). A model that copied
         only the first search would find what the user's own words find,
         which for "dead people" is nothing; one that left the line out, or
         wrote it its own way (dropped as invented), would ignore what the
@@ -1503,7 +1503,7 @@ class SqlRewriteService:
 
         The 'dataset text:' line can read
             (text_match('dead people') OR text_match('post-mortem | ex vivo', 'also'))
-        (preprocess.py, check_description_alternatives). A model that copied
+        (preprocess/topics.py, check_description_alternatives). A model that copied
         only the first search would find what the user's own words find,
         which for "dead people" is nothing.
         """

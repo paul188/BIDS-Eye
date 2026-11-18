@@ -1,4 +1,4 @@
-"""Paired measurement of description alternatives (preprocess.py,
+"""Paired measurement of description alternatives (preprocess/,
 check_description_alternatives): "dead people" also searches "post-mortem".
 
 Each question goes through the search pipeline once (intent, vocabulary

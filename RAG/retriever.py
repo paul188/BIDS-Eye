@@ -821,7 +821,7 @@ def _same_person(term: str, author: str) -> bool:
 
 class MetadataRetriever:
     """
-    Unified retriever for LLM_preprocessor/preprocess.py.
+    Unified retriever for LLM_preprocessor/preprocess/.
 
     Parameters
     ----------

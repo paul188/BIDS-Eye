@@ -477,7 +477,7 @@ def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR,
     """How many datasets match each search term on its own; None when unknown.
 
     Used to check search terms a language model proposed before they are
-    searched (LLM_preprocessor/preprocess.py, topics). A term with nothing
+    searched (LLM_preprocessor/preprocess/topics.py). A term with nothing
     searchable counts 0. A word with decided forms is counted in those forms,
     as the search will match it.
     """

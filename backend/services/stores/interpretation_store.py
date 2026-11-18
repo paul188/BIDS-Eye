@@ -42,7 +42,8 @@ _BACKEND = Path(__file__).resolve().parents[2]
 # translated into, so all of them count, new ones included (a hand-kept list
 # missed the compiler, criteria.py, cohort_count.py, senses.yaml and
 # word_forms.yaml). Not recursive: __pycache__ stays out.
-_VERSION_DIRS = (_BACKEND.parent / "LLM_preprocessor", _BACKEND.parent / "RAG")
+_VERSION_DIRS = (_BACKEND.parent / "LLM_preprocessor", _BACKEND.parent / "LLM_preprocessor" / "preprocess",
+                 _BACKEND.parent / "RAG")
 _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # The backend modules the translation imports (text_to_sql.py and everything
 # it reaches; test_interpretation_store.py checks this list against the

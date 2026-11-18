@@ -31,7 +31,7 @@ Institute'. Matching works on normalised word tokens instead:
 
 The resolved strings become an exact array filter
 (d.institutions && ARRAY[...]) that the GIN index on the column serves; see
-LLM_preprocessor/preprocess.py. Terms that resolve to nothing fall back to
+LLM_preprocessor/preprocess/. Terms that resolve to nothing fall back to
 full-text search via text_alternatives().
 
 The names are loaded from the database at backend startup

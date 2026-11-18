@@ -1,4 +1,4 @@
-"""Places in questions: "datasets from Bonn" (RAG/place_index.py, preprocess.py location lines).
+"""Places in questions: "datasets from Bonn" (RAG/place_index.py, preprocess/ location lines).
 
 "bonn" (2026-11-18) found nothing: no dataset text says Bonn, but two
 datasets name the University of Bonn's ethics committee. The sites of

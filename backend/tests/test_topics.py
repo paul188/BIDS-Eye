@@ -1,7 +1,7 @@
 """Qualified topics: a subject whose meaning a qualifier fixes ("social conflict").
 
 Covers the sense inventory (RAG/senses.py), topic resolution and its filter
-line (LLM_preprocessor/preprocess.py), the 'near' text search
+line (LLM_preprocessor/preprocess/), the 'near' text search
 (services/fulltext/text_search.py), its weaker forms in the uncertain tier and the
 topic chips. See reports/Qualified topics plan.md.
 """

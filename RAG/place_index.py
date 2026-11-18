@@ -15,7 +15,7 @@ preferred over a region and a region over a country of the same name
 
 The values are loaded from the database at backend startup (refresh_from_db).
 Without the table the index is empty and every place falls back to a text
-search (LLM_preprocessor/preprocess.py, _location_lines).
+search (LLM_preprocessor/preprocess/augment.py, _location_lines).
 """
 
 from __future__ import annotations

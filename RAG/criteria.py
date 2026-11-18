@@ -3,7 +3,7 @@
 One entry per criterion. Each records how people phrase it, which evidence
 answers it (strongest first), what does not count as evidence, its
 vocabulary, and what happens when a dataset does not record the value. The
-planner (LLM_preprocessor/preprocess.py) fills a QueryPlan field per
+planner (LLM_preprocessor/preprocess/) fills a QueryPlan field per
 criterion; the condition is built here, so the SQL model copies one fixed
 line instead of choosing a filter itself.
 
