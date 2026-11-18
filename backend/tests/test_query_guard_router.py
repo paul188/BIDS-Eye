@@ -10,7 +10,7 @@ import pytest
 from fastapi import HTTPException
 
 import routers.query as query_router
-from services import query_guard
+from services import dataset_cards, query_guard
 from services.query_cache import CachedQuery, query_cache
 from services.sql_rewriter import FALLBACK_SQL
 
@@ -133,9 +133,9 @@ def test_page_query_runs_with_limits(monkeypatch) -> None:
     async def nothing(*args, **kwargs):
         return None
 
-    monkeypatch.setattr(query_router, "_rows_to_datasets", no_rows)
+    monkeypatch.setattr(dataset_cards, "rows_to_datasets", no_rows)
     monkeypatch.setattr(query_router, "_attach_snippets", nothing)
-    monkeypatch.setattr(query_router, "_attach_descriptions", nothing)
+    monkeypatch.setattr(dataset_cards, "attach_descriptions", nothing)
     cached = CachedQuery(base_sql=_SAFE, params={}, scored_filters=[], apply_relevance=False, explanation="",
                          rerank_done=True)
     cached.total = 5
@@ -190,9 +190,9 @@ def _no_side_queries(monkeypatch):
     async def nothing(*args, **kwargs):
         return None
 
-    monkeypatch.setattr(query_router, "_rows_to_datasets", no_rows)
+    monkeypatch.setattr(dataset_cards, "rows_to_datasets", no_rows)
     monkeypatch.setattr(query_router, "_attach_snippets", nothing)
-    monkeypatch.setattr(query_router, "_attach_descriptions", nothing)
+    monkeypatch.setattr(dataset_cards, "attach_descriptions", nothing)
 
 
 def test_slow_ranking_serves_the_unranked_page(monkeypatch) -> None:

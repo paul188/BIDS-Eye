@@ -274,7 +274,7 @@ class _Session:
 
 
 def test_attach_descriptions_shows_the_paper_line_and_summary():
-    import routers.query as query_router
+    from services import dataset_cards
     from schemas import DatasetSchema
     from services import schema_capabilities as caps
 
@@ -289,7 +289,7 @@ def test_attach_descriptions_shows_the_paper_line_and_summary():
     datasets = [dataset(1), dataset(2), dataset(3)]
     caps.set_display_columns({"paper_relation", "dataset_summary"})
     try:
-        asyncio.run(query_router._attach_descriptions(session, datasets))
+        asyncio.run(dataset_cards.attach_descriptions(session, datasets))
     finally:
         caps.set_display_columns(())
 

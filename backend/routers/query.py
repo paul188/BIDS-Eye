@@ -19,7 +19,6 @@ import logging
 import os
 import re
 from typing import Annotated, Collection, Optional, Sequence
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
@@ -30,16 +29,13 @@ from rate_limits import Category, rate_limit
 from routers.auth import require_auth
 from schemas import (
     DatasetSchema,
-    LinkedPaperSchema,
-    ParticipantSchema,
-    ParticipantSummarySchema,
     QueryFilterSchema,
     QueryPageRequest,
     QueryRequest,
     QueryResponse,
     TextToSQLResult,
 )
-from services import catalogue_values, dataset_description, interpretation_store, query_filters
+from services import catalogue_values, dataset_cards, interpretation_store, query_filters
 from services import query_guard
 from services.query_cache import CachedQuery, query_cache
 from services import translation_store
@@ -54,76 +50,10 @@ log = logging.getLogger(__name__)
 # Capped here as well as in the cache so a page can't request an unbounded slice.
 _MAX_PAGE_SIZE = 100
 _DEFAULT_PAGE_SIZE = 20
-_MAX_PARTICIPANTS_PER_DATASET = 50
-
-
-async def _participants_for(
-    session: AsyncSession, dataset_ids: list[UUID]
-) -> dict[UUID, list[ParticipantSchema]]:
-    """Fetch participants grouped by dataset_id."""
-    if not dataset_ids:
-        return {}
-
-    from db.models import BIDSParticipant
-    from sqlalchemy import select
-
-    rows = await session.execute(
-        select(BIDSParticipant).where(BIDSParticipant.dataset_id.in_(dataset_ids))
-    )
-    result: dict[UUID, list[ParticipantSchema]] = {}
-    for p in rows.scalars():
-        result.setdefault(p.dataset_id, []).append(ParticipantSchema.model_validate(p))
-    return result
 
 
 def _found_message(total: int) -> str:
     return f"Found {total} dataset{'' if total == 1 else 's'} matching your query."
-
-
-def summarize_participants(participants: Sequence[ParticipantSchema]) -> Optional[ParticipantSummarySchema]:
-    """Group, sex and age counts over every participant, so a card can show
-    exact numbers for datasets larger than the participant cap."""
-    if not participants:
-        return None
-    diagnoses: dict[str, int] = {}
-    female = male = 0
-    ages: list[float] = []
-    for p in participants:
-        label = (p.diagnosis or "").strip()
-        if label:
-            diagnoses[label] = diagnoses.get(label, 0) + 1
-        sex = (p.sex or "").strip().lower()
-        if sex in ("f", "female"):
-            female += 1
-        elif sex in ("m", "male"):
-            male += 1
-        if p.age is not None and p.age > 0:
-            ages.append(p.age)
-    return ParticipantSummarySchema(
-        total=len(participants), diagnoses=diagnoses, female=female, male=male,
-        age_min=min(ages) if ages else None, age_max=max(ages) if ages else None,
-    )
-
-
-async def _deprecations_for(
-    session: AsyncSession, dataset_ids: list[UUID]
-) -> dict[UUID, str]:
-    """Return {dataset_id: reason} for datasets marked deprecated.
-
-    Read with its own query instead of through the generated SQL, so the
-    projection the LLM pipeline relies on stays unchanged, and databases that
-    do not have the column yet keep working.
-    """
-    if not dataset_ids or not has_display_column("deprecated_reason"):
-        return {}
-    rows = await session.execute(
-        text(
-            "SELECT id, deprecated_reason FROM bids_datasets "
-            "WHERE id = ANY(:ids) AND deprecated_reason IS NOT NULL"
-        ),
-        {"ids": dataset_ids},
-    )
-    return {row[0]: row[1] for row in rows}
 
 
 # Below this many results a free-text-only condition is dropped (see below).
@@ -235,37 +165,6 @@ async def _rerank_once(
         cached.rerank_ordered = result.ordered_ids
         cached.rerank_demoted = result.demoted_ids
     query_cache.update(query_id, cached)
-
-
-async def _rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[DatasetSchema]:
-    """Build DatasetSchema objects (with capped participants) from result rows."""
-    dataset_ids = [UUID(str(r["id"])) for r in raw]
-    participants_map = await _participants_for(session, dataset_ids)
-    deprecations = await _deprecations_for(session, dataset_ids)
-    return [
-        DatasetSchema(
-            id=r["id"],
-            name=r["name"],
-            accession_id=r.get("accession_id"),
-            bids_version=r.get("bids_version"),
-            dataset_type=r["dataset_type"],
-            source_type=r["source_type"],
-            remote_url=r.get("remote_url"),
-            validation_status=r.get("validation_status"),
-            authors=r.get("authors"),
-            institutions=r.get("institutions"),
-            description_text=r.get("description_text"),
-            deprecated_reason=deprecations.get(UUID(str(r["id"]))),
-            uncertain_level=r.get("uncertain_level"),
-            uncertain_reasons=r.get("uncertain_reasons"),
-            subject_count=r.get("subject_count"),
-            participants=participants_map.get(UUID(str(r["id"])), [])[
-                :_MAX_PARTICIPANTS_PER_DATASET
-            ],
-            participant_summary=summarize_participants(participants_map.get(UUID(str(r["id"])), [])),
-        )
-        for r in raw
-    ]
 
 
 # README excerpts (_attach_snippets). Matched words are wrapped in these
@@ -380,7 +279,7 @@ async def _attach_snippets(
     Postgres words only steer the passage towards them ("1.5T" is the word
     "1.5" there); the marks come from query_filters.field_strength_pattern.
 
-    Read with its own query, like _deprecations_for, so the generated SQL stays
+    Read with its own query, like dataset_cards.deprecations_for, so the generated SQL stays
     unchanged and databases without readme_text keep working. A failure leaves
     the page without excerpts rather than failing it.
     """
@@ -453,53 +352,6 @@ async def _attach_snippets(
             if snippet[-1:] not in ".!?…":
                 snippet += " …"
         dataset.snippet = snippet or None
-
-
-def _paper_url(doi, pmid, pmcid, arxiv_id) -> Optional[str]:
-    if doi:
-        return f"https://doi.org/{doi}"
-    if pmid:
-        return f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
-    if pmcid:
-        return f"https://pmc.ncbi.nlm.nih.gov/articles/{pmcid}/"
-    if arxiv_id:
-        return f"https://arxiv.org/abs/{arxiv_id}"
-    return None
-
-
-async def _attach_descriptions(session: AsyncSession, datasets: list[DatasetSchema]) -> None:
-    """The generated summary of a thin README, and the linked paper when it was
-    checked to report the dataset (services/dataset_description.py). Its own
-    query, like _attach_snippets; a failure leaves the page without them."""
-    if not datasets or not (has_display_column("paper_relation")
-                            and has_display_column("dataset_summary")):
-        return
-    sql = (
-        "SELECT d.id, d.dataset_summary, d.paper_relation->>'relation', "
-        "       p.title, p.year, p.doi, p.pmid, p.pmcid, p.arxiv_id "
-        "FROM bids_datasets d "
-        "LEFT JOIN bids_papers p ON p.paper_key = d.paper_relation->>'paper_key' "
-        "     AND (d.paper_relation->>'shown')::boolean "
-        "WHERE d.id = ANY(:ids) "
-        "  AND (d.dataset_summary IS NOT NULL OR (d.paper_relation->>'shown')::boolean)"
-    )
-    try:
-        async with session.begin_nested():
-            rows = (await session.execute(text(sql), {"ids": [d.id for d in datasets]})).all()
-    except Exception:
-        log.warning("Dataset descriptions unavailable for this page", exc_info=True)
-        return
-    found = {row[0]: row for row in rows}
-    for dataset in datasets:
-        row = found.get(dataset.id)
-        if row is None:
-            continue
-        dataset.generated_summary = row[1]
-        relation, title = row[2], row[3]
-        if title and relation in dataset_description.SHOWN_RELATIONS:
-            dataset.linked_paper = LinkedPaperSchema(
-                title=title, year=row[4], url=_paper_url(row[5], row[6], row[7], row[8]),
-                relation=relation, relation_label=dataset_description.RELATION_LABELS[relation])
 
 
 def _highlight_for(cached: CachedQuery) -> list[tuple]:
@@ -614,10 +466,10 @@ async def _run_page_unguarded(
     if rows is None:
         page_sql, params = page_query(ranked=False)
         rows = (await session.execute(text(page_sql), params)).mappings().all()
-    datasets = await _rows_to_datasets(session, rows)
+    datasets = await dataset_cards.rows_to_datasets(session, rows)
     await _attach_snippets(session, datasets, _highlight_for(cached), _exact_words_for(cached),
                            _strengths_for(cached))
-    await _attach_descriptions(session, datasets)
+    await dataset_cards.attach_descriptions(session, datasets)
     return datasets, total
 
 

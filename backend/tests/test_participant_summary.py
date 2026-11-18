@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import routers.query as query_router
+from services import dataset_cards
 from schemas import ParticipantSchema
 
 
@@ -12,7 +13,7 @@ def test_summary_counts_every_participant_past_the_cap() -> None:
     # 69 mice: the card used to see only the first 50 and drop all counts.
     people = ([_p(i, diagnosis="wild_type_animal_model", sex="F", age=0.3) for i in range(30)]
               + [_p(30 + i, diagnosis="genetic_knockout_animal_model", sex="male") for i in range(39)])
-    summary = query_router.summarize_participants(people)
+    summary = dataset_cards.summarize_participants(people)
     assert summary.total == 69
     assert summary.diagnoses == {"wild_type_animal_model": 30, "genetic_knockout_animal_model": 39}
     assert (summary.female, summary.male) == (30, 39)
@@ -20,8 +21,8 @@ def test_summary_counts_every_participant_past_the_cap() -> None:
 
 
 def test_summary_skips_blank_values_and_empty_lists() -> None:
-    assert query_router.summarize_participants([]) is None
-    summary = query_router.summarize_participants([_p(1, diagnosis="  ", sex="n/a", age=0.0)])
+    assert dataset_cards.summarize_participants([]) is None
+    summary = dataset_cards.summarize_participants([_p(1, diagnosis="  ", sex="n/a", age=0.0)])
     assert summary.diagnoses == {} and summary.female == summary.male == 0
     assert summary.age_min is None
 

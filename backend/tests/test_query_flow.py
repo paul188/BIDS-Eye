@@ -5,6 +5,7 @@ from uuid import UUID
 
 import routers.query as query_router
 from schemas import DatasetSchema, TextToSQLResult
+from services import dataset_cards
 from services.query_cache import query_cache
 
 
@@ -121,7 +122,7 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
             )
 
         monkeypatch.setattr(query_router, "text_to_sql", fake_text_to_sql)
-        monkeypatch.setattr(query_router, "_rows_to_datasets", _fake_rows_to_datasets)
+        monkeypatch.setattr(dataset_cards, "rows_to_datasets", _fake_rows_to_datasets)
         monkeypatch.setattr(
             query_router,
             "_correct_sql_with_gemini",
@@ -179,12 +180,12 @@ def test_deprecated_reason_is_attached_only_when_the_column_exists() -> None:
         # Database without the column (production before the migration): no query at all.
         caps.set_display_columns(())
         session = _Session()
-        assert await query_router._deprecations_for(session, [dataset_id, other_id]) == {}
+        assert await dataset_cards.deprecations_for(session, [dataset_id, other_id]) == {}
         assert session.statements == []
 
         caps.set_display_columns({"deprecated_reason"})
         session = _Session()
-        found = await query_router._deprecations_for(session, [dataset_id, other_id])
+        found = await dataset_cards.deprecations_for(session, [dataset_id, other_id])
         assert found == {dataset_id: "No longer available on OpenNeuro"}
         assert "deprecated_reason IS NOT NULL" in session.statements[0]
 
