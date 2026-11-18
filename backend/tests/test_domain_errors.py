@@ -1,6 +1,6 @@
 """Every expected failure (a DomainError: busy or expired search, login,
 rate limit) reaches the client as its own status and text through the one
-handler (exceptions/handlers.py); any other exception gets DomainError's
+handler (exceptions/handlers.py); any other exception gets the handlers'
 plain 500 without its message; and identical questions sent at the same time
 over HTTP still share one search (routers/query.py ``_in_flight``).
 
@@ -18,7 +18,7 @@ import routers.auth as auth
 import routers.query as query_router
 from deps import get_db
 from exceptions.domain import DomainError
-from exceptions.handlers import install_error_handlers
+from exceptions.handlers import UNEXPECTED_DETAIL, add_error_handlers
 from routers.auth import require_auth
 from schemas import QueryResponse
 from services import query_guard, search
@@ -26,7 +26,7 @@ from services import query_guard, search
 
 def _app() -> FastAPI:
     app = FastAPI()
-    install_error_handlers(app)
+    add_error_handlers(app)
     app.include_router(query_router.router, prefix="/api")
 
     async def no_db():
@@ -97,8 +97,7 @@ def test_every_planned_error_is_a_domain_error_with_its_own_answer():
     )
     for error in errors:
         assert issubclass(error, DomainError)
-        assert error.status_code != DomainError.status_code
-        assert error.detail != DomainError.detail
+        assert "status_code" in vars(error) and "detail" in vars(error)
 
 
 def test_an_unexpected_error_is_a_plain_500_without_its_message(monkeypatch):
@@ -116,12 +115,12 @@ def test_an_unexpected_error_is_a_plain_500_without_its_message(monkeypatch):
 
     reply = asyncio.run(post())
     assert reply.status_code == 500
-    assert reply.json() == {"detail": DomainError.detail}
+    assert reply.json() == {"detail": UNEXPECTED_DETAIL}
 
 
 def test_an_error_raised_with_its_own_detail_and_headers_sends_them():
     app = FastAPI()
-    install_error_handlers(app)
+    add_error_handlers(app)
 
     @app.get("/limited")
     def limited():

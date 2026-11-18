@@ -17,8 +17,8 @@ defined next to that code and without knowing about FastAPI:
 
 Each class names the status and text the client gets; the one handler in
 exceptions/handlers.py turns it into that response, so no router catches
-any of them and nothing raises HTTPException. (The same handlers answer any
-other exception with DomainError's own 500 and text; see handlers.py.)
+any of them and nothing raises HTTPException. (Any other exception gets the
+handlers' own 500; see handlers.py.)
 
 The exception's own message (``str(exc)``) is for logs and may name
 internals; the client sees only ``detail``. A class whose answer depends on
@@ -33,12 +33,12 @@ from typing import Any
 class DomainError(Exception):
     """An expected failure with a fixed answer for the client.
 
-    The class attributes are the answer; the defaults are also what any
-    unexpected exception gets (exceptions/handlers.py).
+    The class attributes are the answer. DomainError itself has none: each
+    subclass sets ``status_code`` and ``detail``; ``headers`` is optional.
     """
 
-    status_code: int = 500
-    detail: Any = "The request could not be completed."
+    status_code: int
+    detail: Any
     headers: dict[str, str] | None = None
 
     def __init__(
