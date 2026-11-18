@@ -240,3 +240,52 @@ def test_other_page_errors_are_not_hidden(monkeypatch) -> None:
 
     with pytest.raises(RuntimeError):
         asyncio.run(search_runner.run_page(_Broken(), query_id, cached, "", 1, 20))
+
+
+class _FailingCountSession(_Session):
+    """The COUNT of the first query raises *error*; later ones succeed."""
+
+    def __init__(self, error: BaseException):
+        super().__init__()
+        self.error = error
+
+    async def execute(self, statement, params=None):
+        sql = str(statement)
+        if sql.startswith("SELECT COUNT(*)") and self.error is not None:
+            self.statements.append(sql)
+            error, self.error = self.error, None
+            raise error
+        return await super().execute(statement, params)
+
+
+def test_the_database_error_itself_is_sent_to_self_correction(monkeypatch) -> None:
+    from sqlalchemy.exc import ProgrammingError
+
+    errors = []
+    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
+                        lambda sql, error, q, key: errors.append(error) or _SAFE + " ")
+    session = _FailingCountSession(ProgrammingError("SELECT", {}, Exception("column d.modality does not exist")))
+    total, cached = _count(session, _SAFE, None)
+    assert "column d.modality does not exist" in errors[0]
+    assert total == 5 and cached.self_corrected
+
+
+def test_a_bug_is_not_sent_to_self_correction(monkeypatch) -> None:
+    called = []
+    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
+                        lambda *args: called.append(args) or _SAFE)
+    with pytest.raises(TypeError):
+        _count(_FailingCountSession(TypeError("a bug")), _SAFE, None)
+    assert called == []
+
+
+def test_a_lost_connection_is_not_sent_to_self_correction(monkeypatch) -> None:
+    from sqlalchemy.exc import OperationalError
+
+    called = []
+    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
+                        lambda *args: called.append(args) or _SAFE)
+    lost = OperationalError("SELECT", {}, Exception("connection was closed"), connection_invalidated=True)
+    with pytest.raises(OperationalError):
+        _count(_FailingCountSession(lost), _SAFE, None)
+    assert called == []

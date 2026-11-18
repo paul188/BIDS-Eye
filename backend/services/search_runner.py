@@ -21,8 +21,10 @@ import logging
 import os
 
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from exceptions.expected import ExpectedError
 from schemas import DatasetSchema
 from services.results import dataset_cards, match_reasons, query_filters, readme_snippets
 from services import query_guard
@@ -49,14 +51,30 @@ def clamp_page(page: int, page_size: int) -> tuple[int, int]:
     return page, page_size
 
 
+class GeneratedQueryError(ExpectedError):
+    """A generated query the guards refused or the database rejected. The
+    message is the reason, as self-correction is told it; the session's
+    transaction may be aborted."""
+
+
 async def guarded_count(session: AsyncSession, base_sql: str, params: dict) -> int:
     """COUNT of a generated query behind the guards of services/query_guard.py:
-    per-transaction limits, then the static and plan checks (QueryRefusedError)."""
+    per-transaction limits, then the static and plan checks.
+
+    Raises GeneratedQueryError when the query is refused or fails. A lost
+    connection is not the query's fault and is raised as it is."""
     await query_guard.apply_limits(session)
     count_sql = build_count_sql(base_sql)
-    if base_sql != _FALLBACK_SQL:
-        await query_guard.vet(session, base_sql, count_sql, params)
-    result = await session.execute(text(count_sql), params)
+    try:
+        if base_sql != _FALLBACK_SQL:
+            await query_guard.vet(session, base_sql, count_sql, params)
+        result = await session.execute(text(count_sql), params)
+    except query_guard.QueryRefusedError as exc:
+        raise GeneratedQueryError(str(exc)) from exc
+    except DBAPIError as exc:
+        if exc.connection_invalidated:
+            raise
+        raise GeneratedQueryError(str(exc)) from exc
     return int(result.scalar() or 0)
 
 
@@ -83,7 +101,8 @@ async def count_with_base_correction(
             try:
                 async with session.begin_nested():
                     relaxed_total = await guarded_count(session, cached.relaxed_sql, cached.params)
-            except Exception:
+            except GeneratedQueryError as exc:
+                log.info("Search without the free-text conditions not used: %s", exc)
                 relaxed_total = 0
             # Without the phrase the search must still be a search: 990 or
             # 1,400 datasets in no useful order (0 correct answers among the
@@ -98,7 +117,8 @@ async def count_with_base_correction(
                 query_cache.update(query_id, cached)
                 return relaxed_total
         return total
-    except Exception as exc:
+    except GeneratedQueryError as exc:
+        log.warning("Generated SQL refused or failed, asking for a correction: %s", exc)
         # Roll back the aborted transaction before any retry — without this,
         # every subsequent execute on the same session fails with
         # InFailedSQLTransactionError.
@@ -120,7 +140,8 @@ async def count_with_base_correction(
         query_cache.update(query_id, cached)
         try:
             return await guarded_count(session, cached.base_sql, cached.params)
-        except Exception:
+        except GeneratedQueryError as exc:
+            log.warning("Corrected SQL refused or failed too, using the fallback sample: %s", exc)
             await session.rollback()
             cached.base_sql = _FALLBACK_SQL
             cached.params = {}
