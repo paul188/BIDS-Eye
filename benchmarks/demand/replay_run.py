@@ -63,10 +63,14 @@ def main() -> None:
 
     preprocess.run_pipeline = replay_pipeline
     t2s._gemini_sql_generation = replay_generate
-    # No model repairs SQL here either; the router holds its own reference.
-    import routers.query as router
+    # No model repairs SQL here either; the search runner holds its own reference.
+    try:
+        from services import search_runner as runner
+    except ImportError:
+        # Search code before the router split: these lived in routers/query.py.
+        import routers.query as runner
     # The recorded repair, when there is one; otherwise the SQL stays as it is.
-    t2s._correct_sql_with_gemini = router._correct_sql_with_gemini = lambda sql, *a, **k: (
+    t2s._correct_sql_with_gemini = runner._correct_sql_with_gemini = lambda sql, *a, **k: (
         recording.get(current.get("question"), {}).get("corrected_sql") or sql)
     questions = [q for q in load_questions(args.queries, args.prefix) if q["question"] in recording]
     asyncio.run(eval_recall._run(questions, args.out, args.backend_dir,

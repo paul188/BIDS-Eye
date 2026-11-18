@@ -42,7 +42,7 @@ async def _import(args: argparse.Namespace, engine, ts) -> int:
     import asyncio as aio
     import os
     import preprocess
-    import routers.query as router
+    from services import search_runner as runner
     from sqlalchemy import text
     from db.db import async_session_maker
     from services import schema_capabilities, text_search, word_form_store
@@ -90,7 +90,7 @@ async def _import(args: argparse.Namespace, engine, ts) -> int:
         async with async_session_maker() as session:
             await session.execute(text("SET TRANSACTION READ ONLY"))
             try:
-                total = await router._guarded_count(session, result.sql, result.params)
+                total = await runner.guarded_count(session, result.sql, result.params)
             finally:
                 await session.rollback()
         return result.sql, total

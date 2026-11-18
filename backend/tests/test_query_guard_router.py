@@ -10,7 +10,7 @@ import pytest
 from fastapi import HTTPException
 
 import routers.query as query_router
-from services import dataset_cards, query_guard, readme_snippets
+from services import dataset_cards, query_guard, readme_snippets, search_runner
 from services.query_cache import CachedQuery, query_cache
 from services.sql_rewriter import FALLBACK_SQL
 
@@ -78,7 +78,7 @@ def _fresh_guard_state(monkeypatch):
 def _count(session, sql, corrector):
     cached = CachedQuery(base_sql=sql, params={}, scored_filters=[], apply_relevance=False, explanation="")
     query_id = query_cache.put(cached)
-    total = asyncio.run(query_router._count_with_base_correction(session, query_id, cached, "question"))
+    total = asyncio.run(search_runner.count_with_base_correction(session, query_id, cached, "question"))
     return total, cached
 
 
@@ -89,7 +89,7 @@ def test_exploding_query_never_reaches_the_database(monkeypatch) -> None:
         seen.append(error)
         return _SAFE
 
-    monkeypatch.setattr(query_router, "_correct_sql_with_gemini", corrector)
+    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini", corrector)
     session = _Session()
     total, cached = _count(session, _EXPLODING, corrector)
     assert total == 5
@@ -99,7 +99,7 @@ def test_exploding_query_never_reaches_the_database(monkeypatch) -> None:
 
 
 def test_refused_twice_gives_the_fallback_sample(monkeypatch) -> None:
-    monkeypatch.setattr(query_router, "_correct_sql_with_gemini", lambda sql, error, q, key: _EXPLODING + " ")
+    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini", lambda sql, error, q, key: _EXPLODING + " ")
     session = _Session()
     total, cached = _count(session, _EXPLODING, None)
     assert cached.base_sql == FALLBACK_SQL
@@ -108,7 +108,7 @@ def test_refused_twice_gives_the_fallback_sample(monkeypatch) -> None:
 
 def test_plan_explosion_is_refused_too(monkeypatch) -> None:
     errors = []
-    monkeypatch.setattr(query_router, "_correct_sql_with_gemini",
+    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
                         lambda sql, error, q, key: errors.append(error) or sql)
     session = _Session(plan_rows=50_000_000)
     total, cached = _count(session, _SAFE, None)
@@ -141,7 +141,7 @@ def test_page_query_runs_with_limits(monkeypatch) -> None:
     cached.total = 5
     query_id = query_cache.put(cached)
     session = _Session()
-    asyncio.run(query_router._run_page(session, query_id, cached, "", 1, 20))
+    asyncio.run(search_runner.run_page(session, query_id, cached, "", 1, 20))
     page = next(i for i, s in enumerate(session.statements) if "page_result" in s or "LIMIT" in s)
     assert any(s.startswith("SET LOCAL statement_timeout") for s in session.statements[:page])
 
@@ -199,7 +199,7 @@ def test_slow_ranking_serves_the_unranked_page(monkeypatch) -> None:
     _no_side_queries(monkeypatch)
     cached, query_id = _ranked_cached()
     session = _SlowRankingSession()
-    asyncio.run(query_router._run_page(session, query_id, cached, "", 1, 20))
+    asyncio.run(search_runner.run_page(session, query_id, cached, "", 1, 20))
     ranked = next(i for i, s in enumerate(session.statements) if "matched_codes" in s)
     assert session.statements[ranked - 1] == "SET LOCAL statement_timeout = '25s'"
     assert any("LIMIT" in s and "matched_codes" not in s for s in session.statements[ranked + 1:])
@@ -211,7 +211,7 @@ def test_later_pages_of_a_slow_query_stay_unranked(monkeypatch) -> None:
     cached, query_id = _ranked_cached()
     cached.ranking_skipped = True
     session = _SlowRankingSession()
-    asyncio.run(query_router._run_page(session, query_id, cached, "", 2, 20))
+    asyncio.run(search_runner.run_page(session, query_id, cached, "", 2, 20))
     assert not any("matched_codes" in s for s in session.statements)
 
 
@@ -219,7 +219,7 @@ def test_fast_ranking_keeps_the_ranked_page_and_restores_the_timeout(monkeypatch
     _no_side_queries(monkeypatch)
     cached, query_id = _ranked_cached()
     session = _Session()
-    asyncio.run(query_router._run_page(session, query_id, cached, "", 1, 20))
+    asyncio.run(search_runner.run_page(session, query_id, cached, "", 1, 20))
     ranked = next(i for i, s in enumerate(session.statements) if "matched_codes" in s)
     assert session.statements[ranked + 1].startswith("SET LOCAL statement_timeout = '120s'")
     assert not cached.ranking_skipped
@@ -236,4 +236,4 @@ def test_other_page_errors_are_not_hidden(monkeypatch) -> None:
             return await super().execute(statement, params)
 
     with pytest.raises(RuntimeError):
-        asyncio.run(query_router._run_page(_Broken(), query_id, cached, "", 1, 20))
+        asyncio.run(search_runner.run_page(_Broken(), query_id, cached, "", 1, 20))

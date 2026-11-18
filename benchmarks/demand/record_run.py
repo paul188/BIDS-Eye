@@ -79,9 +79,13 @@ def main() -> None:
             save()
         return sql
 
-    # The router asks a model to repair SQL the database rejects; keep the repair.
-    import routers.query as router
-    correct = router._correct_sql_with_gemini
+    # The search runner asks a model to repair SQL the database rejects; keep the repair.
+    try:
+        from services import search_runner as runner
+    except ImportError:
+        # Search code before the router split: these lived in routers/query.py.
+        import routers.query as runner
+    correct = runner._correct_sql_with_gemini
 
     def recording_correct(sql, *a, **k):
         fixed = correct(sql, *a, **k)
@@ -90,7 +94,7 @@ def main() -> None:
             save()
         return fixed
 
-    router._correct_sql_with_gemini = t2s._correct_sql_with_gemini = recording_correct
+    runner._correct_sql_with_gemini = t2s._correct_sql_with_gemini = recording_correct
     preprocess.run_pipeline = recording_pipeline
     t2s._gemini_sql_generation = recording_generate
     asyncio.run(eval_recall._run(load_questions(args.queries, args.prefix), args.out,

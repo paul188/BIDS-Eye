@@ -5,7 +5,7 @@ from uuid import UUID
 
 import routers.query as query_router
 from schemas import DatasetSchema, TextToSQLResult
-from services import dataset_cards
+from services import dataset_cards, search_runner
 from services.query_cache import query_cache
 
 
@@ -124,7 +124,7 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         monkeypatch.setattr(query_router, "text_to_sql", fake_text_to_sql)
         monkeypatch.setattr(dataset_cards, "rows_to_datasets", _fake_rows_to_datasets)
         monkeypatch.setattr(
-            query_router,
+            search_runner,
             "_correct_sql_with_gemini",
             lambda sql, db_error, question, api_key: sql.replace("{{COLS}}", "d.id"),
         )

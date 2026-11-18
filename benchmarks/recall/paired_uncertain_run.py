@@ -42,7 +42,11 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker, engine
-    import routers.query as router
+    try:
+        from services.search_runner import count_with_base_correction
+    except ImportError:
+        # Search code before the router split: these lived in routers/query.py.
+        from routers.query import _count_with_base_correction as count_with_base_correction
     from services.query_cache import CachedQuery, query_cache
     from services.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.text_to_sql import text_to_sql
@@ -94,7 +98,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
             query_id = query_cache.put(cached)
             async with async_session_maker() as session:
                 await session.execute(text("SET TRANSACTION READ ONLY"))
-                total = await router._count_with_base_correction(
+                total = await count_with_base_correction(
                     session, query_id, cached, q["question"]
                 )
                 fallback = cached.base_sql == FALLBACK_SQL

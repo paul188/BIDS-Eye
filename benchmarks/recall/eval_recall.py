@@ -85,7 +85,6 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker, engine
-    import routers.query as router
     from services.query_cache import CachedQuery, query_cache
     from services.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.text_to_sql import text_to_sql
@@ -102,8 +101,16 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
         import institution_index
     except ImportError:
         institution_index = None
-    rerank_settings = getattr(router, "rerank_settings", None)
-    rerank_once = getattr(router, "_rerank_once", None)
+    try:
+        from services import search_runner as runner
+        count_with_base_correction = runner.count_with_base_correction
+        rerank_once = runner.rerank_once
+    except ImportError:
+        # Search code before the router split: these lived in routers/query.py.
+        import routers.query as runner
+        count_with_base_correction = runner._count_with_base_correction
+        rerank_once = getattr(runner, "_rerank_once", None)
+    rerank_settings = getattr(runner, "rerank_settings", None)
 
     page_params = inspect.signature(build_page_sql).parameters
     results: List[Dict[str, Any]] = []
@@ -145,7 +152,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
             query_id = query_cache.put(cached)
             async with async_session_maker() as session:
                 await session.execute(text("SET TRANSACTION READ ONLY"))
-                total = await router._count_with_base_correction(
+                total = await count_with_base_correction(
                     session, query_id, cached, q["question"]
                 )
                 if rerank_once is not None:
