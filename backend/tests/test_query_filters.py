@@ -318,3 +318,19 @@ def test_count_of_patients_with_a_diagnosis_says_patients():
     assert (chip.kind, chip.field, chip.label) == ("count", "Patients", "≥ 25 with Frontotemporal dementia")
     count = cohort_count.confirmed_sql(["parkinsons_disease", "de_novo_parkinsons"], 40)
     assert _by_id(_HEAD + f"WHERE {count} GROUP BY d.id")["w0"].label == "≥ 40 with Parkinson's disease +1"
+
+
+def test_topic_chip_text_words_stay_a_list():
+    # "datasets of twin studies" (2026-11-18) answered 500: the topic branch
+    # reused the name `searched` for its detail string, so text_words became a
+    # string and the response schema rejected it after the search had run.
+    from schemas import QueryFilterSchema
+
+    near = "(monozygotic <1> twins | twins <1> monozygotic) | (genetic <1> studies | studies <1> genetic)"
+    condition = (f"(d.search_tsv @@ TO_TSQUERY('english', 'twin & studies') "
+                 f"OR d.search_tsv @@ TO_TSQUERY('english', '{near}'))")
+    chip = _by_id(_HEAD + f"WHERE {condition} GROUP BY d.id")["w0"]
+    assert chip.kind == "topic"
+    assert isinstance(chip.text_words, list) and "twin studies" in chip.text_words
+    assert "Searched as: twin studies" in chip.detail
+    QueryFilterSchema(**chip.to_dict())

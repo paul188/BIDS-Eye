@@ -470,8 +470,9 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 
     if _is_topic(node):
         names = [_humanize_code(t) for t in _literals_for(node, ["task"])]
-        searched = ", ".join(phrases[:10]) + ("…" if len(phrases) > 10 else "")
-        detail = f"One subject, its words close together. Searched as: {searched}."
+        # Not `searched`: that is the word list the page marks (text_words).
+        searched_as = ", ".join(phrases[:10]) + ("…" if len(phrases) > 10 else "")
+        detail = f"One subject, its words close together. Searched as: {searched_as}."
         if names:
             detail += " " + codes_detail("task", names)
         if forms_note:
