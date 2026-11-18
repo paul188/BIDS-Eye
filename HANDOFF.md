@@ -1,0 +1,173 @@
+# BIDS-Eye handoff — state on 2026-11-18
+
+For Paul (and any Claude session) picking the work up on another machine.
+Written from the git branches, the shared `WORKLOG.md`, the Claude memory notes and the live server, read on 2026-11-18.
+No server addresses or commands are in this file (public repository, pre-commit hook); they are in the untracked files listed in [section 8](#8-moving-to-another-machine).
+
+## 1. What is live
+
+| Part | Commit | Branch | Since |
+|---|---|---|---|
+| Backend (incl. `LLM_preprocessor`, `RAG`, `crawlers`) | `4f49468` | `live-merge` (pushed, [PR #1](https://github.com/paul188/BIDS-Eye/pull/1) into `main`, open, mergeable) | 2026-11-17 22:18 UTC |
+| Frontend | `a0c122d` | `merged-line` (contained in `live-merge`) | 2026-11-17 21:26 UTC |
+
+`live-merge` holds all sessions' backend work: the cache and query log, the gold-set search fixes, the summary tables, the catalogue value check, the patient count, description alternatives, frontotemporal dementia, decoded participant groups, the server-side search guards, and the general SQL compiler. The older per-feature branches (`interpretation-cache`, `search-fixes-gold`, `patient-count`, `description-alternatives`, `ftd-diagnosis-live`, `query-guards-live`, `merged-line`, `codex/deterministic-cohort-sql`) are all contained in it; `interpretation-cache` only in content (its feature arrived under other commits). `main` on GitHub is 71 commits behind `live-merge` (the local `main` has 48 unpushed commits, all contained in `live-merge`); merging PR #1 brings it up to date.
+
+Server flags in `.env`: `UNCERTAIN_TIER=true`, `TEXT_SEARCH_PAPERS=true`, `INTERPRETATION_CACHE=true`, `RERANK_ENABLED=false` (on purpose: the re-ranker sends dataset text to Gemini and needs Paul's OK), model cascade gemini-2.5-flash → 2.5-pro → 2.5-flash-lite.
+
+Rollback images exist on the server for every deploy (`bids-eye-backend:pre-live-merge` is the one before the current backend, `bids-eye-frontend:pre-one-search-per-page` before the current frontend).
+
+## 2. How a search works now
+
+1. **Intent model** (`LLM_preprocessor/preprocess.py`): question → `QueryPlan` (diagnoses per group, scans, tasks, age groups, sex, counts, topics, description text, request wishes …).
+2. **Vocabulary** (`RAG/retriever.py`, `RAG/value_mappings.yaml`, `RAG/text_terms.py`): plan terms → codes, plus text fallbacks.
+3. **Compiler** (`backend/services/participant_query_compiler.py`, since f3fd9bb): builds the SQL in code for about 55 of the 70 gold requests. It declines sidecar fields, licences, ordering, result limits, institutions/authors/funding, negated or same-subject scans, contradictions and file names; those go to the **SQL model** (`backend/services/text_to_sql.py`, few-shot examples in `backend/few_shot_examples.json`).
+4. **Rewriter** (`backend/services/sql_rewriter.py`): concept keys, catalogue value check (`catalogue_values.py`), patient counts, participants-join fix, summary tables (`bids_dataset_facets`, `bids_datasets.n_subjects`).
+5. **Text search** (`backend/services/text_search.py`): `text_match()` placeholders → Postgres full text (modes all / short / loose / near / also).
+6. **Uncertain tier** (`backend/services/uncertain_tier.py`): "probable" results that miss one fact or match only part of a text condition.
+7. **Router** (`backend/routers/query.py`): relaxed re-run below 3 results, self-correction, paging, interpretation cache (`interpretation_store.py`, every search kept in `query_log`).
+
+## 3. How good it is
+
+Gold set: 70 real requests with judged answers (`benchmarks/demand/gold/`, README there). Scored with `benchmarks/recall/eval_recall.py score <run> --truth benchmarks/demand/gold/requests_truth.json --held-out-file <empty file>`.
+
+| Run | Recall | R@20 | Precision | Empty (of 65 scored) |
+|---|---|---|---|---|
+| Live `live-merge` 4f49468, two runs | 67–68% | 66% | 68% | 8 |
+| Compiler line f3fd9bb without the live branches, two runs | 69–71% | 66–68% | 63–66% | 5–6 |
+| Unchanged search before 2026-11-17 (per WORKLOG) | about 50% | — | about 56% | 21% of pages |
+
+The live line has about 2.6 points less recall than the compiler line alone. The cause is that it keeps a description as a filter when it has alternatives, even when no dataset text matches (qf19, qf31, qf42). Paul left that as it is; `rare-words` (section 4) addresses part of it.
+
+The benchmark resolves only differences of about 5 points. Repeated runs differ because the model's translation varies, and the cache makes many requests identical between runs.
+
+## 4. Work not yet in `live-merge`
+
+| Where | What | State |
+|---|---|---|
+| `loose-text`, worktree `../Bids-Eye-loose-text`, **uncommitted** | Point 1 of the to-do list: a phrase is no longer shortened to one broad word (tier relaxation needs a rare remainder; "syndrome" never kept alone; "eating disorders" stays whole; "deep brain stimulation" keeps "deep"). | Measured by replay on merged-line a0c122d: precision 63% → 65%, recall 70% unchanged, 30 results removed (22 not relevant, 8 partial, 0 relevant). 786 tests pass. **Needs porting onto `live-merge`, a replay there, then commit.** |
+| `rare-words` (6ca9529, on 2e89bd3) | Rare description words are searched when they are all the question asks ("datasets with astronauts" returned the whole catalogue); a left-out 'dataset text' line is no longer ANDed back in. Includes `text-formula`. | 13 affected gold requests: recall@20 0.34 → 0.52, precision 0.41 → 0.47 (one run each). Not merged, not deployed. |
+| `rare-words-only` (384bb28, on 2e89bd3) | The same without the description formula. | Not merged, not deployed. |
+| `text-formula` (26696a6, on 049e939) | The description search read as a formula ("drawings or art" is an OR); only the NOT parts are put back when the model leaves them out. | Not merged, not deployed. |
+| `description-alternatives` worktree `../Bids-Eye-desc-alt`, **uncommitted** | `_has_filter` and the rare-description fallback. | An earlier draft of `rare-words-only`. Probably superseded; check before deleting. |
+
+The superseded branch `ftd-diagnosis` (985ddfe, the FTD change on another base) can be deleted; the change is in `live-merge`.
+
+## 5. To-do list
+
+The first 14 items come from the 2026-11-17 search-quality review (`reports/Text to SQL and prompt optimisation.md`, `SEARCH_TODO.md`); the rest come from the other sessions' open items in `WORKLOG.md`. File and line numbers refer to merged-line a0c122d. Build new backend work on `live-merge`.
+
+### Search quality, in order of gain per effort
+
+1. ~~Loose-text sweep~~ — done on `loose-text`, still to port (section 4).
+2. **Keep alternatives; no datatype+suffix OR** (~3 h):
+   - a rare own phrase drops the validated alternatives too (`preprocess.py` near "not searchable"; qf03 returned 354 results);
+   - `(datatype='anatomical_mri' OR suffix='mp2rage')` means "any anatomical scan", and is empty when negated (qf27);
+   - "CT" resolves to PET through the PET-CT synonyms (qf40).
+3. **Cache hygiene** (~1 h, `interpretation_store.py`):
+   - the version hash misses `participant_query_compiler.py`, `RAG/criteria.py`, `RAG/cohort_count.py`, `senses.yaml` and `word_forms.yaml`;
+   - relaxed, self-corrected and one-result translations are stored forever.
+4. **Self-correction of tiered SQL** (~½ day): it re-rewrites already-tiered SQL with the raw question → invalid SQL → the 200-dataset sample (`routers/query.py`, `text_to_sql.py`, `sql_rewriter.py`; qf12, qf27).
+5. **Uncertain-tier evidence** (~½ day + gold run): keep the `:AB` scope when a diagnosis or task is promoted from README or paper text. In earlier checks, second-tier results were wrong for 9 of 16 Alzheimer's and 5 of 5 ADHD results. Log `uncertain_level` per result in `record_run.py`.
+6. **Measurement protocol** (~1 day): 3 uncached runs per variant, per-request means, a paired sign-flip test, a stability metric, and a lockbox of new requests from `query_log`.
+7. **Few-shot pool** (~½ day): of 319 examples, 24 have a diagnosis without a text fallback, 13 filter on healthy, 11 use HAVING counts, and 8 put diagnosis and sex/age in one row. Add a lint test against the SQL prompt rules.
+8. **Hard/soft rule in the plan** (1–2 days): a preference field that never becomes WHERE; recorded facts go to their columns (`direction`/`desc` entities, channel types).
+9. **relevance_score**: one count per term, not a sum over all matched codes (`sql_rewriter.py`).
+10. **Concept-to-task lists**:
+    - language without gambling, delay-discounting and food-choice tasks, with reading;
+    - BCI with oddball and P300;
+    - emotion recognition is not emotion induction.
+11. **Vocabulary lookup**: replace the WRatio partial match by retrieve-top-k-then-choose with a "none" option (`RAG/retriever.py`; "task-based" → a release-from-suppression task, qf29).
+12. **Relaxed fallback**: may drop `(EXISTS task OR text)` conjuncts, never a protected condition.
+13. **Compiler coverage**: log its decline rate; add the "patients and healthy controls" case.
+14. **Later**:
+    - vote over 3–5 plan samples for uncached requests;
+    - per-criterion LLM check of soft criteria;
+    - fitted ordering score;
+    - re-ranker on;
+    - prompt optimisation only after ≥150 requests and a headroom test.
+
+### Decisions waiting for Paul
+
+- Merge PR #1 into `main`.
+- Whether `rare-words` (or `rare-words-only`) goes into `live-merge` and live.
+- Keep or drop the own-words-first ranking ('also' mode): it is in `live-merge`, and the held-out check showed no gain.
+- Description kept as a filter when it has alternatives (costs about 2.6 recall points, see section 3).
+
+### Open items from other sessions (from WORKLOG, not re-checked)
+
+- **Age groups:**
+  - the check whether the intent model fills `age_groups` was not run (`benchmarks/easy`, "agegroups", about 42 model calls);
+  - datasets entirely inside the group should rank first;
+  - the tier's "ages recorded" check still counts age 0.
+- **Participant groups** (`crawlers/openneuro-crawler/remote/participant_groups.py`): applied once on production (17 datasets). The crawler does not run on the server, so new datasets are not decoded.
+- **Production gaps:**
+  - the retriever's database back-check never runs (no `DATABASE_URL`/psycopg2 in the container);
+  - neither does the embedding fallback (no `sentence_transformers`).
+- **Vocabulary errors seen, not changed:**
+  - "type 2 diabetes" → type 1;
+  - "pain" → fibromyalgia / zoster neuralgia;
+  - "palsy" → Parkinson's;
+  - "frontotemporal dementia"-style misses for Lewy body and vascular dementia (the catalogue has no such datasets).
+- **Counts:**
+  - "at least 20 children with autism and resting-state fMRI" returns 0 (not looked into);
+  - "at least 60 female participants" is sometimes a count of women and sometimes the subject count.
+- **Database:** Postgres runs with default memory settings (`shared_buffers` 128 MB, `work_mem` 4 MB).
+- **Summary tables:** after any crawl or change to `bids_objects`, refresh `bids_dataset_facets` (`remote/dataset_facets.py`, post_crawl does it) and restart the backend.
+- **Catalogue coverage:** 278 public OpenNeuro datasets are missing from the catalogue (gold README).
+- **Gold set:** the judges are LLMs; no person has read the labels.
+
+## 6. How to measure a change
+
+- **Free replay** (no model calls; for compiler, rewriter, text search and tier changes): `benchmarks/demand/replay_run.py --recording <recording.json>` runs the current code on recorded plans and model SQL. Recordings come from `benchmarks/demand/record_run.py`. The latest recording (merged-line, 70 gold requests) is on the server in the merged-line bench folder. Copy it into `benchmarks/demand/results/` if you want it locally.
+- **Full gold run** (about 140 model calls, 15–20 min): `benchmarks/recall/eval_recall.py run --queries benchmarks/demand/demand_first_run.yaml …`, run in a container on the server against the live database with the candidate code mounted. The exact commands are in the untracked `benchmarks/easy/run_on_server.sh` and in `WORKLOG.md`.
+- **Compare runs**: `benchmarks/demand/compare_runs.py`.
+- **Tests**:
+  ```bash
+  git submodule update --init
+  cd backend
+  METADATA_DB_NAME=x METADATA_DB_USER=x METADATA_DB_PASSWORD=x METADATA_DB_HOST=localhost \
+    PYTHONPATH=../BIDS-SQL python3 -m pytest -q
+  ```
+  `live-merge` had 833 tests passing at merge time.
+
+## 7. Working rules Paul has set
+
+- **Labels first:** an uploader label on OpenNeuro (study design, species, diagnosis …) decides. README text is only the fallback.
+- **Backend twins:** every frontend guard gets a deliberate backend check (or the endpoint goes).
+- **Measure, then deploy promptly:** measure on the gold requests first, then deploy without delay when Paul asks. Deploy from a commit (`git archive`), never from a working tree. Tag a rollback image, check the server's file hashes against the base commit right before shipping, and append a WORKLOG entry.
+- **Ask before writing to the database:** writes, migrations and anything that sends dataset text to an external model need Paul's explicit OK in the conversation.
+- **No server details in tracked files:** results, logs, reports, research notes, `WORKLOG.md` and `run_on_server.sh` stay untracked.
+- **Parallel sessions:** several Claude sessions run in parallel. Each works in its own worktree, never switches the branch of a shared one, stages only its own files, and commits only when Paul asks.
+- **Same answer, every search kept:** every paid-for search is kept (`query_log`), and the same question should give the same answer (interpretation cache).
+
+## 8. Moving to another machine
+
+In git (pushed): `live-merge`, `patient-count`, `codex/deterministic-cohort-sql` (6 local commits not pushed), `main` (48 local commits not pushed). Everything live is on GitHub through `live-merge`.
+
+**Only on this machine:**
+
+| What | Where |
+|---|---|
+| Unpushed branches | `merged-line`, `loose-text`, `rare-words`, `rare-words-only`, `text-formula`, `ftd-diagnosis-live`, `query-guards-live`, `search-fixes-gold`, `description-alternatives`, `interpretation-cache`, `ftd-diagnosis` (only `rare-words`, `rare-words-only` and `text-formula` hold work that is not in `live-merge`) |
+| Uncommitted changes | `../Bids-Eye-loose-text`, `../Bids-Eye-desc-alt` |
+| Shared session log | `WORKLOG.md` (server and deploy details) |
+| Search to-do with status | `SEARCH_TODO.md` |
+| Research reports | `reports/`, `research_notes/` |
+| Benchmark outputs | `benchmarks/*/results/`, `benchmarks/demand/blame/*.json`, `benchmarks/openneuro_facets/openneuro_results.json` |
+| Server helper (server commands) | `benchmarks/easy/run_on_server.sh` |
+| Claude memory: server access, deploy history, Paul's rules | `~/.claude/projects/-home-paul-johannssen-Desktop-Bids-Eye/memory/` (on another machine the folder name follows that machine's repository path) |
+| Pre-rewrite history backup and hash map | `~/bids-eye-history-rewrite-2026-11-14/` (never push from it) |
+| SSH key and SSH config entry for the server | `~/.ssh/` |
+
+Everything in this table except the SSH key, the SSH config and the pre-rewrite backup bundle is packed in `~/bids-eye-handoff-2026-11-18.tgz` (119 MB, made 2026-11-18): a git bundle of every local branch, the two uncommitted changes as patches, the untracked files, the Claude memory notes and the rewrite hash map. Its `README.txt` says how to unpack. It contains server details: keep it private.
+
+On the new machine:
+
+```bash
+git clone https://github.com/paul188/BIDS-Eye.git && cd BIDS-Eye
+git fetch <unpacked>/all-branches.bundle 'refs/heads/*:refs/remotes/handoff/*'
+git submodule update --init && git config core.hooksPath .githooks
+git worktree add -b loose-text ../Bids-Eye-loose-text handoff/loose-text
+git -C ../Bids-Eye-loose-text apply <unpacked>/patches/loose-text_on_a0c122d.patch
+```
