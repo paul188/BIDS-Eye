@@ -78,6 +78,7 @@ from text_terms import (
 )
 from institution_index import text_alternatives as _institution_text_alternatives
 import place_index as _place_index
+import reference_vocabulary as _reference_vocabulary
 from cohort_count import placeholder as _patients_placeholder
 import senses as _senses
 from criteria import SPECIES_CODES as _SPECIES_CODES, normalise_species as _normalise_species, \
@@ -1818,16 +1819,30 @@ def _size_conditions(plan: QueryPlan) -> List[str]:
 # the result ("standard & manner" matched 17 of 1,721 datasets and removed 975
 # of 986 correct answers of one real request).
 _REQUEST_WORDS = frozenset("""
-    standard manner simple very trivial non-trivial nontrivial complex basic easy good great nice
-    quality suitable useful appropriate sufficient enough complete completely comprehensive
-    available included including provided labeled labelled annotated documented public open free
-    machine learning deep classification classify training train benchmark benchmarking
+    standard manner simple very trivial non-trivial nontrivial complex easy good great nice
+    suitable useful appropriate sufficient enough complete completely comprehensive
+    available included including provided labeled labelled annotated documented public
+    benchmark benchmarking
     publication paper reports reported reporting results that which with have has containing
     contains format formatted dataset datasets data collection collections looking need want
     similar like ideally preferably possible
     analyse analyze analyses analyzes analysing analyzing analysed analyzed analysis specifically
     bids bids-valid bids-compliant valid compliant raw
 """.split())
+# Request words that are also part of what datasets study: "deep brain
+# stimulation", "reward learning", "cognitive training", "sleep quality",
+# "eyes open", "free recall", "basic emotions". Dropped only when no
+# neighbouring word is content ("for training", "open dataset").
+_AMBIGUOUS_REQUEST_WORDS = frozenset("""
+    machine learning deep training train classification classify quality open free basic
+""".split())
+# Whole wish phrases, cut out before single words are looked at.
+_REQUEST_PHRASES_RE = re.compile(
+    r"\b(?:machine[ -]learning|deep[ -]learning|high[ -]quality|good[ -]quality|open[ -]access|"
+    r"open[ -]source|freely available|free to use|publicly available|raw (?:or|and) processed)\b",
+    re.IGNORECASE,
+)
+_FUNCTION_WORDS = frozenset("a an and as at by for from in of on or the to".split())
 
 
 # Words that name a kind of recording, and filler that may accompany them.
@@ -1864,8 +1879,23 @@ def _matches_too_few(text: str) -> bool:
 
 
 def _content_words(text: str) -> str:
-    """*text* without the words that describe the request (see _REQUEST_WORDS)."""
-    kept = [w for w in text.split() if w.lower().strip(".,;:()'\"") not in _REQUEST_WORDS]
+    """*text* without the words that describe the request (see _REQUEST_WORDS).
+
+    A word of _AMBIGUOUS_REQUEST_WORDS stays when a neighbour is content:
+    "deep brain stimulation" keeps "deep", "open data, classification" is "".
+    """
+    words = _REQUEST_PHRASES_RE.sub(" ", text).split()
+    bare = [w.lower().strip(".,;:()'\"") for w in words]
+
+    def content(i: int) -> bool:
+        return (0 <= i < len(bare) and bare[i] not in _REQUEST_WORDS
+                and bare[i] not in _AMBIGUOUS_REQUEST_WORDS and bare[i] not in _FUNCTION_WORDS)
+
+    kept = [
+        word for i, word in enumerate(words)
+        if bare[i] not in _REQUEST_WORDS
+        and (bare[i] not in _AMBIGUOUS_REQUEST_WORDS or content(i - 1) or content(i + 1))
+    ]
     return " ".join(kept)
 # Words around an age group in "datasets with children", "data from kids".
 _AGE_FILLER_WORDS = frozenset((
@@ -2485,6 +2515,70 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
                  ", ".join(f"{form} {n}" for form, n in item.forms[:5]))
 
 
+# Words that say a name is a person: "datasets by Huntington", "the Wilson lab".
+_AUTHOR_CUE_RE = re.compile(
+    r"\b(?:by|authors?|authored|lab|labs|laborator(?:y|ies)|team|et\s+al|published|"
+    r"uploaded|contributed|investigators?|researchers?|scientists?|pi)\b",
+    re.IGNORECASE,
+)
+
+
+def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -> None:
+    """Move a name the model took for an author to the disease or task it names.
+
+    "rasmussen" alone was read as an author, and the name lookup then picked
+    "Rasmus Sinn" (2026-11-18). A name that is exactly a known disease or
+    task (curated vocabulary, or MeSH / Cognitive Atlas through
+    RAG/reference_vocabulary.py) is searched as that disease or task, unless
+    the question says it is a person ("by", "lab", "authors" ...) and the
+    catalogue has an author of that name.
+    """
+    if retriever is None or not plan.author_names or not hasattr(retriever, "known_concept"):
+        return
+    says_person = bool(_AUTHOR_CUE_RE.search(question or ""))
+    kept: List[str] = []
+    moved: List[Tuple[str, str, str]] = []          # (name, field, label)
+    for name in plan.author_names:
+        concept = retriever.known_concept(name)
+        if concept is None and not retriever.retrieve_for_field("author", name):
+            # No such author: a misspelt disease surname ("rasmussehn").
+            surname = _reference_vocabulary.near_surname(name)
+            if surname:
+                concept = retriever.known_concept(surname)
+                name = surname if concept else name
+        if concept is None or (says_person and retriever.retrieve_for_field("author", name)):
+            kept.append(name)
+            continue
+        field, label = concept
+        if field == "diagnosis":
+            if not plan.groups:
+                plan.groups.append(ParticipantGroup(group_name="patient_group"))
+            if name not in plan.groups[0].diagnosis_terms:
+                plan.groups[0].diagnosis_terms.append(name)
+        else:
+            plan.scan_requirements.append(ScanRequirement(scan_terms=[name]))
+        moved.append((name, field, label))
+        log.info("Name %r is the %s %r, not an author", name, field, label)
+    if not moved:
+        return
+    plan.author_names = kept
+    if not kept and plan.query_family == QueryFamily.AUTHOR_QUERY:
+        plan.query_family = (QueryFamily.CONCEPT_QUERY if moved[0][1] == "diagnosis"
+                             else QueryFamily.SCAN_FILTER)
+    readings = "; ".join(
+        f"'{name}' is the {'diagnosis' if field == 'diagnosis' else 'task'} {label}, not an author"
+        for name, field, label in moved
+    )
+    summary = plan.natural_language_summary or ""
+    if not kept and re.search(r"\bauthor", summary, re.IGNORECASE):
+        parts = [f"participants with {label}" if field == "diagnosis"
+                 else f"the {label}" + ("" if re.search(r"\b(task|test|paradigm)\b", label, re.I)
+                                       else " task")
+                 for _name, field, label in moved]
+        summary = "Find datasets with " + " and ".join(parts) + "."
+    plan.natural_language_summary = f"{summary} ({readings}.)".strip()
+
+
 def run_pipeline(
     query: str,
     retriever: Any = None,
@@ -2512,6 +2606,7 @@ def run_pipeline(
     else:
         plan = preprocess_query(query, api_key=api_key)
         decided = {}
+    _names_that_are_conditions(plan, query, retriever)
     _keep_ambiguity_topics(plan)
     _detach_topic_terms(plan)
     if decided:

@@ -73,6 +73,43 @@ _STOPWORDS = frozenset({
     "the", "to", "with",
 })
 
+# Everyday words that name a condition only together with "disorder",
+# "disease" or "syndrome": "eating disorders" searched as "eating" matched
+# abstracts about meals (qp08: 1 of 12 results correct). A diagnosis string
+# whose remaining words are all of these keeps its generic word;
+# "Parkinson's disease" → "parkinson" still drops it.
+_NEEDS_GENERIC_WORD = frozenset({
+    "eating", "sleep", "sleeping", "movement", "movements", "motor", "personality",
+    "language", "speech", "reading", "learning", "conduct", "mood", "panic",
+    "use", "down", "williams", "heart", "kidney", "liver", "lung", "metabolic",
+    "mental", "psychiatric", "neurological", "developmental", "neurodevelopmental",
+    "neurodegenerative", "neuromuscular", "genetic", "rare", "functional",
+    "attention", "communication", "adjustment", "stress", "pain",
+})
+
+# Words that qualify the thing searched for rather than name it. Never kept
+# alone when a longer term is shortened.
+MODIFIER_WORDS = frozenset({
+    "young", "old", "older", "healthy", "many", "few", "single", "multiple", "different",
+    "large", "small", "high", "low", "new", "long", "short", "early", "late", "normal",
+    "typical", "various", "several", "repeated", "dense", "continuous", "natural",
+})
+
+# Nouns too general to stand for the term they were part of: "bipolar
+# syndrome" shortened to "syndrome" matched Fragile X, Down syndrome mice and
+# a phantom study (qf01: 38 of 50 results wrong).
+NEVER_ALONE_WORDS = frozenset({
+    "state", "resting", "rest", "syndrome", "syndromes", "disease", "diseases",
+    "disorder", "disorders", "spectrum", "condition", "conditions", "task", "tasks",
+    "study", "studies", "data", "dataset", "datasets", "brain", "control", "controls",
+    "subjects", "participants", "patients", "people", "images", "image", "analysis",
+    "results", "design", "level", "group", "groups", "type", "types", "related", "based",
+    # General in a BIDS catalogue: "mriqc & derivatives" → "mriqc" keeps the
+    # term (qx06 lost three correct datasets when "derivatives" counted).
+    "derivatives", "derivative", "files", "file", "recordings", "recording",
+    "scans", "scan", "sessions", "session", "version", "versions",
+})
+
 # "Parkinson's disease" should find "Basal Ganglia in Parkinson".
 _GENERIC_DIAGNOSIS_WORDS = frozenset({
     "disease", "diseases", "disorder", "disorders", "syndrome", "syndromes",
@@ -213,12 +250,23 @@ def _flat(term: Term) -> List[str]:
 
 
 def _core_words(text: str) -> Term:
-    """Words of a diagnosis string without generic and population words."""
+    """Words of a diagnosis string without generic and population words.
+
+    The generic word stays when the rest is only everyday words
+    (_NEEDS_GENERIC_WORD): "eating disorders" stays whole.
+    """
     words = split_words(_PARENTHESES_RE.sub(" ", text or ""))
-    core = [
+    without_population = [
         word for word in words
-        if not (len(word) == 1 and word[0] in _GENERIC_DIAGNOSIS_WORDS | _POPULATION_WORDS)
+        if not (len(word) == 1 and word[0] in _POPULATION_WORDS)
+    ] or words
+    core = [
+        word for word in without_population
+        if not (len(word) == 1 and word[0] in _GENERIC_DIAGNOSIS_WORDS)
     ]
+    if core and len(core) < len(without_population) and all(
+            len(word) == 1 and word[0] in _NEEDS_GENERIC_WORD for word in core):
+        return without_population
     return core or words
 
 
@@ -247,10 +295,19 @@ def _vocabulary_strings() -> Dict[str, List[Tuple[str, float]]]:
 
 def _lookup_strings(code: str) -> List[Tuple[str, float]]:
     try:
-        return _vocabulary_strings().get(code, [])
+        curated = _vocabulary_strings().get(code, [])
     except Exception:
         # The vocabulary only widens the search; without it the user's own
         # words still apply.
+        curated = []
+    if curated:
+        return curated
+    # A disease no dataset has yet (RAG/reference_vocabulary.py): its official
+    # terms ("rasmussen" also searches "rasmussen encephalitis").
+    try:
+        import reference_vocabulary
+        return reference_vocabulary.strings(code)
+    except Exception:
         return []
 
 

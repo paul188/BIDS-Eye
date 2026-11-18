@@ -11,8 +11,9 @@ so a user sees the same answer every time, and the rows can be checked later,
 offline, against the database (review_* columns).
 
 What is stored is the SQL, not the result: it is run again on every request, so
-new datasets show up. A translation is stored only when it found something; an
-empty result must not become permanent. A row belongs to one version of the
+new datasets show up. A translation is stored only when it ran as written and
+found a real result (routers/query.py _worth_storing): an empty, relaxed or
+repaired search must not become permanent. A row belongs to one version of the
 translating code (pipeline_version, a hash of its source files), so a deploy
 that changes the pipeline starts with a fresh cache and keeps the old rows for
 comparison.
@@ -36,23 +37,45 @@ from sqlalchemy.ext.asyncio import AsyncSession
 log = logging.getLogger(__name__)
 
 _BACKEND = Path(__file__).resolve().parent.parent
-# Files whose content decides what a question is translated into.
+# Every code and vocabulary file of these folders decides what a question is
+# translated into, so all of them count, new ones included (a hand-kept list
+# missed the compiler, criteria.py, cohort_count.py, senses.yaml and
+# word_forms.yaml). Not recursive: __pycache__ stays out.
+_VERSION_DIRS = (_BACKEND.parent / "LLM_preprocessor", _BACKEND.parent / "RAG")
+_VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
+# The backend modules the translation imports (text_to_sql.py and everything
+# it reaches; test_interpretation_store.py checks this list against the
+# imports), and the few-shot examples. models.py and schemas.py are left out:
+# they define the shape of rows and responses, not the translation.
 _VERSION_FILES = (
     _BACKEND / "constants.py",
     _BACKEND / "few_shot_examples.json",
-    _BACKEND / "services" / "text_to_sql.py",
+    _BACKEND / "services" / "catalogue_values.py",
+    _BACKEND / "services" / "concept_keys.py",
+    _BACKEND / "services" / "participant_query_compiler.py",
+    _BACKEND / "services" / "query_guard.py",
+    _BACKEND / "services" / "schema_capabilities.py",
     _BACKEND / "services" / "sql_rewriter.py",
     _BACKEND / "services" / "text_search.py",
+    _BACKEND / "services" / "text_to_sql.py",
+    _BACKEND / "services" / "translation_store.py",
     _BACKEND / "services" / "uncertain_tier.py",
-    _BACKEND / "services" / "concept_keys.py",
-    _BACKEND / "services" / "catalogue_values.py",
-    _BACKEND.parent / "LLM_preprocessor" / "preprocess.py",
-    _BACKEND.parent / "LLM_preprocessor" / "llm_client.py",
-    _BACKEND.parent / "RAG" / "value_mappings.yaml",
-    _BACKEND.parent / "RAG" / "retriever.py",
-    _BACKEND.parent / "RAG" / "text_terms.py",
+    _BACKEND / "services" / "word_form_store.py",
 )
+_VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
+                "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE",
+                "ANTHROPIC_FALLBACK_MODEL")
 _version: Optional[str] = None
+
+
+def version_paths() -> list:
+    """The files pipeline_version() reads, in a fixed order."""
+    paths = list(_VERSION_FILES)
+    for directory in _VERSION_DIRS:
+        if directory.is_dir():
+            paths.extend(sorted(p for p in directory.iterdir()
+                                if p.is_file() and p.suffix in _VERSION_SUFFIXES))
+    return paths
 
 
 def enabled() -> bool:
@@ -64,13 +87,14 @@ def pipeline_version() -> str:
     global _version
     if _version is None:
         digest = hashlib.sha256()
-        for path in _VERSION_FILES:
+        for path in version_paths():
+            # The name too: a renamed or added file is a different pipeline.
+            digest.update(f"{path.parent.name}/{path.name}\0".encode())
             try:
                 digest.update(path.read_bytes())
             except OSError:
-                digest.update(f"missing:{path.name}".encode())
-        for name in ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
-                     "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE"):
+                digest.update(b"missing")
+        for name in _VERSION_ENV:
             digest.update(f"{name}={os.getenv(name, '')};".encode())
         _version = digest.hexdigest()[:16]
     return _version

@@ -646,6 +646,22 @@ async def query_datasets(
         _in_flight.pop(key, None)
 
 
+def _worth_storing(cached: CachedQuery, total: int) -> bool:
+    """Whether a new translation becomes the stored answer to its question.
+
+    Only one that ran as written and found a real result. The stored SQL is
+    reused for good, so these get a fresh attempt next time instead:
+    - an emergency fallback or a model-repaired SQL (self_corrected);
+    - a relaxed re-run: it depends on how many datasets matched that day, and
+      stored it would never again try the full conditions;
+    - fewer than _MIN_RESULTS results, the case the relaxed re-run is for.
+    """
+    return (total >= _MIN_RESULTS
+            and cached.base_sql != _FALLBACK_SQL
+            and not cached.self_corrected
+            and not cached.relaxed)
+
+
 async def _answer_question(body: QueryRequest, session: AsyncSession, _auth: dict) -> QueryResponse:
     """One search: translation, first page, logging."""
     page, page_size = _clamp_page(1, _DEFAULT_PAGE_SIZE)
@@ -708,8 +724,7 @@ async def _answer_question(body: QueryRequest, session: AsyncSession, _auth: dic
         relaxed=cached.relaxed, self_corrected=bool(cached.self_corrected),
         fallback=cached.base_sql == _FALLBACK_SQL,
     )
-    # Keep a translation that found something and needed no emergency fallback.
-    if stored is None and total > 0 and cached.base_sql != _FALLBACK_SQL:
+    if stored is None and _worth_storing(cached, total):
         await interpretation_store.put(session, body.question, payload, total)
     # Keep the translation for the next time this question is asked, but only
     # one that ran as written and found something: a corrected or empty search
