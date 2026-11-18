@@ -218,7 +218,8 @@ def test_a_failed_load_at_startup_keeps_the_facets_and_turns_the_check_off() -> 
     _detect(uncovered=0, connection=connection)
     assert schema_capabilities.has_dataset_facets()
     assert not cv.enabled()
-    assert connection.savepoints == ["rolled back"]  # the startup connection stays usable
+    # The summary reads, then the failed load: only its savepoint is rolled back.
+    assert connection.savepoints == ["released", "rolled back"]
 
 
 def test_a_failed_reload_keeps_the_old_values_and_waits_before_trying_again(monkeypatch) -> None:

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import re
 import sys
 from pathlib import Path
@@ -236,6 +237,10 @@ class _Result:
     def scalar_one(self):
         return self._rows[0][0]
 
+    def scalar(self):
+        row = self._rows[0]
+        return row[0] if isinstance(row, tuple) else None
+
 
 class _Connection:
     def __init__(self, columns, tables=()):
@@ -246,8 +251,11 @@ class _Connection:
         if "information_schema.columns" in sql:
             return _Result([(name,) for name in self._columns])
         if "to_regclass" in sql:
-            return _Result([(params["table"] in self._tables,)])
+            return _Result([((params or {}).get("table") in self._tables,)])
         return _Result([{"total": 10}])
+
+    def begin_nested(self):
+        return contextlib.nullcontext()
 
 
 def test_exact_capabilities_follow_columns_and_table() -> None:

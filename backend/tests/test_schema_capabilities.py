@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import re
 from pathlib import Path
 
 import pytest
+from sqlalchemy.exc import ProgrammingError
 
 import constants
 from services.catalogue import schema_capabilities as caps
@@ -178,6 +180,9 @@ class _FakeResult:
     def one(self):
         return self._rows[0]
 
+    def scalar(self):
+        return None  # no summary table, no stored subject count
+
 
 class _FakeConnection:
     """Answers the two detection queries from canned data."""
@@ -194,6 +199,9 @@ class _FakeConnection:
             return _FakeResult([(name,) for name in self._columns])
         return _FakeResult([self._counts])
 
+    def begin_nested(self):
+        return contextlib.nullcontext()
+
 
 def test_detection_requires_column_to_exist_and_hold_data() -> None:
     connection = _FakeConnection(
@@ -208,14 +216,84 @@ def test_detection_requires_column_to_exist_and_hold_data() -> None:
     assert "size_bytes" not in connection.statements[-1]
 
 
-def test_detection_failure_hides_every_optional_column() -> None:
-    class _BrokenEngine:
-        def connect(self):
-            raise RuntimeError("database unreachable")
+class _Engine:
+    def __init__(self, error: BaseException):
+        self.error = error
 
+    def connect(self):
+        raise self.error
+
+
+def test_detection_failure_hides_every_optional_column() -> None:
     caps.set_available_columns({"readme_text"})
-    assert asyncio.run(caps.refresh_available_columns(_BrokenEngine())) == frozenset()
+    caps.set_summaries(True, True)
+    engine = _Engine(ConnectionRefusedError("database unreachable"))
+    assert asyncio.run(caps.refresh_available_columns(engine)) == frozenset()
     assert caps.available_columns() == frozenset()
+    assert not caps.has_dataset_facets() and not caps.has_subject_counts()
+
+
+def test_a_bug_in_the_detection_is_not_taken_for_an_unreachable_database() -> None:
+    with pytest.raises(KeyError):
+        asyncio.run(caps.refresh_available_columns(_Engine(KeyError("total"))))
+
+
+class _SummaryFailsConnection(_FakeConnection):
+    """The facets coverage query fails, as in a database without bids_objects."""
+
+    def __init__(self, columns, counts):
+        super().__init__(columns, counts)
+        self.savepoints = []
+
+    async def execute(self, statement, params=None):
+        sql = str(statement)
+        if "to_regclass" in sql:
+            self.statements.append(sql)
+            return _ScalarResult(True)
+        if "NOT EXISTS" in sql:
+            self.statements.append(sql)
+            raise ProgrammingError(sql, {}, Exception('relation "bids_objects" does not exist'))
+        return await super().execute(statement, params)
+
+    def begin_nested(self):
+        connection = self
+
+        class _Savepoint:
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                connection.savepoints.append("rolled back" if exc_type else "released")
+                return False
+
+        return _Savepoint()
+
+
+class _ScalarResult:
+    def __init__(self, value):
+        self.value = value
+
+    def scalar(self):
+        return self.value
+
+    def scalar_one(self):
+        return self.value
+
+
+def test_a_failed_summary_query_leaves_the_other_checks_running() -> None:
+    # Before 2026-11-18 the failure aborted the startup transaction, the
+    # column counts failed after it, and full-text search was switched off.
+    connection = _SummaryFailsConnection(
+        columns=["id", "name", "search_tsv", "readme_text"],
+        counts={"total": 1000, "readme_text": 850},
+    )
+    detected = asyncio.run(caps.detect_available_columns(connection))
+    try:
+        assert detected == frozenset({"readme_text"})
+        assert caps.has_fts() and not caps.has_dataset_facets()
+        assert connection.savepoints == ["rolled back"]
+    finally:
+        caps.set_fts(False)
 
 
 def test_display_column_needs_only_to_exist() -> None:

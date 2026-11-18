@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import re
 import sys
 from pathlib import Path
@@ -464,6 +465,9 @@ class _FakeResult:
     def one(self):
         return self._rows[0]
 
+    def scalar(self):
+        return None  # no summary table
+
 
 class _FakeConnection:
     def __init__(self, columns):
@@ -473,6 +477,9 @@ class _FakeConnection:
         if "information_schema.columns" in str(statement):
             return _FakeResult([(name,) for name in self._columns])
         return _FakeResult([{"total": 10}])
+
+    def begin_nested(self):
+        return contextlib.nullcontext()
 
 
 def test_full_text_capability_follows_the_column() -> None:
