@@ -179,11 +179,10 @@ async def _record_user_query(session: AsyncSession, user: Optional[str], questio
         pass  # stale/legacy JWT sub not in users table — don't crash the response
 
 
-class SearchExpiredError(DomainError):
+class SearchExpiredError(
+    DomainError, status_code=410, detail="This search has expired. Please run the query again."
+):
     """The query_id is no longer in the query cache."""
-
-    status_code = 410
-    detail = "This search has expired. Please run the query again."
 
 
 async def next_page(session: AsyncSession, query_id: str, page: int, page_size: int) -> QueryResponse:

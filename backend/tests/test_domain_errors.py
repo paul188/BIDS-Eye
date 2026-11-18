@@ -97,7 +97,13 @@ def test_every_planned_error_is_a_domain_error_with_its_own_answer():
     )
     for error in errors:
         assert issubclass(error, DomainError)
-        assert "status_code" in vars(error) and "detail" in vars(error)
+        assert isinstance(error.status_code, int) and error.detail
+
+
+def test_an_error_class_without_its_answer_is_refused_when_defined():
+    with pytest.raises(TypeError):
+        class NoAnswerError(DomainError, status_code=400):
+            pass
 
 
 def test_an_unexpected_error_is_a_plain_500_without_its_message(monkeypatch):

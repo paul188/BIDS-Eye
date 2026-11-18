@@ -81,16 +81,13 @@ def _now() -> float:
     return time.time()
 
 
-class RateLimitError(DomainError):
+class RateLimitError(DomainError, status_code=429, detail={"code": "rate_limit_exceeded"}):
     """A window of the request's category is used up.
 
     ``detail`` says which (code, category, window, limit, retry_after; read by
     the frontend's class of the same name in api/index.ts) and the
     Retry-After header when, so both are passed when it is raised.
     """
-
-    status_code = 429
-    detail = {"code": "rate_limit_exceeded"}
 
 
 # (client, category, window seconds) -> (window number, requests counted in it).

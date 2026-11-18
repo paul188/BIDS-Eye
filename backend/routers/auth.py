@@ -33,40 +33,33 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 # ── Errors (answered by exceptions/handlers.py) ───────────────────────────────
 
-class NotSignedInError(DomainError):
+class NotSignedInError(DomainError, status_code=401, detail="Not signed in"):
     """No signed-in session. RequireLoginMiddleware (api_security.py) sends the
     same answer before routing, where exception handlers do not reach."""
 
-    status_code = 401
-    detail = "Not signed in"
 
-
-class OAuthStateError(DomainError):
+class OAuthStateError(DomainError, status_code=400, detail="Invalid or expired OAuth state."):
     """GitHub returned a state this browser's session was not given, or it expired."""
 
-    status_code = 400
-    detail = "Invalid or expired OAuth state."
 
-
-class GitHubTokenError(DomainError):
+class GitHubTokenError(
+    DomainError, status_code=400, detail="Failed to obtain access token from GitHub."
+):
     """GitHub did not exchange the login code for an access token."""
 
-    status_code = 400
-    detail = "Failed to obtain access token from GitHub."
 
-
-class GitHubLoginMissingError(DomainError):
+class GitHubLoginMissingError(
+    DomainError, status_code=502, detail="GitHub did not return a login name."
+):
     """GitHub's /user answer had no login name."""
 
-    status_code = 502
-    detail = "GitHub did not return a login name."
 
-
-class NotInGitHubOrgError(DomainError):
+class NotInGitHubOrgError(
+    DomainError,
+    status_code=403,
+    detail="Access restricted to members of the required GitHub organization.",
+):
     """The user is not a member of GITHUB_ORG."""
-
-    status_code = 403
-    detail = "Access restricted to members of the required GitHub organization."
 
 
 # ── Session ───────────────────────────────────────────────────────────────────
