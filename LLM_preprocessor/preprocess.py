@@ -741,7 +741,8 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     NOT into scan_terms.  Use these exact BIDS sidecar key names:
       Manufacturer           → string, use operator "=" (the SQL layer uses ILIKE)
                                Values: 'Siemens', 'Philips', 'GE', 'Bruker', 'Canon'
-      ManufacturerModelName  → string, use operator "="
+      ManufacturersModelName → string, use operator "=" (the BIDS key; the SQL layer also reads
+                               the DICOM spelling ManufacturerModelName)
                                Values: 'Prisma', 'Prisma_fit', 'Skyra', 'Trio',
                                        'Achieva', 'Ingenia', 'MAGNETOM Vida', etc.
       MagneticFieldStrength  → numeric Tesla, use >, <, >=, <=, = operators
@@ -755,7 +756,7 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "3 Tesla datasets"         → metadata_filters: [{"json_field": "MagneticFieldStrength", "operator": "=", "value": 3.0}]
       "above 3T"                 → metadata_filters: [{"json_field": "MagneticFieldStrength", "operator": ">", "value": 3.0}]
       "Siemens scanners"         → metadata_filters: [{"json_field": "Manufacturer", "operator": "=", "value": "Siemens"}]
-      "Prisma scanner"           → metadata_filters: [{"json_field": "ManufacturerModelName", "operator": "=", "value": "Prisma"}]
+      "Prisma scanner"           → metadata_filters: [{"json_field": "ManufacturersModelName", "operator": "=", "value": "Prisma"}]
       "has software version info"→ metadata_filters: [{"json_field": "SoftwareVersions", "operator": "exists"}]
       "PET with a carbon-11 tracer" → scan_terms: ["PET"],
                                    metadata_filters: [{"json_field": "TracerRadionuclide", "operator": "=", "value": "C11"}]

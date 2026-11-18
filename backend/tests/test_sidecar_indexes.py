@@ -35,3 +35,12 @@ def test_the_rewriters_number_cast_is_the_indexed_expression(key: str, cast: str
     guarded = sql_rewrite_service._guard_json_number_casts(sql)
     written = re.search(r"CASE WHEN .*? END", guarded).group(0).replace("o2.", "")
     assert _flat(written) in _flat(MIGRATION.read_text())
+
+
+@pytest.mark.parametrize("key", ["ManufacturersModelName", "ManufacturerModelName"])
+def test_the_rewriters_scanner_model_expression_is_the_indexed_one(key: str) -> None:
+    sql = ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM bids_objects AS o2 "
+           f"WHERE o2.dataset_id = d.id AND o2.other_entities ->> '{key}' ILIKE '%prisma%')")
+    unified = sql_rewrite_service._unify_scanner_model_key(sql)
+    written = re.search(r"COALESCE\(.*?\)(?= ILIKE)", unified).group(0).replace("o2.", "")
+    assert f"gin (({written}) gin_trgm_ops)" in _flat(MIGRATION.read_text())

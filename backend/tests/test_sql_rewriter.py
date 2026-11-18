@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from services.translate.sql_rewriter import FALLBACK_SQL, SqlRewriteService, build_count_sql, build_page_sql
 
 
@@ -180,3 +182,28 @@ def test_a_requested_order_is_kept_on_the_page() -> None:
     ).sql
     page_sql, _ = build_page_sql(base_sql, [], False, 20, 0)
     assert "ORDER BY" not in _outer_order(page_sql)
+
+
+_UNIFIED = ("COALESCE(bo.other_entities ->> 'ManufacturersModelName', "
+            "bo.other_entities ->> 'ManufacturerModelName')")
+
+
+@pytest.mark.parametrize("key", ["ManufacturersModelName", "ManufacturerModelName"])
+def test_the_scanner_model_is_read_under_both_sidecar_keys(key: str) -> None:
+    """BIDS names it ManufacturersModelName, a few datasets write the DICOM
+    ManufacturerModelName: whichever the model writes, both are searched."""
+    raw_sql = ("SELECT d.id FROM bids_datasets d WHERE EXISTS (SELECT 1 FROM bids_objects bo "
+               f"WHERE bo.dataset_id = d.id AND bo.other_entities->>'{key}' ILIKE '%Prisma%')")
+    sql = SERVICE.rewrite_generated_sql(raw_sql, "Prisma scanner").sql
+    assert f"{_UNIFIED} ILIKE '%Prisma%'" in sql
+    assert sql.count("ModelName") == 2
+
+
+def test_the_unified_scanner_model_and_other_keys_are_left_alone() -> None:
+    raw_sql = ("SELECT d.id FROM bids_datasets d WHERE EXISTS (SELECT 1 FROM bids_objects bo "
+               f"WHERE bo.dataset_id = d.id AND {_UNIFIED} ILIKE '%Skyra%' "
+               "AND bo.other_entities ->> 'Manufacturer' ILIKE '%Siemens%')")
+    once = SERVICE._unify_scanner_model_key(raw_sql)
+    assert SERVICE._unify_scanner_model_key(once) == once
+    assert once.count("ModelName") == 2
+    assert "bo.other_entities ->> 'Manufacturer' ILIKE" in once

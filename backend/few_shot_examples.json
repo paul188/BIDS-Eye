@@ -4062,21 +4062,21 @@
     },
     {
       "question": "Find datasets acquired on a Siemens Prisma scanner.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturerModelName' ILIKE '%Prisma%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturersModelName' ILIKE '%Prisma%') GROUP BY d.id",
       "pattern": "scanner_model",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]
     },
     {
       "question": "Which datasets were collected on a Siemens Skyra?",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturerModelName' ILIKE '%Skyra%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturersModelName' ILIKE '%Skyra%') GROUP BY d.id",
       "pattern": "scanner_model",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]
     },
     {
       "question": "Find datasets using a Philips Achieva scanner.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturerModelName' ILIKE '%Achieva%') GROUP BY d.id",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.other_entities->>'ManufacturersModelName' ILIKE '%Achieva%') GROUP BY d.id",
       "pattern": "scanner_model",
       "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists", "json"]

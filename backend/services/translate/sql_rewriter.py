@@ -269,6 +269,7 @@ class SqlRewriteService:
         sql = self._participants_join_to_subqueries(sql)
         sql = self._drop_healthy_filters(sql)
         sql = self._decorrelate_grouped_exists(sql)
+        sql = self._unify_scanner_model_key(sql)
         sql = self._guard_json_number_casts(sql)
         sql = self._case_insensitive_sex(sql)
         sql = self._drop_invented_text_filters(sql, augmented_question)
@@ -724,6 +725,54 @@ class SqlRewriteService:
         if column not in {"task", "datatype", "suffix"}:
             return False
         return isinstance(right, exp.Literal)
+
+    # BIDS names the scanner model ManufacturersModelName; DICOM, and a few
+    # datasets' sidecars, ManufacturerModelName (production 2026-11-18: 1,093
+    # datasets the first, 52 the second, 48 of them on files without the
+    # first). Either key the model writes is read as both, in the expression
+    # crawlers/migrate_add_sidecar_indexes.sql indexes.
+    _SCANNER_MODEL_KEYS = ("ManufacturersModelName", "ManufacturerModelName")
+
+    def _unify_scanner_model_key(self, sql: str) -> str:
+        """Read the scanner model under both of its sidecar keys.
+
+        <alias>.other_entities ->> 'ManufacturerModelName' (or the BIDS key)
+        becomes COALESCE(<alias>.other_entities ->> 'ManufacturersModelName',
+        <alias>.other_entities ->> 'ManufacturerModelName').
+        """
+        if parse_one is None or exp is None or "ModelName" not in sql:
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+        except Exception:
+            return sql
+        changed = False
+        for node in list(parsed.find_all(exp.JSONExtractScalar)):
+            if self._json_key(node.expression) not in self._SCANNER_MODEL_KEYS:
+                continue
+            if isinstance(node.parent, exp.Coalesce):
+                continue  # already the unified expression (or written that way)
+            source = node.this.sql(dialect="postgres")
+            node.replace(parse_one(
+                "COALESCE(" + ", ".join(f"{source} ->> '{k}'" for k in self._SCANNER_MODEL_KEYS) + ")",
+                read="postgres"))
+            changed = True
+        if not changed:
+            return sql
+        log.info("Read the scanner model under both sidecar keys")
+        return parsed.sql(dialect="postgres")
+
+    @staticmethod
+    def _json_key(key: Any) -> Optional[str]:
+        """The top-level key of ->> 'Key': a one-step JSONPath in sqlglot, a string literal in older versions."""
+        if isinstance(key, exp.JSONPath):
+            steps = [s for s in key.expressions if not isinstance(s, exp.JSONPathRoot)]
+            if len(steps) == 1 and isinstance(steps[0], exp.JSONPathKey):
+                return str(steps[0].this)
+            return None
+        if isinstance(key, exp.Literal) and key.is_string:
+            return key.this
+        return None
 
     def _guard_json_number_casts(self, sql: str) -> str:
         """Make number casts of JSON values safe: a non-number no longer crashes the query.

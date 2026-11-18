@@ -13,10 +13,11 @@
 --   sampling frequency >= 2000 Hz   21.8 s -> 0.2 s
 --   Manufacturer = 'Bruker'         21.4 s -> 0.2 s
 --   Manufacturer ILIKE '%philips%'  15.2 s -> 1.3 s
---   model ILIKE '%prisma%'          13.9 s -> 0.001 s
+--   model ILIKE '%prisma%'          13.9 s -> 0.001 s  (on ManufacturerModelName only,
+--                                   which few files have; see the last index)
 --
 -- Numbers: the index is on the exact expression the SQL rewriter writes for a
--- number cast of a sidecar value (backend/services/sql_rewriter.py,
+-- number cast of a sidecar value (backend/services/translate/sql_rewriter.py,
 -- _guard_json_number_casts: the number pattern, DOUBLE PRECISION). PostgreSQL
 -- uses an expression index only for the same expression, so
 -- backend/tests/test_sidecar_indexes.py fails when the two drift apart.
@@ -24,7 +25,8 @@
 --
 -- Text: a trigram index serves ILIKE '%...%' and ~*; the plain one serves =.
 --
--- Additive: an extension and indexes, kept current by PostgreSQL itself.
+-- Additive: an extension and indexes, kept current by PostgreSQL itself (the
+-- one DROP removes an index this file used to create).
 -- Undo with DROP INDEX CONCURRENTLY. About 65 MB together. Each build reads
 -- the whole file table (15 to 40 seconds each on the copy; slower on the
 -- server). Run each statement on its own, with `SET statement_timeout = 0`.
@@ -51,6 +53,13 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_bids_objects_manufacturer_trgm
     ON bids_objects USING gin ((other_entities ->> 'Manufacturer') gin_trgm_ops)
     WHERE (other_entities ->> 'Manufacturer') IS NOT NULL;
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_bids_objects_scanner_model_trgm
-    ON bids_objects USING gin ((other_entities ->> 'ManufacturerModelName') gin_trgm_ops)
-    WHERE (other_entities ->> 'ManufacturerModelName') IS NOT NULL;
+-- The scanner model under both of its keys, in the expression the SQL rewriter
+-- writes for either (sql_rewriter.py, _unify_scanner_model_key). BIDS names it
+-- ManufacturersModelName; production on 2026-11-18 had it in 1,093 datasets,
+-- the DICOM spelling ManufacturerModelName in 52. It replaces an index on the
+-- DICOM spelling alone.
+CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_bids_objects_scanner_model_any_trgm
+    ON bids_objects USING gin ((COALESCE(other_entities ->> 'ManufacturersModelName', other_entities ->> 'ManufacturerModelName')) gin_trgm_ops)
+    WHERE COALESCE(other_entities ->> 'ManufacturersModelName', other_entities ->> 'ManufacturerModelName') IS NOT NULL;
+
+DROP INDEX CONCURRENTLY IF EXISTS ix_bids_objects_scanner_model_trgm;

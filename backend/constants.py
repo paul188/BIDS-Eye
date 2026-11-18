@@ -186,7 +186,9 @@ CREATE TABLE bids_objects (
                                   --   json_typeof works, jsonb_* functions and ?/@> do not)
                                   -- Scanner hardware keys (use ILIKE for string fields):
                                   --   Manufacturer          TEXT  e.g. 'Siemens', 'Philips', 'GE', 'Bruker'
-                                  --   ManufacturerModelName TEXT  e.g. 'Prisma', 'Skyra', 'Achieva', 'MAGNETOM'
+                                  --   ManufacturersModelName TEXT e.g. 'Prisma', 'Skyra', 'Achieva', 'MAGNETOM'
+                                  --     (the BIDS key; the SQL layer also reads a few datasets'
+                                  --     DICOM spelling ManufacturerModelName)
                                   --   MagneticFieldStrength FLOAT e.g. 1.5, 3.0, 7.0  (Tesla). Vendors write
                                   --     approximate values (2.89 for 3 T, 6.98 for 7 T): compare with a
                                   --     range, e.g. 7 T → BETWEEN 6.5 AND 7.5, never = 7.0
