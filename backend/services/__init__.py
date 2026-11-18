@@ -12,4 +12,23 @@ The stages it calls:
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
   indexing/    offline LLM jobs over datasets (scripts/ and the crawler, not requests)
+
+The groups are by subject, not by order, because one search calls the
+language model up to three times and several groups serve more than one step
+(catalogue/ word forms feed the intent prompt and the SQL rewrites). In order:
+
+  1. stored translation   stores/interpretation_store: the same question gets
+                          the same translation; a hit skips steps 2-4
+  2. preprocessing        LLM_preprocessor/ (outside backend/): vocabulary,
+                          word forms and topic counts, then the INTENT MODEL
+                          writes a QueryPlan
+  3. SQL                  translate/participant_query_compiler compiles the
+                          plan, or translate/text_to_sql asks the SQL MODEL
+  4. SQL rewrites         translate/sql_rewriter: structural fixes, the
+                          catalogue value check, full-text conditions and the
+                          uncertain tier (fulltext/)
+  5. run                  search_runner + query_guard: one page; a relaxed
+                          re-run when too few datasets match
+  6. result page          results/: the RERANK MODEL orders the first
+                          candidates, then filter chips, cards, snippets
 """
