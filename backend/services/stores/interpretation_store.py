@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from sqlalchemy import select, update, func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
@@ -133,7 +134,11 @@ def _key(question: str) -> str:
 
 
 async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
-    """The stored translation of *question* for the running code version, or None."""
+    """The stored translation of *question* for the running code version, or None.
+
+    A database error reading it gives None (the question is translated anew);
+    one counting the hit only costs the count: the translation is still
+    returned, since translating anew is what the store exists to avoid."""
     if not enabled():
         return None
     from models import QueryInterpretation
@@ -141,18 +146,28 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
         row = (await session.execute(
             select(QueryInterpretation).where(QueryInterpretation.key == _key(question))
         )).scalar_one_or_none()
-        if row is None or row.review_verdict == "wrong":
-            return None
+    except SQLAlchemyError:
+        log.warning("interpretation cache: lookup failed", exc_info=True)
+        await session.rollback()
+        return None
+    if row is None or row.review_verdict == "wrong":
+        return None
+    key = row.key
+    try:
+        payload = json.loads(row.payload)
+    except ValueError:  # JSONDecodeError; written by put(), so never expected
+        log.error("interpretation cache: stored payload of %s is not JSON", key)
+        return None
+    try:
         await session.execute(
-            update(QueryInterpretation).where(QueryInterpretation.key == row.key)
+            update(QueryInterpretation).where(QueryInterpretation.key == key)
             .values(hits=QueryInterpretation.hits + 1, last_used_at=func.now())
         )
         await session.commit()
-        return json.loads(row.payload)
-    except Exception:
-        log.exception("interpretation cache: lookup failed")
+    except SQLAlchemyError:
+        log.warning("interpretation cache: hit of %s not counted", key, exc_info=True)
         await session.rollback()
-        return None
+    return payload
 
 
 async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any], total: int,

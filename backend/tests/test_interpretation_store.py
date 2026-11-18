@@ -142,3 +142,69 @@ def test_version_reads_every_preprocessing_module():
     and the version reads folders without recursing into them."""
     modules = {p for p in (_ROOT / "LLM_preprocessor").rglob("*.py") if "__pycache__" not in p.parts}
     assert modules and modules <= set(store.version_paths())
+
+
+class _Rows:
+    def __init__(self, row):
+        self.row = row
+
+    def scalar_one_or_none(self):
+        return self.row
+
+
+class _StoredRow:
+    key = "k"
+    review_verdict = None
+    payload = '{"sql": "SELECT 1"}'
+
+
+class _Session:
+    """Answers the lookup with *row*; the hit UPDATE raises *update_error*."""
+
+    def __init__(self, row=None, select_error=None, update_error=None):
+        self.row, self.select_error, self.update_error = row, select_error, update_error
+        self.rollbacks = self.commits = 0
+
+    async def execute(self, statement, params=None):
+        if str(statement).lstrip().upper().startswith("UPDATE"):
+            if self.update_error:
+                raise self.update_error
+            return None
+        if self.select_error:
+            raise self.select_error
+        return _Rows(self.row)
+
+    async def commit(self):
+        self.commits += 1
+
+    async def rollback(self):
+        self.rollbacks += 1
+
+
+def _get(session):
+    import asyncio
+    return asyncio.run(store.get(session, "fMRI datasets"))
+
+
+def test_a_failed_hit_count_keeps_the_stored_translation(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _Session(row=_StoredRow(), update_error=OperationalError("UPDATE", {}, Exception("lock timeout")))
+    assert _get(session) == {"sql": "SELECT 1"}
+    assert session.rollbacks == 1 and session.commits == 0
+
+
+def test_a_failed_lookup_translates_anew(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _Session(select_error=OperationalError("SELECT", {}, Exception("connection reset")))
+    assert _get(session) is None
+    assert session.rollbacks == 1
+
+
+def test_a_bug_in_the_lookup_is_raised(monkeypatch):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    with pytest.raises(TypeError):
+        _get(_Session(select_error=TypeError("a bug")))
