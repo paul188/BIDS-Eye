@@ -54,13 +54,10 @@ from typing import Any, AsyncIterator, Optional
 from exceptions.domain import DomainError
 from exceptions.expected import ExpectedError
 
-log = logging.getLogger(__name__)
+from sqlglot import exp, parse
+from sqlglot.errors import SqlglotError
 
-try:  # optional dependency, as in sql_rewriter
-    from sqlglot import exp, parse
-except Exception:  # pragma: no cover
-    exp = None
-    parse = None
+log = logging.getLogger(__name__)
 
 
 class QueryRefusedError(ExpectedError):
@@ -229,14 +226,17 @@ def _singleton_tsquery_ctes(root: Any) -> set[str]:
 
 
 def check_static(sql: str) -> Optional[str]:
-    """The reason this SQL must not run, or None. Unparsable SQL passes:
-    the database rejects it, cheaply, and self-correction takes over."""
-    if parse is None:
-        return None
+    """The reason this SQL must not run, or None.
+
+    SQL that sqlglot cannot parse is refused: the rules below cannot be
+    checked on it, and Postgres accepts some of it (``EXISTS (TABLE users)``
+    reads a table outside the catalogue). sqlglot parsed every one of the
+    2,867 distinct queries of the benchmark runs and the 319 few-shot
+    examples (2026-11-18), so this refuses nothing a search writes today."""
     try:
         statements = [s for s in parse(sql, read="postgres") if s is not None]
-    except Exception:
-        return None
+    except SqlglotError as exc:
+        return f"the SQL could not be checked ({exc}); write one plain PostgreSQL SELECT"
     if len(statements) != 1:
         return "more than one SQL statement"
     root = statements[0]
@@ -304,20 +304,28 @@ _PLAN_ROWS_DEFAULT = 1.0e7
 
 
 async def max_plan_rows(session: Any) -> float:
-    """Most rows any plan step may expect: 3 × the largest table's estimate."""
+    """Most rows any plan step may expect: 3 × the largest table's estimate.
+
+    The estimate is read once, in a savepoint (*session* is the search's: a
+    failed read must not abort it). After a failure this search uses
+    _PLAN_ROWS_DEFAULT and the next one reads again."""
     global _max_plan_rows
     configured = os.getenv("SEARCH_MAX_PLAN_ROWS")
     if configured:
         return float(configured)
     if _max_plan_rows is None:
         from sqlalchemy import text
+        from sqlalchemy.exc import DBAPIError
         try:
-            biggest = (await session.execute(text(
-                "SELECT max(reltuples) FROM pg_class WHERE relname IN ('bids_objects', 'bids_participants', "
-                "'bids_datasets')"))).scalar()
-            _max_plan_rows = max(float(biggest or 0) * _PLAN_ROWS_FACTOR, 1.0e6)
-        except Exception:
-            _max_plan_rows = _PLAN_ROWS_DEFAULT
+            async with session.begin_nested():
+                biggest = (await session.execute(text(
+                    "SELECT max(reltuples) FROM pg_class WHERE relname IN ('bids_objects', "
+                    "'bids_participants', 'bids_datasets')"))).scalar()
+        except DBAPIError as exc:
+            log.warning("Table sizes not read (%s); plan limit %.0f rows for this search",
+                        exc.orig or exc, _PLAN_ROWS_DEFAULT)
+            return _PLAN_ROWS_DEFAULT
+        _max_plan_rows = max(float(biggest or 0) * _PLAN_ROWS_FACTOR, 1.0e6)
     return _max_plan_rows
 
 
@@ -338,13 +346,22 @@ def largest_step(plan_json: Any) -> tuple[float, str]:
 
 
 async def check_plan(session: Any, sql: str, params: Optional[dict] = None) -> Optional[str]:
-    """EXPLAIN the query (nothing runs) and refuse an expected row explosion."""
+    """EXPLAIN the query (nothing runs) and refuse an expected row explosion.
+
+    A query Postgres rejects passes here: the real execution reports the
+    error, and that message is what self-correction needs. The EXPLAIN runs
+    in a savepoint, since an error outside one aborts the search's
+    transaction, and the next statement would report only "current
+    transaction is aborted"."""
     from sqlalchemy import text
+    from sqlalchemy.exc import DBAPIError
     try:
-        result = await session.execute(text(f"EXPLAIN (FORMAT JSON) {sql}"), params or {})
-        rows, node = largest_step(result.scalar())
-    except Exception:
-        return None  # the real execution reports the error
+        async with session.begin_nested():
+            plan = (await session.execute(text(f"EXPLAIN (FORMAT JSON) {sql}"), params or {})).scalar()
+    except DBAPIError as exc:
+        log.info("EXPLAIN failed, the query runs unchecked by the plan guard: %s", exc.orig or exc)
+        return None
+    rows, node = largest_step(plan)
     limit = await max_plan_rows(session)
     if rows > limit:
         return (f"the query plan expects {rows:,.0f} rows at one step ({node}), more than the "

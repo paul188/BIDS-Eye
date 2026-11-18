@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 
 import pytest
+from sqlalchemy.exc import DBAPIError
 
 from services import query_guard
 from services.query_guard import QueryRefusedError, SearchBusyError, check_static, largest_step
@@ -74,8 +75,15 @@ def test_safe_shapes_pass(sql: str) -> None:
     assert check_static(sql) is None
 
 
-def test_unparsable_sql_is_left_to_the_database() -> None:
-    assert check_static("SELEC broken (") is None
+def test_unparsable_sql_is_refused() -> None:
+    assert "could not be checked" in (check_static("SELEC broken (") or "")
+
+
+def test_sql_postgres_accepts_but_sqlglot_cannot_parse_is_refused() -> None:
+    # Postgres runs TABLE users as SELECT * FROM users; sqlglot 30 cannot
+    # parse it, and before 2026-11-18 such SQL skipped every rule.
+    sql = "SELECT d.id FROM bids_datasets d WHERE EXISTS (TABLE users)"
+    assert "could not be checked" in (check_static(sql) or "")
 
 
 def test_cross_join_to_literal_tsquery_cte_is_safe() -> None:
@@ -359,16 +367,21 @@ class _Result:
         return self.value
 
 
+def _db_error(message: str) -> DBAPIError:
+    return DBAPIError("statement", None, Exception(message))
+
+
 class _Nested:
-    def __init__(self, fail: bool):
-        self.fail = fail
+    def __init__(self, fail: bool, savepoints: list):
+        self.fail, self.savepoints = fail, savepoints
 
     async def __aenter__(self):
         if self.fail:
-            raise RuntimeError("permission denied to set parameter temp_file_limit")
+            raise _db_error("permission denied to set parameter temp_file_limit")
         return self
 
-    async def __aexit__(self, *exc):
+    async def __aexit__(self, exc_type, exc, tb):
+        self.savepoints.append("rolled back" if exc_type else "released")
         return False
 
 
@@ -379,13 +392,14 @@ class _Session:
         self.rows, self.biggest_table = rows, biggest_table
         self.explain_fails, self.savepoint_fails = explain_fails, savepoint_fails
         self.statements = []
+        self.savepoints = []
 
     async def execute(self, statement, params=None):
         sql = str(statement)
         self.statements.append(sql)
         if sql.startswith("EXPLAIN"):
             if self.explain_fails:
-                raise RuntimeError("syntax error")
+                raise _db_error('column d.modality does not exist')
             return _Result([{"Plan": {"Node Type": "Hash Join", "Plan Rows": self.rows}}])
         if "reltuples" in sql:
             if isinstance(self.biggest_table, Exception):
@@ -394,7 +408,7 @@ class _Session:
         return _Result(None)
 
     def begin_nested(self):
-        return _Nested(self.savepoint_fails)
+        return _Nested(self.savepoint_fails, self.savepoints)
 
 
 @pytest.fixture(autouse=True)
@@ -438,14 +452,33 @@ def test_configured_plan_limit_wins(monkeypatch) -> None:
 
 
 def test_unknown_table_size_falls_back_to_ten_million() -> None:
-    _vet(_Session(rows=9_000_000, biggest_table=RuntimeError("no pg_class")))
-    query_guard._max_plan_rows = None
+    _vet(_Session(rows=9_000_000, biggest_table=_db_error("no pg_class")))
     with pytest.raises(QueryRefusedError):
-        _vet(_Session(rows=11_000_000, biggest_table=RuntimeError("no pg_class")))
+        _vet(_Session(rows=11_000_000, biggest_table=_db_error("no pg_class")))
+
+
+def test_a_failed_size_read_is_not_kept_and_leaves_the_transaction_usable() -> None:
+    session = _Session(rows=9_000_000, biggest_table=_db_error("canceling statement"))
+    _vet(session)
+    assert query_guard._max_plan_rows is None  # the next search reads again
+    assert session.savepoints == ["released", "rolled back"]  # EXPLAIN, then the size read
+    _vet(_Session(rows=1000))
+    assert query_guard._max_plan_rows == 2_700_000 * 3
 
 
 def test_failing_explain_leaves_the_error_to_the_real_run() -> None:
-    _vet(_Session(explain_fails=True))
+    session = _Session(explain_fails=True)
+    _vet(session)
+    # Only the savepoint is rolled back: the real run reports the real error,
+    # not "current transaction is aborted".
+    assert session.savepoints == ["rolled back"]
+
+
+def test_a_bug_reading_the_plan_is_not_taken_for_a_database_error() -> None:
+    session = _Session()
+    session.rows = "many"  # float("many") fails in largest_step
+    with pytest.raises(ValueError):
+        _vet(session)
 
 
 def test_static_refusal_skips_the_plan() -> None:
