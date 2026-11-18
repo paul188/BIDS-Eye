@@ -42,6 +42,9 @@ export interface Dataset {
   generated_summary?: string | null
   /** The primary paper, when it was checked to report this dataset (or a larger sample including it). */
   linked_paper?: { title: string; year: number | null; url: string | null; relation: string; relation_label: string } | null
+  /** Why it matched, per filter that can match in several ways
+   *  ("Age: 12 of 40 participants aged 4–23 months"); older backends omit it. */
+  match_reasons?: string[]
 }
 
 export interface TextToSQLResult {

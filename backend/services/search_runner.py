@@ -24,7 +24,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
-from services.results import dataset_cards, query_filters, readme_snippets
+from services.results import dataset_cards, match_reasons, query_filters, readme_snippets
 from services import query_guard
 from services.stores.query_cache import CachedQuery, query_cache
 from services.results.rerank import rerank_candidates, settings as rerank_settings, should_rerank
@@ -258,4 +258,6 @@ async def _run_page_unguarded(
     await readme_snippets.attach_snippets(session, datasets, _highlight_for(cached),
                                           _exact_words_for(cached), _strengths_for(cached))
     await dataset_cards.attach_descriptions(session, datasets)
+    await match_reasons.attach_match_reasons(
+        session, datasets, None if cached.self_corrected else cached.filter_sql)
     return datasets, total

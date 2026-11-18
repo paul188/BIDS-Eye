@@ -166,12 +166,66 @@ def test_filters_cannot_be_changed_through_the_api():
 def test_highlight_query_takes_words_of_text_and_coded_chips():
     terms = qf.highlight_terms(_sql(DIAGNOSIS, MODALITY, NO_EEG, ADULTS, TEXT))
     assert {("parkinson",), ("parkinsons",), ("paralysis", "agitans"), ("parkinson", "disease"),
-            ("fMRI",), ("sleep", "deprivation")} == set(terms)
-    # Negated chips and ages have nothing to mark.
+            ("fMRI",), ("sleep", "deprivation")} <= set(terms)
+    # An age chip marks the words of its age groups (what the uncertain tier
+    # accepts from a README), never its numbers.
+    assert {("adults",), ("elderly",), ("older", "adults")} <= set(terms)
+    # Negated chips have nothing to mark.
+    assert ("EEG",) not in terms
     words = qf.highlight_tsquery(_sql(DIAGNOSIS, MODALITY, NO_EEG, ADULTS, TEXT))
     assert "eeg" not in words and "18" not in words
     assert qf.highlight_tsquery(_HEAD + "GROUP BY d.id") is None
     assert qf.highlight_tsquery(None) is None
+
+
+_INFANT_WORDS = {("infant",), ("infants",), ("newborn",), ("neonate",), ("neonatal",),
+                 ("baby",), ("babies",), ("toddler",), ("toddlers",)}
+
+
+def _expanded(*conditions: str) -> str:
+    from services.fulltext import text_search
+    return text_search.expand_text_search(_sql(*conditions), papers=False).sql
+
+
+def test_age_group_chip_marks_its_words():
+    # "infant datasets" matches recorded ages under 3; a README excerpt still
+    # marks the infant words where it has them, and the chip carries them for
+    # the page's own marking of descriptions (frontend/src/highlight.ts).
+    from criteria import age_condition
+    sql = _expanded(age_condition(["infants"]))
+    age = next(chip for chip in qf.describe(sql) if chip.kind == "age")
+    assert {"infant", "newborn", "baby"} <= set(age.text_words)
+    assert _INFANT_WORDS <= set(qf.highlight_terms(sql))
+    children = set(qf.highlight_terms(_expanded(age_condition(["children"]))))
+    assert {("children",), ("child",), ("adolescents",), ("pediatric",)} <= children
+    older = set(qf.highlight_terms(_expanded(age_condition(["older_adults"]))))
+    assert {("elderly",), ("older", "adults")} <= older and ("infant",) not in older
+
+
+def test_numeric_age_chip_marks_the_words_of_its_age_group():
+    # "under 2" has no words in its SQL; the README evidence of the uncertain
+    # tier for that range is the infant words.
+    under_two = ("EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+                 "AND p2.age < 2)")
+    chip = _by_id(_sql(under_two))["w0"]
+    assert chip.kind == "age" and chip.label == "under 2"
+    assert _INFANT_WORDS <= set(qf.highlight_terms(_sql(under_two)))
+    # A range no age group covers a good part of marks nothing.
+    narrow = ("EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+              "AND p2.age BETWEEN 30 AND 31)")
+    assert ("adults",) in qf.highlight_terms(_sql(narrow))   # inside the adult group
+    assert qf.highlight_terms(_sql("EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE "
+                                   "p2.dataset_id = d.id AND p2.age > 0)")) == []
+
+
+def test_every_chip_kind_marks_its_words_but_a_negated_one_does_not():
+    from criteria import species_condition
+    species = _expanded(species_condition(["mouse"]))
+    assert {("mouse",), ("mice",)} <= set(qf.highlight_terms(species))
+    negated = f"NOT ({TEXT})"
+    assert qf.highlight_terms(_sql(negated)) == []
+    negated_age = f"NOT ({ADULTS})"
+    assert qf.highlight_terms(_sql(negated_age)) == []
 
 
 def test_highlight_terms_pair_the_words_of_a_phrase():

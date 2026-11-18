@@ -60,6 +60,19 @@ jobs:
       METADATA_DB_HOST: localhost
       METADATA_DB_PORT: "5432"
       JWT_SECRET: ci-only-not-a-secret
+      # A scratch database for the tests that need real SQL
+      # (tests/test_match_reasons_postgres.py); on its own port so nothing
+      # finds it under METADATA_DB_*.
+      BIDSEYE_TEST_PG_DSN: postgresql+asyncpg://postgres:ci@localhost:55439/postgres
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci
+        ports:
+          - 55439:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v7
         with:
@@ -110,7 +123,7 @@ jobs:
           fi
 
   frontend:
-    name: Frontend build and type check
+    name: Frontend build, type check and tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -119,8 +132,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          # 24: runs the TypeScript tests without a build step (type stripping).
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+      - run: npm test

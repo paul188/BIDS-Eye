@@ -206,6 +206,12 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
       {{ dataset.uncertain_reasons }}
     </p>
 
+    <!-- Why it matched: the recorded values, files or text that satisfied each filter -->
+    <p v-if="dataset.match_reasons?.length" class="text-[13px] text-muted">
+      <span class="font-semibold text-ink/80">Matched:</span>
+      {{ dataset.match_reasons.join(' · ') }}
+    </p>
+
     <!-- Why the dataset is marked deprecated (e.g. no longer on OpenNeuro) -->
     <p v-if="dataset.deprecated_reason" class="text-[13px] text-danger-ink">
       <span class="font-semibold">Deprecated:</span>
