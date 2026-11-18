@@ -205,6 +205,15 @@ def _remove(atom: Any) -> str:
     return ""
 
 
+def _dropped_note(outcome: str) -> str:
+    """The note for what _remove() did."""
+    return {
+        "exact": "left out (one of several alternatives)",
+        "dropped": "condition dropped",
+        "": "kept (under NOT it excludes nothing)",
+    }[outcome]
+
+
 def _quoted(value: str) -> str:
     return "'" + value + "'"
 
@@ -217,6 +226,62 @@ def _like_matches(field: str, pattern: str, case_insensitive: bool) -> bool:
     regex = "".join(".*" if c == "%" else "." if c == "_" else re.escape(c) for c in pattern)
     flags = re.IGNORECASE if case_insensitive else 0
     return any(re.fullmatch(regex, value, flags) for value in _known.get(field, ()))
+
+
+# One function per kind of condition. Each changes the tree in place and
+# returns one note per value it corrected or dropped ([] when all are known).
+
+def _check_in_list(node: Any, field: str) -> List[str]:
+    """field IN ('a', 'b'): replace unknown values, leave out the rest; an
+    empty list drops the condition."""
+    literals = node.expressions
+    values = [_string(v) for v in literals]
+    if not literals or any(v is None for v in values) or node.args.get("query"):
+        return []
+    unknown = [v for v in values if not is_known(field, v)]
+    if not unknown:
+        return []
+    fixes = {v: correction(field, v) for v in unknown}
+    kept: List[str] = []
+    for value in values:
+        kept.extend(c for c in (fixes.get(value, [value])) if c not in kept)
+    if not kept:
+        return [f"{field} {', '.join(map(_quoted, unknown))} occur in no dataset: "
+                + _dropped_note(_remove(node))]
+    node.set("expressions", [exp.Literal.string(v) for v in kept])
+    return [f"{field} '{v}' occurs in no dataset: "
+            + (f"replaced by {_shown(fixes[v])}" if fixes[v] else "left out of the list")
+            for v in unknown]
+
+
+def _check_pattern(node: Any, field: str, pattern_node: Any) -> List[str]:
+    """field LIKE / ILIKE 'pattern': dropped when it matches no known value."""
+    pattern = _string(pattern_node)
+    if pattern is None or _like_matches(field, pattern, isinstance(node, exp.ILike)):
+        return []
+    return [f"{field} pattern '{pattern}' matches no dataset: {_dropped_note(_remove(node))}"]
+
+
+def _check_comparison(node: Any, field: str, column: Any, value_node: Any) -> List[str]:
+    """field = 'x' / field != 'x': replace an unknown value; else drop an =
+    (it matches nothing) and keep a != (it excludes nothing)."""
+    value = _string(value_node)
+    if value is None or is_known(field, value):
+        return []
+    fixed = correction(field, value)
+    if fixed:
+        if len(fixed) == 1:
+            replacement = (exp.EQ if isinstance(node, exp.EQ) else exp.NEQ)(
+                this=column.copy(), expression=exp.Literal.string(fixed[0]))
+        else:
+            replacement = exp.In(this=column.copy(), expressions=[exp.Literal.string(v) for v in fixed])
+            if isinstance(node, exp.NEQ):
+                replacement = exp.Not(this=replacement)
+        node.replace(replacement)
+        return [f"{field} '{value}' occurs in no dataset: replaced by {_shown(fixed)}"]
+    if isinstance(node, exp.EQ):
+        return [f"{field} '{value}' occurs in no dataset: {_dropped_note(_remove(node))}"]
+    return [f"{field} '{value}' occurs in no dataset: the exclusion excludes nothing"]
 
 
 def check_sql(sql: str) -> Tuple[str, List[str]]:
@@ -242,66 +307,15 @@ def check_sql(sql: str) -> Tuple[str, List[str]]:
         field = _field_of(left)
         if field is None:
             continue
-
         if isinstance(node, exp.In):
-            literals = node.expressions
-            values = [_string(v) for v in literals]
-            if not literals or any(v is None for v in values) or node.args.get("query"):
-                continue
-            unknown = [v for v in values if not is_known(field, v)]
-            if not unknown:
-                continue
-            fixes = {v: correction(field, v) for v in unknown}
-            kept: List[str] = []
-            for value in values:
-                kept.extend(c for c in (fixes.get(value, [value])) if c not in kept)
-            if kept:
-                node.set("expressions", [exp.Literal.string(v) for v in kept])
-                notes.extend(f"{field} '{v}' occurs in no dataset: "
-                             + (f"replaced by {_shown(fixes[v])}" if fixes[v] else "left out of the list")
-                             for v in unknown)
-            else:
-                notes.append(f"{field} {', '.join(map(_quoted, unknown))} occur in no dataset: "
-                             + _dropped_note(_remove(node)))
-            continue
-
-        if isinstance(node, (exp.Like, exp.ILike)):
-            pattern = _string(right)
-            if pattern is None or _like_matches(field, pattern, isinstance(node, exp.ILike)):
-                continue
-            notes.append(f"{field} pattern '{pattern}' matches no dataset: {_dropped_note(_remove(node))}")
-            continue
-
-        value = _string(right)
-        if value is None or is_known(field, value):
-            continue
-        fixed = correction(field, value)
-        if fixed:
-            column = left.copy()
-            if len(fixed) == 1:
-                replacement = (exp.EQ if isinstance(node, exp.EQ) else exp.NEQ)(
-                    this=column, expression=exp.Literal.string(fixed[0]))
-            else:
-                replacement = exp.In(this=column, expressions=[exp.Literal.string(v) for v in fixed])
-                if isinstance(node, exp.NEQ):
-                    replacement = exp.Not(this=replacement)
-            node.replace(replacement)
-            notes.append(f"{field} '{value}' occurs in no dataset: replaced by {_shown(fixed)}")
-        elif isinstance(node, exp.EQ):
-            notes.append(f"{field} '{value}' occurs in no dataset: {_dropped_note(_remove(node))}")
+            notes.extend(_check_in_list(node, field))
+        elif isinstance(node, (exp.Like, exp.ILike)):
+            notes.extend(_check_pattern(node, field, right))
         else:
-            notes.append(f"{field} '{value}' occurs in no dataset: the exclusion excludes nothing")
+            notes.extend(_check_comparison(node, field, left, right))
 
     if not notes:
         return sql, []
     for note in notes:
         log.warning("Catalogue check: %s", note)
     return tree.sql(dialect="postgres"), notes
-
-
-def _dropped_note(outcome: str) -> str:
-    return {
-        "exact": "left out (one of several alternatives)",
-        "dropped": "condition dropped",
-        "": "kept (under NOT it excludes nothing)",
-    }[outcome]
