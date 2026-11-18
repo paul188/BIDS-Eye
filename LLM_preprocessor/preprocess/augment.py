@@ -366,7 +366,7 @@ def _age_groups_only(description_search: Optional[str]) -> Optional[List[str]]:
 
 
 _SPECIES_ONLY_RE = re.compile(
-    r"\s*(?:(?:non[- ]?human|animals?|rodents?|rats?|mouse|mice|murine|monkeys?|macaques?|macaca|rhesus|"
+    r"\s*(?:(?:non[- ]?human|humans?|homo sapiens|animals?|rodents?|rats?|mouse|mice|murine|monkeys?|macaques?|macaca|rhesus|"
     r"baboons?|marmosets?|capuchins?|cynomolgus|lemurs?|primates?|nhps?|pigs?|swine|sheep|dogs?|canine|cats?|"
     r"ferrets?|bats?|birds?|pigeons?|songbirds?|zebra ?finch(?:es)?|zebrafish|species|"
     # words around the species in "datasets that contain monkeys", "data from rats"

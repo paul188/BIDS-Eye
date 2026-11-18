@@ -311,10 +311,12 @@ class QueryPlan(BaseModel):
     # ── Species (RAG/criteria.py) ─────────────────────────────────────────────
     species: List[str] = Field(
         default_factory=list,
-        description="Non-human species the user asks for, as codes: "
+        description="Species the user asks for, as codes: "
                     + ", ".join(_SPECIES_CODES)
                     + ". 'animal studies' / 'non-human' → any_animal; 'rodents' → mouse and rat; "
-                    "monkeys, macaques, marmosets → primate. Empty for human data or when not asked."
+                    "monkeys, macaques, marmosets → primate; 'human' only when the user "
+                    "explicitly limits the search to humans ('human participants', 'in humans', "
+                    "'human fMRI'). Empty when the user does not name a species."
     )
 
     @field_validator("species", mode="before")

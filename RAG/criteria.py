@@ -27,6 +27,7 @@ class Criterion:
     evidence: Tuple[str, ...]       # what answers it, strongest first
     not_evidence: Tuple[str, ...]   # what must not count
     when_missing: str               # behaviour when the dataset does not record it
+    default: Optional[str] = None   # the value assumed when nothing says otherwise
 
 
 # ── Species ──────────────────────────────────────────────────────────────────
@@ -46,12 +47,19 @@ SPECIES = Criterion(
         "a label naming another species: a 'Human' dataset is not a mouse dataset because its "
         "README mentions mice",
     ),
-    when_missing="NULL, empty, 'Other', 'n/a' and 'unknown' say nothing: the text fallback decides",
+    when_missing="NULL, empty, 'Other', 'n/a' and 'unknown' say nothing: the dataset is "
+                 "assumed human unless its name or description names an animal species; "
+                 "for an animal question that text decides",
+    default="human",
 )
 
 # A label that says nothing about the species.
 _UNKNOWN_LABEL = r"^\s*(other|n/?a|unknown)?\s*$"
 SPECIES_UNKNOWN = f"(d.species IS NULL OR d.species ~* '{_UNKNOWN_LABEL}')"
+
+# Anchored: "Non-Human Primates" and "Phantom Human" contain "human".
+_HUMAN_LABEL = r"^\s*(humans?|homo sapiens)\s*$"
+HUMAN = "human"
 
 
 @dataclass(frozen=True)
@@ -92,7 +100,21 @@ _ANY_ANIMAL_WORDS = ("animal", "animals", "mouse", "mice", "rat", "rats", "roden
                      "macaque", "monkey", "primate", "nonhuman")
 ANY_ANIMAL = "any_animal"
 
-SPECIES_CODES = (ANY_ANIMAL,) + tuple(SPECIES_GROUPS)
+SPECIES_CODES = (HUMAN, ANY_ANIMAL) + tuple(SPECIES_GROUPS)
+
+# The default: a dataset without a species label is human, unless its name or
+# description names an animal species. Of 670 unlabelled datasets on the live
+# database (2026-11-18), these words named 13, all of them animal studies
+# (Mouse_rest_*, Rat_rest_STZ, TheVirtualBrain Macaque, the pig ischemia
+# model). Not "animal": it shares the stem 'anim' with "animated", and
+# ds000228 (children watching an animated film) is human. Not cat, bat, bird
+# or dog: "CAT snacks", "CAT Faces" are human studies.
+_ANIMAL_NAME_WORDS = tuple(word for code in ("mouse", "rat", "primate", "pig")
+                           for word in SPECIES_GROUPS[code].words)
+SPECIES_ASSUMED_HUMAN = (f"({SPECIES_UNKNOWN} AND NOT "
+                         f"{format_text_match(list(_ANIMAL_NAME_WORDS), MODE_SHORT)})")
+# Human by label, or by default.
+HUMAN_SPECIES = f"(d.species ~* '{_HUMAN_LABEL}' OR {SPECIES_ASSUMED_HUMAN})"
 
 # What the planner may write instead of a code.
 _SYNONYMS = {
@@ -104,6 +126,7 @@ _SYNONYMS = {
     "bats": "bat", "birds": "bird", "pigeon": "bird", "songbird": "bird",
     "animal": ANY_ANIMAL, "animals": ANY_ANIMAL, "non-human": ANY_ANIMAL,
     "nonhuman": ANY_ANIMAL, "any animal": ANY_ANIMAL,
+    "humans": HUMAN, "homo sapiens": HUMAN,
 }
 
 
@@ -123,7 +146,8 @@ def normalise_species(values: Iterable[str]) -> List[str]:
             codes = []
         out.extend(c for c in codes if c not in out)
     if ANY_ANIMAL in out:
-        return [ANY_ANIMAL]          # covers every other animal
+        # Covers every other animal, not humans.
+        return [c for c in out if c in (HUMAN, ANY_ANIMAL)]
     return out
 
 
@@ -138,12 +162,19 @@ def species_condition(codes: Sequence[str], has_column: bool = True) -> Optional
 
     With the column: the uploader's label decides; a dataset whose label says
     nothing counts when its text names the species. Without it: text only.
+
+    Human is the default (HUMAN_SPECIES): a dataset without a label counts
+    unless its name or description names an animal. Without the column
+    every dataset counts as human, so asking for humans is no condition.
     """
     codes = normalise_species(codes)
-    if not codes:
+    if not codes or (HUMAN in codes and not has_column):
         return None
     parts: List[str] = []
     for code in codes:
+        if code == HUMAN:
+            parts.append(HUMAN_SPECIES)
+            continue
         if code == ANY_ANIMAL:
             text = _text(_ANY_ANIMAL_WORDS, MODE_SHORT)
             if not has_column:
@@ -283,11 +314,9 @@ def _recorded_age_in(low: float, high: Optional[float]) -> str:
 AGE_UNKNOWN = ("(COALESCE(d.age_min, 0) <= 0 AND COALESCE(d.age_max, 0) <= 0 AND NOT EXISTS "
                "(SELECT 1 FROM bids_participants pa WHERE pa.dataset_id = d.id AND pa.age > 0))")
 
-# Animal ages are in days or weeks: a labelled non-human dataset is never a
-# human age group (ds004819, pigs aged 0-14).
-# Anchored: "Non-Human Primates" contains "human".
-_HUMAN_LABEL = r"^\s*(humans?|homo sapiens)\s*$"
-_HUMAN_OR_UNLABELLED = (f"({SPECIES_UNKNOWN} OR d.species ~* '{_HUMAN_LABEL}')")
+# Animal ages are in days or weeks: a non-human dataset is never a human age
+# group (ds004819, pigs aged 0-14). The species default decides for datasets
+# without a label (HUMAN_SPECIES).
 
 
 def age_condition(codes: Sequence[str], has_species_column: bool = True) -> Optional[str]:
@@ -307,7 +336,7 @@ def age_condition(codes: Sequence[str], has_species_column: bool = True) -> Opti
         text = _text(group.words, MODE_SHORT)
         parts.append(f"{_recorded_age_in(group.low, group.high)} OR ({AGE_UNKNOWN} AND {text})")
     ages = "(" + " OR ".join(parts) + ")"
-    return f"({ages} AND {_HUMAN_OR_UNLABELLED})" if has_species_column else ages
+    return f"({ages} AND {HUMAN_SPECIES})" if has_species_column else ages
 
 
 def age_group_label(codes: Sequence[str]) -> str:

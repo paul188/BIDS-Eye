@@ -111,10 +111,13 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
             group_operator: "AND"
     Species words ("animals", "rats", "mice", "monkeys", "non-human") are not
     diagnoses either: they go into species (codes: mouse, rat, primate, pig,
-    sheep, dog, cat, ferret, bat, bird, zebrafish, any_animal) and nowhere
+    sheep, dog, cat, ferret, bat, bird, zebrafish, any_animal, human) and nowhere
     else — not diagnosis_terms, scan_terms or description_search. "animal
     studies" → species: ["any_animal"]; "rodents" → ["mouse", "rat"]; "monkey
-    fMRI" → species: ["primate"], scan_terms: ["fMRI"]. Only an animal model
+    fMRI" → species: ["primate"], scan_terms: ["fMRI"]. "human" only when the
+    user explicitly limits the search to humans ("human fMRI", "data from
+    human participants" → species: ["human"]); a question that names no
+    species gets no species. Only an animal model
     of a disease ("3xTg Alzheimer mice") also keeps its disease in
     diagnosis_terms. Publication dates ("published in the last 12 months",
     "recent datasets", "since 2024") are not description_search either: the

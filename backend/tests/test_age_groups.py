@@ -73,9 +73,12 @@ def test_adolescents_stop_below_18() -> None:
     assert "d.age_min < 18 AND d.age_max >= 12" in cond
 
 
-def test_labelled_animals_are_never_an_age_group() -> None:
+def test_animals_are_never_an_age_group() -> None:
+    from criteria import HUMAN_SPECIES
+
+    # Human by label or by the species default (RAG/criteria.py).
     cond = age_condition(["children"])
-    assert cond.endswith("~* '^\\s*(humans?|homo sapiens)\\s*$'))")
+    assert cond.endswith(f" AND {HUMAN_SPECIES})")
     assert age_condition(["children"], has_species_column=False).count("species") == 0
 
 

@@ -49,6 +49,7 @@ TEXT = "text"              # search_tsv: name, description, study fields, README
 SHORT_TEXT = "short_text"  # name or description only (ILIKE, or search_tsv words labelled :AB)
 README = "readme"
 FIELD = "field"            # the dataset's own columns
+ASSUMED = "assumed"        # the column is empty and its default holds (_DEFAULT_PHRASES)
 
 _PHRASES = {
     FILES: "in the dataset's files",
@@ -84,6 +85,9 @@ _FIELD_LABELS = {
     "study_domain": "study domain",
 }
 _MAX_VALUE_CHARS = 60
+# Columns with a default (RAG/criteria.py): a branch that holds when the
+# column is NULL holds by assuming this.
+_DEFAULT_PHRASES = {"species": "no species label, assumed human"}
 
 
 @dataclass
@@ -215,7 +219,14 @@ def classify_branch(branch, alias: str) -> Optional[Venue]:
                      age_column=age,
                      reads_diagnosis=any(c.name.lower() == "diagnosis" for c in columns))
 
-    names = tuple(dict.fromkeys(c.name.lower() for c in outer_columns if c.name.lower() != "id"))
+    # A negated text search left here only says when the branch applies
+    # (the species default: no label AND no animal named); its vector is no value.
+    names = tuple(dict.fromkeys(c.name.lower() for c in outer_columns
+                                if c.name.lower() != "id" and c.name.lower() not in _TEXT_COLUMNS))
+    if len(names) == 1 and names[0] in _DEFAULT_PHRASES and any(
+            isinstance(node.expression, exp.Null) and not _under_not(node, branch)
+            for node in branch.find_all(exp.Is)):
+        return Venue(ASSUMED, columns=names)
     if {"age_min", "age_max"} & set(names):
         # Either bound alone ("d.age_min < 3") is shown as the whole range.
         names = tuple(dict.fromkeys(("age_min", "age_max") + names))
@@ -332,6 +343,8 @@ def reasons_for(plans: Sequence[ChipPlan], row: dict, total: Optional[int]) -> L
                 phrase = _participants_phrase(venue, row, c, b, total)
             elif venue.kind == FIELD:
                 phrase = _field_phrase(venue, row)
+            elif venue.kind == ASSUMED:
+                phrase = _DEFAULT_PHRASES[venue.columns[0]]
             else:
                 phrase = _PHRASES[venue.kind]
             if phrase and phrase not in phrases:
