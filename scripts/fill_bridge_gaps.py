@@ -11,7 +11,7 @@ Run from repo root:
     python scripts/fill_bridge_gaps.py
 
 Merges results directly into RAG/bids_to_ca_map.json.
-Requires: requests, rapidfuzz
+Requires: rapidfuzz
 """
 import argparse
 import json
@@ -24,48 +24,7 @@ from typing import Dict, List, Optional, Set
 import yaml
 from rapidfuzz import fuzz, process as rfprocess
 
-try:
-    import requests as _requests
-
-    def _get_json(url: str, retries: int = 5) -> Optional[dict | list]:
-        for attempt in range(retries):
-            try:
-                r = _requests.get(url, timeout=30)
-                if r.status_code == 429:
-                    wait = int(r.headers.get("Retry-After", 2 ** (attempt + 1)))
-                    print(f"  [429] waiting {wait}s …", file=sys.stderr)
-                    time.sleep(wait)
-                    continue
-                r.raise_for_status()
-                return r.json()
-            except Exception as exc:
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-        return None
-
-except ImportError:
-    import json as _json, urllib.request, urllib.error
-
-    def _get_json(url: str, retries: int = 5) -> Optional[dict | list]:  # type: ignore
-        for attempt in range(retries):
-            try:
-                with urllib.request.urlopen(url, timeout=30) as resp:
-                    return _json.loads(resp.read())
-            except urllib.error.HTTPError as exc:
-                if exc.code == 429:
-                    wait = int(exc.headers.get("Retry-After", 2 ** (attempt + 1)))
-                    time.sleep(wait)
-                    continue
-                if attempt == retries - 1:
-                    return None
-                time.sleep(2 ** attempt)
-            except Exception:
-                if attempt == retries - 1:
-                    return None
-                time.sleep(2 ** attempt)
-        return None
+from cognitive_atlas_api import CognitiveAtlasFetchError, get_json as _get_json
 
 
 _CA_BASE   = "https://www.cognitiveatlas.org"
@@ -161,7 +120,10 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
 
     # ── Fetch CA task list ────────────────────────────────────────────────────
     print("Fetching CA task list …")
-    ca_tasks_raw = _get_json(_TASK_LIST)
+    try:
+        ca_tasks_raw = _get_json(_TASK_LIST)
+    except CognitiveAtlasFetchError as exc:
+        sys.exit(f"ERROR: could not fetch CA task list: {exc}")
     if not ca_tasks_raw or not isinstance(ca_tasks_raw, list):
         print("ERROR: could not fetch CA task list", file=sys.stderr)
         sys.exit(1)
@@ -170,6 +132,7 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
     # ── Scan CA tasks for target construct links ──────────────────────────────
     new_entries: Dict[str, dict] = {}
     scanned = 0
+    failed: List[str] = []
 
     for i, ca_task in enumerate(ca_tasks_raw):
         ca_id   = ca_task.get("id", "")
@@ -185,7 +148,12 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
             print(f"  {i}/{len(ca_tasks_raw)}: {ca_name}")
 
         # Fetch full task JSON to check its concepts
-        task_full = _get_json(_TASK_JSON.format(id=ca_id))
+        try:
+            task_full = _get_json(_TASK_JSON.format(id=ca_id))
+        except CognitiveAtlasFetchError as exc:
+            print(f"  [WARN] {exc}", file=sys.stderr)
+            failed.append(ca_id)
+            continue
         time.sleep(0.05)
         scanned += 1
 
@@ -242,8 +210,16 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
             new_entries[best_code] = entry
 
     print(f"\nScanned {scanned} new CA tasks  → {len(new_entries)} new BIDS matches")
+    # The bridge only gains entries here, so what was found is still written;
+    # the exit status says that a run again may find more.
+    if failed:
+        print(f"WARNING: {len(failed)} CA task(s) could not be read and were not scanned: "
+              f"{', '.join(failed[:10])}{' …' if len(failed) > 10 else ''}. Run again.",
+              file=sys.stderr)
 
     if not new_entries:
+        if failed:
+            sys.exit(1)
         print("No new entries found — bridge is already as complete as the CA API allows.")
         return
 
@@ -267,6 +243,8 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
         json.dump(bridge, f, indent=2, ensure_ascii=False)
 
     print(f"\nWrote {len(bridge)} entries to {bridge_path}  ({updated} changed)")
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
