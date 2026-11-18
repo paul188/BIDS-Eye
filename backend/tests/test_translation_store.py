@@ -236,6 +236,7 @@ class _Session:
 
 def _search(monkeypatch, total: int, self_corrected: bool = False):
     import routers.query as router
+    from services import search, search_runner
     from schemas import QueryRequest, TextToSQLResult
 
     entry = ts.candidate("motor datasets", _plan(), MODEL_SQL)
@@ -252,9 +253,9 @@ def _search(monkeypatch, total: int, self_corrected: bool = False):
 
     monkeypatch.setattr(ts, "refresh", nothing)
     monkeypatch.setattr(ts, "count_hit", nothing)
-    monkeypatch.setattr(router, "text_to_sql", translate)
-    monkeypatch.setattr(router, "_run_page", page)
-    monkeypatch.setattr(router, "_filters_for", lambda cached: [])
+    monkeypatch.setattr(search, "text_to_sql", translate)
+    monkeypatch.setattr(search_runner, "run_page", page)
+    monkeypatch.setattr(search, "_filters_for", lambda cached: [])
     session = _Session()
     asyncio.run(router.query_datasets(
         QueryRequest(question="motor datasets"), session, {"sub": "login"}))

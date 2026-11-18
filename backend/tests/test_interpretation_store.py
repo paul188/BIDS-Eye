@@ -103,11 +103,12 @@ def test_a_new_vocabulary_file_changes_the_version(monkeypatch, tmp_path):
 ])
 def test_only_a_translation_that_ran_as_written_is_stored(total, fallback, self_corrected,
                                                           relaxed, expected):
-    import routers.query as query_router
+    from services import search
+    from services.sql_rewriter import FALLBACK_SQL
     from services.query_cache import CachedQuery
 
-    cached = CachedQuery(base_sql=query_router._FALLBACK_SQL if fallback else "SELECT 1",
+    cached = CachedQuery(base_sql=FALLBACK_SQL if fallback else "SELECT 1",
                          params={}, scored_filters=[], apply_relevance=False)
     cached.self_corrected = self_corrected
     cached.relaxed = relaxed
-    assert query_router._worth_storing(cached, total) is expected
+    assert search._worth_storing(cached, total) is expected

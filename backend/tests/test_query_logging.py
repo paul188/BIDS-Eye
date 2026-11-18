@@ -11,6 +11,7 @@ import asyncio
 
 import routers.query as query_router
 from schemas import QueryRequest, TextToSQLResult
+from services import search, search_runner
 
 
 class _Savepoint:
@@ -56,9 +57,9 @@ def _search(monkeypatch, session: _Session, question: str = "fMRI datasets with 
     async def empty_page(*args, **kwargs):
         return [], 0
 
-    monkeypatch.setattr(query_router, "text_to_sql", translate)
-    monkeypatch.setattr(query_router, "_run_page", empty_page)
-    monkeypatch.setattr(query_router, "_filters_for", lambda cached: [])
+    monkeypatch.setattr(search, "text_to_sql", translate)
+    monkeypatch.setattr(search_runner, "run_page", empty_page)
+    monkeypatch.setattr(search, "_filters_for", lambda cached: [])
     return asyncio.run(query_router.query_datasets(
         QueryRequest(question=question), session, {"sub": "some-login"}))
 

@@ -25,7 +25,7 @@ Rollback images exist on the server for every deploy (`bids-eye-backend:pre-live
 4. **Rewriter** (`backend/services/sql_rewriter.py`): concept keys, catalogue value check (`catalogue_values.py`), patient counts, participants-join fix, summary tables (`bids_dataset_facets`, `bids_datasets.n_subjects`).
 5. **Text search** (`backend/services/text_search.py`): `text_match()` placeholders → Postgres full text (modes all / short / loose / near / also).
 6. **Uncertain tier** (`backend/services/uncertain_tier.py`): "probable" results that miss one fact or match only part of a text condition.
-7. **Router** (`backend/routers/query.py`): relaxed re-run below 3 results, self-correction, paging, interpretation cache (`interpretation_store.py`, every search kept in `query_log`).
+7. **Search** (`backend/services/search.py`, `search_runner.py`; the endpoints in `backend/routers/query.py`): relaxed re-run below 3 results, self-correction, paging, interpretation cache (`interpretation_store.py`, every search kept in `query_log`).
 
 ## 3. How good it is
 

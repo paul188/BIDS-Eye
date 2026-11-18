@@ -12,7 +12,7 @@ offline, against the database (review_* columns).
 
 What is stored is the SQL, not the result: it is run again on every request, so
 new datasets show up. A translation is stored only when it ran as written and
-found a real result (routers/query.py _worth_storing): an empty, relaxed or
+found a real result (services/search.py _worth_storing): an empty, relaxed or
 repaired search must not become permanent. A row belongs to one version of the
 translating code (pipeline_version, a hash of its source files), so a deploy
 that changes the pipeline starts with a fresh cache and keeps the old rows for

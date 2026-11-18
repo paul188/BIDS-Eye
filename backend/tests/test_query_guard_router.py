@@ -156,7 +156,8 @@ def test_busy_search_answers_503(monkeypatch) -> None:
     async def scenario():
         async with query_guard.slot():
             with pytest.raises(HTTPException) as caught:
-                await query_router._run_page(_Session(), query_id, cached, "", 1, 20)
+                await query_router.query_page(
+                    query_router.QueryPageRequest(query_id=query_id), _Session())
             assert caught.value.status_code == 503
 
     asyncio.run(scenario())

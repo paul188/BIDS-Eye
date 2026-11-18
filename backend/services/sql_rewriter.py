@@ -185,7 +185,7 @@ class RewriteResult:
     # the filter chips (services/query_filters.py). Equals sql without the tier.
     filter_sql: Optional[str] = None
     # The same query without its free-text-only conditions, for the case that
-    # the full query finds nothing (routers/query.py); None when there is no
+    # the full query finds nothing (services/search_runner.py); None when there is no
     # such condition to drop.
     relaxed_sql: Optional[str] = None
     # Values the catalogue check corrected or dropped (services/catalogue_values.py).

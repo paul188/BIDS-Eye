@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import routers.query as query_router
-from services import dataset_cards
+from services import dataset_cards, search
 from schemas import ParticipantSchema
 
 
@@ -28,5 +27,5 @@ def test_summary_skips_blank_values_and_empty_lists() -> None:
 
 
 def test_found_message_uses_the_right_plural() -> None:
-    assert query_router._found_message(1) == "Found 1 dataset matching your query."
-    assert query_router._found_message(2) == "Found 2 datasets matching your query."
+    assert search._found_message(1) == "Found 1 dataset matching your query."
+    assert search._found_message(2) == "Found 2 datasets matching your query."

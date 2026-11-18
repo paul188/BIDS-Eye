@@ -52,7 +52,7 @@ class CachedQuery:
     # query finds nothing. *relaxed* says that it replaced base_sql.
     relaxed_sql: Optional[str] = None
     relaxed: bool = False
-    # True once the relevance-ranked page was too slow (routers/query.py):
+    # True once the relevance-ranked page was too slow (services/search_runner.py):
     # every page of this query is then served unranked, in one stable order.
     ranking_skipped: bool = False
     created_at: float = field(default_factory=time.monotonic)
