@@ -10,12 +10,14 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
   0. links      derivatives (OpenNeuro's preprocessing bucket and the
                 dataset's own derivatives/ folders) and scanner-header sites
                 (remote/dataset_links.refresh_links). No LLM, public sources only.
-  -. places    city, region and country of each new site name, from the
-                Research Organization Registry (remote/site_places.match_new).
   1. papers     find and look up the papers each dataset names
                 (remote/paper_store.enrich: Europe PMC, bioRxiv/medRxiv, arXiv,
                 OpenAlex). Only datasets whose papers were never checked, or
                 were checked more than PAPER_RECHECK_DAYS ago (default 30).
+  -. affiliations  institutions of the first and last author of each primary
+                paper, from OpenAlex (remote/paper_affiliations.refresh).
+  -. places    city, region and country of each new site name, from the
+                Research Organization Registry (remote/site_places.match_new).
   2. descriptions  how each primary paper relates to its dataset, and a
                 generated summary where the README is thin
                 (backend/services/dataset_description.py, the same code as
@@ -34,6 +36,7 @@ Environment:
     CRAWL_PARTICIPANT_GROUPS "false" skips decoding participant groups (default on)
     CRAWL_LINKS             "false" skips step 0 (default on)
     CRAWL_SITE_PLACES       "false" skips matching site names to places (default on)
+    CRAWL_PAPER_AFFILIATIONS "false" skips the lead authors' institutions as sites (default on)
     CRAWL_PAPERS            "false" skips step 1 (default on)
     CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
     CRAWL_WORD_FORMS        "false" skips step 3 (default on)
@@ -205,6 +208,24 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         except Exception as exc:
             log.error("[post-crawl] Derivatives and sites failed: %s", exc, exc_info=True)
 
+    if _flag("CRAWL_PAPERS"):
+        try:
+            stats = await lookup_papers(engine, accessions)
+            log.info("[post-crawl] Papers looked up: %s", stats or "none due")
+        except Exception as exc:
+            log.error("[post-crawl] Paper lookup failed: %s", exc, exc_info=True)
+
+    # The institutions of the first and last author of each primary paper
+    # (OpenAlex, with their ROR id) are sites too (remote/paper_affiliations.py).
+    if _flag("CRAWL_PAPER_AFFILIATIONS"):
+        try:
+            from remote import paper_affiliations
+
+            stats = await paper_affiliations.refresh(engine, accessions)
+            log.info("[post-crawl] Paper affiliations: %s", stats)
+        except Exception as exc:
+            log.error("[post-crawl] Paper affiliations failed: %s", exc, exc_info=True)
+
     # Where the sites are: names not matched yet go to ROR once
     # (remote/site_places.py); questions that name a place read the result.
     if _flag("CRAWL_SITE_PLACES"):
@@ -216,13 +237,6 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
             log.info("[post-crawl] Site places: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Site places failed: %s", exc, exc_info=True)
-
-    if _flag("CRAWL_PAPERS"):
-        try:
-            stats = await lookup_papers(engine, accessions)
-            log.info("[post-crawl] Papers looked up: %s", stats or "none due")
-        except Exception as exc:
-            log.error("[post-crawl] Paper lookup failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_DESCRIPTIONS") and _descriptions_available():
         try:

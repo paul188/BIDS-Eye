@@ -96,3 +96,25 @@ def test_an_institution_is_also_found_through_its_ror_name() -> None:
     expanded = text_search.expand_text_search(sql, fts=True, papers=False).sql
     chip = query_filters.describe(expanded)[0]
     assert (chip.field, chip.label) == ("Institution", "University of Bonn")
+
+
+def test_lead_authors_institutions_become_sites() -> None:
+    from remote import paper_affiliations as pa
+
+    def author(position, *institutions):
+        return {"author_position": position, "institutions": [
+            {"display_name": name, "ror": ror} for name, ror in institutions]}
+
+    works = {
+        "10.1/a": [author("first", ("University of Bonn", "https://ror.org/041nas322")),
+                   author("middle", ("Harvard University", "https://ror.org/03vek6s52")),
+                   author("last", ("University of Bonn", "https://ror.org/041nas322"),
+                          ("No ROR Lab", None))],
+        "10.1/b": None,   # OpenAlex unreachable
+    }
+    found = pa.collect([("d1", "ds1", "10.1/a"), ("d2", "ds2", "10.1/b"), ("d2", "ds2", "10.1/a")],
+                       lookup=works.get, pause=0)
+    # Middle authors and institutions without a ROR id are left out.
+    assert found["d1"] == [("University of Bonn", "https://ror.org/041nas322", "first author of doi:10.1/a")]
+    # One failed lookup keeps the dataset's old rows.
+    assert found["d2"] is None

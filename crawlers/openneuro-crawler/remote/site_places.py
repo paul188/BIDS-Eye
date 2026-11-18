@@ -12,6 +12,10 @@ IRB' scores 1.0 against a Malaysian institute of the same name, 'Lucas Center'
 0.94 against a Belgian MS centre. A name without a confident match is stored
 with ror_id '' so it is not asked again.
 
+A site that already carries a ROR id (the institutions OpenAlex gives for a
+paper's authors, remote/paper_affiliations.py) is looked up by that id
+instead of being matched by name.
+
 Names are matched once; post_crawl.py calls match_new() after the sites of a
 crawl cycle are written. ROR's API is public and needs no key.
 
@@ -27,13 +31,14 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
 
 log = logging.getLogger(__name__)
 
 _ROR_URL = "https://api.ror.org/v2/organizations?affiliation="
+_ROR_ID_URL = "https://api.ror.org/v2/organizations/"
 _USER_AGENT = "bids-eye-crawler/1.0 (site places)"
 # ROR allows 2,000 requests per 5 minutes; stay well below.
 _PAUSE_SECONDS = 0.2
@@ -60,9 +65,9 @@ _DDL = (
 )
 
 _NEW_NAMES = text(
-    "SELECT DISTINCT s.name_raw FROM bids_dataset_sites s "
+    "SELECT s.name_raw, max(s.ror_id) FROM bids_dataset_sites s "
     "WHERE NOT EXISTS (SELECT 1 FROM bids_site_places p WHERE p.name_raw = s.name_raw) "
-    "ORDER BY 1"
+    "GROUP BY s.name_raw ORDER BY 1"
 )
 _INSERT = text(
     "INSERT INTO bids_site_places "
@@ -95,6 +100,24 @@ def ror_matches(name: str, timeout: float = 30.0, retries: int = 3) -> Optional[
     return None
 
 
+def ror_by_id(ror_id: str, timeout: float = 30.0, retries: int = 3) -> Optional[List[Dict[str, Any]]]:
+    """The organisation with *ror_id*, as a one-item match list; None when ROR cannot be reached."""
+    request = urllib.request.Request(_ROR_ID_URL + ror_id.rstrip("/").rsplit("/", 1)[-1],
+                                     headers={"User-Agent": _USER_AGENT})
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return [{"chosen": True, "organization": json.load(response)}]
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return []
+            log.warning("ROR id %s: HTTP %s, attempt %d", ror_id, exc.code, attempt + 1)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+            log.warning("ROR id %s failed (%s), attempt %d", ror_id, exc, attempt + 1)
+        time.sleep(5 * (attempt + 1))
+    return None
+
+
 def place_rows(name: str, matches: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """bids_site_places rows for *name*: one per matched organisation, or one empty row."""
     rows = []
@@ -116,8 +139,9 @@ def place_rows(name: str, matches: Iterable[Dict[str, Any]]) -> List[Dict[str, A
     return rows
 
 
-async def new_names(conn: Any) -> List[str]:
-    return [row[0] for row in await conn.execute(_NEW_NAMES)]
+async def new_names(conn: Any) -> List[Tuple[str, str]]:
+    """(name, ROR id or '') of the site names without a row yet."""
+    return [(row[0], row[1] or "") for row in await conn.execute(_NEW_NAMES)]
 
 
 async def store(conn: Any, name: str, matches: Iterable[Dict[str, Any]]) -> int:
@@ -126,16 +150,16 @@ async def store(conn: Any, name: str, matches: Iterable[Dict[str, Any]]) -> int:
     return len(rows)
 
 
-async def match_new(conn: Any, limit: Optional[int] = None,
-                    lookup=ror_matches, pause: float = _PAUSE_SECONDS) -> Dict[str, int]:
+async def match_new(conn: Any, limit: Optional[int] = None, lookup=ror_matches,
+                    lookup_id=ror_by_id, pause: float = _PAUSE_SECONDS) -> Dict[str, int]:
     """Match the site names that have no row yet. Names ROR could not be asked about stay unmatched."""
     await ensure_table(conn)
     names = await new_names(conn)
     if limit is not None:
         names = names[:limit]
     stats = {"names": len(names), "matched": 0, "no_match": 0, "unreachable": 0}
-    for name in names:
-        matches = lookup(name)
+    for name, ror_id in names:
+        matches = lookup_id(ror_id) if ror_id else lookup(name)
         if matches is None:
             stats["unreachable"] += 1
             continue
