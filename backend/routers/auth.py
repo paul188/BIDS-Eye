@@ -10,6 +10,8 @@ from urllib.parse import quote, urlsplit
 import httpx
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from exceptions.domain import DomainError
@@ -26,7 +28,19 @@ SESSION_DAYS = 7
 _SESSION_MAX_AGE = SESSION_DAYS * 24 * 3600
 _OAUTH_STATE_SECONDS = 10 * 60
 
-_PLACEHOLDER_SECRETS = ("change-me", "changeme")
+
+class AuthSettings(BaseSettings):
+    """Read from the environment when api_security.py builds the middleware."""
+
+    model_config = SettingsConfigDict(str_strip_whitespace=True, hide_input_in_errors=True)
+
+    # Signs the session and CSRF cookies. With a missing or guessable key anyone
+    # who reads the repo could sign a session for any user, so the app refuses
+    # to start without one of at least 32 characters (.env.example's
+    # placeholder is shorter). Generate one with
+    #   python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+    SESSION_SECRET: SecretStr = Field(min_length=32)
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -64,25 +78,10 @@ class NotInGitHubOrgError(
 
 # ── Session ───────────────────────────────────────────────────────────────────
 
-def session_secret() -> str:
-    """The key that signs the session and CSRF cookies. Refuses to run without a real one.
-
-    A missing or placeholder key would let anyone who reads the repo sign a
-    session for any user, so the app must not start instead of falling back.
-    """
-    secret = os.getenv("JWT_SECRET", "").strip()
-    if not secret or secret.lower().startswith(_PLACEHOLDER_SECRETS):
-        raise RuntimeError(
-            "JWT_SECRET is missing or still a placeholder. Set it to a long random value, "
-            'e.g. python3 -c "import secrets; print(secrets.token_urlsafe(64))"'
-        )
-    return secret
-
-
-def session_middleware_options() -> dict:
+def session_middleware_options(secret: str) -> dict:
     """Keyword arguments for SessionMiddleware."""
     return {
-        "secret_key": session_secret(),
+        "secret_key": secret,
         "session_cookie": SESSION_COOKIE,
         "max_age": _SESSION_MAX_AGE,
         "path": "/api",
@@ -91,23 +90,22 @@ def session_middleware_options() -> dict:
     }
 
 
-def _now() -> float:
-    return time.time()
-
-
 def session_user(session: MutableMapping) -> dict | None:
     """The signed-in user stored in a session, or None.
 
-    SessionMiddleware re-issues the cookie on every response, so its own max_age
-    only limits idle time. The login time stored in the session caps the total
-    lifetime: a copied cookie stops working SESSION_DAYS after the login. An
-    expired session is emptied, which makes the middleware delete the cookie.
+    A session ends SESSION_DAYS after the login however much it is used, so a
+    copied cookie stops working then. SessionMiddleware already ends it: it
+    signs the cookie only when the session changes (Starlette 1.x) and refuses
+    a signature older than max_age. The login time stored in the session keeps
+    the cap should the middleware ever re-sign on every response, as older
+    Starlette did. An expired session is emptied, which makes the middleware
+    delete the cookie.
     """
     user = session.get("user")
     if not isinstance(user, dict) or not user.get("sub"):
         return None
     logged_in_at = user.get("iat")
-    if not isinstance(logged_in_at, (int, float)) or _now() - logged_in_at > _SESSION_MAX_AGE:
+    if not isinstance(logged_in_at, (int, float)) or time.time() - logged_in_at > _SESSION_MAX_AGE:
         session.clear()
         return None
     return user
@@ -150,7 +148,7 @@ async def github_login(request: Request):
         return RedirectResponse(f"{target.scheme}://{target.netloc}{request.url.path}?hop=1")
 
     state = secrets.token_urlsafe(32)
-    request.session["oauth_state"] = {"value": state, "exp": _now() + _OAUTH_STATE_SECONDS}
+    request.session["oauth_state"] = {"value": state, "exp": time.time() + _OAUTH_STATE_SECONDS}
 
     auth_url = (
         "https://github.com/login/oauth/authorize"
@@ -173,7 +171,7 @@ def _take_oauth_state(request: Request, returned: str) -> bool:
     if not isinstance(expected, dict) or not returned:
         return False
     value, exp = expected.get("value"), expected.get("exp")
-    if not isinstance(value, str) or not isinstance(exp, (int, float)) or _now() > exp:
+    if not isinstance(value, str) or not isinstance(exp, (int, float)) or time.time() > exp:
         return False
     return secrets.compare_digest(value, returned)
 
@@ -269,7 +267,7 @@ async def github_callback(request: Request):
     request.session["user"] = {
         "sub": github_login_name,
         "email": primary_email or "",
-        "iat": int(_now()),
+        "iat": int(time.time()),
     }
 
     # Relative on purpose: the cookie was just set on this host, so the app

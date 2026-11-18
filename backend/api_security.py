@@ -29,9 +29,9 @@ from starlette_csrf import CSRFMiddleware
 
 from routers.auth import (
     SESSION_COOKIE,
+    AuthSettings,
     NotSignedInError,
     session_middleware_options,
-    session_secret,
     session_user,
 )
 
@@ -80,12 +80,12 @@ def _needs_login(path: str) -> bool:
 
 
 def install_security_middleware(app: FastAPI) -> None:
-    """Add the middleware stack. Raises when JWT_SECRET is missing or a placeholder."""
-    secret = session_secret()
+    """Add the middleware stack. Raises when SESSION_SECRET is missing or too short."""
+    secret = AuthSettings().SESSION_SECRET.get_secret_value()
 
     # add_middleware wraps the app: the last one added runs first.
     app.add_middleware(RequireLoginMiddleware)
-    app.add_middleware(SessionMiddleware, **session_middleware_options())
+    app.add_middleware(SessionMiddleware, **session_middleware_options(secret))
     app.add_middleware(
         CSRFMiddleware,
         secret=secret,
