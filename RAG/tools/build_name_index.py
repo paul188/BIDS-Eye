@@ -79,29 +79,35 @@ def _distinct_array_values(
     return [row[0] for row in conn.execute(sql).fetchall()]
 
 
+# key in name_index.json: (column of bids_datasets, alias in the query)
+_COLUMNS = {
+    "authors":         ("authors",  "author"),
+    "funding_sources": ("funding",  "funding_source"),
+    # Fallback for RAG/institution_index.py; the backend loads the live
+    # list from the database at startup.
+    "institutions":    ("institutions", "institution"),
+}
+
+
 def fetch_names(db_url: str) -> Dict[str, List[str]]:
+    """The distinct names per key. A key whose query fails is left out, and
+    main() then keeps the existing file instead of writing it empty."""
     from sqlalchemy import create_engine
+    from sqlalchemy.exc import SQLAlchemyError
     engine = create_engine(db_url)
 
-    columns = {
-        "authors":         ("authors",  "author"),
-        "funding_sources": ("funding",  "funding_source"),
-        # Fallback for RAG/institution_index.py; the backend loads the live
-        # list from the database at startup.
-        "institutions":    ("institutions", "institution"),
-    }
-    names: Dict[str, List[str]] = {key: [] for key in columns}
+    names: Dict[str, List[str]] = {}
 
     with engine.connect() as conn:
-        for key, (col_name, alias) in columns.items():
+        for key, (col_name, alias) in _COLUMNS.items():
             try:
                 col_type = _get_column_type(conn, "bids_datasets", col_name)
                 if not col_type:
                     raise ValueError(f"Column bids_datasets.{col_name} not found in schema")
                 names[key] = _distinct_array_values(conn, col_name, alias, col_type)
                 print(f"  {key}: {len(names[key])} distinct values")
-            except Exception as exc:
-                print(f"  [WARN] {key} failed: {exc} — skipping", file=sys.stderr)
+            except (SQLAlchemyError, ValueError) as exc:  # ValueError: column missing or type not supported
+                print(f"  [WARN] {key} failed: {exc}", file=sys.stderr)
                 conn.rollback()
 
     return names
@@ -145,9 +151,15 @@ def main() -> None:
     print("Querying DB for author and funding names...")
     names = fetch_names(args.db_url)
 
+    # The file is the backend's fallback when its database load fails
+    # (RAG/institution_index.py): an empty list would replace a good one.
+    missing = [key for key in _COLUMNS if key not in names]
+    if missing:
+        raise SystemExit(f"Not read from the database: {', '.join(missing)}. "
+                         f"{args.out} is unchanged.")
     total = sum(len(v) for v in names.values())
     if total == 0:
-        print("WARNING: no values retrieved — check DB connection and schema.", file=sys.stderr)
+        raise SystemExit(f"No values retrieved — check the database. {args.out} is unchanged.")
 
     save_atomic(args.out, names)
     size_kb = args.out.stat().st_size / 1000
