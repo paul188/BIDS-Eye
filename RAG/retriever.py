@@ -37,7 +37,7 @@ Key method for scan terms:
     task names containing "fMRI".
 
 Build the name index with:
-    python RAG/build_name_index.py --db-url <url> --out RAG/name_index.json
+    python RAG/tools/build_name_index.py --db-url <url> --out RAG/name_index.json
 
 Requires:
     pip install rapidfuzz
@@ -838,7 +838,7 @@ class MetadataRetriever:
             raise FileNotFoundError(
                 f"Name index not found: {path}\n"
                 "Build it with:\n"
-                "  python RAG/build_name_index.py --db-url <url> --out RAG/name_index.json"
+                "  python RAG/tools/build_name_index.py --db-url <url> --out RAG/name_index.json"
             )
         with open(path, encoding="utf-8") as fh:
             self._names: Dict[str, List[str]] = json.load(fh)

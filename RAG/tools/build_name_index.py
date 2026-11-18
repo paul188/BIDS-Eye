@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-RAG/build_name_index.py
------------------------
+RAG/tools/build_name_index.py
+-----------------------------
 Build a flat index of author names and funding sources from the database
 for use by RAG/retriever.py (RapidFuzz token-similarity matching).
 
@@ -12,7 +12,7 @@ are handled directly by value_mappings.yaml via yaml_to_llamaindex.py.
 
 Usage
 -----
-    python RAG/build_name_index.py \\
+    python RAG/tools/build_name_index.py \\
         --db-url "postgresql://user:password@localhost:5432/bids_sql" \\
         --out    RAG/name_index.json
 
@@ -137,7 +137,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--out", type=Path,
-        default=Path(__file__).parent / "name_index.json",
+        default=Path(__file__).resolve().parents[1] / "name_index.json",
         help="Output path (default: RAG/name_index.json)"
     )
     args = parser.parse_args()

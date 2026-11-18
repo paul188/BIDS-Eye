@@ -17,8 +17,8 @@ official sources,
 
 Usage (downloads both sources when no local copies are given):
 
-    python RAG/build_reference_vocabulary.py
-    python RAG/build_reference_vocabulary.py --mesh-xml desc2025.xml --cogatlas-json tasks.json
+    python RAG/tools/build_reference_vocabulary.py
+    python RAG/tools/build_reference_vocabulary.py --mesh-xml desc2025.xml --cogatlas-json tasks.json
 
 The output is read by RAG/reference_vocabulary.py.
 """
@@ -38,7 +38,7 @@ from typing import Dict, Iterable, List, Optional
 
 import yaml
 
-_THIS_DIR = Path(__file__).parent
+_THIS_DIR = Path(__file__).resolve().parents[1]  # RAG/, where the vocabulary lives
 _OUT = _THIS_DIR / "reference_vocabulary.yaml"
 
 MESH_YEAR = 2025
@@ -246,7 +246,7 @@ def cogatlas_entries(tasks: List[dict]) -> Dict[str, dict]:
 
 _HEADER = f"""\
 # Reference vocabulary: diagnoses and tasks from official sources, also those
-# no OpenNeuro dataset has yet. Built by RAG/build_reference_vocabulary.py; do
+# no OpenNeuro dataset has yet. Built by RAG/tools/build_reference_vocabulary.py; do
 # not edit by hand. The curated value_mappings.yaml decides first; this file is
 # read by RAG/reference_vocabulary.py only for terms the curated one lacks.
 #

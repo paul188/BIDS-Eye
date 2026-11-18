@@ -1,6 +1,6 @@
 """
-RAG/merge_proposals.py
-----------------------
+RAG/tools/merge_proposals.py
+----------------------------
 Atomically apply synonym proposals from expand_synonyms.py into the flat
 SKOS value_mappings.yaml.
 
@@ -14,13 +14,13 @@ Modes:
 Atomic write: temp file → os.replace(), so a crash cannot corrupt the YAML.
 
 Usage:
-    python RAG/merge_proposals.py \\
+    python RAG/tools/merge_proposals.py \\
         --proposals RAG/proposals_batch1.yaml \\
         --yaml      RAG/value_mappings.yaml \\
         --mode      replace
 
     # Dry-run — show what would change without writing
-    python RAG/merge_proposals.py --proposals RAG/proposals_batch1.yaml --dry-run
+    python RAG/tools/merge_proposals.py --proposals RAG/proposals_batch1.yaml --dry-run
 """
 
 from __future__ import annotations

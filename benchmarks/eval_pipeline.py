@@ -1,7 +1,7 @@
 """
 End-to-end pipeline benchmark for BIDS-Eye.
 
-Reuses QUERIES from RAG/run_query_eval.py (no duplication).
+Reuses QUERIES from benchmarks/run_query_eval.py (no duplication).
 For each query: POST /api/query, score against expected_min, must_contain, must_not.
 
 Usage:
@@ -37,7 +37,7 @@ def _check_schema_hallucination(sql: str) -> bool:
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from RAG.run_query_eval import QUERIES, evaluate as _score_query
+from benchmarks.run_query_eval import QUERIES, evaluate as _score_query
 
 
 _CATEGORY_PATTERNS = [
