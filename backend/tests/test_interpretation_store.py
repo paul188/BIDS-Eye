@@ -10,7 +10,8 @@ _ROOT = _BACKEND.parent
 # Imported by the translation, but they only define the shape of rows and
 # responses (see interpretation_store._VERSION_FILES).
 _NOT_TRANSLATION = {_BACKEND / "models.py", _BACKEND / "schemas.py",
-                    _BACKEND / "exceptions" / "domain.py"}
+                    _BACKEND / "exceptions" / "domain.py",
+                    _BACKEND / "exceptions" / "expected.py"}
 
 
 def test_questions_that_differ_only_in_form_share_a_key():

@@ -52,6 +52,7 @@ import re
 from typing import Any, AsyncIterator, Optional
 
 from exceptions.domain import DomainError
+from exceptions.expected import ExpectedError
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ except Exception:  # pragma: no cover
     parse = None
 
 
-class QueryRefusedError(Exception):
+class QueryRefusedError(ExpectedError):
     """A generated query that must not run; the message says why."""
 
 

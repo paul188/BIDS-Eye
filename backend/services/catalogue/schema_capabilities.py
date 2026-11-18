@@ -139,10 +139,16 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
                             "remote/dataset_facets.py --refresh-all and restart.", FACETS_TABLE, uncovered)
         # The values generated SQL is checked against (services/catalogue/catalogue_values.py).
         from services.catalogue import catalogue_values
-        if _has_facets:
-            await catalogue_values.load(connection)
-        else:
+        if not _has_facets:
             catalogue_values.set_known({})
+        else:
+            try:
+                await catalogue_values.load(connection)
+            except catalogue_values.CatalogueLoadError as exc:
+                # The facets still serve the search; only the value check is off
+                # until refresh_if_stale reads the values.
+                log.warning("%s; catalogue value check off for now", exc)
+                catalogue_values.set_known({})
     except Exception as exc:  # a database without these: search as before
         log.info("Dataset summaries not usable: %s", exc)
         _has_facets = _has_subject_counts = False
