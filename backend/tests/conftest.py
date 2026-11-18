@@ -13,3 +13,17 @@ for path in (
     if path.exists() and str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
+
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _fresh_rate_limits():
+    """Every test starts with empty rate-limit counts (rate_limits.py keeps them
+    in memory for the whole process)."""
+    import rate_limits
+
+    rate_limits.reset()
+    yield
+    rate_limits.reset()

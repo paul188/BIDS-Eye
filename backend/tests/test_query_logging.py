@@ -50,16 +50,12 @@ class _Session:
 
 
 def _search(monkeypatch, session: _Session, question: str = "fMRI datasets with n-back"):
-    async def no_limit(*args, **kwargs) -> None:
-        return None
-
     async def translate(question_: str) -> TextToSQLResult:
         return TextToSQLResult(sql="SELECT 1", explanation="")
 
     async def empty_page(*args, **kwargs):
         return [], 0
 
-    monkeypatch.setattr(query_router, "_enforce_rate_limit", no_limit)
     monkeypatch.setattr(query_router, "text_to_sql", translate)
     monkeypatch.setattr(query_router, "_run_page", empty_page)
     monkeypatch.setattr(query_router, "_filters_for", lambda cached: [])

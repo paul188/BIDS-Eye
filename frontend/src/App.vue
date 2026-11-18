@@ -33,6 +33,9 @@ async function logout() {
 
 // ── Rate limiting ──────────────────────────────────────────────────────────────
 const rateLimitedUntil = ref<string | null>(null)
+// Which limit was hit: 20 searches a day, or too many searches in one minute.
+const rateLimitWindow = ref('')
+const rateLimitCount = ref(0)
 const countdownDisplay = ref('00:00:00')
 let countdownInterval: ReturnType<typeof setInterval> | undefined
 
@@ -115,6 +118,8 @@ async function submit() {
     if (err instanceof RateLimitError) {
       input.value = q  // restore so the user doesn't lose their question
       rateLimitedUntil.value = err.retryAfter
+      rateLimitWindow.value = err.window
+      rateLimitCount.value = err.limit
       startCountdown()
     }
   }
@@ -322,6 +327,8 @@ onUnmounted(() => {
               ref="inputBar"
               v-model="input"
               :rate-limited-until="rateLimitedUntil"
+              :rate-limit-window="rateLimitWindow"
+              :rate-limit-count="rateLimitCount"
               :countdown="countdownDisplay"
               placeholder="e.g. resting-state fMRI in adolescents with ADHD"
               @submit="submit"
@@ -363,6 +370,8 @@ onUnmounted(() => {
               :ref="setQueryBar"
               v-model="input"
               :rate-limited-until="rateLimitedUntil"
+              :rate-limit-window="rateLimitWindow"
+              :rate-limit-count="rateLimitCount"
               :countdown="countdownDisplay"
               placeholder="Describe the datasets you need"
               @submit="submit"

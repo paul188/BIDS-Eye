@@ -250,7 +250,6 @@ def _search(monkeypatch, total: int, self_corrected: bool = False):
         cached.self_corrected = self_corrected
         return [], total
 
-    monkeypatch.setattr(router, "_enforce_rate_limit", nothing)
     monkeypatch.setattr(ts, "refresh", nothing)
     monkeypatch.setattr(ts, "count_hit", nothing)
     monkeypatch.setattr(router, "text_to_sql", translate)

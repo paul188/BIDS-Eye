@@ -18,7 +18,6 @@ import asyncio
 import logging
 import os
 import re
-from datetime import date, datetime, timedelta, timezone
 from typing import Annotated, Collection, Optional, Sequence
 from uuid import UUID
 
@@ -27,6 +26,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from deps import get_db
+from rate_limits import Category, rate_limit
 from routers.auth import require_auth
 from schemas import (
     DatasetSchema,
@@ -50,43 +50,6 @@ from services.text_to_sql import _correct_sql_with_gemini, text_to_sql
 
 router = APIRouter(prefix="/query", tags=["query"])
 log = logging.getLogger(__name__)
-
-_DAILY_LIMIT = int(os.getenv("DAILY_MESSAGE_LIMIT", "20"))
-_ADMIN_LOGINS = {
-    u.strip() for u in os.getenv("ADMIN_GITHUB_LOGINS", "paul188").split(",") if u.strip()
-}
-
-
-async def _enforce_rate_limit(session: AsyncSession, github_login: str) -> None:
-    """Atomically increment today's message count and raise 429 if over the limit."""
-    if github_login in _ADMIN_LOGINS:
-        return
-    result = await session.execute(
-        text("""
-            INSERT INTO message_usage (github_login, usage_date, count)
-            VALUES (:login, :today, 1)
-            ON CONFLICT (github_login, usage_date)
-            DO UPDATE SET count = message_usage.count + 1
-            RETURNING count
-        """),
-        {"login": github_login, "today": date.today()},
-    )
-    new_count = result.scalar()
-    await session.commit()
-
-    if new_count > _DAILY_LIMIT:
-        now = datetime.now(timezone.utc)
-        retry_after = (now + timedelta(days=1)).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        raise HTTPException(
-            status_code=429,
-            detail={
-                "code": "rate_limit_exceeded",
-                "retry_after": retry_after.isoformat(),
-                "limit": _DAILY_LIMIT,
-            },
-        )
 
 # Capped here as well as in the cache so a page can't request an unbounded slice.
 _MAX_PAGE_SIZE = 100
@@ -639,7 +602,7 @@ async def _run_page_unguarded(
 _in_flight: dict[tuple[str, str], asyncio.Future] = {}
 
 
-@router.post("", response_model=QueryResponse)
+@router.post("", response_model=QueryResponse, dependencies=[rate_limit(Category.SEARCH)])
 async def query_datasets(
     body: QueryRequest,
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -651,7 +614,8 @@ async def query_datasets(
 
     The same question from the same user while it is still running does not
     start a second search: it gets the running search's answer (or error),
-    without another language-model call and without using a daily search.
+    without another language-model call. The rate limit (rate_limits.py,
+    SEARCH) still counts it, since it ran before this function.
     """
     key = (_auth.get("sub", ""), interpretation_store.normalize(body.question))
     running = _in_flight.get(key)
@@ -683,8 +647,7 @@ async def query_datasets(
 
 
 async def _answer_question(body: QueryRequest, session: AsyncSession, _auth: dict) -> QueryResponse:
-    """One search: daily limit, translation, first page, logging."""
-    await _enforce_rate_limit(session, _auth.get("sub", ""))
+    """One search: translation, first page, logging."""
     page, page_size = _clamp_page(1, _DEFAULT_PAGE_SIZE)
     # The same question gets the same translation every time (the models that
     # write it are not repeatable): reuse a stored one when there is one.
@@ -783,7 +746,7 @@ async def _answer_question(body: QueryRequest, session: AsyncSession, _auth: dic
     )
 
 
-@router.post("/page", response_model=QueryResponse)
+@router.post("/page", response_model=QueryResponse, dependencies=[rate_limit(Category.PAGE)])
 async def query_page(
     body: QueryPageRequest,
     session: Annotated[AsyncSession, Depends(get_db)],

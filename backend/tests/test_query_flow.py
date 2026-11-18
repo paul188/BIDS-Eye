@@ -130,8 +130,6 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         monkeypatch.setenv("GEMINI_API_KEY", "dummy-key")
 
         session = _FakeSession()
-        # An admin login: exempt from the daily rate limit, so no usage row is written.
-        monkeypatch.setattr(query_router, "_ADMIN_LOGINS", {"tester"})
         first = await query_router.query_datasets(
             query_router.QueryRequest(question="find datasets"), session, {"sub": "tester"}
         )

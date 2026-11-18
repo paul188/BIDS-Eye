@@ -14,12 +14,13 @@ from fastapi import APIRouter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler-backup"))
 
+from rate_limits import Category, rate_limit
 from schemas import CrawlerStatusResponse
 
 router = APIRouter(prefix="/crawler", tags=["crawler"])
 
 
-@router.get("/status", response_model=CrawlerStatusResponse)
+@router.get("/status", response_model=CrawlerStatusResponse, dependencies=[rate_limit(Category.LIGHT)])
 async def crawler_status():
     """Return the current state of the background crawler service."""
     try:

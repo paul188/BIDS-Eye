@@ -10,8 +10,12 @@ const MAX_HEIGHT = 240
 // searches.
 const props = withDefaults(defineProps<{
   modelValue: string
-  /** ISO time the daily limit resets; shows the countdown under the box. */
+  /** ISO time the search limit resets; shows the countdown under the box. */
   rateLimitedUntil: string | null
+  /** 'day' for the daily search cap, 'minute' for too many searches at once. */
+  rateLimitWindow?: string
+  /** How many searches that window allows. */
+  rateLimitCount?: number
   countdown: string
   placeholder?: string
 }>(), { placeholder: 'Describe the datasets you need' })
@@ -105,7 +109,7 @@ defineExpose({ focus: (options?: FocusOptions) => textarea.value?.focus(options)
     :class="charCount >= CHAR_LIMIT ? 'text-danger-ink font-medium' : 'text-muted'"
   >{{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}</p>
 
-  <!-- Daily limit reached: the box stays, the notice goes under it. -->
+  <!-- Search limit reached: the box stays, the notice goes under it. -->
   <div
     v-if="rateLimitedUntil"
     class="mt-3 flex items-center gap-3 bg-panel border border-border rounded-xl px-5 py-4"
@@ -114,7 +118,13 @@ defineExpose({ focus: (options?: FocusOptions) => textarea.value?.focus(options)
       <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
     </svg>
     <p class="text-sm text-ink">
-      You've used all 20 free searches for today. You can search again in
+      <template v-if="rateLimitWindow === 'day'">
+        You've used all {{ rateLimitCount || 20 }} free searches for today.
+      </template>
+      <template v-else>
+        That's a lot of searches in a short time.
+      </template>
+      You can search again in
       <span class="font-mono font-medium text-accent tabular-nums">{{ countdown }}</span>.
     </p>
   </div>

@@ -12,6 +12,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from rate_limits import Category, rate_limit
+
 # The login lives in Starlette's SessionMiddleware (see api_security.py): a
 # signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
 # every /api request; the frontend never sees the value.
@@ -92,7 +94,7 @@ def _github_redirect_uri(request: Request) -> str:
     return os.getenv("GITHUB_REDIRECT_URI") or str(request.url_for("github_callback"))
 
 
-@router.get("/github")
+@router.get("/github", dependencies=[rate_limit(Category.LOGIN)])
 async def github_login(request: Request):
     redirect_uri = _github_redirect_uri(request)
 
@@ -137,7 +139,7 @@ def _take_oauth_state(request: Request, returned: str) -> bool:
     return secrets.compare_digest(value, returned)
 
 
-@router.get("/github/callback", name="github_callback")
+@router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
 async def github_callback(request: Request):
     code = request.query_params.get("code", "")
 
@@ -222,12 +224,12 @@ async def _remember_user(github_login: str, email: str | None) -> None:
         await session.commit()
 
 
-@router.get("/me")
+@router.get("/me", dependencies=[rate_limit(Category.LIGHT)])
 async def me(user: dict = Depends(require_auth)):
     return {"login": user["sub"]}
 
 
-@router.post("/logout")
+@router.post("/logout", dependencies=[rate_limit(Category.LIGHT)])
 async def logout(request: Request):
     request.session.clear()
     return {"ok": True}

@@ -90,14 +90,27 @@ export interface CrawlerStatus {
   error_count: number
 }
 
+// A 429 from the backend's rate limiter (backend/rate_limits.py): which kind
+// of request ran out ('search', 'page', ...), in which window ('minute' or
+// 'day'), and when it may be tried again.
 export class RateLimitError extends Error {
   retryAfter: string
   limit: number
-  constructor(retryAfter: string, limit: number) {
+  category: string
+  window: string
+  constructor(detail: { retry_after: string; limit: number; category?: string; window?: string }) {
     super('rate_limit_exceeded')
-    this.retryAfter = retryAfter
-    this.limit = limit
+    this.retryAfter = detail.retry_after
+    this.limit = detail.limit
+    this.category = detail.category ?? ''
+    this.window = detail.window ?? ''
   }
+}
+
+async function throwIfRateLimited(res: Response): Promise<void> {
+  if (res.status !== 429) return
+  const data = await res.json()
+  throw new RateLimitError(data.detail)
 }
 
 const BASE = '/api'
@@ -127,10 +140,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
-  if (res.status === 429) {
-    const data = await res.json()
-    throw new RateLimitError(data.detail.retry_after, data.detail.limit)
-  }
+  await throwIfRateLimited(res)
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }
@@ -138,6 +148,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { credentials: 'same-origin' })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
+  await throwIfRateLimited(res)
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }
