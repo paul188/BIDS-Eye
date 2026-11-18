@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 from services import query_guard
-from services.query_guard import QueryRefused, SearchBusy, check_static, largest_step
+from services.query_guard import QueryRefusedError, SearchBusyError, check_static, largest_step
 from services.translate.sql_rewriter import SqlRewriteService
 
 REWRITER = SqlRewriteService()
@@ -413,7 +413,7 @@ def _vet(session, sql=_GOOD):
 def test_the_estimate_of_the_disk_filling_query_is_refused() -> None:
     # EXPLAIN on production estimated 12.3 million rows for it (2026-11-14);
     # no other benchmark query exceeded one scan of bids_objects, 2.7 million.
-    with pytest.raises(QueryRefused, match="12,300,000 rows"):
+    with pytest.raises(QueryRefusedError, match="12,300,000 rows"):
         _vet(_Session(rows=12_300_000))
 
 
@@ -423,7 +423,7 @@ def test_one_scan_of_the_largest_table_passes() -> None:
 
 def test_limit_is_three_times_the_largest_table() -> None:
     _vet(_Session(rows=8_000_000, biggest_table=2_700_000))
-    with pytest.raises(QueryRefused):
+    with pytest.raises(QueryRefusedError):
         _vet(_Session(rows=8_200_000, biggest_table=2_700_000))
 
 
@@ -433,14 +433,14 @@ def test_small_database_still_allows_a_million_rows() -> None:
 
 def test_configured_plan_limit_wins(monkeypatch) -> None:
     monkeypatch.setenv("SEARCH_MAX_PLAN_ROWS", "500")
-    with pytest.raises(QueryRefused):
+    with pytest.raises(QueryRefusedError):
         _vet(_Session(rows=501))
 
 
 def test_unknown_table_size_falls_back_to_ten_million() -> None:
     _vet(_Session(rows=9_000_000, biggest_table=RuntimeError("no pg_class")))
     query_guard._max_plan_rows = None
-    with pytest.raises(QueryRefused):
+    with pytest.raises(QueryRefusedError):
         _vet(_Session(rows=11_000_000, biggest_table=RuntimeError("no pg_class")))
 
 
@@ -450,7 +450,7 @@ def test_failing_explain_leaves_the_error_to_the_real_run() -> None:
 
 def test_static_refusal_skips_the_plan() -> None:
     session = _Session()
-    with pytest.raises(QueryRefused, match="pg_sleep"):
+    with pytest.raises(QueryRefusedError, match="pg_sleep"):
         _vet(session, "SELECT pg_sleep(1)")
     assert not any(s.startswith("EXPLAIN") for s in session.statements)
 
@@ -508,7 +508,7 @@ def test_slot_reports_busy_instead_of_queueing_forever(monkeypatch) -> None:
 
     async def scenario():
         async with query_guard.slot():
-            with pytest.raises(SearchBusy):
+            with pytest.raises(SearchBusyError):
                 async with query_guard.slot():
                     pass
         async with query_guard.slot():  # free again
@@ -556,7 +556,7 @@ class QueryCanceledError(Exception):
     pass
 
 
-class _Wrapped(Exception):
+class _WrappedError(Exception):
     def __init__(self, orig):
         super().__init__("(sqlalchemy.dialects.postgresql.asyncpg.Error)")
         self.orig = orig
@@ -564,10 +564,10 @@ class _Wrapped(Exception):
 
 def test_timeouts_are_recognised_also_when_wrapped() -> None:
     assert query_guard.is_timeout(QueryCanceledError("canceling statement due to statement timeout"))
-    assert query_guard.is_timeout(_Wrapped(QueryCanceledError("x")))
+    assert query_guard.is_timeout(_WrappedError(QueryCanceledError("x")))
     assert query_guard.is_timeout(RuntimeError("canceling statement due to statement timeout"))
     assert not query_guard.is_timeout(RuntimeError("syntax error at or near FROM"))
-    assert not query_guard.is_timeout(_Wrapped(RuntimeError("relation does not exist")))
+    assert not query_guard.is_timeout(_WrappedError(RuntimeError("relation does not exist")))
 
 
 def test_ranked_page_timeout_setting(monkeypatch) -> None:

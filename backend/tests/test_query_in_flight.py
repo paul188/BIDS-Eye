@@ -6,10 +6,10 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from fastapi import HTTPException
 from pydantic import ValidationError
 
 import routers.query as query_router
+from rate_limits import RateLimitError
 from schemas import QueryRequest, QueryResponse
 
 
@@ -72,7 +72,7 @@ def test_asking_again_after_the_search_finished_runs_it_again(monkeypatch):
 
 
 def test_an_error_reaches_the_waiting_request_too(monkeypatch):
-    limit = HTTPException(status_code=429, detail={"code": "rate_limit_exceeded"})
+    limit = RateLimitError("search per minute used up")
     runs = _counting_search(monkeypatch, fail_with=limit)
 
     async def scenario():

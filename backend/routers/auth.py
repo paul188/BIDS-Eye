@@ -8,10 +8,11 @@ from collections.abc import MutableMapping
 from urllib.parse import quote, urlsplit
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
 
 # The login lives in Starlette's SessionMiddleware (see api_security.py): a
@@ -25,6 +26,44 @@ _OAUTH_STATE_SECONDS = 10 * 60
 _PLACEHOLDER_SECRETS = ("change-me", "changeme")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+# ── Errors (answered by exceptions/handlers.py) ──────────────────────────────
+
+class NotSignedInError(DomainError):
+    """No signed-in session. RequireLoginMiddleware (api_security.py) sends the
+    same answer before routing, where exception handlers do not reach."""
+
+    status_code = 401
+    detail = "Not signed in"
+
+
+class OAuthStateError(DomainError):
+    """GitHub returned a state this browser's session was not given, or it expired."""
+
+    status_code = 400
+    detail = "Invalid or expired OAuth state."
+
+
+class GitHubTokenError(DomainError):
+    """GitHub did not exchange the login code for an access token."""
+
+    status_code = 400
+    detail = "Failed to obtain access token from GitHub."
+
+
+class GitHubLoginMissingError(DomainError):
+    """GitHub's /user answer had no login name."""
+
+    status_code = 502
+    detail = "GitHub did not return a login name."
+
+
+class NotInGitHubOrgError(DomainError):
+    """The user is not a member of GITHUB_ORG."""
+
+    status_code = 403
+    detail = "Access restricted to members of the required GitHub organization."
 
 
 def session_secret() -> str:
@@ -86,7 +125,7 @@ def require_auth(request: Request) -> dict:
     """
     user = getattr(request.state, "user", None) or session_user(request.session)
     if user is None:
-        raise HTTPException(status_code=401, detail="Not signed in")
+        raise NotSignedInError()
     return user
 
 
@@ -144,7 +183,7 @@ async def github_callback(request: Request):
     code = request.query_params.get("code", "")
 
     if not _take_oauth_state(request, request.query_params.get("state", "")):
-        raise HTTPException(status_code=400, detail="Invalid or expired OAuth state.")
+        raise OAuthStateError()
 
     # Exchange code for GitHub access token
     async with httpx.AsyncClient() as client:
@@ -161,7 +200,7 @@ async def github_callback(request: Request):
         )
     access_token = token_resp.json().get("access_token")
     if not access_token:
-        raise HTTPException(status_code=400, detail="Failed to obtain access token from GitHub.")
+        raise GitHubTokenError(f"token exchange answered {token_resp.status_code}")
 
     gh_headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 
@@ -173,7 +212,7 @@ async def github_callback(request: Request):
 
     github_login_name = user_resp.json().get("login")
     if not isinstance(github_login_name, str) or not github_login_name:
-        raise HTTPException(status_code=502, detail="GitHub did not return a login name.")
+        raise GitHubLoginMissingError(f"/user answered {user_resp.status_code}")
     primary_email = next(
         (e["email"] for e in emails_resp.json() if e.get("primary") and e.get("verified")),
         None,
@@ -188,10 +227,7 @@ async def github_callback(request: Request):
                 timeout=10,
             )
         if membership.status_code != 204:
-            raise HTTPException(
-                status_code=403,
-                detail="Access restricted to members of the required GitHub organization.",
-            )
+            raise NotInGitHubOrgError(f"{github_login_name} not in {github_org}")
 
     await _remember_user(github_login_name, primary_email)
 

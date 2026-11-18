@@ -1,7 +1,8 @@
-"""A busy or expired search raised anywhere below the router
-reaches the client as its own status and text through the one handler
-(exceptions/handlers.py), and identical questions sent at the same time over
-HTTP still share one search (routers/query.py ``_in_flight``).
+"""Every expected failure (a DomainError: busy or expired search, login,
+rate limit) reaches the client as its own status and text through the one
+handler (exceptions/handlers.py); any other exception gets DomainError's
+plain 500 without its message; and identical questions sent at the same time
+over HTTP still share one search (routers/query.py ``_in_flight``).
 
 Needs the backend image (routers.query imports the db package)."""
 from __future__ import annotations
@@ -13,10 +14,11 @@ import pytest
 from fastapi import FastAPI
 
 import rate_limits
+import routers.auth as auth
 import routers.query as query_router
 from deps import get_db
 from exceptions.domain import DomainError
-from exceptions.handlers import install_domain_error_handler
+from exceptions.handlers import install_error_handlers
 from routers.auth import require_auth
 from schemas import QueryResponse
 from services import query_guard, search
@@ -24,7 +26,7 @@ from services import query_guard, search
 
 def _app() -> FastAPI:
     app = FastAPI()
-    install_domain_error_handler(app)
+    install_error_handlers(app)
     app.include_router(query_router.router, prefix="/api")
 
     async def no_db():
@@ -62,9 +64,9 @@ def test_an_unknown_query_id_is_410_from_the_real_service():
 @pytest.mark.parametrize(
     "error, status, detail",
     [
-        (query_guard.SearchBusy("no search slot free within 30s"), 503,
+        (query_guard.SearchBusyError("no search slot free within 30s"), 503,
          "The search is busy. Please try again in a minute."),
-        (search.SearchExpired("q"), 410, "This search has expired. Please run the query again."),
+        (search.SearchExpiredError("q"), 410, "This search has expired. Please run the query again."),
     ],
 )
 def test_each_error_from_the_search_gets_its_answer(monkeypatch, error, status, detail):
@@ -80,16 +82,63 @@ def test_each_error_from_the_search_gets_its_answer(monkeypatch, error, status, 
 
 def test_busy_on_a_later_page_is_503(monkeypatch):
     async def busy(session, query_id, page, page_size):
-        raise query_guard.SearchBusy("no search slot free within 30s")
+        raise query_guard.SearchBusyError("no search slot free within 30s")
 
     monkeypatch.setattr(search, "next_page", busy)
     reply = asyncio.run(_post("/api/query/page", {"query_id": "q"}))
     assert reply.status_code == 503
 
 
-def test_every_search_error_is_a_domain_error():
-    for error in (query_guard.SearchBusy, search.SearchExpired):
+def test_every_planned_error_is_a_domain_error_with_its_own_answer():
+    errors = (
+        query_guard.SearchBusyError, search.SearchExpiredError, rate_limits.RateLimitError,
+        auth.NotSignedInError, auth.OAuthStateError, auth.GitHubTokenError,
+        auth.GitHubLoginMissingError, auth.NotInGitHubOrgError,
+    )
+    for error in errors:
         assert issubclass(error, DomainError)
+        assert error.status_code != DomainError.status_code
+        assert error.detail != DomainError.detail
+
+
+def test_an_unexpected_error_is_a_plain_500_without_its_message(monkeypatch):
+    async def crashes(session, question, user):
+        raise RuntimeError("password=hunter2 in the connection string")
+
+    monkeypatch.setattr(search, "answer_question", crashes)
+
+    async def post():
+        # raise_app_exceptions=False: Starlette re-raises after answering, so
+        # the server can log the traceback; the client only sees the answer.
+        transport = httpx.ASGITransport(app=_app(), raise_app_exceptions=False)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            return await client.post("/api/query", json={"question": "art"})
+
+    reply = asyncio.run(post())
+    assert reply.status_code == 500
+    assert reply.json() == {"detail": DomainError.detail}
+
+
+def test_an_error_raised_with_its_own_detail_and_headers_sends_them():
+    app = FastAPI()
+    install_error_handlers(app)
+
+    @app.get("/limited")
+    def limited():
+        raise rate_limits.RateLimitError("internal", detail={"code": "rate_limit_exceeded", "limit": 3},
+                                      headers={"Retry-After": "7"})
+
+    async def get():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            return await client.get("/limited")
+
+    reply = asyncio.run(get())
+    assert reply.status_code == 429
+    assert reply.json() == {"detail": {"code": "rate_limit_exceeded", "limit": 3}}
+    assert reply.headers["retry-after"] == "7"
+    # The class default is untouched by the instance's detail.
+    assert rate_limits.RateLimitError.detail == {"code": "rate_limit_exceeded"}
 
 
 def test_identical_questions_over_http_share_one_search(monkeypatch):

@@ -14,6 +14,7 @@ from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 
 import api_security
+from exceptions.handlers import install_error_handlers
 from routers import auth
 
 SECRET = "test-secret-" + "x" * 40
@@ -40,6 +41,7 @@ def _build_app(monkeypatch: pytest.MonkeyPatch, frontend_url: str = "*") -> Fast
 
     app = FastAPI()
     api_security.install_security_middleware(app)
+    install_error_handlers(app)
     app.include_router(auth.router, prefix="/api")
 
     @app.get("/api/protected")

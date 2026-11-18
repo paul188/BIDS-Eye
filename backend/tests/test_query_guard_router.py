@@ -157,7 +157,7 @@ def test_busy_search_answers_503(monkeypatch) -> None:
         async with query_guard.slot():
             # The router lets it through; main.py's handler answers 503
             # (tests/test_domain_errors.py).
-            with pytest.raises(query_guard.SearchBusy) as caught:
+            with pytest.raises(query_guard.SearchBusyError) as caught:
                 await query_router.query_page(
                     query_router.QueryPageRequest(query_id=query_id), _Session())
             assert caught.value.status_code == 503

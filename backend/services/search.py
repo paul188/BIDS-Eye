@@ -62,7 +62,7 @@ async def answer_question(session: AsyncSession, question: str,
     """One search: translation, first page, logging. *user* is the login the
     search is recorded under in user_queries (none: not recorded).
 
-    Raises query_guard.SearchBusy when no slot for generated SQL frees up.
+    Raises query_guard.SearchBusyError when no slot for generated SQL frees up.
     """
     page, page_size = search_runner.clamp_page(1, search_runner.DEFAULT_PAGE_SIZE)
     # The same question gets the same translation every time (the models that
@@ -154,7 +154,7 @@ async def _record_user_query(session: AsyncSession, user: Optional[str], questio
         pass  # stale/legacy JWT sub not in users table — don't crash the response
 
 
-class SearchExpired(DomainError):
+class SearchExpiredError(DomainError):
     """The query_id is no longer in the query cache."""
 
     status_code = 410
@@ -165,12 +165,12 @@ async def next_page(session: AsyncSession, query_id: str, page: int, page_size: 
     """Another page of an already-translated query, reusing its cached base
     SQL (no new LLM call).
 
-    Raises SearchExpired when the query left the cache, and
-    query_guard.SearchBusy when no slot for generated SQL frees up.
+    Raises SearchExpiredError when the query left the cache, and
+    query_guard.SearchBusyError when no slot for generated SQL frees up.
     """
     cached = query_cache.get(query_id)
     if cached is None:
-        raise SearchExpired(query_id)
+        raise SearchExpiredError(query_id)
 
     page, page_size = search_runner.clamp_page(page, page_size)
     # The question is only needed for self-correction, which already happened on
