@@ -340,6 +340,11 @@ def get_group_summary(group_db: Dict[str, Dict[str, List[str]]]) -> Dict[str, Li
 EmbeddingIndex = Dict[str, Tuple[List[str], Any, List[List[str]]]]
 
 
+class EmbeddingIndexError(Exception):
+    """The embedding index could not be built: the model could not be loaded
+    (download, files), value_mappings.yaml not read, or encoding failed."""
+
+
 def build_embedding_index(
     model_name: str,
     yaml_path: str,
@@ -351,8 +356,22 @@ def build_embedding_index(
     Cache is keyed on YAML content hash + model name — auto-invalidates when
     value_mappings.yaml changes.
 
-    Returns None if sentence_transformers or numpy are unavailable.
+    Returns None if sentence_transformers or numpy are unavailable. Raises
+    EmbeddingIndexError when the index cannot be built.
     """
+    try:
+        return _build_embedding_index(model_name, yaml_path, cache_dir)
+    # OSError: the model download (requests and huggingface_hub errors are
+    # OSErrors) or a file; RuntimeError: torch while encoding.
+    except (OSError, yaml.YAMLError, RuntimeError) as exc:
+        raise EmbeddingIndexError(f"embedding index for {model_name}: {exc}") from exc
+
+
+def _build_embedding_index(
+    model_name: str,
+    yaml_path: str,
+    cache_dir: Optional[str],
+) -> Optional[EmbeddingIndex]:
     if not _NUMPY_OK:
         return None
     try:

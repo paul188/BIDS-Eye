@@ -62,6 +62,7 @@ import json
 import logging
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -86,6 +87,7 @@ from yaml_to_llamaindex import (  # noqa: E402  (after the sys.path line above)
     group_display_db,
     hierarchy_db,
     measures_db,
+    EmbeddingIndexError,
     build_embedding_index,
 )
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
@@ -221,17 +223,26 @@ _YAML_PATH = str(_THIS_DIR / "value_mappings.yaml")
 
 _emb_indices: Dict[str, Optional[Any]] = {}  # model_name → EmbeddingIndex or None
 _emb_models: Dict[str, Any] = {}             # model_name → SentenceTransformer or None
+# model_name → when loading it last failed. A failure is often a download
+# (network, Hugging Face): tried again after _EMB_RETRY_SECONDS, not at every
+# lookup and not never.
+_emb_failed_at: Dict[str, float] = {}
+_EMB_RETRY_SECONDS = 600.0
 
 
 def _load_embedding_tier(model_name: str) -> Optional[Any]:
     """Lazy-load the embedding index and the SentenceTransformer for *model_name*.
 
     Returns the EmbeddingIndex on success, None if sentence-transformers /
-    numpy are not installed or the index cannot be built.  Result is cached
-    so each model is loaded at most once per process.
+    numpy are not installed or the index cannot be built.  A result is cached
+    so each model is loaded at most once per process; a failure is retried
+    after _EMB_RETRY_SECONDS.
     """
     if model_name in _emb_indices:
         return _emb_indices[model_name]
+    failed_at = _emb_failed_at.get(model_name)
+    if failed_at is not None and time.monotonic() - failed_at < _EMB_RETRY_SECONDS:
+        return None
 
     try:
         import numpy  # noqa: F401 — probe before heavy work
@@ -242,14 +253,17 @@ def _load_embedding_tier(model_name: str) -> Optional[Any]:
 
     try:
         index = build_embedding_index(model_name, _YAML_PATH)
-        if index is not None:
-            _emb_models[model_name] = SentenceTransformer(model_name)
-        _emb_indices[model_name] = index
-        return index
-    except Exception as exc:
-        log.warning("Embedding index load failed for %s: %s", model_name, exc)
-        _emb_indices[model_name] = None
+        model = SentenceTransformer(model_name) if index is not None else None
+    # OSError: loading the model (download or files) outside the index build.
+    except (EmbeddingIndexError, OSError) as exc:
+        log.warning("Embedding index load failed for %s (tried again in %.0fs): %s",
+                    model_name, _EMB_RETRY_SECONDS, exc)
+        _emb_failed_at[model_name] = time.monotonic()
         return None
+    if model is not None:
+        _emb_models[model_name] = model
+    _emb_indices[model_name] = index
+    return index
 
 
 def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]:
@@ -921,17 +935,23 @@ class MetadataRetriever:
             log.debug("psycopg2 not installed — skipping DB back-check")
             return codes, []
 
+        conn = None
         try:
-            with psycopg2.connect(self._db_url) as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        f"SELECT DISTINCT {col} FROM {table} WHERE {col} = ANY(%s)",
-                        (codes,),
-                    )
-                    live_set = {row[0] for row in cur.fetchall()}
-        except Exception as exc:
+            # "with psycopg2.connect()" ends the transaction, not the
+            # connection: it is closed explicitly below.
+            conn = psycopg2.connect(self._db_url)
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    f"SELECT DISTINCT {col} FROM {table} WHERE {col} = ANY(%s)",
+                    (codes,),
+                )
+                live_set = {row[0] for row in cur.fetchall()}
+        except psycopg2.Error as exc:
             log.warning("DB back-check failed for field=%s: %s", field, exc)
             return codes, []
+        finally:
+            if conn is not None:
+                conn.close()
 
         live = [c for c in codes if c in live_set]
         miss = [c for c in codes if c not in live_set]

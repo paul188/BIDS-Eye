@@ -115,10 +115,14 @@ def is_collision(evidence: WordEvidence) -> bool:
 @lru_cache(maxsize=1)
 def _reviewed() -> Dict[str, Optional[Tuple[str, ...]]]:
     """word → its forms, or None where stemming is right. From word_forms.yaml."""
+    # A broken list must not stop the search. UnicodeDecodeError is a ValueError.
     try:
         data = yaml.safe_load(_PATH.read_text()) or {}
-    except Exception as exc:  # a broken list must not stop the search
+    except (OSError, ValueError, yaml.YAMLError) as exc:
         log.warning("word_forms.yaml could not be read (%s) — ignoring it", exc)
+        return {}
+    if not isinstance(data, dict):
+        log.warning("word_forms.yaml is not a mapping — ignoring it")
         return {}
     found: Dict[str, Optional[Tuple[str, ...]]] = {}
     for entry in data.get("exact") or []:

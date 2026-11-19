@@ -393,7 +393,10 @@ async def refresh_from_db(engine: Any) -> int:
     On any error (column missing, database down) the index is left unset, and
     the retriever falls back to RAG/name_index.json.
     """
+    import asyncio
+
     from sqlalchemy import text
+    from sqlalchemy.exc import SQLAlchemyError
 
     try:
         async with engine.connect() as connection:
@@ -402,7 +405,9 @@ async def refresh_from_db(engine: Any) -> int:
                 "WHERE btrim(inst) <> ''"
             ))
             names = [row[0] for row in rows]
-    except Exception as exc:
+    # A refused connection can reach us as a bare OSError (asyncpg), a
+    # connect timeout as asyncio.TimeoutError.
+    except (SQLAlchemyError, OSError, asyncio.TimeoutError) as exc:
         log.warning("Could not load institution names (%s) — using name_index.json", exc)
         return 0
     set_names(names)
