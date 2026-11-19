@@ -61,7 +61,6 @@ from __future__ import annotations
 import json
 import logging
 import re
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -70,15 +69,7 @@ from rapidfuzz import fuzz as _fuzz
 from rapidfuzz import process as _process
 from rapidfuzz.distance import Levenshtein as _Levenshtein
 
-log = logging.getLogger(__name__)
-
-# Ensure RAG/ is on sys.path so yaml_to_llamaindex is importable regardless
-# of which directory this module is imported from.
-_THIS_DIR = Path(__file__).parent
-if str(_THIS_DIR) not in sys.path:
-    sys.path.insert(0, str(_THIS_DIR))
-
-from yaml_to_llamaindex import (  # noqa: E402  (after the sys.path line above)
+from yaml_to_llamaindex import (
     leaf_db,
     display_db,
     leaf_codes_db,
@@ -90,9 +81,15 @@ from yaml_to_llamaindex import (  # noqa: E402  (after the sys.path line above)
     EmbeddingIndexError,
     build_embedding_index,
 )
-from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
-import institution_index as _institution_index  # noqa: E402
-import reference_vocabulary as _reference  # noqa: E402
+from join_registry import field_to_db_col as _field_to_db_col
+import institution_index as _institution_index
+import reference_vocabulary as _reference
+
+log = logging.getLogger(__name__)
+
+_THIS_DIR = Path(__file__).parent
+# The author / funding / institution names (tools/build_name_index.py).
+NAME_INDEX_PATH = _THIS_DIR / "name_index.json"
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 

@@ -28,19 +28,13 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
-import sys
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
 
 from services.catalogue import off_loop_query, schema_capabilities
 
-_RAG_DIR = Path(__file__).resolve().parents[3] / "RAG"
-if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
-    sys.path.insert(0, str(_RAG_DIR))
-
-from word_forms import WordEvidence  # noqa: E402
+from word_forms import WordEvidence
 
 log = logging.getLogger(__name__)
 

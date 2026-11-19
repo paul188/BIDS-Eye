@@ -1,0 +1,37 @@
+# RAG/: the curated vocabulary (YAML) and the modules that read it.
+#
+# Installed editable, like BIDS-SQL (Dockerfile, CI, local setup in README.md):
+#   pip install -e RAG
+# The backend and LLM_preprocessor then import these modules by their bare
+# names (import yaml_to_llamaindex) without adding RAG/ to sys.path
+# themselves. Editable only: the modules read the YAML and JSON files next
+# to them.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bids-eye-rag"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+    "rapidfuzz>=3.0.0",
+]
+
+[tool.setuptools]
+py-modules = [
+    "cohort_count",
+    "criteria",
+    "institution_index",
+    "join_registry",
+    "place_index",
+    "reference_vocabulary",
+    "retriever",
+    "senses",
+    "text_formula",
+    "text_terms",
+    "word_forms",
+    "yaml_to_llamaindex",
+]

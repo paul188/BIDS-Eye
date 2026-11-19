@@ -29,7 +29,6 @@ import logging
 import math
 import os
 import re
-import sys
 import textwrap
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -492,17 +491,6 @@ def _format_examples(examples: List[dict], max_chars: Optional[int] = None) -> s
         lines.append(item)
     return "\n".join(lines)
 
-# ── Project-root modules on sys.path ──────────────────────────────────────────
-# Works both locally (BIDS-Eye/) and inside Docker (/app/)
-_ROOT = Path(__file__).resolve().parents[3]
-for _mod_dir in (
-    _ROOT / "backend",
-    _ROOT / "LLM_preprocessor",
-    _ROOT / "RAG",
-):
-    if _mod_dir.exists() and str(_mod_dir) not in sys.path:
-        sys.path.insert(0, str(_mod_dir))
-
 from schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
@@ -708,13 +696,13 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     """
     try:
         from preprocess import run_pipeline
-        from retriever import MetadataRetriever
+        from retriever import NAME_INDEX_PATH, MetadataRetriever
     except ImportError as exc:
         log.warning("Pipeline modules not importable (%s) — using fallback SQL", exc)
         return TextToSQLResult(sql=_FALLBACK_SQL, explanation=str(exc))
 
     # Stage 2 retriever (author / funding name resolution + optional DB back-check)
-    name_index_path = _ROOT / "RAG" / "name_index.json"
+    name_index_path = NAME_INDEX_PATH
     retriever: Optional[MetadataRetriever] = None
     if name_index_path.exists():
         try:

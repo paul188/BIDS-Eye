@@ -51,16 +51,8 @@ Modules, in import order (each uses only those before it):
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Make RAG/ importable from this package regardless of working directory.
-_RAG_DIR = str(Path(__file__).resolve().parents[2] / "RAG")
-if _RAG_DIR not in sys.path:
-    sys.path.insert(0, _RAG_DIR)
-
 # The names other code and the tests use (private ones included).
-from .plan import (  # noqa: E402,F401
+from .plan import (  # noqa: F401
     AugmentedQueryPlan,
     MetadataFilter,
     ParticipantGroup,
@@ -74,27 +66,27 @@ from .plan import (  # noqa: E402,F401
     ScoredFilter,
     Topic,
 )
-from .prompt import (  # noqa: E402,F401
+from .prompt import (  # noqa: F401
     _SYSTEM_PROMPT,
 )
-from .intent import (  # noqa: E402,F401
+from .intent import (  # noqa: F401
     _gemini_output_schema,
     preprocess_query,
     word_evidence,
 )
-from .rag import (  # noqa: E402,F401
+from .rag import (  # noqa: F401
     _is_healthy_term,
     _participant_conditions,
     build_rag_requests,
 )
-from .topics import (  # noqa: E402,F401
+from .topics import (  # noqa: F401
     _detach_topic_terms,
     _keep_ambiguity_topics,
     check_description_alternatives,
     resolve_topic,
     resolve_topics,
 )
-from .augment import (  # noqa: E402,F401
+from .augment import (  # noqa: F401
     _age_groups_only,
     _build_augmented_question,
     _content_words,
@@ -104,7 +96,7 @@ from .augment import (  # noqa: E402,F401
     _without_phrases,
     augment_with_rag,
 )
-from .pipeline import (  # noqa: E402,F401
+from .pipeline import (  # noqa: F401
     _names_that_are_conditions,
     run_pipeline,
 )

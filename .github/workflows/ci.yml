@@ -86,6 +86,7 @@ jobs:
         run: |
           pip install -r BIDS-SQL/requirements.txt
           pip install -e BIDS-SQL
+          pip install -e RAG -e LLM_preprocessor
           pip install -e backend
           pip install pytest time-machine
       - name: Run tests

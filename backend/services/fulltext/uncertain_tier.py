@@ -56,16 +56,10 @@ import hashlib
 import logging
 import os
 import re
-import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-_RAG_DIR = Path(__file__).resolve().parents[3] / "RAG"
-if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
-    sys.path.insert(0, str(_RAG_DIR))
-
-from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS  # noqa: E402
+from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot

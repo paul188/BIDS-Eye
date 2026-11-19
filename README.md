@@ -109,11 +109,11 @@ The repository is split into two main application layers:
 One straightforward local setup is:
 
 ```bash
-cd BIDS-SQL
-pip install -e .
+pip install -e BIDS-SQL
+pip install -e RAG -e LLM_preprocessor
+pip install -e backend
 
-cd ../backend
-pip install -e .
+cd backend
 uvicorn main:app --reload --port 8000
 
 cd ../frontend
