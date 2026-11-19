@@ -45,6 +45,7 @@ It also keeps one status column up to date:
 
 from __future__ import annotations
 
+import http.client
 import json
 import logging
 import re
@@ -177,11 +178,14 @@ def post_graphql(
         except urllib.error.HTTPError as exc:
             # 4xx carries a GraphQL validation message in the body; retrying
             # the same query cannot succeed.
-            detail = exc.read().decode("utf-8", "replace")[:500]
+            detail = _error_body(exc)
             if 400 <= exc.code < 500 and exc.code != 429:
                 raise OpenNeuroAPIError(f"HTTP {exc.code}: {detail}") from exc
             last_error = OpenNeuroAPIError(f"HTTP {exc.code}: {detail}")
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        # URLError and timeouts are OSErrors; a body cut short (IncompleteRead)
+        # is an HTTPException; JSONDecodeError and UnicodeDecodeError (a body
+        # that is not UTF-8) are ValueErrors.
+        except (OSError, http.client.HTTPException, ValueError) as exc:
             last_error = exc
         else:
             if isinstance(body, dict) and isinstance(body.get("data"), dict):
@@ -189,7 +193,15 @@ def post_graphql(
             last_error = OpenNeuroAPIError(f"no data in response: {str(body)[:300]}")
         if attempt < retries:
             time.sleep(3 * attempt)
-    raise OpenNeuroAPIError(f"OpenNeuro GraphQL request failed: {last_error}")
+    raise OpenNeuroAPIError(f"OpenNeuro GraphQL request failed: {last_error}") from last_error
+
+
+def _error_body(exc: urllib.error.HTTPError) -> str:
+    """The start of an error answer's body; empty when it cannot be read."""
+    try:
+        return exc.read().decode("utf-8", "replace")[:500]
+    except (OSError, http.client.HTTPException):
+        return ""
 
 
 _DELETED_RE = re.compile(r"has been deleted\.?(?:\s*Reason:\s*(?P<reason>.*))?$", re.IGNORECASE | re.DOTALL)
