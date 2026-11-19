@@ -831,7 +831,7 @@ def main():
     except FileNotFoundError:
         print(f"Error: {args.input} not found", file=sys.stderr)
         sys.exit(1)
-    except Exception as e:
+    except (OSError, yaml.YAMLError) as e:  # a bug is raised with its traceback
         print(f"Error loading YAML: {e}", file=sys.stderr)
         sys.exit(1)
 

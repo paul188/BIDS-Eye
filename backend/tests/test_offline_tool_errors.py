@@ -99,3 +99,28 @@ def test_a_failed_crossref_fetch_is_not_cached(monkeypatch):
     monkeypatch.setattr(expand_synonyms.urllib.request, "urlopen", unreachable)
     assert expand_synonyms._fetch_crossref_abstract("10.1/x") is None
     assert "10.1/x" not in expand_synonyms._crossref_cache
+
+
+profiles = _load(ROOT / "scripts" / "extract_readme_profiles.py", "extract_readme_profiles")
+
+
+def test_an_unusable_answer_or_failed_call_is_returned_a_bug_is_raised(monkeypatch):
+    import llm_client
+
+    source = SimpleNamespace(accession_id="ds000001")
+    monkeypatch.setattr(profiles, "_ask_model", lambda *a: "not json")
+    monkeypatch.setattr(profiles.rp, "parse_response",
+                        lambda raw, source: (_ for _ in ()).throw(ValueError("no JSON")))
+    _, profile, error = profiles._extract_safe(source, "m", None)
+    assert profile is None and isinstance(error, profiles.ProfileAnswerError)
+
+    def all_failed(*a):
+        raise llm_client.LLMAllFailedError("All LLM tiers failed")
+    monkeypatch.setattr(profiles, "_ask_model", all_failed)
+    assert isinstance(profiles._extract_safe(source, "m", None)[2], llm_client.LLMAllFailedError)
+
+    def bug(*a):
+        raise KeyError("prompt field")
+    monkeypatch.setattr(profiles, "_ask_model", bug)
+    with pytest.raises(KeyError):
+        profiles._extract_safe(source, "m", None)

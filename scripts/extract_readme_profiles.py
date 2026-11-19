@@ -143,23 +143,32 @@ def _ask_model(source: rp.ProfileSource, model: str, thinking: Optional[str]) ->
     )
 
 
+class ProfileAnswerError(Exception):
+    """The model's answer could not be used, twice."""
+
+
 def _extract(source: rp.ProfileSource, model: str, thinking: Optional[str]) -> rp.Profile:
     """Ask the model, retrying once when the answer is not usable JSON."""
-    last_error: Optional[Exception] = None
+    last_error: Optional[ValueError] = None
     for _attempt in range(2):
         raw = _ask_model(source, model, thinking)
         try:
             return rp.parse_response(raw, source)
         except ValueError as exc:
             last_error = exc
-    raise RuntimeError(f"unusable answer twice: {last_error}")
+    raise ProfileAnswerError(f"unusable answer twice: {last_error}") from last_error
 
 
 def _extract_safe(source: rp.ProfileSource, model: str, thinking: Optional[str]):
-    """(source, profile, error) — runs in a worker thread, never raises."""
+    """(source, profile, error) — runs in a worker thread. A failed model call
+    or an unusable answer is returned as the error, counted and skipped; a bug
+    (in build_prompt, say) is raised and stops the run, instead of reading
+    as "model call failed" for every dataset."""
+    from llm_client import LLMAllFailedError
+
     try:
         return source, _extract(source, model, thinking), None
-    except Exception as exc:  # noqa: BLE001
+    except (LLMAllFailedError, ProfileAnswerError) as exc:
         return source, None, exc
 
 
