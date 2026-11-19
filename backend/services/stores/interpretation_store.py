@@ -173,39 +173,50 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
 
 async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any], total: int,
                     *, from_cache: bool, relaxed: bool, self_corrected: bool, fallback: bool) -> None:
-    """Write one row to query_log for a search that was run. Always on; never raises."""
+    """Write one row to query_log for a search that was run. Always on.
+
+    A database error is logged and the search answers anyway; anything else
+    (a payload json cannot encode) is a bug and is raised.
+    """
     from models import QueryLog
+    row = QueryLog(
+        question=question, pipeline_version=pipeline_version(),
+        payload=json.dumps(payload, ensure_ascii=False), total=total,
+        from_cache=from_cache, relaxed=relaxed, self_corrected=self_corrected, fallback=fallback,
+    )
     try:
         # A savepoint keeps a failed insert from breaking the response; the
         # commit makes the row last (get_db never commits).
         async with session.begin_nested():
-            session.add(QueryLog(
-                question=question, pipeline_version=pipeline_version(),
-                payload=json.dumps(payload, ensure_ascii=False), total=total,
-                from_cache=from_cache, relaxed=relaxed, self_corrected=self_corrected, fallback=fallback,
-            ))
+            session.add(row)
         await session.commit()
-    except Exception:
+    except SQLAlchemyError:
         log.warning("query log: insert failed", exc_info=True)
+        await session.rollback()  # a failed commit leaves the session unusable until then
 
 
 async def put(session: AsyncSession, question: str, payload: Dict[str, Any], total: int) -> None:
-    """Store a translation that found something. Never raises."""
+    """Store a translation that found something.
+
+    The first translation of a question stays: when two workers store the
+    same question at once, the second insert does nothing (ON CONFLICT), where
+    it used to fail on the primary key and log a traceback. A database error
+    is logged and the search answers anyway; anything else is a bug and is
+    raised.
+    """
     if not enabled() or total <= 0:
         return
+    from sqlalchemy.dialects.postgresql import insert
+
     from models import QueryInterpretation
+    statement = insert(QueryInterpretation).values(
+        key=_key(question), pipeline_version=pipeline_version(), question=question,
+        question_normalized=normalize(question),
+        payload=json.dumps(payload, ensure_ascii=False), total_at_creation=total,
+    ).on_conflict_do_nothing(index_elements=[QueryInterpretation.key])
     try:
-        key = _key(question)
-        exists = (await session.execute(
-            select(QueryInterpretation.key).where(QueryInterpretation.key == key)
-        )).scalar_one_or_none()
-        if exists is None:
-            session.add(QueryInterpretation(
-                key=key, pipeline_version=pipeline_version(), question=question,
-                question_normalized=normalize(question),
-                payload=json.dumps(payload, ensure_ascii=False), total_at_creation=total,
-            ))
-            await session.commit()
-    except Exception:
-        log.exception("interpretation cache: store failed")
+        await session.execute(statement)
+        await session.commit()
+    except SQLAlchemyError:
+        log.warning("interpretation cache: store failed", exc_info=True)
         await session.rollback()

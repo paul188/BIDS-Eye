@@ -208,3 +208,71 @@ def test_a_bug_in_the_lookup_is_raised(monkeypatch):
     monkeypatch.setenv("INTERPRETATION_CACHE", "true")
     with pytest.raises(TypeError):
         _get(_Session(select_error=TypeError("a bug")))
+
+
+class _WriteSession:
+    """Records statements and ORM rows; *commit_error* is raised by commit()."""
+
+    def __init__(self, execute_error=None, commit_error=None):
+        self.execute_error, self.commit_error = execute_error, commit_error
+        self.statements, self.added = [], []
+        self.commits = self.rollbacks = 0
+
+    async def execute(self, statement, params=None):
+        if self.execute_error:
+            raise self.execute_error
+        from sqlalchemy.dialects import postgresql
+        self.statements.append(str(statement.compile(dialect=postgresql.dialect())))
+
+    def add(self, row):
+        self.added.append(row)
+
+    def begin_nested(self):
+        import contextlib
+        return contextlib.nullcontext()
+
+    async def commit(self):
+        if self.commit_error:
+            raise self.commit_error
+        self.commits += 1
+
+    async def rollback(self):
+        self.rollbacks += 1
+
+
+def _put(session, payload=None):
+    import asyncio
+    asyncio.run(store.put(session, "fMRI datasets", payload or {"sql": "SELECT 1"}, 25))
+
+
+def test_a_question_stored_twice_at_once_keeps_the_first(monkeypatch):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _WriteSession()
+    _put(session)
+    assert "ON CONFLICT (key) DO NOTHING" in session.statements[0]
+    assert session.commits == 1
+
+
+def test_a_failed_store_is_logged_and_the_search_answers(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _WriteSession(execute_error=OperationalError("INSERT", {}, Exception("disk full")))
+    _put(session)
+    assert session.rollbacks == 1
+
+
+def test_a_payload_json_cannot_encode_is_a_bug(monkeypatch):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    with pytest.raises(TypeError):
+        _put(_WriteSession(), payload={"params": {"since": object()}})
+
+
+def test_a_failed_query_log_commit_rolls_back_and_the_search_answers():
+    import asyncio
+    from sqlalchemy.exc import OperationalError
+
+    session = _WriteSession(commit_error=OperationalError("COMMIT", {}, Exception("connection reset")))
+    asyncio.run(store.log_query(session, "q", {"sql": "SELECT 1"}, 3, from_cache=False,
+                                relaxed=False, self_corrected=False, fallback=False))
+    assert len(session.added) == 1 and session.rollbacks == 1

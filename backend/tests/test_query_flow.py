@@ -37,6 +37,7 @@ class _FakeSession:
 
     def __init__(self):
         self.rollback_count = 0
+        self.added = []
         self.execute_calls = 0
         self.count_calls = 0
         self.statements = []
@@ -90,6 +91,12 @@ class _FakeSession:
 
     async def rollback(self):
         self.rollback_count += 1
+
+    def add(self, row):
+        self.added.append(row)
+
+    async def commit(self):
+        pass
 
 
 async def _fake_rows_to_datasets(session, raw):
