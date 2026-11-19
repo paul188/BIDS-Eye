@@ -62,15 +62,12 @@ def _count_topic_matches(alternatives: List[str],
     """
     try:
         text_search = _catalogue.text_search()  # backend/services; absent outside the API
-    except Exception:
+    except ImportError:
         return None
-    try:
-        if exact_forms:
-            return text_search.count_matches(alternatives, _MODE_NEAR, exact_forms)
-        return text_search.count_matches(alternatives, _MODE_NEAR)
-    except Exception as exc:  # a check must never break a search
-        log.warning("Topic alternative check failed (%s) — searching them unchecked", exc)
-        return None
+    # None when the catalogue cannot answer (count_matches catches that).
+    if exact_forms:
+        return text_search.count_matches(alternatives, _MODE_NEAR, exact_forms)
+    return text_search.count_matches(alternatives, _MODE_NEAR)
 
 
 def _is_ambiguity_topic(topic: Topic) -> bool:
@@ -193,11 +190,9 @@ def _topic_codes(
     def lookup(term: str) -> Dict[str, float]:
         if retriever is None or not hasattr(retriever, "retrieve_for_field_multi_scored"):
             return {}
-        try:
-            found = retriever.retrieve_for_field_multi_scored("task", [term])
-        except Exception as exc:
-            log.warning("Topic vocabulary lookup failed for %r (%s)", term, exc)
-            return {}
+        # In memory (the vocabulary and, when loaded, the embedding models):
+        # nothing here fails while the code is right.
+        found = retriever.retrieve_for_field_multi_scored("task", [term])
         return {code: float(score) for pairs in found.values() for code, score in pairs}
 
     codes = lookup(phrase)

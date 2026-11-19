@@ -17,6 +17,7 @@ import text_terms  # noqa: E402
 from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.fulltext import text_search  # noqa: E402
+from services.catalogue.off_loop_query import CatalogueLookupError  # noqa: E402
 from services.translate.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
 
 SERVICE = SqlRewriteService()
@@ -198,7 +199,7 @@ def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
     terms = text_terms.parse_alternatives("complex motor task")
 
     def broken(queries):
-        raise RuntimeError("database gone")
+        raise CatalogueLookupError("database gone")
 
     text_search.set_frequency_lookup(broken)
     assert text_search.build_filter_tsquery(terms, "loose") == "complex"
@@ -512,3 +513,17 @@ def test_migration_and_crawler_define_the_same_search_vector() -> None:
     profiles = (ROOT / "crawlers" / "migrate_add_readme_profiles.sql").read_text()
     added = dict(re.findall(r"ADD COLUMN IF NOT EXISTS (\w+)\s+([A-Z]+)", profiles))
     assert added == meta.PROFILE_COLUMNS
+
+
+def test_a_bug_in_a_frequency_lookup_is_raised() -> None:
+    terms = text_terms.parse_alternatives("complex motor task")
+
+    def buggy(queries):
+        raise TypeError("a bug")
+
+    text_search.set_frequency_lookup(buggy)
+    try:
+        with pytest.raises(TypeError):
+            text_search.build_filter_tsquery(terms, "loose")
+    finally:
+        text_search.set_frequency_lookup(None)

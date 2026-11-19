@@ -91,15 +91,12 @@ def word_evidence(query: str) -> Dict[str, Any]:
         import word_forms
         text_search = _catalogue.text_search()  # backend/services
         word_form_store = _catalogue.word_form_store()
-    except Exception:
+    except ImportError:  # outside the backend
         return {}
-    try:
-        if not text_search.exact_enabled():
-            return {}
-        return word_form_store.lookup(word_forms.question_words(query))
-    except Exception as exc:  # a lookup must never break a search
-        log.warning("Word form lookup failed (%s) — searching by stem", exc)
+    if not text_search.exact_enabled():
         return {}
+    # {} when the catalogue cannot answer (word_form_store.lookup catches that).
+    return word_form_store.lookup(word_forms.question_words(query))
 
 
 def preprocess_query(
@@ -160,10 +157,10 @@ def _word_forms_block(evidence: Optional[Dict[str, Any]]) -> str:
         return ""
     try:
         import word_forms
-        return word_forms.prompt_block(word_forms.needs_decision(evidence))
-    except Exception as exc:
+    except ImportError as exc:
         log.warning("Word forms left out of the prompt (%s)", exc)
         return ""
+    return word_forms.prompt_block(word_forms.needs_decision(evidence))
 
 
 def _take_word_choices(raw: str, word_choices: Optional[List[Tuple[str, List[str]]]]) -> str:

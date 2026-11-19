@@ -34,7 +34,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
 
-from services.catalogue import schema_capabilities
+from services.catalogue import off_loop_query, schema_capabilities
 
 _RAG_DIR = Path(__file__).resolve().parents[3] / "RAG"
 if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
@@ -150,28 +150,11 @@ def _own_connection_lookup(words: List[str]) -> Optional[List[Sequence[Any]]]:
         pass
     else:
         return None
-    try:
-        from db.db import engine as app_engine
-        from sqlalchemy.ext.asyncio import create_async_engine
-        from sqlalchemy.pool import NullPool
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Word form lookup unavailable (%s) — searching by stem", exc)
-        return None
 
-    async def _rows() -> List[Sequence[Any]]:
-        # NullPool: the connection belongs to this short-lived event loop only.
-        engine = create_async_engine(app_engine.url, poolclass=NullPool)
-        try:
-            async with engine.connect() as connection:
-                return list(await connection.execute(text(_LOOKUP_SQL), _params(words)))
-        finally:
-            await engine.dispose()
+    async def _rows(connection: Any) -> List[Sequence[Any]]:
+        return list(await connection.execute(text(_LOOKUP_SQL), _params(words)))
 
-    try:
-        return asyncio.run(asyncio.wait_for(_rows(), LOOKUP_TIMEOUT_SECONDS))
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Word form lookup failed (%s) — searching by stem", exc)
-        return None
+    return off_loop_query.run_with_own_connection(_rows, LOOKUP_TIMEOUT_SECONDS)
 
 
 def make_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
@@ -191,13 +174,7 @@ def make_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
             pass
         else:
             return None  # called on an event loop: blocking here would deadlock
-        future = asyncio.run_coroutine_threadsafe(_rows(words), loop)
-        try:
-            return future.result(timeout=timeout)
-        except Exception as exc:
-            future.cancel()
-            log.warning("Word form lookup failed (%s) — searching by stem", exc)
-            return None
+        return off_loop_query.run_on_loop(_rows(words), loop, timeout)
 
     return lookup
 
@@ -215,7 +192,9 @@ def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
     """The catalogue's forms for each of *words*; {} when unavailable.
 
     Words that are not plain lower-case words, and stopwords, are left out.
-    A lookup never breaks a search: every failure gives {}.
+    A lookup raises CatalogueLookupError when the database cannot answer;
+    that gives {} and the words are searched by stem. Anything else it
+    raises is a bug.
     """
     asked = [w for w in dict.fromkeys(words) if _WORD_RE.fullmatch(w)]
     if not asked or not schema_capabilities.has_word_forms():
@@ -225,8 +204,8 @@ def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
         return {}
     try:
         rows = run(asked)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Word form lookup raised (%s) — searching by stem", exc)
+    except off_loop_query.CatalogueLookupError as exc:
+        log.warning("Word form lookup failed (%s) — searching by stem", exc)
         return {}
     found: Dict[str, WordEvidence] = {}
     for row in rows or ():

@@ -20,6 +20,7 @@ if str(_CRAWLER) not in sys.path:
 import word_forms  # noqa: E402
 from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.catalogue import word_form_store as store  # noqa: E402
+from services.catalogue.off_loop_query import CatalogueLookupError  # noqa: E402
 from word_forms import WordEvidence  # noqa: E402
 
 AGEING = WordEvidence("ageing", "age", 291, (
@@ -164,7 +165,7 @@ def test_lookup_parses_rows_and_skips_what_cannot_be_a_word(word_forms_table) ->
 
 def test_lookup_never_breaks_a_search(word_forms_table) -> None:
     def broken(words):
-        raise RuntimeError("database gone")
+        raise CatalogueLookupError("database gone")
 
     store.set_lookup(broken)
     assert store.lookup(["ageing"]) == {}
@@ -277,3 +278,12 @@ def test_exact_capabilities_follow_columns_and_table() -> None:
         caps.set_paper_fts(False)
         caps.set_exact_fts(False)
         caps.set_display_columns(())
+
+
+def test_a_bug_in_a_word_form_lookup_is_raised(word_forms_table) -> None:
+    def buggy(words):
+        raise TypeError("a bug")
+
+    store.set_lookup(buggy)
+    with pytest.raises(TypeError):
+        store.lookup(["ageing"])

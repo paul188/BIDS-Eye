@@ -69,8 +69,9 @@ from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS  # noqa: E402
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
+    import sqlglot.errors
     from sqlglot import exp
-except Exception:  # pragma: no cover
+except ImportError:  # pragma: no cover
     sqlglot = None
     exp = None
 
@@ -191,11 +192,9 @@ def _rare_enough(kept: List[str], guard: Optional[str]) -> bool:
     then stays as it was.
     """
     query = " & ".join(kept)
-    try:
-        from services.fulltext import text_search
-        counts = text_search.guarded_counts([query], [guard_for(query, guard)])
-    except Exception:  # pragma: no cover — no database available
-        counts = None
+    from services.fulltext import text_search
+    # None when the catalogue cannot be asked (guarded_counts catches that).
+    counts = text_search.guarded_counts([query], [guard_for(query, guard)])
     if not counts:
         return True
     return counts[0] <= RELAXED_MAX_MATCHES
@@ -229,12 +228,9 @@ def _rarest_parts(parts: List[str], guard: Optional[str] = None) -> List[str]:
     keep = (len(parts) + 1) // 2
     if keep >= len(parts):
         return parts
-    counts = None
-    try:
-        from services.fulltext import text_search
-        counts = text_search.guarded_counts(parts, [guard_for(part, guard) for part in parts])
-    except Exception:  # pragma: no cover — no database available
-        counts = None
+    from services.fulltext import text_search
+    # None when the catalogue cannot be asked (guarded_counts catches that).
+    counts = text_search.guarded_counts(parts, [guard_for(part, guard) for part in parts])
     if counts and len(counts) == len(parts):
         # A modifier ("young", "healthy", "many") is never kept in place of a
         # noun, however rare it happens to be.
@@ -1159,7 +1155,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         return sql
     try:
         tree = sqlglot.parse_one(sql, read="postgres")
-    except Exception:
+    except sqlglot.errors.SqlglotError:
         return sql
     if not isinstance(tree, exp.Select):
         return sql
@@ -1176,11 +1172,11 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     hard: List[str] = []
     soft: List[SoftCondition] = []
     for node in _keep_only_sex_pairs(_flatten_and(where.this)):
-        condition = None
-        try:
-            condition = classify(node, alias, papers=papers)
-        except Exception as exc:  # one odd condition must not break the query
-            log.debug("uncertain_tier: could not classify %s (%s)", node, exc)
+        # classify has no expected failures (sqlglot and regex work on a tree
+        # that parsed); it ran without one on the 1,972 conditions of the
+        # benchmark runs' SQL (2026-11-19). A failure here is a bug: raised,
+        # not turned silently into a hard filter as it used to be.
+        condition = classify(node, alias, papers=papers)
         if condition is None:
             hard.append(node.sql(dialect="postgres"))
         else:
