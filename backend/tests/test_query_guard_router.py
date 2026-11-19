@@ -175,7 +175,9 @@ class _SlowRankingSession(_Session):
     async def execute(self, statement, params=None):
         if "matched_codes" in str(statement):
             self.statements.append(str(statement))
-            raise QueryCanceledError("canceling statement due to statement timeout")
+            from sqlalchemy.exc import OperationalError
+            raise OperationalError(str(statement), {}, QueryCanceledError(
+                "canceling statement due to statement timeout"))
         return await super().execute(statement, params)
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import re
 import time
@@ -8,6 +9,7 @@ from uuid import UUID
 
 import pytest
 
+from llm_client import LLMAllFailedError
 from services.results import rerank
 from services.catalogue import schema_capabilities as caps
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
@@ -92,8 +94,8 @@ class _Session:
                          "llm_profile": f"profile {n}", "readme_excerpt": "readme"}
                         for n, i in enumerate(IDS)])
 
-    async def rollback(self):
-        pass
+    def begin_nested(self):
+        return contextlib.nullcontext()
 
 
 def test_rerank_judges_in_parallel_batches(monkeypatch) -> None:
@@ -118,7 +120,7 @@ def test_rerank_judges_in_parallel_batches(monkeypatch) -> None:
 
 def test_rerank_gives_up_quietly_on_errors_and_timeouts(monkeypatch) -> None:
     def broken(*args):
-        raise RuntimeError("503 unavailable")
+        raise LLMAllFailedError("gemini/x: 503 UNAVAILABLE")
 
     monkeypatch.setattr(rerank, "_judge_batch", broken)
     assert asyncio.run(rerank.rerank_candidates(_Session(), IDS, "q")) is None
@@ -150,3 +152,40 @@ def test_page_sql_applies_the_reranked_order_after_sqlglot() -> None:
     # No re-ranking: no ORDER BY added.
     untouched, params = build_page_sql(base, [], True, 20, 0)
     assert "_rr_top" not in untouched and set(params) == {"_limit", "_offset"}
+
+
+def test_a_bug_in_judging_a_batch_is_raised(monkeypatch) -> None:
+    def broken(*args):
+        raise KeyError("score")
+
+    monkeypatch.setattr(rerank, "_judge_batch", broken)
+    with pytest.raises(KeyError):
+        asyncio.run(rerank.rerank_candidates(_Session(), IDS, "q"))
+
+
+def test_candidates_that_cannot_be_read_skip_the_reranking_in_a_savepoint() -> None:
+    from sqlalchemy.exc import OperationalError
+
+    class _Failing(_Session):
+        def __init__(self):
+            super().__init__()
+            self.savepoints = []
+
+        def begin_nested(self):
+            session = self
+
+            class _Savepoint:
+                async def __aenter__(self):
+                    return self
+
+                async def __aexit__(self, exc_type, exc, tb):
+                    session.savepoints.append("rolled back" if exc_type else "released")
+                    return False
+            return _Savepoint()
+
+        async def execute(self, statement, params=None):
+            raise OperationalError("SELECT", {}, Exception("connection reset"))
+
+    session = _Failing()
+    assert asyncio.run(rerank.rerank_candidates(session, IDS, "q")) is None
+    assert session.savepoints == ["rolled back"]

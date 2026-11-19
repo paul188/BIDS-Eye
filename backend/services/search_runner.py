@@ -21,7 +21,7 @@ import logging
 import os
 
 from sqlalchemy import text
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.expected import ExpectedError
@@ -159,15 +159,17 @@ async def rerank_once(
     ):
         query_cache.update(query_id, cached)
         return
+    candidate_sql, params = build_page_sql(
+        cached.base_sql, cached.scored_filters, True,
+        rerank_settings()["candidates"], 0, rank_tsquery=cached.rank_tsquery,
+    )
+    # In a savepoint: a failed read only skips the re-ranking.
     try:
-        candidate_sql, params = build_page_sql(
-            cached.base_sql, cached.scored_filters, True,
-            rerank_settings()["candidates"], 0, rank_tsquery=cached.rank_tsquery,
-        )
-        rows = await session.execute(text(candidate_sql), {**cached.params, **params})
-        candidate_ids = [row["id"] for row in rows.mappings().all()]
-    except Exception:
-        await session.rollback()
+        async with session.begin_nested():
+            rows = await session.execute(text(candidate_sql), {**cached.params, **params})
+            candidate_ids = [row["id"] for row in rows.mappings().all()]
+    except SQLAlchemyError as exc:
+        log.warning("Re-ranking skipped: candidates not read (%s)", exc)
         query_cache.update(query_id, cached)
         return
     result = await rerank_candidates(session, candidate_ids, question, cached.explanation)
@@ -266,7 +268,7 @@ async def _run_page_unguarded(
                     f"SET LOCAL statement_timeout = '{query_guard.ranked_page_timeout()}'"))
                 rows = (await session.execute(text(page_sql), params)).mappings().all()
             await query_guard.apply_limits(session)  # the page's timeout outlives its savepoint
-        except Exception as exc:
+        except DBAPIError as exc:
             if not query_guard.is_timeout(exc):
                 raise
             log.warning("Ranked page too slow; serving query %s unranked", query_id)
