@@ -40,7 +40,7 @@ async def query_datasets(
     (services/search.py ask). The rate limit (rate_limits.py, SEARCH) still
     counts it, since it ran before this function.
     """
-    return await search.ask(session, body.question, _auth.get("sub"))
+    return await search.ask(session, body.question)
 
 
 @router.post("/page", response_model=QueryResponse, dependencies=[rate_limit(Category.PAGE)])

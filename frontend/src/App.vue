@@ -6,6 +6,7 @@ import MessageBubble from './components/MessageBubble.vue'
 import LoginView from './components/LoginView.vue'
 import LogoMark from './components/LogoMark.vue'
 import InputBar from './components/InputBar.vue'
+import CookieBanner from './components/CookieBanner.vue'
 
 // null until /api/auth/me answers: the session cookie is HttpOnly, so the page
 // can only learn whether it is signed in by asking the backend.
@@ -360,6 +361,8 @@ onUnmounted(() => {
     </main>
 
   </div>
+
+  <CookieBanner />
 </template>
 
 <style scoped>

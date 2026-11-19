@@ -4,8 +4,7 @@ services/search.py
 A natural-language search from question to result page.
 
 ask() is the entry point: identical questions running at the same time share
-one search, whoever asked them, and each asker's question is recorded in
-their history. answer_question is that one search. It translates the question once: a stored translation of the
+one search, whoever asked them. answer_question is that one search. It translates the question once: a stored translation of the
 same question (services/stores/interpretation_store.py) is reused, otherwise the
 Text-To-SQL layer writes one (services/translate/text_to_sql.py). The resulting base
 SELECT is cached under an opaque ``query_id`` (services/stores/query_cache.py), the
@@ -15,9 +14,6 @@ a cached query without another language-model call.
 """
 
 from __future__ import annotations
-
-import logging
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,8 +27,6 @@ from services import search_runner
 from services.stores.query_cache import CachedQuery, query_cache
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
 from services.translate.text_to_sql import text_to_sql
-
-log = logging.getLogger(__name__)
 
 
 def _found_message(total: int) -> str:
@@ -72,25 +66,23 @@ def _worth_storing(cached: CachedQuery, total: int) -> bool:
 _in_flight: SingleFlight[QueryResponse] = SingleFlight()
 
 
-async def ask(session: AsyncSession, question: str, user: Optional[str]) -> QueryResponse:
+async def ask(session: AsyncSession, question: str) -> QueryResponse:
     """The answer to *question*, from the search for it already running if
-    there is one, and the question recorded in *user*'s history (none: not
-    recorded). A search that fails records nothing.
+    there is one.
+
+    Who asked is not stored anywhere: the only record of a search is its
+    anonymous query_log row (models.QueryLog), as the site's privacy notice
+    says (frontend/src/components/CookieBanner.vue).
 
     Raises query_guard.SearchBusyError when no slot for generated SQL frees up.
     """
-    answer = await _in_flight.run(
+    return await _in_flight.run(
         interpretation_store.normalize(question), lambda: answer_question(session, question)
     )
-    # Per asker, outside the shared search: everyone who asked gets a row, in
-    # their own request's session.
-    await _record_user_query(session, user, question)
-    return answer
 
 
 async def answer_question(session: AsyncSession, question: str) -> QueryResponse:
-    """One search: translation, first page, logging. The same for every user;
-    ask() records who asked.
+    """One search: translation, first page, logging. The same for every user.
 
     Raises query_guard.SearchBusyError when no slot for generated SQL frees up.
     """
@@ -165,28 +157,6 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
         page_size=page_size,
         has_more=(page * page_size) < total,
     )
-
-
-async def _record_user_query(session: AsyncSession, user: Optional[str], question: str) -> None:
-    if user is None:
-        return
-    from models import UserQuery
-    from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-    try:
-        async with session.begin_nested():
-            session.add(UserQuery(github_login=user, question=question))
-    except IntegrityError:
-        # A stale or legacy JWT whose login is not in users (the foreign key).
-        log.info("Search of %s not recorded: login not in users", user)
-        return
-    # The savepoint only protects the response from a failed insert. Without
-    # this commit the row is rolled back when the session closes (get_db
-    # never commits), which left user_queries empty from June 2026 on.
-    try:
-        await session.commit()
-    except SQLAlchemyError:
-        log.warning("Search of %s not recorded: commit failed", user, exc_info=True)
-        await session.rollback()
 
 
 class SearchExpiredError(

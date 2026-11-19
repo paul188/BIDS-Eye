@@ -1,7 +1,12 @@
-"""Every search is recorded in user_queries, and the row is really committed.
+"""Every search is recorded in query_log, anonymously, and the row is really committed.
 
-From June to November 2026 the insert ran inside a savepoint that nothing
-committed, so the table stayed empty while the code looked as if it logged.
+The only record of a search is its query_log row: nothing stores who asked.
+The site's privacy notice says so (frontend/src/components/CookieBanner.vue).
+Until November 2026 a second table, user_queries, kept each question with the
+asker's GitHub login; it was removed for that notice.
+
+From June to November 2026 that insert ran inside a savepoint that nothing
+committed; the checks on `released` below catch the same mistake for query_log.
 
 Needs the BIDS-SQL submodule (routers.query imports the db package)."""
 
@@ -31,16 +36,12 @@ class _Savepoint:
 class _Session:
     """Keeps apart what was added, what a savepoint released and what was committed."""
 
-    def __init__(self, fail_insert: bool = False) -> None:
+    def __init__(self) -> None:
         self.pending: list = []
         self.released: list = []
         self.committed: list = []
-        self.fail_insert = fail_insert
 
     def add(self, row) -> None:
-        if self.fail_insert:
-            from sqlalchemy.exc import IntegrityError
-            raise IntegrityError("INSERT", {}, Exception("foreign key violation: login not in users"))
         self.pending.append(row)
 
     def begin_nested(self) -> _Savepoint:
@@ -68,23 +69,21 @@ def _search(monkeypatch, session: _Session, question: str = "fMRI datasets with 
         QueryRequest(question=question), session, {"sub": "some-login"}))
 
 
-def test_a_search_is_recorded_and_committed(monkeypatch) -> None:
+def test_a_search_is_logged_and_committed(monkeypatch) -> None:
     session = _Session()
     _search(monkeypatch, session, "fMRI datasets with n-back")
 
-    by_user = [row for row in session.committed if type(row).__name__ == "UserQuery"]
-    assert [(row.github_login, row.question) for row in by_user] == [
-        ("some-login", "fMRI datasets with n-back")]
-    # The permanent log of every search (models.QueryLog) gets its row too.
     logged = [row for row in session.committed if type(row).__name__ == "QueryLog"]
     assert [(row.question, row.total, row.from_cache) for row in logged] == [
         ("fMRI datasets with n-back", 0, False)]
     assert not session.released, "the row was left in a savepoint and never committed"
 
 
-def test_a_failed_insert_does_not_break_the_search(monkeypatch) -> None:
-    session = _Session(fail_insert=True)
-    response = _search(monkeypatch, session)
+def test_no_row_records_who_asked(monkeypatch) -> None:
+    session = _Session()
+    _search(monkeypatch, session)
 
-    assert response.total == 0
-    assert not session.committed
+    rows = session.committed + session.released + session.pending
+    assert {type(row).__name__ for row in rows} == {"QueryLog"}
+    for row in rows:
+        assert "some-login" not in {str(value) for value in vars(row).values()}, row
