@@ -58,3 +58,44 @@ def test_auto_map_raises_its_own_error_when_no_model_answers():
 def test_auto_map_raises_a_bug():
     with pytest.raises(TypeError):
         auto_map._call_gemini(_Client([TypeError("unexpected keyword")]), "", "p")
+
+
+expand_synonyms = _load(ROOT / "RAG" / "tools" / "expand_synonyms.py", "expand_synonyms")
+
+
+def _gemini_answers(monkeypatch, answers):
+    from google import genai
+
+    client = _Client(answers)
+    monkeypatch.setattr(genai, "Client", lambda api_key: client)
+    monkeypatch.setattr(expand_synonyms.time, "sleep", lambda s: None)
+    return client
+
+
+def test_expand_synonyms_turns_an_api_error_into_its_own_error(monkeypatch):
+    from google.genai import errors
+
+    client = _gemini_answers(monkeypatch, [errors.ServerError(503, {"error": {}}),
+                                           errors.ClientError(400, {"error": {}})])
+    with pytest.raises(expand_synonyms.SynonymLLMError):
+        expand_synonyms._call_gemini("p", "key")
+    assert len(client.calls) == 2
+
+
+def test_expand_synonyms_raises_a_bug(monkeypatch):
+    _gemini_answers(monkeypatch, [TypeError("unexpected keyword")])
+    with pytest.raises(TypeError):
+        expand_synonyms._call_gemini("p", "key")
+
+
+def test_a_failed_crossref_fetch_is_not_cached(monkeypatch):
+    import urllib.error
+
+    monkeypatch.setattr(expand_synonyms.time, "sleep", lambda s: None)
+
+    def unreachable(request, timeout):
+        raise urllib.error.URLError("timed out")
+
+    monkeypatch.setattr(expand_synonyms.urllib.request, "urlopen", unreachable)
+    assert expand_synonyms._fetch_crossref_abstract("10.1/x") is None
+    assert "10.1/x" not in expand_synonyms._crossref_cache

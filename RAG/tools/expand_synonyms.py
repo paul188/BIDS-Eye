@@ -39,6 +39,7 @@ Review the proposal file, then run merge_proposals.py to apply it atomically.
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import os
 import re
@@ -46,10 +47,19 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from contextlib import closing
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
+
+# What reading a web API can raise: URLError, HTTPError and timeouts are
+# OSErrors, IncompleteRead an HTTPException, a body that is not JSON a ValueError.
+_FETCH_ERRORS = (OSError, http.client.HTTPException, ValueError)
+
+
+class SynonymLLMError(Exception):
+    """The model gave no answer for one node (API error, rate limit, network)."""
 
 # ── Paths & constants ──────────────────────────────────────────────────────────
 
@@ -212,7 +222,8 @@ def _fetch_dataset_context(
     seen_texts: List[str] = []
     all_refs:   List[Any] = []
 
-    with psycopg2.connect(db_url) as conn:
+    # "with psycopg2.connect()" ends the transaction, not the connection.
+    with closing(psycopg2.connect(db_url)) as conn:
         with conn.cursor() as cur:
 
             # Strategy 1 — datasets referenced in dataset_codes
@@ -291,18 +302,18 @@ def _fetch_crossref_abstract(doi: str) -> Optional[str]:
         time.sleep(_CROSSREF_DELAY)
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
-
-        message  = data.get("message", {})
-        title    = (message.get("title") or [""])[0]
-        abstract = message.get("abstract") or ""
-        abstract = re.sub(r"<[^>]+>", "", abstract)   # strip JATS XML tags
-
-        text   = f"{title}. {abstract}".strip(". ") or None
-        result = _truncate_words(text, 200) if text else None
-
-    except Exception as exc:
+    except _FETCH_ERRORS as exc:
+        # Not cached: a later term citing the same DOI tries again.
         print(f"    [crossref] {doi}: {exc}", file=sys.stderr)
-        result = None
+        return None
+
+    message  = data.get("message", {})
+    title    = (message.get("title") or [""])[0]
+    abstract = message.get("abstract") or ""
+    abstract = re.sub(r"<[^>]+>", "", abstract)   # strip JATS XML tags
+
+    text   = f"{title}. {abstract}".strip(". ") or None
+    result = _truncate_words(text, 200) if text else None
 
     _crossref_cache[doi] = result
     return result
@@ -330,7 +341,7 @@ def _fetch_openalex_abstracts(term: str, max_papers: int = 3) -> List[str]:
         time.sleep(_OPENALEX_DELAY)
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
-    except Exception as exc:
+    except _FETCH_ERRORS as exc:
         print(f"    [openalex] {term}: {exc}", file=sys.stderr)
         return []
 
@@ -518,12 +529,15 @@ def _parse_llm_response(raw: Optional[str]) -> List[str]:
 def _call_anthropic(prompt: str, api_key: str, system: str = _SYSTEM_AUGMENT) -> List[str]:
     import anthropic
     client = anthropic.Anthropic(api_key=api_key)
-    resp = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        system=system,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        resp = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            system=system,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except anthropic.APIError as exc:
+        raise SynonymLLMError(f"claude-sonnet-4-6: {exc}") from exc
     return _parse_llm_response(resp.content[0].text)
 
 
@@ -533,13 +547,14 @@ def _call_gemini(
     model: str = "gemini-2.5-pro",
     system: str = _SYSTEM_AUGMENT,
 ) -> List[str]:
+    import httpx
     from google import genai
+    from google.genai import errors as genai_errors
     from google.genai import types
     client = genai.Client(api_key=api_key)
 
     # Retry with exponential backoff on 503 / rate-limit errors.
     delays = [15, 30, 60, 120]
-    last_exc: Exception = RuntimeError("no attempt made")
     for attempt, wait in enumerate([0] + delays):
         if wait:
             time.sleep(wait)
@@ -554,13 +569,12 @@ def _call_gemini(
                     max_output_tokens=8192,
                 ),
             )
-        except Exception as exc:
-            last_exc = exc
-            msg = str(exc)
-            if "503" in msg or "UNAVAILABLE" in msg or "429" in msg or "RESOURCE_EXHAUSTED" in msg:
-                if attempt < len(delays):
-                    continue   # retry after backoff
-            raise
+        except genai_errors.APIError as exc:
+            if exc.code in (429, 503) and attempt < len(delays):  # RESOURCE_EXHAUSTED, UNAVAILABLE
+                continue   # retry after backoff
+            raise SynonymLLMError(f"{model}: {exc}") from exc
+        except httpx.TransportError as exc:  # timeout, connection
+            raise SynonymLLMError(f"{model}: {type(exc).__name__}: {exc}") from exc
         # Gemini 2.5 Pro (thinking) may return text via candidates when resp.text is None.
         # content.parts can also be None when the model returns only a thinking block.
         text = resp.text
@@ -570,8 +584,7 @@ def _call_gemini(
             parts     = getattr(content, "parts", None) or []
             text      = "".join(p.text for p in parts if p and getattr(p, "text", None))
         return _parse_llm_response(text)
-
-    raise last_exc
+    raise AssertionError("unreachable: the last attempt returns or raises")
 
 
 def _call_llm(
@@ -653,6 +666,8 @@ def main() -> None:
     out_fh.write(header)
     out_fh.flush()
 
+    import psycopg2
+
     for i, node in enumerate(nodes, 1):
         label = f"[{i}/{len(nodes)}] {node['path']}"
         print(f"{label}", end="  ", flush=True)
@@ -660,7 +675,13 @@ def main() -> None:
         # 2. DB context
         try:
             desc_texts, dois = _fetch_dataset_context(args.db_url, node)
-        except Exception as exc:
+        except psycopg2.OperationalError as exc:
+            # The database is down or unreachable: every further node would
+            # fail the same way. What was found so far is already in the file.
+            out_fh.close()
+            sys.exit(f"\n[db unreachable: {exc}] — stopped after {i - 1} nodes; "
+                     f"rerun with --offset {args.offset + i - 1}")
+        except psycopg2.Error as exc:
             print(f"[db error: {exc}]")
             continue
 
@@ -689,11 +710,11 @@ def main() -> None:
 
         # 5. LLM candidate generation
         sys_prompt = _SYSTEM_REPLACE if args.mode == "replace" else _SYSTEM_AUGMENT
+        prompt = _build_prompt(node, all_texts, mode=args.mode)
         try:
-            prompt     = _build_prompt(node, all_texts, mode=args.mode)
             candidates = _call_llm(prompt, anthropic_key, gemini_key, args.gemini_model,
                                    system=sys_prompt)
-        except Exception as exc:
+        except SynonymLLMError as exc:
             print(f"[llm error: {exc}]")
             continue
 
