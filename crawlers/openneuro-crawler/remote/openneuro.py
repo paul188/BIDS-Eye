@@ -32,6 +32,7 @@ from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 from sqlalchemy import select, text, update
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.db import async_session_maker
 from db.models import BIDSDataset, BIDSObject
@@ -369,7 +370,7 @@ async def _enrich_from_openneuro_api(accession_id: str) -> None:
         )
     except OpenNeuroAPIError as exc:
         log.warning("  [metadata] OpenNeuro API unavailable for %s: %s", accession_id, exc)
-    except Exception as exc:
+    except SQLAlchemyError as exc:
         log.warning("  [metadata] Could not store OpenNeuro metadata for %s: %s", accession_id, exc)
 
 

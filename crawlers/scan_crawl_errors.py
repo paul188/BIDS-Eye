@@ -56,7 +56,7 @@ def scan_log(path: Path) -> tuple[list[tuple], list[tuple]]:
 
     try:
         lines = path.read_text(errors="replace").splitlines()
-    except Exception as e:
+    except OSError as e:  # read_text(errors="replace") raises nothing else
         print(f"  [warn] Could not read {path.name}: {e}", file=sys.stderr)
         return [], []
 

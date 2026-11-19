@@ -101,3 +101,42 @@ def test_backfill_sql_replaces_per_source_and_quotes() -> None:
     assert "x.source = 'in_dataset'" in sql            # an empty list still clears old rows
     assert "'fMRIPrep', '21.0.1', 'openneuro_derivatives'" in sql
     assert "'ds0''02'" in sql
+
+
+def test_an_unexpected_file_tree_is_a_link_source_error(monkeypatch) -> None:
+    import pytest
+
+    answer = {"data": {"d0": {"latestSnapshot": {"files": [{"directory": True, "id": "x"}]}}}}
+    monkeypatch.setattr(links, "_post_graphql", lambda query, variables: answer)
+    with pytest.raises(links.LinkSourceError, match="ds000001"):
+        links._list_trees([("ds000001", None)])
+    answer["data"]["d0"] = None  # a dataset the API did not return
+    assert links._list_trees([("ds000001", None)]) == [None]
+
+
+def test_a_source_that_cannot_be_read_keeps_the_stored_rows(monkeypatch) -> None:
+    import asyncio
+
+    import pytest
+
+    calls = []
+
+    class _Conn:
+        async def execute(self, statement, params=None):
+            calls.append(str(statement))
+
+    def unreadable(accessions):
+        raise links.LinkSourceError("bucket listing refused")
+
+    def bug(accessions):
+        raise KeyError("filename")
+
+    monkeypatch.setattr(links, "openneuro_derivatives", unreadable)
+    monkeypatch.setattr(links, "in_dataset_derivatives", lambda accessions: {})
+    counts = asyncio.run(links.refresh_links(_Conn(), ["ds000001"]))
+    assert counts == {"openneuro_derivatives": 0, "in_dataset": 0}
+    assert not any("DELETE FROM bids_derivatives" in s for s in calls)
+
+    monkeypatch.setattr(links, "openneuro_derivatives", bug)
+    with pytest.raises(KeyError):
+        asyncio.run(links.refresh_links(_Conn(), ["ds000001"]))
