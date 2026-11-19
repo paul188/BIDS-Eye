@@ -130,10 +130,8 @@ def test_rewriter_runs_the_check_and_reports_it() -> None:
 def test_real_vocabulary_knows_the_raw_suffixes(monkeypatch) -> None:
     monkeypatch.undo()  # the real vocabulary, RAG/value_mappings.yaml
     cv.set_known(KNOWN)
-    try:
-        cv._vocabulary()
-    except Exception as exc:  # pragma: no cover - vocabulary not on the path
-        pytest.skip(f"vocabulary not importable: {exc}")
+    if cv._vocabulary() is None:  # pragma: no cover - vocabulary not on the path
+        pytest.skip("vocabulary not importable")
     assert cv.correction("suffix", "bold") == ["fmri_bold"]
     assert cv.correction("suffix", "T1w") == ["t1_weighted_mri"]
 
@@ -247,3 +245,28 @@ def test_an_error_that_is_not_a_database_error_is_not_swallowed(monkeypatch) -> 
     monkeypatch.setattr(cv, "load", broken)
     with pytest.raises(TypeError):
         asyncio.run(cv.refresh_if_stale(_Connection(uncovered=0)))
+
+
+def test_an_unloadable_vocabulary_is_tried_once(monkeypatch) -> None:
+    import builtins
+
+    monkeypatch.undo()
+    cv.set_known(KNOWN)
+    real_import = builtins.__import__
+    attempts = []
+
+    def failing_import(name, *args, **kwargs):
+        if name == "yaml_to_llamaindex":
+            attempts.append(name)
+            raise ImportError("no RAG on the path")
+        return real_import(name, *args, **kwargs)
+
+    cv._vocabulary.cache_clear()
+    monkeypatch.setattr(builtins, "__import__", failing_import)
+    try:
+        assert cv.correction("suffix", "bold") == []
+        assert cv.correction("task", "recognition") == []
+        assert attempts == ["yaml_to_llamaindex"]
+    finally:
+        monkeypatch.setattr(builtins, "__import__", real_import)
+        cv._vocabulary.cache_clear()

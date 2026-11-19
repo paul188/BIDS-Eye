@@ -34,12 +34,14 @@ import logging
 import os
 import re
 import time
+from functools import lru_cache
 from typing import Any, Dict, FrozenSet, Iterable, List, Mapping, Optional, Tuple
 
 from exceptions.expected import ExpectedError
 
 try:
     import sqlglot
+    import sqlglot.errors
     from sqlglot import exp
 except ImportError:  # pragma: no cover - sqlglot is a backend dependency
     sqlglot = None
@@ -133,8 +135,18 @@ def is_known(field: str, value: str) -> bool:
 
 # ── Corrections ───────────────────────────────────────────────────────────────
 
-def _vocabulary():
-    from yaml_to_llamaindex import group_db, leaf_db  # RAG/, on the backend's path
+@lru_cache(maxsize=1)
+def _vocabulary() -> Optional[Tuple[dict, dict]]:
+    """(group_db, leaf_db) of the curated vocabulary (RAG/, on the backend's
+    path), or None when it cannot be loaded. The failure is cached: a failed
+    import is not kept in sys.modules, so every correction() would otherwise
+    import and parse value_mappings.yaml again, and warn again."""
+    import yaml
+    try:
+        from yaml_to_llamaindex import group_db, leaf_db
+    except (ImportError, OSError, yaml.YAMLError) as exc:
+        log.warning("Vocabulary not available for value corrections (%s)", exc)
+        return None
     return group_db, leaf_db
 
 
@@ -149,11 +161,10 @@ def correction(field: str, value: str) -> List[str]:
     for form in forms:                      # spelling only: 'Fmri_Bold'
         if form in known:
             return [form]
-    try:
-        group_db, leaf_db = _vocabulary()
-    except Exception as exc:  # without the vocabulary an unknown value is only dropped
-        log.warning("Vocabulary not available for value corrections (%s)", exc)
+    vocabulary = _vocabulary()
+    if vocabulary is None:  # without the vocabulary an unknown value is only dropped
         return []
+    group_db, leaf_db = vocabulary
 
     def synonym() -> List[str]:
         for form in forms:
@@ -317,7 +328,7 @@ def check_sql(sql: str) -> Tuple[str, List[str]]:
         return sql, []
     try:
         tree = sqlglot.parse_one(sql, read="postgres")
-    except Exception:
+    except sqlglot.errors.SqlglotError:  # query_guard refuses it later
         return sql, []
 
     notes: List[str] = []
