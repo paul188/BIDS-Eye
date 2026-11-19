@@ -3,9 +3,9 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Date, DateTime, Integer, String, Text
 from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
 
@@ -30,8 +30,6 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-
-    queries: Mapped[list[UserQuery]] = relationship(back_populates="user")
 
 
 class QueryInterpretation(Base):
@@ -65,7 +63,12 @@ class QueryLog(Base):
 
     Permanent, unlike services/stores/query_cache.py (in memory, 30 minutes) and
     unlike the interpretation cache, which keeps one translation per question
-    and none that found nothing. No user is recorded here.
+    and none that found nothing.
+
+    Anonymous, and the only record of a search: no column and no other table
+    links a question to who asked it. The site's privacy notice promises this
+    (frontend/src/components/CookieBanner.vue); a per-user search table
+    (user_queries) was removed for it in November 2026.
     """
 
     __tablename__ = "query_log"
@@ -83,20 +86,3 @@ class QueryLog(Base):
     relaxed: Mapped[bool] = mapped_column(default=False)
     self_corrected: Mapped[bool] = mapped_column(default=False)
     fallback: Mapped[bool] = mapped_column(default=False)
-
-
-class UserQuery(Base):
-    """One row per query a user has submitted."""
-
-    __tablename__ = "user_queries"
-
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    github_login: Mapped[str] = mapped_column(
-        ForeignKey("users.github_login"), index=True
-    )
-    question: Mapped[str] = mapped_column(Text)
-    asked_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), index=True
-    )
-
-    user: Mapped[User] = relationship(back_populates="queries")

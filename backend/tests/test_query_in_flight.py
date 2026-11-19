@@ -1,7 +1,7 @@
 """The server-side twins of the search page's guards: one search per question
-while it runs, whoever asks it (services/search.py ``_in_flight``), with every
-asker recorded in their own history, and no blank questions
-(schemas.QueryRequest)."""
+while it runs, whoever asks it (services/search.py ``_in_flight``), and no
+blank questions (schemas.QueryRequest). Who asked is not recorded:
+tests/test_query_logging.py."""
 from __future__ import annotations
 
 import asyncio
@@ -20,18 +20,9 @@ def _response(total: int) -> QueryResponse:
                          total=total, page=1, page_size=20, has_more=False)
 
 
-class _Runs(list):
-    """The questions searched for; ``recorded`` is the history, (user, question)."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.recorded: list[tuple[str, str]] = []
-
-
-def _counting_search(monkeypatch, *, fail_with: Exception | None = None) -> _Runs:
-    """Replace one search with a slow fake that counts its runs, and the
-    history with ``runs.recorded``."""
-    runs = _Runs()
+def _counting_search(monkeypatch, *, fail_with: Exception | None = None) -> list[str]:
+    """Replace one search with a slow fake that counts its runs."""
+    runs: list[str] = []
 
     async def fake(session, question):
         runs.append(question)
@@ -40,11 +31,7 @@ def _counting_search(monkeypatch, *, fail_with: Exception | None = None) -> _Run
             raise fail_with
         return _response(len(runs))
 
-    async def record(session, user, question):
-        runs.recorded.append((user, question))
-
     monkeypatch.setattr(search, "answer_question", fake)
-    monkeypatch.setattr(search, "_record_user_query", record)
     return runs
 
 
@@ -77,8 +64,6 @@ def test_another_user_asking_the_same_question_shares_the_search(monkeypatch):
     first, second = asyncio.run(scenario())
     assert runs == ["art"]
     assert first is second
-    # Each asker's own question, in their own history.
-    assert sorted(runs.recorded) == [("a", "art"), ("b", "Art?")]
     assert len(search._in_flight) == 0
 
 
@@ -116,7 +101,6 @@ def test_an_error_reaches_the_waiting_request_too(monkeypatch):
     results = asyncio.run(scenario())
     assert runs == ["art"]
     assert all(r is limit for r in results)
-    assert runs.recorded == []          # a failed search goes into no history
     assert len(search._in_flight) == 0
 
 
