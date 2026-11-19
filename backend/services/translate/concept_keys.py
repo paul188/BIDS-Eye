@@ -42,8 +42,14 @@ _LITERAL_RE = re.compile(r"'([^']*)'")
 
 @lru_cache(maxsize=1)
 def _vocabulary() -> Tuple[Dict[str, Dict[str, List[str]]], Dict[str, FrozenSet[str]]]:
-    """(group term → member codes, stored codes) per field."""
-    from yaml_to_llamaindex import group_db, leaf_db
+    """(group term → member codes, stored codes) per field; None, logged once
+    (the result is cached), when the vocabulary cannot be loaded."""
+    import yaml
+    try:
+        from yaml_to_llamaindex import group_db, leaf_db
+    except (ImportError, OSError, yaml.YAMLError) as exc:
+        log.warning("Vocabulary not available for concept keys (%s)", exc)
+        return None
 
     groups = {field: group_db.get(field, {}) for field in FIELDS}
     stored = {field: frozenset(leaf_db.get(field, {}).values()) for field in FIELDS}
@@ -52,11 +58,10 @@ def _vocabulary() -> Tuple[Dict[str, Dict[str, List[str]]], Dict[str, FrozenSet[
 
 def group_codes(field: str, value: str) -> Optional[List[str]]:
     """Member codes if *value* names a category of *field* and is not a code itself."""
-    try:
-        groups, stored = _vocabulary()
-    except Exception as exc:  # the vocabulary only widens a filter
-        log.warning("Vocabulary not available for concept keys (%s)", exc)
+    vocabulary = _vocabulary()
+    if vocabulary is None:  # the vocabulary only widens a filter
         return None
+    groups, stored = vocabulary
     key = value.strip().lower()
     if not key or key in stored[field]:
         return None

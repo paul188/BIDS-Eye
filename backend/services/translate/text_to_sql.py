@@ -40,13 +40,12 @@ log = logging.getLogger(__name__)
 _FEW_SHOT_POOL: Dict[str, List[dict]] = {}
 _FEW_SHOT_PATH = Path(__file__).resolve().parents[2] / "few_shot_examples.json"
 if _FEW_SHOT_PATH.exists():
-    try:
-        with open(_FEW_SHOT_PATH) as _f:
-            _FEW_SHOT_POOL = json.load(_f)
-        log.info("Loaded %d few-shot families from %s",
-                 len(_FEW_SHOT_POOL), _FEW_SHOT_PATH)
-    except Exception as _e:
-        log.warning("Could not load few_shot_examples.json: %s", _e)
+    # The file is part of the repository: a broken one stops the backend at
+    # startup instead of letting every query be written without examples.
+    with open(_FEW_SHOT_PATH) as _f:
+        _FEW_SHOT_POOL = json.load(_f)
+    log.info("Loaded %d few-shot families from %s",
+             len(_FEW_SHOT_POOL), _FEW_SHOT_PATH)
 
 _FAMILY_ALIASES: Dict[str, str] = {
     "subject_multimodal": "subject_multimodal_query",
@@ -723,7 +722,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
                 str(name_index_path),
                 db_url=os.getenv("DATABASE_URL"),
             )
-        except Exception as exc:
+        except (OSError, ValueError) as exc:  # unreadable, or not JSON
             log.warning("Could not load RAG name index: %s", exc)
 
     # Stages 1 + 2

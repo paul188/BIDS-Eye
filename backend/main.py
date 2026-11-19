@@ -97,7 +97,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             crawler_scheduler = create_scheduler()
             crawler_scheduler.start()
             log.info("Background crawler started in-process.")
-        except Exception as exc:
+        except (ImportError, ValueError) as exc:  # crawler not importable, bad CRAWL_INTERVAL_HOURS
             log.warning("Could not start crawler in-process: %s", exc)
 
     yield

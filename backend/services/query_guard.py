@@ -382,6 +382,7 @@ def _setting(name: str, default: str) -> str:
 async def apply_limits(session: Any) -> None:
     """Statement timeout, temp file cap and sort memory for this transaction."""
     from sqlalchemy import text
+    from sqlalchemy.exc import DBAPIError
     await session.execute(text(f"SET LOCAL statement_timeout = '{_setting('SEARCH_STATEMENT_TIMEOUT', '120s')}'"))
     await session.execute(text(f"SET LOCAL work_mem = '{_setting('SEARCH_WORK_MEM', '32MB')}'"))
     # temp_file_limit can only be set by a superuser; a savepoint keeps a
@@ -390,7 +391,7 @@ async def apply_limits(session: Any) -> None:
         async with session.begin_nested():
             await session.execute(text(
                 f"SET LOCAL temp_file_limit = '{_setting('SEARCH_TEMP_FILE_LIMIT', '1GB')}'"))
-    except Exception as exc:  # pragma: no cover - depends on the role
+    except DBAPIError as exc:  # pragma: no cover - depends on the role
         log.warning("temp_file_limit not set: %s", exc)
 
 
