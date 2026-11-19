@@ -33,7 +33,7 @@ if str(_BIDS_SQL) not in sys.path:
     sys.path.insert(0, str(_BIDS_SQL))
 
 import db.models  # noqa: E402, F401 — registers models with Base.metadata before create_all
-import models     # noqa: E402, F401 — registers backend-only models (message_usage, etc.)
+import models     # noqa: E402, F401 — registers backend-only models (query_log, etc.)
 from db.db import create_all_tables, engine  # noqa: E402
 from services.catalogue import schema_capabilities, word_form_store  # noqa: E402
 from services.fulltext import text_search  # noqa: E402
