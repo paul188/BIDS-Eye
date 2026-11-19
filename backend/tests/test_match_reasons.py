@@ -283,6 +283,7 @@ def test_attach_skips_the_query_when_nothing_needs_explaining():
 
 def test_a_failing_query_leaves_the_page_without_reasons():
     dataset = _dataset()
-    session = _Session(error=RuntimeError("statement timeout"))
+    from sqlalchemy.exc import OperationalError
+    session = _Session(error=OperationalError("SELECT", {}, Exception("canceling statement due to statement timeout")))
     asyncio.run(mr.attach_match_reasons(session, [dataset], _sql(DIAGNOSIS)))
     assert dataset.match_reasons == []

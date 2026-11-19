@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
@@ -359,18 +360,15 @@ async def attach_match_reasons(session: AsyncSession, datasets: List[DatasetSche
     """Set match_reasons on the page's datasets; a failure leaves them empty."""
     if not datasets or not filter_sql:
         return
-    try:
-        alias, plans = plan(filter_sql)
-    except Exception:
-        log.warning("Match reasons: could not read the query", exc_info=True)
-        return
+    # SQL that cannot be parsed gives (None, []) (query_filters._parse).
+    alias, plans = plan(filter_sql)
     if alias is None or not plans:
         return
     sql = build_sql(alias, plans)
     try:
         async with session.begin_nested():
             rows = (await session.execute(text(sql), {"ids": [d.id for d in datasets]})).mappings().all()
-    except Exception:
+    except SQLAlchemyError:
         log.warning("Match reasons unavailable for this page", exc_info=True)
         return
     by_id = {str(row["dataset_id"]): dict(row) for row in rows}

@@ -39,9 +39,11 @@ from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
     from sqlglot import exp
-except Exception:  # pragma: no cover
+    from sqlglot.errors import SqlglotError
+except ImportError:  # pragma: no cover
     sqlglot = None
     exp = None
+    SqlglotError = ()  # type: ignore[assignment,misc]  # nothing is parsed, so nothing to catch
 
 log = logging.getLogger(__name__)
 
@@ -724,7 +726,7 @@ def _parse(sql: str):
         return None
     try:
         tree = sqlglot.parse_one(sql, read="postgres")
-    except Exception:
+    except SqlglotError:
         return None
     return tree if isinstance(tree, exp.Select) else None
 
@@ -758,8 +760,8 @@ def where_conditions(sql: Optional[str]) -> Tuple[Optional[str], List[Tuple[Quer
             continue
         try:
             found.append((describe_condition(node, chip_id), node))
-        except Exception as exc:  # one odd condition must not lose the others
-            log.debug("query_filters: could not describe %s (%s)", node, exc)
+        except ValueError as exc:  # a number that is not one; the other conditions still count
+            log.warning("query_filters: could not describe %s (%s)", node, exc)
     return alias, found
 
 
@@ -775,16 +777,12 @@ def describe(sql: Optional[str]) -> List[QueryFilter]:
             exclusion = describe_exclusion(node, chip_id)
             if exclusion is not None:
                 chips.append(exclusion)
-        except Exception as exc:  # one odd condition must not lose the others
-            log.debug("query_filters: could not describe %s (%s)", node, exc)
+        except ValueError as exc:  # a number that is not one; the other chips still show
+            log.warning("query_filters: could not describe %s (%s)", node, exc)
             text = node.sql(dialect="postgres")
             chips.append(QueryFilter(id=chip_id, kind="other", field="Condition",
                                      label=text[:48], detail=text))
-    try:
-        sort = describe_order(tree)
-    except Exception as exc:
-        log.debug("query_filters: could not describe the order (%s)", exc)
-        sort = None
+    sort = describe_order(tree)
     if sort is not None:
         chips.append(sort)
     return chips

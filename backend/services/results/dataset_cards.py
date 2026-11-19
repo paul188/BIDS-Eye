@@ -15,6 +15,7 @@ from typing import Optional, Sequence
 from uuid import UUID
 
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
@@ -153,7 +154,7 @@ async def attach_descriptions(session: AsyncSession, datasets: list[DatasetSchem
     try:
         async with session.begin_nested():
             rows = (await session.execute(text(sql), {"ids": [d.id for d in datasets]})).all()
-    except Exception:
+    except SQLAlchemyError:
         log.warning("Dataset descriptions unavailable for this page", exc_info=True)
         return
     found = {row[0]: row for row in rows}
