@@ -191,7 +191,9 @@ def _load_existing_index(index_path: Path) -> tuple[dict, Path]:
             if not isinstance(idx, dict):
                 raise ValueError("top-level JSON value must be an object")
             return idx, candidate
-        except Exception as exc:
+        # JSONDecodeError and UnicodeDecodeError are ValueErrors, as is the
+        # top-level check above.
+        except (OSError, ValueError) as exc:
             failures.append(f"{candidate}: {type(exc).__name__}: {exc}")
 
     failure_text = "\n".join(f"  - {item}" for item in failures)
