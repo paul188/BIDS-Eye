@@ -239,10 +239,10 @@ def test_writes_locks_and_batches_are_refused(sql: str, words: str) -> None:
 
 
 # ── only the dataset catalogue ────────────────────────────────────────────────
-# The app's own tables share the database: users (with e-mail addresses),
-# query_log (other users' questions). A question can steer the
-# model into reading them, e.g. one character of an address at a time through
-# EXISTS.
+# The app's own tables share the database: query_log (other users' questions)
+# and query_interpretations. A question can steer the model into reading them,
+# e.g. one character at a time through EXISTS. The "users" cases below stand for
+# any table outside the catalogue (production had one until November 2026).
 
 def _app_tables() -> list[str]:
     import models  # backend/models.py: the app's own tables, not the catalogue
@@ -251,7 +251,18 @@ def _app_tables() -> list[str]:
 
 
 def test_the_app_tables_are_known() -> None:
-    assert {"users", "query_log", "message_usage"} <= set(_app_tables())
+    assert {"query_log", "query_interpretations"} <= set(_app_tables())
+
+
+def test_no_app_table_holds_a_user() -> None:
+    # The privacy notice (frontend/src/components/CookieBanner.vue) says the
+    # server stores nothing about a user.
+    import models
+    for cls in vars(models).values():
+        if isinstance(cls, type) and cls.__module__ == "models" and hasattr(cls, "__tablename__"):
+            columns = {c.name for c in cls.__table__.columns}
+            assert not columns & {"github_login", "github_email", "email", "user", "user_id"}, (
+                cls.__tablename__, columns)
 
 
 @pytest.mark.parametrize("table", _app_tables())

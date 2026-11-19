@@ -29,7 +29,7 @@ from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata before create_all
 import institution_index
-import models     # noqa: F401 — registers backend-only models (message_usage, etc.)
+import models     # noqa: F401 — registers backend-only models (query_log, etc.)
 import place_index
 from db.db import create_all_tables, engine
 from services.catalogue import schema_capabilities, word_form_store

@@ -7,7 +7,9 @@ import { ref } from 'vue'
 // about: questions are stored on the server without who asked (query_log,
 // backend/models.py; tests/test_query_logging.py checks no row records the
 // asker) and sent to Google's Gemini API on a paid key, whose prompts Google
-// does not train on. Keep this text in line with the backend. If a tracking or third-party
+// does not train on. Nothing about a user is stored on the server (no users
+// table, no e-mail address; backend/routers/auth.py, backend/models.py).
+// Keep this text in line with the backend. If a tracking or third-party
 // cookie is ever added, this must become a real consent choice that is asked
 // before that cookie is set.
 const STORAGE_KEY = 'bids-eye-cookie-notice'
@@ -42,7 +44,8 @@ function dismiss() {
       <p class="leading-relaxed">
         BIDS-Eye uses only the cookies it needs to work: no tracking or advertising.
         Your searches are sent to Google's Gemini AI to interpret them, and stored
-        anonymously, without your name, so we can improve search quality.
+        anonymously, without your name, so we can improve search quality. We keep
+        no account data.
       </p>
 
       <div v-if="showDetails" class="mt-3 space-y-3 text-xs text-muted leading-relaxed">
@@ -78,8 +81,10 @@ function dismiss() {
               Please don't type personal information into the search.
             </li>
             <li>
-              At sign-in we store your GitHub username and email address for your
-              account, and count your searches per day for the daily limit.
+              We keep no account data. Signing in with GitHub only puts your
+              username into the sign-in cookie; we don't ask GitHub for your email
+              address. For the daily limit your searches are counted in the server's
+              memory, never written down.
             </li>
           </ul>
         </div>

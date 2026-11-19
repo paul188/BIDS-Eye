@@ -1,35 +1,21 @@
+"""The app's own tables, next to the dataset catalogue in the same database.
+
+None of them holds anything about a user: no logins, no e-mail addresses, no
+per-user counts (the rate limits count in memory, rate_limits.py). The tables
+users, message_usage and user_queries did until November 2026 and were removed
+for the site's privacy notice (frontend/src/components/CookieBanner.vue).
+"""
+
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
-from sqlalchemy import Date, DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Integer, String, Text
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
-
-
-class MessageUsage(Base):
-    """Tracks per-user daily message counts for rate limiting."""
-
-    __tablename__ = "message_usage"
-
-    github_login: Mapped[str] = mapped_column(String(100), primary_key=True)
-    usage_date: Mapped[date] = mapped_column(Date, primary_key=True)
-    count: Mapped[int] = mapped_column(Integer, default=0)
-
-
-class User(Base):
-    """One row per GitHub user who has ever logged in."""
-
-    __tablename__ = "users"
-
-    github_login: Mapped[str] = mapped_column(String(100), primary_key=True)
-    github_email: Mapped[str | None] = mapped_column(String(254), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
 
 
 class QueryInterpretation(Base):

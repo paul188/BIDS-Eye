@@ -36,6 +36,14 @@ def _github(request: httpx.Request) -> httpx.Response:
     return httpx.Response(404)
 
 
+def _session_data(client: TestClient) -> dict:
+    """What the signed session cookie holds (the payload is base64 JSON before the first dot)."""
+    import base64
+    import json
+    payload = client.cookies[auth.SESSION_COOKIE].split(".")[0]
+    return json.loads(base64.b64decode(payload + "=" * (-len(payload) % 4)))
+
+
 def _build_app(monkeypatch: pytest.MonkeyPatch, frontend_url: str = "*") -> FastAPI:
     monkeypatch.setenv("SESSION_SECRET", SECRET)
     monkeypatch.setenv("FRONTEND_URL", frontend_url)
@@ -60,22 +68,23 @@ def _build_app(monkeypatch: pytest.MonkeyPatch, frontend_url: str = "*") -> Fast
 
 
 @pytest.fixture
-def remembered(monkeypatch: pytest.MonkeyPatch) -> list:
+def github_calls(monkeypatch: pytest.MonkeyPatch) -> list:
+    """The paths the backend asked GitHub for, in order."""
+    calls: list[str] = []
+
+    def answer(request: httpx.Request) -> httpx.Response:
+        calls.append(request.url.path)
+        return _github(request)
+
     monkeypatch.setattr(
         auth.httpx, "AsyncClient",
-        lambda **kw: _REAL_ASYNC_CLIENT(transport=httpx.MockTransport(_github), **kw),
+        lambda **kw: _REAL_ASYNC_CLIENT(transport=httpx.MockTransport(answer), **kw),
     )
-    calls: list[tuple[str, str | None]] = []
-
-    async def remember(login: str, email: str | None) -> None:
-        calls.append((login, email))
-
-    monkeypatch.setattr(auth, "_remember_user", remember)
     return calls
 
 
 @pytest.fixture
-def app(monkeypatch: pytest.MonkeyPatch, remembered: list) -> FastAPI:
+def app(monkeypatch: pytest.MonkeyPatch, github_calls: list) -> FastAPI:
     return _build_app(monkeypatch)
 
 
@@ -112,9 +121,7 @@ def _csrf(client: TestClient) -> dict:
 # ── Session cookie ───────────────────────────────────────────────────────────
 
 
-def test_callback_sets_httponly_cookie_and_keeps_token_out_of_url(
-    client: TestClient, remembered: list
-) -> None:
+def test_callback_sets_httponly_cookie_and_keeps_token_out_of_url(client: TestClient) -> None:
     resp = _login(client)
 
     assert resp.status_code in (302, 307)
@@ -128,7 +135,21 @@ def test_callback_sets_httponly_cookie_and_keeps_token_out_of_url(
     assert "secure" in flags
     assert "samesite=lax" in flags
     assert "path=/api" in flags
-    assert remembered == [("octo", "octo@example.org")]
+
+
+def test_sign_in_asks_and_keeps_only_the_login(client: TestClient, github_calls: list) -> None:
+    # The privacy notice (frontend/src/components/CookieBanner.vue): no e-mail
+    # address is asked for, and the session holds the login and its time only.
+    # Nothing is written to the database (auth.py has no database code at all).
+    resp = client.get("/api/auth/github", follow_redirects=False)
+    scope = parse_qs(urlsplit(resp.headers["location"]).query)["scope"][0]
+    assert scope == "read:org"
+
+    _callback(client, parse_qs(urlsplit(resp.headers["location"]).query)["state"][0])
+    assert github_calls == ["/login/oauth/access_token", "/user"]
+    assert set(_session_data(client)) == {"user"}
+    assert set(_session_data(client)["user"]) == {"sub", "iat"}
+    assert not hasattr(auth, "_remember_user")
 
 
 def test_cookie_signs_in_and_logout_signs_out(client: TestClient) -> None:
@@ -285,7 +306,7 @@ def test_no_credentialed_cors_for_wildcard_frontend(client: TestClient) -> None:
 
 
 def test_cors_only_for_the_configured_frontend(
-    monkeypatch: pytest.MonkeyPatch, remembered: list
+    monkeypatch: pytest.MonkeyPatch, github_calls: list
 ) -> None:
     client = _browser(_build_app(monkeypatch, frontend_url="https://app.example"))
     _login(client)
