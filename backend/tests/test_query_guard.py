@@ -232,7 +232,7 @@ def test_writes_locks_and_batches_are_refused(sql: str, words: str) -> None:
 
 # ── only the dataset catalogue ────────────────────────────────────────────────
 # The app's own tables share the database: users (with e-mail addresses),
-# query_log and user_queries (other users' questions). A question can steer the
+# query_log (other users' questions). A question can steer the
 # model into reading them, e.g. one character of an address at a time through
 # EXISTS.
 
@@ -243,7 +243,7 @@ def _app_tables() -> list[str]:
 
 
 def test_the_app_tables_are_known() -> None:
-    assert {"users", "query_log", "user_queries", "message_usage"} <= set(_app_tables())
+    assert {"users", "query_log", "message_usage"} <= set(_app_tables())
 
 
 @pytest.mark.parametrize("table", _app_tables())
