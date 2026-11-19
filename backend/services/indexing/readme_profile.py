@@ -313,12 +313,12 @@ def attach_codes(profile: Profile, lookup: Optional[CodeLookup]) -> None:
     """Map each verified studied condition to canonical diagnosis codes."""
     if lookup is None:
         return
+    # The lookup works in memory (scripts/extract_readme_profiles.py
+    # _code_lookup). A failure used to leave the fact without codes, and the
+    # dataset then counted as done; now it stops the run.
     for fact in profile.facts:
         if fact.kind == "condition" and fact.verified and fact.role in STUDIED_ROLES:
-            try:
-                fact.codes = list(lookup(fact.term))[:8]
-            except Exception:  # a failed lookup leaves the fact without codes
-                fact.codes = []
+            fact.codes = list(lookup(fact.term))[:8]
 
 
 def meta_record(profile: Profile, source: ProfileSource, model: str, extracted_at: str) -> Dict[str, Any]:
