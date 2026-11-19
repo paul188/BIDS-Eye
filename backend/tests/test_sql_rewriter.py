@@ -207,3 +207,20 @@ def test_the_unified_scanner_model_and_other_keys_are_left_alone() -> None:
     assert SERVICE._unify_scanner_model_key(once) == once
     assert once.count("ModelName") == 2
     assert "bo.other_entities ->> 'Manufacturer' ILIKE" in once
+
+
+def test_a_condition_is_anded_onto_every_branch_of_a_union() -> None:
+    service = SqlRewriteService()
+    sql = ("SELECT d.id FROM bids_datasets d WHERE d.name = 'a' OR d.name = 'b' "
+           "UNION SELECT d.id FROM bids_datasets d")
+    out = service._and_into_where(sql, "d.n_subjects >= 10")
+    assert out.count("d.n_subjects >= 10") == 2
+    # The old filter keeps its OR inside brackets.
+    assert "(d.name = 'a' OR d.name = 'b')" in out
+
+
+def test_a_condition_is_not_added_to_sql_that_cannot_be_parsed() -> None:
+    # The guard refuses such SQL; the old string edit put the condition in
+    # front of the filter without brackets.
+    sql = "SELECT d.id FROM bids_datasets d WHERE EXISTS (TABLE users)"
+    assert SqlRewriteService()._and_into_where(sql, "d.n_subjects >= 10") == sql

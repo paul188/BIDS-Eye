@@ -61,16 +61,17 @@ def _load_accessions() -> list[str]:
 
     yaml_path = Path(__file__).parent / "accessions.yaml"
     if yaml_path.exists():
+        import yaml
         try:
-            import yaml
             with open(yaml_path) as f:
                 data = yaml.safe_load(f)
-            if isinstance(data, list):
-                return [str(a) for a in data]
-            if isinstance(data, dict):
-                return [str(a) for a in data.get("accessions", [])]
-        except Exception as exc:
-            log.warning("Failed to load accessions.yaml: %s", exc)
+        except (OSError, yaml.YAMLError) as exc:
+            log.error("Failed to load accessions.yaml, nothing is crawled: %s", exc)
+            return []
+        if isinstance(data, list):
+            return [str(a) for a in data]
+        if isinstance(data, dict):
+            return [str(a) for a in data.get("accessions", [])]
 
     log.warning(
         "No accession IDs configured. Set OPENNEURO_ACCESSIONS or create accessions.yaml."

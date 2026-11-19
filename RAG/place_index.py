@@ -139,7 +139,10 @@ async def refresh_from_db(engine: Any) -> int:
     On any error (table missing, database down) the index stays as it was, so
     place names fall back to a text search.
     """
+    import asyncio
+
     from sqlalchemy import text
+    from sqlalchemy.exc import SQLAlchemyError
 
     try:
         async with engine.connect() as connection:
@@ -151,7 +154,9 @@ async def refresh_from_db(engine: Any) -> int:
                 "WHERE institution <> ''"
             ))
             places = [(row[0], row[1]) for row in rows]
-    except Exception as exc:
+    # As in institution_index.refresh_from_db; a missing table is a
+    # ProgrammingError (SQLAlchemyError).
+    except (SQLAlchemyError, OSError, asyncio.TimeoutError) as exc:
         log.warning("Could not load site places (%s) — place names are searched as text", exc)
         return 0
     index = set_places(places)

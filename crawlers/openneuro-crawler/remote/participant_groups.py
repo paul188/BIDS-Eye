@@ -43,10 +43,12 @@ into neurofibromatosis type 1 and "placebo" into a control code):
 from __future__ import annotations
 
 import asyncio
+import http.client
 import json
 import logging
 import re
 import sys
+import urllib.error
 import urllib.request
 from functools import lru_cache
 from pathlib import Path
@@ -225,15 +227,29 @@ def plan_dataset(rows: Sequence[Tuple[str, Any]], sidecar: Optional[dict],
 
 # ── Database ──────────────────────────────────────────────────────────────────
 
+class ParticipantSidecarError(Exception):
+    """participants.json exists or may exist, but could not be read."""
+
+
 def fetch_sidecar(accession: str) -> Optional[dict]:
-    """participants.json of an OpenNeuro dataset (latest snapshot), or None."""
+    """participants.json of an OpenNeuro dataset (latest snapshot), or None
+    when the dataset has none (404). Raises ParticipantSidecarError when it
+    could not be read: a dataset decoded without the sidecar's Levels would
+    get raw values as codes, and once it has any it is never looked at again."""
     if not re.fullmatch(r"ds\d{6}", accession or ""):
         return None
+    url = SIDECAR_URL.format(accession=accession)
     try:
-        with urllib.request.urlopen(SIDECAR_URL.format(accession=accession), timeout=20) as response:
+        with urllib.request.urlopen(url, timeout=20) as response:
             return json.loads(response.read().decode("utf-8", "replace"))
-    except Exception:
-        return None
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise ParticipantSidecarError(f"{url}: {exc}") from exc
+    # URLError and timeouts are OSErrors, IncompleteRead an HTTPException,
+    # JSONDecodeError a ValueError.
+    except (OSError, http.client.HTTPException, ValueError) as exc:
+        raise ParticipantSidecarError(f"{url}: {exc}") from exc
 
 
 _DATASETS = """
@@ -279,7 +295,13 @@ async def run(conn, accessions: Optional[Sequence[str]] = None, apply: bool = Fa
                 (await conn.execute(text(_ROWS), {"id": dataset_id})).all()]
         if not group_columns(rows):
             continue
-        sidecar = await asyncio.to_thread(fetch, accession)
+        try:
+            sidecar = await asyncio.to_thread(fetch, accession)
+        except ParticipantSidecarError as exc:
+            # Skipped, not decoded without it: the dataset still has no
+            # diagnosis, so the next run tries again.
+            log.warning("participant groups: %s skipped, sidecar not read (%s)", accession, exc)
+            continue
         plan = plan_dataset(rows, sidecar)
         if plan is None:
             continue

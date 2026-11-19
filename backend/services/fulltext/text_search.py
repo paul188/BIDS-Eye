@@ -102,7 +102,7 @@ from text_terms import (  # noqa: E402
 
 from word_forms import forms_for  # noqa: E402
 
-from services.catalogue import schema_capabilities  # noqa: E402
+from services.catalogue import off_loop_query, schema_capabilities  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -207,31 +207,14 @@ def _own_connection_lookup(queries: List[str],
     """
     if _on_event_loop() or not schema_capabilities.has_fts():
         return None
-    try:
-        from db.db import engine as app_engine
-        from sqlalchemy import text
-        from sqlalchemy.ext.asyncio import create_async_engine
-        from sqlalchemy.pool import NullPool
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Word frequency lookup unavailable (%s) — using the longest word", exc)
-        return None
+    from sqlalchemy import text
 
-    async def _count() -> List[int]:
-        # NullPool: the connection belongs to this short-lived event loop only.
-        engine = create_async_engine(app_engine.url, poolclass=NullPool)
-        try:
-            async with engine.connect() as connection:
-                sql, params = _count_statement(queries, guards)
-                rows = await connection.execute(text(sql), params)
-                return [int(row[0]) for row in rows]
-        finally:
-            await engine.dispose()
+    async def _count(connection: Any) -> List[int]:
+        sql, params = _count_statement(queries, guards)
+        rows = await connection.execute(text(sql), params)
+        return [int(row[0]) for row in rows]
 
-    try:
-        return asyncio.run(asyncio.wait_for(_count(), FREQUENCY_TIMEOUT_SECONDS))
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Word frequency lookup failed (%s) — using the longest word", exc)
-        return None
+    return off_loop_query.run_with_own_connection(_count, FREQUENCY_TIMEOUT_SECONDS)
 
 
 def make_frequency_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
@@ -257,13 +240,7 @@ def make_frequency_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
             pass
         else:
             return None  # called on an event loop: blocking here would deadlock
-        future = asyncio.run_coroutine_threadsafe(_count(queries, guards), loop)
-        try:
-            return future.result(timeout=timeout)
-        except Exception as exc:
-            future.cancel()
-            log.warning("Word frequency lookup failed (%s) — using the longest word", exc)
-            return None
+        return off_loop_query.run_on_loop(_count(queries, guards), loop, timeout)
 
     return lookup
 
@@ -377,7 +354,9 @@ def _lookup_counts(queries: List[str],
     """Datasets matching each query; with *guards*, also its unstemmed guard.
 
     The lookup gets the guards only when there is one, so a lookup that knows
-    nothing of them (tests, older callers) keeps working.
+    nothing of them (tests, older callers) keeps working. A lookup raises
+    CatalogueLookupError when the database cannot answer; the search then
+    goes on without the counts. Anything else it raises is a bug.
     """
     lookup = _own_connection_lookup if _frequency_lookup is _OWN_CONNECTION else _frequency_lookup
     if lookup is None:
@@ -387,8 +366,8 @@ def _lookup_counts(queries: List[str],
             counts = lookup(queries, list(guards))
         else:
             counts = lookup(queries)
-    except Exception as exc:  # a lookup must never break a search
-        log.warning("Word frequency lookup raised (%s) — using the longest word", exc)
+    except off_loop_query.CatalogueLookupError as exc:
+        log.warning("Word frequency lookup failed (%s) — using the longest word", exc)
         return None
     if not counts or len(counts) != len(queries):
         return None
@@ -683,10 +662,9 @@ def is_guarded_pair(node: Any) -> bool:
     """
     if type(node).__name__ != "Paren" or type(node.this).__name__ != "And":
         return False
-    try:
-        return _GUARD_RE.match(node.this.right.sql(dialect="postgres")) is not None
-    except Exception:  # an odd node is simply not a pair
-        return False
+    # An And always has a right side, and .sql() only warns about what the
+    # dialect cannot express (sqlglot's default unsupported_level).
+    return _GUARD_RE.match(node.this.right.sql(dialect="postgres")) is not None
 
 
 def expand_text_search(

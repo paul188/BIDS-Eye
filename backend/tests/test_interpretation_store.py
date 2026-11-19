@@ -10,7 +10,8 @@ _ROOT = _BACKEND.parent
 # Imported by the translation, but they only define the shape of rows and
 # responses (see interpretation_store._VERSION_FILES).
 _NOT_TRANSLATION = {_BACKEND / "models.py", _BACKEND / "schemas.py",
-                    _BACKEND / "exceptions" / "domain.py"}
+                    _BACKEND / "exceptions" / "domain.py",
+                    _BACKEND / "exceptions" / "expected.py"}
 
 
 def test_questions_that_differ_only_in_form_share_a_key():
@@ -141,3 +142,137 @@ def test_version_reads_every_preprocessing_module():
     and the version reads folders without recursing into them."""
     modules = {p for p in (_ROOT / "LLM_preprocessor").rglob("*.py") if "__pycache__" not in p.parts}
     assert modules and modules <= set(store.version_paths())
+
+
+class _Rows:
+    def __init__(self, row):
+        self.row = row
+
+    def scalar_one_or_none(self):
+        return self.row
+
+
+class _StoredRow:
+    key = "k"
+    review_verdict = None
+    payload = '{"sql": "SELECT 1"}'
+
+
+class _Session:
+    """Answers the lookup with *row*; the hit UPDATE raises *update_error*."""
+
+    def __init__(self, row=None, select_error=None, update_error=None):
+        self.row, self.select_error, self.update_error = row, select_error, update_error
+        self.rollbacks = self.commits = 0
+
+    async def execute(self, statement, params=None):
+        if str(statement).lstrip().upper().startswith("UPDATE"):
+            if self.update_error:
+                raise self.update_error
+            return None
+        if self.select_error:
+            raise self.select_error
+        return _Rows(self.row)
+
+    async def commit(self):
+        self.commits += 1
+
+    async def rollback(self):
+        self.rollbacks += 1
+
+
+def _get(session):
+    import asyncio
+    return asyncio.run(store.get(session, "fMRI datasets"))
+
+
+def test_a_failed_hit_count_keeps_the_stored_translation(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _Session(row=_StoredRow(), update_error=OperationalError("UPDATE", {}, Exception("lock timeout")))
+    assert _get(session) == {"sql": "SELECT 1"}
+    assert session.rollbacks == 1 and session.commits == 0
+
+
+def test_a_failed_lookup_translates_anew(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _Session(select_error=OperationalError("SELECT", {}, Exception("connection reset")))
+    assert _get(session) is None
+    assert session.rollbacks == 1
+
+
+def test_a_bug_in_the_lookup_is_raised(monkeypatch):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    with pytest.raises(TypeError):
+        _get(_Session(select_error=TypeError("a bug")))
+
+
+class _WriteSession:
+    """Records statements and ORM rows; *commit_error* is raised by commit()."""
+
+    def __init__(self, execute_error=None, commit_error=None):
+        self.execute_error, self.commit_error = execute_error, commit_error
+        self.statements, self.added = [], []
+        self.commits = self.rollbacks = 0
+
+    async def execute(self, statement, params=None):
+        if self.execute_error:
+            raise self.execute_error
+        from sqlalchemy.dialects import postgresql
+        self.statements.append(str(statement.compile(dialect=postgresql.dialect())))
+
+    def add(self, row):
+        self.added.append(row)
+
+    def begin_nested(self):
+        import contextlib
+        return contextlib.nullcontext()
+
+    async def commit(self):
+        if self.commit_error:
+            raise self.commit_error
+        self.commits += 1
+
+    async def rollback(self):
+        self.rollbacks += 1
+
+
+def _put(session, payload=None):
+    import asyncio
+    asyncio.run(store.put(session, "fMRI datasets", payload or {"sql": "SELECT 1"}, 25))
+
+
+def test_a_question_stored_twice_at_once_keeps_the_first(monkeypatch):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _WriteSession()
+    _put(session)
+    assert "ON CONFLICT (key) DO NOTHING" in session.statements[0]
+    assert session.commits == 1
+
+
+def test_a_failed_store_is_logged_and_the_search_answers(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    session = _WriteSession(execute_error=OperationalError("INSERT", {}, Exception("disk full")))
+    _put(session)
+    assert session.rollbacks == 1
+
+
+def test_a_payload_json_cannot_encode_is_a_bug(monkeypatch):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    with pytest.raises(TypeError):
+        _put(_WriteSession(), payload={"params": {"since": object()}})
+
+
+def test_a_failed_query_log_commit_rolls_back_and_the_search_answers():
+    import asyncio
+    from sqlalchemy.exc import OperationalError
+
+    session = _WriteSession(commit_error=OperationalError("COMMIT", {}, Exception("connection reset")))
+    asyncio.run(store.log_query(session, "q", {"sql": "SELECT 1"}, 3, from_cache=False,
+                                relaxed=False, self_corrected=False, fallback=False))
+    assert len(session.added) == 1 and session.rollbacks == 1

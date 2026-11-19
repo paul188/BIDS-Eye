@@ -15,7 +15,7 @@ Next step (manual):
     yaml_to_llamaindex.py loads that file at startup to build the measures_db
     reverse index (cognitive construct → task codes).
 
-Requires: requests, rapidfuzz  (pip install requests rapidfuzz)
+Requires: rapidfuzz  (pip install rapidfuzz)
 """
 import argparse
 import json
@@ -28,53 +28,7 @@ from typing import Dict, Optional
 import yaml
 from rapidfuzz import fuzz, process as rfprocess
 
-try:
-    import requests as _requests
-
-    def _get_json(url: str, retries: int = 5) -> Optional[dict | list]:
-        for attempt in range(retries):
-            try:
-                r = _requests.get(url, timeout=30)
-                if r.status_code == 429:
-                    wait = int(r.headers.get("Retry-After", 2 ** (attempt + 1)))
-                    print(f"  [429] rate limited — waiting {wait}s …", file=sys.stderr)
-                    time.sleep(wait)
-                    continue
-                r.raise_for_status()
-                return r.json()
-            except Exception as exc:
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-        return None
-
-except ImportError:
-    import json as _json
-    import urllib.request
-    import urllib.error
-
-    def _get_json(url: str, retries: int = 5) -> Optional[dict | list]:  # type: ignore[misc]
-        for attempt in range(retries):
-            try:
-                with urllib.request.urlopen(url, timeout=30) as resp:
-                    return _json.loads(resp.read())
-            except urllib.error.HTTPError as exc:
-                if exc.code == 429:
-                    wait = int(exc.headers.get("Retry-After", 2 ** (attempt + 1)))
-                    print(f"  [429] rate limited — waiting {wait}s …", file=sys.stderr)
-                    time.sleep(wait)
-                    continue
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-            except Exception as exc:
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-        return None
+from cognitive_atlas_api import CognitiveAtlasFetchError, get_json as _get_json
 
 
 _CA_BASE = "https://www.cognitiveatlas.org"
@@ -142,13 +96,17 @@ def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
 
     # ── Fetch CA task list ───────────────────────────────────────────────────
     print("Fetching CA task list …")
-    ca_tasks_raw = _get_json(_TASK_LIST)
+    try:
+        ca_tasks_raw = _get_json(_TASK_LIST)
+    except CognitiveAtlasFetchError as exc:
+        sys.exit(f"ERROR: could not fetch CA task list: {exc}")
     if not ca_tasks_raw or not isinstance(ca_tasks_raw, list):
         print("ERROR: could not fetch CA task list", file=sys.stderr)
         sys.exit(1)
     print(f"  {len(ca_tasks_raw)} CA tasks")
 
     results: Dict[str, dict] = {}
+    failed: list[str] = []
 
     print("Matching tasks and fetching concept links …")
     for i, ca_task in enumerate(ca_tasks_raw):
@@ -185,7 +143,12 @@ def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
             continue
 
         # Fetch full task JSON for concept links (via contrasts)
-        task_full = _get_json(_TASK_JSON.format(id=ca_id))
+        try:
+            task_full = _get_json(_TASK_JSON.format(id=ca_id))
+        except CognitiveAtlasFetchError as exc:
+            print(f"  [WARN] {exc}", file=sys.stderr)
+            failed.append(ca_id)
+            continue
         time.sleep(0.05)
 
         measures_set: set[str] = set()
@@ -213,6 +176,12 @@ def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
         prev = results.get(best_code)
         if prev is None or prev["confidence"] < entry["confidence"]:
             results[best_code] = entry
+
+    # A task whose JSON could not be read would be written without its
+    # construct links, into a file that replaces the old one in full.
+    if failed:
+        sys.exit(f"ERROR: {len(failed)} CA task(s) could not be read ({', '.join(failed[:10])}"
+                 f"{' …' if len(failed) > 10 else ''}); {out_path} is unchanged. Run again.")
 
     # ── Write output ─────────────────────────────────────────────────────────
     out_file = Path(out_path)

@@ -14,6 +14,7 @@ import re
 from typing import Collection, Optional, Sequence
 
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
@@ -173,23 +174,23 @@ async def attach_snippets(
         params = {"ids": ids, "chars": _SNIPPET_PLAIN_CHARS * 4}
     try:
         async with session.begin_nested():
-            rows = await session.execute(text(sql), params)
-            found = {}
-            for row in rows:
-                raw = row[1]
-                if highlight and raw:
-                    by_form = row[4] if exact and len(row) > 4 else None
-                    if by_form and SNIPPET_START in by_form:
-                        raw = by_form   # every mark there is a word form asked for
-                    else:
-                        term_lexemes = {w: set(lexemes.split())
-                                        for w, lexemes in zip(words, row[3])}
-                        raw = keep_justified_marks(raw, row[2], terms or (), term_lexemes, exact)
-                    raw = mark_pattern(raw, strength_pattern)
-                found[row[0]] = raw
-    except Exception:
+            rows = list(await session.execute(text(sql), params))
+    except SQLAlchemyError:
         log.warning("README excerpts unavailable for this page", exc_info=True)
         return
+    found = {}
+    for row in rows:
+        raw = row[1]
+        if highlight and raw:
+            by_form = row[4] if exact and len(row) > 4 else None
+            if by_form and SNIPPET_START in by_form:
+                raw = by_form   # every mark there is a word form asked for
+            else:
+                term_lexemes = {w: set(lexemes.split())
+                                for w, lexemes in zip(words, row[3])}
+                raw = keep_justified_marks(raw, row[2], terms or (), term_lexemes, exact)
+            raw = mark_pattern(raw, strength_pattern)
+        found[row[0]] = raw
     for dataset in datasets:
         raw = found.get(dataset.id)
         if not raw:

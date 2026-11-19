@@ -80,6 +80,10 @@ MODEL_CASCADE = [
 
 _MODEL_IDS = [model_id for model_id, *_ in MODEL_CASCADE]
 
+
+class GeminiCascadeError(Exception):
+    """No model of MODEL_CASCADE gave an answer."""
+
 def _gemini_client():
     from google import genai
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -89,9 +93,16 @@ def _gemini_client():
 
 
 def _call_gemini(client, _model: str, prompt: str) -> str:
+    """The first answer of MODEL_CASCADE. A model is retried on 429 and 503
+    and skipped on any other API error or a broken connection; raises
+    GeminiCascadeError when none answered. Anything else (a bug, a config the
+    SDK rejects) is raised."""
+    import httpx
+    from google.genai import errors as genai_errors
     from google.genai import types
     model_cascade = list(_MODEL_IDS)
 
+    last: Exception | None = None
     for mdl in model_cascade:
         for attempt in range(5):
             try:
@@ -105,18 +116,22 @@ def _call_gemini(client, _model: str, prompt: str) -> str:
                 )
                 if resp.text:
                     return resp.text
-            except Exception as exc:
-                err = str(exc)
-                if "404" in err or "NOT_FOUND" in err:
+            except genai_errors.APIError as exc:
+                last = exc
+                if exc.code == 404:  # model not available
                     break
-                if "429" in err or "503" in err or "RESOURCE_EXHAUSTED" in err or "UNAVAILABLE" in err:
+                if exc.code in (429, 503):  # RESOURCE_EXHAUSTED, UNAVAILABLE
                     wait = 30.0 * (2 ** attempt)
                     print(f"    rate-limited, waiting {wait:.0f}s …")
                     time.sleep(wait)
                 else:
-                    print(f"    unexpected error: {err[:100]}")
+                    print(f"    {mdl}: API error {exc.code}: {str(exc)[:100]}")
                     break
-    raise RuntimeError("Gemini call failed for all models in cascade.")
+            except httpx.TransportError as exc:  # timeout, connection
+                last = exc
+                print(f"    {mdl}: {type(exc).__name__}: {str(exc)[:100]}")
+                break
+    raise GeminiCascadeError(f"no model of the cascade answered (last error: {last})") from last
 
 
 # ── YAML helpers ───────────────────────────────────────────────────────────────
@@ -594,7 +609,9 @@ def generate_decisions(
                 batch_decisions = json.loads(raw_resp)
                 if not isinstance(batch_decisions, list):
                     raise ValueError("expected JSON array")
-            except Exception as exc:
+            # ValueError: an answer that is not a JSON array (JSONDecodeError
+            # is one); a bug in the prompt or the parsing is raised.
+            except (GeminiCascadeError, ValueError) as exc:
                 print(f"FAILED ({exc})")
                 print("      Skipping batch — re-run with --resume to retry.")
                 continue

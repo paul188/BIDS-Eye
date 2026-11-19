@@ -3,8 +3,10 @@ exceptions/domain.py
 --------------------
 Every error the API answers on purpose.
 
-Code that can fail in an expected way raises a subclass of DomainError,
-defined next to that code and without knowing about FastAPI:
+An expected failure the client should hear about is a subclass of
+DomainError, itself an ExpectedError (exceptions/expected.py; an internal
+expected failure derives from ExpectedError directly). It is defined next to
+the code that raises it, without knowing about FastAPI:
 
     services/query_guard.py   SearchBusyError           503
     services/search.py        SearchExpiredError        410
@@ -33,8 +35,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from exceptions.expected import ExpectedError
 
-class DomainError(Exception):
+
+class DomainError(ExpectedError):
     """An expected failure with a fixed answer for the client.
 
     A subclass gives its answer on the class line (``status_code=...,

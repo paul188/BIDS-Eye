@@ -30,12 +30,14 @@ After a migration or backfill, restart the backend to pick up the new state.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 import re
 from typing import Any, Collection, FrozenSet, List
 
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from constants import OPTIONAL_DATASET_COLUMNS
 
@@ -118,34 +120,45 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
 
     A summary that misses a dataset would hide it from the search, so the
     facets table counts only when no dataset with files lacks rows in it.
+
+    The reads run in a savepoint: *connection* goes on to the other checks
+    of detect_available_columns, and a failed statement outside one would
+    abort it and make them fail too.
     """
     global _has_facets, _has_subject_counts
     _has_facets = _has_subject_counts = False
     try:
-        if SUBJECT_COUNT_COLUMN in present:
-            filled = (await connection.execute(text(
-                f"SELECT count({SUBJECT_COUNT_COLUMN}) FROM bids_datasets"))).scalar()
-            _has_subject_counts = bool(filled)
-        exists = (await connection.execute(text(
-            f"SELECT to_regclass('{FACETS_TABLE}') IS NOT NULL"))).scalar()
-        if exists:
-            uncovered = (await connection.execute(text(
-                "SELECT count(*) FROM bids_datasets d "
-                f"WHERE NOT EXISTS (SELECT 1 FROM {FACETS_TABLE} f WHERE f.dataset_id = d.id) "
-                "AND EXISTS (SELECT 1 FROM bids_objects o WHERE o.dataset_id = d.id)"))).scalar()
-            _has_facets = not uncovered
-            if uncovered:
-                log.warning("%s misses %d datasets that have files: not used. Run "
-                            "remote/dataset_facets.py --refresh-all and restart.", FACETS_TABLE, uncovered)
-        # The values generated SQL is checked against (services/catalogue/catalogue_values.py).
-        from services.catalogue import catalogue_values
-        if _has_facets:
-            await catalogue_values.load(connection)
-        else:
-            catalogue_values.set_known({})
-    except Exception as exc:  # a database without these: search as before
+        async with connection.begin_nested():
+            if SUBJECT_COUNT_COLUMN in present:
+                filled = (await connection.execute(text(
+                    f"SELECT count({SUBJECT_COUNT_COLUMN}) FROM bids_datasets"))).scalar()
+                _has_subject_counts = bool(filled)
+            exists = (await connection.execute(text(
+                f"SELECT to_regclass('{FACETS_TABLE}') IS NOT NULL"))).scalar()
+            if exists:
+                uncovered = (await connection.execute(text(
+                    "SELECT count(*) FROM bids_datasets d "
+                    f"WHERE NOT EXISTS (SELECT 1 FROM {FACETS_TABLE} f WHERE f.dataset_id = d.id) "
+                    "AND EXISTS (SELECT 1 FROM bids_objects o WHERE o.dataset_id = d.id)"))).scalar()
+                _has_facets = not uncovered
+                if uncovered:
+                    log.warning("%s misses %d datasets that have files: not used. Run "
+                                "remote/dataset_facets.py --refresh-all and restart.", FACETS_TABLE, uncovered)
+    except SQLAlchemyError as exc:  # a database without these: search as before
         log.info("Dataset summaries not usable: %s", exc)
         _has_facets = _has_subject_counts = False
+    # The values generated SQL is checked against (services/catalogue/catalogue_values.py).
+    from services.catalogue import catalogue_values
+    if not _has_facets:
+        catalogue_values.set_known({})
+    else:
+        try:
+            await catalogue_values.load(connection)
+        except catalogue_values.CatalogueLoadError as exc:
+            # The facets still serve the search; only the value check is off
+            # until refresh_if_stale reads the values.
+            log.warning("%s; catalogue value check off for now", exc)
+            catalogue_values.set_known({})
     log.info("Dataset summaries: facets table %s, stored subject count %s",
              "used" if _has_facets else "not used", "used" if _has_subject_counts else "not used")
 # The two vectors without stemming, and the catalogue's word forms; see
@@ -242,12 +255,11 @@ def _non_empty_expression(column: str, sql_type: str) -> str:
 
 
 async def _table_exists(connection: Any, table: str) -> bool:
-    try:
-        result = await connection.execute(
-            text("SELECT to_regclass(:table) IS NOT NULL"), {"table": table})
-        return bool(result.scalar_one())
-    except Exception:  # an odd connection must not hide the columns found
-        return False
+    # to_regclass answers NULL for a missing table; it fails only when the
+    # connection does, and then so does every other check.
+    result = await connection.execute(
+        text("SELECT to_regclass(:table) IS NOT NULL"), {"table": table})
+    return bool(result.scalar_one())
 
 
 async def detect_available_columns(connection: Any) -> FrozenSet[str]:
@@ -316,14 +328,19 @@ async def detect_available_columns(connection: Any) -> FrozenSet[str]:
 
 
 async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
-    """Detect and store the state. On any error, assume no optional column."""
+    """Detect and store the state. When the database cannot be read, assume
+    no optional column, no full-text column and no summary table. A bug in
+    the detection is raised: startup fails instead of running degraded."""
     global _available, _present_display, _has_fts, _has_paper_fts
     global _has_exact_fts, _has_exact_paper_fts, _has_word_forms
     try:
         async with engine.connect() as connection:
             _available = await detect_available_columns(connection)
-    except Exception as exc:
+    except (SQLAlchemyError, OSError, asyncio.TimeoutError) as exc:
         log.warning("Could not inspect optional dataset columns (%s) — hiding all of them", exc)
+        from services.catalogue import catalogue_values
+        set_summaries(False, False)
+        catalogue_values.set_known({})
         _available = frozenset()
         _present_display = frozenset()
         _has_fts = False

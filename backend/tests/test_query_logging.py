@@ -39,7 +39,8 @@ class _Session:
 
     def add(self, row) -> None:
         if self.fail_insert:
-            raise RuntimeError("foreign key violation: login not in users")
+            from sqlalchemy.exc import IntegrityError
+            raise IntegrityError("INSERT", {}, Exception("foreign key violation: login not in users"))
         self.pending.append(row)
 
     def begin_nested(self) -> _Savepoint:
@@ -47,6 +48,9 @@ class _Session:
 
     async def commit(self) -> None:
         self.committed.extend(self.released)
+        self.released.clear()
+
+    async def rollback(self) -> None:
         self.released.clear()
 
 

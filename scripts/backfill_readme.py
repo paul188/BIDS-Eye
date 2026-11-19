@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "crawlers" / "openn
 import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
+from botocore.exceptions import BotoCoreError, ClientError
 from sqlalchemy import select, update
 
 from db.db import async_session_maker
@@ -106,17 +107,26 @@ def _fetch_s3_readme(accession_id: str) -> bytes | None:
                 if filename in _README_NAMES:
                     resp = client.get_object(Bucket=OPENNEURO_BUCKET, Key=key)
                     raw = resp["Body"].read()
-                    # Cache to mirror so future re-runs don't re-fetch
-                    dest = _CACHE_DIR / accession_id / filename
-                    dest.parent.mkdir(parents=True, exist_ok=True)
-                    dest.write_bytes(raw)
+                    _cache(accession_id, filename, raw)
                     return raw
-    except Exception as exc:
-        if "AccessDenied" in str(exc):
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") == "AccessDenied":
             log.debug("  %s: access denied (restricted dataset)", accession_id)
         else:
             log.warning("  %s: S3 fetch failed — %s", accession_id, exc)
+    except BotoCoreError as exc:  # timeouts, broken connections and streams
+        log.warning("  %s: S3 fetch failed — %s", accession_id, exc)
     return None
+
+
+def _cache(accession_id: str, filename: str, raw: bytes) -> None:
+    """Keep a fetched README in the mirror so future re-runs don't re-fetch it."""
+    dest = _CACHE_DIR / accession_id / filename
+    try:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(raw)
+    except OSError as exc:  # the README is still used, only not cached
+        log.warning("  %s: README not cached in %s — %s", accession_id, dest.parent, exc)
 
 
 def _process_readme(raw: bytes) -> tuple[str | None, list[str]]:

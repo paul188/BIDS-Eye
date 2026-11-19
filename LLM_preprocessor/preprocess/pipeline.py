@@ -22,11 +22,11 @@ def _decide_word_forms(evidence: Dict[str, Any],
     """The forms each colliding word of the question must match in ({} for none)."""
     try:
         import word_forms
-        decided = {word: list(forms)
-                   for word, forms in word_forms.decide(evidence, word_choices).items()}
-    except Exception as exc:
+    except ImportError as exc:
         log.warning("Word forms not decided (%s) — searching by stem", exc)
         return {}
+    decided = {word: list(forms)
+               for word, forms in word_forms.decide(evidence, word_choices).items()}
     if decided:
         log.info("Exact word forms: %s", decided)
     return decided
@@ -45,14 +45,15 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
     try:
         import word_forms
         word_form_store = _catalogue.word_form_store()
-        searched = list(dict.fromkeys(
-            word for terms in _TEXT_MATCH_WORDS_RE.findall(augmented_question)
-            for word in re.findall(r"[a-z]+", terms.lower())))
-        open_words = [w for w in searched if w not in decided and not word_forms.reviewed(w)[0]]
-        undecided = [e for e in word_form_store.lookup(open_words).values()
-                     if word_forms.is_collision(e)]
-    except Exception:
+    except ImportError:  # outside the backend
         return
+    searched = list(dict.fromkeys(
+        word for terms in _TEXT_MATCH_WORDS_RE.findall(augmented_question)
+        for word in re.findall(r"[a-z]+", terms.lower())))
+    open_words = [w for w in searched if w not in decided and not word_forms.reviewed(w)[0]]
+    # {} when the catalogue cannot answer (lookup catches that).
+    undecided = [e for e in word_form_store.lookup(open_words).values()
+                 if word_forms.is_collision(e)]
     for item in undecided:
         log.info("Searched by stem although it collides: %s (%d datasets; own forms %d; %s)",
                  item.word, item.stem_docs, word_forms.family_docs(item),

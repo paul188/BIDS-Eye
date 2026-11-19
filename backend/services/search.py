@@ -16,6 +16,7 @@ a cached query without another language-model call.
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,6 +31,8 @@ from services import search_runner
 from services.stores.query_cache import CachedQuery, query_cache
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
 from services.translate.text_to_sql import text_to_sql
+
+log = logging.getLogger(__name__)
 
 
 def _found_message(total: int) -> str:
@@ -168,15 +171,22 @@ async def _record_user_query(session: AsyncSession, user: Optional[str], questio
     if user is None:
         return
     from models import UserQuery
+    from sqlalchemy.exc import IntegrityError, SQLAlchemyError
     try:
         async with session.begin_nested():
             session.add(UserQuery(github_login=user, question=question))
-        # The savepoint only protects the response from a failed insert. Without
-        # this commit the row is rolled back when the session closes (get_db
-        # never commits), which left user_queries empty from June 2026 on.
+    except IntegrityError:
+        # A stale or legacy JWT whose login is not in users (the foreign key).
+        log.info("Search of %s not recorded: login not in users", user)
+        return
+    # The savepoint only protects the response from a failed insert. Without
+    # this commit the row is rolled back when the session closes (get_db
+    # never commits), which left user_queries empty from June 2026 on.
+    try:
         await session.commit()
-    except Exception:
-        pass  # stale/legacy JWT sub not in users table — don't crash the response
+    except SQLAlchemyError:
+        log.warning("Search of %s not recorded: commit failed", user, exc_info=True)
+        await session.rollback()
 
 
 class SearchExpiredError(

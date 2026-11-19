@@ -1,11 +1,15 @@
 import hashlib
 import json
+import logging
 import re as _re
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
+
+log = logging.getLogger(__name__)
 
 try:
     import numpy as _np  # noqa: F401  (availability probe)
@@ -336,6 +340,11 @@ def get_group_summary(group_db: Dict[str, Dict[str, List[str]]]) -> Dict[str, Li
 EmbeddingIndex = Dict[str, Tuple[List[str], Any, List[List[str]]]]
 
 
+class EmbeddingIndexError(Exception):
+    """The embedding index could not be built: the model could not be loaded
+    (download, files), value_mappings.yaml not read, or encoding failed."""
+
+
 def build_embedding_index(
     model_name: str,
     yaml_path: str,
@@ -347,8 +356,22 @@ def build_embedding_index(
     Cache is keyed on YAML content hash + model name — auto-invalidates when
     value_mappings.yaml changes.
 
-    Returns None if sentence_transformers or numpy are unavailable.
+    Returns None if sentence_transformers or numpy are unavailable. Raises
+    EmbeddingIndexError when the index cannot be built.
     """
+    try:
+        return _build_embedding_index(model_name, yaml_path, cache_dir)
+    # OSError: the model download (requests and huggingface_hub errors are
+    # OSErrors) or a file; RuntimeError: torch while encoding.
+    except (OSError, yaml.YAMLError, RuntimeError) as exc:
+        raise EmbeddingIndexError(f"embedding index for {model_name}: {exc}") from exc
+
+
+def _build_embedding_index(
+    model_name: str,
+    yaml_path: str,
+    cache_dir: Optional[str],
+) -> Optional[EmbeddingIndex]:
     if not _NUMPY_OK:
         return None
     try:
@@ -376,8 +399,11 @@ def build_embedding_index(
                     index[cat] = (cat_meta["terms"], npz[cat], cat_meta["codes"])
             if index:
                 return index
-        except Exception:
-            pass
+        # A cache written by another version or cut short: rebuild it.
+        # np.load raises EOFError, ValueError or BadZipFile on a broken file;
+        # KeyError is a meta file of another shape.
+        except (OSError, EOFError, ValueError, KeyError, zipfile.BadZipFile) as exc:
+            log.info("Embedding cache %s not usable (%s); rebuilding", embs_path.name, exc)
 
     # ── Build per-category (term, code_list) pairs ────────────────────────────
     # Re-parse so we have access to display_db and group_display_db
@@ -422,8 +448,8 @@ def build_embedding_index(
         with open(meta_path, "w", encoding="utf-8") as fh:
             json.dump(meta_out, fh)
         np.savez(str(embs_path), **embs_out)
-    except Exception:
-        pass
+    except OSError as exc:  # the next start encodes again
+        log.warning("Embedding cache not written to %s (%s)", cache_base, exc)
 
     return index
 

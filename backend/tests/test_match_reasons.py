@@ -58,8 +58,8 @@ def test_infant_age_group_has_four_venues():
     assert participants.participant_rows is not None and participants.age_column is not None
     # Either age bound alone is read as the whole range.
     assert age.branches[1][1].columns[:2] == ("age_min", "age_max")
-    # The species guard reads one column only: nothing to tell apart.
-    assert "Species" not in plans
+    # The species guard: a human label, or no label and the default.
+    assert _kinds(plans["Species"]) == [mr.FIELD, mr.ASSUMED]
 
 
 def test_diagnosis_reads_the_participant_list_and_the_text():
@@ -140,7 +140,7 @@ def test_unreadable_sql_has_no_plan():
 
 
 def test_built_query_is_valid_sql_with_counts_and_ages():
-    alias, plans = mr.plan(_sql(age_condition(["infants"]), DIAGNOSIS))
+    alias, plans = mr.plan(_sql(age_condition(["infants"], has_species_column=False), DIAGNOSIS))
     sql = mr.build_sql(alias, plans)
     tree = sqlglot.parse_one(sql.replace(":ids", "'{}'"), read="postgres")
     names = {e.alias_or_name for e in tree.expressions}
@@ -165,7 +165,21 @@ def test_age_span(low, high, expected):
 
 
 def _age_plans():
-    return mr.plan(_sql(age_condition(["infants"]), DIAGNOSIS, species_condition(["mouse"])))[1]
+    # Without the species guard, so the chips are age (0), diagnosis (1), species (2).
+    return mr.plan(_sql(age_condition(["infants"], has_species_column=False), DIAGNOSIS,
+                        species_condition(["mouse"])))[1]
+
+
+def test_reason_for_the_species_default():
+    plans = mr.plan(_sql(species_condition(["human"])))[1]
+    assert [p.field for p in plans] == ["Species"]
+    assert _kinds(plans[0]) == [mr.FIELD, mr.ASSUMED]
+    assert mr.reasons_for(plans, {"h0_0": True, "f_species": "Human"}, None) == [
+        "Species: species label “Human”"]
+    assert mr.reasons_for(plans, {"h0_1": True, "f_species": None}, None) == [
+        "Species: no species label, assumed human"]
+    # The negated animal words only say when the default applies: no tsvector value.
+    assert "f_search_tsv" not in mr.build_sql("d", plans)
 
 
 def test_reason_for_recorded_ages_and_coded_diagnosis():
@@ -269,6 +283,7 @@ def test_attach_skips_the_query_when_nothing_needs_explaining():
 
 def test_a_failing_query_leaves_the_page_without_reasons():
     dataset = _dataset()
-    session = _Session(error=RuntimeError("statement timeout"))
+    from sqlalchemy.exc import OperationalError
+    session = _Session(error=OperationalError("SELECT", {}, Exception("canceling statement due to statement timeout")))
     asyncio.run(mr.attach_match_reasons(session, [dataset], _sql(DIAGNOSIS)))
     assert dataset.match_reasons == []

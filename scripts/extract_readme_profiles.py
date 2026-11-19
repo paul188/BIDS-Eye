@@ -42,6 +42,7 @@ for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
+import yaml  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
@@ -106,14 +107,17 @@ async def _check_schema(conn) -> List[str]:
     return missing
 
 
+# What loading the resolver raises when its files are missing or broken:
+# importing the retriever reads RAG/value_mappings.yaml, and it reads
+# name_index.json (FileNotFoundError is an OSError, JSONDecodeError a ValueError).
+_RESOLVER_ERRORS = (ImportError, OSError, ValueError, yaml.YAMLError)
+
+
 def _code_lookup():
-    """Diagnosis resolver from the search pipeline; None when it cannot load."""
-    try:
-        from retriever import MetadataRetriever
-        retriever = MetadataRetriever(str(_REPO / "RAG" / "name_index.json"))
-    except Exception as exc:  # noqa: BLE001
-        log.warning("Diagnosis resolver unavailable (%s) — facts are stored without codes", exc)
-        return None
+    """Diagnosis resolver from the search pipeline. Raises one of
+    _RESOLVER_ERRORS when it cannot load."""
+    from retriever import MetadataRetriever
+    retriever = MetadataRetriever(str(_REPO / "RAG" / "name_index.json"))
 
     def lookup(term: str):
         scored = retriever.retrieve_for_field_multi_scored("diagnosis", [term])
@@ -139,23 +143,32 @@ def _ask_model(source: rp.ProfileSource, model: str, thinking: Optional[str]) ->
     )
 
 
+class ProfileAnswerError(Exception):
+    """The model's answer could not be used, twice."""
+
+
 def _extract(source: rp.ProfileSource, model: str, thinking: Optional[str]) -> rp.Profile:
     """Ask the model, retrying once when the answer is not usable JSON."""
-    last_error: Optional[Exception] = None
+    last_error: Optional[ValueError] = None
     for _attempt in range(2):
         raw = _ask_model(source, model, thinking)
         try:
             return rp.parse_response(raw, source)
         except ValueError as exc:
             last_error = exc
-    raise RuntimeError(f"unusable answer twice: {last_error}")
+    raise ProfileAnswerError(f"unusable answer twice: {last_error}") from last_error
 
 
 def _extract_safe(source: rp.ProfileSource, model: str, thinking: Optional[str]):
-    """(source, profile, error) — runs in a worker thread, never raises."""
+    """(source, profile, error) — runs in a worker thread. A failed model call
+    or an unusable answer is returned as the error, counted and skipped; a bug
+    (in build_prompt, say) is raised and stops the run, instead of reading
+    as "model call failed" for every dataset."""
+    from llm_client import LLMAllFailedError
+
     try:
         return source, _extract(source, model, thinking), None
-    except Exception as exc:  # noqa: BLE001
+    except (LLMAllFailedError, ProfileAnswerError) as exc:
         return source, None, exc
 
 
@@ -217,7 +230,15 @@ async def main() -> int:
         if not todo:
             return 0
 
-        lookup = None if args.no_codes else _code_lookup()
+        # Facts stored without codes count as done (sources_needing_work
+        # compares only the input), so a broken resolver must stop the run
+        # instead of leaving every dataset without codes until --force.
+        try:
+            lookup = None if args.no_codes else _code_lookup()
+        except _RESOLVER_ERRORS as exc:
+            log.error("Diagnosis resolver unavailable (%s). Fix it, or run with --no-codes "
+                      "to store the facts without codes.", exc)
+            return 2
         stats: Counter = Counter()
         roles: Counter = Counter()
         loop = asyncio.get_running_loop()

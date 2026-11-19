@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from sqlalchemy import select, update, func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
@@ -49,7 +50,8 @@ _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # it reaches; test_interpretation_store.py checks this list against the
 # imports), and the few-shot examples. models.py and schemas.py are left out:
 # they define the shape of rows and responses, not the translation; so is
-# exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers.
+# exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers,
+# and exceptions/expected.py, the base class of the errors.
 _VERSION_FILES = (
     _BACKEND / "constants.py",
     _BACKEND / "few_shot_examples.json",
@@ -61,8 +63,10 @@ _VERSION_FILES = (
     _BACKEND / "services" / "translate" / "sql_rewriter.py",
     _BACKEND / "services" / "fulltext" / "text_search.py",
     _BACKEND / "services" / "translate" / "text_to_sql.py",
+    _BACKEND / "services" / "translate" / "value_check.py",
     _BACKEND / "services" / "fulltext" / "uncertain_tier.py",
     _BACKEND / "services" / "catalogue" / "word_form_store.py",
+    _BACKEND / "services" / "catalogue" / "off_loop_query.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
                 "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE",
@@ -132,7 +136,11 @@ def _key(question: str) -> str:
 
 
 async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
-    """The stored translation of *question* for the running code version, or None."""
+    """The stored translation of *question* for the running code version, or None.
+
+    A database error reading it gives None (the question is translated anew);
+    one counting the hit only costs the count: the translation is still
+    returned, since translating anew is what the store exists to avoid."""
     if not enabled():
         return None
     from models import QueryInterpretation
@@ -140,55 +148,76 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
         row = (await session.execute(
             select(QueryInterpretation).where(QueryInterpretation.key == _key(question))
         )).scalar_one_or_none()
-        if row is None or row.review_verdict == "wrong":
-            return None
+    except SQLAlchemyError:
+        log.warning("interpretation cache: lookup failed", exc_info=True)
+        await session.rollback()
+        return None
+    if row is None or row.review_verdict == "wrong":
+        return None
+    key = row.key
+    try:
+        payload = json.loads(row.payload)
+    except ValueError:  # JSONDecodeError; written by put(), so never expected
+        log.error("interpretation cache: stored payload of %s is not JSON", key)
+        return None
+    try:
         await session.execute(
-            update(QueryInterpretation).where(QueryInterpretation.key == row.key)
+            update(QueryInterpretation).where(QueryInterpretation.key == key)
             .values(hits=QueryInterpretation.hits + 1, last_used_at=func.now())
         )
         await session.commit()
-        return json.loads(row.payload)
-    except Exception:
-        log.exception("interpretation cache: lookup failed")
+    except SQLAlchemyError:
+        log.warning("interpretation cache: hit of %s not counted", key, exc_info=True)
         await session.rollback()
-        return None
+    return payload
 
 
 async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any], total: int,
                     *, from_cache: bool, relaxed: bool, self_corrected: bool, fallback: bool) -> None:
-    """Write one row to query_log for a search that was run. Always on; never raises."""
+    """Write one row to query_log for a search that was run. Always on.
+
+    A database error is logged and the search answers anyway; anything else
+    (a payload json cannot encode) is a bug and is raised.
+    """
     from models import QueryLog
+    row = QueryLog(
+        question=question, pipeline_version=pipeline_version(),
+        payload=json.dumps(payload, ensure_ascii=False), total=total,
+        from_cache=from_cache, relaxed=relaxed, self_corrected=self_corrected, fallback=fallback,
+    )
     try:
         # A savepoint keeps a failed insert from breaking the response; the
         # commit makes the row last (get_db never commits).
         async with session.begin_nested():
-            session.add(QueryLog(
-                question=question, pipeline_version=pipeline_version(),
-                payload=json.dumps(payload, ensure_ascii=False), total=total,
-                from_cache=from_cache, relaxed=relaxed, self_corrected=self_corrected, fallback=fallback,
-            ))
+            session.add(row)
         await session.commit()
-    except Exception:
+    except SQLAlchemyError:
         log.warning("query log: insert failed", exc_info=True)
+        await session.rollback()  # a failed commit leaves the session unusable until then
 
 
 async def put(session: AsyncSession, question: str, payload: Dict[str, Any], total: int) -> None:
-    """Store a translation that found something. Never raises."""
+    """Store a translation that found something.
+
+    The first translation of a question stays: when two workers store the
+    same question at once, the second insert does nothing (ON CONFLICT), where
+    it used to fail on the primary key and log a traceback. A database error
+    is logged and the search answers anyway; anything else is a bug and is
+    raised.
+    """
     if not enabled() or total <= 0:
         return
+    from sqlalchemy.dialects.postgresql import insert
+
     from models import QueryInterpretation
+    statement = insert(QueryInterpretation).values(
+        key=_key(question), pipeline_version=pipeline_version(), question=question,
+        question_normalized=normalize(question),
+        payload=json.dumps(payload, ensure_ascii=False), total_at_creation=total,
+    ).on_conflict_do_nothing(index_elements=[QueryInterpretation.key])
     try:
-        key = _key(question)
-        exists = (await session.execute(
-            select(QueryInterpretation.key).where(QueryInterpretation.key == key)
-        )).scalar_one_or_none()
-        if exists is None:
-            session.add(QueryInterpretation(
-                key=key, pipeline_version=pipeline_version(), question=question,
-                question_normalized=normalize(question),
-                payload=json.dumps(payload, ensure_ascii=False), total_at_creation=total,
-            ))
-            await session.commit()
-    except Exception:
-        log.exception("interpretation cache: store failed")
+        await session.execute(statement)
+        await session.commit()
+    except SQLAlchemyError:
+        log.warning("interpretation cache: store failed", exc_info=True)
         await session.rollback()

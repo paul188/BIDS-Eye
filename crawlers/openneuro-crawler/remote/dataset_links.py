@@ -282,6 +282,7 @@ def _list_trees(requests: Sequence[Tuple[str, Optional[str]]]) -> List[Optional[
     """Entries of several folders in one request: [(accession, tree id or None for the root)].
 
     An entry is {id, filename, directory, urls}. None for a dataset the API did not return.
+    Raises LinkSourceError when the answer does not have that shape.
     """
     if not requests:
         return []
@@ -301,9 +302,22 @@ def _list_trees(requests: Sequence[Tuple[str, Optional[str]]]) -> List[Optional[
     data = _post_graphql(query, variables).get("data") or {}
     out: List[Optional[List[dict]]] = []
     for i in range(len(requests)):
-        snapshot = ((data.get(f"d{i}") or {}).get("latestSnapshot")) or None
-        out.append(None if snapshot is None else list(snapshot.get("files") or []))
+        dataset = data.get(f"d{i}") or {}
+        snapshot = (dataset.get("latestSnapshot") if isinstance(dataset, dict) else None) or None
+        if snapshot is None:
+            out.append(None)
+            continue
+        files = (snapshot.get("files") or []) if isinstance(snapshot, dict) else None
+        if not isinstance(files, list) or not all(_is_entry(e) for e in files):
+            raise LinkSourceError(f"unexpected file tree for {requests[i][0]}: {str(snapshot)[:200]}")
+        out.append(files)
     return out
+
+
+def _is_entry(entry: Any) -> bool:
+    """A file tree entry with the keys in_dataset_derivatives reads."""
+    return (isinstance(entry, dict) and isinstance(entry.get("filename"), str)
+            and (not entry.get("directory") or bool(entry.get("id"))))
 
 
 def _chunks(items: Sequence[Any], size: int) -> Iterable[Sequence[Any]]:
@@ -463,6 +477,8 @@ async def refresh_links(conn: Any, accession_ids: Sequence[str]) -> Dict[str, in
     """
     import asyncio
 
+    from remote.openneuro_metadata import OpenNeuroAPIError
+
     accession_ids = [a for a in accession_ids if a]
     counts = {"openneuro_derivatives": 0, "in_dataset": 0}
     await ensure_tables(conn)
@@ -470,7 +486,9 @@ async def refresh_links(conn: Any, accession_ids: Sequence[str]) -> Dict[str, in
                           (SOURCE_IN_DATASET, in_dataset_derivatives)):
         try:
             found = await asyncio.to_thread(fetch, accession_ids)
-        except Exception as exc:  # network, API shape — never fail the crawl
+        # The bucket (LinkSourceError) or the GraphQL API (OpenNeuroAPIError)
+        # could not be read or answered in an unexpected shape; a bug is raised.
+        except (LinkSourceError, OpenNeuroAPIError) as exc:
             log.warning("[links] %s not read: %s", source, exc)
             continue
         for accession, derivatives in found.items():

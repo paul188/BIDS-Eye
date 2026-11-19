@@ -39,9 +39,11 @@ for _mod_dir in (
 
 try:  # pragma: no cover - exercised in environments that have sqlglot installed
     from sqlglot import exp, parse_one
+    from sqlglot.errors import SqlglotError
 except ImportError:  # pragma: no cover - keep the service usable when the dep is absent locally
     exp = None  # type: ignore[assignment]
     parse_one = None  # type: ignore[assignment]
+    SqlglotError = ()  # type: ignore[assignment,misc]  # nothing is parsed, so nothing to catch
 
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
@@ -51,7 +53,7 @@ import cohort_count as _cohort_count  # noqa: E402
 from services.fulltext import text_search as _text_search  # noqa: E402
 from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
 from services.catalogue import schema_capabilities as _schema_capabilities  # noqa: E402
-from services.catalogue import catalogue_values as _catalogue_values  # noqa: E402
+from services.translate import value_check as _value_check  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -216,7 +218,7 @@ class RewriteResult:
     # the full query finds nothing (services/search_runner.py); None when there is no
     # such condition to drop.
     relaxed_sql: Optional[str] = None
-    # Values the catalogue check corrected or dropped (services/catalogue/catalogue_values.py).
+    # Values the catalogue check corrected or dropped (services/translate/value_check.py).
     value_fixes: list[str] = _field(default_factory=list)
 
 
@@ -239,7 +241,7 @@ class SqlRewriteService:
                 f"SELECT {self.projection} FROM bids_datasets d",
                 read="postgres",
             )
-        except Exception as exc:  # pragma: no cover - depends on sqlglot availability
+        except SqlglotError as exc:  # pragma: no cover - depends on sqlglot availability
             log.warning("Could not pre-parse canonical projection: %s", exc)
             return None
         if not isinstance(parsed, exp.Select):
@@ -289,7 +291,7 @@ class SqlRewriteService:
         sql = _expand_concept_keys(sql)
         # A datatype / suffix / task value no dataset has matches nothing
         # (suffix = 'bold'): correct it or drop its condition.
-        sql, value_fixes = _catalogue_values.check_sql(sql)
+        sql, value_fixes = _value_check.check_sql(sql)
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._participants_join_to_subject_count(sql)
         # Any other join of bids_participants next to the file join multiplies
@@ -445,7 +447,7 @@ class SqlRewriteService:
                 if facets and self._facet_table(select):
                     changed = True
             return parsed.sql(dialect="postgres") if changed else sql
-        except Exception as exc:  # the unchanged query is always correct
+        except SqlglotError as exc:  # the unchanged query is always correct
             log.warning("Summary rewrite skipped: %s", exc)
             return sql
 
@@ -560,7 +562,7 @@ class SqlRewriteService:
             return sql
         try:
             parsed = parse_one(sql, read="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
         return parsed.sql(dialect="postgres")
 
@@ -574,7 +576,7 @@ class SqlRewriteService:
 
         try:
             parsed = parse_one(sql, read="postgres")
-        except Exception:
+        except SqlglotError:
             return self._rewrite_projection_fallback(sql)
 
         if not isinstance(parsed, exp.Select):
@@ -650,7 +652,7 @@ class SqlRewriteService:
 
         try:
             parsed = parse_one(sql, read="postgres")
-        except Exception:
+        except SqlglotError:
             return self._strip_outer_scan_filters_fallback(sql)[0]
 
         if not isinstance(parsed, exp.Select):
@@ -773,7 +775,7 @@ class SqlRewriteService:
             return sql
         try:
             parsed = parse_one(sql, read="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
         changed = False
         for node in list(parsed.find_all(exp.JSONExtractScalar)):
@@ -818,7 +820,7 @@ class SqlRewriteService:
             return sql
         try:
             parsed = parse_one(sql, read="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
         changed = False
         for cast in list(parsed.find_all(exp.Cast)):
@@ -954,7 +956,7 @@ class SqlRewriteService:
             return sql
         try:
             select = parse_one(sql, read="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
         if not isinstance(select, exp.Select):
             return sql
@@ -1100,7 +1102,7 @@ class SqlRewriteService:
                 else:
                     parsed.set(clause, None)
             sql = parsed.sql(dialect="postgres")
-        except Exception as exc:
+        except SqlglotError as exc:
             log.warning("Could not remove the model's patient count: %s", exc)
         present = {" ".join(m.group(0).lower().split()) for m in _cohort_count.PLACEHOLDER_RE.finditer(sql)}
         for condition in wanted:
@@ -1146,7 +1148,7 @@ class SqlRewriteService:
         try:
             parsed = parse_one(sql, read="postgres")
             select = parsed if isinstance(parsed, exp.Select) else parsed.find(exp.Select)
-            if select is None:
+            if select is None:  # e.g. TABLE x; the guard refuses it
                 return sql
             source = select.args.get("from") or select.args.get("from_")
             table = source.this if source is not None else None
@@ -1185,7 +1187,7 @@ class SqlRewriteService:
             select.set("joins", [j for j in joins if j is not target])
             log.info("Rewrote the count over joined bids_participants to the subject count")
             return parsed.sql(dialect="postgres")
-        except Exception as exc:  # the unchanged query is still the model's
+        except SqlglotError as exc:  # the unchanged query is still the model's
             log.warning("Participants-join rewrite skipped: %s", exc)
             return sql
 
@@ -1263,7 +1265,7 @@ class SqlRewriteService:
                     where.set("this", rest)
             log.info("Dropped the healthy-diagnosis requirement")
             return parsed.sql(dialect="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
 
     def _decorrelate_grouped_exists(self, sql: str) -> str:
@@ -1316,7 +1318,7 @@ class SqlRewriteService:
                 return sql
             log.info("Rewrote a per-dataset grouped EXISTS into one grouped subquery")
             return parsed.sql(dialect="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
 
     def _without_text_only_filters(self, sql: str) -> Optional[str]:
@@ -1358,7 +1360,7 @@ class SqlRewriteService:
                 merged = exp.and_(merged, c)
             parsed.set("where", exp.Where(this=merged))
             return parsed.sql(dialect="postgres")
-        except Exception:
+        except SqlglotError:
             return None
 
     def _drop_invented_text_filters(self, sql: str, augmented_question: str) -> str:
@@ -1418,7 +1420,7 @@ class SqlRewriteService:
                 merged = exp.and_(merged, c)
             parsed.set("where", exp.Where(this=merged))
             return parsed.sql(dialect="postgres")
-        except Exception:
+        except SqlglotError:
             return sql
     @staticmethod
     def _participant_count_in_having(sql: str) -> str:
@@ -1573,27 +1575,42 @@ class SqlRewriteService:
         return sql
 
     def _and_into_where(self, sql: str, condition: str) -> str:
-        """AND *condition* onto the outer WHERE, keeping the existing filter intact."""
-        if parse_one is not None and exp is not None:
-            try:
-                parsed = parse_one(sql, read="postgres")
-                extra = exp.condition(condition, dialect="postgres")
-                if isinstance(parsed, exp.Select):
-                    where = parsed.args.get("where")
-                    # Parenthesise the old filter: it may contain a top-level OR.
-                    merged = exp.and_(extra, exp.paren(where.this)) if where else extra
-                    parsed.set("where", exp.Where(this=merged))
-                    return parsed.sql(dialect="postgres")
-            except Exception:
-                pass  # fall through to the string-based edit
+        """AND *condition* onto the outer WHERE, keeping the existing filter intact.
 
-        if re.search(r"\bWHERE\b", sql, re.IGNORECASE):
-            return re.sub(
-                r"\bWHERE\b", f"WHERE {condition} AND", sql, count=1, flags=re.IGNORECASE
-            )
-        return re.sub(
-            r"\bGROUP\s+BY\b", f"WHERE {condition}\nGROUP BY", sql, count=1, flags=re.IGNORECASE
-        )
+        Into every branch of a UNION / INTERSECT / EXCEPT. SQL sqlglot cannot
+        parse is returned unchanged: the guard refuses it (query_guard.
+        check_static), so self-correction rewrites it. The string edit used
+        before put the condition in front of the old filter without brackets
+        (with a top-level OR it bound one branch only), into the first WHERE
+        even inside a subquery, and dropped it when there was neither WHERE
+        nor GROUP BY.
+        """
+        if parse_one is None or exp is None:
+            return sql
+        try:
+            parsed = parse_one(sql, read="postgres")
+            extra = exp.condition(condition, dialect="postgres")
+        except SqlglotError as exc:
+            log.warning("Condition not added to unparsable SQL (%s): %s", exc, condition)
+            return sql
+
+        def add(node) -> bool:
+            if isinstance(node, exp.Subquery):
+                return add(node.this)
+            if isinstance(node, (exp.Union, exp.Intersect, exp.Except)):
+                return add(node.left) & add(node.right)
+            if not isinstance(node, exp.Select):
+                return False
+            where = node.args.get("where")
+            # Parenthesise the old filter: it may contain a top-level OR.
+            merged = exp.and_(extra.copy(), exp.paren(where.this)) if where else extra.copy()
+            node.set("where", exp.Where(this=merged))
+            return True
+
+        if not add(parsed):
+            log.warning("Condition not added to a %s query: %s", type(parsed).__name__, condition)
+            return sql
+        return parsed.sql(dialect="postgres")
 
     def _inject_relevance_cte(
         self, sql: str, scored_filters: list, rank_tsquery: Optional[str] = None
@@ -1688,7 +1705,7 @@ def _has_top_level_order(sql: str) -> bool:
     if parse_one is not None:
         try:
             return parse_one(sql, read="postgres").args.get("order") is not None
-        except Exception:
+        except SqlglotError:
             pass
     # Without a parse: an ORDER BY after the last closing parenthesis.
     return re.search(r"\bORDER\s+BY\b", sql[sql.rfind(")") + 1:], re.IGNORECASE) is not None

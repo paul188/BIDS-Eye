@@ -102,8 +102,12 @@ def fetch_authors_and_funding(db_url: str) -> dict[str, list[str]]:
     """
     Extract all distinct author and funding strings from bids_datasets.
     Supports both TEXT[] and JSON/JSONB array storage.
+
+    A category whose query fails is left out of the result, so patch_index
+    keeps what the index has for it (it used to be written as empty).
     """
     from sqlalchemy import create_engine, text
+    from sqlalchemy.exc import SQLAlchemyError
 
     engine = create_engine(db_url)
 
@@ -128,11 +132,10 @@ def fetch_authors_and_funding(db_url: str) -> dict[str, list[str]]:
                     f"  {category}: {len(values[category])} distinct values "
                     f"(from bids_datasets.{column_name} {column_type})"
                 )
-            except Exception as exc:
-                print(f"  [WARN] {category} query failed: {exc} — skipping",
+            except (SQLAlchemyError, ValueError) as exc:  # ValueError: column type not supported
+                print(f"  [WARN] {category} query failed: {exc} — the index keeps its old values",
                       file=sys.stderr)
                 conn.rollback()
-                values[category] = []
 
     return values
 
@@ -188,7 +191,9 @@ def _load_existing_index(index_path: Path) -> tuple[dict, Path]:
             if not isinstance(idx, dict):
                 raise ValueError("top-level JSON value must be an object")
             return idx, candidate
-        except Exception as exc:
+        # JSONDecodeError and UnicodeDecodeError are ValueErrors, as is the
+        # top-level check above.
+        except (OSError, ValueError) as exc:
             failures.append(f"{candidate}: {type(exc).__name__}: {exc}")
 
     failure_text = "\n".join(f"  - {item}" for item in failures)
@@ -235,7 +240,10 @@ def patch_index(index_path: Path, idx: dict, source_path: Path,
 
     for cat in _NEW_CATEGORIES:
         old_count = len(idx["values"].get(cat, []))
-        idx["values"][cat]     = new_values.get(cat, [])
+        if cat not in new_values:  # its query failed: keep the old values
+            print(f"  Kept '{cat}': {old_count} values (not read from the database)")
+            continue
+        idx["values"][cat]     = new_values[cat]
         idx["embeddings"][cat] = new_embeddings.get(cat, [])
         new_count = len(idx["values"][cat])
         verb = "Added" if old_count == 0 else "Updated"
@@ -280,6 +288,8 @@ def main() -> None:
 
     print("Step 1: Extracting author and funding values from DB...")
     values = fetch_authors_and_funding(args.db_url)
+    if not values:
+        raise SystemExit("No category could be read from the database; the index is unchanged.")
 
     print("\nStep 2: Building embeddings...")
     embeddings = embed_categories(values)
@@ -289,8 +299,11 @@ def main() -> None:
 
     print("\nDone. The following categories were added/updated:")
     for cat in _NEW_CATEGORIES:
-        n = len(values.get(cat, []))
-        print(f"  {cat}: {n} values")
+        if cat in values:
+            print(f"  {cat}: {len(values[cat])} values")
+    failed = [cat for cat in _NEW_CATEGORIES if cat not in values]
+    if failed:
+        print(f"Not updated (query failed, see above): {', '.join(failed)}", file=sys.stderr)
     print("\nRe-deploy the Modal app if using Modal inference:")
     print("  modal deploy modal_app/app.py")
 

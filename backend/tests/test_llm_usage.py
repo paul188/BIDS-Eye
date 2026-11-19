@@ -6,6 +6,7 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "LLM_preprocessor"))
 
 import llm_client  # noqa: E402
+from google.genai import errors as genai_errors  # noqa: E402
 
 
 def _gemini_response(text="ok", **counts):
@@ -64,7 +65,7 @@ def test_a_failed_tier_does_not_leak_its_usage_into_the_next(monkeypatch):
     def call(model, *a, **k):
         if model == "first":
             llm_client._note_gemini_usage(_gemini_response(prompt_token_count=99))
-            raise RuntimeError("400 bad request")
+            raise genai_errors.ClientError(400, {"error": {"status": "INVALID_ARGUMENT"}})
         return "ok"   # second tier reports no usage
     monkeypatch.setattr(llm_client, "_call_gemini", call)
     collected = llm_client.start_usage_collection()
@@ -82,3 +83,62 @@ def test_anthropic_input_includes_cached_tokens():
     llm_client._last_call.usage = None
     assert usage["input_tokens"] == 1000
     assert usage["cached_tokens"] == 900
+
+
+def _server_error():
+    return genai_errors.ServerError(503, {"error": {"status": "UNAVAILABLE"}})
+
+
+def test_a_bug_in_a_provider_call_is_raised_not_taken_for_an_outage(monkeypatch):
+    def call(*a, **k):
+        raise TypeError("generate_content() got an unexpected keyword argument 'timeout'")
+    monkeypatch.setattr(llm_client, "_call_gemini", call)
+    import pytest
+    with pytest.raises(TypeError):
+        llm_client.llm_generate("q", api_key="k", models=["first", "second"], use_fallback=False)
+
+
+def test_a_server_error_is_retried_on_the_same_tier(monkeypatch):
+    calls = []
+
+    def call(model, *a, **k):
+        calls.append(model)
+        if len(calls) == 1:
+            raise _server_error()
+        return "ok"
+    monkeypatch.setattr(llm_client, "_call_gemini", call)
+    monkeypatch.setattr(llm_client.time, "sleep", lambda s: None)
+    assert llm_client.llm_generate("q", api_key="k", models=["first", "second"], use_fallback=False) == "ok"
+    assert calls == ["first", "first"]
+
+
+def test_a_client_error_that_mentions_a_timeout_is_not_retried(monkeypatch):
+    # The old check looked for words such as "timeout" in the message.
+    calls = []
+
+    def call(model, *a, **k):
+        calls.append(model)
+        if model == "first":
+            raise genai_errors.ClientError(400, {"error": {"status": "INVALID_ARGUMENT",
+                                                          "message": "timeout must be positive"}})
+        return "ok"
+    monkeypatch.setattr(llm_client, "_call_gemini", call)
+    assert llm_client.llm_generate("q", api_key="k", models=["first", "second"], use_fallback=False) == "ok"
+    assert calls == ["first", "second"]
+
+
+def test_a_timeout_is_transient():
+    import httpx
+    assert llm_client._gemini_is_transient(httpx.ReadTimeout("read timed out"))
+    assert not llm_client._gemini_is_transient(genai_errors.ClientError(403, {"error": {}}))
+
+
+def test_no_gemini_key_skips_to_claude_without_calling_gemini(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "set")
+    gemini_calls = []
+    monkeypatch.setattr(llm_client, "_call_gemini", lambda *a, **k: gemini_calls.append(a) or "x")
+    monkeypatch.setattr(llm_client, "_call_anthropic", lambda *a, **k: "from claude")
+    assert llm_client.llm_generate("q", models=["first"]) == "from claude"
+    assert gemini_calls == []

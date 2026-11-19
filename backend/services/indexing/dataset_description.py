@@ -402,7 +402,15 @@ class Outcome:
 
 def describe_one(source: DatasetSource, need_relation: bool, current_relation: Optional[dict],
                  need_summary: bool, model: str = DEFAULT_MODEL) -> Outcome:
-    """Ask for the relation and/or the summary of one dataset; never raises."""
+    """Ask for the relation and/or the summary of one dataset.
+
+    A model call that fails on every tier (LLMAllFailedError) is recorded in
+    the outcome and the batch goes on. Anything else raised is a bug and
+    stops the batch: it used to be recorded as "model call failed" for every
+    dataset, and the batch "completed" with all of them failed.
+    """
+    from llm_client import LLMAllFailedError
+
     outcome = Outcome(source)
     shown = bool(current_relation and current_relation.get("shown"))
     if need_relation and source.paper:
@@ -411,7 +419,7 @@ def describe_one(source: DatasetSource, need_relation: bool, current_relation: O
                 _ask(relation_prompt(source), RELATION_SYSTEM, RELATION_SCHEMA, model), source)
             if outcome.relation is None:
                 outcome.relation_error = "unreadable relation answer"
-        except Exception as exc:
+        except LLMAllFailedError as exc:
             outcome.relation_error = f"model call failed: {str(exc)[:200]}"
         if outcome.relation is not None:
             shown = outcome.relation.shown
@@ -424,7 +432,7 @@ def describe_one(source: DatasetSource, need_relation: bool, current_relation: O
         try:
             summary = parse_summary(_ask(summary_prompt(source, use_paper), SUMMARY_SYSTEM,
                                          SUMMARY_SCHEMA, model))
-        except Exception as exc:
+        except LLMAllFailedError as exc:
             outcome.summary_error = f"model call failed: {str(exc)[:200]}"
             return outcome
         if summary is None:

@@ -51,6 +51,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from uuid import UUID
 
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from services.catalogue import schema_capabilities
 
@@ -255,12 +256,14 @@ async def rerank_candidates(
     if len(ids) < 2:
         return None
     uuids = [UUID(cid) for cid in ids]
+    # In a savepoint: a failed read must not abort the search's transaction
+    # (a rollback of all of it would also undo its limits).
     try:
-        rows = (await session.execute(text(_details_sql()), {"ids": uuids})).mappings().all()
-        files = (await session.execute(_FILES_SQL, {"ids": uuids})).mappings().all()
-    except Exception as exc:  # noqa: BLE001 — re-ranking must never break a search
+        async with session.begin_nested():
+            rows = (await session.execute(text(_details_sql()), {"ids": uuids})).mappings().all()
+            files = (await session.execute(_FILES_SQL, {"ids": uuids})).mappings().all()
+    except SQLAlchemyError as exc:
         log.warning("Re-ranking skipped: could not load candidates (%s)", exc)
-        await session.rollback()
         return None
     by_id = {str(r["id"]): dict(r) for r in rows}
     files_by_id = {str(f["dataset_id"]): dict(f) for f in files}
@@ -283,11 +286,15 @@ async def rerank_candidates(
     except asyncio.TimeoutError:
         log.warning("Re-ranking skipped: no answer within %.0f s", cfg["timeout"])
         return None
+    from llm_client import LLMAllFailedError
+
     scores: Dict[str, int] = {}
     for result in results:
-        if isinstance(result, BaseException):
+        if isinstance(result, LLMAllFailedError):  # the model could not be asked
             log.warning("Re-ranking batch failed: %s", str(result)[:300])
             continue
+        if isinstance(result, BaseException):  # a bug, or a cancelled batch
+            raise result
         scores.update(result)
     if not scores:
         return None

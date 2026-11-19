@@ -25,8 +25,9 @@ language model up to three times and several groups serve more than one step
   3. SQL                  translate/participant_query_compiler compiles the
                           plan, or translate/text_to_sql asks the SQL MODEL
   4. SQL rewrites         translate/sql_rewriter: structural fixes, the
-                          catalogue value check, full-text conditions and the
-                          uncertain tier (fulltext/)
+                          value check (translate/value_check, against the
+                          values catalogue/ loaded), full-text conditions and
+                          the uncertain tier (fulltext/)
   5. run                  search_runner + query_guard: one page; a relaxed
                           re-run when too few datasets match
   6. result page          results/: the RERANK MODEL orders the first

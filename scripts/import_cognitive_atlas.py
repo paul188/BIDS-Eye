@@ -10,7 +10,7 @@ Output: RAG/cognitive_atlas_constructs.yaml  (~900 concepts, ~1 800 hierarchy ed
 The file is a drop-in for yaml_to_llamaindex.py which loads it alongside
 value_mappings.yaml.  Re-run any time the CA API is updated.
 
-Requires: requests  (pip install requests)
+Requires: nothing beyond PyYAML (the API is read with urllib)
 """
 import argparse
 import re
@@ -18,58 +18,11 @@ import sys
 import time
 from collections import Counter
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import yaml
 
-try:
-    import requests as _requests
-
-    def _get_json(url: str, retries: int = 5) -> Optional[dict | list]:
-        for attempt in range(retries):
-            try:
-                r = _requests.get(url, timeout=30)
-                if r.status_code == 429:
-                    # Respect Retry-After if present, otherwise exponential back-off
-                    wait = int(r.headers.get("Retry-After", 2 ** (attempt + 1)))
-                    print(f"  [429] rate limited — waiting {wait}s …", file=sys.stderr)
-                    time.sleep(wait)
-                    continue
-                r.raise_for_status()
-                return r.json()
-            except Exception as exc:
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-        return None
-
-except ImportError:
-    import json as _json
-    import urllib.request
-    import urllib.error
-
-    def _get_json(url: str, retries: int = 5) -> Optional[dict | list]:  # type: ignore[misc]
-        for attempt in range(retries):
-            try:
-                with urllib.request.urlopen(url, timeout=30) as resp:
-                    return _json.loads(resp.read())
-            except urllib.error.HTTPError as exc:
-                if exc.code == 429:
-                    wait = int(exc.headers.get("Retry-After", 2 ** (attempt + 1)))
-                    print(f"  [429] rate limited — waiting {wait}s …", file=sys.stderr)
-                    time.sleep(wait)
-                    continue
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-            except Exception as exc:
-                if attempt == retries - 1:
-                    print(f"  [WARN] {url}: {exc}", file=sys.stderr)
-                    return None
-                time.sleep(2 ** attempt)
-        return None
+from cognitive_atlas_api import CognitiveAtlasFetchError, get_json as _get_json
 
 
 _CA_BASE = "https://www.cognitiveatlas.org"
@@ -86,7 +39,10 @@ def _key(name: str) -> str:
 def main(out_path: str) -> None:
     # ── 1. Fetch concept list ────────────────────────────────────────────────
     print("Fetching concept list …")
-    raw = _get_json(_CONCEPT_LIST)
+    try:
+        raw = _get_json(_CONCEPT_LIST)
+    except CognitiveAtlasFetchError as exc:
+        sys.exit(f"ERROR: could not fetch concept list: {exc}")
     if not raw or not isinstance(raw, list):
         print("ERROR: could not fetch concept list", file=sys.stderr)
         sys.exit(1)
@@ -115,6 +71,7 @@ def main(out_path: str) -> None:
     # ── 2. Fetch per-concept JSON and build YAML nodes ───────────────────────
     print("Fetching concept details …")
     constructs: Dict[str, dict] = {}
+    failed: List[str] = []
 
     for i, c in enumerate(raw):
         cid = c.get("id", "")
@@ -126,7 +83,12 @@ def main(out_path: str) -> None:
         if i % 50 == 0:
             print(f"  {i}/{len(raw)}: {name}")
 
-        full = _get_json(_CONCEPT_JSON.format(id=cid))
+        try:
+            full = _get_json(_CONCEPT_JSON.format(id=cid))
+        except CognitiveAtlasFetchError as exc:
+            print(f"  [WARN] {exc}", file=sys.stderr)
+            failed.append(cid)
+            continue
         time.sleep(0.05)
 
         definition_text: str = c.get("definition_text") or ""
@@ -177,6 +139,12 @@ def main(out_path: str) -> None:
             node["synonyms"] = synonyms
 
         constructs[key] = node
+
+    # A concept whose JSON could not be read would be written without its
+    # broader / part_of hierarchy, into a file that replaces the old one.
+    if failed:
+        sys.exit(f"ERROR: {len(failed)} concept(s) could not be read ({', '.join(failed[:10])}"
+                 f"{' …' if len(failed) > 10 else ''}); {out_path} is unchanged. Run again.")
 
     # ── 3. Write YAML ────────────────────────────────────────────────────────
     out_file = Path(out_path)

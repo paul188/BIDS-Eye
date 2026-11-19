@@ -30,7 +30,9 @@ from uuid import uuid4
 import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
+from botocore.exceptions import BotoCoreError, ClientError
 from sqlalchemy import select, text, update
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.db import async_session_maker
 from db.models import BIDSDataset, BIDSObject
@@ -98,9 +100,14 @@ def _build_mirror(
       - Real file content for .json / .tsv (metadata pybids needs).
       - Empty stub files for all other types so pybids sees the full tree
         and can extract entities from filenames.
+
+    A metadata file whose download fails is left as an empty stub too, and
+    the next crawl downloads it again (an empty local file of a non-empty S3
+    object). Before 2026-11-18 such a stub was kept for good: a timeout on
+    participants.tsv left the dataset indexed without participants.
     """
     log.info("  [mirror] Building mirror at %s", mirror_dir)
-    downloaded = skipped = stubbed = 0
+    downloaded = skipped = stubbed = failed = 0
 
     for obj in all_objects:
         key: str = obj["Key"]
@@ -127,9 +134,10 @@ def _build_mirror(
             ext = Path(low).suffix
 
         if dest.exists():
-            # Re-try dataset_description.json if it's a 0-byte stub from a
-            # previous failed/restricted crawl — it needs real content
-            if rel == "dataset_description.json" and dest.stat().st_size == 0:
+            # An empty metadata file is the stub of a failed download (or of a
+            # restricted crawl, for dataset_description.json): fetch it again.
+            if (ext in _METADATA_EXTENSIONS and dest.stat().st_size == 0
+                    and (obj.get("Size", 0) > 0 or rel == "dataset_description.json")):
                 pass  # fall through and re-download
             elif ext == ".json":
                 # Validate cached JSON — re-download if corrupt (e.g. written
@@ -139,7 +147,7 @@ def _build_mirror(
                     _json.loads(dest.read_bytes())
                     skipped += 1
                     continue
-                except Exception:
+                except ValueError:  # JSONDecodeError, UnicodeDecodeError
                     dest.unlink()  # corrupt — fall through to re-download
             else:
                 skipped += 1
@@ -199,18 +207,18 @@ def _build_mirror(
                             raw = b"{}"
                 dest.write_bytes(raw)
                 downloaded += 1
-            except Exception as exc:
-                is_access_denied = "AccessDenied" in str(exc)
-                log.warning("  [mirror] Failed to download %s: %s", key, exc)
+            except (ClientError, BotoCoreError) as exc:
                 # Any AccessDenied means the dataset is restricted — bail immediately
                 # and let the GraphQL fallback handle it rather than wasting time
                 # trying to download hundreds more files.
-                if is_access_denied:
+                if isinstance(exc, ClientError) and exc.response.get("Error", {}).get("Code") == "AccessDenied":
                     raise DatasetAccessDeniedError(
                         f"{accession_id}: access denied on {rel}"
-                    )
+                    ) from exc
+                log.warning("  [mirror] Failed to download %s (retried next crawl): %s", key, exc)
                 dest.touch()   # stub so pybids still sees the file
                 stubbed += 1
+                failed += 1
         else:
             dest.touch()
             stubbed += 1
@@ -227,7 +235,7 @@ def _build_mirror(
                     dest.write_bytes(_fetch_bytes(client, key))
                     downloaded += 1
                     log.info("  [mirror] README fetched: %s", filename)
-                except Exception as exc:
+                except (ClientError, BotoCoreError) as exc:
                     log.warning("  [mirror] Failed to fetch README %s: %s", key, exc)
             break  # only one README variant needed
 
@@ -235,6 +243,9 @@ def _build_mirror(
         "  [mirror] Done — %d downloaded, %d stubbed, %d skipped (already present)",
         downloaded, stubbed, skipped,
     )
+    if failed:
+        log.warning("  [mirror] %s: %d metadata file(s) failed to download; indexed without "
+                    "them this time, downloaded again on the next crawl", accession_id, failed)
 
 
 # ─── Post-pipeline stamps ─────────────────────────────────────────────────────
@@ -359,7 +370,7 @@ async def _enrich_from_openneuro_api(accession_id: str) -> None:
         )
     except OpenNeuroAPIError as exc:
         log.warning("  [metadata] OpenNeuro API unavailable for %s: %s", accession_id, exc)
-    except Exception as exc:
+    except SQLAlchemyError as exc:
         log.warning("  [metadata] Could not store OpenNeuro metadata for %s: %s", accession_id, exc)
 
 

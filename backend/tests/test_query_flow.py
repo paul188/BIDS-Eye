@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 from uuid import UUID
 
+from sqlalchemy.exc import ProgrammingError
+
 import routers.query as query_router
 from schemas import DatasetSchema, TextToSQLResult
 from services.results import dataset_cards
@@ -35,6 +37,7 @@ class _FakeSession:
 
     def __init__(self):
         self.rollback_count = 0
+        self.added = []
         self.execute_calls = 0
         self.count_calls = 0
         self.statements = []
@@ -64,7 +67,7 @@ class _FakeSession:
         if "COUNT(*)" in sql:
             self.count_calls += 1
         if "COUNT(*)" in sql and self.count_calls == 1:
-            raise RuntimeError("synthetic database error")
+            raise ProgrammingError("SELECT COUNT(*)", {}, Exception("synthetic database error"))
         if "COUNT(*)" in sql:
             return _FakeResult(scalar_value=2)
         if "page_result" in sql:
@@ -88,6 +91,12 @@ class _FakeSession:
 
     async def rollback(self):
         self.rollback_count += 1
+
+    def add(self, row):
+        self.added.append(row)
+
+    async def commit(self):
+        pass
 
 
 async def _fake_rows_to_datasets(session, raw):

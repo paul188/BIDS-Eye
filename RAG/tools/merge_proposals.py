@@ -190,10 +190,14 @@ def main() -> None:
                 width=120,
             )
         os.replace(tmp_path, yaml_path)
-        print(f"Written: {yaml_path}")
-    except Exception as exc:
+    except (OSError, yaml.YAMLError) as exc:
         os.unlink(tmp_path)
         sys.exit(f"Error writing file: {exc}")
+    except BaseException:
+        # A bug or Ctrl-C: remove the temporary file and raise as it is.
+        os.unlink(tmp_path)
+        raise
+    print(f"Written: {yaml_path}")
 
 
 if __name__ == "__main__":

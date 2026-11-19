@@ -112,7 +112,7 @@ class TextToSQLResult(BaseModel):
     # The query without its free-text-only conditions (empty-result fallback).
     relaxed_sql: Optional[str] = Field(default=None, exclude=True)
     # datatype / suffix / task values no dataset has, corrected or dropped
-    # before the query ran (services/catalogue/catalogue_values.py).
+    # before the query ran (services/translate/value_check.py).
     value_fixes: List[str] = []
 
 
