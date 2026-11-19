@@ -63,6 +63,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "translate" / "sql_rewriter.py",
     _BACKEND / "services" / "fulltext" / "text_search.py",
     _BACKEND / "services" / "translate" / "text_to_sql.py",
+    _BACKEND / "services" / "translate" / "value_check.py",
     _BACKEND / "services" / "fulltext" / "uncertain_tier.py",
     _BACKEND / "services" / "catalogue" / "word_form_store.py",
     _BACKEND / "services" / "catalogue" / "off_loop_query.py",

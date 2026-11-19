@@ -18,7 +18,8 @@ import sys
 
 # Kept in step with backend/services/__init__.py.
 GROUPS = {
-    "translate": ("text_to_sql", "participant_query_compiler", "sql_rewriter", "concept_keys"),
+    "translate": ("text_to_sql", "participant_query_compiler", "sql_rewriter", "concept_keys",
+                  "value_check"),
     "fulltext": ("text_search", "uncertain_tier"),
     "catalogue": ("schema_capabilities", "catalogue_values", "word_form_store"),
     "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),

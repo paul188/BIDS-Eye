@@ -53,7 +53,7 @@ import cohort_count as _cohort_count  # noqa: E402
 from services.fulltext import text_search as _text_search  # noqa: E402
 from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
 from services.catalogue import schema_capabilities as _schema_capabilities  # noqa: E402
-from services.catalogue import catalogue_values as _catalogue_values  # noqa: E402
+from services.translate import value_check as _value_check  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -218,7 +218,7 @@ class RewriteResult:
     # the full query finds nothing (services/search_runner.py); None when there is no
     # such condition to drop.
     relaxed_sql: Optional[str] = None
-    # Values the catalogue check corrected or dropped (services/catalogue/catalogue_values.py).
+    # Values the catalogue check corrected or dropped (services/translate/value_check.py).
     value_fixes: list[str] = _field(default_factory=list)
 
 
@@ -291,7 +291,7 @@ class SqlRewriteService:
         sql = _expand_concept_keys(sql)
         # A datatype / suffix / task value no dataset has matches nothing
         # (suffix = 'bold'): correct it or drop its condition.
-        sql, value_fixes = _catalogue_values.check_sql(sql)
+        sql, value_fixes = _value_check.check_sql(sql)
         sql = self._rewrite_participant_count_to_having(sql)
         sql = self._participants_join_to_subject_count(sql)
         # Any other join of bids_participants next to the file join multiplies
