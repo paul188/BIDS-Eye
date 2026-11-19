@@ -101,7 +101,19 @@ async def refresh(conn: Any) -> Dict[str, int]:
 
     Raises when search_tsv_exact is missing: run
     crawlers/migrate_add_exact_search.sql first.
+
+    The DELETE and the INSERT must share one transaction, or searches see an
+    empty table until the INSERT ends and quietly fall back to stem matching.
+    Raises on a connection that commits each statement (AUTOCOMMIT). SQLAlchemy
+    cannot tell: in_transaction() is True inside begin() even then, so the
+    database is asked. Two calls of pg_current_xact_id() return the same id
+    only inside one transaction.
     """
+    first, second = [(await conn.execute(text("SELECT pg_current_xact_id()"))).scalar_one()
+                     for _ in range(2)]
+    if first != second:
+        raise RuntimeError("word_form_store.refresh() needs a transaction; "
+                           "the connection commits each statement (AUTOCOMMIT?)")
     present = (await conn.execute(text(
         "SELECT count(*) FROM information_schema.columns "
         "WHERE table_schema = current_schema() AND table_name = 'bids_datasets' "

@@ -287,3 +287,25 @@ def test_a_bug_in_a_word_form_lookup_is_raised(word_forms_table) -> None:
     store.set_lookup(buggy)
     with pytest.raises(TypeError):
         store.lookup(["ageing"])
+
+
+class _AutocommitConnection:
+    """Every statement is a transaction of its own; records what it ran."""
+
+    def __init__(self):
+        self.statements, self._xact = [], 0
+
+    async def execute(self, statement, params=None):
+        sql = str(statement)
+        self.statements.append(sql)
+        if "pg_current_xact_id" in sql:
+            self._xact += 1
+            return _Result([(self._xact,)])
+        return _Result([(1,)])
+
+
+def test_refresh_refuses_a_connection_without_a_transaction() -> None:
+    conn = _AutocommitConnection()
+    with pytest.raises(RuntimeError, match="needs a transaction"):
+        asyncio.run(store.refresh(conn))
+    assert not any("DELETE" in sql for sql in conn.statements)
