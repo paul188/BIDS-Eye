@@ -152,6 +152,15 @@ def test_a_diagnosis_the_vocabulary_does_not_know_is_searched_in_its_group() -> 
     assert "'loose'" not in sql   # not ANDed as its own condition
 
 
+def test_an_unknown_term_with_nothing_searchable_is_left_out() -> None:
+    # "-" passes the term check but leaves no word to search: it once put
+    # None into the OR list and the join raised TypeError.
+    sql = pqc.compile_plan(_plan(["-", "schizophrenia"]), RESOLVED).sql
+    assert sql is not None and "p_cohort.diagnosis IN ('schizophrenia'" in sql
+    # Nothing else in the group: declined, not an empty "()" condition.
+    assert pqc.compile_plan(_plan(["-"]), RESOLVED).sql is None
+
+
 def test_recorded_facts_replace_their_words() -> None:
     plan = _plan(description_search="fMRIPrep", doi_required=True, min_sessions=3)
     sql = pqc.compile_plan(plan, [], _augmented("  dataset text: text_match('fmriprep')")).sql
