@@ -1146,6 +1146,8 @@ class SqlRewriteService:
         try:
             parsed = parse_one(sql, read="postgres")
             select = parsed if isinstance(parsed, exp.Select) else parsed.find(exp.Select)
+            if select is None:
+                return sql
             source = select.args.get("from") or select.args.get("from_")
             table = source.this if source is not None else None
             if not isinstance(table, exp.Table) or table.name.lower() != "bids_datasets":

@@ -285,16 +285,16 @@ async def rerank_candidates(
         return None
     scores: Dict[str, int] = {}
     for result in results:
-        if isinstance(result, Exception):
+        if isinstance(result, BaseException):
             log.warning("Re-ranking batch failed: %s", str(result)[:300])
             continue
         scores.update(result)
     if not scores:
         return None
-    result = order_from_scores(ids, scores)
+    ranked = order_from_scores(ids, scores)
     log.info("Re-ranked %d of %d candidates: %s", len(scores), len(ids),
              dict(sorted(_count(scores.values()).items(), reverse=True)))
-    return result
+    return ranked
 
 
 def _count(values) -> Dict[int, int]:

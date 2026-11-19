@@ -110,7 +110,7 @@ def _nested(tokens: List[str]) -> bool:
 
 def _commas(tokens: List[str]) -> List[str]:
     """A comma is OR where OR appears between the same parentheses, else nothing."""
-    out = list(tokens)
+    out: List[Optional[str]] = list(tokens)
     stack: List[List[int]] = [[]]          # comma positions per open level
     has_or: List[bool] = [False]
     for i, token in enumerate(tokens):
@@ -179,9 +179,10 @@ class _Parser:
             if self.peek() == _CLOSE:
                 self.take()
             return inner
-        words = []
-        while self.peek() not in (None, _OR, _AND, _NOT, _OPEN, _CLOSE):
-            words.append(self.take())
+        words: List[str] = []
+        while (word := self.peek()) is not None and word not in (_OR, _AND, _NOT, _OPEN, _CLOSE):
+            self.take()
+            words.append(word)
         if not words:
             # A stray operator or closing parenthesis: skip it.
             if token is not None and token != _CLOSE:
@@ -321,12 +322,12 @@ def _sql(node: Node, top: bool = False) -> Optional[str]:
     else:
         parts = [_sql(part) for part in node.children]
         joiner = " OR "
-    parts = [p for p in parts if p]
-    if not parts:
+    found = [p for p in parts if p]
+    if not found:
         return None
-    if len(parts) == 1:
-        return parts[0]
-    joined = joiner.join(parts)
+    if len(found) == 1:
+        return found[0]
+    joined = joiner.join(found)
     return joined if top and joiner == " AND " else f"({joined})"
 
 
@@ -338,9 +339,8 @@ def compile_formula(node: Optional[Node]) -> Optional[str]:
     if node is None:
         return None
     if isinstance(node, And):
-        parts = [_sql(part) for part in conjuncts(node)]
-        parts = [p for p in parts if p]
-        return " AND ".join(parts) if parts else None
+        found = [p for part in conjuncts(node) if (p := _sql(part))]
+        return " AND ".join(found) if found else None
     return _sql(node, top=True)
 
 

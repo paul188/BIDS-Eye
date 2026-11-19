@@ -33,15 +33,16 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import asdict, dataclass, field
+import dataclasses
+from dataclasses import asdict, dataclass
 from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
     from sqlglot import exp
 except Exception:  # pragma: no cover
-    sqlglot = None
-    exp = None
+    sqlglot = None  # type: ignore[assignment]
+    exp = None  # type: ignore[assignment]
 
 log = logging.getLogger(__name__)
 
@@ -113,11 +114,12 @@ class QueryFilter:
     negated: bool = False       # the dataset must NOT match
     # Words also searched in the dataset text (README, description). A chip
     # that is only text has kind "text" and these as its label.
-    text_words: List[str] = field(default_factory=list)
+    # dataclasses.field: the name 'field' is this class's own attribute.
+    text_words: List[str] = dataclasses.field(default_factory=list)
     detail: str = ""            # longer description for a tooltip
     # Every value behind a label shortened to "+N", so the page can open the
     # full list; empty when the label already shows them all.
-    values: List[str] = field(default_factory=list)
+    values: List[str] = dataclasses.field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -220,7 +222,9 @@ def _outer_parentheses_removed(text: str) -> str:
 
 
 def _split_top_level(query: str, sep: str) -> List[str]:
-    parts, depth, current = [], 0, []
+    parts: List[str] = []
+    current: List[str] = []
+    depth = 0
     for ch in query:
         if ch == "(":
             depth += 1
@@ -302,6 +306,7 @@ def _age_label(node) -> Optional[str]:
         return f"{fmt(low[0])}–{fmt(high[0])}"
     if low:
         return f"{fmt(low[0])}+" if low[1] else f"over {fmt(low[0])}"
+    assert high is not None  # both None returned above
     return f"up to {fmt(high[0])}" if high[1] else f"under {fmt(high[0])}"
 
 
@@ -316,7 +321,7 @@ def _bound(node, matches) -> Optional[str]:
             low, high = between.args.get("low"), between.args.get("high")
             if isinstance(low, exp.Literal) and isinstance(high, exp.Literal):
                 return f"{low.this}–{high.this}"
-    found = {}
+    found: dict[str, str] = {}
     for cls, symbol in _SYMBOLS.items():
         for comparison in ([node] if isinstance(node, cls) else []) + list(node.find_all(cls)):
             if matches(comparison.this) and isinstance(comparison.expression, exp.Literal) \
@@ -562,8 +567,8 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 
     sexes = _literals_for(node, ["sex"])
     if sexes:
-        names = {"f": "female", "female": "female", "m": "male", "male": "male"}
-        return chip("sex", "Sex", [names.get(s.lower(), s) for s in sexes])
+        sex_names = {"f": "female", "female": "female", "m": "male", "male": "male"}
+        return chip("sex", "Sex", [sex_names.get(s.lower(), s) for s in sexes])
 
     size = _size_label(node)
     if size:
@@ -729,8 +734,8 @@ def _parse(sql: str):
     return tree if isinstance(tree, exp.Select) else None
 
 
-def _conditions(tree) -> List[Tuple[str, object]]:
-    found = []
+def _conditions(tree) -> List[Tuple[str, exp.Expression]]:
+    found: List[Tuple[str, exp.Expression]] = []
     for prefix, clause in (("w", "where"), ("h", "having")):
         node = tree.args.get(clause)
         if node is not None:
@@ -738,7 +743,9 @@ def _conditions(tree) -> List[Tuple[str, object]]:
     return found
 
 
-def where_conditions(sql: Optional[str]) -> Tuple[Optional[str], List[Tuple[QueryFilter, object]]]:
+def where_conditions(
+    sql: Optional[str],
+) -> Tuple[Optional[str], List[Tuple[QueryFilter, exp.Expression]]]:
     """The dataset alias and each top-level WHERE condition with its chip.
 
     For services/results/match_reasons.py, which evaluates a condition's

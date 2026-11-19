@@ -43,7 +43,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from functools import lru_cache
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 MODE_ALL = "all"
 MODE_SHORT = "short"
@@ -384,7 +384,7 @@ def diagnosis_qualifier(
 
 
 def diagnosis_alternatives(
-    term_to_codes: Dict[str, Sequence[str]],
+    term_to_codes: Mapping[str, Sequence[str]],
     lookup: Optional[Callable[[str], List[Tuple[str, float]]]] = None,
     limit: int = MAX_DIAGNOSIS_ALTERNATIVES,
 ) -> List[str]:
@@ -430,10 +430,10 @@ def diagnosis_alternatives(
 
     kept: List[Term] = []
     kept_sets: List[frozenset] = []
-    for term, min_part in candidates:
-        if not term or _longest_part(term) < min_part:
+    for candidate, min_part in candidates:
+        if not candidate or _longest_part(candidate) < min_part:
             continue
-        parts = frozenset(_flat(term))
+        parts = frozenset(_flat(candidate))
         # "refractory epilepsy" adds nothing once "epilepsy" is searched.
         if any(existing <= parts for existing in kept_sets):
             continue
@@ -441,7 +441,7 @@ def diagnosis_alternatives(
         covered = [i for i, existing in enumerate(kept_sets) if parts < existing]
         for index in reversed(covered):
             del kept[index], kept_sets[index]
-        kept.append(term)
+        kept.append(candidate)
         kept_sets.append(parts)
         if len(kept) >= limit:
             break
