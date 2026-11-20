@@ -321,6 +321,35 @@ class SqlRewriteService:
                              filter_sql=filter_sql, relaxed_sql=relaxed_sql,
                              value_fixes=value_fixes)
 
+    def finish_corrected_sql(self, raw: str, failed_sql: str) -> str:
+        """The model's repair of *failed_sql*, ready to run; FALLBACK_SQL when
+        its answer holds no query.
+
+        *failed_sql* already went through rewrite_generated_sql, so the repair
+        is not rewritten again: a second pass put the dataset columns over the
+        uncertain tier's wrapper, whose outer query has no table d, and every
+        repaired tiered query failed. Only the outer column list of
+        *failed_sql* is put back, because the page query and the result cards
+        read those columns (uncertain_level among them). The guards check the
+        repair like any generated query (services/query_guard.py).
+
+        Returns *failed_sql* itself when the model changed only the formatting.
+        """
+        sql = self.extract_sql(raw)
+        if sql == _FALLBACK_SQL or parse_one is None or exp is None:
+            return sql
+        try:
+            failed = parse_one(failed_sql, read="postgres")
+            repaired = parse_one(sql, read="postgres")
+        except SqlglotError:
+            return sql  # the database gives the reason
+        if isinstance(failed, exp.Select) and isinstance(repaired, exp.Select):
+            repaired.set("expressions", [item.copy() for item in failed.expressions])
+        repaired_sql = repaired.sql(dialect="postgres")
+        if repaired_sql == failed.sql(dialect="postgres"):
+            return failed_sql
+        return repaired_sql
+
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""
         base = self._use_summaries(self._normalize_sql(base_sql))
@@ -1710,6 +1739,10 @@ def rewrite_generated_sql(raw_sql: str, augmented_question: str,
                           word_forms: Optional[Mapping[str, Sequence[str]]] = None,
                           ) -> RewriteResult:
     return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, word_forms)
+
+
+def finish_corrected_sql(raw: str, failed_sql: str) -> str:
+    return sql_rewrite_service.finish_corrected_sql(raw, failed_sql)
 
 
 def build_count_sql(base_sql: str) -> str:
