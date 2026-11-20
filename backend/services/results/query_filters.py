@@ -576,9 +576,9 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     if hands:
         # The stored codes (sql_rewriter._handedness_codes); without this the
         # chip showed the raw SQL ("Condition · EXISTS(SELECT 1 …").
-        names = {"left_handed": "left-handed", "right_handed": "right-handed",
-                 "ambidextrous": "ambidextrous", "unknown_handedness": "not recorded"}
-        return chip("field", "Handedness", [names.get(h.lower(), h) for h in hands])
+        hand_names = {"left_handed": "left-handed", "right_handed": "right-handed",
+                      "ambidextrous": "ambidextrous", "unknown_handedness": "not recorded"}
+        return chip("field", "Handedness", [hand_names.get(h.lower(), h) for h in hands])
 
     size = _size_label(node)
     if size:

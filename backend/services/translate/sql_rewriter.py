@@ -988,9 +988,10 @@ class SqlRewriteService:
             literals = re.findall(r"'((?:[^']|'')*)'", m.group(3))
             if not literals or re.sub(r"'(?:[^']|'')*'|[\s,]", "", m.group(3)):
                 return m.group(0)  # not a plain list of string literals
-            codes = [self._handedness_code(lit.replace("''", "'")) for lit in literals]
-            if None in codes:
-                return m.group(0)
+            codes = [code for lit in literals
+                     if (code := self._handedness_code(lit.replace("''", "'"))) is not None]
+            if len(codes) < len(literals):
+                return m.group(0)  # a value with no stored code
             return f"LOWER({m.group(1)}) {m.group(2).upper()} ({quoted(codes)})"
 
         def pattern(m: re.Match) -> str:
