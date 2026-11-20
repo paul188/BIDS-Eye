@@ -66,6 +66,7 @@ jobs:
         run: |
           pip install -r BIDS-SQL/requirements.txt
           pip install -e BIDS-SQL
+          pip install -e RAG -e LLM_preprocessor
           pip install -e backend
           pip install mypy==2.3.1 types-PyYAML==6.0.12.20261113
       # The folders and settings are in mypy.ini.
