@@ -47,6 +47,31 @@ jobs:
       # added once they are clean.
       - run: ruff check backend LLM_preprocessor RAG
 
+  typecheck:
+    name: Type check (mypy)
+    runs-on: ubuntu-latest
+    env:
+      # mypy reads the installed packages' types: same versions as the image.
+      PIP_CONSTRAINT: ${{ github.workspace }}/backend/constraints.txt
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/constraints.txt
+      - name: Install as the backend image does
+        run: |
+          pip install -r BIDS-SQL/requirements.txt
+          pip install -e BIDS-SQL
+          pip install -e RAG -e LLM_preprocessor
+          pip install -e backend
+          pip install mypy==2.3.1 types-PyYAML==6.0.12.20261113
+      # The folders and settings are in mypy.ini.
+      - run: mypy
+
   backend-tests:
     name: Backend tests
     runs-on: ubuntu-latest

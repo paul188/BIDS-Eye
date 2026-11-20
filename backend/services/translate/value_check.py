@@ -42,8 +42,8 @@ try:
     import sqlglot.errors
     from sqlglot import exp
 except ImportError:  # pragma: no cover - sqlglot is a backend dependency
-    sqlglot = None
-    exp = None
+    sqlglot = None  # type: ignore[assignment]
+    exp = None  # type: ignore[assignment]
 
 log = logging.getLogger(__name__)
 
@@ -186,8 +186,8 @@ def _check_in_list(node: Any, field: str) -> List[str]:
     """field IN ('a', 'b'): replace unknown values, leave out the rest; an
     empty list drops the condition."""
     literals = node.expressions
-    values = [_string(v) for v in literals]
-    if not literals or any(v is None for v in values) or node.args.get("query"):
+    values = [s for v in literals if (s := _string(v)) is not None]
+    if not literals or len(values) < len(literals) or node.args.get("query"):
         return []
     unknown = [v for v in values if not catalogue_values.is_known(field, v)]
     if not unknown:
@@ -221,6 +221,7 @@ def _check_comparison(node: Any, field: str, column: Any, value_node: Any) -> Li
         return []
     fixed = correction(field, value)
     if fixed:
+        replacement: exp.Expression
         if len(fixed) == 1:
             replacement = (exp.EQ if isinstance(node, exp.EQ) else exp.NEQ)(
                 this=column.copy(), expression=exp.Literal.string(fixed[0]))

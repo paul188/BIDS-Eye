@@ -41,7 +41,7 @@ _LITERAL_RE = re.compile(r"'([^']*)'")
 
 
 @lru_cache(maxsize=1)
-def _vocabulary() -> Tuple[Dict[str, Dict[str, List[str]]], Dict[str, FrozenSet[str]]]:
+def _vocabulary() -> Optional[Tuple[Dict[str, Dict[str, List[str]]], Dict[str, FrozenSet[str]]]]:
     """(group term → member codes, stored codes) per field; None, logged once
     (the result is cached), when the vocabulary cannot be loaded."""
     import yaml

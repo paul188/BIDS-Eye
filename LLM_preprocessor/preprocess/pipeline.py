@@ -194,11 +194,12 @@ def run_pipeline(
                         rag_results.setdefault(field, {})[term] = [c for c, _ in pairs]
                         _record_scores(field, pairs)
                 continue
+            scan_resolved: Dict[str, Dict[str, List[str]]]
             if hasattr(retriever, "retrieve_scan_terms"):
                 scan_resolved = retriever.retrieve_scan_terms(req.terms)
             else:
                 # Fallback for retrievers that don't yet have retrieve_scan_terms
-                scan_resolved: Dict[str, Dict[str, List[str]]] = {}
+                scan_resolved = {}
                 for field in ("datatype", "suffix", "task"):
                     if hasattr(retriever, "retrieve_for_field_multi"):
                         tm = retriever.retrieve_for_field_multi(field, req.terms)
@@ -236,7 +237,7 @@ def run_pipeline(
                 )
             else:
                 cat_key = req.field.value + "s"
-                term_map: Dict[str, List[str]] = {}
+                term_map = {}
                 for term in req.terms:
                     hints = retriever.retrieve(f"{req.field.value}: {term}")
                     codes = hints.get(cat_key, [])[:10]
@@ -276,7 +277,7 @@ def run_pipeline(
     unresolved: Dict[str, List[str]] = {}
     for req in rag_requests:
         if req.field == RAGField.SCAN:
-            resolved_scan = set()
+            resolved_scan: set[str] = set()
             for sf in ("datatype", "suffix", "task"):
                 resolved_scan.update(rag_results.get(sf, {}).keys())
             missed = [t for t in req.terms if t not in resolved_scan]

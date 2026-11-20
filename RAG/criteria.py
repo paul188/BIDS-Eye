@@ -140,8 +140,8 @@ def normalise_species(values: Iterable[str]) -> List[str]:
             codes = ["mouse", "rat"]
         elif key in SPECIES_CODES:
             codes = [key]
-        elif _SYNONYMS.get(key):
-            codes = [_SYNONYMS[key]]
+        elif synonym := _SYNONYMS.get(key):
+            codes = [synonym]
         else:
             codes = []
         out.extend(c for c in codes if c not in out)
@@ -295,12 +295,12 @@ def _recorded_age_in(low: float, high: Optional[float]) -> str:
         bounds.append(f"pa.age < {_num(high)}")
     rows = ("EXISTS (SELECT 1 FROM bids_participants pa WHERE pa.dataset_id = d.id AND "
             + " AND ".join(bounds) + ")")
-    if low <= 0:
+    if high is None:
+        dataset = f"(d.age_max >= {_num(low)} OR d.age_min >= {_num(low)})"
+    elif low <= 0:
         hi = _num(high)
         dataset = (f"((d.age_min > 0 AND d.age_min < {hi})"
                    f" OR (d.age_max > 0 AND d.age_max < {hi}))")
-    elif high is None:
-        dataset = f"(d.age_max >= {_num(low)} OR d.age_min >= {_num(low)})"
     else:
         lo, hi = _num(low), _num(high)
         dataset = (f"((d.age_min > 0 AND d.age_min < {hi} AND d.age_max >= {lo})"

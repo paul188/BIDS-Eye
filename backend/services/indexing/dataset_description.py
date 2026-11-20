@@ -212,6 +212,7 @@ RELATION_SCHEMA = {
 
 def relation_prompt(source: DatasetSource) -> str:
     paper = source.paper
+    assert paper is not None, "asked only for a dataset with a linked paper"
     return (
         f"[README] of OpenNeuro dataset {source.accession}\n"
         f"{source.readme_text() or '(none)'}\n\n"
@@ -297,6 +298,7 @@ def summary_prompt(source: DatasetSource, use_paper: bool) -> str:
         f"[CATALOGUE] fields recorded for the dataset\n{source.catalogue_text()}",
     ]
     if use_paper:
+        assert source.paper is not None, "use_paper needs a linked paper"
         parts.append(f"[PAPER] that reports this dataset\nTitle: {source.paper.title}\n"
                      f"Abstract: {source.paper.abstract}")
     rules = [
@@ -358,6 +360,7 @@ def check_summary(summary: str, source: DatasetSource, paper_used: bool) -> Opti
                 "README/catalogue (paper facts need the 'According to the linked paper' framing)"
             return f"numbers not in {where}: {sorted(invented)}"
     if paper_used:
+        assert source.paper is not None, "paper_used needs a linked paper"
         abstract = _words(source.paper.abstract)
         copied = {tuple(abstract[i:i + COPY_WORDS]) for i in range(len(abstract) - COPY_WORDS + 1)}
         words = _words(summary)
@@ -559,7 +562,8 @@ async def run(
 
     stats: Counter = Counter()
     accessions = [a for a in (accessions or []) if a]
-    scope, params = "", {"thin": THIN_CHARS}
+    scope = ""
+    params: dict[str, Any] = {"thin": THIN_CHARS}
     if accessions:
         scope, params = "AND d.accession_id = ANY(:acc)", {**params, "acc": list(accessions)}
     async with engine.connect() as conn:
@@ -634,6 +638,7 @@ async def _record(conn, dataset_id, outcome: Outcome, model: str, stats: Counter
     if dry_run:
         return
     if relation is not None:
+        assert source.paper is not None, "a relation needs a linked paper"
         value = {
             "paper_key": source.paper.paper_key, "relation": relation.relation,
             "shown": relation.shown, "mismatches": relation.mismatches,

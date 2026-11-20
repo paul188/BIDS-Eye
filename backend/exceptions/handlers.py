@@ -39,5 +39,7 @@ async def unexpected_error_response(request: Request, exc: Exception) -> JSONRes
 
 
 def add_error_handlers(app: FastAPI) -> None:
-    app.add_exception_handler(DomainError, domain_error_response)
+    # Starlette types every handler as taking any Exception; it calls this one
+    # only for a DomainError.
+    app.add_exception_handler(DomainError, domain_error_response)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unexpected_error_response)

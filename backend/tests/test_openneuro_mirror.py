@@ -34,7 +34,7 @@ class _Client:
         self.failures = dict(failures or {})
         self.fetched = []
 
-    def get_object(self, Bucket, Key):
+    def get_object(self, Bucket, Key):  # noqa: N803 - boto3's argument names
         self.fetched.append(Key)
         if Key in self.failures:
             raise self.failures.pop(Key)

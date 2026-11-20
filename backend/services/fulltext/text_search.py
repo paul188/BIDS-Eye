@@ -717,7 +717,9 @@ def expand_text_search(
                 rank_exact_parts.append(rank_exact)
         column = PAPER_FTS_COLUMN if (use_papers and not inside_not) else FTS_COLUMN
 
-        def atom(query: str) -> str:
+        def atom(query: Optional[str]) -> str:
+            if query is None:
+                return "FALSE"  # no term is searchable, as for "???" above
             return f"{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
 
         if not exact_enabled():
@@ -794,7 +796,7 @@ def keyword_query(question: str) -> Optional[str]:
 
 def is_safe_tsquery(query: Optional[str]) -> bool:
     """True if *query* was built here and can be inlined into SQL."""
-    return bool(query) and _SAFE_TSQUERY_RE.match(query) is not None
+    return bool(query) and _SAFE_TSQUERY_RE.match(query or "") is not None
 
 
 # Between the parts of a rank query: the tsquery for search_tsv, the one for

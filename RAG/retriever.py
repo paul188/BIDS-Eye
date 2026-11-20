@@ -727,10 +727,10 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     # ("resting-state eyes open" / "resting state eyes-open"). Treat that as an
     # exact match and return the codes of every label that scores 100.
     if results[0][1] >= 100:
-        codes = dict.fromkeys(
+        exact_codes = dict.fromkeys(
             code for label, score, _ in results if score >= 100 for code in all_targets[label]
         )
-        return [(code, 1.0) for code in codes]
+        return [(code, 1.0) for code in exact_codes]
 
     # Several labels often tie on WRatio: every label containing the term, and
     # every label the term contains, scores the same. Prefer a label made only
@@ -922,12 +922,13 @@ class MetadataRetriever:
         """
         if not self._db_url or not codes:
             return codes, []
-        if _field_to_db_col(field) is None:
+        db_column = _field_to_db_col(field)
+        if db_column is None:
             return codes, []
 
-        table, col = _field_to_db_col(field)
+        table, col = db_column
         try:
-            import psycopg2  # type: ignore
+            import psycopg2
         except ImportError:
             log.debug("psycopg2 not installed — skipping DB back-check")
             return codes, []

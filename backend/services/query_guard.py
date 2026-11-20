@@ -405,11 +405,12 @@ def is_timeout(exc: BaseException) -> bool:
     """A statement cancelled by statement_timeout (asyncpg QueryCanceledError,
     possibly wrapped by SQLAlchemy)."""
     seen = set()
-    while exc is not None and id(exc) not in seen:
-        seen.add(id(exc))
-        if "QueryCanceled" in type(exc).__name__ or "statement timeout" in str(exc):
+    current: Optional[BaseException] = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if "QueryCanceled" in type(current).__name__ or "statement timeout" in str(current):
             return True
-        exc = getattr(exc, "orig", None) or exc.__cause__
+        current = getattr(current, "orig", None) or current.__cause__
     return False
 
 

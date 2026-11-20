@@ -174,9 +174,10 @@ def _institution_lines(
                 parts.append(text_part)
             condition = parts[0] if len(parts) == 1 else "(" + " OR ".join(parts) + ")"
         else:
-            condition = _format_text_match(alternatives or [term])
-            if not condition:
+            text_condition = _format_text_match(alternatives or [term])
+            if not text_condition:
                 continue
+            condition = text_condition
         label = term.replace('"', "'")
         lines.append(f'  institution "{label}": {condition}')
     return lines
@@ -207,9 +208,10 @@ def _location_lines(plan: QueryPlan) -> List[str]:
             text_part = _format_text_match(list(dict.fromkeys([term, value])), _MODE_SHORT)
             condition = f"({sites} OR {text_part})" if text_part else sites
         else:
-            condition = _format_text_match([term])
-            if not condition:
+            text_condition = _format_text_match([term])
+            if not text_condition:
                 continue
+            condition = text_condition
         lines.append(f'  location "{term.replace(chr(34), chr(39))}": {condition}')
     return lines
 
@@ -542,8 +544,8 @@ def _build_augmented_question(
                 # dataset text; such terms get a condition of their own.
                 qualifiers = {t: _diagnosis_qualifier(t, cs) for t, cs in term_to_codes.items() if cs}
                 if any(qualifiers.values()):
-                    parts = [_diagnosis_condition({t: term_to_codes[t]}, q) for t, q in qualifiers.items()]
-                    parts = [p for p in parts if p]
+                    parts = [p for t, q in qualifiers.items()
+                             if (p := _diagnosis_condition({t: term_to_codes[t]}, q))]
                     condition = (parts[0] if len(parts) == 1
                                  else "(" + " OR ".join(parts) + ")") if parts else None
                 else:
@@ -705,12 +707,12 @@ def _build_augmented_question(
         for term in terms:
             if _term_key(term) in held:
                 continue
-            for field, missed in unresolved_terms.items():
-                if field != RAGField.INSTITUTION.value and any(_term_key(m) == _term_key(term) for m in missed):
+            for field_name, missed in unresolved_terms.items():
+                if field_name != RAGField.INSTITUTION.value and any(_term_key(m) == _term_key(term) for m in missed):
                     text_only = _format_text_match([term], _MODE_LOOSE)
                     if text_only:
                         held[_term_key(term)] = text_only
-                        unresolved_terms[field] = [m for m in missed if _term_key(m) != _term_key(term)]
+                        unresolved_terms[field_name] = [m for m in missed if _term_key(m) != _term_key(term)]
                     break
         listed = [term for term in terms if _term_key(term) in held]
         if len(listed) > 1:
@@ -878,8 +880,8 @@ def _build_augmented_question(
     # broken text filters on canonical-code columns (diagnosis, task, datatype, suffix).
     if unresolved_terms:
         missing_parts = []
-        for field, terms in unresolved_terms.items():
-            missing_parts.append(f"{field}: {', '.join(repr(t) for t in terms)}")
+        for field_name, terms in unresolved_terms.items():
+            missing_parts.append(f"{field_name}: {', '.join(repr(t) for t in terms)}")
         # One 'loose' text_match() per term: the dataset must contain the
         # term's most distinctive word anywhere in its text (README included);
         # the other words only move it up in the ranking.
@@ -907,10 +909,10 @@ def _build_augmented_question(
     # The SQL model must omit these from EXISTS filters (they always return empty).
     if db_miss_terms:
         miss_parts = []
-        for field, codes in db_miss_terms.items():
+        for field_name, codes in db_miss_terms.items():
             unique_codes = list(dict.fromkeys(codes))  # deduplicate
             miss_parts.append(
-                f"{field}: {', '.join(repr(c) for c in unique_codes)}"
+                f"{field_name}: {', '.join(repr(c) for c in unique_codes)}"
             )
         context_lines.append(
             "[DB MISS — resolved codes with zero rows in the database: "

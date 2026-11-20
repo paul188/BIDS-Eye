@@ -204,7 +204,11 @@ def _group_condition(group: Any, resolved: Dict[str, List[str]]) -> Optional[str
         if text:
             parts.append(text)
     for term in unknown:
-        parts.append(format_text_match([term.lower()], MODE_SHORT))
+        unknown_text = format_text_match([term.lower()], MODE_SHORT)
+        if unknown_text:  # None when nothing searchable is left
+            parts.append(unknown_text)
+    if not parts:
+        return None
     condition = "(" + " OR ".join(parts) + ")"
     minimum = _value(group, "min_subjects")
     if minimum is None:

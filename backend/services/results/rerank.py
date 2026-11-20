@@ -298,10 +298,10 @@ async def rerank_candidates(
         scores.update(result)
     if not scores:
         return None
-    result = order_from_scores(ids, scores)
+    ranked = order_from_scores(ids, scores)
     log.info("Re-ranked %d of %d candidates: %s", len(scores), len(ids),
              dict(sorted(_count(scores.values()).items(), reverse=True)))
-    return result
+    return ranked
 
 
 def _count(values) -> Dict[int, int]:

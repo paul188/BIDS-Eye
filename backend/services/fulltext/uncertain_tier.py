@@ -66,8 +66,8 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot.errors
     from sqlglot import exp
 except ImportError:  # pragma: no cover
-    sqlglot = None
-    exp = None
+    sqlglot = None  # type: ignore[assignment]
+    exp = None  # type: ignore[assignment]
 
 log = logging.getLogger(__name__)
 
@@ -726,7 +726,7 @@ def _keep_only_sex_pairs(nodes: list) -> list:
     alone held for a dataset with no participant rows at all.
     """
     rest = []
-    pairs = {}
+    pairs: dict[str, exp.Expression] = {}
     for node in nodes:
         bare = node.this if isinstance(node, exp.Paren) else node
         if isinstance(bare, exp.Not) and isinstance(bare.this, exp.Exists) and _reads_participant_sex(bare):
@@ -950,7 +950,10 @@ def _file_rows(select, alias: str) -> Optional[Tuple[str, List[str], List[str], 
     where = select.args.get("where")
     if where is None:
         return None
-    sidecar, files, file_columns, correlated = [], [], set(), False
+    sidecar: List[str] = []
+    files: List[str] = []
+    file_columns: set[str] = set()
+    correlated = False
     for part in _and_parts(where.this):
         columns = list(part.find_all(exp.Column))
         if (isinstance(part, exp.EQ) and {c.table for c in columns} == {inner, alias}
@@ -999,7 +1002,7 @@ def _strength_tsquery(strengths: Sequence[float]) -> str:
     english parser keeps "7T", "7Tesla", "7.0T" as one word and splits "7 T"
     and "7-Tesla" into the bare number. A prefilter only: the regex decides.
     Checked against the regex on Postgres (tests/test_scanner_sex_venues_postgres.py)."""
-    words = []
+    words: List[str] = []
     for value in strengths:
         number = f"{value:g}"
         forms = [number, f"{value:.1f}"]
@@ -1026,8 +1029,8 @@ def _sidecar(node, alias: str) -> Optional[SoftCondition]:
     selects = _exists_branches(node)
     if not selects:
         return None
-    rows = [_file_rows(s, alias) for s in selects]
-    if any(r is None for r in rows):
+    rows = [r for s in selects if (r := _file_rows(s, alias)) is not None]
+    if len(rows) < len(selects):
         return None
     if len({(tuple(r[2])) for r in rows}) > 1:
         return None   # branches on different files: no single file part
@@ -1251,7 +1254,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         r"TO_TSQUERY\(\s*'(?P<config>english|simple)'\s*,\s*'(?P<query>[^']*)'\s*\)",
         re.IGNORECASE,
     )
-    query_values = {}
+    query_values: dict[tuple[str, str], str] = {}
     for match in tsquery_re.finditer(inner_sql + "\n" + raw_sql):
         key = (match.group("config").lower(), match.group("query"))
         query_values.setdefault(key, f"q{len(query_values)}")

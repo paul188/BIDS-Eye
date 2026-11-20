@@ -40,7 +40,7 @@ import contextvars
 import os
 import threading
 import time
-from typing import List, Optional, Sequence
+from typing import Any, List, Optional, Sequence
 
 log = logging.getLogger(__name__)
 
@@ -215,7 +215,7 @@ def _call_gemini(model, prompt, system, temperature, api_key, *, json_schema=Non
                  thinking_level=None, call_timeout=None, max_tokens=None) -> str:
     from google import genai
     from google.genai import types
-    extra = {}
+    extra: dict[str, Any] = {}
     if json_schema is not None:
         extra["response_mime_type"] = "application/json"
         extra["response_json_schema"] = json_schema

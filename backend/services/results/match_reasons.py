@@ -23,7 +23,8 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass, field
+import dataclasses
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
@@ -36,7 +37,7 @@ from services.results import query_filters
 try:
     from sqlglot import exp
 except ImportError:  # pragma: no cover - sqlglot is a backend dependency
-    exp = None
+    exp = None  # type: ignore[assignment]
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +113,8 @@ class ChipPlan:
     """One chip and its evaluable branches, in the condition's order."""
     field: str
     kind: str
-    branches: List[Tuple[str, Venue]] = field(default_factory=list)
+    # dataclasses.field: the name 'field' is this class's own attribute.
+    branches: List[Tuple[str, Venue]] = dataclasses.field(default_factory=list)
 
 
 # ── Reading the SQL ───────────────────────────────────────────────────────────
@@ -315,8 +317,9 @@ def _number(value: float) -> str:
 def age_span(low: float, high: float) -> str:
     """'4–23 months' below 2 years, else '6–11 years'; one value once."""
     if high < 2:
-        lo, hi = round(low * 12), round(high * 12)
-        return f"{lo} months" if lo == hi else f"{lo}–{hi} months"
+        months_lo, months_hi = round(low * 12), round(high * 12)
+        return (f"{months_lo} months" if months_lo == months_hi
+                else f"{months_lo}–{months_hi} months")
     lo, hi = _number(low), _number(high)
     return f"{lo} years" if lo == hi else f"{lo}–{hi} years"
 
@@ -358,6 +361,7 @@ def reasons_for(plans: Sequence[ChipPlan], row: dict, total: Optional[int]) -> L
     reasons = []
     for c, chip in enumerate(plans):
         phrases: List[str] = []
+        phrase: Optional[str]
         for b, (_, venue) in enumerate(chip.branches):
             if not row.get(f"h{c}_{b}"):
                 continue
