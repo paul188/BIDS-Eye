@@ -236,17 +236,38 @@ def classify_branch(branch, alias: str) -> Optional[Venue]:
     return None
 
 
+def _is_age_species_guard(node, age_nodes: list) -> bool:
+    """True for the species check an age condition carries with it:
+    "(<ages> AND <human species>)" (RAG/criteria.py age_condition).
+
+    The search never asked about species, so no reason explains it. A
+    species limit the search did ask for ("human infants") is its own
+    condition in the WHERE chain, not paired with the ages in parentheses.
+    """
+    child, parent = node, node.parent
+    while isinstance(parent, exp.Paren):
+        child, parent = parent, parent.parent
+    if not isinstance(parent, exp.And) or not isinstance(parent.parent, exp.Paren):
+        return False
+    other = parent.left if parent.right is child else parent.right
+    return any(other is age for age in age_nodes)
+
+
 def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
     """The dataset alias and the chips worth explaining: not negated, with
-    at least two kinds of venue (a modality chip only ever matches files)."""
+    at least two kinds of venue (a modality chip only ever matches files),
+    and not the species check of an age condition."""
     if exp is None:
         return None, []
     alias, conditions = query_filters.where_conditions(sql)
     if alias is None:
         return None, []
+    age_nodes = [node for chip, node in conditions if chip.field == "Age"]
     plans = []
     for chip, node in conditions:
         if chip.negated:
+            continue
+        if chip.field == "Species" and _is_age_species_guard(node, age_nodes):
             continue
         branches = []
         for branch in or_branches(node):

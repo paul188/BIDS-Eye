@@ -58,8 +58,23 @@ def test_infant_age_group_has_four_venues():
     assert participants.participant_rows is not None and participants.age_column is not None
     # Either age bound alone is read as the whole range.
     assert age.branches[1][1].columns[:2] == ("age_min", "age_max")
-    # The species guard: a human label, or no label and the default.
-    assert _kinds(plans["Species"]) == [mr.FIELD, mr.ASSUMED]
+    # The species guard of the age group is not explained: nobody asked for a species.
+    assert "Species" not in plans
+
+
+@pytest.mark.parametrize("order", ["species first", "age first"])
+def test_a_species_asked_for_is_explained_next_to_an_age_group(order):
+    # "human infants": the species condition the search asked for is its
+    # own chip (a human label, or no label and the default); the age
+    # group's guard, the same SQL in parentheses with the ages, is not.
+    conditions = [species_condition(["human"]), age_condition(["infants"])]
+    if order == "age first":
+        conditions.reverse()
+    plans = mr.plan(_sql(*conditions))[1]
+    assert [p.field for p in plans] == (
+        ["Species", "Age"] if order == "species first" else ["Age", "Species"])
+    species = next(p for p in plans if p.field == "Species")
+    assert _kinds(species) == [mr.FIELD, mr.ASSUMED]
 
 
 def test_diagnosis_reads_the_participant_list_and_the_text():
