@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 import secrets
 import time
@@ -12,7 +11,6 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
@@ -23,6 +21,11 @@ from rate_limits import Category, rate_limit
 # The login lives in Starlette's SessionMiddleware (see api_security.py): a
 # signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
 # every /api request; the frontend never sees the value.
+#
+# The server keeps nothing about a user: the cookie holds the GitHub login and
+# the sign-in time, and nothing else is asked from GitHub or stored (no e-mail
+# address, no users table). The site's privacy notice says so
+# (frontend/src/components/CookieBanner.vue); tests/test_auth_session.py checks it.
 SESSION_COOKIE = "bids_eye_session"
 SESSION_DAYS = 7
 _SESSION_MAX_AGE = SESSION_DAYS * 24 * 3600
@@ -127,6 +130,9 @@ def require_auth(request: Request) -> dict:
 
 # ── GitHub login ──────────────────────────────────────────────────────────────
 
+GITHUB_SCOPE = "read:org"
+
+
 def _github_redirect_uri(request: Request) -> str:
     return os.getenv("GITHUB_REDIRECT_URI") or str(request.url_for("github_callback"))
 
@@ -154,7 +160,9 @@ async def github_login(request: Request):
         "https://github.com/login/oauth/authorize"
         f"?client_id={quote(os.getenv('GITHUB_CLIENT_ID', ''))}"
         f"&redirect_uri={quote(redirect_uri, safe='')}"
-        f"&scope={quote('read:org user:email')}"
+        # read:org only for the GITHUB_ORG membership check; the login name
+        # itself needs no scope.
+        f"&scope={quote(GITHUB_SCOPE)}"
         f"&state={state}"
     )
     return RedirectResponse(auth_url)
@@ -194,23 +202,6 @@ def _github_login(user_resp) -> str:
     return login.strip() if isinstance(login, str) else ""
 
 
-def _primary_email(emails_resp) -> str | None:
-    """The verified primary address from GitHub's /user/emails answer, else None.
-
-    Without the user:email scope, or on an error, GitHub answers with an
-    object instead of a list; the sign-in then goes on without an address.
-    """
-    data = _json(emails_resp) if emails_resp.status_code == 200 else None
-    if not isinstance(data, list):
-        return None
-    return next(
-        (e["email"] for e in data
-         if isinstance(e, dict) and e.get("primary") and e.get("verified")
-         and isinstance(e.get("email"), str)),
-        None,
-    )
-
-
 @router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
 async def github_callback(request: Request):
     code = request.query_params.get("code", "")
@@ -239,15 +230,11 @@ async def github_callback(request: Request):
     gh_headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 
     async with httpx.AsyncClient() as client:
-        user_resp, emails_resp = await asyncio.gather(
-            client.get("https://api.github.com/user", headers=gh_headers, timeout=10),
-            client.get("https://api.github.com/user/emails", headers=gh_headers, timeout=10),
-        )
+        user_resp = await client.get("https://api.github.com/user", headers=gh_headers, timeout=10)
 
     github_login_name = _github_login(user_resp)
     if not github_login_name:
         raise GitHubLoginMissingError(f"/user answered {user_resp.status_code}")
-    primary_email = _primary_email(emails_resp)
 
     github_org = os.getenv("GITHUB_ORG", "").strip()
     if github_org:
@@ -260,35 +247,13 @@ async def github_callback(request: Request):
         if membership.status_code != 204:
             raise NotInGitHubOrgError(f"{github_login_name} not in {github_org}")
 
-    await _remember_user(github_login_name, primary_email)
-
     # A fresh session for the new login: nothing from before it carries over.
     request.session.clear()
-    request.session["user"] = {
-        "sub": github_login_name,
-        "email": primary_email or "",
-        "iat": int(time.time()),
-    }
+    request.session["user"] = {"sub": github_login_name, "iat": int(time.time())}
 
     # Relative on purpose: the cookie was just set on this host, so the app
     # must open on this host too.
     return RedirectResponse("/")
-
-
-async def _remember_user(github_login: str, email: str | None) -> None:
-    from db.db import async_session_maker
-    from models import User
-
-    async with async_session_maker() as session:
-        await session.execute(
-            pg_insert(User)
-            .values(github_login=github_login, github_email=email)
-            .on_conflict_do_update(
-                index_elements=["github_login"],
-                set_={"github_email": email},
-            )
-        )
-        await session.commit()
 
 
 # ── Signed-in user ────────────────────────────────────────────────────────────

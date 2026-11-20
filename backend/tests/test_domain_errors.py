@@ -156,11 +156,6 @@ def test_identical_questions_over_http_share_one_search(monkeypatch):
 
     monkeypatch.setattr(search, "answer_question", slow)
 
-    async def not_recorded(session, user, question):  # the app here has no database
-        return None
-
-    monkeypatch.setattr(search, "_record_user_query", not_recorded)
-
     async def scenario():
         transport = httpx.ASGITransport(app=_app())
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:

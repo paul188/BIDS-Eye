@@ -4,6 +4,8 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 _CRAWLER = ROOT / "crawlers" / "openneuro-crawler"
 if str(_CRAWLER) not in sys.path:
@@ -149,3 +151,58 @@ def test_fetch_batch_separates_unavailable_from_unknown(monkeypatch) -> None:
 
 def test_status_column_is_not_shown_to_the_sql_model() -> None:
     assert not set(meta.STATUS_COLUMNS) & set(constants.OPTIONAL_DATASET_COLUMNS)
+
+
+class _Body:
+    """A urlopen answer whose read raises *error* or returns *data*."""
+
+    def __init__(self, data=b"", error=None):
+        self.data, self.error = data, error
+
+    def read(self, *args):
+        if self.error is not None:
+            raise self.error
+        return self.data
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def _answers(monkeypatch, *answers):
+    queue = list(answers)
+
+    def urlopen(request, timeout):
+        answer = queue.pop(0)
+        if isinstance(answer, BaseException):
+            raise answer
+        return answer
+
+    monkeypatch.setattr(meta.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(meta.time, "sleep", lambda s: None)
+    return queue
+
+
+def test_a_body_cut_short_or_not_utf8_is_retried(monkeypatch):
+    import http.client
+
+    _answers(monkeypatch, _Body(error=http.client.IncompleteRead(b"{")),
+             _Body(b'{"data": "\xff"}'), _Body(b'{"data": {"ok": 1}}'))
+    assert meta.post_graphql("{ x }") == {"data": {"ok": 1}}
+
+
+def test_every_attempt_failing_raises_openneuro_api_error_from_the_last(monkeypatch):
+    import http.client
+
+    _answers(monkeypatch, *[_Body(error=http.client.IncompleteRead(b"{"))] * 3)
+    with pytest.raises(meta.OpenNeuroAPIError) as caught:
+        meta.post_graphql("{ x }")
+    assert isinstance(caught.value.__cause__, http.client.IncompleteRead)
+
+
+def test_a_bug_is_not_retried(monkeypatch):
+    _answers(monkeypatch, TypeError("a bug"))
+    with pytest.raises(TypeError):
+        meta.post_graphql("{ x }")

@@ -25,6 +25,10 @@ ENV PIP_CONSTRAINT=/app/backend/constraints.txt
 RUN pip install --no-cache-dir -r /app/BIDS-SQL/requirements.txt && \
     pip install --no-cache-dir -e /app/BIDS-SQL
 
+# RAG/ and LLM_preprocessor/, which the backend imports by module name
+# (their pyproject.toml lists the modules)
+RUN pip install --no-cache-dir -e /app/RAG -e /app/LLM_preprocessor
+
 # Install Backend dependencies from pyproject.toml
 RUN pip install --no-cache-dir -e /app/backend
 

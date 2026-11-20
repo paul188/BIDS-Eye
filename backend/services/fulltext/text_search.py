@@ -73,17 +73,10 @@ import itertools
 import logging
 import os
 import re
-import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Callable, List, Mapping, Optional, Sequence, Tuple
 
-_ROOT = Path(__file__).resolve().parents[3]
-_RAG_DIR = _ROOT / "RAG"
-if _RAG_DIR.exists() and str(_RAG_DIR) not in sys.path:
-    sys.path.insert(0, str(_RAG_DIR))
-
-from text_terms import (  # noqa: E402
+from text_terms import (
     MODE_ALL,
     MODE_ALSO,
     MODE_LOOSE,

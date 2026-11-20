@@ -22,20 +22,8 @@ from __future__ import annotations
 
 import logging
 import re
-import sys
 from dataclasses import dataclass, field as _field
-from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Sequence
-
-# Make project-local modules importable regardless of working directory.
-_ROOT = Path(__file__).resolve().parents[3]
-for _mod_dir in (
-    _ROOT / "backend",
-    _ROOT / "LLM_preprocessor",
-    _ROOT / "RAG",
-):
-    if _mod_dir.exists() and str(_mod_dir) not in sys.path:
-        sys.path.insert(0, str(_mod_dir))
 
 try:  # pragma: no cover - exercised in environments that have sqlglot installed
     from sqlglot import exp, parse_one

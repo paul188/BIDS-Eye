@@ -7,8 +7,11 @@ name = "bids-eye-backend"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    # Install bids-sql first: pip install -e ../BIDS-SQL
+    # The repo's other folders, installed first (README.md, Dockerfile):
+    #   pip install -e ../BIDS-SQL -e ../RAG -e ../LLM_preprocessor
     "bids-sql",
+    "bids-eye-rag",
+    "bids-eye-llm-preprocessor",
     "fastapi>=0.111",
     "uvicorn[standard]>=0.29",
     "pydantic>=2.0",
@@ -31,6 +34,19 @@ dependencies = [
 embeddings = [
     "sentence-transformers>=3.0.0",
     "numpy>=1.24",
+]
+
+# The top-level modules other code imports by name (import schemas). main.py
+# is left out: uvicorn and the tests load it from this folder.
+[tool.setuptools]
+py-modules = [
+    "api_security",
+    "constants",
+    "deps",
+    "models",
+    "rate_limits",
+    "schemas",
+    "single_flight",
 ]
 
 [tool.setuptools.packages.find]

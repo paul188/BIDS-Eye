@@ -27,23 +27,14 @@ from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
 
-# ── Make BIDS-SQL importable ──────────────────────────────────────────────────
-_BIDS_SQL = Path(__file__).resolve().parents[1] / "BIDS-SQL"
-if str(_BIDS_SQL) not in sys.path:
-    sys.path.insert(0, str(_BIDS_SQL))
-
-import db.models  # noqa: E402, F401 — registers models with Base.metadata before create_all
-import models     # noqa: E402, F401 — registers backend-only models (message_usage, etc.)
-from db.db import create_all_tables, engine  # noqa: E402
-from services.catalogue import schema_capabilities, word_form_store  # noqa: E402
-from services.fulltext import text_search  # noqa: E402
-
-_RAG = Path(__file__).resolve().parents[1] / "RAG"
-if str(_RAG) not in sys.path:
-    sys.path.insert(0, str(_RAG))
-import institution_index  # noqa: E402
-import place_index  # noqa: E402
-from services.catalogue.schema_capabilities import has_fts, refresh_available_columns  # noqa: E402
+import db.models  # noqa: F401 — registers models with Base.metadata before create_all
+import institution_index
+import models     # noqa: F401 — registers backend-only models (query_log, etc.)
+import place_index
+from db.db import create_all_tables, engine
+from services.catalogue import schema_capabilities, word_form_store
+from services.catalogue.schema_capabilities import has_fts, refresh_available_columns
+from services.fulltext import text_search
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
