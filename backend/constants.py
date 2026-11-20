@@ -215,7 +215,7 @@ CREATE TABLE bids_participants (
     participant_id TEXT,
     age            FLOAT,
     sex            TEXT,        -- 'M', 'F', 'male', 'female', etc.
-    handedness     TEXT,        -- 'R', 'L', 'right', 'left', etc.
+    handedness     TEXT,        -- 'right_handed', 'left_handed', 'ambidextrous', 'unknown_handedness'
     diagnosis      TEXT,        -- normalized standard_code, e.g. 'epilepsy', 'schizophrenia',
                              --   'healthy_control', 'major_depressive_disorder', 'adhd'
                              -- Use broad concept keys for categories (auto-expanded at runtime):
