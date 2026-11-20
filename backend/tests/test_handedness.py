@@ -80,3 +80,13 @@ def test_logged_request_finds_left_handed_participants() -> None:
 def test_schema_names_the_stored_codes() -> None:
     line = next(line for line in build_schema_ddl().splitlines() if line.strip().startswith("handedness"))
     assert "'left_handed'" in line and "'L'" not in line
+
+
+def test_chip_names_the_handedness() -> None:
+    """The chip of "left-handed people with alzheimers" showed raw SQL (2026-11-20)."""
+    from services.results import query_filters as qf
+
+    sql = ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS(SELECT 1 FROM bids_participants AS p2 "
+           "WHERE p2.dataset_id = d.id AND LOWER(p2.handedness) = 'left_handed') GROUP BY d.id")
+    chips = qf.describe(sql)
+    assert [(c.field, c.label) for c in chips] == [("Handedness", "left-handed")]
