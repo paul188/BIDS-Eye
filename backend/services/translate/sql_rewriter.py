@@ -290,6 +290,7 @@ class SqlRewriteService:
         sql = self._unify_scanner_model_key(sql)
         sql = self._guard_json_number_casts(sql)
         sql = self._case_insensitive_sex(sql)
+        sql = self._handedness_codes(sql)
         sql = self._drop_invented_text_filters(sql, augmented_question)
         sql = self._inject_vocab_miss(sql, augmented_question)
         sql = self._inject_topics(sql, augmented_question)
@@ -320,6 +321,35 @@ class SqlRewriteService:
         return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery,
                              filter_sql=filter_sql, relaxed_sql=relaxed_sql,
                              value_fixes=value_fixes)
+
+    def finish_corrected_sql(self, raw: str, failed_sql: str) -> str:
+        """The model's repair of *failed_sql*, ready to run; FALLBACK_SQL when
+        its answer holds no query.
+
+        *failed_sql* already went through rewrite_generated_sql, so the repair
+        is not rewritten again: a second pass put the dataset columns over the
+        uncertain tier's wrapper, whose outer query has no table d, and every
+        repaired tiered query failed. Only the outer column list of
+        *failed_sql* is put back, because the page query and the result cards
+        read those columns (uncertain_level among them). The guards check the
+        repair like any generated query (services/query_guard.py).
+
+        Returns *failed_sql* itself when the model changed only the formatting.
+        """
+        sql = self.extract_sql(raw)
+        if sql == _FALLBACK_SQL or parse_one is None or exp is None:
+            return sql
+        try:
+            failed = parse_one(failed_sql, read="postgres")
+            repaired = parse_one(sql, read="postgres")
+        except SqlglotError:
+            return sql  # the database gives the reason
+        if isinstance(failed, exp.Select) and isinstance(repaired, exp.Select):
+            repaired.set("expressions", [item.copy() for item in failed.expressions])
+        repaired_sql = repaired.sql(dialect="postgres")
+        if repaired_sql == failed.sql(dialect="postgres"):
+            return failed_sql
+        return repaired_sql
 
     def build_count_sql(self, base_sql: str) -> str:
         """Wrap a cached base query in a COUNT(*) query for pagination metadata."""
@@ -884,6 +914,96 @@ class SqlRewriteService:
         rewritten = self._SEX_IN_RE.sub(in_list, self._SEX_EQ_RE.sub(eq, sql))
         if rewritten != sql:
             log.info("Made sex comparisons case-insensitive")
+        return rewritten
+
+    # p.handedness = 'left', p2.handedness IN ('L', 'left'), p.handedness ~* '\mleft\M',
+    # p.handedness ILIKE '%left%' — never an expression already wrapped in LOWER(...).
+    _HANDEDNESS_EQ_RE = re.compile(r"(?<![\w.(])(\w+\.handedness)\s*(=|<>|!=)\s*'([^']*)'", re.IGNORECASE)
+    _HANDEDNESS_IN_RE = re.compile(
+        r"(?<![\w.(])(\w+\.handedness)\s+(NOT\s+IN|IN)\s*\(([^()]*)\)", re.IGNORECASE)
+    _HANDEDNESS_PATTERN_RE = re.compile(
+        r"(?<![\w.(])(\w+\.handedness)\s+(NOT\s+I?LIKE|I?LIKE|!~\*?|~\*?)\s+(?:E)?'((?:[^']|'')*)'",
+        re.IGNORECASE)
+    # The stored codes (RAG/value_mappings.yaml, handedness) and what a
+    # request or the SQL model says for them.
+    _HANDEDNESS_CODES = ("right_handed", "left_handed", "ambidextrous", "unknown_handedness")
+    _HANDEDNESS_SYNONYMS = {
+        **dict.fromkeys(("l", "lh", "left", "lefthanded", "left_hander", "lefthander",
+                         "left_handers", "lefthanders", "sinistral", "sinistrals", "lefty"),
+                        "left_handed"),
+        **dict.fromkeys(("r", "rh", "right", "righthanded", "right_hander", "righthander",
+                         "right_handers", "righthanders", "dextral", "dextrals"),
+                        "right_handed"),
+        **dict.fromkeys(("a", "ambi", "ambidexter", "ambidextrals", "mixed", "mixed_handed",
+                         "both", "either"),
+                        "ambidextrous"),
+        **dict.fromkeys(("unknown", "n/a", "na"), "unknown_handedness"),
+    }
+
+    @classmethod
+    def _handedness_code(cls, literal: str) -> Optional[str]:
+        """The stored code a handedness value stands for, or None if unclear."""
+        value = re.sub(r"[\s-]+", "_", literal.strip().lower())
+        if value in cls._HANDEDNESS_CODES:
+            return value
+        if value in cls._HANDEDNESS_SYNONYMS:
+            return cls._HANDEDNESS_SYNONYMS[value]
+        for prefix, code in (("left", "left_handed"), ("right", "right_handed"), ("ambi", "ambidextrous")):
+            if value.startswith(prefix):
+                return code
+        return None
+
+    @classmethod
+    def _handedness_pattern_code(cls, pattern: str) -> Optional[str]:
+        """The one code a LIKE or regex pattern on handedness is after, or None."""
+        words = set(re.findall(r"[a-z]+", re.sub(r"\\[mMyYbB]", " ", pattern.lower())))
+        found = {code for code in (cls._handedness_code(w) for w in words if len(w) > 1) if code}
+        return found.pop() if len(found) == 1 else None
+
+    def _handedness_codes(self, sql: str) -> str:
+        """Compare participant handedness with the stored codes.
+
+        participants.tsv values are stored as right_handed, left_handed,
+        ambidextrous (a few 'Ambidextrous' / 'AMBIDEXTROUS') and
+        unknown_handedness. The SQL model wrote p2.handedness = 'left' and
+        p.handedness ~* '\\mleft\\M' (the underscore is a word character, so
+        \\M never matches inside 'left_handed'): four real requests for
+        left-handed participants found 0 datasets (2026-11-18), where 99
+        datasets list left-handed participants and 16 list at least 20.
+
+        Each equality, IN list, LIKE / ILIKE or regex match on a handedness
+        column becomes LOWER(col) compared with the stored code. A value or
+        pattern that names no handedness ('3.34', '%' alone) is left as it is.
+        """
+        def quoted(values: list[str]) -> str:
+            return ", ".join(f"'{v}'" for v in dict.fromkeys(values))
+
+        def eq(m: re.Match) -> str:
+            code = self._handedness_code(m.group(3))
+            if code is None:
+                return m.group(0)
+            return f"LOWER({m.group(1)}) {'=' if m.group(2) == '=' else '<>'} '{code}'"
+
+        def in_list(m: re.Match) -> str:
+            literals = re.findall(r"'((?:[^']|'')*)'", m.group(3))
+            if not literals or re.sub(r"'(?:[^']|'')*'|[\s,]", "", m.group(3)):
+                return m.group(0)  # not a plain list of string literals
+            codes = [self._handedness_code(lit.replace("''", "'")) for lit in literals]
+            if None in codes:
+                return m.group(0)
+            return f"LOWER({m.group(1)}) {m.group(2).upper()} ({quoted(codes)})"
+
+        def pattern(m: re.Match) -> str:
+            code = self._handedness_pattern_code(m.group(3).replace("''", "'"))
+            if code is None:
+                return m.group(0)
+            negated = m.group(2).upper().startswith(("NOT", "!"))
+            return f"LOWER({m.group(1)}) {'<>' if negated else '='} '{code}'"
+
+        rewritten = self._HANDEDNESS_PATTERN_RE.sub(
+            pattern, self._HANDEDNESS_IN_RE.sub(in_list, self._HANDEDNESS_EQ_RE.sub(eq, sql)))
+        if rewritten != sql:
+            log.info("Compared handedness with the stored codes")
         return rewritten
 
     def _rewrite_task_ilike_concepts(self, sql: str) -> str:
@@ -1710,6 +1830,10 @@ def rewrite_generated_sql(raw_sql: str, augmented_question: str,
                           word_forms: Optional[Mapping[str, Sequence[str]]] = None,
                           ) -> RewriteResult:
     return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, word_forms)
+
+
+def finish_corrected_sql(raw: str, failed_sql: str) -> str:
+    return sql_rewrite_service.finish_corrected_sql(raw, failed_sql)
 
 
 def build_count_sql(base_sql: str) -> str:

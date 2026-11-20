@@ -572,6 +572,14 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         sex_names = {"f": "female", "female": "female", "m": "male", "male": "male"}
         return chip("sex", "Sex", [sex_names.get(s.lower(), s) for s in sexes])
 
+    hands = _literals_for(node, ["handedness"])
+    if hands:
+        # The stored codes (sql_rewriter._handedness_codes); without this the
+        # chip showed the raw SQL ("Condition · EXISTS(SELECT 1 …").
+        names = {"left_handed": "left-handed", "right_handed": "right-handed",
+                 "ambidextrous": "ambidextrous", "unknown_handedness": "not recorded"}
+        return chip("field", "Handedness", [names.get(h.lower(), h) for h in hands])
+
     size = _size_label(node)
     if size:
         return chip("field", "Size", size)
@@ -599,10 +607,77 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
                            detail=(f"The dataset text mentions: {', '.join(phrases[:8])}. "
                                    f"{forms_note}").strip())
 
-    sql = node.sql(dialect="postgres")
-    return QueryFilter(id=chip_id, kind="other", field="Condition",
-                       label=(sql[:48] + "…") if len(sql) > 48 else sql,
-                       negated=negated, detail=sql)
+    field_name, label, detail = plain_condition(node)
+    return QueryFilter(id=chip_id, kind="other", field=field_name, label=label,
+                       negated=negated, detail=detail)
+
+
+# ── Any other condition -> words, never SQL ───────────────────────────────────
+# A chip showed "Condition · EXISTS(SELECT 1 FROM bids_participants AS p2 WHE…"
+# (2026-11-20). The exact condition stays under "Show generated SQL".
+
+_TABLE_WORDS = {
+    "bids_datasets": "Dataset", "bids_participants": "Participants", "bids_objects": "Files",
+    "bids_dataset_facets": "Files", "bids_derivatives": "Processed data",
+    "bids_dataset_papers": "Papers", "bids_papers": "Papers", "bids_dataset_sites": "Sites",
+    "bids_site_places": "Sites",
+}
+# Join keys and row ids say nothing about what a condition asks.
+_KEY_COLUMNS = frozenset({"id", "dataset_id", "participant_id", "subject", "paper_id", "name_raw"})
+_PLAIN_VALUE_RE = re.compile(r"^[\w][\w .,'()/+-]{0,40}$")
+
+
+def _words_of(identifier: str) -> str:
+    """'SubjectsWithFewSessions' / 'other_entities' / 'bids_derivatives' -> plain words."""
+    name = re.sub(r"^bids_", "", identifier)
+    name = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name)
+    return re.sub(r"[_\s]+", " ", name).strip().lower()
+
+
+def plain_condition(node) -> Tuple[str, str, str]:
+    """(field, label, detail) in words for a condition no other chip describes.
+
+    Field: the table the condition looks at ("Participants", "Processed data"),
+    "Dataset" for the dataset's own columns. Label: the plain values it compares
+    with ("fmriprep"), else "not recorded" for an IS NULL test, else the columns
+    it reads ("handedness"). No SQL text in any of the three.
+    """
+    tables = [t.name for t in node.find_all(exp.Table) if t.name]
+    fields = [_TABLE_WORDS.get(t.lower(), _words_of(t).capitalize()) for t in tables]
+    field_name = next((f for f in fields if f != "Dataset"), fields[0] if fields else "Dataset")
+
+    columns: List[str] = []
+    for column in node.find_all(exp.Column):
+        name = column.name or ""
+        if name and name.lower() not in _KEY_COLUMNS and not column.find_ancestor(exp.Count):
+            columns.append(_words_of(name))
+    for key in node.find_all(exp.JSONExtractScalar, exp.JSONExtract):
+        literal = key.expression
+        if isinstance(literal, exp.Literal) and literal.is_string:
+            columns.append(_words_of(literal.this))
+    columns = [c for c in dict.fromkeys(columns) if c]
+
+    values = [lit.this.strip("%") for lit in node.find_all(exp.Literal)
+              if lit.is_string and not lit.find_ancestor(exp.Anonymous)]
+    values = [v for v in dict.fromkeys(values)
+              if _PLAIN_VALUE_RE.match(v) and not re.search(r"\b(select|from|where)\b", v, re.I)]
+    values = [_humanize_code(v) if "_" in v else v for v in values]
+
+    def named(column: str) -> str:
+        return column.upper() if column in ("doi", "dicom", "url") else column[:1].upper() + column[1:]
+
+    if values:
+        label = _short_list(values, " or ")
+    elif any(isinstance(n.expression, exp.Null) for n in node.find_all(exp.Is)):
+        label = f"{named(columns[0])} not recorded" if columns else "Not recorded"
+    elif columns:
+        label = _short_list([named(c) for c in columns], ", ")
+    else:
+        label = "Other condition"
+    about = f": {', '.join(columns[:6])}" if columns else ""
+    detail = (f"A condition on the {field_name.lower()}{about}. "
+              "It has no summary of its own; “Show generated SQL” has it in full.")
+    return field_name, label, detail
 
 
 # ── Sort order and limit -> one chip ──────────────────────────────────────────
@@ -786,9 +861,9 @@ def describe(sql: Optional[str]) -> List[QueryFilter]:
                 chips.append(exclusion)
         except ValueError as exc:  # a number that is not one; the other chips still show
             log.warning("query_filters: could not describe %s (%s)", node, exc)
-            text = node.sql(dialect="postgres")
-            chips.append(QueryFilter(id=chip_id, kind="other", field="Condition",
-                                     label=text[:48], detail=text))
+            field_name, label, detail = plain_condition(node)
+            chips.append(QueryFilter(id=chip_id, kind="other", field=field_name,
+                                     label=label, detail=detail))
     sort = describe_order(tree)
     if sort is not None:
         chips.append(sort)

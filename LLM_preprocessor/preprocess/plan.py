@@ -109,7 +109,7 @@ class ParticipantGroup(BaseModel):
     )
     handedness: List[str] = Field(
         default_factory=list,
-        description="e.g. ['right'], ['left'], ['ambidextrous']"
+        description="stored codes: ['right_handed'], ['left_handed'], ['ambidextrous']"
     )
     age_min: Optional[float] = Field(default=None, description="Minimum participant age")
     age_max: Optional[float] = Field(default=None, description="Maximum participant age")

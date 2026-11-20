@@ -495,6 +495,7 @@ from schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
 from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
+from services.translate.sql_rewriter import finish_corrected_sql as _finish_corrected_sql  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.catalogue.schema_capabilities import (  # noqa: E402
     available_columns as _available_columns,
@@ -509,6 +510,9 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     """
     Stage 4 — ask Gemini to fix a SQL query that failed with a PostgreSQL error.
     Returns the corrected SQL, or the original if correction fails.
+
+    *sql* is the rewritten query that ran (uncertain tier included); the
+    answer is not rewritten again (sql_rewriter.finish_corrected_sql).
     """
     try:
         from constants import build_schema_ddl
@@ -519,7 +523,8 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
 
     prompt = (
         "A PostgreSQL query failed. Fix it and return ONLY the corrected SQL — "
-        "no explanation, no markdown fences.\n\n"
+        "no explanation, no markdown fences. Change only what the error requires; "
+        "keep the SELECT list and the rest of the query as they are.\n\n"
         f"Original question:\n{question}\n\n"
         f"Database schema:\n{schema_ddl}\n\n"
         f"Failed SQL:\n{sql}\n\n"
@@ -529,7 +534,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     try:
         raw = llm_generate(prompt, temperature=0.0, api_key=api_key,
                            purpose="sql_correction")
-        corrected = _rewrite_generated_sql(raw, question).sql
+        corrected = _finish_corrected_sql(raw, sql)
         return corrected if corrected != _FALLBACK_SQL else sql
     except LLMAllFailedError as exc:
         log.warning("All LLM tiers failed during SQL correction: %s", exc)

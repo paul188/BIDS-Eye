@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from uuid import UUID
 
+import pytest
 import sqlglot
 
 from services.results import query_filters as qf
@@ -451,3 +453,29 @@ def test_a_shortened_label_keeps_the_full_list():
     assert chip.label == "Epilepsy +2"
     assert chip.values == ["Epilepsy", "Focal epilepsy", "Absence epilepsy"]
     assert _by_id(_sql(DIAGNOSIS))["w0"].values == []  # one diagnosis: nothing hidden
+
+
+# ── no SQL in any chip ────────────────────────────────────────────────────────
+# "Condition · EXISTS(SELECT 1 FROM bids_participants AS p2 WHE…" was shown
+# as a chip (2026-11-20). Conditions without a summary of their own are named
+# in words; the SQL stays under "Show generated SQL".
+
+_SQL_TOKENS = re.compile(r"\b(SELECT|FROM|WHERE|EXISTS|IS NULL|IS NOT NULL)\b|@@|->>|\b[a-z]\w*\.\w+\b|[()=<>]")
+
+
+@pytest.mark.parametrize("condition, field, label", [
+    (r"EXISTS(SELECT 1 FROM bids_participants AS p WHERE p.dataset_id = d.id AND p.handedness ~* '\mleft\M')",
+     "Participants", "Handedness"),
+    ("d.license IS NULL", "Dataset", "License not recorded"),
+    ("NOT d.doi IS NULL", "Dataset", "DOI not recorded"),
+    ("EXISTS(SELECT 1 FROM bids_derivatives AS dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep')",
+     "Processed data", "fmriprep"),
+    ("EXISTS(SELECT 1 FROM bids_dataset_papers AS dp WHERE dp.dataset_id = d.id AND dp.role = 'primary')",
+     "Papers", "primary"),
+    ("d.id IN (SELECT dataset_id FROM datasets_to_exclude)", "Datasets to exclude", "Other condition"),
+])
+def test_other_conditions_are_named_in_words(condition: str, field: str, label: str) -> None:
+    chips = qf.describe(_sql(condition))
+    assert [(c.field, c.label) for c in chips] == [(field, label)]
+    for text in (chips[0].field, chips[0].label, chips[0].detail):
+        assert not _SQL_TOKENS.search(text.replace("“Show generated SQL”", "")), text
