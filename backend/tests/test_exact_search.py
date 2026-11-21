@@ -197,8 +197,8 @@ def test_exact_words_rank_on_the_unstemmed_vector(exact, monkeypatch) -> None:
     assert ranking.split_rank("memory#x'; DROP") == ("memory", None)
     assert ranking.join_rank("memory", None) == "memory" and ranking.join_rank(None, None) is None
 
-    assert ranking.rank_expression("ft", "memory") == ranking.text_rank_expression("ft.search_tsv", "memory")
-    assert ranking.rank_expression("ft", "#(ageing | aging)") == ranking.text_rank_expression(
+    assert ranking.rank_expression("ft", "memory") == ranking.ts_rank_cd_expression("ft.search_tsv", "memory")
+    assert ranking.rank_expression("ft", "#(ageing | aging)") == ranking.ts_rank_cd_expression(
         "ft.search_tsv_exact", "(ageing | aging)", "simple")
     both = ranking.rank_expression("ft", mixed.rank_tsquery)
     assert "ft.search_tsv, to_tsquery('english', 'quantitative & mri & ageing'), 0)" in both
@@ -206,7 +206,7 @@ def test_exact_words_rank_on_the_unstemmed_vector(exact, monkeypatch) -> None:
     assert ranking.rank_expression("ft", None) is None
     # A cached rank from before the switch went off: the exact part is ignored.
     monkeypatch.delenv(vectors.EXACT_ENV)
-    assert ranking.rank_expression("ft", mixed.rank_tsquery) == ranking.text_rank_expression(
+    assert ranking.rank_expression("ft", mixed.rank_tsquery) == ranking.ts_rank_cd_expression(
         "ft.search_tsv", "quantitative & mri & ageing")
     assert ranking.rank_expression("ft", "#(ageing | aging)") is None
 

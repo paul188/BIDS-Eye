@@ -19,23 +19,26 @@ from services.fulltext import vectors
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
 
 # How much a match counts, by where it is. The search vectors give each part
-# of a dataset a weight label (crawlers/migrate_add_search_tsv.sql and the
-# other migrate_add_*.sql); ts_rank_cd scores a label by its weight here.
-WEIGHT_NAME = 1.0           # label A: the dataset's name
-WEIGHT_SHORT_FIELDS = 0.6   # label B: short fields, incl. conditions the README says were studied
-WEIGHT_LLM_PROFILE = 0.4    # label C: the language model's profile of the README
-WEIGHT_README = 0.05        # label D: README text, and paper text when that is on
+# of a dataset a Postgres weight label (setweight in crawlers/migrate_add_search_tsv.sql
+# and the other migrate_add_*.sql); ts_rank_cd scores a label by its weight here.
+TS_WEIGHT_NAME = 1.0           # label A: the dataset's name
+TS_WEIGHT_SHORT_FIELDS = 0.6   # label B: short fields, incl. conditions the README says were studied
+TS_WEIGHT_LLM_PROFILE = 0.4    # label C: the language model's profile of the README
+TS_WEIGHT_README = 0.05        # label D: README text, and paper text when that is on
 
-WEIGHT_BY_LABEL = {
-    "A": WEIGHT_NAME,
-    "B": WEIGHT_SHORT_FIELDS,
-    "C": WEIGHT_LLM_PROFILE,
-    "D": WEIGHT_README,
+TS_WEIGHT_BY_LABEL = {
+    "A": TS_WEIGHT_NAME,
+    "B": TS_WEIGHT_SHORT_FIELDS,
+    "C": TS_WEIGHT_LLM_PROFILE,
+    "D": TS_WEIGHT_README,
 }
-# ts_rank_cd takes the weights as one array in the order D, C, B, A.
-RANK_WEIGHTS = "{" + ", ".join(str(WEIGHT_BY_LABEL[label]) for label in "DCBA") + "}"
-# 32 scales the rank into 0..1 (rank / (rank + 1)), the range RAG scores use.
-RANK_NORMALIZATION = 32
+# ts_rank_cd's weights argument: one array in the order D, C, B, A.
+TS_RANK_WEIGHTS = "{" + ", ".join(str(TS_WEIGHT_BY_LABEL[label]) for label in "DCBA") + "}"
+# ts_rank_cd's normalization argument, a Postgres bit mask. 0 leaves the rank
+# as it is; 32 divides it by itself + 1, which puts it in 0..1, the range RAG
+# scores use.
+TS_RANK_NORMALIZATION_NONE = 0
+TS_RANK_NORMALIZATION_RANK_PLUS_ONE = 32
 
 # Between the parts of a rank query: the tsquery for search_tsv, the one for
 # search_tsv_exact, and the one for a search with alternative words ('also'). Not a tsquery
@@ -107,20 +110,20 @@ def _plain_rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
     if exact and not vectors.exact_enabled():
         exact = None
     if stemmed and not exact:
-        return text_rank_expression(f"{alias}.{FTS_COLUMN}", stemmed)
+        return ts_rank_cd_expression(f"{alias}.{FTS_COLUMN}", stemmed)
     if exact and not stemmed:
-        return text_rank_expression(f"{alias}.{EXACT_FTS_COLUMN}", exact, EXACT_TS_CONFIG)
+        return ts_rank_cd_expression(f"{alias}.{EXACT_FTS_COLUMN}", exact, EXACT_TS_CONFIG)
     if not stemmed:
         return None
-    raw = (f"COALESCE(ts_rank_cd('{RANK_WEIGHTS}', {alias}.{FTS_COLUMN}, "
-           f"to_tsquery('{TS_CONFIG}', '{stemmed}'), 0), 0) + "
-           f"COALESCE(ts_rank_cd('{RANK_WEIGHTS}', {alias}.{EXACT_FTS_COLUMN}, "
-           f"to_tsquery('{EXACT_TS_CONFIG}', '{exact}'), 0), 0)")
-    # Normalization 32 of text_rank_expression, applied to the sum.
+    raw = (f"COALESCE(ts_rank_cd('{TS_RANK_WEIGHTS}', {alias}.{FTS_COLUMN}, "
+           f"to_tsquery('{TS_CONFIG}', '{stemmed}'), {TS_RANK_NORMALIZATION_NONE}), 0) + "
+           f"COALESCE(ts_rank_cd('{TS_RANK_WEIGHTS}', {alias}.{EXACT_FTS_COLUMN}, "
+           f"to_tsquery('{EXACT_TS_CONFIG}', '{exact}'), {TS_RANK_NORMALIZATION_NONE}), 0)")
+    # TS_RANK_NORMALIZATION_RANK_PLUS_ONE, applied to the sum.
     return f"(({raw}) / (({raw}) + 1))"
 
 
-def text_rank_expression(vector_sql: str, rank_tsquery: str, config: str = TS_CONFIG) -> str:
+def ts_rank_cd_expression(vector_sql: str, rank_tsquery: str, config: str = TS_CONFIG) -> str:
     """SQL expression for the 0..1 text rank of one dataset.
 
     *config*: TS_CONFIG for search_tsv, EXACT_TS_CONFIG for search_tsv_exact.
@@ -130,6 +133,6 @@ def text_rank_expression(vector_sql: str, rank_tsquery: str, config: str = TS_CO
     if config not in (TS_CONFIG, EXACT_TS_CONFIG):
         raise ValueError("unknown text search configuration")
     return (
-        f"COALESCE(ts_rank_cd('{RANK_WEIGHTS}', {vector_sql}, "
-        f"to_tsquery('{config}', '{rank_tsquery}'), {RANK_NORMALIZATION}), 0)"
+        f"COALESCE(ts_rank_cd('{TS_RANK_WEIGHTS}', {vector_sql}, "
+        f"to_tsquery('{config}', '{rank_tsquery}'), {TS_RANK_NORMALIZATION_RANK_PLUS_ONE}), 0)"
     )
