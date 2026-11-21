@@ -264,3 +264,17 @@ def test_construct_with_few_tasks_counts_only_next_to_a_named_task(
     assert "emotion_general" in _resolve_yaml_term("task", "emotion")
     # Constructs linked to many tasks are unchanged.
     assert len(_resolve_yaml_term("task", "decision making")) > 20
+
+
+@pytest.mark.parametrize("term", ["brain trauma", "neurotrauma", "head trauma", "acquired brain injuries"])
+def test_brain_trauma_is_traumatic_brain_injury(term: str) -> None:
+    # These were synonyms of the group sensory_metabolic_trauma, which also
+    # holds the blindness and perceptual-distortion codes: "datasets containing
+    # brain trauma" confirmed cannabis users and bilinguals (live, 2026-11-15).
+    assert _resolve_yaml_term("diagnosis", term) == ["traumatic_brain_injury", "brain_contusion"]
+
+
+@pytest.mark.parametrize("term", ["glioblastoma", "GBM"])
+def test_glioblastoma_is_grade_4_glioma(term: str) -> None:
+    # Was a synonym of tumors_lesions: meningioma, CNS lymphoma, brain abscess.
+    assert _resolve_yaml_term("diagnosis", term) == ["grade_4_glioma"]

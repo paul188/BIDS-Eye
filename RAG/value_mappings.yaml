@@ -2565,10 +2565,6 @@ diagnosis:
       weight: 0.85
     - term: brain malignancy
       weight: 0.85
-    - term: glioblastoma
-      weight: 0.8
-    - term: GBM
-      weight: 0.7
     - term: intracranial neoplasm
       weight: 0.85
   tumor_spectrum:
@@ -2816,8 +2812,10 @@ diagnosis:
     broader:
     - glioma_spectrum
     synonyms:
+    - term: glioblastoma
+      weight: 0.8
     - term: GBM
-      weight: 0.1
+      weight: 0.7
     - term: glioblastoma multiforme
       weight: 0.1
     - term: WHO grade IV glioma
@@ -3820,16 +3818,9 @@ diagnosis:
     broader:
     - neurological
     synonyms:
-    - acquired brain injuries
     - sensory disorders
     - metabolic brain conditions
     - traumatic and sensory conditions
-    - term: brain trauma
-      weight: 0.85
-    - term: neurotrauma
-      weight: 0.85
-    - term: head trauma
-      weight: 0.85
   traumatic_brain_injury:
     label: traumatic brain injury
     standard_code: traumatic_brain_injury
@@ -3855,7 +3846,13 @@ diagnosis:
     - term: craniocerebral injury
       weight: 0.1
     - term: head trauma
-      weight: 0.1
+      weight: 0.85
+    - term: brain trauma
+      weight: 0.85
+    - term: neurotrauma
+      weight: 0.85
+    - term: acquired brain injuries
+      weight: 0.85
     - term: closed head injury
       weight: 0.1
     - term: CHI
