@@ -73,10 +73,9 @@ def test_a_stem_collides_when_other_forms_bring_most_datasets() -> None:
 
 # ── Deciding ──────────────────────────────────────────────────────────────────
 
-def test_prompt_block_lists_the_colliding_forms_with_counts(reviewed_list) -> None:
+def test_prompt_block_lists_forms_with_counts(reviewed_list) -> None:
     block = word_forms.prompt_block(word_forms.needs_decision({"ageing": AGEING, "scans": SCANS}))
-    # The pairs to judge, then the word itself; "ageings" is the word's own plural.
-    assert "ageing: age (220), aged (44), aging (34), ages (30), ageing (4)\n" in block + "\n"
+    assert "ageing: age (220), aged (44), aging (34), ages (30), ageing (4), ageings (1)" in block
     assert "scans" not in block
     assert word_forms.prompt_block([]) == ""
 
@@ -105,10 +104,9 @@ def test_reviewed_list_wins_and_covers_inflections(reviewed_list) -> None:
         "exact": [{"forms": ["severe", "severely", "severity"], "excludes": ["several"]}],
         "stemmed": [["depressed", "depression", "depressive"]],
     })
-    # Without the catalogue, the forms the group names.
     assert word_forms.forms_for("severity") == ("severity", "severe", "severely")
-    # The list's pair wins over a model's choice.
-    assert word_forms.forms_for("severe", {"severe": ("severe", "several")}) == ("severe",)
+    assert word_forms.forms_for("severe", {"severe": ("severe", "several")}) == (
+        "severe", "severely", "severity")
     # Listed as stemmed: no forms, and the model is not asked.
     assert word_forms.forms_for("depressed", {"depressed": ("depressed",)}) is None
     assert word_forms.needs_decision({"depressed": DEPRESSED}) == []
@@ -118,7 +116,7 @@ def test_reviewed_list_wins_and_covers_inflections(reviewed_list) -> None:
 
 
 def test_forms_are_safe_for_a_tsquery_literal(reviewed_list) -> None:
-    reviewed_list({"exact": [{"forms": ["sign", "sign's", "sign | x", "signs"], "excludes": ["signal"]}]})
+    reviewed_list({"exact": [{"forms": ["sign", "sign's", "sign | x", "signs"]}]})
     assert word_forms.forms_for("sign") == ("sign", "signs")
     assert word_forms.forms_for("x", {"x": ("x", "y'); DROP")}) == ("x",)
 
@@ -276,94 +274,3 @@ def test_refresh_refuses_a_connection_without_a_transaction() -> None:
     with pytest.raises(RuntimeError, match="needs a transaction"):
         asyncio.run(store.refresh(conn))
     assert not any("DELETE" in sql for sql in conn.statements)
-
-
-# ── Pairs ─────────────────────────────────────────────────────────────────────
-
-WEIGHT = WordEvidence("weight", "weight", 1400, (
-    ("weighted", 1300), ("weight", 120), ("weights", 40), ("weighting", 30), ("weightings", 12)))
-
-
-def test_a_form_nobody_judged_keeps_matching(reviewed_list) -> None:
-    rare = WordEvidence("ageing", "age", 300, AGEING.forms + (("ageless", 3),))
-    # "ageless" is too rare to be shown, so nobody judged it: it stays.
-    assert "ageless" not in word_forms.open_forms(rare)
-    decided = word_forms.decide({"ageing": rare}, [("ageing", ["ageing", "aging"])])
-    assert decided == {"ageing": ("ageing", "aging", "ageings", "ageless")}
-
-
-def test_a_pair_goes_one_way(reviewed_list) -> None:
-    reviewed_list({"exact": [{"forms": ["ageing", "aging"], "excludes": ["age", "ages", "aged"],
-                              "why": "x"}]})
-    assert word_forms.excluded_forms("ageing") == {"age", "ages", "aged"}
-    # "aged" against "ageing" was not judged: a search for "aged" stems.
-    assert word_forms.excluded_forms("aged") == frozenset()
-    assert word_forms.forms_for("aged") is None
-
-
-def test_a_reviewed_word_takes_its_stem_minus_the_excluded_forms(reviewed_list) -> None:
-    reviewed_list({"exact": [{"forms": ["weight", "weights"], "excludes": ["weighted", "weighting"],
-                              "why": "x"}]})
-    asked = []
-
-    def catalogue(word):
-        asked.append(word)
-        return WEIGHT
-
-    assert word_forms.forms_for("weight", None, catalogue) == ("weight", "weights", "weightings")
-    assert asked == ["weight"]
-    # A word without pairs never asks the catalogue.
-    assert word_forms.forms_for("memory", None, catalogue) is None
-    assert asked == ["weight"]
-    # The question's words get the same from decide(), with no model answer.
-    assert word_forms.decide({"weight": WEIGHT}, []) == {"weight": ("weight", "weights", "weightings")}
-
-
-def test_a_reviewed_word_with_an_open_pair_goes_to_the_model(reviewed_list) -> None:
-    reviewed_list({"exact": [{"forms": ["weight", "weights"], "excludes": ["weighted"], "why": "x"}]})
-    # "weighted" is judged; "weighting" (30 datasets, against 120) is not.
-    assert word_forms.open_forms(WEIGHT) == ()
-    many = WordEvidence("weight", "weight", 1600, WEIGHT.forms[:3] + (("weighting", 200),))
-    assert word_forms.open_forms(many) == ("weighting",)
-    decided = word_forms.decide({"weight": many}, [("weight", ["weight", "weights"])])
-    assert decided == {"weight": ("weight", "weights")}
-    # Listed as stemmed: every pair matches, nothing is open.
-    reviewed_list({"stemmed": [["weight", "weighted", "weighting"]]})
-    assert word_forms.open_forms(many) == ()
-
-
-def test_excluded_forms_cover_both_spellings(reviewed_list) -> None:
-    reviewed_list({"exact": [{"forms": ["organ", "organs"], "excludes": ["organized"], "why": "x"}]})
-    assert {"organized", "organised"} <= word_forms.excluded_forms("organ")
-
-
-def test_cached_evidence_asks_once(word_forms_table) -> None:
-    asked = []
-
-    def fake(words):
-        asked.append(words)
-        return [("weight", "weight", 1400, ["weighted:1300", "weight:120"])]
-
-    store.set_lookup(fake)
-    assert store.cached_evidence("weight").forms == (("weighted", 1300), ("weight", 120))
-    assert store.cached_evidence("weight") is not None
-    assert asked == [["weight"]]
-    # A missing answer is kept too.
-    store.set_lookup(lambda words: None)
-    assert store.cached_evidence("weight") is None
-    assert store.cached_evidence("weight") is None
-
-
-def test_the_guard_of_a_reviewed_word_lists_its_stem_minus_the_excluded(
-        reviewed_list, word_forms_table, monkeypatch) -> None:
-    from services.fulltext import tsquery, vectors
-
-    monkeypatch.setenv(vectors.EXACT_ENV, "true")
-    reviewed_list({"exact": [{"forms": ["weight", "weights"], "excludes": ["weighted", "weighting"],
-                              "why": "x"}]})
-    store.set_lookup(lambda words: [("weight", "weight", 1400,
-                                     [f"{form}:{n}" for form, n in WEIGHT.forms])])
-    assert tsquery.exact_guard((("weight",),)) == "(weight | weights | weightings)"
-    # Without the catalogue: the group's forms.
-    store.set_lookup(None)
-    assert tsquery.exact_guard((("weight",),)) == "(weight | weights)"

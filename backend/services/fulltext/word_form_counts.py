@@ -13,23 +13,19 @@ bids_word_forms has one row per word form found in the datasets' own text
 
 refresh() rebuilds it; it runs after each crawl
 (crawlers/openneuro-crawler/post_crawl.py) and from
-scripts/refresh_word_forms.py. It decides whether a searched word is worth a
-closer look, and, for a word with forms judged different from it
-(RAG/word_forms.py), which forms of its stem the search requires: all the
-table has, minus those. A form new since the last refresh is then missed
-until the next one.
+scripts/refresh_word_forms.py. The table only has to be roughly current:
+it decides whether a searched word is worth a closer look
+(RAG/word_forms.py), not what a search returns.
 
-lookup() answers for the words of one question, cached_evidence() for one
-word at a time (a reviewed word the question's decisions do not cover). Like
-the word counts in services/fulltext/text_search.py they are called from the
-translation worker thread, so they reach the database through worker_db.
+lookup() answers for the words of one question. Like the word counts in
+services/fulltext/text_search.py it is called from the translation worker
+thread, so it reaches the database through worker_db.
 """
 
 from __future__ import annotations
 
 import logging
 import re
-import time
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
@@ -132,13 +128,6 @@ async def refresh(conn: Any) -> Dict[str, int]:
 # Given words, returns the rows of _LOOKUP_SQL, or None when unavailable.
 Lookup = Callable[[List[str]], Optional[List[Sequence[Any]]]]
 
-# How long cached_evidence() keeps an answer, a missing one included: one
-# search builds many queries for the same word, and a database that did not
-# answer should not be asked again for each.
-EVIDENCE_CACHE_SECONDS = 600.0
-# word → (time asked, its evidence or None)
-_evidence_cache: Dict[str, Tuple[float, Optional[WordEvidence]]] = {}
-
 
 def _database_lookup(words: List[str]) -> List[Sequence[Any]]:
     """The rows for *words*, from the database (worker_db.current())."""
@@ -157,7 +146,6 @@ def set_lookup(lookup: Optional[Lookup]) -> None:
     """Install another lookup (tests); None switches lookups off."""
     global _lookup
     _lookup = lookup
-    _evidence_cache.clear()
 
 
 def reset_lookup() -> None:
@@ -198,14 +186,3 @@ def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
         found[word] = WordEvidence(word=word, stem=stem, stem_docs=int(stem_docs or 0),
                                    forms=_parse_forms(forms))
     return found
-
-
-def cached_evidence(word: str) -> Optional[WordEvidence]:
-    """lookup() for one word, kept EVIDENCE_CACHE_SECONDS; None when unavailable."""
-    now = time.monotonic()
-    cached = _evidence_cache.get(word)
-    if cached is not None and now - cached[0] < EVIDENCE_CACHE_SECONDS:
-        return cached[1]
-    evidence = lookup([word]).get(word)
-    _evidence_cache[word] = (now, evidence)
-    return evidence

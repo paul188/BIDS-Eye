@@ -34,26 +34,17 @@ from text_terms import (
     parse_alternatives,
     split_words,
 )
-from word_forms import WordEvidence, forms_for, search_variants
+from word_forms import forms_for, search_variants
 
 from services.fulltext import vectors, word_frequencies
 
 # word → the forms it must match in, as decided for one question
-# (RAG/word_forms.py). The reviewed list there applies without being passed;
-# for a word not in the mapping it takes the catalogue's forms (_catalogue_forms).
+# (RAG/word_forms.py). The reviewed list there applies without being passed.
 ExactForms = Mapping[str, Sequence[str]]
 
 SCOPE_LABEL = {MODE_ALL: "", MODE_LOOSE: "", MODE_SHORT: ":AB", MODE_NEAR: ""}
 NAME_LABEL = ":A"
 _SAFE_TSQUERY_RE = re.compile(r"^[a-z0-9 &|()<>:AB-]+$")
-
-
-def _catalogue_forms(word: str) -> Optional[WordEvidence]:
-    """The catalogue's forms of *word*, for a reviewed word the question's
-    decisions do not cover (word_forms.forms_for)."""
-    # Imported here: word_form_counts imports text_search, which imports this module.
-    from services.fulltext import word_form_counts
-    return word_form_counts.cached_evidence(word)
 
 
 def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple[str, ...]]:
@@ -64,7 +55,7 @@ def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple
     """
     if len(word) != 1 or not vectors.exact_enabled():
         return None
-    forms = forms_for(word[0], exact_forms, _catalogue_forms)
+    forms = forms_for(word[0], exact_forms)
     if not forms:
         return forms
     return tuple(dict.fromkeys(f for form in forms for f in (form, *search_variants(form))))
