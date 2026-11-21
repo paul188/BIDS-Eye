@@ -74,15 +74,9 @@ participants = cast(Table, BIDSParticipant.__table__)
 
 def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]], migration: str,
                       flag: str | None = None) -> Column[Any]:
-    """Declare a column of bids_datasets that a migration in crawlers/ adds.
+    """Declare a bids_datasets column that the SQL file *migration* creates.
 
-    *migration* is the SQL file that creates the column; check_schema names
-    it in the error when the column is missing. *flag* is PAPERS_FLAG,
-    EXACT_FLAG or None: with a flag, the column is required only while that
-    flag is on, without one always.
-
-    Both are stored in the column's info dict. SQLAlchemy ignores that dict,
-    so they change nothing in the SQL the column is used in.
+    With a *flag*, check_schema requires the column only while that flag is on.
     """
     info = {MIGRATION: migration}
     if flag:
@@ -93,56 +87,112 @@ def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]],
 # The columns of bids_datasets that the migrations add, plus its key.
 datasets = Table(
     BIDSDataset.__tablename__, metadata,
+    # The dataset's key, declared in db/models.py; repeated so code can name
+    # datasets.c.id.
     Column("id", UUID(as_uuid=True), primary_key=True),
-    # Full-text vectors. The paper ones add the text of the papers a dataset
-    # names; the exact ones are not stemmed.
+
+    # Full-text search vectors. All four are GENERATED columns: PostgreSQL
+    # recomputes them on every write.
+    # The dataset's text, stemmed with 'english', weighted A name, B uploader
+    # study fields and LLM-found conditions, C llm_profile, D readme_text.
+    # Text matches and the ranking use it.
     _migration_column("search_tsv", TSVECTOR, _SEARCH_TSV),
+    # search_tsv plus the title, abstract and keywords of the dataset's
+    # primary papers at weight D. Used only to match, never to rank.
     _migration_column("search_tsv_papers", TSVECTOR, _PAPER_SEARCH, PAPERS_FLAG),
+    # search_tsv without stemming ('simple'), so "ageing" does not also match
+    # "age". Searched together with search_tsv for words whose form is decided.
     _migration_column("search_tsv_exact", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG),
+    # search_tsv_papers without stemming.
     _migration_column("search_tsv_exact_papers", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG),
-    # The stored subject count (crawlers/openneuro-crawler/remote/dataset_facets.py).
+
+    # Number of distinct subjects in the dataset's files: a copy of
+    # COUNT(DISTINCT subject) over bids_objects, refreshed after each crawl
+    # (crawlers/openneuro-crawler/remote/dataset_facets.py).
     _migration_column("n_subjects", Integer, _FACETS),
-    # OpenNeuro fields; the ones in constants.OPTIONAL_DATASET_COLUMNS are
-    # shown to the SQL model once enough datasets fill them.
+
+    # Fields from the OpenNeuro API, filled by the crawler and by
+    # scripts/backfill_openneuro_metadata.py. The ones in
+    # constants.OPTIONAL_DATASET_COLUMNS are shown to the SQL model once
+    # enough datasets fill them. "Uploader-entered" means free text the
+    # uploader typed on OpenNeuro, often empty.
+    # Sanitised README of the latest snapshot.
     _migration_column("readme_text", Text, _OPENNEURO),
+    # Uploader-entered diagnosis status, e.g. 'Healthy / Control'.
     _migration_column("dx_status", Text, _OPENNEURO),
+    # Uploader-entered research topic.
     _migration_column("study_domain", Text, _OPENNEURO),
+    # Uploader-entered study design, e.g. 'Longitudinal'.
     _migration_column("study_design", Text, _OPENNEURO),
+    # Uploader-entered species, e.g. 'Human', 'Mouse'.
     _migration_column("species", Text, _OPENNEURO),
+    # Uploader-entered 'Cross-Sectional', 'Longitudinal', …
     _migration_column("study_longitudinal", Text, _OPENNEURO),
+    # Uploader-entered senior author.
     _migration_column("senior_author", Text, _OPENNEURO),
+    # When the dataset went public on OpenNeuro.
     _migration_column("publish_date", DateTime(timezone=True), _OPENNEURO),
+    # Whether the dataset has been processed on brainlife.io.
     _migration_column("on_brainlife", Boolean, _OPENNEURO),
+    # OpenNeuro download count of the latest snapshot.
     _migration_column("downloads", Integer, _OPENNEURO),
+    # OpenNeuro view count of the latest snapshot.
     _migration_column("views", Integer, _OPENNEURO),
+    # Youngest and oldest participant age OpenNeuro reports, in years. Ages
+    # outside 0-120 are dropped as entry errors; NULL when none are left.
     _migration_column("age_min", Double, _OPENNEURO),
     _migration_column("age_max", Double, _OPENNEURO),
+    # Total size of the latest snapshot in bytes.
     _migration_column("size_bytes", BigInteger, _OPENNEURO),
+    # NULL while the dataset is fine on OpenNeuro; otherwise why OpenNeuro
+    # marked it deprecated.
     _migration_column("deprecated_reason", Text, _OPENNEURO),
+
+    # Every InstitutionName found in the dataset's sidecar JSON files.
     _migration_column("institutions", ARRAY(Text), _INSTITUTIONS),
-    # Read by the API itself, never by generated SQL.
+
+    # Written by an LLM; read by the API itself, never by generated SQL.
+    # Short profile of the README in standard terms
+    # (scripts/extract_readme_profiles.py). Part of search_tsv at weight C,
+    # and read by the re-ranker.
     _migration_column("llm_profile", Text, _PROFILES),
+    # How the dataset's primary paper relates to it (reports, larger_sample,
+    # related_study, tool, unclear), with the evidence quote and whether the
+    # paper is shown (services/dataset_description.py).
     _migration_column("paper_relation", JSONB, _DESCRIPTIONS),
+    # Two or three generated sentences, only for datasets whose README and
+    # description together are under 500 characters.
     _migration_column("dataset_summary", Text, _DESCRIPTIONS),
 )
 
 # One row per dataset and (datatype, suffix, task) it has files for: a
-# summary of bids_objects that the executed SQL reads instead
-# (sql_rewriter._use_summaries).
+# summary of bids_objects (2.7 million rows, this one about 21,000) that the
+# executed SQL reads instead (sql_rewriter._use_summaries). Refreshed after
+# each crawl, like n_subjects.
 dataset_facets = Table(
     "bids_dataset_facets", metadata,
+    # bids_datasets.id.
     Column("dataset_id", UUID(as_uuid=True)),
+    # BIDS datatype folder, e.g. 'anat', 'func', 'eeg'.
     Column("datatype", Text),
+    # BIDS suffix, e.g. 'T1w', 'bold', 'events'.
     Column("suffix", Text),
+    # BIDS task label, e.g. 'rest'; NULL for files without a task.
     Column("task", Text),
     info={MIGRATION: _FACETS},
 )
 
-# Every word form in the catalogue's text, its stem and how many datasets have it.
+# Every word form in the catalogue's text with its stem, filled by
+# scripts/refresh_word_forms.py and after each crawl. It shows which forms a
+# stem merges, which decides whether a searched word must match in the form
+# asked for.
 word_forms = Table(
     "bids_word_forms", metadata,
+    # The word as it appears in the text, e.g. 'ageing'.
     Column("form", Text, primary_key=True),
+    # Its 'english' stem, e.g. 'age'.
     Column("stem", Text),
+    # How many datasets contain the form.
     Column("ndoc", Integer),
     info={MIGRATION: _EXACT_SEARCH, FLAG: EXACT_FLAG},
 )
