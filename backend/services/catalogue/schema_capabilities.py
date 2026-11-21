@@ -147,11 +147,11 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
     except SQLAlchemyError as exc:  # a database without these: search as before
         log.info("Dataset summaries not usable: %s", exc)
         _has_facets = _has_subject_counts = False
-    # The values generated SQL is checked against (services/catalogue/catalogue_values.py).
+    # The known values of the coded fields (services/catalogue/catalogue_values.py);
+    # it reads the facet fields only when _has_facets.
     from services.catalogue import catalogue_values
     catalogue_values.clear()
-    if _has_facets:
-        await catalogue_values.load(connection)
+    await catalogue_values.load(connection)
     log.info("Dataset summaries: facets table %s, stored subject count %s",
              "used" if _has_facets else "not used", "used" if _has_subject_counts else "not used")
 # The two vectors without stemming, and the catalogue's word forms; see

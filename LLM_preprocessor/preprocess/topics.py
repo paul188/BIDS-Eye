@@ -212,8 +212,8 @@ def _topic_codes(
         if code not in excluded and not (set(code.lower().split("_")) & unwanted_words)
     }
     codes = dict(list(codes.items())[:_TOPIC_MAX_CODES])
-    if codes and retriever is not None and hasattr(retriever, "db_verify_codes"):
-        live, _miss = retriever.db_verify_codes("task", list(codes))
+    if codes:
+        live, _miss = _catalogue.verify_codes("task", list(codes), retriever)
         codes = {code: codes[code] for code in live}
     return codes
 

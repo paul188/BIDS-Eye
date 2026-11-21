@@ -246,31 +246,31 @@ def run_pipeline(
             if term_map:
                 rag_results[req.field.value] = term_map
 
-    # Optional DB back-check: remove codes that have zero rows in the live DB
-    # and surface them as DB_MISS warnings so the SQL model omits those filters.
+    # DB back-check: remove codes that no dataset has and surface them as
+    # DB_MISS warnings so the SQL model omits those filters. In the API the
+    # backend's cache of coded values answers (catalogue.verify_codes).
     db_miss_terms: Dict[str, List[str]] = {}
-    if retriever is not None and hasattr(retriever, "db_verify_codes"):
-        for field in list(rag_results.keys()):
-            term_map = rag_results[field]
-            new_term_map: Dict[str, List[str]] = {}
-            for term, codes in term_map.items():
-                live, miss = retriever.db_verify_codes(field, codes)
-                if not live and codes and field == RAGField.DIAGNOSIS.value:
-                    # No participant row carries the diagnosis yet, but it is
-                    # known: keep it, so the diagnosis line searches its words
-                    # in the dataset titles and labels. As a DB MISS the SQL
-                    # model was told to use the parent code: "frontotemporal
-                    # dementia" became every dementia (2026-11-17).
-                    new_term_map[term] = codes
-                    continue
-                if miss:
-                    db_miss_terms.setdefault(field, []).extend(miss)
-                if live:
-                    new_term_map[term] = live
-                elif not live and codes:
-                    # All codes for this term are DB misses — term is unresolvable
-                    db_miss_terms.setdefault(field, []).extend(codes)
-            rag_results[field] = new_term_map
+    for field in list(rag_results.keys()):
+        term_map = rag_results[field]
+        new_term_map: Dict[str, List[str]] = {}
+        for term, codes in term_map.items():
+            live, miss = _catalogue.verify_codes(field, codes, retriever)
+            if not live and codes and field == RAGField.DIAGNOSIS.value:
+                # No participant row carries the diagnosis yet, but it is
+                # known: keep it, so the diagnosis line searches its words
+                # in the dataset titles and labels. As a DB MISS the SQL
+                # model was told to use the parent code: "frontotemporal
+                # dementia" became every dementia (2026-11-17).
+                new_term_map[term] = codes
+                continue
+            if miss:
+                db_miss_terms.setdefault(field, []).extend(miss)
+            if live:
+                new_term_map[term] = live
+            elif not live and codes:
+                # All codes for this term are DB misses — term is unresolvable
+                db_miss_terms.setdefault(field, []).extend(codes)
+        rag_results[field] = new_term_map
 
     # Collect terms that were requested but returned no codes — surface as warnings
     # so the SQL model does not fall back to ILIKE on canonical-code columns.

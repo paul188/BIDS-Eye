@@ -48,6 +48,10 @@ except ImportError:  # pragma: no cover - sqlglot is a backend dependency
 log = logging.getLogger(__name__)
 
 ENV = "CATALOGUE_VALUE_CHECK"
+# The fields checked. Not the participant fields the catalogue also caches:
+# dropping a required diagnosis condition would widen the search to every
+# dataset the rest of the query allows.
+FIELDS = catalogue_values.FACET_FIELDS
 
 
 # ── Corrections ───────────────────────────────────────────────────────────────
@@ -106,16 +110,17 @@ def correction(field: str, value: str) -> List[str]:
 # On every translation, from sql_rewriter.
 
 def enabled() -> bool:
-    """True when known values are loaded and CATALOGUE_VALUE_CHECK is not 'false'.
+    """True when the known values of FIELDS are loaded and CATALOGUE_VALUE_CHECK is not 'false'.
 
     Without known values every value would look unknown and be dropped, so
     "nothing loaded" means "do not check".
     """
-    return catalogue_values.loaded() and os.getenv(ENV, "true").strip().lower() not in ("false", "0", "no", "off")
+    return (all(catalogue_values.loaded(field) for field in FIELDS)
+            and os.getenv(ENV, "true").strip().lower() not in ("false", "0", "no", "off"))
 
 
 def _field_of(node: Any) -> Optional[str]:
-    if isinstance(node, exp.Column) and node.name.lower() in catalogue_values.FIELDS:
+    if isinstance(node, exp.Column) and node.name.lower() in FIELDS:
         return node.name.lower()
     return None
 

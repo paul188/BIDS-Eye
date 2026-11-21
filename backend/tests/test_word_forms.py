@@ -238,6 +238,9 @@ class _Result:
     def scalar_one(self):
         return self._rows[0][0]
 
+    def all(self):
+        return self._rows
+
     def scalar(self):
         row = self._rows[0]
         return row[0] if isinstance(row, tuple) else None
@@ -253,6 +256,8 @@ class _Connection:
             return _Result([(name,) for name in self._columns])
         if "to_regclass" in sql:
             return _Result([((params or {}).get("table") in self._tables,)])
+        if "count(DISTINCT dataset_id)" in sql:  # catalogue_values: no coded values
+            return _Result([])
         return _Result([{"total": 10}])
 
     def begin_nested(self):

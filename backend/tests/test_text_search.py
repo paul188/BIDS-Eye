@@ -492,6 +492,9 @@ class _FakeResult:
     def one(self):
         return self._rows[0]
 
+    def all(self):
+        return self._rows
+
     def scalar(self):
         return None  # no summary table
 
@@ -503,6 +506,8 @@ class _FakeConnection:
     async def execute(self, statement, params=None):
         if "information_schema.columns" in str(statement):
             return _FakeResult([(name,) for name in self._columns])
+        if "count(DISTINCT dataset_id)" in str(statement):  # catalogue_values: no coded values
+            return _FakeResult([])
         return _FakeResult([{"total": 10}])
 
     def begin_nested(self):

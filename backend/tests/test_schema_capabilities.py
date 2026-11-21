@@ -180,6 +180,9 @@ class _FakeResult:
     def one(self):
         return self._rows[0]
 
+    def all(self):
+        return self._rows
+
     def scalar(self):
         return None  # no summary table, no stored subject count
 
@@ -197,6 +200,8 @@ class _FakeConnection:
         self.statements.append(sql)
         if "information_schema.columns" in sql:
             return _FakeResult([(name,) for name in self._columns])
+        if "count(DISTINCT dataset_id)" in sql:  # catalogue_values: no coded values
+            return _FakeResult([])
         return _FakeResult([self._counts])
 
     def begin_nested(self):
@@ -291,7 +296,8 @@ def test_a_failed_summary_query_leaves_the_other_checks_running() -> None:
     try:
         assert detected == frozenset({"readme_text"})
         assert caps.has_fts() and not caps.has_dataset_facets()
-        assert connection.savepoints == ["rolled back"]
+        # The failed summary read, then catalogue_values reading the participants.
+        assert connection.savepoints == ["rolled back", "released"]
     finally:
         caps.set_fts(False)
 
