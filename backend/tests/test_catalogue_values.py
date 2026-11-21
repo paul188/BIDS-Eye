@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from services.catalogue import catalogue_values as cv
+from services.catalogue.catalogue_values import catalogue_values as cv
 
 # The cache as catalogue_values.load() fills it: value → datasets.
 KNOWN = {

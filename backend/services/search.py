@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions.domain import DomainError
 from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
 from single_flight import SingleFlight
-from services.catalogue import catalogue_values
+from services.catalogue.catalogue_values import catalogue_values
 from services.stores import interpretation_store
 from services.results import query_filters
 from services import search_runner

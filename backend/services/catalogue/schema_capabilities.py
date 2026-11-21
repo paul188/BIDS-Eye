@@ -149,7 +149,7 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
         _has_facets = _has_subject_counts = False
     # The known values of the coded fields (services/catalogue/catalogue_values.py);
     # it reads the facet fields only when _has_facets.
-    from services.catalogue import catalogue_values
+    from services.catalogue.catalogue_values import catalogue_values
     catalogue_values.clear()
     await catalogue_values.load(connection)
     log.info("Dataset summaries: facets table %s, stored subject count %s",
@@ -331,7 +331,7 @@ async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
             _available = await detect_available_columns(connection)
     except (SQLAlchemyError, OSError, asyncio.TimeoutError) as exc:
         log.warning("Could not inspect optional dataset columns (%s) — hiding all of them", exc)
-        from services.catalogue import catalogue_values
+        from services.catalogue.catalogue_values import catalogue_values
         set_summaries(False, False)
         catalogue_values.clear()
         _available = frozenset()

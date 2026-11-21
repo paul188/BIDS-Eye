@@ -30,8 +30,9 @@ def word_form_store():
 
 
 def catalogue_values():
-    """backend/services/catalogue/catalogue_values: coded values and their dataset counts."""
-    from services.catalogue import catalogue_values
+    """The backend's shared CatalogueValues (services/catalogue/catalogue_values.py):
+    coded values and their dataset counts."""
+    from services.catalogue.catalogue_values import catalogue_values
     return catalogue_values
 
 

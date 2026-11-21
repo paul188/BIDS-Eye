@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from preprocess import catalogue
 
-from services.catalogue import catalogue_values as cv
+from services.catalogue.catalogue_values import catalogue_values as cv
 
 
 class _Retriever:

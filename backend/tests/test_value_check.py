@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("sqlglot")
 
-from services.catalogue import catalogue_values as cv  # noqa: E402
+from services.catalogue.catalogue_values import catalogue_values as cv  # noqa: E402
 from services.translate import value_check as vc  # noqa: E402
 
 # The cache as catalogue_values.load() fills it: value → datasets.

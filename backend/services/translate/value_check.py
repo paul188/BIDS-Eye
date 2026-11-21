@@ -35,7 +35,7 @@ import re
 from functools import lru_cache
 from typing import Any, List, Optional, Tuple
 
-from services.catalogue import catalogue_values
+from services.catalogue.catalogue_values import catalogue_values
 
 try:
     import sqlglot

@@ -22,7 +22,7 @@ def _empty_catalogue_values(monkeypatch):
     back-check from that cache."""
     import time
 
-    from services.catalogue import catalogue_values
+    from services.catalogue.catalogue_values import catalogue_values
 
     monkeypatch.setattr(catalogue_values, "_counts", {})
     # As after startup: a search does not reload before REFRESH_SECONDS.
