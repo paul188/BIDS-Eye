@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word form labels</title>
+<style>
+:root { --bg:#fbfaf8; --fg:#1d1d1b; --muted:#6b6862; --line:#e2dfd8; --card:#ffffff;
+        --accent:#2f5d8a; --mark:#fbe7a1; --on:#2f5d8a; --onfg:#ffffff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#171716; --fg:#ecebe7; --muted:#a19d95; --line:#33322f;
+    --card:#1f1f1d; --accent:#8db4dc; --mark:#5c4b12; --on:#8db4dc; --onfg:#111; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 20px 16px 120px; }
+header { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:baseline; justify-content:space-between; }
+h1 { font-size:17px; margin:0; }
+.muted { color:var(--muted); font-size:13px; }
+.q { font-size:20px; margin:22px 0 6px; }
+.q b { color:var(--accent); }
+.cols { display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:14px; }
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.card h2 { font-size:16px; margin:0 0 8px; }
+.snip { font-size:13.5px; margin:0 0 10px; overflow-wrap:anywhere; }
+.snip:last-child { margin-bottom:0; }
+mark { background:var(--mark); color:inherit; padding:0 1px; border-radius:2px; }
+.opts { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-top:18px; }
+@media (max-width: 720px) { .opts { grid-template-columns: 1fr; } }
+button { font:inherit; color:var(--fg); background:var(--card); border:1px solid var(--line);
+         border-radius:8px; padding:9px 10px; cursor:pointer; text-align:left; }
+button.on { background:var(--on); color:var(--onfg); border-color:var(--on); }
+button .k { display:inline-block; min-width:1.4em; font-weight:600; }
+.nav { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
+textarea { width:100%; font:inherit; color:var(--fg); background:var(--card); border:1px solid var(--line);
+           border-radius:8px; padding:8px; margin-top:12px; min-height:2.6em; }
+.bar { height:4px; background:var(--line); border-radius:2px; margin-top:10px; }
+.bar > div { height:100%; background:var(--accent); border-radius:2px; }
+details { margin-top:20px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Word form labels</h1>
+  <span class="muted" id="progress"></span>
+</header>
+<div class="bar"><div id="bar"></div></div>
+
+<p class="q">Should a search for <b id="qa"></b> find datasets that only say <b id="qb"></b>?</p>
+<p class="muted">Forms separated by “/” are plural and singular of one word; judge them as one.</p>
+
+<div class="opts" id="opts"></div>
+<textarea id="note" placeholder="Note (optional)"></textarea>
+
+<div class="cols">
+  <div class="card"><h2 id="ha"></h2><div id="sa"></div></div>
+  <div class="card"><h2 id="hb"></h2><div id="sb"></div></div>
+</div>
+
+<div class="nav">
+  <button id="prev">← Back</button>
+  <button id="next">Next →</button>
+  <button id="skip">First unlabelled</button>
+  <button id="export">Export labels (JSON)</button>
+  <span class="muted">Keys: 1–5 label and advance, ← →, N note</span>
+</div>
+
+<details>
+  <summary>What the options mean</summary>
+  <p><b>Both directions</b>: the two mean the same here; each search should find the other.<br>
+  <b>Only A → B</b>: a search for A should also find B, but a search for B should not find A.<br>
+  <b>Only B → A</b>: the reverse.<br>
+  <b>Neither</b>: different meanings; neither search should find the other.<br>
+  <b>Depends on context</b>: sometimes the same meaning, sometimes not; the word alone can't decide.</p>
+  <p class="muted">Labels are kept in this browser until exported. Set __SET_ID__.</p>
+</details>
+</main>
+
+<script>
+const DATA = __DATA__;
+const KEY = "labels:" + DATA.set_id;
+const OPTIONS = [
+  ["both", "Both directions"], ["a_to_b", "Only A → B"], ["b_to_a", "Only B → A"],
+  ["neither", "Neither"], ["context", "Depends on context"]];
+let labels = {};
+try { labels = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { labels = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(labels)); } catch (e) {} };
+let i = 0;
+const firstOpen = () => { const k = DATA.pairs.findIndex(p => !(labels[p.id] && labels[p.id].label)); return k < 0 ? 0 : k; };
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const name = forms => forms.join(" / ");
+
+function snippets(list) {
+  if (!list.length) return '<p class="snip muted">No snippet in name, description or README.</p>';
+  return list.map(s => `<p class="snip">${esc(s.before)}<mark>${esc(s.match)}</mark>${esc(s.after)}</p>`).join("");
+}
+
+function render() {
+  const p = DATA.pairs[i], cur = labels[p.id] || {};
+  $("qa").textContent = name(p.a); $("qb").textContent = name(p.b);
+  $("ha").textContent = "A: " + name(p.a); $("hb").textContent = "B: " + name(p.b);
+  $("sa").innerHTML = snippets(p.a_snippets); $("sb").innerHTML = snippets(p.b_snippets);
+  $("opts").innerHTML = OPTIONS.map(([v, t], k) =>
+    `<button data-v="${v}" class="${cur.label === v ? "on" : ""}"><span class="k">${k + 1}</span>${t}</button>`).join("");
+  $("note").value = cur.note || "";
+  const done = DATA.pairs.filter(q => labels[q.id] && labels[q.id].label).length;
+  $("progress").textContent = `Pair ${i + 1} of ${DATA.pairs.length} · ${done} labelled`;
+  $("bar").style.width = (100 * done / DATA.pairs.length) + "%";
+}
+
+function setLabel(v) {
+  const p = DATA.pairs[i];
+  labels[p.id] = Object.assign({}, labels[p.id], {label: v, at: new Date().toISOString()});
+  save();
+  if (i < DATA.pairs.length - 1) i++;
+  render();
+}
+
+$("opts").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setLabel(b.dataset.v); });
+$("note").addEventListener("input", e => {
+  const p = DATA.pairs[i]; labels[p.id] = Object.assign({}, labels[p.id], {note: e.target.value}); save(); });
+$("prev").onclick = () => { if (i > 0) { i--; render(); } };
+$("next").onclick = () => { if (i < DATA.pairs.length - 1) { i++; render(); } };
+$("skip").onclick = () => { i = firstOpen(); render(); };
+$("export").onclick = () => {
+  const blob = new Blob([JSON.stringify({set_id: DATA.set_id, labels}, null, 1)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "word_form_labels.json"; a.click();
+};
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "TEXTAREA") { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.key >= "1" && e.key <= "5") setLabel(OPTIONS[+e.key - 1][0]);
+  else if (e.key === "ArrowLeft") $("prev").click();
+  else if (e.key === "ArrowRight") $("next").click();
+  else if (e.key === "n" || e.key === "N") { e.preventDefault(); $("note").focus(); }
+});
+i = firstOpen();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word form joins</title>
+<style>
+:root { --bg:#fbfaf8; --fg:#1d1d1b; --muted:#6b6862; --line:#e2dfd8; --card:#ffffff;
+        --accent:#2f5d8a; --mark:#fbe7a1; --on:#2f5d8a; --onfg:#ffffff; --warn:#a8461c; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#171716; --fg:#ecebe7; --muted:#a19d95; --line:#33322f;
+    --card:#1f1f1d; --accent:#8db4dc; --mark:#5c4b12; --on:#8db4dc; --onfg:#111; --warn:#e59a6f; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:16px; }
+header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; }
+h1 { font-size:20px; margin:0; }
+.muted { color:var(--muted); }
+.warn { color:var(--warn); font-weight:600; }
+.bar { height:4px; background:var(--line); border-radius:2px; margin:10px 0 16px; }
+.bar div { height:100%; background:var(--accent); border-radius:2px; width:0; }
+.title { font-size:26px; font-weight:650; margin:4px 0 2px; }
+.facts { display:flex; flex-wrap:wrap; gap:6px 18px; margin:6px 0 14px; }
+.facts b { font-variant-numeric:tabular-nums; }
+.opts { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+.opts button { background:var(--card); color:var(--fg); border:1px solid var(--line);
+               border-radius:8px; padding:9px 10px; cursor:pointer; text-align:left; font:inherit; }
+.opts button.on { background:var(--on); color:var(--onfg); border-color:var(--on); }
+.k { display:inline-block; min-width:1.4em; font-weight:700; opacity:.7; }
+textarea { width:100%; background:var(--card); color:var(--fg); border:1px solid var(--line);
+           border-radius:8px; padding:8px; margin-top:12px; min-height:2.6em; font:inherit; }
+.groups { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:12px; margin-top:14px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; min-width:0; }
+.card h2 { font-size:15px; margin:0 0 4px; }
+.form { margin:10px 0 0; }
+.form b { font-size:15px; }
+.snip { margin:2px 0 0; overflow-wrap:anywhere; font-size:13px; }
+.snip .ds { color:var(--muted); font-size:12px; margin-right:6px; }
+mark { background:var(--mark); color:inherit; padding:0 2px; border-radius:3px; }
+.nav { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:16px; }
+.nav button, .nav label, .nav select { background:var(--card); color:var(--fg); border:1px solid var(--line);
+             border-radius:8px; padding:7px 12px; cursor:pointer; font:inherit; }
+details { margin-top:18px; }
+@media (max-width: 720px) { .opts { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Word form joins</h1>
+  <span class="muted" id="progress"></span>
+</header>
+<div class="bar"><div id="bar"></div></div>
+
+<p class="muted" style="margin:0 0 8px">Should a search for one of these words also find the others?</p>
+<div class="title" id="title"></div>
+<div class="facts" id="facts"></div>
+
+<div class="opts" id="opts"></div>
+<textarea id="note" placeholder="Note (optional; for 'only some', say which)"></textarea>
+
+<div class="groups" id="groups"></div>
+
+<div class="nav">
+  <button id="prev">← Back</button>
+  <button id="next">Next →</button>
+  <button id="skip">First unreviewed</button>
+  <select id="kind"><option value="">All kinds</option></select>
+  <button id="export">Export labels (JSON)</button>
+  <label>Import labels <input type="file" id="import" accept="application/json" hidden></label>
+  <span id="unsaved"></span>
+</div>
+<p class="muted">Keys: 1–4 label and advance, ← →, N note. Sorted by how many datasets one spelling alone misses.</p>
+
+<details>
+  <summary>What the options mean</summary>
+  <p><b>Join</b>: same meaning; a search for any of them should find all.<br>
+  <b>Don't join</b>: they mean different things here (e.g. "left" the side vs "leave"), or one is a name.<br>
+  <b>Only some</b>: join part of the forms; write which in the note.<br>
+  <b>Unsure</b>: can't tell from the forms and examples.</p>
+  <p class="muted">Each box is one stem as PostgreSQL sees it, with the forms the catalogue writes and how many
+  datasets have each. <i>Missed</i> = datasets that write only the other spellings, i.e. what a search for this box
+  alone loses today. <i>Its stem also matches</i> = words a search for this box already finds today
+  through the shared stem. Labels are kept in this browser; export them, the file is what counts. Set __SET_ID__.</p>
+</details>
+</main>
+
+<script>
+const DATA = __DATA__;
+const KEY = "merge:" + DATA.set_id;
+const OPTIONS = [["join", "Join"], ["no", "Don't join"], ["some", "Only some"], ["unsure", "Unsure"]];
+const ALL = DATA.families;
+let store = {labels: {}, exported: 0};
+try { store = Object.assign(store, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+const labels = store.labels;
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+let kind = "", C = ALL, i = 0;
+const isDone = f => labels[f.id] && labels[f.id].label;
+const done = () => ALL.filter(isDone).length;
+const firstOpen = () => { const k = C.findIndex(f => !isDone(f)); return k < 0 ? 0 : k; };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+
+const kinds = [...new Set(ALL.flatMap(f => f.kinds))].sort();
+$("kind").innerHTML += kinds.map(k => `<option value="${esc(k)}">${esc(k)} (${ALL.filter(f => f.kinds.includes(k)).length})</option>`).join("");
+
+function render() {
+  if (!C.length) { $("title").textContent = "Nothing of this kind."; return; }
+  const f = C[i], cur = labels[f.id] || {};
+  $("title").textContent = f.title;
+  $("facts").innerHTML =
+    `<span>datasets with any form <b>${f.datasets}</b></span>` +
+    `<span>missed by one spelling alone <b>${f.impact}</b></span>` +
+    `<span class="muted">found by: ${esc(f.kinds.join(", "))}</span>`;
+  $("groups").innerHTML = f.groups.map(g =>
+    `<div class="card"><h2>${esc(g.forms.map(x => x.form).join(", "))}</h2>` +
+    `<div class="muted">${g.datasets} datasets · missed ${g.missed_without_others}</div>` +
+    (g.stem_also_matches.length ? `<div class="muted">its stem also matches: ${esc(g.stem_also_matches.join(", "))}</div>` : "") +
+    g.forms.map(x => `<div class="form"><b>${esc(x.form)}</b> <span class="muted">${x.datasets}</span>` +
+      x.examples.map(s => `<p class="snip"><span class="ds">${esc(s.dataset)}</span>${esc(s.before)}` +
+        `<mark>${esc(s.match)}</mark>${esc(s.after)}</p>`).join("") + `</div>`).join("") +
+    (g.more_forms ? `<p class="muted">+ ${g.more_forms} rarer forms</p>` : "") + `</div>`).join("");
+  $("opts").innerHTML = OPTIONS.map(([v, t], k) =>
+    `<button data-v="${v}" class="${cur.label === v ? "on" : ""}"><span class="k">${k + 1}</span>${t}</button>`).join("");
+  $("note").value = cur.note || "";
+  const n = done();
+  $("progress").textContent = `${i + 1} of ${C.length}${kind ? " (" + kind + ")" : ""} · ${n} of ${ALL.length} reviewed`;
+  $("bar").style.width = (100 * n / ALL.length) + "%";
+  const pending = n - (store.exported || 0);
+  $("unsaved").innerHTML = pending > 0 ? `<span class="warn">${pending} not exported yet</span>` : "";
+}
+
+function setLabel(v) {
+  const f = C[i];
+  labels[f.id] = Object.assign({}, labels[f.id], {label: v, title: f.title, at: new Date().toISOString()});
+  save();
+  if (i < C.length - 1) i++;
+  render();
+}
+
+$("opts").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setLabel(b.dataset.v); });
+$("note").addEventListener("input", e => {
+  const f = C[i]; labels[f.id] = Object.assign({}, labels[f.id], {title: f.title, note: e.target.value}); save(); });
+$("prev").onclick = () => { if (i > 0) { i--; render(); } };
+$("next").onclick = () => { if (i < C.length - 1) { i++; render(); } };
+$("skip").onclick = () => { i = firstOpen(); render(); };
+$("kind").onchange = e => { kind = e.target.value; C = kind ? ALL.filter(f => f.kinds.includes(kind)) : ALL; i = firstOpen(); render(); };
+$("export").onclick = () => {
+  const blob = new Blob([JSON.stringify({set_id: DATA.set_id, labels}, null, 1)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "merge_labels.json"; a.click();
+  store.exported = done(); save(); render();
+};
+$("import").onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  file.text().then(t => {
+    const d = JSON.parse(t);
+    if (d.set_id !== DATA.set_id) { alert(`This file is for set ${d.set_id}, not ${DATA.set_id}.`); return; }
+    Object.assign(labels, d.labels || {}); store.exported = done(); save(); i = firstOpen(); render();
+  }).catch(() => alert("Not a label file."));
+};
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.key >= "1" && e.key <= "4") setLabel(OPTIONS[+e.key - 1][0]);
+  else if (e.key === "ArrowLeft") $("prev").click();
+  else if (e.key === "ArrowRight") $("next").click();
+  else if (e.key === "n" || e.key === "N") { e.preventDefault(); $("note").focus(); }
+});
+i = firstOpen();
+render();
+</script>
+</body>
+</html>
