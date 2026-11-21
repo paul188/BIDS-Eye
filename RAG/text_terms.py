@@ -96,6 +96,9 @@ MODIFIER_WORDS = frozenset({
     "young", "old", "older", "healthy", "many", "few", "single", "multiple", "different",
     "large", "small", "high", "low", "new", "long", "short", "early", "late", "normal",
     "typical", "various", "several", "repeated", "dense", "continuous", "natural",
+    # "rare & diseases" shortened to "rare" found the RARE MRI sequence of
+    # mouse studies (live, 2026-11-20).
+    "rare",
 })
 
 # Nouns too general to stand for the term they were part of: "bipolar

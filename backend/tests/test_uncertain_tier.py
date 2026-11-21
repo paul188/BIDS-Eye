@@ -201,3 +201,30 @@ def test_reasons_name_what_is_missing() -> None:
     synonyms = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', "
                                  "'parkinson:AB | (paralysis:AB <-> agitans:AB)')")
     assert '"parkinson" / "paralysis" … appears only further down in the README' in ut.apply(synonyms)
+
+
+def test_and_in_nested_parentheses_is_split_into_conditions() -> None:
+    """"spatiotemporal epilepsy" (live, 2026-11-20): the AND sat in two pairs of
+    parentheses and stayed one condition, whose weaker form was any one of
+    its text searches, so a paper saying "spatiotemporal" was enough."""
+    where = ("(((EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+             "AND p2.diagnosis IN ('epilepsy')) OR d.search_tsv @@ to_tsquery('english', 'epilepsy:AB')) "
+             "AND d.search_tsv @@ to_tsquery('english', 'spatiotemporal')))")
+    tree = sqlglot.parse_one(BASE.format(where=where), read="postgres")
+    parts = ut._flatten_and(tree.args["where"].this)
+    assert len(parts) == 2
+    tiered = ut.apply(BASE.format(where=where), papers=True)
+    # Each condition is judged alone: one may be unsure, not both.
+    assert "evidence.u0" in tiered and "evidence.u1" in tiered
+
+
+def test_guarded_pair_in_extra_parentheses_stays_whole() -> None:
+    pair = ("((d.search_tsv @@ to_tsquery('english', 'age') "
+            "AND d.search_tsv_exact @@ to_tsquery('simple', 'ageing | aging')))")
+    tree = sqlglot.parse_one(BASE.format(where=pair), read="postgres")
+    assert len(ut._flatten_and(tree.args["where"].this)) == 1
+
+
+def test_rare_never_stands_for_rare_diseases() -> None:
+    # "rare" alone found the RARE MRI sequence of mouse studies (live, 2026-11-20).
+    assert ut.relax_tsquery("rare & diseases") is None

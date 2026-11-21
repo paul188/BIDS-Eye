@@ -1121,10 +1121,17 @@ def _flatten_and(node) -> list:
     from services.fulltext.text_search import is_guarded_pair
     if isinstance(node, exp.And):
         return _flatten_and(node.left) + _flatten_and(node.right)
-    if isinstance(node, exp.Paren) and isinstance(node.this, exp.And):
-        if is_guarded_pair(node):
-            return [node]   # a text search and its word forms: one condition
-        return _flatten_and(node.this)
+    # Any depth: "((codes OR epilepsy words) AND spatiotemporal)" in two pairs
+    # of parentheses stayed one condition, whose weaker form was any one of
+    # its text searches: a paper that says "spatiotemporal" was a probable
+    # match for "spatiotemporal epilepsy" (live, 2026-11-20).
+    inner = node
+    while isinstance(inner, exp.Paren) and isinstance(inner.this, exp.Paren):
+        inner = inner.this
+    if isinstance(inner, exp.Paren) and isinstance(inner.this, exp.And):
+        if is_guarded_pair(inner):
+            return [inner]   # a text search and its word forms: one condition
+        return _flatten_and(inner.this)
     return [node]
 
 
