@@ -61788,7 +61788,7 @@ suffix:
     label: cerebral blood flow (ASL)
     standard_code: cerebral_blood_flow
     broader:
-    - pet_asl
+    - arterial_spin_labelling
     synonyms:
     - term: asl cbf
       weight: 0.1
@@ -64069,7 +64069,12 @@ suffix:
     standard_code: arterial_spin_labelling
     broader:
     - pet_asl
+    description: The ASL images; the M0 scan, ASL context, ASL reference, CBF and
+      transit time files are narrower, so "ASL" finds a dataset that has only
+      those (ds005529 has only M0 and CBF maps, 2026-11-21).
     synonyms:
+    - term: ASL
+      weight: 0.9
     - term: flow-sensitive alternating inversion recovery
       weight: 0.27
     - term: pCASL
@@ -64117,7 +64122,7 @@ suffix:
     label: M0 scan (ASL calibration)
     standard_code: m0_scan
     broader:
-    - pet_asl
+    - arterial_spin_labelling
     synonyms:
     - term: M0 image
       weight: 0.1
@@ -64167,7 +64172,7 @@ suffix:
     label: ASL reference image
     standard_code: asl_reference
     broader:
-    - pet_asl
+    - arterial_spin_labelling
     synonyms:
     - term: aslref
       weight: 0.1
@@ -64215,7 +64220,7 @@ suffix:
     label: ASL label-control context
     standard_code: asl_context
     broader:
-    - pet_asl
+    - arterial_spin_labelling
     synonyms:
     - term: aslcontext
       weight: 0.1
@@ -64307,7 +64312,7 @@ suffix:
     label: Arterial Transit Time
     standard_code: att
     broader:
-    - pet_asl
+    - arterial_spin_labelling
     codes:
     - ATT
     synonyms:

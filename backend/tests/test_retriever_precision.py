@@ -292,3 +292,17 @@ def test_epilepsy_still_covers_temporal_lobe_epilepsy() -> None:
     codes = _resolve_yaml_term("diagnosis", "epilepsy")
     assert codes[0] == "epilepsy"
     assert {"temporal_lobe_epilepsy", "hippocampal_sclerosis", "focal_cortical_dysplasia"} <= set(codes)
+
+
+ASL_FILES = ["arterial_spin_labelling", "cerebral_blood_flow", "m0_scan", "asl_reference", "asl_context", "att"]
+
+
+@pytest.mark.parametrize("term", ["ASL", "arterial spin labelling", "pCASL"])
+def test_asl_includes_the_files_only_asl_has(term: str) -> None:
+    # "dataset with ASL" missed ds005529, which has only M0 scans and CBF maps (2026-11-21).
+    assert _resolve_yaml_term("suffix", term) == ASL_FILES
+
+
+def test_cbf_and_m0_alone_stay_narrow() -> None:
+    assert _resolve_yaml_term("suffix", "CBF") == ["cerebral_blood_flow"]
+    assert _resolve_yaml_term("suffix", "M0") == ["m0_scan"]
