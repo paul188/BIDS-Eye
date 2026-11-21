@@ -21,7 +21,6 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 
-from exceptions.expected import ExpectedError
 from services.catalogue import schema_capabilities
 
 log = logging.getLogger(__name__)
@@ -31,10 +30,6 @@ FACETS_TABLE = "bids_dataset_facets"
 # The facets table is refreshed after each crawl (post_crawl.py), so a value
 # added by a crawl is wrongly rejected for at most 10 minutes.
 REFRESH_SECONDS = 600
-
-
-class CatalogueLoadError(ExpectedError):
-    """The values could not be read from the facets table."""
 
 
 # ── The cached values ─────────────────────────────────────────────────────────
@@ -72,17 +67,20 @@ def clear() -> None:
 
 # ── Loading them from the facets table ────────────────────────────────────────
 
-# time.monotonic() of the last try_load(), whether it succeeded or not.
+# time.monotonic() of the last load(), whether it succeeded or not.
 _last_attempt: float | None = None
 
 
 async def load(connection: AsyncConnection | AsyncSession) -> None:
     """Read the values from the facets table and cache them.
 
-    The reads run in a savepoint, so the caller's transaction stays usable
-    when they fail. On failure this raises CatalogueLoadError and the cached
-    values stay as they were.
+    If the read fails, the old values stay cached, or the value check stays
+    off if there were none. The value check is optional: it only catches
+    wrong values in generated SQL, so a failed read must not fail startup or
+    a search. refresh_if_stale() tries again after REFRESH_SECONDS. The
+    reads run in a savepoint, so the caller's transaction stays usable.
     """
+    global _last_attempt
     values: dict[str, list[str]] = {}
     try:
         async with connection.begin_nested():
@@ -92,39 +90,24 @@ async def load(connection: AsyncConnection | AsyncSession) -> None:
                     f"SELECT DISTINCT {field} FROM {FACETS_TABLE} WHERE {field} IS NOT NULL"))
                 values[field] = list(result.scalars().all())
     except SQLAlchemyError as exc:
-        raise CatalogueLoadError(
-            f"reading {', '.join(FIELDS)} from {FACETS_TABLE} failed: {exc}") from exc
-    set_known(values)
-    log.info("Catalogue values: %s",
-             ", ".join(f"{len(field_values)} {field}" for field, field_values in values.items()))
-
-
-async def try_load(connection: AsyncConnection | AsyncSession) -> None:
-    """load(), but never raises CatalogueLoadError.
-
-    If the read fails, the old values stay cached, or the value check stays
-    off if there were none. The value check is optional: it only catches
-    wrong values in generated SQL, so a failed read must not fail startup or
-    a search. refresh_if_stale() tries again after REFRESH_SECONDS.
-    """
-    global _last_attempt
-    try:
-        await load(connection)
-    except CatalogueLoadError as exc:
-        note = "keeping the old values" if loaded() else "value check off for now"
-        log.warning("%s; %s", exc, note)
-    # Set only after load() returns or raises CatalogueLoadError. A bug in
-    # load() (any other exception) skips this line, so every search fails
-    # until it is fixed instead of the bug going quiet for REFRESH_SECONDS.
-    # Two searches arriving together may both reload; that is only a
-    # duplicate query.
+        log.warning("Reading %s from %s failed (%s); %s", ", ".join(FIELDS), FACETS_TABLE, exc,
+                    "keeping the old values" if loaded() else "value check off for now")
+    else:
+        set_known(values)
+        log.info("Catalogue values: %s",
+                 ", ".join(f"{len(field_values)} {field}" for field, field_values in values.items()))
+    # Set only after the read succeeded or failed with a database error. A
+    # bug (any other exception) skips this line, so every search fails until
+    # it is fixed instead of the bug going quiet for REFRESH_SECONDS. Two
+    # searches arriving together may both reload; that is only a duplicate
+    # query.
     _last_attempt = time.monotonic()
 
 
 async def refresh_if_stale(connection: AsyncConnection | AsyncSession) -> None:
-    """try_load() when the facets table is in use and the last try is REFRESH_SECONDS old."""
+    """load() when the facets table is in use and the last load is REFRESH_SECONDS old."""
     if not schema_capabilities.has_dataset_facets():
         return
     if _last_attempt is not None and time.monotonic() - _last_attempt < REFRESH_SECONDS:
         return
-    await try_load(connection)
+    await load(connection)

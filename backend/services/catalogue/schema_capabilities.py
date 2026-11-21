@@ -151,7 +151,7 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
     from services.catalogue import catalogue_values
     catalogue_values.clear()
     if _has_facets:
-        await catalogue_values.try_load(connection)
+        await catalogue_values.load(connection)
     log.info("Dataset summaries: facets table %s, stored subject count %s",
              "used" if _has_facets else "not used", "used" if _has_subject_counts else "not used")
 # The two vectors without stemming, and the catalogue's word forms; see

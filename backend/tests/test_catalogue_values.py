@@ -124,11 +124,12 @@ def test_an_error_that_is_not_a_database_error_is_not_swallowed(monkeypatch) -> 
     import asyncio
     from services.catalogue import schema_capabilities
 
-    async def broken(connection):
-        raise TypeError("a bug in load()")
+    class _Buggy(_Connection):
+        async def execute(self, statement, params=None):
+            raise TypeError("a bug in load()")
 
     monkeypatch.setattr(schema_capabilities, "has_dataset_facets", lambda: True)
     monkeypatch.setattr(cv, "_last_attempt", None)
-    monkeypatch.setattr(cv, "load", broken)
     with pytest.raises(TypeError):
-        asyncio.run(cv.refresh_if_stale(_Connection(uncovered=0)))
+        asyncio.run(cv.refresh_if_stale(_Buggy(uncovered=0)))
+    assert cv._last_attempt is None  # the next search tries again
