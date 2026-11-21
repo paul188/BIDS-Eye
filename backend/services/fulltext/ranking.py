@@ -5,8 +5,8 @@ The text rank of a result: SQL for ts_rank_cd over the stored vectors, and the
 rank string that carries its queries from the translation to the result page.
 
 The rank string is one tsquery for search_tsv, or "stemmed#exact" when words
-with decided forms rank on search_tsv_exact, or "stemmed#exact#own" when other
-words ('also') widen a search (join_rank, split_rank). It is stored with a
+with decided forms rank on search_tsv_exact, or "stemmed#exact#alternative" when
+alternative words ('also') widen a search (join_rank, split_rank). It is stored with a
 translation and travels as one string.
 """
 
@@ -38,7 +38,7 @@ RANK_WEIGHTS = "{" + ", ".join(str(WEIGHT_BY_LABEL[label]) for label in "DCBA") 
 RANK_NORMALIZATION = 32
 
 # Between the parts of a rank query: the tsquery for search_tsv, the one for
-# search_tsv_exact, and the search that 'also' words widen. Not a tsquery
+# search_tsv_exact, and the one for a search with alternative words ('also'). Not a tsquery
 # character.
 RANK_SEPARATOR = "#"
 # Some searches get other words added: "dead people" also searches
@@ -52,10 +52,10 @@ OTHER_WORDS_ONLY_GO_LAST = 100
 
 
 def join_rank(stemmed: Optional[str], exact: Optional[str],
-              own: Optional[str] = None) -> Optional[str]:
+              alternative: Optional[str] = None) -> Optional[str]:
     """One rank string from its parts; the stemmed query alone as it is."""
-    if own:
-        return f"{stemmed or ''}{RANK_SEPARATOR}{exact or ''}{RANK_SEPARATOR}{own}"
+    if alternative:
+        return f"{stemmed or ''}{RANK_SEPARATOR}{exact or ''}{RANK_SEPARATOR}{alternative}"
     if not exact:
         return stemmed or None
     return f"{stemmed or ''}{RANK_SEPARATOR}{exact}"
@@ -69,17 +69,21 @@ def _rank_parts(rank: Optional[str]) -> List[Optional[str]]:
 
 def split_rank(rank: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
     """(stemmed, exact) of a rank string; a part is None when absent or unsafe."""
-    stemmed, exact, _own = _rank_parts(rank)
+    stemmed, exact, _alternative = _rank_parts(rank)
     return stemmed, exact
 
 
-def rank_own(rank: Optional[str]) -> Optional[str]:
-    """The search that other words widen ('also'); None when there is none."""
+def rank_alternative(rank: Optional[str]) -> Optional[str]:
+    """The third part, present when alternative words ('also') widen a search.
+
+    It holds the search as the user wrote it: a dataset that matches only the
+    alternative words does not match it. None when there is none.
+    """
     return _rank_parts(rank)[2]
 
 
-def without_own(rank: Optional[str]) -> Optional[str]:
-    """The rank string without the 'also' part: every match ranks alike."""
+def without_alternative(rank: Optional[str]) -> Optional[str]:
+    """The rank string without the alternative part: every match ranks alike."""
     return join_rank(*split_rank(rank))
 
 
@@ -91,11 +95,11 @@ def rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
     other words of a search ('also') loses OTHER_WORDS_ONLY_GO_LAST.
     """
     expression = _plain_rank_expression(alias, rank)
-    own = rank_own(rank)
-    if expression is None or not own:
+    alternative = rank_alternative(rank)
+    if expression is None or not alternative:
         return expression
     return (f"({expression} - CASE WHEN {alias}.{FTS_COLUMN} @@ "
-            f"to_tsquery('{TS_CONFIG}', '{own}') THEN 0 ELSE {OTHER_WORDS_ONLY_GO_LAST} END)")
+            f"to_tsquery('{TS_CONFIG}', '{alternative}') THEN 0 ELSE {OTHER_WORDS_ONLY_GO_LAST} END)")
 
 
 def _plain_rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:

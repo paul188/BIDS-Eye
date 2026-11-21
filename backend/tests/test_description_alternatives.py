@@ -168,23 +168,23 @@ def test_a_match_on_the_alternatives_only_ranks_below_the_users_words() -> None:
                  "text_match('reproducibility | stability', 'also'))")
     stemmed, exact = ranking.split_rank(rank)
     assert "reproducibility" in stemmed and "reliability" in stemmed and exact is None
-    assert ranking.rank_own(rank) == "(test <-> retest) & reliability"
+    assert ranking.rank_alternative(rank) == "(test <-> retest) & reliability"
     expression = ranking.rank_expression("ft", rank)
     assert expression.endswith(
         "- CASE WHEN ft.search_tsv @@ to_tsquery('english', '(test <-> retest) & reliability') "
         f"THEN 0 ELSE {ranking.OTHER_WORDS_ONLY_GO_LAST} END)")
-    # Without the 'also' part every match ranks alike, as a 'near' search does.
-    flat = ranking.without_own(rank)
+    # Without the alternative part every match ranks alike, as a 'near' search does.
+    flat = ranking.without_alternative(rank)
     assert flat == stemmed and "CASE" not in ranking.rank_expression("ft", flat)
 
 
 def test_other_searches_rank_as_before() -> None:
     rank = _rank("text_match('ketamine') AND text_match('social conflict', 'near')")
-    assert ranking.rank_own(rank) is None
+    assert ranking.rank_alternative(rank) is None
     assert "CASE" not in ranking.rank_expression("ft", rank)
     # 'also' without a search before it has nothing to rank below.
     alone = _rank("text_match('post-mortem | ex vivo', 'also')")
-    assert ranking.rank_own(alone) is None
+    assert ranking.rank_alternative(alone) is None
 
 
 def test_the_page_orders_by_the_penalised_rank() -> None:

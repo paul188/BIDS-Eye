@@ -138,7 +138,9 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     async def rows_for(session, raw_sql, question, forms, translation,
                        flat: bool = False) -> Dict[str, Any]:
         rewritten = await asyncio.to_thread(rewrite, raw_sql, question, forms)
-        rank = ranking.without_own(rewritten.rank_tsquery) if flat else rewritten.rank_tsquery
+        # without_own on backends before the rename.
+        without = getattr(ranking, "without_alternative", None) or ranking.without_own
+        rank = without(rewritten.rank_tsquery) if flat else rewritten.rank_tsquery
         page_sql, extra = build_page_sql(
             base_sql=rewritten.sql, scored_filters=translation.scored_filters,
             apply_relevance=translation.apply_relevance, limit=ALL_ROWS, offset=0,
