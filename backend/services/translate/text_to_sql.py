@@ -768,6 +768,15 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     # / user-ordered queries so we don't override the order the user asked for.
     plan = augmented_plan.plan
     apply_relevance = plan.result_limit is None and plan.order_by is None
+    # The whole catalogue is no answer to a search: "bonn" and "datasets
+    # related to drawings or art" got all 1,721 datasets, in no useful order
+    # (live, 2026-11-17/18). Only a ranking or top-N question ("the 10
+    # largest datasets") may leave every dataset in.
+    if apply_relevance and keeps_every_dataset(rewritten.sql):
+        log.warning("Translation of %r has no condition; keyword search instead", question)
+        return keyword_fallback(
+            question, ((explanation or "").rstrip()
+                       + " No search condition could be taken from the question.").strip())
     scored_filters = [
         {"field": f.field, "code": f.code, "score": f.score}
         for f in augmented_plan.scored_filters
@@ -789,6 +798,29 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
 
 
 # ── Public entry point ─────────────────────────────────────────────────────────
+
+def keeps_every_dataset(sql: str) -> bool:
+    """True if *sql* returns the whole catalogue.
+
+    That is a single SELECT without WHERE, HAVING or an inner join at its
+    outer level. SQL that does not parse counts as filtered; the query guard
+    deals with it.
+    """
+    import sqlglot
+    import sqlglot.errors
+    from sqlglot import exp
+
+    try:
+        tree = sqlglot.parse_one(sql, read="postgres")
+    except sqlglot.errors.SqlglotError:
+        return False
+    if not isinstance(tree, exp.Select):
+        return False
+    if tree.args.get("where") is not None or tree.args.get("having") is not None:
+        return False
+    return all((join.side or "").upper() in ("LEFT", "FULL")
+               for join in tree.args.get("joins") or [])
+
 
 def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     """Plain keyword search when no language model answered.
