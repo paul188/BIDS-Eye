@@ -15,7 +15,7 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 import senses  # noqa: E402
 from services.results import query_filters  # noqa: E402
-from services.fulltext import text_search, uncertain_tier  # noqa: E402
+from services.fulltext import text_search, tsquery, uncertain_tier, word_frequencies  # noqa: E402
 from text_terms import parse_alternatives  # noqa: E402
 
 SOCIAL = pp.Topic(
@@ -45,7 +45,7 @@ def _counts(table, default=5):
 
 @pytest.fixture(autouse=True)
 def _no_database(monkeypatch):
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda queries: None)
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda queries: None)
 
 
 # ── Sense inventory ───────────────────────────────────────────────────────────
@@ -148,22 +148,22 @@ def test_topic_becomes_a_filter_line_and_ranks_its_codes() -> None:
 # ── Near search ───────────────────────────────────────────────────────────────
 
 def test_near_spells_out_both_orders_and_small_gaps() -> None:
-    query = text_search.build_filter_tsquery(parse_alternatives("social conflict | aggression"), "near")
+    query = tsquery.build_filter_tsquery(parse_alternatives("social conflict | aggression"), "near")
     assert query == ("(social <1> conflict | social <2> conflict | conflict <1> social | "
                      "conflict <2> social) | aggression")
-    assert text_search.build_rank_tsquery(parse_alternatives("social conflict"), "near") == \
+    assert tsquery.build_rank_tsquery(parse_alternatives("social conflict"), "near") == \
         "social & conflict"
 
 
 def test_near_keeps_the_order_of_three_words() -> None:
-    query = text_search.build_filter_tsquery(parse_alternatives("approach avoidance conflict"), "near")
+    query = tsquery.build_filter_tsquery(parse_alternatives("approach avoidance conflict"), "near")
     assert query.count("|") == 3
     assert query.startswith("(approach <1> avoidance <1> conflict")
 
 
 def test_count_matches_maps_counts_back_to_terms(monkeypatch) -> None:
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda queries: [7] * len(queries))
-    assert text_search.count_matches(["aggression", "???", "family conflict"]) == [7, 0, 7]
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda queries: [7] * len(queries))
+    assert tsquery.count_matches(["aggression", "???", "family conflict"]) == [7, 0, 7]
 
 
 # ── Uncertain tier ────────────────────────────────────────────────────────────

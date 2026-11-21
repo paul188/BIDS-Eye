@@ -112,13 +112,17 @@ sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/RAG"]
 from db.db import engine
 try:
     from services.catalogue import schema_capabilities
-    from services.fulltext import text_search
-except ImportError:  # backend before services/ was grouped
-    from services import schema_capabilities, text_search
+    from services.fulltext import vectors
+except ImportError:  # backend before text_search.py was split
+    try:
+        from services.catalogue import schema_capabilities
+        from services.fulltext import text_search as vectors
+    except ImportError:  # backend before services/ was grouped
+        from services import schema_capabilities, text_search as vectors
 async def main():
     await schema_capabilities.refresh_available_columns(engine)
     result = {
-        "papers": text_search.papers_enabled(),
+        "papers": vectors.papers_enabled(),
         "paper_fts": schema_capabilities.has_paper_fts(),
         "exact_fts": schema_capabilities.has_exact_fts(),
         "exact_paper_fts": schema_capabilities.has_exact_paper_fts(),
@@ -324,10 +328,10 @@ async def _prepare_live_capabilities() -> bool:
     import main  # noqa: F401
     from db.db import engine
     from services.catalogue import schema_capabilities
-    from services.fulltext import text_search
+    from services.fulltext import vectors
 
     await schema_capabilities.refresh_available_columns(engine)
-    papers = text_search.papers_enabled()
+    papers = vectors.papers_enabled()
     # main_cli later starts a fresh asyncio loop for execution.
     await engine.dispose()
     return papers
@@ -420,12 +424,12 @@ def main_cli() -> int:
     sys.path.insert(0, str(ROOT / "RAG"))
     from services import query_guard
     from services.catalogue import schema_capabilities
-    from services.fulltext import text_search
+    from services.fulltext import word_frequencies
     from services.fulltext import uncertain_tier as working_tier
 
     # Keep SQL generation deterministic and offline in the default mode. The
     # live run still compares exactly these generated statements.
-    text_search.set_frequency_lookup(lambda _queries, *_guards: None)
+    word_frequencies.set_frequency_lookup(lambda _queries, *_guards: None)
     remote_capabilities = None
     remote_capability_error = None
     if args.ssh_target:

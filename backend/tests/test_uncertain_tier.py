@@ -6,7 +6,7 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
-from services.fulltext import text_search, uncertain_tier as ut  # noqa: E402
+from services.fulltext import tsquery, uncertain_tier as ut, word_frequencies  # noqa: E402
 
 BASE = (
     "SELECT d.id, d.name, d.accession_id, COUNT(DISTINCT o.subject) AS subject_count "
@@ -22,7 +22,7 @@ def _counts(monkeypatch):
     # Rarity without a database: "children" is rarer than "young".
     counts = {"young": 300, "children": 120, "evaluated": 500, "resective": 30, "surgery": 90,
               "resective & surgery": 7}
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda qs: [counts.get(q, 1000) for q in qs])
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda qs: [counts.get(q, 1000) for q in qs])
     monkeypatch.setenv("UNCERTAIN_POSSIBLE", "true")  # the tests cover both levels
 
 
@@ -92,9 +92,9 @@ def test_page_query_puts_the_tier_first() -> None:
 
 
 def test_keyword_query_drops_question_noise() -> None:
-    query = text_search.keyword_query("Find EEG datasets of children with ADHD please")
+    query = tsquery.keyword_query("Find EEG datasets of children with ADHD please")
     assert query == "eeg | children | adhd"
-    assert text_search.keyword_query("show me all datasets") is None
+    assert tsquery.keyword_query("show me all datasets") is None
 
 
 def test_weaker_form_does_not_repeat_the_file_check() -> None:
@@ -152,13 +152,12 @@ def test_hoisted_terms_name_each_tsquery_once_and_pass_the_guard() -> None:
 
 def test_modifiers_are_not_kept_alone() -> None:
     # Even when "young" is rarer than "children".
-    import services.fulltext.text_search as ts
-    original = ts._lookup_counts
-    ts._lookup_counts = lambda qs: [{"young": 54, "children": 63}.get(q, 1000) for q in qs]
+    original = word_frequencies._lookup_counts
+    word_frequencies._lookup_counts = lambda qs: [{"young": 54, "children": 63}.get(q, 1000) for q in qs]
     try:
         assert ut.relax_tsquery("young & children") == "children"
     finally:
-        ts._lookup_counts = original
+        word_frequencies._lookup_counts = original
 
 
 def test_top_n_and_ordered_questions_keep_their_shape() -> None:

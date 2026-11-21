@@ -6,10 +6,16 @@ import itself did before, so the callers' fallbacks are unchanged.
 """
 
 
-def text_search():
-    """backend/services/fulltext/text_search: full-text match counts, exact-search switch."""
-    from services.fulltext import text_search
-    return text_search
+def tsquery():
+    """backend/services/fulltext/tsquery: full-text match counts of search terms."""
+    from services.fulltext import tsquery
+    return tsquery
+
+
+def vectors():
+    """backend/services/fulltext/vectors: the exact-search switch."""
+    from services.fulltext import vectors
+    return vectors
 
 
 def word_form_store():

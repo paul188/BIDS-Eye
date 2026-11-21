@@ -38,7 +38,7 @@ from services.translate.concept_keys import expand_concept_keys as _expand_conce
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
 
-from services.fulltext import text_search as _text_search  # noqa: E402
+from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
 from services.catalogue import schema_capabilities as _schema_capabilities  # noqa: E402
 from services.translate import value_check as _value_check  # noqa: E402
@@ -1760,7 +1760,7 @@ class SqlRewriteService:
             field_cols[field] = col_info
             rows.append(f"('{field}', '{code}', {float(score):.4f})")
 
-        text_rank = _text_search.rank_expression("ft", rank_tsquery)
+        text_rank = ranking.rank_expression("ft", rank_tsquery)
         use_text_rank = text_rank is not None
         if not rows and not use_text_rank:
             return sql

@@ -61,13 +61,13 @@ def _count_topic_matches(alternatives: List[str],
     counted in those forms, as it will be searched.
     """
     try:
-        text_search = _catalogue.text_search()  # backend/services; absent outside the API
+        tsquery = _catalogue.tsquery()  # backend/services; absent outside the API
     except ImportError:
         return None
     # None when the catalogue cannot answer (count_matches catches that).
     if exact_forms:
-        return text_search.count_matches(alternatives, _MODE_NEAR, exact_forms)
-    return text_search.count_matches(alternatives, _MODE_NEAR)
+        return tsquery.count_matches(alternatives, _MODE_NEAR, exact_forms)
+    return tsquery.count_matches(alternatives, _MODE_NEAR)
 
 
 def _is_ambiguity_topic(topic: Topic) -> bool:

@@ -293,10 +293,10 @@ def _matches_too_few(text: str) -> bool:
     then kept, as before.
     """
     try:
-        text_search = _catalogue.text_search()
+        tsquery = _catalogue.tsquery()
     except ImportError:
         return False
-    counts = text_search.count_matches([text], _MODE_ALL)
+    counts = tsquery.count_matches([text], _MODE_ALL)
     return bool(counts) and counts[0] is not None and counts[0] < _MIN_TEXT_MATCHES
 
 
@@ -313,10 +313,10 @@ def _formula_matches_too_few(part: "_text_formula.Node") -> bool:
     if len(alternatives) == 1:
         return _matches_too_few(alternatives[0])
     try:
-        text_search = _catalogue.text_search()
+        tsquery = _catalogue.tsquery()
     except ImportError:
         return False
-    counts = text_search.count_matches(alternatives, _MODE_ALL)
+    counts = tsquery.count_matches(alternatives, _MODE_ALL)
     if not counts or any(c is None for c in counts):
         return False
     return sum(counts) < _MIN_TEXT_MATCHES

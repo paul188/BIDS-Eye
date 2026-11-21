@@ -16,7 +16,7 @@ if str(_CRAWLER) not in sys.path:
 import text_terms  # noqa: E402
 from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
-from services.fulltext import text_search  # noqa: E402
+from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E402
 from services.catalogue.off_loop_query import CatalogueLookupError  # noqa: E402
 from services.translate.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
 
@@ -31,11 +31,11 @@ BASE = (
 def _full_text_available():
     caps.set_fts(True)
     caps.set_available_columns(())
-    text_search.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
     yield
     caps.set_fts(False)
     caps.set_available_columns(())
-    text_search.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
 
 
 # ── Terms and placeholders ────────────────────────────────────────────────────
@@ -159,21 +159,21 @@ def test_diagnosis_alternatives_work_without_a_vocabulary() -> None:
 
 def test_filter_query_scopes_by_weight_label() -> None:
     terms = text_terms.parse_alternatives("epilepsy | seizure disorder")
-    assert text_search.build_filter_tsquery(terms, "short") == "epilepsy:AB | (seizure:AB & disorder:AB)"
-    assert text_search.build_filter_tsquery(terms, "all") == "epilepsy | (seizure & disorder)"
+    assert tsquery.build_filter_tsquery(terms, "short") == "epilepsy:AB | (seizure:AB & disorder:AB)"
+    assert tsquery.build_filter_tsquery(terms, "all") == "epilepsy | (seizure & disorder)"
     # Ranking always looks at every field.
-    assert text_search.build_rank_tsquery(terms, "short") == "epilepsy | (seizure & disorder)"
+    assert tsquery.build_rank_tsquery(terms, "short") == "epilepsy | (seizure & disorder)"
 
 
 def test_hyphenated_words_must_be_adjacent() -> None:
     terms = text_terms.parse_alternatives("resting-state fmri")
-    assert text_search.build_filter_tsquery(terms, "all") == "(resting <-> state) & fmri"
+    assert tsquery.build_filter_tsquery(terms, "all") == "(resting <-> state) & fmri"
 
 
 def test_loose_term_keeps_its_rarest_words_while_enough_datasets_match() -> None:
     terms = text_terms.parse_alternatives("virtual reality navigation")
     # No frequencies: the longest word, as the ILIKE search did.
-    assert text_search.build_filter_tsquery(terms, "loose") == "navigation"
+    assert tsquery.build_filter_tsquery(terms, "loose") == "navigation"
 
     word_counts = {"virtual": 40, "reality": 13, "navigation": 60}
     combined_counts = {"reality & virtual & navigation": 2, "reality & virtual": 9}
@@ -183,16 +183,16 @@ def test_loose_term_keeps_its_rarest_words_while_enough_datasets_match() -> None
         asked.append(queries)
         return [word_counts.get(q, combined_counts.get(q, 0)) for q in queries]
 
-    text_search.set_frequency_lookup(lookup)
-    assert text_search.build_filter_tsquery(terms, "loose") == "reality & virtual"
+    word_frequencies.set_frequency_lookup(lookup)
+    assert tsquery.build_filter_tsquery(terms, "loose") == "reality & virtual"
     assert asked == [["virtual", "reality", "navigation"],
                      ["reality & virtual & navigation", "reality & virtual"]]
     # Every word ranks.
-    assert text_search.build_rank_tsquery(terms, "loose") == "virtual | reality | navigation"
+    assert tsquery.build_rank_tsquery(terms, "loose") == "virtual | reality | navigation"
 
     # Too rare together: the rarest word alone.
     combined_counts.update({"reality & virtual": 1})
-    assert text_search.build_filter_tsquery(terms, "loose") == "reality"
+    assert tsquery.build_filter_tsquery(terms, "loose") == "reality"
 
 
 def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
@@ -201,16 +201,16 @@ def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
     def broken(queries):
         raise CatalogueLookupError("database gone")
 
-    text_search.set_frequency_lookup(broken)
-    assert text_search.build_filter_tsquery(terms, "loose") == "complex"
-    text_search.set_frequency_lookup(lambda queries: None)
-    assert text_search.build_filter_tsquery(terms, "loose") == "complex"
+    word_frequencies.set_frequency_lookup(broken)
+    assert tsquery.build_filter_tsquery(terms, "loose") == "complex"
+    word_frequencies.set_frequency_lookup(lambda queries: None)
+    assert tsquery.build_filter_tsquery(terms, "loose") == "complex"
     # A word no dataset contains: every word is required, so nothing matches
     # ("sickle cell disease" must not become a search for "cell").
-    text_search.set_frequency_lookup(
+    word_frequencies.set_frequency_lookup(
         lambda queries: [0, 40, 900] if len(queries) == 3 else [2]
     )
-    assert text_search.build_filter_tsquery(terms, "loose") == "complex & motor & task"
+    assert tsquery.build_filter_tsquery(terms, "loose") == "complex & motor & task"
 
 
 def test_without_an_installed_lookup_counts_come_from_an_own_connection(monkeypatch) -> None:
@@ -221,27 +221,27 @@ def test_without_an_installed_lookup_counts_come_from_an_own_connection(monkeypa
         asked.append(queries)
         return [900, 40] if len(queries) == 2 else [12]
 
-    monkeypatch.setattr(text_search, "_own_connection_lookup", own)
-    monkeypatch.setattr(text_search, "_frequency_lookup", text_search._OWN_CONNECTION)
+    monkeypatch.setattr(word_frequencies, "_own_connection_lookup", own)
+    monkeypatch.setattr(word_frequencies, "_frequency_lookup", word_frequencies._OWN_CONNECTION)
     terms = text_terms.parse_alternatives("eye tracking")
-    assert text_search.build_filter_tsquery(terms, "loose") == "tracking & eye"
+    assert tsquery.build_filter_tsquery(terms, "loose") == "tracking & eye"
     assert asked == [["eye", "tracking"], ["tracking & eye"]]
 
 
 def test_own_connection_lookup_stays_off_without_the_column_or_on_the_loop() -> None:
     caps.set_fts(False)
-    assert text_search._own_connection_lookup(["eye"]) is None
+    assert word_frequencies._own_connection_lookup(["eye"]) is None
     caps.set_fts(True)
 
     async def on_loop():
-        return text_search._own_connection_lookup(["eye"])
+        return word_frequencies._own_connection_lookup(["eye"])
 
     assert asyncio.run(on_loop()) is None
 
 
 def test_frequency_lookup_refuses_to_block_the_event_loop() -> None:
     async def scenario():
-        lookup = text_search.make_frequency_lookup(engine=object(), loop=asyncio.get_running_loop())
+        lookup = word_frequencies.make_frequency_lookup(engine=object(), loop=asyncio.get_running_loop())
         return lookup(["alcohol"])
 
     assert asyncio.run(scenario()) is None
@@ -260,7 +260,7 @@ def test_expand_replaces_placeholders_and_collects_the_rank_query() -> None:
     assert "d.search_tsv @@ to_tsquery('english', 'epilepsy:AB | epileptic:AB')" in expanded.sql
     assert "d.search_tsv @@ to_tsquery('english', 'alcohol')" in expanded.sql
     assert expanded.rank_tsquery == "(epilepsy | epileptic) | alcohol"
-    assert text_search.is_safe_tsquery(expanded.rank_tsquery)
+    assert tsquery.is_safe_tsquery(expanded.rank_tsquery)
 
 
 def test_negated_and_unsearchable_placeholders() -> None:
@@ -521,9 +521,9 @@ def test_a_bug_in_a_frequency_lookup_is_raised() -> None:
     def buggy(queries):
         raise TypeError("a bug")
 
-    text_search.set_frequency_lookup(buggy)
+    word_frequencies.set_frequency_lookup(buggy)
     try:
         with pytest.raises(TypeError):
-            text_search.build_filter_tsquery(terms, "loose")
+            tsquery.build_filter_tsquery(terms, "loose")
     finally:
-        text_search.set_frequency_lookup(None)
+        word_frequencies.set_frequency_lookup(None)

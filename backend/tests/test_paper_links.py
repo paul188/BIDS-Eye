@@ -278,8 +278,8 @@ def _text_search():
     if str(backend) not in sys.path:
         sys.path.insert(0, str(backend))
     from services.catalogue import schema_capabilities
-    from services.fulltext import text_search
-    return schema_capabilities, text_search
+    from services.fulltext import text_search, vectors
+    return schema_capabilities, text_search, vectors
 
 
 _SQL = (
@@ -291,7 +291,7 @@ _SQL = (
 
 
 def test_papers_switch_widens_positive_matches_only(monkeypatch) -> None:
-    capabilities, text_search = _text_search()
+    capabilities, text_search, vectors = _text_search()
     off = text_search.expand_text_search(_SQL, fts=True, papers=False)
     on = text_search.expand_text_search(_SQL, fts=True, papers=True)
 
@@ -306,22 +306,22 @@ def test_papers_switch_widens_positive_matches_only(monkeypatch) -> None:
 
 
 def test_papers_switch_needs_the_flag_and_the_column(monkeypatch) -> None:
-    capabilities, text_search = _text_search()
+    capabilities, text_search, vectors = _text_search()
     monkeypatch.setattr(capabilities, "_has_paper_fts", True)
     monkeypatch.setenv("TEXT_SEARCH_PAPERS", "true")
-    assert text_search.papers_enabled()
+    assert vectors.papers_enabled()
     monkeypatch.setenv("TEXT_SEARCH_PAPERS", "false")
-    assert not text_search.papers_enabled()
+    assert not vectors.papers_enabled()
     monkeypatch.setenv("TEXT_SEARCH_PAPERS", "true")
     monkeypatch.setattr(capabilities, "_has_paper_fts", False)
-    assert not text_search.papers_enabled()
+    assert not vectors.papers_enabled()
     # Without search_tsv at all the switch changes nothing.
     sql = text_search.expand_text_search(_SQL, fts=False, papers=True).sql
     assert "search_tsv" not in sql
 
 
 def test_negated_spans_ignore_parentheses_in_literals() -> None:
-    _, text_search = _text_search()
+    _, text_search, _ = _text_search()
     sql = "SELECT 1 WHERE NOT (a = '(x)' OR b) AND (c OR NOT(d))"
     spans = text_search.negated_spans(sql)
     assert [sql[start:end + 1] for start, end in sorted(spans)] == ["(a = '(x)' OR b)", "(d)"]

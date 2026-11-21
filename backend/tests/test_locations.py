@@ -19,7 +19,7 @@ import place_index  # noqa: E402
 import preprocess as pp  # noqa: E402
 from services.translate import participant_query_compiler as pqc  # noqa: E402
 from services.results import query_filters  # noqa: E402
-from services.fulltext import text_search  # noqa: E402
+from services.fulltext import text_search, word_frequencies  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler"))
 from remote import site_places  # noqa: E402
@@ -30,7 +30,7 @@ PLACES = [("city", "Bonn"), ("city", "Cologne"), ("city", "Washington"), ("regio
 
 @pytest.fixture(autouse=True)
 def _places(monkeypatch):
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda queries: None)
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda queries: None)
     place_index.set_places(PLACES)
     yield
     place_index.set_places(())

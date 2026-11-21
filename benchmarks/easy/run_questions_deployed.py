@@ -28,14 +28,18 @@ async def run():
         pass
     try:
         try:
-            from services.fulltext import text_search
+            from services.fulltext import word_frequencies
             from services.catalogue.schema_capabilities import has_fts
-        except ImportError:  # backend before services/ was grouped
-            from services import text_search
-            from services.schema_capabilities import has_fts
+        except ImportError:  # backend before text_search.py was split
+            try:
+                from services.fulltext import text_search as word_frequencies
+                from services.catalogue.schema_capabilities import has_fts
+            except ImportError:  # backend before services/ was grouped
+                from services import text_search as word_frequencies
+                from services.schema_capabilities import has_fts
         if has_fts():
-            text_search.set_frequency_lookup(
-                text_search.make_frequency_lookup(engine, asyncio.get_running_loop()))
+            word_frequencies.set_frequency_lookup(
+                word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop()))
     except Exception:
         pass
     for question in QUESTIONS:

@@ -55,7 +55,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         from routers.query import _count_with_base_correction as count_with_base_correction
-    from services.fulltext import text_search
+    from services.fulltext import word_frequencies
     from services.translate import text_to_sql as translator
     from services.stores.query_cache import CachedQuery, query_cache
     from services.catalogue.schema_capabilities import (
@@ -81,8 +81,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     if institution_index is not None:
         await institution_index.refresh_from_db(engine)
     if has_fts():
-        text_search.set_frequency_lookup(
-            text_search.make_frequency_lookup(engine, asyncio.get_running_loop())
+        word_frequencies.set_frequency_lookup(
+            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop())
         )
     if not (has_exact_fts() and has_word_forms()):
         raise SystemExit("search_tsv_exact or bids_word_forms is missing: run "

@@ -12,7 +12,7 @@ import pytest
 import preprocess
 import retriever
 from services.catalogue import schema_capabilities as caps
-from services.fulltext import text_search
+from services.fulltext import word_frequencies
 from services.translate import text_to_sql
 from services.translate.text_to_sql import keeps_every_dataset
 
@@ -26,11 +26,11 @@ BASE = (
 def _full_text_available():
     caps.set_fts(True)
     caps.set_available_columns(())
-    text_search.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
     yield
     caps.set_fts(False)
     caps.set_available_columns(())
-    text_search.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
 
 
 def _fake_pipeline(monkeypatch, question: str, generated_sql: str, **plan_overrides) -> None:

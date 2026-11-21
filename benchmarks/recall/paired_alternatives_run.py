@@ -93,7 +93,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker, engine
-    from services.fulltext import text_search, uncertain_tier
+    from services.fulltext import ranking, tsquery, uncertain_tier, word_frequencies
     from services.translate import text_to_sql as translator
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.catalogue.schema_capabilities import has_fts, refresh_available_columns
@@ -115,8 +115,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     if institution_index is not None:
         await institution_index.refresh_from_db(engine)
     if has_fts():
-        text_search.set_frequency_lookup(
-            text_search.make_frequency_lookup(engine, asyncio.get_running_loop()))
+        word_frequencies.set_frequency_lookup(
+            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop()))
     print(f"label={label!r} database={database} has_fts={has_fts()} "
           f"tier={uncertain_tier.enabled()}", file=sys.stderr, flush=True)
 
@@ -133,7 +133,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     async def rows_for(session, raw_sql, question, forms, translation,
                        flat: bool = False) -> Dict[str, Any]:
         rewritten = await asyncio.to_thread(rewrite, raw_sql, question, forms)
-        rank = text_search.without_own(rewritten.rank_tsquery) if flat else rewritten.rank_tsquery
+        rank = ranking.without_own(rewritten.rank_tsquery) if flat else rewritten.rank_tsquery
         page_sql, extra = build_page_sql(
             base_sql=rewritten.sql, scored_filters=translation.scored_filters,
             apply_relevance=translation.apply_relevance, limit=ALL_ROWS, offset=0,
@@ -165,11 +165,11 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
             alternatives: Dict[str, Optional[int]] = {}
             if found:
                 condition, own, words = found
-                counts = await asyncio.to_thread(text_search.count_matches, words)
+                counts = await asyncio.to_thread(tsquery.count_matches, words)
                 alternatives = dict(zip(words, counts or [None] * len(words)))
                 own_words = _CALL_RE.match(own).group(1)
                 own_count = (await asyncio.to_thread(
-                    text_search.count_matches, [own_words], "all") or [None])[0]
+                    tsquery.count_matches, [own_words], "all") or [None])[0]
                 common.update(own=own, own_count=own_count, alternatives=alternatives)
             async with async_session_maker() as session:
                 per_variant["alt_on"] = await rows_for(session, raw, question, forms, translation)

@@ -96,9 +96,9 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     # measure them on the same questions.
     try:
         from services.catalogue.schema_capabilities import has_fts
-        from services.fulltext import text_search
+        from services.fulltext import word_frequencies
     except ImportError:
-        has_fts, text_search = (lambda: False), None
+        has_fts, word_frequencies = (lambda: False), None
     try:
         import institution_index
     except ImportError:
@@ -130,9 +130,9 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     await refresh_available_columns(engine)
     if institution_index is not None:
         await institution_index.refresh_from_db(engine)
-    if has_fts() and text_search is not None:
-        text_search.set_frequency_lookup(
-            text_search.make_frequency_lookup(engine, asyncio.get_running_loop())
+    if has_fts() and word_frequencies is not None:
+        word_frequencies.set_frequency_lookup(
+            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop())
         )
 
     for number, q in enumerate(questions, 1):

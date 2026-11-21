@@ -18,7 +18,7 @@ import preprocess as pp
 import word_forms
 from services.results import query_filters as qf
 from services.catalogue import schema_capabilities as caps
-from services.fulltext import text_search as ts
+from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
 from services.fulltext import uncertain_tier as ut
 from services.catalogue import word_form_store
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
@@ -50,25 +50,25 @@ def _database_with_full_text(tmp_path, monkeypatch):
     path.write_text("{}")
     monkeypatch.setattr(word_forms, "_PATH", path)
     word_forms._reviewed.cache_clear()
-    monkeypatch.delenv(ts.EXACT_ENV, raising=False)
+    monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
     caps.set_fts(True)
     caps.set_paper_fts(True)
     caps.set_exact_fts(True, papers=True, word_forms=True)
     caps.set_available_columns(())
-    ts.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
     word_form_store.set_lookup(None)
     yield path
     caps.set_fts(False)
     caps.set_paper_fts(False)
     caps.set_exact_fts(False)
-    ts.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
     word_form_store.reset_lookup()
     word_forms._reviewed.cache_clear()
 
 
 @pytest.fixture
 def exact(monkeypatch):
-    monkeypatch.setenv(ts.EXACT_ENV, "true")
+    monkeypatch.setenv(vectors.EXACT_ENV, "true")
 
 
 # ── Switch ────────────────────────────────────────────────────────────────────
@@ -79,9 +79,9 @@ def test_without_the_switch_nothing_changes(monkeypatch) -> None:
     assert ts.expand_text_search(sql, exact_forms=FORMS) == plain
     assert "search_tsv_exact" not in plain.sql and "#" not in plain.rank_tsquery
     # The switch alone is not enough: the column must exist.
-    monkeypatch.setenv(ts.EXACT_ENV, "true")
+    monkeypatch.setenv(vectors.EXACT_ENV, "true")
     caps.set_exact_fts(False)
-    assert not ts.exact_enabled()
+    assert not vectors.exact_enabled()
     assert ts.expand_text_search(sql, exact_forms=FORMS) == plain
 
 
@@ -169,15 +169,15 @@ def test_counts_ask_with_the_guard_only_when_there_is_one(exact) -> None:
         asked.append((queries, guards))
         return [5] * len(queries)
 
-    ts.set_frequency_lookup(lookup)
-    assert ts.count_matches(["memory", "healthy ageing"], exact_forms=FORMS) == [5, 5]
+    word_frequencies.set_frequency_lookup(lookup)
+    assert tsquery.count_matches(["memory", "healthy ageing"], exact_forms=FORMS) == [5, 5]
     assert asked[-1][1] == [None, "(ageing | aging)"]
-    ts.count_matches(["memory"], exact_forms=FORMS)
+    tsquery.count_matches(["memory"], exact_forms=FORMS)
     assert asked[-1] == (["memory"], None)
-    sql, params = ts._count_statement(["a", "ageing"], [None, "(ageing | aging)"])
+    sql, params = word_frequencies._count_statement(["a", "ageing"], [None, "(ageing | aging)"])
     assert "search_tsv_exact @@ to_tsquery('simple', q.guard)" in sql
     assert params == {"queries": ["a", "ageing"], "guards": [None, "(ageing | aging)"]}
-    assert ts._count_statement(["a"], [None]) == (ts._COUNT_SQL, {"queries": ["a"]})
+    assert word_frequencies._count_statement(["a"], [None]) == (word_frequencies._COUNT_SQL, {"queries": ["a"]})
 
 
 def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
@@ -190,7 +190,7 @@ def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
                   ("ageing & connectome", "(ageing | aging)"): 2}
         return [counts.get((q, g), 0) for q, g in zip(queries, guards)]
 
-    ts.set_frequency_lookup(lookup)
+    word_frequencies.set_frequency_lookup(lookup)
     expanded = ts.expand_text_search(_where("text_match('ageing connectome', 'loose')"),
                                      exact_forms=FORMS)
     assert _condition(expanded) == (
@@ -207,23 +207,23 @@ def test_exact_words_rank_on_the_unstemmed_vector(exact) -> None:
                                   exact_forms=FORMS)
     # Next to other words the term still ranks where all of them meet.
     assert mixed.rank_tsquery == "quantitative & mri & ageing#(ageing | aging)"
-    assert ts.split_rank(mixed.rank_tsquery) == ("quantitative & mri & ageing", "(ageing | aging)")
-    assert ts.split_rank("memory") == ("memory", None)
-    assert ts.split_rank("memory#x'; DROP") == ("memory", None)
-    assert ts.join_rank("memory", None) == "memory" and ts.join_rank(None, None) is None
+    assert ranking.split_rank(mixed.rank_tsquery) == ("quantitative & mri & ageing", "(ageing | aging)")
+    assert ranking.split_rank("memory") == ("memory", None)
+    assert ranking.split_rank("memory#x'; DROP") == ("memory", None)
+    assert ranking.join_rank("memory", None) == "memory" and ranking.join_rank(None, None) is None
 
-    assert ts.rank_expression("ft", "memory") == ts.text_rank_expression("ft.search_tsv", "memory")
-    assert ts.rank_expression("ft", "#(ageing | aging)") == ts.text_rank_expression(
+    assert ranking.rank_expression("ft", "memory") == ranking.text_rank_expression("ft.search_tsv", "memory")
+    assert ranking.rank_expression("ft", "#(ageing | aging)") == ranking.text_rank_expression(
         "ft.search_tsv_exact", "(ageing | aging)", "simple")
-    both = ts.rank_expression("ft", mixed.rank_tsquery)
+    both = ranking.rank_expression("ft", mixed.rank_tsquery)
     assert "ft.search_tsv, to_tsquery('english', 'quantitative & mri & ageing'), 0)" in both
     assert "ft.search_tsv_exact, to_tsquery('simple', '(ageing | aging)'), 0)" in both
-    assert ts.rank_expression("ft", None) is None
+    assert ranking.rank_expression("ft", None) is None
     # A cached rank from before a rollback: the exact part is ignored.
     caps.set_exact_fts(False)
-    assert ts.rank_expression("ft", mixed.rank_tsquery) == ts.text_rank_expression(
+    assert ranking.rank_expression("ft", mixed.rank_tsquery) == ranking.text_rank_expression(
         "ft.search_tsv", "quantitative & mri & ageing")
-    assert ts.rank_expression("ft", "#(ageing | aging)") is None
+    assert ranking.rank_expression("ft", "#(ageing | aging)") is None
 
 
 def test_the_page_query_orders_by_both_ranks(exact) -> None:
@@ -274,7 +274,7 @@ def test_guard_for_follows_the_words_that_remain() -> None:
 
 
 def test_the_weaker_form_keeps_the_word_forms(exact, monkeypatch) -> None:
-    monkeypatch.setattr(ts, "_lookup_counts", lambda queries, guards=None: [
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda queries, guards=None: [
         {"healthy": 300, "ageing": 30, "cohort": 100}.get(q, 1000) for q in queries])
     sql = _expanded(f"{MODALITY} AND text_match('healthy ageing cohort')")
     tiered = ut.apply(sql, papers=False)

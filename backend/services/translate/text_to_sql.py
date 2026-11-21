@@ -829,18 +829,18 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     full-text rank, so the best matches come first. Without the full-text
     column, or without usable words, the bounded sample as before.
     """
-    from services.fulltext import text_search
+    from services.fulltext import tsquery, vectors
     from services.catalogue.schema_capabilities import has_fts
     from services.translate.sql_rewriter import DEFAULT_DATASET_PROJECTION
 
-    query = text_search.keyword_query(question) if has_fts() else None
+    query = tsquery.keyword_query(question) if has_fts() else None
     if not query:
         return TextToSQLResult(sql=_FALLBACK_SQL, explanation=explanation + " Showing a sample of datasets.")
     sql = (
         f"SELECT {DEFAULT_DATASET_PROJECTION}\n"
         "FROM bids_datasets d\n"
         "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-        f"WHERE d.{text_search.FTS_COLUMN} @@ to_tsquery('{text_search.TS_CONFIG}', '{query}')\n"
+        f"WHERE d.{vectors.FTS_COLUMN} @@ to_tsquery('{vectors.TS_CONFIG}', '{query}')\n"
         "GROUP BY d.id"
     )
     return TextToSQLResult(

@@ -14,7 +14,7 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 from services.results import query_filters  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
-from services.fulltext import text_search, uncertain_tier  # noqa: E402
+from services.fulltext import ranking, text_search, uncertain_tier, word_frequencies  # noqa: E402
 
 
 def _plan(**fields) -> pp.QueryPlan:
@@ -28,7 +28,7 @@ def _counts(table, default=5):
 
 @pytest.fixture(autouse=True)
 def _no_database(monkeypatch):
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda queries: None)
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda queries: None)
 
 
 def test_alternatives_are_checked_against_the_catalogue() -> None:
@@ -166,25 +166,25 @@ def _rank(condition: str) -> str:
 def test_a_match_on_the_alternatives_only_ranks_below_the_users_words() -> None:
     rank = _rank("(text_match('test-retest reliability') OR "
                  "text_match('reproducibility | stability', 'also'))")
-    stemmed, exact = text_search.split_rank(rank)
+    stemmed, exact = ranking.split_rank(rank)
     assert "reproducibility" in stemmed and "reliability" in stemmed and exact is None
-    assert text_search.rank_own(rank) == "(test <-> retest) & reliability"
-    expression = text_search.rank_expression("ft", rank)
+    assert ranking.rank_own(rank) == "(test <-> retest) & reliability"
+    expression = ranking.rank_expression("ft", rank)
     assert expression.endswith(
         "- CASE WHEN ft.search_tsv @@ to_tsquery('english', '(test <-> retest) & reliability') "
-        f"THEN 0 ELSE {text_search.ALSO_ONLY_PENALTY} END)")
+        f"THEN 0 ELSE {ranking.ALSO_ONLY_PENALTY} END)")
     # Without the 'also' part every match ranks alike, as a 'near' search does.
-    flat = text_search.without_own(rank)
-    assert flat == stemmed and "CASE" not in text_search.rank_expression("ft", flat)
+    flat = ranking.without_own(rank)
+    assert flat == stemmed and "CASE" not in ranking.rank_expression("ft", flat)
 
 
 def test_other_searches_rank_as_before() -> None:
     rank = _rank("text_match('ketamine') AND text_match('social conflict', 'near')")
-    assert text_search.rank_own(rank) is None
-    assert "CASE" not in text_search.rank_expression("ft", rank)
+    assert ranking.rank_own(rank) is None
+    assert "CASE" not in ranking.rank_expression("ft", rank)
     # 'also' without a search before it has nothing to rank below.
     alone = _rank("text_match('post-mortem | ex vivo', 'also')")
-    assert text_search.rank_own(alone) is None
+    assert ranking.rank_own(alone) is None
 
 
 def test_the_page_orders_by_the_penalised_rank() -> None:

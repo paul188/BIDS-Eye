@@ -56,7 +56,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.translate.text_to_sql import text_to_sql
     from services.catalogue.schema_capabilities import has_fts, has_paper_fts, refresh_available_columns
-    from services.fulltext import text_search
+    from services.fulltext import text_search, word_frequencies
     try:
         import institution_index
     except ImportError:
@@ -76,8 +76,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     if institution_index is not None:
         await institution_index.refresh_from_db(engine)
     if has_fts():
-        text_search.set_frequency_lookup(
-            text_search.make_frequency_lookup(engine, asyncio.get_running_loop())
+        word_frequencies.set_frequency_lookup(
+            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop())
         )
     if not has_paper_fts():
         raise SystemExit("search_tsv_papers is missing: run crawlers/migrate_add_paper_search.sql first")

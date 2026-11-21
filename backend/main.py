@@ -34,7 +34,7 @@ import place_index
 from db.db import create_all_tables, engine
 from services.catalogue import schema_capabilities, word_form_store
 from services.catalogue.schema_capabilities import has_fts, refresh_available_columns
-from services.fulltext import text_search
+from services.fulltext import word_frequencies
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -65,8 +65,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Multi-word free-text terms filter on their rarest word; the count comes
     # from the database and is asked for from the translation worker thread.
     if has_fts():
-        text_search.set_frequency_lookup(
-            text_search.make_frequency_lookup(engine, asyncio.get_running_loop())
+        word_frequencies.set_frequency_lookup(
+            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop())
         )
 
     # The catalogue's word forms, asked for from the same worker thread: which

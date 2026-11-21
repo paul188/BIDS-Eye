@@ -1,7 +1,7 @@
 """A phrase is never shortened to one broad word (search-quality review 2026-11-17, point 1)."""
 import preprocess
 import text_terms
-from services.fulltext import text_search, uncertain_tier
+from services.fulltext import tsquery, uncertain_tier, word_frequencies
 
 
 def _counts(table):
@@ -15,7 +15,7 @@ def _counts(table):
 
 def test_a_common_remainder_is_no_weak_evidence(monkeypatch):
     # "visual & cortex" → "cortex" (142 datasets) said 'probable' for any README with "cortex".
-    monkeypatch.setattr(text_search, "_lookup_counts",
+    monkeypatch.setattr(word_frequencies, "_lookup_counts",
                         _counts({"visual": 600, "cortex": 142}))
     assert uncertain_tier.relax_tsquery("visual & cortex") is None
     # The scope still widens when the words stay.
@@ -23,40 +23,40 @@ def test_a_common_remainder_is_no_weak_evidence(monkeypatch):
 
 
 def test_a_rare_remainder_stands_for_the_term(monkeypatch):
-    monkeypatch.setattr(text_search, "_lookup_counts",
+    monkeypatch.setattr(word_frequencies, "_lookup_counts",
                         _counts({"memory": 400, "consolidation": 10}))
     assert uncertain_tier.relax_tsquery("memory & consolidation") == "consolidation"
 
 
 def test_dropping_only_general_words_needs_no_rare_remainder(monkeypatch):
-    monkeypatch.setattr(text_search, "_lookup_counts",
+    monkeypatch.setattr(word_frequencies, "_lookup_counts",
                         _counts({"emotional": 94, "state": 900}))
     assert uncertain_tier.relax_tsquery("emotional & state") == "emotional"
 
 
 def test_without_counts_the_shortening_stays():
-    text_search.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
     try:
         assert uncertain_tier.relax_tsquery("memory & consolidation") == "consolidation"
     finally:
-        text_search.set_frequency_lookup(text_search._OWN_CONNECTION)
+        word_frequencies.set_frequency_lookup(word_frequencies._OWN_CONNECTION)
 
 
 # ── loose text: a general word is never the one kept ────────────────────────
 
 def test_loose_core_keeps_the_specific_word(monkeypatch):
     # In the catalogue "syndrome" (11) is rarer than "bipolar" (43); together 1.
-    monkeypatch.setattr(text_search, "_lookup_counts",
+    monkeypatch.setattr(word_frequencies, "_lookup_counts",
                         _counts({"bipolar": 43, "syndrome": 11, "bipolar & syndrome": 1}))
-    assert text_search._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
+    assert tsquery._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
 
 
 def test_loose_core_without_counts_skips_the_general_word():
-    text_search.set_frequency_lookup(None)
+    word_frequencies.set_frequency_lookup(None)
     try:
-        assert text_search._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
+        assert tsquery._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
     finally:
-        text_search.set_frequency_lookup(text_search._OWN_CONNECTION)
+        word_frequencies.set_frequency_lookup(word_frequencies._OWN_CONNECTION)
 
 
 # ── diagnosis fallback: "disorder" stays after an everyday word ─────────────

@@ -186,9 +186,9 @@ def _rare_enough(kept: List[str], guard: Optional[str]) -> bool:
     then stays as it was.
     """
     query = " & ".join(kept)
-    from services.fulltext import text_search
+    from services.fulltext import word_frequencies
     # None when the catalogue cannot be asked (guarded_counts catches that).
-    counts = text_search.guarded_counts([query], [guard_for(query, guard)])
+    counts = word_frequencies.guarded_counts([query], [guard_for(query, guard)])
     if not counts:
         return True
     return counts[0] <= RELAXED_MAX_MATCHES
@@ -216,15 +216,15 @@ def _rarest_parts(parts: List[str], guard: Optional[str] = None) -> List[str]:
     """The rarer half of a term's parts (rounded up), in their original order.
 
     Rarity comes from how many datasets contain each part
-    (text_search's frequency lookup); without it, the longest parts. A part
+    (word_frequencies.py); without it, the longest parts. A part
     with exact word forms (*guard*) is counted in those forms.
     """
     keep = (len(parts) + 1) // 2
     if keep >= len(parts):
         return parts
-    from services.fulltext import text_search
+    from services.fulltext import word_frequencies
     # None when the catalogue cannot be asked (guarded_counts catches that).
-    counts = text_search.guarded_counts(parts, [guard_for(part, guard) for part in parts])
+    counts = word_frequencies.guarded_counts(parts, [guard_for(part, guard) for part in parts])
     if counts and len(counts) == len(parts):
         # A modifier ("young", "healthy", "many") is never kept in place of a
         # noun, however rare it happens to be.
@@ -568,7 +568,7 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
     scoped to the name and short fields could never reach it.
     """
     from services.catalogue import schema_capabilities
-    from services.fulltext.text_search import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, PAPER_FTS_COLUMN
+    from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, PAPER_FTS_COLUMN
     spans = _negated_spans(sql)
     atoms = []
     for match in _TSQUERY_RE.finditer(sql):
@@ -1151,8 +1151,8 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     can be uncertain, or when it cannot be parsed.
     """
     if papers is None:
-        from services.fulltext import text_search
-        papers = text_search.papers_enabled()
+        from services.fulltext import vectors
+        papers = vectors.papers_enabled()
     if hoist_terms is None:
         hoist_terms = hoist_terms_enabled()
     if sqlglot is None or LEVEL_COLUMN in sql:

@@ -10,8 +10,8 @@ def test_request_words_are_not_searched_as_text():
 
 
 def test_a_generic_word_is_no_weak_evidence(monkeypatch):
-    from services.fulltext import text_search
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda parts: [5 for _ in parts])
+    from services.fulltext import word_frequencies
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda parts: [5 for _ in parts])
     assert uncertain_tier.relax_tsquery("resting:AB & state:AB") is None
     assert uncertain_tier.relax_tsquery("bipolar:AB & syndrome:AB") == "bipolar"
     assert uncertain_tier.relax_tsquery("young & children") == "children"
@@ -36,12 +36,12 @@ def test_wish_phrases_are_cut_from_the_text_search():
 
 
 def test_free_text_no_dataset_contains_is_not_searched(monkeypatch):
-    from services.fulltext import text_search
-    monkeypatch.setattr(text_search, "count_matches", lambda alts, mode: [1 for _ in alts])
+    from services.fulltext import tsquery
+    monkeypatch.setattr(tsquery, "count_matches", lambda alts, mode: [1 for _ in alts])
     assert preprocess._matches_too_few("adjacency matrices graphml")
-    monkeypatch.setattr(text_search, "count_matches", lambda alts, mode: [40 for _ in alts])
+    monkeypatch.setattr(tsquery, "count_matches", lambda alts, mode: [40 for _ in alts])
     assert not preprocess._matches_too_few("pediatric")
-    monkeypatch.setattr(text_search, "count_matches", lambda alts, mode: None)
+    monkeypatch.setattr(tsquery, "count_matches", lambda alts, mode: None)
     assert not preprocess._matches_too_few("pediatric")
 
 

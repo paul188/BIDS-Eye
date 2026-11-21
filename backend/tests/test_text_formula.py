@@ -16,7 +16,7 @@ sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
 import text_formula as tf  # noqa: E402
-from services.fulltext import text_search, uncertain_tier  # noqa: E402
+from services.fulltext import text_search, tsquery, uncertain_tier, vectors, word_frequencies  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 
 
@@ -76,7 +76,7 @@ def test_phrases_are_cleaned_one_by_one() -> None:
 
 @pytest.fixture(autouse=True)
 def _no_database(monkeypatch):
-    monkeypatch.setattr(text_search, "_lookup_counts", lambda queries: None)
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda queries: None)
 
 
 def _question(**fields) -> str:
@@ -115,11 +115,11 @@ def test_rare_parts_are_not_searched_but_a_negation_stays(monkeypatch) -> None:
 
 
 def test_an_or_counts_its_phrases_together(monkeypatch) -> None:
-    monkeypatch.setattr(text_search, "count_matches",
+    monkeypatch.setattr(tsquery, "count_matches",
                         lambda alternatives, mode="near": [2 if a == "drawings" else 1 for a in alternatives])
     # 2 + 1 datasets: still searched (three is enough).
     assert "text_match('drawings | art')" in _question(description_search="drawings or art")
-    monkeypatch.setattr(text_search, "count_matches", lambda alternatives, mode="near": [1, 1])
+    monkeypatch.setattr(tsquery, "count_matches", lambda alternatives, mode="near": [1, 1])
     assert "dataset text:" not in _question(description_search="drawings or art", name_search="connectome")
 
 
@@ -242,9 +242,9 @@ def test_render_shows_the_grouping() -> None:
 
 
 def test_formula_counts_without_a_database_keep_the_part(monkeypatch) -> None:
-    monkeypatch.setattr(text_search, "count_matches", lambda alternatives, mode="near": None)
+    monkeypatch.setattr(tsquery, "count_matches", lambda alternatives, mode="near": None)
     assert not pp._formula_matches_too_few(tf.parse_formula("drawings or art"))
-    monkeypatch.setattr(text_search, "count_matches", lambda alternatives, mode="near": [None, 4])
+    monkeypatch.setattr(tsquery, "count_matches", lambda alternatives, mode="near": [None, 4])
     assert not pp._formula_matches_too_few(tf.parse_formula("drawings or art"))
     # A part with a NOT inside is no plain text search and is never too few.
     assert not pp._formula_matches_too_few(tf.parse_formula("dreams or not sleep"))
@@ -281,7 +281,7 @@ def test_a_formula_line_is_not_taken_for_alternatives() -> None:
 def full_text(monkeypatch):
     from services.catalogue import schema_capabilities
     monkeypatch.setattr(schema_capabilities, "has_fts", lambda: True)
-    monkeypatch.setattr(text_search, "papers_enabled", lambda: False)
+    monkeypatch.setattr(vectors, "papers_enabled", lambda: False)
 
 
 def _rewrite(monkeypatch, description: str, model_where: Optional[str] = None, tier: bool = True):
