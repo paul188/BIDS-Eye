@@ -18,21 +18,20 @@ it decides whether a searched word is worth a closer look
 (RAG/word_forms.py), not what a search returns.
 
 lookup() answers for the words of one question. Like the word counts in
-services/fulltext/text_search.py it is called from the translation worker thread, so
-the API installs a pooled lookup at startup (make_lookup); other entry points
-(one-off containers, the recall benchmark) open a connection of their own.
+services/fulltext/text_search.py it is called from the translation worker
+thread, so it reaches the database through worker_db.
 """
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import re
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
 
-from services.catalogue import off_loop_query, schema_capabilities
+import worker_db
+from services.catalogue import schema_capabilities
 
 from word_forms import WordEvidence
 
@@ -128,61 +127,29 @@ async def refresh(conn: Any) -> Dict[str, int]:
 # Given words, returns the rows of _LOOKUP_SQL, or None when unavailable.
 Lookup = Callable[[List[str]], Optional[List[Sequence[Any]]]]
 
-_OWN_CONNECTION = object()
-_lookup: Any = _OWN_CONNECTION
+
+def _database_lookup(words: List[str]) -> List[Sequence[Any]]:
+    """The rows for *words*, from the database (worker_db.current())."""
+    params = {"words": words, "limit": FORMS_PER_WORD}
+
+    async def rows(connection: Any) -> List[Sequence[Any]]:
+        return list(await connection.execute(text(_LOOKUP_SQL), params))
+
+    return worker_db.current().run(rows, LOOKUP_TIMEOUT_SECONDS)
+
+
+_lookup: Optional[Lookup] = _database_lookup
 
 
 def set_lookup(lookup: Optional[Lookup]) -> None:
-    """Install the lookup; None switches lookups off (tests)."""
+    """Install another lookup (tests); None switches lookups off."""
     global _lookup
     _lookup = lookup
 
 
 def reset_lookup() -> None:
-    """Back to a connection of its own per call (the state before startup)."""
-    global _lookup
-    _lookup = _OWN_CONNECTION
-
-
-def _params(words: List[str]) -> Dict[str, Any]:
-    return {"words": words, "limit": FORMS_PER_WORD}
-
-
-def _own_connection_lookup(words: List[str]) -> Optional[List[Sequence[Any]]]:
-    """Look up with a connection of its own; only off the event loop."""
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        pass
-    else:
-        return None
-
-    async def _rows(connection: Any) -> List[Sequence[Any]]:
-        return list(await connection.execute(text(_LOOKUP_SQL), _params(words)))
-
-    return off_loop_query.run_with_own_connection(_rows, LOOKUP_TIMEOUT_SECONDS)
-
-
-def make_lookup(engine: Any, loop: asyncio.AbstractEventLoop,
-                timeout: float = LOOKUP_TIMEOUT_SECONDS) -> Lookup:
-    """Pooled lookup for code running in a worker thread (see
-    text_search.make_frequency_lookup: the engine belongs to the event loop)."""
-    statement = text(_LOOKUP_SQL)
-
-    async def _rows(words: List[str]) -> List[Sequence[Any]]:
-        async with engine.connect() as connection:
-            return list(await connection.execute(statement, _params(words)))
-
-    def lookup(words: List[str]) -> Optional[List[Sequence[Any]]]:
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            pass
-        else:
-            return None  # called on an event loop: blocking here would deadlock
-        return off_loop_query.run_on_loop(_rows(words), loop, timeout)
-
-    return lookup
+    """Back to asking the database."""
+    set_lookup(_database_lookup)
 
 
 def _parse_forms(values: Sequence[str]) -> Tuple[Tuple[str, int], ...]:
@@ -198,19 +165,18 @@ def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
     """The catalogue's forms for each of *words*; {} when unavailable.
 
     Words that are not plain lower-case words, and stopwords, are left out.
-    A lookup raises CatalogueLookupError when the database cannot answer;
+    A lookup raises worker_db.WorkerDbError when the database cannot answer;
     that gives {} and the words are searched by stem. Anything else it
     raises is a bug.
     """
     asked = [w for w in dict.fromkeys(words) if _WORD_RE.fullmatch(w)]
     if not asked or not schema_capabilities.has_word_forms():
         return {}
-    run = _own_connection_lookup if _lookup is _OWN_CONNECTION else _lookup
-    if run is None:
+    if _lookup is None:
         return {}
     try:
-        rows = run(asked)
-    except off_loop_query.CatalogueLookupError as exc:
+        rows = _lookup(asked)
+    except worker_db.WorkerDbError as exc:
         log.warning("Word form lookup failed (%s) — searching by stem", exc)
         return {}
     found: Dict[str, WordEvidence] = {}

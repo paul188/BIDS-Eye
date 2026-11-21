@@ -80,10 +80,14 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     await refresh_available_columns(engine)
     if institution_index is not None:
         await institution_index.refresh_from_db(engine)
-    if has_fts():
-        word_frequencies.set_frequency_lookup(
-            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop())
-        )
+    try:
+        import worker_db
+    except ImportError:  # backend before worker_db.py
+        if has_fts():
+            word_frequencies.set_frequency_lookup(
+                word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop()))
+    else:
+        worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
     if not (has_exact_fts() and has_word_forms()):
         raise SystemExit("search_tsv_exact or bids_word_forms is missing: run "
                          "crawlers/migrate_add_exact_search.sql and scripts/refresh_word_forms.py")

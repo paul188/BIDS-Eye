@@ -20,7 +20,7 @@ if str(_CRAWLER) not in sys.path:
 import word_forms  # noqa: E402
 from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.catalogue import word_form_store as store  # noqa: E402
-from services.catalogue.off_loop_query import CatalogueLookupError  # noqa: E402
+from worker_db import WorkerDbError  # noqa: E402
 from word_forms import WordEvidence  # noqa: E402
 
 AGEING = WordEvidence("ageing", "age", 291, (
@@ -165,7 +165,7 @@ def test_lookup_parses_rows_and_skips_what_cannot_be_a_word(word_forms_table) ->
 
 def test_lookup_never_breaks_a_search(word_forms_table) -> None:
     def broken(words):
-        raise CatalogueLookupError("database gone")
+        raise WorkerDbError("database gone")
 
     store.set_lookup(broken)
     assert store.lookup(["ageing"]) == {}

@@ -47,6 +47,7 @@ py-modules = [
     "rate_limits",
     "schemas",
     "single_flight",
+    "worker_db",
 ]
 
 [tool.setuptools.packages.find]

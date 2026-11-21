@@ -70,7 +70,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "translate" / "value_check.py",
     _BACKEND / "services" / "fulltext" / "uncertain_tier.py",
     _BACKEND / "services" / "catalogue" / "word_form_store.py",
-    _BACKEND / "services" / "catalogue" / "off_loop_query.py",
+    _BACKEND / "worker_db.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
                 "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE",

@@ -31,10 +31,9 @@ import db.models  # noqa: F401 — registers models with Base.metadata before cr
 import institution_index
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
 import place_index
+import worker_db
 from db.db import create_all_tables, engine
-from services.catalogue import schema_capabilities, word_form_store
-from services.catalogue.schema_capabilities import has_fts, refresh_available_columns
-from services.fulltext import word_frequencies
+from services.catalogue.schema_capabilities import refresh_available_columns
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -62,19 +61,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # place names in questions (RAG/place_index.py).
     await place_index.refresh_from_db(engine)
 
-    # Multi-word free-text terms filter on their rarest word; the count comes
-    # from the database and is asked for from the translation worker thread.
-    if has_fts():
-        word_frequencies.set_frequency_lookup(
-            word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop())
-        )
-
-    # The catalogue's word forms, asked for from the same worker thread: which
-    # other words share a searched word's stem (services/catalogue/word_form_store.py).
-    if schema_capabilities.has_word_forms():
-        word_form_store.set_lookup(
-            word_form_store.make_lookup(engine, asyncio.get_running_loop())
-        )
+    # The translation worker thread asks the database for word counts
+    # (services/fulltext/word_frequencies.py) and word forms
+    # (services/catalogue/word_form_store.py); its queries run here, on this
+    # event loop, with the pooled engine.
+    worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
 
     # Optionally run the crawler in-process (useful for single-container dev).
     # In production the crawler runs as its own Docker service.

@@ -17,7 +17,8 @@ import text_terms  # noqa: E402
 from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E402
-from services.catalogue.off_loop_query import CatalogueLookupError  # noqa: E402
+import worker_db  # noqa: E402
+from worker_db import WorkerDbError  # noqa: E402
 from services.translate.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
 
 SERVICE = SqlRewriteService()
@@ -199,7 +200,7 @@ def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
     terms = text_terms.parse_alternatives("complex motor task")
 
     def broken(queries):
-        raise CatalogueLookupError("database gone")
+        raise WorkerDbError("database gone")
 
     word_frequencies.set_frequency_lookup(broken)
     assert tsquery.build_filter_tsquery(terms, "loose") == "complex"
@@ -213,38 +214,63 @@ def test_loose_term_survives_a_failing_or_empty_lookup() -> None:
     assert tsquery.build_filter_tsquery(terms, "loose") == "complex & motor & task"
 
 
-def test_without_an_installed_lookup_counts_come_from_an_own_connection(monkeypatch) -> None:
-    """Entry points that skip main.py's startup (benchmark, one-off runs) still get frequencies."""
-    asked = []
+class _CannedWorkerDb(worker_db.WorkerDb):
+    """Answers every query with the next canned result, recording the SQL."""
 
-    def own(queries):
-        asked.append(queries)
-        return [900, 40] if len(queries) == 2 else [12]
+    def __init__(self, answers):
+        self.answers = list(answers)
+        self.statements = []
 
-    monkeypatch.setattr(word_frequencies, "_own_connection_lookup", own)
-    monkeypatch.setattr(word_frequencies, "_frequency_lookup", word_frequencies._OWN_CONNECTION)
+    def _run(self, query, timeout):
+        answer = self.answers.pop(0)
+        statements = self.statements
+
+        class Connection:
+            async def execute(self, statement, params):
+                statements.append((str(statement), params))
+                return [(count,) for count in answer]
+
+        return asyncio.run(query(Connection()))
+
+
+@pytest.fixture
+def canned_db():
+    def install(*answers):
+        db = _CannedWorkerDb(answers)
+        worker_db.install(db)
+        word_frequencies.reset_frequency_lookup()
+        return db
+    yield install
+    worker_db.reset()
+    word_frequencies.set_frequency_lookup(None)
+
+
+def test_by_default_counts_come_from_the_worker_db(canned_db) -> None:
+    db = canned_db([900, 40], [12])
     terms = text_terms.parse_alternatives("eye tracking")
     assert tsquery.build_filter_tsquery(terms, "loose") == "tracking & eye"
-    assert asked == [["eye", "tracking"], ["tracking & eye"]]
+    assert [params["queries"] for _, params in db.statements] == [["eye", "tracking"],
+                                                                  ["tracking & eye"]]
 
 
-def test_own_connection_lookup_stays_off_without_the_column_or_on_the_loop() -> None:
+def test_database_counts_stay_off_without_the_column(canned_db) -> None:
+    canned_db()
     caps.set_fts(False)
-    assert word_frequencies._own_connection_lookup(["eye"]) is None
-    caps.set_fts(True)
-
-    async def on_loop():
-        return word_frequencies._own_connection_lookup(["eye"])
-
-    assert asyncio.run(on_loop()) is None
+    try:
+        assert word_frequencies._lookup_counts(["eye"]) is None
+    finally:
+        caps.set_fts(True)
 
 
-def test_frequency_lookup_refuses_to_block_the_event_loop() -> None:
-    async def scenario():
-        lookup = word_frequencies.make_frequency_lookup(engine=object(), loop=asyncio.get_running_loop())
-        return lookup(["alcohol"])
+def test_counts_on_the_event_loop_are_skipped_not_blocked() -> None:
+    word_frequencies.reset_frequency_lookup()
+    try:
+        async def on_loop():
+            return word_frequencies._lookup_counts(["alcohol"])
 
-    assert asyncio.run(scenario()) is None
+        assert asyncio.run(on_loop()) is None
+    finally:
+        word_frequencies.set_frequency_lookup(None)
 
 
 # ── Expansion ─────────────────────────────────────────────────────────────────

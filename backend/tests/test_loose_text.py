@@ -39,7 +39,7 @@ def test_without_counts_the_shortening_stays():
     try:
         assert uncertain_tier.relax_tsquery("memory & consolidation") == "consolidation"
     finally:
-        word_frequencies.set_frequency_lookup(word_frequencies._OWN_CONNECTION)
+        word_frequencies.reset_frequency_lookup()
 
 
 # ── loose text: a general word is never the one kept ────────────────────────
@@ -56,7 +56,7 @@ def test_loose_core_without_counts_skips_the_general_word():
     try:
         assert tsquery._loose_core([["bipolar"], ["syndrome"]]) == [["bipolar"]]
     finally:
-        word_frequencies.set_frequency_lookup(word_frequencies._OWN_CONNECTION)
+        word_frequencies.reset_frequency_lookup()
 
 
 # ── diagnosis fallback: "disorder" stays after an everyday word ─────────────

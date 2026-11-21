@@ -37,9 +37,14 @@ async def run():
             except ImportError:  # backend before services/ was grouped
                 from services import text_search as word_frequencies
                 from services.schema_capabilities import has_fts
-        if has_fts():
-            word_frequencies.set_frequency_lookup(
-                word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop()))
+        try:
+            import worker_db
+        except ImportError:  # backend before worker_db.py
+            if has_fts():
+                word_frequencies.set_frequency_lookup(
+                    word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop()))
+        else:
+            worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
     except Exception:
         pass
     for question in QUESTIONS:
