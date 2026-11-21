@@ -1,0 +1,7295 @@
+{
+ "sentences": 30546,
+ "terms": [
+  {
+   "kind": "anatomy",
+   "term": "temporal lobe",
+   "counts": {
+    "adjacent": 37,
+    "coord": 4,
+    "stacked": 1
+   },
+   "papers": {
+    "adjacent": 21,
+    "coord": 4,
+    "stacked": 1
+   },
+   "docs_adjacent": 21,
+   "docs_only_coord_stacked": 4,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     37
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     3,
+     0,
+     3
+    ],
+    [
+     4,
+     0,
+     1
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "These slices covered a partial volume encompassing the temporal and occipital lobes, which allowed us to maximize spatial",
+     "participant, parallel to the hippocampus and covering the temporal and occipital lobes.",
+     "large portions of the superficial aspects of occipital, temporal, parietal, and frontal lobes.",
+     "Resection locations in the cohort were predominantly in the temporal and frontal lobes."
+    ],
+    "stacked": [
+     "on the EEG at specific brain regions including, temporal superior lobe, lateral prefrontal cortex, occipital cortex"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "temporal cortex",
+   "counts": {
+    "unlinked_far": 5,
+    "adjacent": 10,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "papers": {
+    "unlinked_far": 4,
+    "adjacent": 6,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 0,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     10
+    ],
+    [
+     5,
+     0,
+     1
+    ],
+    [
+     6,
+     0,
+     2
+    ],
+    [
+     8,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "artifact renders as a ghost that may overlap the cortex through one or both temporal lobes.",
+     "These findings support the notion of the entorhinal cortex being involved in the encoding of temporal context information as well as the perirhinal",
+     "We found that temporal changes of HRV were correlated to dynamic changes of prefrontal connectivity, especially to the middle cingulate cortex, the left insula, supplementary motor",
+     "Temporal dynamics of neural responses in human visual cortex.",
+     "Temporal dynamics of short-term neural adaptation in human visual cortex."
+    ],
+    "coord": [
+     "The proposed language recruited bilateral superior temporal, precentral, anterior intraparietal and cerebellar cortices.",
+     "The proposed language recruited bilateral superior temporal, precentral, anterior intraparietal and cerebellar cortices."
+    ],
+    "head_coord": [
+     "on the EEG at specific brain regions including, temporal superior lobe, lateral prefrontal cortex, occipital cortex, posterior parietal cortex"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "frontal lobe",
+   "counts": {
+    "adjacent": 5,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 3,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     5
+    ],
+    [
+     6,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "the seizure onsets were distributed over the central, frontal, temporal, occipital, parietal and insula lobes, with a predominance of temporal lobe"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "frontal cortex",
+   "counts": {
+    "unlinked_far": 4,
+    "head_coord": 4,
+    "coord": 1,
+    "adjacent": 4
+   },
+   "papers": {
+    "unlinked_far": 4,
+    "head_coord": 3,
+    "coord": 1,
+    "adjacent": 4
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 7,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -7,
+     0,
+     1
+    ],
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     2
+    ],
+    [
+     1,
+     0,
+     4
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     6,
+     0,
+     1
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "have partial brain coverage \u2014 centered on the auditory cortices in both brain hemispheres and include frontal and posterior portions of the brain.",
+     "confidence following committed and observed decisions in the inferior frontal gyrus and a dissociation in the anterior prefrontal cortex and anterior insula.",
+     "For small volume analysis, the right orbitofrontal cortex (ROFC) exhibited a sex with lavender and ALD interaction, and a sex with lavender and EST interaction was observed in the left inferior frontal gyrus (LIFG).",
+     "Connectivity between this region and the right inferior frontal gyrus varied depending on choice and experimental condition, suggesting that this part of prefrontal cortex is sensitive to guilt-related information"
+    ],
+    "head_coord": [
+     "right posterior insula and the putamen, the superior frontal gyrus and the anterior cingulate cortex in the modafinil-treated group.",
+     "single-voxel sLASER MRS data in the prefrontal cortex, posterior frontal lobe, and occipital lobe.",
+     "- Volumes of interest = prefrontal cortex, posterior frontal lobe, and occipital lobe - Voxel",
+     "dorsolateral prefrontal cortex (DLPFC), dorsomedial prefrontal cortex (DMPFC), intraparietal sulcus (IPS), and middle frontal gyrus (MFG)\u2014regions implicated in decision-"
+    ],
+    "coord": [
+     "remote events), as did several regions of frontal and parietal cortex."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "prefrontal cortex",
+   "counts": {
+    "adjacent": 44,
+    "postmod": 1,
+    "head_coord": 1,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 32,
+    "postmod": 1,
+    "head_coord": 1,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 32,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     44
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "of prefrontal connectivity, especially to the middle cingulate cortex, the left insula, supplementary motor area, dorsal and ventral lateral prefrontal regions."
+    ],
+    "head_coord": [
+     "the insula, the amygdala, the middle cingulate cortex and lateral prefrontal regions after biofeedback intervention when compared to"
+    ],
+    "unlinked_far": [
+     "included: anterior cingulate, posterior cingulate, lateral prefrontal, orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "parietal cortex",
+   "counts": {
+    "unlinked_far": 1,
+    "adjacent": 12,
+    "head_coord": 1
+   },
+   "papers": {
+    "unlinked_far": 1,
+    "adjacent": 8,
+    "head_coord": 1
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     12
+    ],
+    [
+     6,
+     0,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Medical) covering the left hemisphere from the premotor cortex to the superior parietal lobule."
+    ],
+    "head_coord": [
+     ", lateral prefrontal, orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "parietal lobe",
+   "counts": {
+    "adjacent": 3,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 3,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -7,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     3
+    ],
+    [
+     3,
+     0,
+     2
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "of the superficial aspects of occipital, temporal, parietal, and frontal lobes.",
+     "the central, frontal, temporal, occipital, parietal and insula lobes, with a predominance of temporal lobe"
+    ],
+    "head_coord": [
+     "EEG at specific brain regions including, temporal superior lobe, lateral prefrontal cortex, occipital cortex, posterior parietal cortex, and Broca."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "occipital cortex",
+   "counts": {
+    "adjacent": 4,
+    "unlinked_far": 2,
+    "head_coord": 2
+   },
+   "papers": {
+    "adjacent": 4,
+    "unlinked_far": 2,
+    "head_coord": 1
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 3,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -5,
+     0,
+     2
+    ],
+    [
+     1,
+     0,
+     4
+    ],
+    [
+     4,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     ", orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices.",
+     "showed that the receptive region of the early visual cortex (V1-V4), and category-selective areas such as the fusiform face area (FFA) and occipital face area (OFA), responded"
+    ],
+    "head_coord": [
+     "single-voxel sLASER MRS data in the prefrontal cortex, posterior frontal lobe, and occipital lobe.",
+     "- Volumes of interest = prefrontal cortex, posterior frontal lobe, and occipital lobe - Voxel resolution = 25 \u00d7"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "occipital lobe",
+   "counts": {
+    "adjacent": 6,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 4,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     6
+    ],
+    [
+     4,
+     0,
+     1
+    ],
+    [
+     5,
+     0,
+     1
+    ]
+   ],
+   "samples": {
+    "coord": [
+     ", covering large portions of the superficial aspects of occipital, temporal, parietal, and frontal lobes.",
+     "distributed over the central, frontal, temporal, occipital, parietal and insula lobes, with a predominance of temporal lobe"
+    ],
+    "head_coord": [
+     "EEG at specific brain regions including, temporal superior lobe, lateral prefrontal cortex, occipital cortex, posterior parietal cortex, and"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "visual cortex",
+   "counts": {
+    "adjacent": 46,
+    "unlinked_far": 6,
+    "coord": 1
+   },
+   "papers": {
+    "adjacent": 28,
+    "unlinked_far": 4,
+    "coord": 1
+   },
+   "docs_adjacent": 28,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 4,
+   "gaps": [
+    [
+     -4,
+     1,
+     4
+    ],
+    [
+     1,
+     0,
+     46
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "There were 10 ROIs: early visual (EarlyVis), lateral occipital cortex (LOC), occipital place area",
+     "Adaptive recruitment of cortex-wide recurrence for visual object recognition (fMRI)",
+     "accompanying the study **\"Adaptive recruitment of cortex-wide recurrence for visual object recognition\"** (Link",
+     "Adaptive recruitment of cortex-wide recurrence for visual object recognition (EEG)",
+     "accompanying the study **\"Adaptive recruitment of cortex-wide recurrence for visual object recognition\"** (Link",
+     "Overt visual attention modulates decision-related signals in ventral and dorsal medial prefrontal cortex."
+    ],
+    "coord": [
+     "Electrode Placement: ECoG electrodes targeted visual and somatosensory cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "motor cortex",
+   "counts": {
+    "coord": 2,
+    "adjacent": 12,
+    "postmod": 3,
+    "unlinked_far": 1,
+    "stacked": 1
+   },
+   "papers": {
+    "coord": 2,
+    "adjacent": 9,
+    "postmod": 2,
+    "unlinked_far": 1,
+    "stacked": 1
+   },
+   "docs_adjacent": 9,
+   "docs_only_coord_stacked": 3,
+   "docs_only_near": 2,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -5,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     2
+    ],
+    [
+     1,
+     0,
+     12
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     4,
+     0,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "portion of the brain (e.g. large parts of motor and somato-sensory cortices).",
+     "), and one cortical (primary sensory, motor and association cortices)."
+    ],
+    "postmod": [
+     "of prefrontal connectivity, especially to the middle cingulate cortex, the left insula, supplementary motor area, dorsal and ventral lateral prefrontal",
+     "TDCS Modulation of Visual Cortex in Motor Imagery",
+     "The TDCS Modulation of Visual Cortex in Motor Imagery dataset was created by Anthony Mensah"
+    ],
+    "unlinked_far": [
+     "Pruszynski, Diedrichsen (2021) biorxiv paper \"Motor planning brings human primary somatosensory cortex into action-specific preparatory states\""
+    ],
+    "stacked": [
+     "EEG study where the left and right hemisphere primary motor (M1) cortices were stimulated with TMS while EEG was"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "auditory cortex",
+   "counts": {
+    "adjacent": 19,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 12,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 12,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -3,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     19
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "selective attention to speech stimuli in the subcortex and cortex, entitled \"The auditory brainstem response to natural speech is not"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "somatosensory cortex",
+   "counts": {
+    "adjacent": 10
+   },
+   "papers": {
+    "adjacent": 6
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     10
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "cingulate cortex",
+   "counts": {
+    "adjacent": 7,
+    "coord": 1,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 6,
+    "coord": 1,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     7
+    ],
+    [
+     4,
+     0,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "Dorsal anterior cingulate and ventromedial prefrontal cortex have inverse roles in both foraging and"
+    ],
+    "unlinked_far": [
+     "The eight regions included: anterior cingulate, posterior cingulate, lateral prefrontal, orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "insular cortex",
+   "counts": {
+    "adjacent": 3
+   },
+   "papers": {
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     3
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "orbitofrontal cortex",
+   "counts": {
+    "adjacent": 8,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 7,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "anterior cingulate, posterior cingulate, lateral prefrontal, orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "cerebral cortex",
+   "counts": {
+    "adjacent": 14,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 12,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 12,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     14
+    ],
+    [
+     6,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Rates of cerebral protein synthesis in primary visual cortex during sleep-dependent memory consolidation,"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "anterior cingulate",
+   "counts": {
+    "adjacent": 13
+   },
+   "papers": {
+    "adjacent": 12
+   },
+   "docs_adjacent": 12,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     13
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "posterior cingulate",
+   "counts": {
+    "unlinked_far": 1,
+    "adjacent": 1
+   },
+   "papers": {
+    "unlinked_far": 1,
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "-FMRI) revealed increased FC between the right posterior insula and the putamen, the superior frontal gyrus and the anterior cingulate cortex in the modafinil-treated group"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "temporal gyrus",
+   "counts": {
+    "unlinked_far": 1,
+    "adjacent": 3
+   },
+   "papers": {
+    "unlinked_far": 1,
+    "adjacent": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "window that ranged from the top of the cingulate gyrus (superiorly) to the tip of the temporal pole (inferiorly)."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "frontal gyrus",
+   "counts": {
+    "adjacent": 7
+   },
+   "papers": {
+    "adjacent": 7
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     7
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "fusiform gyrus",
+   "counts": {},
+   "papers": {},
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "angular gyrus",
+   "counts": {
+    "adjacent": 1
+   },
+   "papers": {
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     1
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "temporal pole",
+   "counts": {
+    "adjacent": 4
+   },
+   "papers": {
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     4
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "temporal sulcus",
+   "counts": {
+    "head_coord": 1,
+    "adjacent": 3
+   },
+   "papers": {
+    "head_coord": 1,
+    "adjacent": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     3
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "of prominent brain structures like the ventricles, central sulcus, superior temporal gyrus, etc.), the"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "white matter",
+   "counts": {
+    "coord": 3,
+    "adjacent": 48,
+    "unlinked_near": 3
+   },
+   "papers": {
+    "coord": 3,
+    "adjacent": 39,
+    "unlinked_near": 3
+   },
+   "docs_adjacent": 39,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     48
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     0,
+     3
+    ],
+    [
+     3,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "Structural data were segmented into white and gray matter to facilitate the normalization.",
+     "to characterize mouse brain tissue microstructure, both in white and gray matter, in-vivo.",
+     "Masks of white and grey matter were obtained from the T1w image using"
+    ],
+    "unlinked_near": [
+     "Extensively trained operators inspected the reconstructed white and grey matter surfaces and performed manual edits when necessary",
+     "cycle-driven hormone concentrations co-fluctuate with white and gray matter architecture changes across the whole brain.",
+     ", DWI, DTI): Total brain volume, white/gray matter, cortical thickness, hippocampal volume -"
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "gray matter",
+   "counts": {
+    "adjacent": 28,
+    "unlinked_near": 4,
+    "coord": 1
+   },
+   "papers": {
+    "adjacent": 23,
+    "unlinked_near": 4,
+    "coord": 1
+   },
+   "docs_adjacent": 23,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 3,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     28
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     3,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "BOLD correction (BOCO), and segmentation of grey + white matter were performed.",
+     "statistics on the CVR maps (age regression, grey/white matter averages, etc).",
+     "Segmentations:** Precise segmentations of 12 brains into gray and white matter compartments.",
+     "T1 of 1.75 s for the mean value across gray and white matter at 10.5 T33) and 208 Hz"
+    ],
+    "coord": [
+     "steps: MOCO, BOCO, and segmentation of grey + white matter."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "basal ganglia",
+   "counts": {
+    "adjacent": 14
+   },
+   "papers": {
+    "adjacent": 10
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     14
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "corpus callosum",
+   "counts": {
+    "adjacent": 1
+   },
+   "papers": {
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     1
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "spinal cord",
+   "counts": {
+    "adjacent": 53
+   },
+   "papers": {
+    "adjacent": 25
+   },
+   "docs_adjacent": 25,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     53
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "brain stem",
+   "counts": {},
+   "papers": {},
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "nucleus accumbens",
+   "counts": {
+    "adjacent": 2
+   },
+   "papers": {
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     2
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "ventral striatum",
+   "counts": {
+    "adjacent": 3
+   },
+   "papers": {
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     3
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "dorsal striatum",
+   "counts": {
+    "adjacent": 1
+   },
+   "papers": {
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     1
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "medial temporal lobe",
+   "counts": {
+    "adjacent": 22
+   },
+   "papers": {
+    "adjacent": 10
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "superior temporal gyrus",
+   "counts": {
+    "adjacent": 3
+   },
+   "papers": {
+    "adjacent": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "inferior frontal gyrus",
+   "counts": {
+    "adjacent": 4
+   },
+   "papers": {
+    "adjacent": 4
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "posterior cingulate cortex",
+   "counts": {
+    "apart": 2
+   },
+   "papers": {
+    "apart": 2
+   },
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [],
+   "samples": {
+    "apart": [
+     "-FMRI) revealed increased FC between the right posterior insula and the putamen, the superior frontal gyrus and the anterior cingulate cortex in the modafinil-treated group.",
+     "The eight regions included: anterior cingulate, posterior cingulate, lateral prefrontal, orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "anterior cingulate cortex",
+   "counts": {
+    "adjacent": 5,
+    "loose": 1,
+    "apart": 1
+   },
+   "papers": {
+    "adjacent": 5,
+    "loose": 1,
+    "apart": 1
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 1,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "Dorsal anterior cingulate and ventromedial prefrontal cortex have inverse roles in both foraging and"
+    ],
+    "apart": [
+     "The eight regions included: anterior cingulate, posterior cingulate, lateral prefrontal, orbitofrontal, precuneus, lateral parietal, lateral occipital, and lateral temporal cortices."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "dorsolateral prefrontal cortex",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 4
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "anatomy",
+   "term": "supplementary motor area",
+   "counts": {
+    "adjacent": 5,
+    "loose": 1
+   },
+   "papers": {
+    "adjacent": 4,
+    "loose": 1
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "using the Craddock atlas with 240 parcellations, excluding supplementary motor and motor areas."
+    ]
+   }
+  },
+  {
+   "kind": "anatomy",
+   "term": "primary visual cortex",
+   "counts": {
+    "adjacent": 6,
+    "loose": 1
+   },
+   "papers": {
+    "adjacent": 4,
+    "loose": 1
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "Primary motor and visual cortices have most often been used as controls"
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "default mode network",
+   "counts": {
+    "adjacent": 4,
+    "loose": 2
+   },
+   "papers": {
+    "adjacent": 4,
+    "loose": 2
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 2,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "but also incorporated the frontoparietal, dorsal attention, default mode, and cingulo-opercular networks.",
+     "that support decision-making processes (namely the default mode and salience network) in the follicular compared to the"
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "salience network",
+   "counts": {
+    "adjacent": 2,
+    "postmod": 1
+   },
+   "papers": {
+    "adjacent": 2,
+    "postmod": 1
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "threat perception, or if it covaries with cortical networks involved in visual salience and object recognition."
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "attention network",
+   "counts": {
+    "adjacent": 9,
+    "stacked": 1,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 8,
+    "stacked": 1,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     9
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "stacked": [
+     "the Fronto Parietal Control (FPC) and Dorsal Attention (DAN) networks."
+    ],
+    "unlinked_far": [
+     "visual network but also incorporated the frontoparietal, dorsal attention, default mode, and cingulo-opercular networks."
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "frontoparietal network",
+   "counts": {
+    "head_coord": 1
+   },
+   "papers": {
+    "head_coord": 1
+   },
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     8,
+     0,
+     1
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "occupied the secondary visual network but also incorporated the frontoparietal, dorsal attention, default mode, and cingulo-opercular networks."
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "visual network",
+   "counts": {
+    "adjacent": 4,
+    "unlinked_near": 3,
+    "unlinked_far": 6,
+    "postmod": 2
+   },
+   "papers": {
+    "adjacent": 2,
+    "unlinked_near": 2,
+    "unlinked_far": 6,
+    "postmod": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 3,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -4,
+     1,
+     2
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -3,
+     1,
+     3
+    ],
+    [
+     1,
+     0,
+     4
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     7,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "Brain Network Mechanisms of Visual Shape Completion",
+     "Brain network mechanisms of visual shape completion.",
+     "Brain network mechanisms of visual shape completion."
+    ],
+    "unlinked_far": [
+     "Target processing in overt serial visual search involves the dorsal attention network: A fixation-based event-",
+     "Not all patients in which stimulations evoked visual hallucinations met the inclusion criteria for network analysis that requires running the freesurfer pipeline",
+     "Fixating Targets in Visual Search: The Role of Dorsal and Ventral Attention Networks in the Processing of Relevance and Rarity",
+     "While convolutional neural networks captured the early visual activity evoked by geometric shapes, they",
+     "While convolutional neural networks captured the early visual activity evoked by geometric shapes, they",
+     "Multiple Demand network localizer - based on a visual working memory task (Fedorenko et al"
+    ],
+    "postmod": [
+     "threat perception, or if it covaries with cortical networks involved in visual salience and object recognition.",
+     "speech) and the multiple demand (MD) network (hard > easy visual working memory task)."
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "motor network",
+   "counts": {
+    "postmod": 1,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "postmod": 1,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     7,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "Neural Networks for Semantic and Syntactic Prediction and Visuo-Motor Statistical Learning in Adult Readers with and"
+    ],
+    "unlinked_far": [
+     "Not all patients in which stimulations evoked negative motor responses met the inclusion criteria for network analysis that requires running the freesurfer pipeline",
+     "analyses and data-driven discovery (e.g., network/feature selection approaches for biomarker development and predictive modeling of dimensional traits relevant to social cognition and motor function)."
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "brain network",
+   "counts": {
+    "adjacent": 50,
+    "unlinked_far": 22,
+    "postmod": 4,
+    "head_coord": 2,
+    "stacked": 1
+   },
+   "papers": {
+    "adjacent": 31,
+    "unlinked_far": 15,
+    "postmod": 4,
+    "head_coord": 2,
+    "stacked": 1
+   },
+   "docs_adjacent": 31,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 4,
+   "docs_only_far": 14,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -8,
+     1,
+     4
+    ],
+    [
+     -7,
+     0,
+     1
+    ],
+    [
+     -7,
+     1,
+     2
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     -5,
+     1,
+     3
+    ],
+    [
+     -4,
+     1,
+     4
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     2
+    ],
+    [
+     1,
+     0,
+     50
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     4,
+     1,
+     4
+    ],
+    [
+     5,
+     1,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     7,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Representation of locomotive action affordances in human behavior, brains, and deep neural networks_.",
+     "The evolution of cost-efficiency in neural networks furing recovery from traumatic brain injury.",
+     "serotonergic activation by optogenetics, including reward-related network - General anesthetics, isoflurane, reverses brain-wide activation by DRN stimulation -",
+     "to investigate the changes in the lateral entorhinal area network organization within the brain during pathology progression, in a preclinical",
+     "The language network reemerges during recovery from severe traumatic brain injury",
+     "data described in Licandro et al. 2025 Human Brain Mapping (Licandro R, Olchanyi M, Ferraz da Silva LF, van der Kouwe A, Jaimes C, Ngo NX, Kelley W, Folkerth R, Haynes RL, Edlow BL, Kinney HC, Z\u00f6llei L. High Resolution Postmortem MRI Discovers Developing Structural Connectivity in the Human Ascending Arousal Network.",
+     "postulate sustains wakefulness in the resting, conscious human brain, analogous to the cortical default mode network (DMN) that is believed to",
+     ": to investigate the changes in resting-state network organization within the brain during pathology progression, in a preclinical",
+     "Specifically, even though neural networks for presence and embodiment partially overlap, there exists a subset of brain areas that mediate the flow of information",
+     "unseen contents during higher-order processing in human brains and deep artificial networks",
+     "unseen contents during higher-order processing in human brains and deep artificial networks\".",
+     "Network-specific metabolic and hemodynamic effects elicited by non-invasive brain stimulation"
+    ],
+    "postmod": [
+     "Taken together, these results suggest that a network of brain regions contribute to mnemonic discrimination performance,",
+     "that biofeedback had an influence on a broad functional network of brain regions.",
+     "did not disrupt the basic resting-state-network of the brain.",
+     "Substantial progress has been made in mapping the cortical networks that modulate awareness in the human brain, but knowledge about the subcortical networks"
+    ],
+    "head_coord": [
+     "What brain regions, networks, and functional connections underlie the process",
+     "This data indicates that networks associated with embodiment and presence overlap, and brain areas that support presence may depend upon"
+    ],
+    "stacked": [
+     "breathing and HRV biofeedback would increase functional connectivity within brain emotion-related networks, including between amygdala and mPFC."
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "functional network",
+   "counts": {
+    "postmod": 1,
+    "stacked": 9,
+    "adjacent": 8,
+    "unlinked_far": 12,
+    "unlinked_near": 3,
+    "head_coord": 2,
+    "coord": 5
+   },
+   "papers": {
+    "postmod": 1,
+    "stacked": 7,
+    "adjacent": 7,
+    "unlinked_far": 11,
+    "unlinked_near": 3,
+    "head_coord": 2,
+    "coord": 4
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 7,
+   "docs_only_near": 3,
+   "docs_only_far": 9,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     8
+    ],
+    [
+     2,
+     0,
+     14
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     1,
+     2
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     5,
+     1,
+     2
+    ],
+    [
+     6,
+     1,
+     2
+    ],
+    [
+     7,
+     1,
+     2
+    ],
+    [
+     8,
+     0,
+     1
+    ],
+    [
+     8,
+     1,
+     4
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "Triangulating a cognitive control network using diffusion-weighted magnetic resonance imaging (MRI) and functional MRI."
+    ],
+    "stacked": [
+     "Competition between functional brain networks mediates behavioral variability.",
+     "space) processing pipeline, including individual-specific functional brain networks.",
+     "field imaging provides greater image resolution and reliability of functional connectivity network analyses.",
+     "field imaging provides greater image resolution and reliability of functional connectivity network analyses.",
+     "field imaging provides greater image resolution and reliability of functional connectivity network analyses.",
+     "field imaging provides greater image resolution and reliability of functional connectivity network analyses.",
+     "The interplay of central insulin and menstrual cycle on functional brain networks and neural food cue reactivity in women",
+     "The interplay of central insulin and menstrual cycle on functional brain networks and neural food cue reactivity in women",
+     "the interaction of menstrual phases and central insulin on functional brain networks and neural food cue reactivity."
+    ],
+    "unlinked_far": [
+     "this study looks at structural and resting-state functional MRI scans of the default mode network, English and Spanish (where applicable",
+     "Defining the face processing network: optimization of the functional localizer in fMRI.",
+     "To compute resting state functional connectivity (RSFC), we defined regions of interest in the ventral medial prefrontal cortex (VMPFC) and a total of 260 independent anatomical regions for network-based analysis.",
+     "Functional connections from the dorsal attention network were key in modeling activation differences in",
+     "via slow paced breathing and HRV biofeedback would increase functional connectivity within brain emotion-related networks, including between amygdala and mPFC.",
+     "MRI, immunohistochemistry, and in vivo 7 Tesla functional MRI to map the connectivity of a subcortical arousal network that we postulate sustains wakefulness in the",
+     "Sympathovagal quotient and functional connectivity of control networks are related to gut Ruminococcaceae abundance in",
+     "Findings of the works - Functional map of serotonergic activation by optogenetics, including reward-related network - General anesthetics, isoflurane, reverses",
+     "present a randomized cross-over study using precision functional mapping to characterize acute and persistent effects of psilocybin (PSIL) or methylphenidate (MTP) on brain networks.",
+     "Resting state and task based functional connectivity reveal distinct mPFC and hippocampal network alterations in major depressive disorder.",
+     "Functional connectivity (FC) of brain networks was assessed using resting-state fMRI",
+     "In contrast, intranasal insulin decreased functional connectivity within the somatosensory network during the follicular phase relative to the"
+    ],
+    "unlinked_near": [
+     "SE (2012) Spurious but systematic correlations in functional connectivity MRI networks arise from subject motion.",
+     "Intranasal insulin administration increased resting-state functional connectivity within networks that support decision-making processes (",
+     "Title: **Correspondence of large-scale functional brain network decline across aging mice and humans*"
+    ],
+    "head_coord": [
+     "What brain regions, networks, and functional connections underlie the process?",
+     "Each participant also completed two functional localizer tasks targeting the language network (intact > degraded speech) and the multiple demand (MD) network (hard > easy visual working memory"
+    ],
+    "coord": [
+     "### Ultra-High Field Functional Connectivity / Network Mapping (highresFC) - **",
+     "# Ultra-High Field Functional Connectivity / Network Mapping (highresFC) from the SKIP",
+     "## This dataset: Ultra-High Field Functional Connectivity / Network Mapping (highresFC) - **",
+     "### Ultra-High Field Functional Connectivity / Network Mapping (highresFC) - **",
+     "### Ultra-High Field Functional Connectivity / Network Mapping (highresFC) - **"
+    ]
+   }
+  },
+  {
+   "kind": "network",
+   "term": "language network",
+   "counts": {
+    "adjacent": 5,
+    "head_coord": 1,
+    "unlinked_far": 1,
+    "postmod": 1
+   },
+   "papers": {
+    "adjacent": 4,
+    "head_coord": 1,
+    "unlinked_far": 1,
+    "postmod": 1
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -7,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     5
+    ],
+    [
+     5,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "-state functional MRI scans of the default mode network, English and Spanish (where applicable) proficiency, language background, and demographics of young healthy"
+    ],
+    "unlinked_far": [
+     "tests were applied to assess the consistency of different language abilities and resting state networks in a university student population within the"
+    ],
+    "postmod": [
+     "of the brain: fMRI dissection of the amodal networks for language, mathematics, and social knowledge Antonio"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "functional connectivity",
+   "counts": {
+    "adjacent": 88,
+    "unlinked_near": 2,
+    "stacked": 3,
+    "unlinked_far": 3,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 52,
+    "unlinked_near": 2,
+    "stacked": 1,
+    "unlinked_far": 3,
+    "coord": 2,
+    "head_coord": 1
+   },
+   "docs_adjacent": 52,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 2,
+   "docs_only_far": 3,
+   "gaps": [
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     88
+    ],
+    [
+     2,
+     0,
+     4
+    ],
+    [
+     2,
+     1,
+     2
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     5,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "et al, Pain-free resting-state functional brain connectivity predicts individual pain sensitivity, under review",
+     "al., Pain-free resting-state functional brain connectivity predicts individual pain sensitivity, accepted in"
+    ],
+    "stacked": [
+     "of heart rate variability biofeedback on cardiac regulation and functional brain connectivity",
+     "an 8-week HRV-biofeedback intervention on functional brain connectivity in healthy subjects.",
+     "by HRV-biofeedback is accompanied by changes in functional brain connectivity during resting state."
+    ],
+    "unlinked_far": [
+     "created a comprehensive map of the DMN's subcortical connectivity by analyzing 7 Tesla resting-state functional MRI (rs-fMRI) data",
+     "MRI, immunohistochemistry, and in vivo 7 Tesla functional MRI to map the connectivity of a subcortical arousal network that we",
+     "This dataset contains raw and preprocessed structural and functional MRI data from a **double-blind, placebo-controlled, mixed-design** study investigating the effects of **N,N-dimethyltryptamine (DMT)** and **harmine** on brain connectivity during a **3-day"
+    ],
+    "coord": [
+     "modulating compound KH176 on behavioural deficits and structural- and functional brain connectivity caused by severe damage of the nigrostriatal",
+     "emotions in a contextually meaningful way, focusing on functional and dynamic connectivity."
+    ],
+    "head_coord": [
+     "thought in autism - Coupling between white matter structural connectivity and functional dynamics in autism"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "effective connectivity",
+   "counts": {
+    "adjacent": 4,
+    "coord": 2
+   },
+   "papers": {
+    "adjacent": 3,
+    "coord": 1
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     4
+    ],
+    [
+     2,
+     0,
+     2
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "see Jelsma S.B. et al 2024, Structural and effective brain connectivity in focal epilepsy.",
+     "Jelsma S.B. et al 2024, Structural and effective brain connectivity in focal epilepsy in any publications."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "structural connectivity",
+   "counts": {
+    "unlinked_near": 2,
+    "adjacent": 5,
+    "coord": 2,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "unlinked_near": 2,
+    "adjacent": 5,
+    "coord": 1,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     5
+    ],
+    [
+     3,
+     1,
+     2
+    ],
+    [
+     4,
+     0,
+     2
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "of manual delineation and disconnectome - time series, structural and functional connectivity matrices, and resting state HRF for",
+     "of manual delineation and disconnectome - time series, structural and functional connectivity matrices, and resting state HRF for"
+    ],
+    "coord": [
+     "detailed description see Jelsma S.B. et al 2024, Structural and effective brain connectivity in focal epilepsy.",
+     "Jelsma S.B. et al 2024, Structural and effective brain connectivity in focal epilepsy in any publications."
+    ],
+    "unlinked_far": [
+     "This dataset contains raw and preprocessed structural and functional MRI data from a **double-blind, placebo-controlled, mixed-design** study investigating the effects of **N,N-dimethyltryptamine (DMT)** and **harmine** on brain connectivity during a **3-day",
+     "We also provide parcellated structural connectomes using multiple atlases and connectivity measures."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "resting state",
+   "counts": {
+    "adjacent": 540,
+    "unlinked_far": 1,
+    "coord": 1
+   },
+   "papers": {
+    "adjacent": 271,
+    "unlinked_far": 1,
+    "coord": 1
+   },
+   "docs_adjacent": 271,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     540
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "study uses the method of guided imagery to induce resting, eyes-closed participants using voice-guided imagination to enter distinct 15 emotion states during acquisition of high-density EEG"
+    ],
+    "coord": [
+     "A test-retest resting and cognitive state EEG dataset"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "field map",
+   "counts": {
+    "adjacent": 139,
+    "unlinked_far": 2,
+    "postmod": 1
+   },
+   "papers": {
+    "adjacent": 57,
+    "unlinked_far": 2,
+    "postmod": 1
+   },
+   "docs_adjacent": 57,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -5,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     139
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Retinotopy Dataset is a part of 'Comparing retinotopic maps of children and adults reveals a late-stage change in how V1 samples the visual field' by Marc Himmelberg, Ekin Tuncok",
+     "At each field strength, TE was set to the minimum water-fat in-phase TE, 2.56 ms for 10.5 T and 2.88 ms for 7 T, for improved sensitivity map estimation."
+    ],
+    "postmod": [
+     "inspired computational models, we were able to noninvasively map brain-wide properties (receptive fields (RFs) and spatial frequency ("
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "phase encoding",
+   "counts": {
+    "adjacent": 49,
+    "unlinked_near": 9,
+    "unlinked_far": 3,
+    "postmod": 5
+   },
+   "papers": {
+    "adjacent": 37,
+    "unlinked_near": 5,
+    "unlinked_far": 3,
+    "postmod": 5
+   },
+   "docs_adjacent": 37,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 10,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     0,
+     2
+    ],
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -3,
+     1,
+     2
+    ],
+    [
+     -1,
+     0,
+     2
+    ],
+    [
+     -1,
+     1,
+     6
+    ],
+    [
+     1,
+     0,
+     49
+    ],
+    [
+     1,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "The duration of the encoding and decision phase depends on the sequence length (4",
+     "Number' = 4 : the duration of the encoding or decision phase is 2 sec 'letterfinger'= 1 and",
+     "trial was divided into two events, an \u201cencoding\u201d phase and a \u201cmarking\u201d phase.",
+     "Duration of the encoding phase corresponds to the time that the probe",
+     "reasoned that this was our best estimate for the encoding phase since participants will begin monitoring the change",
+     "- phase: encoding, marking.",
+     "After the encoding phase, an additional 6-minute resting",
+     "behavioral_data : data of behavioral task acquired during the encoding phase # code : code for running anatomical",
+     "and modified repeats were presented both during an incidental encoding phase (smst\\_enc) and a two-"
+    ],
+    "unlinked_far": [
+     "be inferred by calculating the difference between the (encoding + 0.5) and the marking phase onsets.",
+     "the EPI timeseries were distortion-corrected along the encoding axis (P>>A) using the phase difference map (\u2018epi_b0_correct.py\u2019)",
+     "Encoding (letter set), retention (blank screen), and retrieval (probe letter) phases were allocated 1500ms, 2000ms and 1500ms"
+    ],
+    "postmod": [
+     "Stimulus presentation time Phase 1 (encoding phase): 1s",
+     "probe letter was in the letter set presented during encoding phase.",
+     "is a 7-second delay period between the encoding and recall phases.",
+     "The experiment consists of participants encoding object locations during a guided navigation learning phase and then recalling the object locations during",
+     "The experiment consists of participants encoding object locations during a guided navigation learning phase and then recalling the object locations during"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "echo time",
+   "counts": {
+    "unlinked_far": 10,
+    "adjacent": 51,
+    "postmod": 1
+   },
+   "papers": {
+    "unlinked_far": 10,
+    "adjacent": 38,
+    "postmod": 1
+   },
+   "docs_adjacent": 38,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 8,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     51
+    ],
+    [
+     7,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     7
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "the volumetric measurement of the olfactory bulb; a time series of 2D echo planar imaging (EPI) (TR",
+     "msec (with ramp sampling), spin-echo spacing = 29 msec, read-out time = 270 msec.",
+     "fieldmaps (EPI opposite phase encoding; spin-echo opposite phase encoding pairs with partial & non-partial Fourier) -9 or 10 functional scans of slow event-related 5000 scene data (5000scenes) -1 or 0 functional localizer scans used to define scene selective regions (localizer) -each event.json file lists each stimulus, the onset time, and the participant\u2019s response (",
+     "Single-echo multi-flip Fast Low-Angle SHot (FLASH) data were acquired over 100 hours of scan time (25 hours per flip angle)",
+     "A T2- weighted turbo spin echo (TSE) scan was also acquired with an oblique coronal orientation positioned orthogonally to the main axis of the hippocampus (TR/TE= 8100/50 ms, flip angle = 122\u00b0, 0.4 \u00d7 0.4 mm2 in plane resolution, 2 mm slice thickness, 31 interleaved slices with no gap, total acquisition time = 4:21 min).",
+     "-weighted), measures of brain vasculature (Time-of-Flight angiography, T2*-weighted) and gradient-echo field maps.",
+     "A T2- weighted turbo spin echo (TSE) scan was also acquired with an oblique coronal orientation positioned orthogonally to the main axis of the hippocampus (TR/TE= 8100/50 ms, flip angle = 122\u00b0, 0.4 \u00d7 0.4 mm2 in plane resolution, 2 mm slice thickness, 31 interleaved slices with no gap, total acquisition time = 4:21 min).",
+     "Images were acquired using standard Echo-Planar Imaging (EPI) methods, with 2 second repetition time (TR), each repetition acquiring",
+     "Functional images were collected using T2*-weighted echo planar pulse sequence imaging depicting BOLD signal (TE = 30 ms, TR = 800 ms, flip angle = 55\u00b0, spatial resolution 2.4 x 2.4 x 2.4 mm isotropic voxels, transversal orientation, slice thickness = 2.4 mm, 66 slices fully covering the cerebral cortex and the cerebellum, 525 volumes, acquisition time = 7 min).",
+     "the 7 T data acquisition employed a 6-echo protocol, leading to a longer TR of 45 ms, a higher nominal flip angle of 14\u00b0 (using mean 7 T T1 of 1.5 s), and a longer total scan time of ~17.2 min."
+    ],
+    "postmod": [
+     "size, Time of Repetition (TR)=5.0 s, Time of Echo (TE)=2.45 ms, Time of Inversion"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "repetition time",
+   "counts": {
+    "adjacent": 51,
+    "unlinked_far": 8,
+    "postmod": 2,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 41,
+    "unlinked_far": 7,
+    "postmod": 2,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 41,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 3,
+   "docs_only_far": 6,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -8,
+     1,
+     3
+    ],
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     -3,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     51
+    ],
+    [
+     7,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "This means that one less taxonomic category repetition occurred in this run (3 in stead of 4), and the stimulus bird_eating_1.mp4 occurred 3 times instead of the intended 2 times in",
+     "3 (36 reference lines), and 300 repetitions resulting in 15 min of scanning time.",
+     "A total of 150 repetitions were acquired resulting in 10 min of scanning time.",
+     "equivalent number of syllables (4) for each repetition condition were used; the trials differed only in whether the subject repeated each heard syllable one-at-a-time or as a sequence of four syllables",
+     "Each trial was repeated three times, with an inter-repetition-interval (IRI) ranging from",
+     "- 'onset': onset time of an event (sec) - 'duration': duration of the event (sec) - 'trial_type': type of the event (1: Stimulus presentation block, 2: Repetition block, -1 and -2: Initial",
+     "- 'onset': onset time of an event (sec) - 'duration': duration of the event (sec) - 'trial_type': type of the event (1: Stimulus presentation block, 2: Repetition block, -1 and -2: Initial",
+     "- 'onset': onset time of an event (sec) - 'duration': duration of the event (sec) - 'trial_type': type of the event (1: Stimulus presentation block, 2: Repetition block, -1 and -2: Initial"
+    ],
+    "postmod": [
+     "matrix 320\u00d7320\u00d7240, 0.7 mm3 isotropic voxel size, Time of Repetition (TR)=5.0 s, Time of Echo",
+     "- 'onset': onset time of an event (sec) - 'duration': duration of the event (sec) - 'event_type': type of the event (1: Stimulus presentation block, 2: Repetition block, -1, -2, and"
+    ],
+    "unlinked_near": [
+     ", the items were shown as a pair three times, interleaved with repetitions of other pairs."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "flip angle",
+   "counts": {
+    "adjacent": 160
+   },
+   "papers": {
+    "adjacent": 89
+   },
+   "docs_adjacent": 89,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     160
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "slice timing",
+   "counts": {
+    "adjacent": 26,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 21,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 21,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     26
+    ],
+    [
+     6,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "TA was therefore set to 0, as reference slice TR/2 (1.53/2) was used as timing."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "motion correction",
+   "counts": {
+    "adjacent": 38,
+    "postmod": 3,
+    "unlinked_far": 6,
+    "coord": 2,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 31,
+    "postmod": 3,
+    "unlinked_far": 4,
+    "coord": 1,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 31,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 1,
+   "docs_only_far": 3,
+   "gaps": [
+    [
+     -8,
+     1,
+     2
+    ],
+    [
+     -6,
+     0,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     38
+    ],
+    [
+     3,
+     0,
+     2
+    ],
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     5,
+     1,
+     2
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "side correction for geometric distortions applied (also include correction for participant motion).",
+     "in the following order: - Still, no correction - Still, PMC - Nod motion, no correction (+ selective reacquisition",
+     "2016) that applied the common fieldmap and performed corrections for eddy current and subject motion in a single interpolation step."
+    ],
+    "unlinked_far": [
+     "BOLD time-series (including slice-timing correction when applied) were resampled onto their original, native space by applying the transforms to correct for head-motion.",
+     "The head-motion estimates calculated in the correction step were also placed within the corresponding",
+     "composing all the pertinent transformations (i.e. head-motion transform matrices, susceptibility distortion correction when available, and co-registrations",
+     "-stripping, (2) slice-timing correction with the temporal realignment of slices according to the reference slice, (3) BOLD time-series co-registration to the T1w reference image, (4) head-motion estimations and spatial realignment to adjust for",
+     "For each BOLD run, head-motion parameters with respect to the BOLD reference (transformation matrices, and six corresponding rotation and translation parameters) are estimated before any spatiotemporal filtering using \u2018mcflirt\u2019 (FSL 5.0.9) and slice timing correction was applied using 3dTshift (AFNI 20160207",
+     "functional data, confound time series (allowing for motion and physiological noise correction), individual brain masks for each"
+    ],
+    "coord": [
+     "fMRI timeseries were reconstructed with navigator-based joint motion and field correction (restEO, restEC).",
+     "data were also used to reconstruct fMRI timeseries without motion or field correction (restNocoEO, restNocoEC)."
+    ],
+    "unlinked_near": [
+     "scan rigid-body motion and B0 changes for motion and B0 correction, and coil sensitivity maps for SENSE"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "spatial smoothing",
+   "counts": {
+    "adjacent": 8,
+    "unlinked_far": 4,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 8,
+    "unlinked_far": 3,
+    "head_coord": 1
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 4,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     ", (4) head-motion estimations and spatial realignment to adjust for linear head motion, (5) applying parameters from structural images to spatially normalize functional images into Montreal Neurological Institute (MNI) template, and (6) smoothing by a 6mm FWHM (full",
+     "only the derivatives data are available here with some spatial processing: - warping into MNI space, - tissue-weighted smoothing, and - defacing",
+     "- B0 unwarping (susceptibility distortion correction) - Spatial normalization to MNI152 space (SPM12) - Smoothing with 8mm FWHM Gaussian kernel",
+     "timing correction - Motion correction - B0 unwarping - Spatial normalization to MNI152 - Smoothing (8mm FWHM) -"
+    ],
+    "head_coord": [
+     "*: Motion correction, slice timing correction, spatial normalization, and smoothing."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "spatial normalization",
+   "counts": {
+    "unlinked_far": 2,
+    "adjacent": 8
+   },
+   "papers": {
+    "unlinked_far": 2,
+    "adjacent": 6
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "spatial realignment and coregistration with the anatomical scan, spatial smoothing with a 6 mm Gaussian kernel and normalization to the Montreal Neurological Institute (MNI",
+     "spatial realignment and coregistration with the anatomical scan, spatial smoothing with a 8 mm Gaussian kernel and normalization to the Montreal Neurological Institute template For"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "head motion",
+   "counts": {
+    "unlinked_far": 8,
+    "adjacent": 60,
+    "unlinked_near": 4
+   },
+   "papers": {
+    "unlinked_far": 8,
+    "adjacent": 31,
+    "unlinked_near": 4
+   },
+   "docs_adjacent": 31,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 4,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -4,
+     1,
+     2
+    ],
+    [
+     -2,
+     1,
+     2
+    ],
+    [
+     1,
+     0,
+     60
+    ],
+    [
+     2,
+     1,
+     2
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     5
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "anatomical image, and the other due to excessive head movement (more than one-third of the volumes were considered \u201cbad time points\u201d according to the motion correction procedures detailed in the Preprocessing section",
+     "; one in which the subject deliberately moves their head in the scanner, giving an MRI scan with motion-related artifacts; and the other",
+     "The tracked points include \"Head\" and \"handR.\" The motion data is captured using quaternions with channels",
+     "To prevent motion-related artifacts, a head case was customized for each participant and",
+     "Datasets with and without deliberate head movements for evaluating the performance of markerless prospective motion correction and selective reacquisition in a general",
+     "participants diverged from the center position as determined through motion capture of the head position, the task automatically halted and",
+     "By positioning the ring surface coil around the head, it was possible to reduce artifacts due to body motion.",
+     "The subject's head was fixed in an MR-compatible large animal stereotaxic frame to reduce motion during the data acquisition period."
+    ],
+    "unlinked_near": [
+     "In an effort to minimize motion, the head was secured with a custom, 3D",
+     "Brain, Oxford, UK) and included: head-related motion correction, slice-timing correction,",
+     "that underlie the transformation from 2D retinal to 3D head-centric motion signals",
+     "In an effort to minimize motion, the head was secured with a 3D-printed"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "diffusion tensor",
+   "counts": {
+    "adjacent": 25,
+    "postmod": 1,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 18,
+    "postmod": 1,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 18,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     25
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "scan, a series of 4 spherical b-tensor (b = 0, 100 \u2013 500, 1000, 1500 s/mm2; 3 diffusion directions) and 4 linear b-"
+    ],
+    "unlinked_far": [
+     "Diffusion data (32 directions, single shell, b = 800 s/mm\u00b2) support basic tensor-level analyses and longitudinal consistency assessment"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "voxel size",
+   "counts": {
+    "adjacent": 115,
+    "unlinked_far": 5,
+    "unlinked_near": 2,
+    "postmod": 2
+   },
+   "papers": {
+    "adjacent": 61,
+    "unlinked_far": 5,
+    "unlinked_near": 1,
+    "postmod": 2
+   },
+   "docs_adjacent": 61,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 3,
+   "docs_only_far": 3,
+   "gaps": [
+    [
+     -8,
+     1,
+     2
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     115
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "flip angle (FA) = 83\u00b0 matrix size = 72 x 72 field of view (FOV) = 210 mm 3.0 mm isotropic voxels 46 axial slices",
+     "TR 2 s, TE 45 ms, image size 64 x 64 x 33, 4mm3 isotropic voxels",
+     "ms, flip angle = 7\u00b0, matrix size = 256 \u00d7 256, 192 sagittal slices with no gap, and voxel dimensions of 1.0 \u00d7 0.5 \u00d7 0.5",
+     "- Voxel resolution = 0.9 \u00d7 0.9 \u00d7 1.5 mm 3 - TE/TR/TI (ms) = 5.2/12.2/725 - Flip angle = 7\u00b0 - Slices = 124 - FOV = 256 \u00d7 256 mm 2 - Matrix size = 256 \u00d7 256 - Parallel acquisition",
+     "2.26/2300/900 ms - Flip angle = 8\u00b0 - Voxel resolution = 1 \u00d7 1 \u00d7 1 mm 3 - FOV = 256 \u00d7 192 x 256 mm 3 - Matrix size = 256 \u00d7 192 x 256 -"
+    ],
+    "unlinked_near": [
+     "ms, flip angle 10o, 1.2 mm3 isotropic voxels, image size 512x512x280",
+     "ms, flip angle 160o, 3 mm3 isotropic voxels, 256 image size 512x512x36"
+    ],
+    "postmod": [
+     "= 240 mm x 240 mm, 80x80 matrix size, 3x3x3 mm3 isotropic voxels, 38 interleaved axial slices (ascending",
+     "Padding Size: 50 voxels per surface"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "field strength",
+   "counts": {
+    "adjacent": 11,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "adjacent": 9,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 9,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     11
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "participated in another study: empirical ultra high-field fMRI data recorded at four spatial resolutions (0.8 mm, 1.4 mm, 2 mm, and 3 mm isotropic voxel size) for orientation decoding in visual cortex \u2014 in order to test hypotheses on the strength and spatial scale of orientation discriminating signals",
+     "This dataset consists of empirical ultra high-field fMRI data recorded at four spatial resolutions (0.8 mm, 1.4 mm, 2 mm, and 3 mm isotropic voxel size) for orientation decoding in visual cortex \u2014 in order to test hypotheses on the strength and spatial scale of orientation discriminating signals"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "head coil",
+   "counts": {
+    "adjacent": 102,
+    "unlinked_far": 8,
+    "unlinked_near": 13,
+    "postmod": 1
+   },
+   "papers": {
+    "adjacent": 88,
+    "unlinked_far": 8,
+    "unlinked_near": 11,
+    "postmod": 1
+   },
+   "docs_adjacent": 88,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 10,
+   "docs_only_far": 7,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -2,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     102
+    ],
+    [
+     2,
+     1,
+     8
+    ],
+    [
+     3,
+     1,
+     4
+    ],
+    [
+     4,
+     1,
+     2
+    ],
+    [
+     8,
+     1,
+     4
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "element selection = \"selection 1\"; Dual coil = \"yes\"; CLEAR = \"yes\"; body tuned = \"no\"; FOV RL (mm) = 224; AP (mm) = 224; FH (mm) = 157.5; Voxel size RL (mm) = 3.5; AP (mm) = 3.5; Slice thickness (mm) = 3.5; Recon voxel size (mm) = 3.5; Fold-over suppression = \"no\"; Reconstruction matrix = 64; SENSE = \"yes\"; P reduction (AP) = 3; P os factor = 1; Stacks = 1; type = \"parallel\"; slices = 45; slice gap = \"user defined\"; gap (mm) = 0; slice orientation = \"transverse\"; fold-over direction = \"AP\"; fat shift direction = \"A\"; Stack Offc. AP (P=+mm) = -7.5924015; RL (L=+mm) = 2.5429709; FH (H=+mm) = 12.8062849; Ang. AP (deg) = 0.905718386; RL (deg) = -5.66648006; FH (deg) = 0.284474969; Minimum number of packages = 1; Slice scan order = \"descend\"; Large table movement = \"no\"; PlanAlign = \"no\"; REST slabs = 0; Interactive positioning = \"no\"; Patient position = \"head first\";",
+     "Echos were registered using a head-mounted 32-channel coil.",
+     "The position of the head was localized at the beginning and end of each recording using three fiducial coils.",
+     "The position of the head was localized at the beginning and end of each recording using three fiducial coils.",
+     "The position of the head was localized at the beginning and end of each recording using three fiducial coils.",
+     "(MAGNETOM Tim Trio and Verio) equipped with head, neck, and spine coils.",
+     "The position of the head was localized at the beginning and end of the recording using three fiducial coils.",
+     "of the 64 channel coil as the 64 channel coil did not fit the patients head."
+    ],
+    "unlinked_near": [
+     "Four head position coils (HPI) measured the head position",
+     "Four head position coils (HPI) measured the head position",
+     "(GRAPPA) of 2. 64-channel head-neck coil was used for whole MRI acquisition.",
+     "scanner with a 64-channel phased-array head/neck coil.",
+     "Coils Used: Head, neck, and spine coils *",
+     "Standard 64-channel head-neck coil",
+     "Standard 64-channel head-neck coil - **fMRI protocol:**",
+     "determined before and after each scan run using three head localization coils attached to the right and left preauricular",
+     "the 3D coordinates of the EEG electrodes, four head-position indicator coils, and three fiducial points (nasion",
+     "The positions of the EEG electrodes, four head-position indicator coils, and three fiducial points (nasion",
+     "recording run (8 in total) using the head-position indicator coils.",
+     "A and B) using a 64-channel head/neck coil."
+    ],
+    "postmod": [
+     "By positioning the ring surface coil around the head, it was possible to reduce artifacts"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "time series",
+   "counts": {
+    "adjacent": 33,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "adjacent": 24,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 24,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     1,
+     0,
+     33
+    ],
+    [
+     5,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Time-to-Peak (TTP) maps calculated from DSC-PWI Matlab code used for TTP calculation Excel files describing the experimental series and the main results",
+     "The behavioral data includes reaction times and accuracy for a series of cognitive tasks designed to assess visual"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "time course",
+   "counts": {
+    "adjacent": 23,
+    "unlinked_far": 1,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 13,
+    "unlinked_far": 1,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 13,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     23
+    ],
+    [
+     3,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Over the course of the funding period (2021-2026), this study seeks to: 1) characterize neural responses to social rewards across adulthood; 2) relate those responses to risk for financial exploitation and sociodemographic factors tied to risk; and 3) examine changes in risk for financial exploitation over time in healthy and vulnerable groups of older"
+    ],
+    "unlinked_near": [
+     "Each category was presented 56 times through the course of the experiment."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "temporal resolution",
+   "counts": {
+    "adjacent": 13,
+    "unlinked_far": 4
+   },
+   "papers": {
+    "adjacent": 11,
+    "unlinked_far": 4
+   },
+   "docs_adjacent": 11,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     3
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     13
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     ", as well as three high in-plane resolution coronal images of the medial temporal lobe.",
+     "imaging (fMRI), which provides high spatial resolution to characterize spatial representation patterns but is limited in capturing the temporal dynamics inherent in visual cognitive processing.",
+     "imaging (fMRI), which provides high spatial resolution to characterize spatial representation patterns but is limited in capturing the temporal dynamics inherent in visual cognitive processing.",
+     "Lower-resolution fMRI at 1.2mm / 2mm isotropic - `run-#` : experimental run number within each fMRI session in temporal order"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "spatial resolution",
+   "counts": {
+    "adjacent": 36,
+    "coord": 2,
+    "unlinked_far": 8,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 26,
+    "coord": 2,
+    "unlinked_far": 7,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 26,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 1,
+   "docs_only_far": 3,
+   "gaps": [
+    [
+     -8,
+     1,
+     5
+    ],
+    [
+     1,
+     0,
+     36
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     0,
+     2
+    ],
+    [
+     4,
+     1,
+     2
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "and occipital lobes, which allowed us to maximize spatial and temporal resolution over hippocampal subfields.",
+     "instead of the full brain allowed us to maximize spatial and temporal resolution over our a priori ROIs."
+    ],
+    "unlinked_far": [
+     "In the present study, we examined the spatial representation of taste within the human brain of 18 healthy subjects using ultra-high resolution functional magnetic resonance imaging (MRI)",
+     "anatomical scans from MP2RAGE acquisition (uni_den volume) resolution 0.7mm X 0.7mm X 0.7mm. B) 8 task epi files - 130vol, acquired Anterior-to-Posterior C) 1 epi file (fmap) - 20vol, acquired Posterior-to-Anterior, for topup spatial distortion correction",
+     "anatomical scans from MP2RAGE acquisition (uni_den volume) resolution 0.7mm X 0.7mm X 0.7mm. B) 8 task epi files from two tasks - (194vol, 245vol), acquired Anterior-to-Posterior C) 1 epi file (fmap) - 20vol, acquired Posterior-to-Anterior, for topup spatial distortion correction D)",
+     "anatomical scans from MP2RAGE acquisition (uni_den volume) resolution 0.7mm X 0.7mm X 0.7mm. B) 8 task epi files from two tasks - (194vol, 245vol), acquired Anterior-to-Posterior C) 1 epi file (fmap) - 20vol, acquired Posterior-to-Anterior, for topup spatial distortion correction",
+     "High-resolution anatomical T2-weighted images were acquired with a RARE sequence for better spatial normalization.",
+     "brain activity induced by naturalistic stimuli with both high spatial and high temporal resolutions.",
+     "brain activity induced by naturalistic stimuli with both high spatial and high temporal resolutions.",
+     "This dataset contains high-resolution fMRI and eye-tracking data collected to investigate how spatial and semantic memory organize along the hippocampal"
+    ],
+    "unlinked_near": [
+     "**Effects of spatial fMRI resolution on the classification of naturalistic movies*"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "eye tracking",
+   "counts": {
+    "adjacent": 94
+   },
+   "papers": {
+    "adjacent": 47
+   },
+   "docs_adjacent": 47,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     94
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "source localization",
+   "counts": {
+    "adjacent": 8
+   },
+   "papers": {
+    "adjacent": 7
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "brain extraction",
+   "counts": {
+    "adjacent": 6
+   },
+   "papers": {
+    "adjacent": 6
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     6
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "skull stripping",
+   "counts": {
+    "adjacent": 6
+   },
+   "papers": {
+    "adjacent": 4
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     6
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "cortical thickness",
+   "counts": {
+    "adjacent": 15
+   },
+   "papers": {
+    "adjacent": 10
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     15
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "cortical surface",
+   "counts": {
+    "adjacent": 16,
+    "head_coord": 4,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 13,
+    "head_coord": 4,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 13,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     -1,
+     0,
+     4
+    ],
+    [
+     1,
+     0,
+     16
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "to) the white matter boundary and pial boundary surfaces, cortical thickness, and cortical parcellation.",
+     "to) the white matter boundary and pial boundary surfaces, cortical thickness, and cortical parcellation.",
+     "to) the white matter boundary and pial boundary surfaces, cortical thickness, and cortical parcellation.",
+     "to) the white matter boundary and pial boundary surfaces, cortical thickness, and cortical parcellation."
+    ],
+    "unlinked_far": [
+     "We provide both surface-level data from Freesurfer such as cortical thickness, curvature, and sulcal depth"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "band pass",
+   "counts": {
+    "adjacent": 20,
+    "unlinked_near": 2
+   },
+   "papers": {
+    "adjacent": 15,
+    "unlinked_near": 2
+   },
+   "docs_adjacent": 15,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 2,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -1,
+     1,
+     2
+    ],
+    [
+     1,
+     0,
+     20
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "a sampling rate of 250 Hz with an analog pass band of 0.01 to 60 Hz (SA",
+     "all referred to right mastoid) with an analog pass band of 0.01 to 100 Hz (SA"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "high pass",
+   "counts": {
+    "adjacent": 24,
+    "unlinked_far": 3
+   },
+   "papers": {
+    "adjacent": 23,
+    "unlinked_far": 3
+   },
+   "docs_adjacent": 23,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     3
+    ],
+    [
+     1,
+     0,
+     24
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "and applied a 0.5-40 Hz band-pass filter to remove slow DC drifts and high frequency noise.",
+     "et al., 2013) and low-pass filtering at 0.08 Hz has been shown to perform well in removing high frequency motion (Satterthwaite et al.",
+     "Next, we performed band-pass overlap-add FIR filter on the signal to eliminate the low-frequency direct current components and high-frequency noise."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "signal change",
+   "counts": {
+    "adjacent": 7,
+    "postmod": 1,
+    "unlinked_far": 4,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 7,
+    "postmod": 1,
+    "unlinked_far": 4,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 2,
+   "docs_only_far": 4,
+   "gaps": [
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -3,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     7
+    ],
+    [
+     8,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "the encoding phase since participants will begin monitoring the change of the hold signal at some time after the minimum hold"
+    ],
+    "unlinked_far": [
+     "Event-related potential (ERP) signals were recorded at the pre-, mid-, and post-tests while the subjects were performing a distractor version of the change detection task, which included three conditions",
+     "Because changes in respiration can affect BOLD signals and brain connectivity maps, respiratory waveform",
+     ", the green arrow turned to red (stop signal), and participants had to withhold their responses when the color changed.",
+     "The reconstruction was based on a unified signal model incorporating intra-scan rigid-body motion and B0 changes for motion and B0 correction, and"
+    ],
+    "unlinked_near": [
+     "z(false-alarm rate) per condition, with change trials as signal; log-linear correction for hit"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "effect size",
+   "counts": {
+    "unlinked_far": 1,
+    "adjacent": 3
+   },
+   "papers": {
+    "unlinked_far": 1,
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     3
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "in situations of time-based diminishing returns: effects of fixed interval duration and progressive-interval step size."
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "multiple comparisons",
+   "counts": {
+    "adjacent": 2
+   },
+   "papers": {
+    "adjacent": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     2
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "independent component analysis",
+   "counts": {
+    "adjacent": 15
+   },
+   "papers": {
+    "adjacent": 15
+   },
+   "docs_adjacent": 15,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "general linear model",
+   "counts": {
+    "adjacent": 8
+   },
+   "papers": {
+    "adjacent": 8
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "region of interest",
+   "counts": {
+    "adjacent": 18,
+    "loose": 1
+   },
+   "papers": {
+    "adjacent": 18,
+    "loose": 1
+   },
+   "docs_adjacent": 18,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "* manual annotations of 8 regions of widely interest in neuroscience early visual cortex (EVC"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "signal to noise ratio",
+   "counts": {
+    "adjacent": 15,
+    "apart": 1
+   },
+   "papers": {
+    "adjacent": 13,
+    "apart": 1
+   },
+   "docs_adjacent": 13,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [],
+   "samples": {
+    "apart": [
+     "characterises aneurysm location and size, and also provides signal-to-noise (SNR) and contrast-to-noise (CNR) ratios for all scans that were clinically annotated"
+    ]
+   }
+  },
+  {
+   "kind": "method",
+   "term": "hemodynamic response function",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 5
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "framewise displacement",
+   "counts": {
+    "adjacent": 8
+   },
+   "papers": {
+    "adjacent": 8
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "method",
+   "term": "global signal",
+   "counts": {
+    "adjacent": 9
+   },
+   "papers": {
+    "adjacent": 7
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     9
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "working memory",
+   "counts": {
+    "adjacent": 140
+   },
+   "papers": {
+    "adjacent": 72
+   },
+   "docs_adjacent": 72,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     140
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "episodic memory",
+   "counts": {
+    "adjacent": 16,
+    "coord": 3
+   },
+   "papers": {
+    "adjacent": 13,
+    "coord": 2
+   },
+   "docs_adjacent": 13,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     16
+    ],
+    [
+     3,
+     0,
+     3
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "FeedBES - FeedBack signals from Episodic and Semantic memories.",
+     "Episodic and Semantic Memory fMRI Dataset",
+     "Episodic and Semantic Memory fMRI Dataset"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "long term memory",
+   "counts": {
+    "adjacent": 8,
+    "loose": 2,
+    "apart": 1
+   },
+   "papers": {
+    "adjacent": 5,
+    "loose": 2,
+    "apart": 1
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 2,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "Neural pattern similarity predicts long-term fear memory.",
+     "Analysis Offers a Preview of the Noradrenergic Modulation of Long-Term Fear Memory at the Time of Encoding.\u201d"
+    ],
+    "apart": [
+     "Dataset used in the paper: \"Long-term learning transforms prefrontal cortex representations during working memory.\""
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "short term memory",
+   "counts": {
+    "loose": 1
+   },
+   "papers": {
+    "loose": 1
+   },
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {
+    "loose": [
+     "RAVLT; Rey, 1964), which measures short-term verbal memory, and the Digit Symbol Substitution Test"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "semantic memory",
+   "counts": {
+    "unlinked_near": 4,
+    "unlinked_far": 3,
+    "adjacent": 6
+   },
+   "papers": {
+    "unlinked_near": 2,
+    "unlinked_far": 2,
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     6
+    ],
+    [
+     2,
+     1,
+     4
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     7,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "Decoding of multisensory semantics and memories in low-level visual cortex",
+     "# Decoding of multisensory semantics and memories in low-level visual cortex",
+     "Spatial and Semantic Sequence Memory fMRI Dataset",
+     "# Spatial and Semantic Sequence Memory fMRI Dataset"
+    ],
+    "unlinked_far": [
+     "to identify regions involved in the information processing of semantic context dependent multisensory memory traces.",
+     "Possible mechanisms involve item-speci\ufb01c and semantic neural representations at encoding, and the memory strength between encoding and retrieval.",
+     "-speci\ufb01c neural representations and reduced neural overlap between semantic representations) being associated with lower false memory."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "cognitive control",
+   "counts": {
+    "adjacent": 62,
+    "unlinked_far": 7,
+    "postmod": 1
+   },
+   "papers": {
+    "adjacent": 27,
+    "unlinked_far": 6,
+    "postmod": 1
+   },
+   "docs_adjacent": 27,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 3,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -8,
+     1,
+     3
+    ],
+    [
+     1,
+     0,
+     62
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "be less useful for benchmarking other systems; positive control tasks targeting a wider array of brain areas and cognitive processes are needed.",
+     "5-Week Heart Rate Variability Biofeedback Intervention on Cognitive Function: Possible Benefits for Inhibitory Control.",
+     "Description: mixed cognitive tasks [(i) an extended multi-source interference task, MSIT+; (ii) a 3-stimuli oddball task; (iii) a control, simple reaction task, SRT;",
+     "-reported clinical symptoms, behavior from four canonical cognitive function neuropsychological tests, behavioral responses from a novel mobile application assessing inhibitory control, along with structural and functional magnetic",
+     "Resting State MRI data from healthy control (HC), Parkinson's disease with normal cognition (PD-NC), and Parkinson's disease with mild cognitive impairment (PD-MCI) cohorts",
+     "**: Resting State MRI data from healthy control (HC), Parkinson's disease with normal cognition (PD-NC), and Parkinson's disease with mild cognitive impairment (PD-MCI) cohorts",
+     "This study compared cognitive function in 36 individuals with Alzheimer's disease (AD), 23 with Frontotemporal Dementia (FTD), and 29 healthy controls (CN)."
+    ],
+    "postmod": [
+     "fMRI data were collected from participants, including healthy controls (HC) and Parkinson's Disease patients with normal cognition (PD-NC) or mild cognitive impairment (PD-MCI)."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "inhibitory control",
+   "counts": {
+    "adjacent": 28
+   },
+   "papers": {
+    "adjacent": 15
+   },
+   "docs_adjacent": 15,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     28
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "response inhibition",
+   "counts": {
+    "postmod": 1,
+    "adjacent": 7
+   },
+   "papers": {
+    "postmod": 1,
+    "adjacent": 6
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -5,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     7
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "Common neural substrates for inhibition of spoken and manual responses."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "emotion regulation",
+   "counts": {
+    "adjacent": 23,
+    "stacked": 1,
+    "head_coord": 5
+   },
+   "papers": {
+    "adjacent": 11,
+    "stacked": 1,
+    "head_coord": 3
+   },
+   "docs_adjacent": 11,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     1,
+     0,
+     23
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     3,
+     0,
+     5
+    ]
+   ],
+   "samples": {
+    "stacked": [
+     "Emotion down-regulation targets interoceptive brain regions while emotion up"
+    ],
+    "head_coord": [
+     "The task was an emotion processing and regulation task based on visual stimuli (pictures",
+     "# Emotion Processing and Regulation Task (Static Stimuli) \u2014 tDCS\u2011EEG",
+     "EEG recordings and behavioral data from the **Emotion Processing and Regulation** task conducted with **",
+     "# Emotion Processing and Regulation Task (Static Stimuli) \u2014 EEG",
+     "EEG recordings and behavioral data from the **Emotion Processing and Regulation** task with static emotional stimuli"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "reward processing",
+   "counts": {
+    "adjacent": 15,
+    "unlinked_far": 2,
+    "postmod": 1,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 8,
+    "unlinked_far": 2,
+    "postmod": 1,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -6,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     15
+    ],
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     4,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "However, the development of the interactions between reward and cognitive control processing are just beginning to be understood.",
+     "of specific cortical regions involved in cognitive control, reward monitoring, and feedback processing during neurofeedback training."
+    ],
+    "postmod": [
+     "differences in how older adults make decisions related to processing social and non-social rewards."
+    ],
+    "unlinked_near": [
+     "This project investigates differences in reward and social processing between gamblers and non-gamblers."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "decision making",
+   "counts": {
+    "adjacent": 57,
+    "postmod": 4
+   },
+   "papers": {
+    "adjacent": 34,
+    "postmod": 4
+   },
+   "docs_adjacent": 34,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 4,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -8,
+     0,
+     2
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     57
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "data (\"map\"), and then making a decision about the relative values of data at",
+     "beholding the same item from two connected PCs, making preference ratings and subsequent buy/not-buy decisions.",
+     "beholding the same item from two connected PCs, making preference ratings and subsequent buy/not-buy decisions.",
+     "of 45 parents, lying inside the scanner, making buy/not-buy decisions."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "face perception",
+   "counts": {
+    "adjacent": 5,
+    "postmod": 1,
+    "coord": 1
+   },
+   "papers": {
+    "adjacent": 4,
+    "postmod": 1,
+    "coord": 1
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     5
+    ],
+    [
+     3,
+     0,
+     1
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "ii) an implementation thereof for HYPerrealistic reconstruction of PERception (HYPER) of faces from brain recordings."
+    ],
+    "coord": [
+     "Face and object perception"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "face processing",
+   "counts": {
+    "adjacent": 22
+   },
+   "papers": {
+    "adjacent": 11
+   },
+   "docs_adjacent": 11,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     22
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "speech perception",
+   "counts": {
+    "unlinked_far": 3,
+    "postmod": 2,
+    "adjacent": 9,
+    "head_coord": 2,
+    "unlinked_near": 3,
+    "stacked": 1
+   },
+   "papers": {
+    "unlinked_far": 3,
+    "postmod": 2,
+    "adjacent": 5,
+    "head_coord": 2,
+    "unlinked_near": 1,
+    "stacked": 1
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 1,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -4,
+     0,
+     2
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     9
+    ],
+    [
+     3,
+     0,
+     2
+    ],
+    [
+     3,
+     1,
+     3
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Covert speech was used to avoid auditory activation due to perception of self-produced vocalization.",
+     "Language, speech, auditory and visual perception",
+     "From subject S19 onward, the duration of the perception segment was increased to 5 s to match the duration of the silent speech production segment and the number of repetitions"
+    ],
+    "postmod": [
+     "networks in each participant that are involved in the perception and production of speech.",
+     "screen, serving as a separation marker between the perception and silent speech production tasks."
+    ],
+    "head_coord": [
+     "provide insights into our understanding of the neurobiology of speech learning and perception.",
+     "al), comprises four segments: rest, perception, preparation, and silent speech production."
+    ],
+    "unlinked_near": [
+     "processing of vowels in the left temporal cortex predicts speech-in-noise perception deficit in children with autism.",
+     "Attenuated Processing of Vowels in the Left Hemisphere Predicts Speech-in-Noise Perception Deficit in Children with Autism.",
+     "Attenuated processing of vowels in the left hemisphere predicts speech-in-noise perception deficit in children with autism."
+    ],
+    "stacked": [
+     "conflict processing, updating and statistical learning, and speech-in-noise perception and auditory selective attention."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "language comprehension",
+   "counts": {
+    "adjacent": 9,
+    "unlinked_far": 6
+   },
+   "papers": {
+    "adjacent": 7,
+    "unlinked_far": 5
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 4,
+   "gaps": [
+    [
+     -8,
+     1,
+     4
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     9
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Subjects performed semantic comprehension (reading and speech) and verbal production tasks in the MRI scanner in their native and new languages.",
+     "of learning-dependent plasticity of reading and speech comprehension in intermediate and advanced adult language learners, i.e. after the initial effort",
+     "Subjects performed semantic comprehension (reading and speech) and verbal production tasks in the MRI scanner in their native and new languages.",
+     "Six language tasks were administered in the fMRI sessions: A: Word Generation (WG) B: Sentence Generation (SG) C: Phonological Decision (PD) D: Word Comprehension (WC) E: Sentence Comprehension",
+     "WJIV substitution subtest raw pre_wjiv_oralcomp_raw - PRE WJIV oral comprehension subtest raw pre_wjiv_pvocab_raw - PRE WJIV picture vocabulary subtest raw pre_wjiv_phonproc_standard - PRE timepoint WJIV phonological processing standardized composite pre_wjiv_orallang_standard - PRE timepoint WJIV oral language standardized composite kbit2_raw - KBIT reasing subtest",
+     "Abbreviated Scale of Intelligence, 2nd Edition and Paragraph Comprehension and Core standard scores \u2265 80 on the Comprehensive Assessment of Spoken Language, 2nd Edition."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "motor imagery",
+   "counts": {
+    "unlinked_far": 2,
+    "adjacent": 35,
+    "unlinked_near": 1,
+    "coord": 1
+   },
+   "papers": {
+    "unlinked_far": 2,
+    "adjacent": 10,
+    "unlinked_near": 1,
+    "coord": 1
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     36
+    ],
+    [
+     2,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "In the present study, we used mental imagery tasks to investigate language production, motor functions, visuo-spatial memory,",
+     "Participants performed mental imagery tasks (tennis, spatial navigation, hand squeeze) and a motor response task across varying levels of sedation"
+    ],
+    "unlinked_near": [
+     "EEG Motor Movement/Imagery Dataset"
+    ],
+    "coord": [
+     "Subjects performed different motor/imagery tasks while 64-channel EEG were"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "visual attention",
+   "counts": {
+    "adjacent": 19,
+    "unlinked_near": 7,
+    "unlinked_far": 10,
+    "postmod": 1,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 17,
+    "unlinked_near": 3,
+    "unlinked_far": 6,
+    "postmod": 1,
+    "head_coord": 1
+   },
+   "docs_adjacent": 17,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 4,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -8,
+     1,
+     2
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     -3,
+     1,
+     2
+    ],
+    [
+     -2,
+     1,
+     3
+    ],
+    [
+     1,
+     0,
+     19
+    ],
+    [
+     3,
+     1,
+     2
+    ],
+    [
+     4,
+     0,
+     1
+    ],
+    [
+     5,
+     1,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     5
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "Full Field-of-View Visual Stimulation + Attention Control Task ( fFOV + Task):",
+     "Spatial attention alters visual cortical representation during target anticipation",
+     "press in Nature Communications with the title \"Spatial attention alters visual cortical representation during target anticipation\".",
+     "the four target locations to be attended in the visual periphery (focal attention) or all four targets simultaneously (",
+     "we find that focal attention when compared to distributed attention reorganizes visual cortex responses across the representation of space",
+     "Dimension-based attention modulates early visual processing",
+     ", H.J. (2010), Dimension-based attention modulates early visual processing."
+    ],
+    "unlinked_far": [
+     "Full Field-of-View Visual Stimulation Only (fFOV Only): The subject was instructed to focus his/her attention on a crosshair in the center of",
+     "Hemifield Visual Stimulation (hFOV Only): The subject was in- structed to focus his/her attention on a crosshair in the center of",
+     "Significant task regions primarily occupied the secondary visual network but also incorporated the frontoparietal, dorsal attention, default mode, and cingulo-",
+     "Functional connections from the dorsal attention network were key in modeling activation differences in the secondary visual network and across all remaining networks.",
+     "interconnected network coalition that is centered in the secondary visual network, orchestrated by the dorsal attention network, and inclusive of at least",
+     "Target processing in overt serial visual search involves the dorsal attention network: A fixation-based event",
+     "Fixating Targets in Visual Search: The Role of Dorsal and Ventral Attention Networks in the Processing of Relevance and",
+     "We measured the visual cortical BOLD response to the mapping stimulus bar that varied in location, under different attention conditions.",
+     "Focal attention also results in an attraction of population receptive fields centers towards the attended location, an effect that increases across visual cortical hierarchy.",
+     "This setup directed attention away from the visual objects, making them task-irrelevant"
+    ],
+    "postmod": [
+     "Intersensory Attention (Beepflash_run) Cued S1\u2192S2 design indicating whether to attend visual or auditory targets."
+    ],
+    "head_coord": [
+     "superior colliculus is well known for its roles in visual orienting, oculomotor control, attention, and defensive behavior across species."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "selective attention",
+   "counts": {
+    "adjacent": 14,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 9,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 9,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     14
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "The purpose of this Auditory-Visual Attention Shift study was to explore the effects of aging on selective attending and responding to auditory and visual"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "spatial attention",
+   "counts": {
+    "adjacent": 7,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "adjacent": 5,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     7
+    ],
+    [
+     7,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     ", audition, gustation, olfaction, motor, spatial, temporal, causal, social, cognition, emotion, drive, attention.",
+     "we find that focal attention when compared to distributed attention reorganizes visual cortex responses across the representation of space by altering both the BOLD response amplitude and spatial tuning."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "reinforcement learning",
+   "counts": {
+    "adjacent": 20
+   },
+   "papers": {
+    "adjacent": 14
+   },
+   "docs_adjacent": 14,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     20
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "fear conditioning",
+   "counts": {
+    "adjacent": 4
+   },
+   "papers": {
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     4
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "mental rotation",
+   "counts": {},
+   "papers": {},
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "theory of mind",
+   "counts": {
+    "adjacent": 16
+   },
+   "papers": {
+    "adjacent": 11
+   },
+   "docs_adjacent": 11,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "executive function",
+   "counts": {
+    "adjacent": 30
+   },
+   "papers": {
+    "adjacent": 16
+   },
+   "docs_adjacent": 16,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     30
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "social cognition",
+   "counts": {
+    "unlinked_far": 1,
+    "adjacent": 9,
+    "unlinked_near": 2,
+    "coord": 2
+   },
+   "papers": {
+    "unlinked_far": 1,
+    "adjacent": 9,
+    "unlinked_near": 2,
+    "coord": 2
+   },
+   "docs_adjacent": 9,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 2,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     9
+    ],
+    [
+     1,
+     1,
+     1
+    ],
+    [
+     3,
+     0,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "this dataset is the study of auditory attention and cognition, language and music perception as well as social perception."
+    ],
+    "unlinked_near": [
+     "aggression, cognition, social chemosignals",
+     ", motor, spatial, temporal, causal, social, cognition, emotion, drive, attention."
+    ],
+    "coord": [
+     "Social and Spatial Cognition",
+     "a suitable target for neurofeedback approaches, aiming at social and emotional cognition."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "motor learning",
+   "counts": {
+    "head_coord": 1,
+    "unlinked_near": 4,
+    "adjacent": 5,
+    "stacked": 2,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "head_coord": 1,
+    "unlinked_near": 2,
+    "adjacent": 3,
+    "stacked": 2,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 2,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     5
+    ],
+    [
+     2,
+     0,
+     2
+    ],
+    [
+     2,
+     1,
+     4
+    ],
+    [
+     7,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "Learning and memory: motor skill consolidation and intermanual transfer"
+    ],
+    "unlinked_near": [
+     "Frontal operculum temporal difference signals and social motor response learning.",
+     "Motor sequence learning",
+     "### Motor sequence learning",
+     "A critical re-evaluation of fMRI signatures of motor sequence learning\" (https://elifesciences.org/articles/55241)."
+    ],
+    "stacked": [
+     "Networks for Semantic and Syntactic Prediction and Visuo-Motor Statistical Learning in Adult Readers with and without Dyslexia",
+     "Motor skill learning and consolidation"
+    ],
+    "unlinked_far": [
+     "Distinct patterns of connectivity with motor cortex reflect component processes of sensorimotor learning Corson N. Areshenkoff, Anouk J. de",
+     "2 back) - Measured Emotion Differentiation Test - Motor Praxis Test - Penn Conditional Exclusion Task for Children - Short Penn Continuous Performance Test - Number and Letter Version - Penn Matrix Reasoning Test - Variable Short Penn Line Orientation Test - Children's Verbal Reasoning Test - Short Visual Object Learning Test - Trailmaking A - Trailmaking B"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "prediction error",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 4
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     5
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "reaction time",
+   "counts": {
+    "adjacent": 66
+   },
+   "papers": {
+    "adjacent": 51
+   },
+   "docs_adjacent": 51,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     66
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "construct",
+   "term": "response time",
+   "counts": {
+    "unlinked_far": 53,
+    "unlinked_near": 12,
+    "postmod": 9,
+    "adjacent": 20,
+    "head_coord": 2
+   },
+   "papers": {
+    "unlinked_far": 48,
+    "unlinked_near": 12,
+    "postmod": 9,
+    "adjacent": 18,
+    "head_coord": 2
+   },
+   "docs_adjacent": 18,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 16,
+   "docs_only_far": 46,
+   "gaps": [
+    [
+     -8,
+     0,
+     2
+    ],
+    [
+     -8,
+     1,
+     11
+    ],
+    [
+     -7,
+     0,
+     1
+    ],
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     -6,
+     0,
+     3
+    ],
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     -5,
+     0,
+     2
+    ],
+    [
+     -5,
+     1,
+     3
+    ],
+    [
+     -4,
+     1,
+     4
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -3,
+     1,
+     6
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     -2,
+     1,
+     1
+    ],
+    [
+     -1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     20
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     1,
+     3
+    ],
+    [
+     4,
+     1,
+     3
+    ],
+    [
+     5,
+     0,
+     1
+    ],
+    [
+     5,
+     1,
+     1
+    ],
+    [
+     6,
+     1,
+     14
+    ],
+    [
+     7,
+     1,
+     5
+    ],
+    [
+     8,
+     1,
+     10
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Timing fixation cross (400-600 ms) -> gnome cue (1500 ms) -> bar outline (until response) -> animation (1 degree",
+     "17 TRs) post trial onset, a sufficient time window for the hemodynamic response to peak and return to baseline,",
+     "coincided with each button press and indicated whether the response was early, on time, or late.",
+     "- response: response coded as proportion of line extent - RT: reaction time measured from the moment the cursor is",
+     "delivery and the recording of behavioral data (reaction time and accuracy) were controlled by E-prime in conjunction with their serial response box (www.pstnet.com; Psychology Software Tools",
+     ": 'no response'}, if the response was correct, what the reaction time was, and which stimuli image was",
+     "The trial concluded immediately after a response was made, regardless of the reaction time.",
+     "-each event.json file lists each stimulus, the onset time, and the participant\u2019s response (participants performed a simple valence task",
+     "all participants\u2019 scores on standardized tests at each time point and participants\u2019 responses to emotion questionnaires at each time-",
+     "a Likert-type scale and a multivariate item response theory (MIRT) approach was employed to establish the differences between groups in the two times.",
+     "* Participant responses during EEG tasks, including reaction times and accuracy.",
+     "file holds time-stamped events and behavioural responses."
+    ],
+    "unlinked_near": [
+     "Events Headings: -ReactionTime: Reaction Time -ResponseButtonCode: Response Button Code (33 is hit,",
+     "respt: [1xnumber_of_trials double] => response onset times (in ms)",
+     "Button press response attributes (task time window and post-target latency)",
+     "Add 60: Early response Add 80: On time response Add 100: Late response Add 120",
+     "Participants\u2019 responses and reaction times in the magic trick watching and memory",
+     "The /derivatives/ECoGBroadband folder contains time-varying broadband responses estimated by band-pass filtering the",
+     "participants tracking an 18-second countdown and making time-sensitive motor responses under the threat of electric shock.",
+     "participants tracking an 18-second countdown and making time-sensitive motor responses under the threat of electric shock.",
+     "participants tracking an 18-second countdown and making time-sensitive motor responses under the threat of electric shock.",
+     "participants tracking an 18-second countdown and making time-sensitive motor responses under the threat of electric shock.",
+     "Some participants had incomplete responses due to time constraints or misunderstanding of the questions.",
+     "the participants started to move the mouse (decision time), and the response was recorded upon clicking on the target"
+    ],
+    "postmod": [
+     "Reaction time (in sec) Response Accuracy: Accuracy (1: correct",
+     "a if no response) *reaction_time*: time between stimulus onset and response in seconds (n/a if",
+     "*reaction_time*: Time between stimulus onset and response in seconds (n/a if",
+     ", 0: uncorrect) - reactionTime: reaction time from probe onset to participant response - TrialTime: total trial duration -",
+     "3) a stick function regressor aligned at the time of response and modulated by RT .",
+     "We recorded the time of the button press and response accuracy, finding no difference in reaction",
+     "Timing Repeat for 72 trials: fixation dot (until response) -> feedback circle (50",
+     "Behaviourally, the reaction time and accuracy of their button-pressing response were recorded.",
+     "subjective rating submitted by the participant); and timing (onsets and durations for the Valuation, Rating, and Feedback phases, as well as the timing of key-press responses)."
+    ],
+    "head_coord": [
+     "the onset, duration, trial type, stimuli response, correct answer, and reaction times of responses.",
+     "_events.tsv` file is provided - Contains onset times, durations, and trial-type information - Response prompts and button presses are included where"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "visual stimulus",
+   "counts": {
+    "unlinked_far": 50,
+    "adjacent": 57,
+    "stacked": 5,
+    "postmod": 6,
+    "unlinked_near": 5,
+    "coord": 7
+   },
+   "papers": {
+    "unlinked_far": 40,
+    "adjacent": 34,
+    "stacked": 3,
+    "postmod": 5,
+    "unlinked_near": 5,
+    "coord": 5
+   },
+   "docs_adjacent": 34,
+   "docs_only_coord_stacked": 5,
+   "docs_only_near": 4,
+   "docs_only_far": 32,
+   "gaps": [
+    [
+     -8,
+     0,
+     2
+    ],
+    [
+     -8,
+     1,
+     19
+    ],
+    [
+     -7,
+     1,
+     3
+    ],
+    [
+     -6,
+     0,
+     1
+    ],
+    [
+     -5,
+     1,
+     2
+    ],
+    [
+     -4,
+     0,
+     2
+    ],
+    [
+     -4,
+     1,
+     4
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -3,
+     1,
+     1
+    ],
+    [
+     -2,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     57
+    ],
+    [
+     2,
+     0,
+     5
+    ],
+    [
+     2,
+     1,
+     2
+    ],
+    [
+     3,
+     0,
+     6
+    ],
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     4,
+     0,
+     1
+    ],
+    [
+     4,
+     1,
+     6
+    ],
+    [
+     5,
+     1,
+     2
+    ],
+    [
+     6,
+     1,
+     2
+    ],
+    [
+     7,
+     1,
+     3
+    ],
+    [
+     8,
+     1,
+     9
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "These cue stimuli instructed the participant which sensory modality (auditory or visual) to attend.",
+     "files contain trial-wise information, including: stimulus properties (the food image presented, along with its visual and nutritional features); participant responses",
+     "All stimuli were less than 2\u00b0 of horizontal and vertical visual angle.",
+     "Following a 500 ms stimulus onset asynchrony, participants were asked to report the confidence in their first order response by moving a slider on a visual analog scale with marks at 0 (",
+     "Each stimulus was presented for 2.5 seconds at the center of the screen (visual angle: 14.6 degrees; captions were",
+     "Stimuli were presented using a block design at 13.7 x 18.1 degrees of visual angle.",
+     "which enabled us to manipulate the objective parameters of visual illusions, we generated stimuli of varying task difficulty and illusion strength",
+     "Stimuli include eight different square wave spiral gratings subtending 10 degrees of visual angle as well as the color words",
+     "condition required participants to immediately reproduce the preceding excerpt stimulus on a commercially available MRI-compatible keyboard, either unimanually (right hand) or bimanually, as indicated by a visual cue.",
+     "At the end of the visual cueing, participants were provided the possibility to listen two auditory speech stimuli: one stimulus corresponded to the speaker",
+     "All trials included 800 ms of quiet without a visual presentation before the stimuli began.",
+     "prf: grayscale, oriented bar stimuli consisting of curved, band-pass filtered lines that were swept across the screen (up to (~16 degree of visual angle) in a fixed order for"
+    ],
+    "stacked": [
+     "[1 x number_of_valid_trials] - onset of visual motion stimulus tresp:",
+     "Neural reactivity to visual food stimuli is reduced in some areas of the",
+     "Neural reactivity to visual food stimuli is reduced in some areas of the",
+     "Abstract: The extent that neural responsiveness to visual food stimuli is influenced by time of day is",
+     "The visual S2 stimulus consisted of a pair of Gabor patches"
+    ],
+    "postmod": [
+     "fMRI events dot_stim_validtrials - random dot motion stimulus, for valid trials only dot_resp_validtrials - subjects' responses on the motion discrimination task, for valid trials only rating_stim_validtrials - confidence rating visual prompt, for valid trials only",
+     "brief tones) and visual (colored squares) stimuli constituting distinct, interleaved auditory and visual oddball stimulus streams whose stimuli are presented",
+     "2. spatialpattern: grayscale, centrally presented pattern stimuli (~16 degree of visual angle diameter) consisting of curved,",
+     "3. temporalpattern: grayscale, centrally presented pattern stimuli (~16 degree of visual angle diameter) consisting of curved,",
+     "Participants observed stimuli on a visual display and responded using the spacebar on",
+     "Object and word stimuli presented at 5Hz to the left or right visual fields, or centrally, while participants"
+    ],
+    "unlinked_near": [
+     "**Independent variables:** Stimulus stream (visual, auditory, cue); stimulus",
+     "- HEDONIC task, with odors as stimuli and uses visual analog scales to measure subjective liking and",
+     "sub-p01 to sub-p11 viewed grayscale visual pattern stimuli that were varied in temporal or spatial",
+     "The cognitive block comprised five tasks on visual attention, vigilance, stimulus-response conflict processing, updating and",
+     "Participants were exposed to two conditions: a visual-only stimulus and an audiovisual stimulus, both of"
+    ],
+    "coord": [
+     "sequences presented included trials with recordings of audio, visual-only, audiovisual speech stimuli, or printed text via an image",
+     "baseline condition in which participants were presented with both visual and auditory stimuli but were instructed to ignore the auditory",
+     "Dataset of Visual and Audiovisual Stimuli in Virtual Reality from the Edzna Archaeological",
+     "- Project name Dataset of Visual and Audiovisual Stimuli in Virtual Reality from the Edzna Archaeological",
+     ") environment, focusing on a comparative study between visual and audiovisual stimuli based on the archaeological site of Edzna",
+     "The results indicated that both the visual and auditory stimuli had a delay of approximately 20 ms",
+     "with trials, each composed of a sequence of visual and auditory stimuli."
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "auditory stimulus",
+   "counts": {
+    "unlinked_far": 26,
+    "adjacent": 41,
+    "unlinked_near": 8,
+    "postmod": 7,
+    "coord": 1,
+    "head_coord": 1,
+    "stacked": 1
+   },
+   "papers": {
+    "unlinked_far": 22,
+    "adjacent": 29,
+    "unlinked_near": 6,
+    "postmod": 7,
+    "coord": 1,
+    "head_coord": 1,
+    "stacked": 1
+   },
+   "docs_adjacent": 29,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 8,
+   "docs_only_far": 19,
+   "gaps": [
+    [
+     -8,
+     0,
+     2
+    ],
+    [
+     -8,
+     1,
+     7
+    ],
+    [
+     -7,
+     0,
+     1
+    ],
+    [
+     -7,
+     1,
+     2
+    ],
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     -1,
+     0,
+     3
+    ],
+    [
+     1,
+     0,
+     41
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     6
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     3,
+     1,
+     2
+    ],
+    [
+     5,
+     0,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     7,
+     1,
+     2
+    ],
+    [
+     8,
+     1,
+     12
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "3 runs each of separate auditory and visual tasks 20% target stimuli (requiring button response), 80",
+     "Each EDF file is tagged for the auditory naming task with the following event codes: 401 \u2013 stimulus onset 501 \u2013 response onset",
+     ") whether there was a visual unisensory or an auditory-visual multisensory experience associated with the image, and (2) whether this multisensory experience had semantically congruent or incongruent stimuli.",
+     "Each EDF file is tagged for the auditory naming task with the following event codes: 401 \u2013 stimulus onset 402 \u2013 stimulus offset 501 \u2013",
+     "The stimuli files contain the audio ('audio'), and regressors for the deconvolution ('pinds' are the pulse indices, 'anm' is an auditory nerve model regressor, which was used",
+     "The condition corresponds to the auditory instruction Conditions: 1=csp shock; 2=csp noshock; 3=cspi; 4=csm; 5=csmi ShockOn: 1= on; 2= off CSorientation: orientation of the gabor being VIEWED NB-in session 2, if the condition has an \"i\" that means participants were cued to imaging the noted stimulus while viewing the opposite.",
+     "Words were presented in quiet for auditory only, visual only, and audiovisual stimuli.",
+     "performed by participants during functional runs involves naming to auditory definitions or to environmental sounds, and to reverse definitions or white noise stimuli.",
+     "Stimuli and TextGrids are available from the Massive Auditory Lexical Decision database (Tucker et al",
+     "These cue stimuli instructed the participant which sensory modality (auditory or visual) to attend.",
+     "Each EDF file is tagged for the auditory naming task with the following event codes: 401 \u2013 stimulus onset 402 \u2013 stimulus offset 501 \u2013",
+     "investigations that want to have visual presentation of the stimuli in addition to or instead of auditory presentation."
+    ],
+    "unlinked_near": [
+     "Unit (RU) condition trial, 4 different auditory syllable stimuli were presented at a rate of 1Hz",
+     "Repeat Sequence (RS) condition, 4 different auditory syllable stimuli were presented at a rate of 2Hz",
+     "effects of aging on selective attending and responding to auditory and visual stimulus differences using an interleaved dual-oddball",
+     "Independent variables:** Stimulus stream (visual, auditory, cue); stimulus stream identity (target, standard)",
+     "Auditory story stimuli were delivered via S14 insert earphones for",
+     "Paradigm: Individuals were instructed to simply ignore the auditory sentence stimuli and watch a show of their choice",
+     "were equipped with headphones and tested to ensure clear auditory perception of stimulus sounds.",
+     ", participants were provided the possibility to listen two auditory speech stimuli: one stimulus corresponded to the speaker"
+    ],
+    "postmod": [
+     "brief tones) and visual (colored squares) stimuli constituting distinct, interleaved auditory and visual oddball stimulus streams whose stimuli",
+     "Rest and 3 stimulus auditory oddball data with 25 Parkinson patients and",
+     "3 stimulus auditory oddball data in control, sub-",
+     "Within the \"stimuli\" folder are the stimuli used in this experiment, all of which was auditory.",
+     "adult participants with harmonic complex sound (HCS) stimuli that varied in frequency in an auditory oddball protocol during simultaneous EEG and MEG",
+     "The S2 stimuli were either a unisensory stimulus in the cued modality or a compound bisensory auditory\u2013visual stimulus.",
+     "- Inter-task rest: 30 seconds - Stimuli: auditory digits (0-9) and"
+    ],
+    "coord": [
+     ", yielding a total of 50 presentations of each auditory and visual stimuli (2 tasks x 3 blocks x"
+    ],
+    "head_coord": [
+     "performed by participants during functional runs involves naming to auditory definitions or scrambled control stimuli."
+    ],
+    "stacked": [
+     "a repeat rather than a switch trial was 70%.The auditory S2 stimulus consisted of two sequentially presented sinusoidal tones"
+    ]
+   }
+  },
+  {
+   "kind": "construct",
+   "term": "emotional faces",
+   "counts": {
+    "adjacent": 11,
+    "postmod": 1,
+    "head_coord": 1,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "adjacent": 6,
+    "postmod": 1,
+    "head_coord": 1,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     11
+    ],
+    [
+     8,
+     0,
+     1
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "used to show participants race-matched adult target faces displaying emotional expressions (positive: three happy faces"
+    ],
+    "head_coord": [
+     "the relation between linguistically structured affirmative utterances and facial emotional expression (anger, sadness, happiness and a blurred neutral face)."
+    ],
+    "unlinked_far": [
+     "The objective of the study was to investigate if emotional arousal would affect people's perceived realness of others' faces, given ambiguous information.",
+     "To manipulate participants' emotional arousal, images of angry (high emotionality) and neutral (low emotionality) faces (selected based on the their rated"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "n back",
+   "counts": {
+    "adjacent": 34,
+    "unlinked_far": 1,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 16,
+    "unlinked_far": 1,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 16,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -6,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     34
+    ],
+    [
+     2,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "and testCategory experiment, and 1: one-back repetition for training experiment ('n/a' or 0.0 when the"
+    ],
+    "unlinked_near": [
+     "with a 6.0 s instruction screen (\"Remember N steps back\")."
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "go no go",
+   "counts": {
+    "apart": 5,
+    "adjacent": 6,
+    "loose": 2
+   },
+   "papers": {
+    "apart": 5,
+    "adjacent": 3,
+    "loose": 2
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 5,
+   "gaps": [],
+   "samples": {
+    "apart": [
+     "stimuli), with numbers as a no-go condition (i.e., withhold a button",
+     "stimuli), with numbers as a no-go condition (i.e., withhold a button",
+     "a proportion (~40%) of no-go trials in which planning is not followed",
+     "We went to great lengths to identify these electrodes",
+     "that no stop signal would occur after the coming go signal, which is defined as Certain Go trial."
+    ],
+    "loose": [
+     "with the following frequencies: cue 1500 Hz; go stimulus 1700 Hz; no-go stimulus 1300 Hz; and error feedback",
+     "no-go trials than go trials (20 go, 60 no-go)."
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "stop signal",
+   "counts": {
+    "adjacent": 35,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "adjacent": 14,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 14,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     1,
+     0,
+     35
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "after word presentation are filtered with a Butterworth band stop filter (58-62 Hz, 4th order) to remove 60 Hz line noise, and then a Morlet wavelet transformation (wavenumber = 5) is applied to the signal to estimate spectral power, using 8",
+     "after word presentation are filtered with a Butterworth band stop filter (58-62 Hz, 4th order) to remove 60 Hz line noise, and then a Morlet wavelet transformation (wavenumber = 5) is applied to the signal to estimate spectral power, using 8"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "eyes closed",
+   "counts": {
+    "adjacent": 66,
+    "unlinked_near": 18,
+    "postmod": 1,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 42,
+    "unlinked_near": 15,
+    "postmod": 1,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 42,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 13,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     -1,
+     1,
+     14
+    ],
+    [
+     1,
+     0,
+     66
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "Resting state with closed eyes for patients with depression and healthy participants",
+     "Two sessions of resting state with closed eyes for patients with depression in treatment course",
+     "Two sessions of resting state with closed eyes for patients with depression in treatment course",
+     "`FR_Dats_band_ALFA_EP_C_1_can_A1.xlsx` - Alpha band features - First closed-eyes epoch - Channel A1 (Frontal electrode",
+     "This dataset contains resting(eyes closed, eyes open) and cognitive(subtraction, music,",
+     "This dataset contains the EEG resting state-closed eyes recordings from 88 subjects in total.",
+     ", the study protocol started with 5 minutes of closed-eyes rest (Pre-hypnosis Baseline)",
+     "various instructions: repeated jaw clenching, open/closed eyes, horizontal eye movements.",
+     "8 subjects who completed a visual task with their eyes open or closed.",
+     "Resting state EEG with closed eyes and open eyes in females from 60",
+     "This dataset contains resting(eyes closed, eyes open) and EEG recordings during playing",
+     "The following tasks were performed: resting state (eyes open and closed), checkerboard (15Hz),"
+    ],
+    "postmod": [
+     "Because our birds closed their eyes and fell asleep almost immediately after head"
+    ],
+    "unlinked_far": [
+     "* Tissue islands were removed, holes were closed, and tissue masks for specific regions (skull, brain, eyes, sinus, and ear canal)"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "eyes open",
+   "counts": {
+    "adjacent": 101,
+    "postmod": 13,
+    "unlinked_near": 15
+   },
+   "papers": {
+    "adjacent": 75,
+    "postmod": 13,
+    "unlinked_near": 11
+   },
+   "docs_adjacent": 75,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 20,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -4,
+     0,
+     11
+    ],
+    [
+     -2,
+     0,
+     2
+    ],
+    [
+     -2,
+     1,
+     1
+    ],
+    [
+     -1,
+     1,
+     12
+    ],
+    [
+     1,
+     0,
+     101
+    ],
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     3,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "a double beep was presented, asking them to open their eyes and rate their familiarity and enjoyment to",
+     "beep' soundclip was played to cue participants to open their eyes.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross.",
+     "heads on a chin rest, following instructions to open or close their eyes and fixate on a central cross."
+    ],
+    "unlinked_near": [
+     "period was 63seconds, leading to 4.2 minutes of open eyes and 4.2 minutes of closed eyes resting",
+     "During the experiment, participants were seated comfortably with open eyes in a quiet room.",
+     "50cm distance in front of the participant (open eyes) with 50% On cycles (",
+     "During the experiment, participant was seated comfortably with open eyes in a quiet room.",
+     "Then 1 min of eyes closed (or open).",
+     "During the experiment, participants were seated comfortably with open eyes in a quiet room, and they",
+     "video containing various instructions: repeated jaw clenching, open/closed eyes, horizontal eye movements.",
+     "instructed to concentrate on the laser stimuli, maintain open eyes, and fixate their gaze on a",
+     "Participants were instructed to maintain open eyes and attend to visual cues (musical",
+     "A complementary dataset of open-eyes EEG recordings in a photo-stimulation",
+     "`FR_Dats_band_THETA_EP_O_2_can_C15.xlsx` - Theta band features - Second open-eyes epoch - Channel C15 (Posterior electrode",
+     "`EP_C_1`, `EP_C_2` - 2 open-eyes: `EP_O_1`, `EP_O_2"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "finger tapping",
+   "counts": {
+    "adjacent": 14,
+    "unlinked_far": 1
+   },
+   "papers": {
+    "adjacent": 10,
+    "unlinked_far": 1
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     14
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "During tapping blocks, participants were instructed to tap the indicated hand\u2019s fingers against the thumb in a sequential,"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "movie watching",
+   "counts": {
+    "adjacent": 48,
+    "postmod": 7
+   },
+   "papers": {
+    "adjacent": 27,
+    "postmod": 7
+   },
+   "docs_adjacent": 27,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 5,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     -8,
+     0,
+     1
+    ],
+    [
+     -7,
+     0,
+     3
+    ],
+    [
+     -6,
+     0,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     48
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "addition there is the data of one particpants who watching both of these movies and recalling each of them in the",
+     "86 human participants doing the NIH Toolbox and then watching one of 10 full-length movies during functional magnetic resonance imaging (fMRI).The",
+     "'classical' SIEMENS MAGNETOM 7T scanner during watching the Human Connectome Project (HCP) audio movie.",
+     "dataset contains MEG data recorded from 11 subjects while watching the 2h long Chinese-dubbed audio-visual movie 'Forrest Gump'.",
+     "Participants were instructed to focus and enjoy watching the movie.",
+     "(EEG) signals recorded from 27 participants while watching 10-second long clips extracted from movies that they had previously watched.",
+     "fMRI and eye tracking data from human subjects repeatedly watching 5-minute clips of naturalistic (cinematic) movie content without sound."
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "naturalistic viewing",
+   "counts": {
+    "unlinked_near": 3,
+    "adjacent": 7,
+    "unlinked_far": 3,
+    "postmod": 2,
+    "stacked": 1
+   },
+   "papers": {
+    "unlinked_near": 3,
+    "adjacent": 5,
+    "unlinked_far": 3,
+    "postmod": 2,
+    "stacked": 1
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 5,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     2
+    ],
+    [
+     -5,
+     0,
+     2
+    ],
+    [
+     1,
+     0,
+     7
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     3
+    ],
+    [
+     6,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     ", physiological, and neural signatures of surprise during naturalistic sports viewing",
+     "with 6 multifaceted cognitive tasks including 2 hours of naturalistic movie viewing.",
+     "Because our paradigm uses naturalistic video viewing rather than discrete event trials, there"
+    ],
+    "unlinked_far": [
+     "Naturalistic fMRI and MEG recordings during viewing of a reality TV show",
+     "This dataset contains fMRI recordings of 6 subjects viewing more than 8,000 stimuli in the form of images of naturalistic scenes and captions of such images.",
+     "This dataset contains fMRI recordings of 6 subjects viewing more than 8,000 stimuli in the form of images of naturalistic scenes and captions of such images."
+    ],
+    "postmod": [
+     "(EEG) data from the same subjects while viewing the same set of naturalistic stimuli.",
+     "(EEG) data from the same subjects while viewing the same set of naturalistic stimuli."
+    ],
+    "stacked": [
+     "Naturalistic passive viewing"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "oddball task",
+   "counts": {
+    "unlinked_near": 1,
+    "adjacent": 29,
+    "unlinked_far": 9,
+    "stacked": 2,
+    "postmod": 1
+   },
+   "papers": {
+    "unlinked_near": 1,
+    "adjacent": 10,
+    "unlinked_far": 8,
+    "stacked": 2,
+    "postmod": 1
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 1,
+   "docs_only_far": 6,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -7,
+     1,
+     4
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     29
+    ],
+    [
+     2,
+     0,
+     2
+    ],
+    [
+     4,
+     1,
+     2
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "ETS) Adaptive visual and auditory oddball target detection task (Oddball) Alternative uses task (AUT)"
+    ],
+    "unlinked_far": [
+     "programs were modified after piloting Code 38 INCONSISTENT_SUBJECTS - Oddball run 2 acquisition files are missing for subjects who only did one run of the task Code 39 INCONSISTENT_PARAMETERS - These 3 acquisitions",
+     "and visual stimulus differences using an interleaved dual-oddball audio-visual task design.",
+     "**Task details:** Participants respond by finger button press selectively to auditory (brief tones) and visual (colored squares) stimuli constituting distinct, interleaved auditory and visual oddball stimulus streams whose stimuli are presented in",
+     ", participants first completed a 2-stim visual oddball and a 2-doors gambling task.",
+     "a countdown (this has a specific trigger for oddball conds, not for task 3 conds.",
+     "` ` = subject number - ` ` = task name: `airpuff`, `artifact`, `gonogo`, `haririhammer`, `movie`, `oddball`, `sternberg` - `",
+     "` ` = subject number - ` ` = task name: `airpuff`, `artifact`, `gonogo`, `haririhammer`, `movie`, `oddball`, `sternberg` - `",
+     "` ` = subject number - ` ` = task name: `airpuff`, `artifact`, `gonogo`, `haririhammer`, `movie`, `oddball`, `sternberg` - `",
+     "` ` = subject number - ` ` = task name: `airpuff`, `artifact`, `gonogo`, `haririhammer`, `movie`, `oddball`, `sternberg` - `"
+    ],
+    "stacked": [
+     "To ensure engagement, participants performed an oddball detection task responding to occasional artificially-generated images",
+     "To ensure engagement, participants performed an oddball detection task responding to occasional artificially-generated images"
+    ],
+    "postmod": [
+     "acquisition settings (slower and faster) with three tasks (event-related visual oddball, epoch-related visualmotor task,"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "stroop task",
+   "counts": {
+    "adjacent": 14,
+    "unlinked_near": 3,
+    "unlinked_far": 5
+   },
+   "papers": {
+    "adjacent": 7,
+    "unlinked_near": 3,
+    "unlinked_far": 4
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -8,
+     1,
+     2
+    ],
+    [
+     -7,
+     1,
+     1
+    ],
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     -2,
+     1,
+     3
+    ],
+    [
+     1,
+     0,
+     14
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "Task Description: \"Stroop\" --------------------------",
+     "Task Description: Stroop (Stroop) ---------------------------------",
+     "## Task Description: Stroop (Stroop) --- The [DMCC"
+    ],
+    "unlinked_far": [
+     "The two runs of each task (except Rest) were performed together (i.e., Stroop run 1 is always followed by Stroop",
+     "The two runs of each task were performed together (i.e., Stroop run 1 is always followed by Stroop",
+     "6 x resting-state, and 3 x task-based (2 x Stroop, 1 x Faces/Shapes)",
+     "6.38GB 165 - Subjects 2 - Session Available Tasks: Resting-State, Antisaccade, Category-Switch, Color-Shape, Dual N-back, Keep-Track, Letter-Memory, Number-Letter, Stop-Signal, Stroop Available Modalities: EEG Independent variables:",
+     "2: behavioral measures, with the nine cognitive tasks in the following order: antisaccade, letter-memory, color\u2013shape, number\u2013letter, Stroop, keep track, dual n-"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "flanker task",
+   "counts": {
+    "adjacent": 15,
+    "head_coord": 4
+   },
+   "papers": {
+    "adjacent": 7,
+    "head_coord": 4
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 4,
+   "gaps": [
+    [
+     1,
+     0,
+     15
+    ],
+    [
+     5,
+     0,
+     4
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "Flanker inhibitory control and attention task assesses the constructs of attention and executive",
+     "Flanker inhibitory control and attention task assesses the constructs of attention and executive",
+     "Flanker inhibitory control and attention task assesses the constructs of attention and executive",
+     "The four tasks asses attention and executive functioning (Flanker Inhibitory Control and Attention Task), executive functioning (Dimensional Change"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "resting state fmri",
+   "counts": {
+    "apart": 27,
+    "adjacent": 100,
+    "loose": 8
+   },
+   "papers": {
+    "apart": 27,
+    "adjacent": 73,
+    "loose": 8
+   },
+   "docs_adjacent": 73,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 5,
+   "docs_only_far": 23,
+   "gaps": [],
+   "samples": {
+    "apart": [
+     "inhalation challenges",
+     ", both fMRI dataset of phantom and human during resting",
+     "Resting state functional connectivity was investigated using functional magnetic resonance imaging (fMRI).",
+     "Onset Continuous Performance Task",
+     "fMRI resting-state scan of awake mice",
+     "``` # Generate a resting state (rs) timeseries (ts) # Install / load package to make fake fMRI ts # install.packages(\"neuRosim\") library(neuRosim) # Generate a ts ts.rs folders contain raw data for fMRI runs and anatomical scans.",
+     "",
+     "",
+     "scanning of structural (T1-weighted) and resting-state data, participants performed a reading task with simultaneous eye-tracking and fMRI scanning, and the session ended with",
+     "7T fMRI Resting-state Dataset",
+     "the Category Learning (",
+     "Participants also completed a videos awake fMRI task, resting state, and anatomicals"
+    ],
+    "loose": [
+     "They include a T1w scan, a resting-state BOLD fMRI scan, and a diffusion weighted imaging",
+     "in addition to a 10-minutes long _resting state_ fMRI before the task.",
+     "the DMN's subcortical connectivity by analyzing 7 Tesla resting-state functional MRI (rs-fMRI) data from 168 healthy volunteers acquired",
+     "scan, 2x Identify task fMRI scans, 1x Resting State task fMRI scan, and 2x Modulate task fMRI",
+     "This data set consists of two sessions of resting-state spinal cord fMRI data from 48 healthy participants.",
+     "- `sub-01_task-rest_bold.nii.gz`: Resting-state BOLD fMRI scan.",
+     ", 3D_T2w, DTI with 64 diffusion directions and resting-state bold-fMRI data.",
+     "Functional MRI * Resting-state BOLD fMRI (eyes closed)"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "passive viewing",
+   "counts": {
+    "adjacent": 13,
+    "unlinked_near": 3,
+    "stacked": 2
+   },
+   "papers": {
+    "adjacent": 10,
+    "unlinked_near": 2,
+    "stacked": 1
+   },
+   "docs_adjacent": 10,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     13
+    ],
+    [
+     2,
+     0,
+     2
+    ],
+    [
+     2,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "Dense, multi-session passive movie viewing",
+     "#### Passive Ad Viewing (adview) Measures whether gamblers have",
+     "#### Passive Ad Viewing - **Runs:** 1"
+    ],
+    "stacked": [
+     "and neural responses to gambling-related advertising (Passive Ad Viewing).",
+     "Passive Ad Viewing (1 run)"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "picture naming",
+   "counts": {
+    "postmod": 1,
+    "unlinked_far": 3,
+    "adjacent": 12
+   },
+   "papers": {
+    "postmod": 1,
+    "unlinked_far": 3,
+    "adjacent": 5
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     12
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "2 s prior to picture onset, a word naming that picture was presented on the screen; thus"
+    ],
+    "unlinked_far": [
+     "* Memory--> 80 pictures were displayed of which 40 have already been shown in the naming task.",
+     "-visual-stimulation); at time 0 picture is shown on screen; then [0s, 1.5s] post-stimulation phase; [1.5s, 3s], naming phase.",
+     "Service Advanced Vocabulary, Shipley Vocabulary, CANTAB Graded Naming Task, NIH Toolbox Oral Reading Recognition Test, NIH Toolbox Picture Vocabulary"
+    ]
+   }
+  },
+  {
+   "kind": "task",
+   "term": "word reading",
+   "counts": {
+    "postmod": 4,
+    "adjacent": 3,
+    "unlinked_far": 5,
+    "unlinked_near": 3
+   },
+   "papers": {
+    "postmod": 4,
+    "adjacent": 3,
+    "unlinked_far": 3,
+    "unlinked_near": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 5,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -8,
+     1,
+     1
+    ],
+    [
+     -7,
+     1,
+     3
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     -3,
+     0,
+     2
+    ],
+    [
+     -3,
+     1,
+     3
+    ],
+    [
+     -1,
+     0,
+     2
+    ],
+    [
+     1,
+     0,
+     3
+    ]
+   ],
+   "samples": {
+    "postmod": [
+     "Theodoridis, S. Emojis influence autobiographical memory retrieval from reading words: An fMRI-based study,",
+     "* Reading_Speed: reading speed in words per minute.",
+     "Bilingual language processing: reading words, sentences, and narratives with functional",
+     "Reading materials with word-level coordinate information."
+    ],
+    "unlinked_far": [
+     "Dataset accompanying \"Reading Reshapes Stimulus Selectivity in the Visual Word Form Area\", Chauhan, McCook",
+     "# Data for Reading reshapes stimulus selectivity in the visual word form area",
+     "(T1) used in the article, \"Reading reshapes stimulus selectivity in the visual word form area.",
+     ", BEG=beginning reading, REA=emergent reading session - timepoint number age - age in months Sex - biological sex (0=male, 1=female) MEd - maternal education HLE - home literacy composite (z-normalized) FHD - family history of dyslexia (0=none, 1=first degree relative) pre_word_access_raw - PRE WJIV word access subtest raw pre_word_fluency_raw - PRE WJIV",
+     "2) phonological errors were considered, 3) reading speed, expressed in words read per minute, and 4)"
+    ],
+    "unlinked_near": [
+     "and flankers were content words under a 6th grade reading level; plural words and proper nouns were excluded.",
+     "and flankers were content words under a 6th grade reading level; plural words and proper nouns were excluded.",
+     "L2, and baseline (false fonts): - reading lists of words (1s per word, 30 words"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "major depressive disorder",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "bipolar disorder",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 5
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     5
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "autism spectrum disorder",
+   "counts": {
+    "adjacent": 17
+   },
+   "papers": {
+    "adjacent": 12
+   },
+   "docs_adjacent": 12,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "parkinson disease",
+   "counts": {
+    "stacked": 46,
+    "unlinked_near": 7,
+    "adjacent": 6
+   },
+   "papers": {
+    "stacked": 21,
+    "unlinked_near": 7,
+    "adjacent": 6
+   },
+   "docs_adjacent": 6,
+   "docs_only_coord_stacked": 19,
+   "docs_only_near": 1,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     6
+    ],
+    [
+     2,
+     0,
+     46
+    ],
+    [
+     2,
+     1,
+     7
+    ]
+   ],
+   "samples": {
+    "stacked": [
+     "MRI data from healthy control (HC), Parkinson's disease with normal cognition (PD-NC",
+     "SoCal Kinesia and Incentivization for Parkinson's Disease (SKIP): Approach-Avoid",
+     "The London Health Sciences Center Parkinson\u2019s disease (LHSCPD) dataset consists of 40",
+     "Parkinson's Disease",
+     "of resting-state functional MRI during DBS for Parkinson\u2019s disease",
+     "people who are interested in knowing if they have Parkinson's disease.",
+     "EEG Mortality Dataset in Parkinson's Disease",
+     "Dopaminergic therapy in Parkinson's disease decreases cortical beta band coherence in the",
+     "Neurobiology, Parkinson's Disease",
+     "BSBT through discrimination tasks in Alzheimer's disease, Parkinson's disease, and traumatic brain injury cohorts.",
+     "EEG: Resting-State & Walking EEG in Parkinson's Disease",
+     "effects of deep brain stimulation (DBS) in Parkinson\u2019s disease (PD) through optogenetic fMRI in"
+    ],
+    "unlinked_near": [
+     "\u201cMulti-contrast unbiased MRI atlas of a Parkinson's disease population,\u201d International Journal of Computer",
+     "London Heath Sciences Center Parkinson's Disease Dataset (LHSCPD)",
+     "Current available treatments for Parkinson s Disease (PD) focus on relieving motor",
+     "participants, including healthy controls (HC) and Parkinson's Disease patients with normal cognition (PD-",
+     "mutations in the ATP10B gene have been identified in Parkinson\u2019s disease patients, pointing to ATP10B as a",
+     "and T1-weighted imaging data acquired from 10 Parkinson's disease patients (aged 50-76 years",
+     "- **Parkinson\u2019s disease (PD):** 116 participants"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "alzheimer disease",
+   "counts": {
+    "unlinked_near": 6,
+    "stacked": 19
+   },
+   "papers": {
+    "unlinked_near": 6,
+    "stacked": 10
+   },
+   "docs_adjacent": 0,
+   "docs_only_coord_stacked": 10,
+   "docs_only_near": 5,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     2,
+     0,
+     19
+    ],
+    [
+     2,
+     1,
+     6
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "acquired on a cohort of triple transgenic mice for Alzheimer's disease-like pathology, 3xTGAD, and",
+     "acquired on a cohort of triple transgenic mice for Alzheimer's disease-like pathology, 3xTGAD, and",
+     "with intracerebroventricular injection of streptozotocin (STZ) for Alzheimer's disease-like pathology, and a cohort",
+     "with intracerebroventricular injection of streptozotocin (STZ) for Alzheimer's disease-like pathology, and a cohort",
+     "for Epidemiological Studies-Depression (CESD), Alzheimer\u2019s Disease Assessment Scale\u2014Cognitive Subscale (ADAS",
+     "Electroencephalography (EEG) / Computational Neuroscience / Alzheimer's Disease biomarkers"
+    ],
+    "stacked": [
+     "MRI for detecting senile plaques in rodent models of Alzheimer\u2019s disease",
+     "proposed and shown effective in improving several symptoms of Alzheimer's Diseases (AD).",
+     "named \u201cA dataset of EEG recordings from: Alzheimer's disease, Frontotemporal dementia and Healthy subjects\u201d",
+     "recordings in a photo-stimulation setting from: Alzheimer's disease, Frontotemporal dementia and Healthy subjects",
+     "Participants: 36 of them were diagnosed with Alzheimer's disease (AD group), 23 were",
+     "demonstrate the generalizability of BSBT through discrimination tasks in Alzheimer's disease, Parkinson's disease, and traumatic",
+     "Neuroscience, Alzheimer's disease, Frontotemporal dementia",
+     "in resting-state EEG recordings between individuals with Alzheimer's disease or Frontotemporal dementia and healthy individuals.",
+     "Hippocampal LFPs in Alzheimer's Disease",
+     "medial temporal lobe vulnerability to neurofibrillary tangle pathology in Alzheimer\u2019s disease using a 3-D ex vivo",
+     "medial temporal lobe vulnerability to neurofibrillary tangle pathology in Alzheimer\u2019s disease using a 3-D ex vivo",
+     "This study compared cognitive function in 36 individuals with Alzheimer's disease (AD), 23 with Frontotemporal"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "multiple sclerosis",
+   "counts": {
+    "adjacent": 1
+   },
+   "papers": {
+    "adjacent": 1
+   },
+   "docs_adjacent": 1,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     1
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "traumatic brain injury",
+   "counts": {
+    "adjacent": 8
+   },
+   "papers": {
+    "adjacent": 5
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "mild cognitive impairment",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "healthy controls",
+   "counts": {
+    "unlinked_far": 9,
+    "adjacent": 54,
+    "stacked": 1,
+    "unlinked_near": 5
+   },
+   "papers": {
+    "unlinked_far": 9,
+    "adjacent": 40,
+    "stacked": 1,
+    "unlinked_near": 5
+   },
+   "docs_adjacent": 40,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 5,
+   "docs_only_far": 9,
+   "gaps": [
+    [
+     -8,
+     1,
+     3
+    ],
+    [
+     -3,
+     1,
+     2
+    ],
+    [
+     1,
+     0,
+     54
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     3,
+     1,
+     3
+    ],
+    [
+     6,
+     1,
+     2
+    ],
+    [
+     8,
+     1,
+     4
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "This study examined four different forms of self-control in a single context to determine whether multiple forms were related in a single sample of healthy adults.",
+     "have reported that single dose administration of modafinil in healthy young subjects enhances fluid reasoning and affects resting state activity in the Fronto Parietal Control (FPC) and Dorsal Attention (",
+     "### Data Twenty-three healthy participants underwent three counterbalanced rTMS-fMRI sessions on different days, where a prefrontal (FRO), an occipital (OCC) and a temporo-parietal control (CTR) region were identically stimulated",
+     "The dataset contains the EEG data from 8 healthy adult participants during real-time control of the system while listening to the",
+     "Handedness Inventory) native born United States citizens (control for IAPS image self-report) who were medically healthy and exhibited no current Axis I psychopathology",
+     "Sympathovagal quotient and functional connectivity of control networks are related to gut Ruminococcaceae abundance in healthy men",
+     "Includes data from two healthy adult Rhesus Macaques viewing carefully controlled low level visual stimuli varying in color",
+     "We recorded scalp EEG activity of healthy adults during one hour of either 40 Hz audiovisual flicker, no flicker as control, or randomized flicker as sham stimulation",
+     "The data was acquired from 60 healthy individuals, divided into three groups: Braille (tactile) training, Music (piano) training, and a Control group who underwent no targeted training."
+    ],
+    "stacked": [
+     "whole brain T1-weighted MRI scans obtained in healthy adult controls."
+    ],
+    "unlinked_near": [
+     "Healthy Research Volunteers (Controls) Phenotype Data",
+     "Healthy Research Volunteers (Controls) Phenotype Data",
+     "Healthy Research Volunteers (Controls) Phenotype Data",
+     "fMRI) dataset that simultaneously examines both types of control in 77 healthy, unrelated Chinese-English bilinguals.",
+     "Control group of healthy subjects matched to G1 (non-"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "healthy adults",
+   "counts": {
+    "adjacent": 76,
+    "head_coord": 3,
+    "stacked": 12,
+    "unlinked_near": 4,
+    "coord": 6,
+    "unlinked_far": 8
+   },
+   "papers": {
+    "adjacent": 65,
+    "head_coord": 2,
+    "stacked": 12,
+    "unlinked_near": 4,
+    "coord": 5,
+    "unlinked_far": 8
+   },
+   "docs_adjacent": 65,
+   "docs_only_coord_stacked": 15,
+   "docs_only_near": 2,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -8,
+     1,
+     2
+    ],
+    [
+     -5,
+     1,
+     1
+    ],
+    [
+     -4,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     76
+    ],
+    [
+     2,
+     0,
+     14
+    ],
+    [
+     2,
+     1,
+     3
+    ],
+    [
+     3,
+     0,
+     4
+    ],
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     4,
+     0,
+     3
+    ],
+    [
+     5,
+     1,
+     1
+    ],
+    [
+     6,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "Here, during functional magnetic resonance imaging, healthy adolescents and adults performed a modified antisaccade task in which",
+     "Single Dose Intranasal Oxytocin Administration: Data from Healthy Younger and Older Adults",
+     "Overview Single Dose Intranasal Oxytocin Administration: Data from Healthy Younger and Older Adults This study examined the effects of a"
+    ],
+    "stacked": [
+     "In this study, several healthy young adults completed multiple runs of two reward-",
+     "This dataset contains the data of 25 healthy young adults who completed a delay discounting task during",
+     "Curiosity (MMC) dataset contains data from 50 healthy human adults incidentally encoding 36 videos of magic tricks",
+     "and longitudinal memory decline to memory complaints in cognitively healthy older adults.",
+     "gamma band oscillatory dynamics and may be preserved in healthy older adults; high gamma power over midline frontal",
+     "This dataset contains 30 healthy young adults' MEG (CTF), sMRI",
+     "In this study, 47 healthy young adults viewed extended movie sequences of actors performing",
+     "derived from a 7T fMRI study of N=90 healthy human adults (18-40 years old,",
+     "Inclusion criteria: Healthy right-handed adults.",
+     "Participants: - Healthy young adults (N = 53) - Excluded",
+     "Ventromedial prefrontal cortex supports prototype representations in healthy older adults.",
+     "PPG), and behavioral data recorded from 30 healthy young adults during two experimental conditions: resting state"
+    ],
+    "unlinked_near": [
+     "In this study, 48 healthy young adult participants underwent whole\u2010brain high\u2010resolution functional MRI (",
+     "Twenty-one healthy, right-handed adult volunteers (14 women, mean age",
+     "The dataset includes data collected from 23 healthy young adult subjects (7 male, 6 female",
+     "20 healthy human adult participants performing a duration working memory task"
+    ],
+    "coord": [
+     "Thirty-five healthy, young adults performed multiple recognition memory tests, where",
+     "The young adults were 29 healthy, right-handed adults, aged 19-30 years (",
+     "Thirty-five healthy, young adults completed a continuous-recognition, temporal",
+     "Chinese participants were 35 healthy, right-handed young adults (15 females, mean age=19.3,",
+     "French participants were 28 healthy, right-handed adults (15 females, mean age=24.4,",
+     "another [^2] and contains EEG responses of healthy, neurotypical adults who listened to naturalistic speech."
+    ],
+    "unlinked_far": [
+     "Older adult participants were 31 healthy, right-handed, aged 65",
+     "to advance our understanding of language processing in older adults and the impact of healthy aging on brain-behavior relationships.",
+     "### Subjects Generally healthy younger (n = 44; aged 18-31 years; 48% female) and older (n = 43; aged 63-81 years; 56% female) adults were recruited from the Gainesville, FL",
+     "frontal theta power during VSWM sequence recall in older adults, gamma band dynamics during encoding and theta-gamma PAC during retrieval play unique roles in VSWM and that the processes they reflect may be spared in healthy aging.",
+     "changes in risk for financial exploitation over time in healthy and vulnerable groups of older adults.",
+     "Analyses of longitudinal rs-EEG measurements in healthy subjects over the entire adult lifespan could help to better understand the",
+     "Participants were adults with diagnosed primary trigeminal neuralgia (according to The International Classification of Headache Disorders criteria), as well as healthy volunteers.",
+     "The study investigates category learning and memory in healthy young (18-30) and older (60+) adult participants."
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "older adults",
+   "counts": {
+    "adjacent": 36,
+    "unlinked_near": 2,
+    "unlinked_far": 2
+   },
+   "papers": {
+    "adjacent": 20,
+    "unlinked_near": 2,
+    "unlinked_far": 2
+   },
+   "docs_adjacent": 20,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     36
+    ],
+    [
+     3,
+     1,
+     2
+    ],
+    [
+     8,
+     1,
+     2
+    ]
+   ],
+   "samples": {
+    "unlinked_near": [
+     "(N = 36) and a group of older (N = 39) adults were engaged in auditory cued reaction time",
+     "in healthy young (18-30) and older (60+) adult participants."
+    ],
+    "unlinked_far": [
+     ": N = 26, ages 18\u201334 years; older: N = 24, ages 63\u201380 years) who completed three tasks in the scanner: an economic trust game as the investor with three partners (computer, stranger, friend) as the investee; a card-guessing task in which monetary gains and losses were shared with three partners (computer, stranger, friend); and an ultimatum game as responder to three anonymous proposers (computer, age-similar adults, age-dissimilar adults).",
+     "-31 years; 48% female) and older (n = 43; aged 63-81 years; 56% female) adults were recruited from the Gainesville, FL"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "young adults",
+   "counts": {
+    "adjacent": 47,
+    "coord": 7,
+    "stacked": 5,
+    "unlinked_near": 1,
+    "unlinked_far": 6,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 37,
+    "coord": 5,
+    "stacked": 4,
+    "unlinked_near": 1,
+    "unlinked_far": 5,
+    "head_coord": 1
+   },
+   "docs_adjacent": 37,
+   "docs_only_coord_stacked": 6,
+   "docs_only_near": 0,
+   "docs_only_far": 4,
+   "gaps": [
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     47
+    ],
+    [
+     2,
+     0,
+     5
+    ],
+    [
+     3,
+     0,
+     7
+    ],
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     7,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     4
+    ]
+   ],
+   "samples": {
+    "coord": [
+     "responses to salient and non-salient stimuli in younger and older adults",
+     "Two groups of participants (young and older adults) were recruited for this study.",
+     "runs were collected from 301 healthy adults (181 younger, 120 older adults) across 2 sites.",
+     "EEG, ECG and pupil data from young and older adults: rest and auditory cued reaction time",
+     "MRI contrast and physiological responses to acute stress in younger and older adults.",
+     "trial of five weeks of daily HRV biofeedback in younger and older adults.",
+     "oscillation affects plasma amyloid beta and tau levels in younger and older adults."
+    ],
+    "stacked": [
+     ") proficiency, language background, and demographics of young healthy adults who fall into one of three groups",
+     "2 or less), and also from 12 young healthy adults (age 18-24 years)",
+     "Structural (t1) images of 136 young healthy adults; study of effects of chronotype,",
+     "Cerebral tau deposition in young healthy adults using [18F]MK6240 positron emission tomography (",
+     "An open dataset of cerebral tau deposition in young healthy adults based on [18F]MK6240 positron emission tomography"
+    ],
+    "unlinked_near": [
+     "the current study we investigated spoken word processing in young and older adult listeners in the absence of background noise"
+    ],
+    "unlinked_far": [
+     "and electrocardiogram (ECG) while a group of young (N = 36) and a group of older (N = 39) adults were engaged in auditory cued reaction time",
+     "imaging (fMRI) data from 50 participants (younger: N = 26, ages 18\u201334 years; older: N = 24, ages 63\u201380 years) who completed three tasks in the scanner: an economic trust game as the investor with three partners (computer, stranger, friend) as the investee; a card-guessing task in which monetary gains and losses were shared with three partners (computer, stranger, friend); and an ultimatum game as responder to three anonymous proposers (computer, age-similar adults, age-dissimilar adults).",
+     "Resting-state for 34 younger and 28 older adults",
+     "vs. PL administration on brain and behavioral outcomes in younger (n = 44; aged 18-31 years; 48% female) and older (n = 43; aged 63-81 years; 56% female) adults.",
+     "### Subjects Generally healthy younger (n = 44; aged 18-31 years; 48% female) and older (n = 43; aged 63-81 years; 56% female) adults were recruited from the Gainesville, FL",
+     "The study investigates category learning and memory in healthy young (18-30) and older (60+) adult participants."
+    ],
+    "head_coord": [
+     "et al., \"Mapping brain function in adults and young children during naturalistic viewing with high-"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "temporal lobe epilepsy",
+   "counts": {
+    "apart": 1,
+    "adjacent": 5
+   },
+   "papers": {
+    "apart": 1,
+    "adjacent": 3
+   },
+   "docs_adjacent": 3,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [],
+   "samples": {
+    "apart": [
+     "epilepsy who underwent preoperative invasive monitoring in the"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "chronic pain",
+   "counts": {
+    "adjacent": 5,
+    "stacked": 4,
+    "unlinked_near": 1
+   },
+   "papers": {
+    "adjacent": 5,
+    "stacked": 1,
+    "unlinked_near": 1
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 1,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     5
+    ],
+    [
+     3,
+     0,
+     4
+    ],
+    [
+     3,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "stacked": [
+     "Investigating Neuroepigenetic Alterations in Chronic Low Back Pain with PET/MR",
+     "Dataset title ------------- Investigating neuroepigenetic alterations in chronic low back pain with positron emission tomography",
+     "dataset contains multimodal neuroimaging data acquired from patients with chronic low back pain.",
+     "All participants were patients diagnosed with chronic low back pain."
+    ],
+    "unlinked_near": [
+     "Chronic low back pain, Epigenetics, PET"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "sleep deprivation",
+   "counts": {
+    "adjacent": 4
+   },
+   "papers": {
+    "adjacent": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     4
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "disorder",
+   "term": "substance use",
+   "counts": {
+    "head_coord": 2,
+    "adjacent": 35,
+    "unlinked_far": 2,
+    "postmod": 3
+   },
+   "papers": {
+    "head_coord": 2,
+    "adjacent": 16,
+    "unlinked_far": 1,
+    "postmod": 3
+   },
+   "docs_adjacent": 16,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 2,
+   "docs_only_far": 2,
+   "gaps": [
+    [
+     -5,
+     0,
+     1
+    ],
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     -3,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     35
+    ],
+    [
+     4,
+     0,
+     1
+    ],
+    [
+     4,
+     1,
+     1
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "injury with loss of consciousness or cognitive sequelae, use of psychoactive medications, substance dependence within past 6 months, history",
+     "or radiation for cancer, a new history of substance abuse, recreational drug use in the past six months, central"
+    ],
+    "unlinked_far": [
+     "past 5 years, coronary bypass, history of substance abuse, history of central nervous system disease or brain injury, history of disorders of the immune, kidney or liver disorder, low glomerular filtration rate (GFR), history of pulmonary disease (i.e., COPD, asthma), corrected vision poorer than 20/30, insulin-dependent diabetic, taking sedatives/benzodiazepines/anti-psychotics, self-reported caffeine consumption exceeding 6 cups of coffee or 12 soft drinks per day, self-reported cholesterol of at least 200, self-reported blood pressure above 160/90, BMI greater than or equal to 35, recreational drug use in past 6 months, conditions that",
+     "coronary bypass within the last year, history of substance abuse, recreational drug use in past six months, history of"
+    ],
+    "postmod": [
+     "for caffeine or nicotine), must not have used illicit substances in the 2 weeks prior to screen",
+     "between 18 and 45 years of age; -Have used a psychedelic substance within the previous 5 years but not",
+     "cancer, uncontrolled metabolic conditions, current or past use of neuroleptics, history of substance abuse, or contraindications for MRI scanning"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "anxiety disorder",
+   "counts": {
+    "adjacent": 16,
+    "unlinked_far": 5,
+    "unlinked_near": 3
+   },
+   "papers": {
+    "adjacent": 7,
+    "unlinked_far": 5,
+    "unlinked_near": 3
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 5,
+   "gaps": [
+    [
+     -8,
+     1,
+     5
+    ],
+    [
+     1,
+     0,
+     16
+    ],
+    [
+     3,
+     1,
+     3
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "Mobile Phone Usage (MPU) Personality Style and Disorder Inventory (PSSI) Spontaneous and Deliberate Mind-Wandering (S-D-MW) Short New York Cognition Scale (Short-NYC-Q) New York Cognition Scale (NYC-Q) Abbreviated Math Anxiety Scale (AMAS) Behavioral Inhibition and",
+     "psychiatric diagnostic interview (Structured Clinical Interview for DSM-5 Disorders (SCID-5), along with self-report surveys of mood (Beck Depression Inventory-II (BD-II) and anxiety (Beck Anxiety Inventory, BAI)",
+     "psychiatric diagnostic interview (Structured Clinical Interview for DSM-5 Disorders (SCID-5), along with self-report surveys of mood (Beck Depression Inventory-II (BD-II) and anxiety (Beck Anxiety Inventory, BAI)",
+     "psychiatric diagnostic interview (Structured Clinical Interview for DSM-5 Disorders (SCID-5), along with self-report surveys of mood (Beck Depression Inventory-II (BD-II) and anxiety (Beck Anxiety Inventory, BAI)",
+     "and Physical exam, Structured Clinical Interview for DSM-5 Disorders (SCID-5), the Beck Depression Inventory-II (BDI-II), Beck Anxiety Inventory (BAI), and the"
+    ],
+    "unlinked_near": [
+     "Anxiety symptoms were assessed using the Screen for Child Anxiety Related Emotional Disorders (SCARED).",
+     "Anxiety symptoms were assessed using the Screen for Child Anxiety Related Emotional Disorders (SCARED).",
+     "Anxiety symptoms were assessed by the Screen for Child Anxiety Related Emotional Disorders (SCARED) child-self or"
+    ]
+   }
+  },
+  {
+   "kind": "disorder",
+   "term": "depressive symptoms",
+   "counts": {
+    "adjacent": 6
+   },
+   "papers": {
+    "adjacent": 5
+   },
+   "docs_adjacent": 5,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     6
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "stimulation",
+   "term": "transcranial magnetic stimulation",
+   "counts": {
+    "adjacent": 2
+   },
+   "papers": {
+    "adjacent": 2
+   },
+   "docs_adjacent": 2,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "stimulation",
+   "term": "deep brain stimulation",
+   "counts": {
+    "adjacent": 15
+   },
+   "papers": {
+    "adjacent": 7
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [],
+   "samples": {}
+  },
+  {
+   "kind": "stimulation",
+   "term": "heart rate",
+   "counts": {
+    "adjacent": 43,
+    "head_coord": 1
+   },
+   "papers": {
+    "adjacent": 16,
+    "head_coord": 1
+   },
+   "docs_adjacent": 16,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     1,
+     0,
+     43
+    ],
+    [
+     5,
+     0,
+     1
+    ]
+   ],
+   "samples": {
+    "head_coord": [
+     "bioimpedance signal can be used to calculate estimates of heart contractility (sympathetic drive), pulse rate, and stroke volume, among others"
+    ]
+   }
+  },
+  {
+   "kind": "stimulation",
+   "term": "skin conductance",
+   "counts": {
+    "adjacent": 5
+   },
+   "papers": {
+    "adjacent": 4
+   },
+   "docs_adjacent": 4,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     5
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "stimulation",
+   "term": "blood flow",
+   "counts": {
+    "adjacent": 8
+   },
+   "papers": {
+    "adjacent": 8
+   },
+   "docs_adjacent": 8,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "stimulation",
+   "term": "blood pressure",
+   "counts": {
+    "adjacent": 8
+   },
+   "papers": {
+    "adjacent": 7
+   },
+   "docs_adjacent": 7,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     8
+    ]
+   ],
+   "samples": {}
+  },
+  {
+   "kind": "stimulation",
+   "term": "magnetic field",
+   "counts": {
+    "unlinked_far": 1,
+    "adjacent": 21,
+    "postmod": 1
+   },
+   "papers": {
+    "unlinked_far": 1,
+    "adjacent": 19,
+    "postmod": 1
+   },
+   "docs_adjacent": 19,
+   "docs_only_coord_stacked": 0,
+   "docs_only_near": 1,
+   "docs_only_far": 1,
+   "gaps": [
+    [
+     -4,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     21
+    ],
+    [
+     8,
+     1,
+     1
+    ]
+   ],
+   "samples": {
+    "unlinked_far": [
+     "This dataset contains high-resolution functional magnetic resonance (fMRI) data from 20 participants recorded at high field strength (7 Tesla) during prolonged"
+    ],
+    "postmod": [
+     "instances of this problem while undergoing ultra-high field (7T) functional magnetic resonance imaging (fMRI)."
+    ]
+   }
+  },
+  {
+   "kind": "stimulation",
+   "term": "electrical stimulation",
+   "counts": {
+    "adjacent": 38,
+    "stacked": 2
+   },
+   "papers": {
+    "adjacent": 18,
+    "stacked": 2
+   },
+   "docs_adjacent": 18,
+   "docs_only_coord_stacked": 2,
+   "docs_only_near": 0,
+   "docs_only_far": 0,
+   "gaps": [
+    [
+     1,
+     0,
+     38
+    ],
+    [
+     2,
+     0,
+     2
+    ]
+   ],
+   "samples": {
+    "stacked": [
+     "id_scans.tsv*), including scans with **electrical forepaw stimulation** (**task:",
+     "efficacy of synchronous combination of virtual reality and transcutaneous electrical nerve stimulation."
+    ]
+   }
+  }
+ ]
+}

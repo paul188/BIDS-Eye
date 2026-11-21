@@ -1,0 +1,3526 @@
+{
+ "risk+tak": {
+  "classes": {
+   "AB adjacent, nominal": 5
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "risk",
+    "taking",
+    5
+   ]
+  ],
+  "samples": {}
+ },
+ "decision+mak": {
+  "classes": {
+   "AB adjacent, nominal": 59,
+   "BA (reversed)": 9,
+   "AB with words between": 6
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "decision",
+    "making",
+    59
+   ],
+   [
+    "AB with words between",
+    "decision",
+    "made",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "decisions",
+    "make",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "decision",
+    "made",
+    2
+   ],
+   [
+    "AB with words between",
+    "decisions",
+    "made",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "decisions",
+    "made",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "decision",
+    "making",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "decision",
+    "make",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "decisions",
+    "making",
+    1
+   ],
+   [
+    "AB with words between",
+    "decision",
+    "make",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "listened to the auditory maps and made decisions about the data they represented",
+    "map\"), and then making a decision about the relative values of",
+    "played a second time while participants made their decision; in the memory condition",
+    "response conditions under which they would make their decision.",
+    "can manually view the data and make decisions on what channels are actually",
+    ", differences in how older adults make decisions related to processing social and",
+    "Participants make investment decisions and observe partner responses (",
+    ", lying inside the scanner, making buy/not-buy decisions."
+   ],
+   "AB with words between": [
+    "The decision (\"response\") was made under one of two conditions",
+    "\"memory\"), a decision was made in relative quiet (general",
+    "their confidence in the accuracy of decisions they made or decisions they observed.",
+    "release the mouse button when the decision is made (the Release Response event",
+    "That decision does not make the data cost-free",
+    "Betting decisions are made after learning about performance on"
+   ]
+  }
+ },
+ "response+inhibit": {
+  "classes": {
+   "BA (reversed)": 1,
+   "AB adjacent, nominal": 7
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "response",
+    "inhibition",
+    7
+   ],
+   [
+    "BA (reversed)",
+    "responses",
+    "inhibition",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Common neural substrates for inhibition of spoken and manual responses."
+   ]
+  }
+ },
+ "memor+encod": {
+  "classes": {
+   "AB with words between": 4,
+   "BA (reversed)": 7,
+   "AB adjacent, nominal": 6
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "memory",
+    "encoding",
+    6
+   ],
+   [
+    "BA (reversed)",
+    "memory",
+    "encoding",
+    5
+   ],
+   [
+    "AB with words between",
+    "memory",
+    "encoding",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "memories",
+    "encoded",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "memory",
+    "encode_beh",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "SCAP) fMRI, Paired Associates Memory Task - Encoding/Retrieval (PAMenc/",
+    "in distinct brain networks support narrative memory during encoding and retrieval.\"",
+    "Modulation of Long-Term Fear Memory at the Time of Encoding.\u201d",
+    "Moreover, restudy enhanced the memory strength between encoding and retrieval in the visuoparietal"
+   ],
+   "BA (reversed)": [
+    "Pattern analyses suggest that encoded memories were reactivated during the distractor",
+    "speci\ufb01c and semantic neural representations at encoding, and the memory strength between encoding and retrieval",
+    "perception, encoding, consolidation, curiosity, memory, magic tricks",
+    "RH (n=55) participants during encoding and recognition memory tasks for verbal and non",
+    "modified Sternberg task in which the encoding of memory items, maintenance, and",
+    "data is split into encoding (Encode_beh) and memory testing (Test_beh).",
+    "critical VWM stages: individuation during encoding, maintenance, initial comparison, percept-memory comparison, and decision making"
+   ]
+  }
+ },
+ "memor+retriev": {
+  "classes": {
+   "AB with words between": 10,
+   "AB adjacent, nominal": 6,
+   "BA (reversed)": 9
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "memory",
+    "retrieval",
+    9
+   ],
+   [
+    "AB adjacent, nominal",
+    "memory",
+    "retrieval",
+    6
+   ],
+   [
+    "BA (reversed)",
+    "memory",
+    "retrieval",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "memories",
+    "retrieving",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "memories",
+    "retrieved",
+    2
+   ],
+   [
+    "AB with words between",
+    "memories",
+    "retrieval",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "SCAP) fMRI, Paired Associates Memory Task - Encoding/Retrieval (PAMenc/PAMret)",
+    "in distinct brain networks support narrative memory during encoding and retrieval.\"",
+    "Differentiation Tracks Improved Recall of Competing Memories Following Interleaved Study and Retrieval Practice",
+    "during updating was predictive of subsequent memory during retrieval practice but not restudy.",
+    "Shim, Coordinated Representations for Naturalistic Memory Encoding and Retrieval in Hippocampal Neural Subspaces",
+    "representations at encoding, and the memory strength between encoding and retrieval.",
+    "Moreover, restudy enhanced the memory strength between encoding and retrieval in the visuoparietal cortex but",
+    "electrophysiological (EEG) correlates of memory encoding and retrieval in highly practiced individuals."
+   ],
+   "BA (reversed)": [
+    "Retrieval practice facilitates memory updating by enhancing and differentiating",
+    "# Retrieval practice facilitates memory updating by enhancing and differentiating",
+    "raw data used in the \"Retrieval practice facilitates memory updating by enhancing and differentiating",
+    "task, the participants performed the retrieval task to assess their memory.",
+    "time-limited hippocampal role in retrieving autobiographical memories",
+    "time-limited hippocampal role in retrieving autobiographical memories Pre-publication.",
+    "-to-moment content of retrieved memories.",
+    "Forty participants retrieved recent and remote memories, describing each for approximately"
+   ]
+  }
+ },
+ "rest+scan": {
+  "classes": {
+   "AB with words between": 96,
+   "BA (reversed)": 22,
+   "AB adjacent, nominal": 17,
+   "AB adjacent, verbal": 1
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "resting",
+    "scan",
+    58
+   ],
+   [
+    "AB with words between",
+    "resting",
+    "scans",
+    31
+   ],
+   [
+    "AB adjacent, nominal",
+    "rest",
+    "scan",
+    13
+   ],
+   [
+    "BA (reversed)",
+    "resting",
+    "scans",
+    8
+   ],
+   [
+    "BA (reversed)",
+    "resting",
+    "scan",
+    6
+   ],
+   [
+    "BA (reversed)",
+    "rest",
+    "scans",
+    4
+   ],
+   [
+    "AB with words between",
+    "resting",
+    "scanning",
+    3
+   ],
+   [
+    "AB adjacent, nominal",
+    "rest",
+    "scans",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "resting",
+    "scanned",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "resting",
+    "scan",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "rest",
+    "scanned",
+    1
+   ],
+   [
+    "AB with words between",
+    "rest2",
+    "scanned",
+    1
+   ],
+   [
+    "AB with words between",
+    "restroom",
+    "scan",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "resting",
+    "scan",
+    1
+   ],
+   [
+    "AB with words between",
+    "rest",
+    "scan",
+    1
+   ],
+   [
+    "AB with words between",
+    "resting",
+    "scanned",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "rest",
+    "scan",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Not every resting state scan has physiological data.",
+    "Resting State Scan (eyes open, rest",
+    "Resting State Scan (eyes open, rest",
+    "The 5th session includes a resting state scan.",
+    "Misses the resting-state scan. - Subject-37: Misses",
+    "(following learning run 1) resting state scan.",
+    "consists of T1s, T2s, resting state scans (pre-op)",
+    "Dataset consists of 1 11 minute resting state scan and five 8 minute pain"
+   ],
+   "BA (reversed)": [
+    "one or more T2*-weighted scans (resting state BOLD scans)",
+    "90 minutes during which time anatomical scans and two resting fMRI runs and six task",
+    "7T) multi-echo scans at rest.",
+    "During the RS scan participants were asked to rest with their eyes open focusing",
+    "Each participant contributed a structural MRI scan and a resting-state functional MRI scan",
+    "light on the topic, we scanned (fMRI) healthy adults during rest and during a task in",
+    "diagnosed with Parkinson's disease, scanned with resting state fMRI, and who",
+    "7T) multi-echo scans at rest."
+   ],
+   "AB adjacent, verbal": [
+    "`Retino`), and resting scan (`Resting`)"
+   ]
+  }
+ },
+ "brain+activ": {
+  "classes": {
+   "AB adjacent, nominal": 92,
+   "BA (reversed)": 14,
+   "AB with words between": 17
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "brain",
+    "activity",
+    71
+   ],
+   [
+    "AB adjacent, nominal",
+    "brain",
+    "activation",
+    18
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "activity",
+    7
+   ],
+   [
+    "AB with words between",
+    "brain",
+    "activity",
+    6
+   ],
+   [
+    "AB with words between",
+    "brain",
+    "active",
+    4
+   ],
+   [
+    "AB with words between",
+    "brain",
+    "activation",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "activation",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "activate",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "brain",
+    "activity](https://openneuro.org",
+    2
+   ],
+   [
+    "AB with words between",
+    "brainstem",
+    "activation",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "brain",
+    "activity\u052d",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "activations",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "active",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "activated",
+    1
+   ],
+   [
+    "AB with words between",
+    "brain",
+    "activated",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "and provoke persuasion resistance and hence activate to a greater extent brain regions linked to anger and",
+    "social exclusion, is known to activate a range of social brain regions [5] and",
+    "Electroencephalography reflects the activity of sub-cortical brain regions during approach-withdrawal",
+    "stereo-electrodes for recording neural activity in the brain.",
+    "for deriving time-series of activity in each brain region, at each parcellation",
+    "subsets of stimuli was done for activation over the whole brain and small volumes involved in",
+    "participants were trained to modulate the activity of a target brain region, the visual motion",
+    "EEG signals were recorded from 32 active electrodes using a Brain Vision LiveAmp 32 amplifier."
+   ],
+   "AB with words between": [
+    "to see which portions of the brain are active metabolically.",
+    "General anesthetics, isoflurane, reverses brain-wide activation by DRN stimulation - Functional",
+    "(2025) Mapping Whole-Brain Auditory Activation with 3T Multi-",
+    "part in this study and their brain electrophysiological activity were being recorded using 64",
+    "32-channel ActiChamp system (Brain Products GmbH, Germany) with active silver/silver chloride (",
+    "Six areas of the brain showed lower activation in the evening to both",
+    "Simultaneous cortical, subcortical, and brainstem mapping of sensory activation; bioRxiv 2024.04.11.589099; doi",
+    "MR data from 'Reconfiguration of brain-wide neural activity after early life adversity'"
+   ]
+  }
+ },
+ "motion+correct": {
+  "classes": {
+   "AB adjacent, nominal": 37,
+   "BA (reversed)": 6,
+   "AB with words between": 12,
+   "AB adjacent, verbal": 8
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "motion",
+    "correction",
+    37
+   ],
+   [
+    "AB adjacent, verbal",
+    "motion",
+    "corrected",
+    8
+   ],
+   [
+    "AB with words between",
+    "motion",
+    "correction",
+    8
+   ],
+   [
+    "AB with words between",
+    "motion",
+    "corrected",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "motion",
+    "correction",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "motion",
+    "corrected",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "motion",
+    "correct",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "motion",
+    "correcting",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "geometric distortions applied (also include correction for participant motion).",
+    "The data were corrected for motion and linear trend.",
+    "in FSL, including slice time correction, motion correction, linear detrending,",
+    "space by applying the transforms to correct for head-motion.",
+    "wire loops (CWL) for correcting pulse and motion related artifacts.",
+    "due to: - Slice timing correction - Motion correction - B0 unwarping -"
+   ],
+   "AB with words between": [
+    "These images are motion and distortion corrected and have been anatomically aligned",
+    "derivatives including volumetric data such as motion and distortion-corrected BOLD timeseries, confound regressors",
+    "-forrestgump_task-forrestgump_acq-dico_run-01_bold.nii.gz Motion and distortion-corrected data",
+    "The head-motion estimates calculated in the correction step were also placed within",
+    "pertinent transformations (i.e. head-motion transform matrices, susceptibility distortion correction when available, and co",
+    "used to reconstruct fMRI timeseries without motion or field correction (restNocoEO, restNocoEC)",
+    "+ selective reacquisition) - Shake motion, no correction (+ selective reacquisition)",
+    "reconstructed with navigator-based joint motion and field correction (restEO, restEC)"
+   ],
+   "AB adjacent, verbal": [
+    "Functional data was motion corrected, susceptibility distortion corrected,",
+    "slice-timing/head-motion corrected, aligned to anatomy and",
+    ", which contains the mean of motion-corrected volumes (the mean image",
+    "were generated based on mean of motion-corrected volumes are found under derivatives",
+    "The HRRT motion-corrected dynamic data were mapped to",
+    "with fMRIPrep version 25.2.3, including motion-corrected, spatially normalised, and",
+    "and T1 Weighted (MPnRAGE_VFA : motion corrected) images.",
+    "Images ### MPnRAGE_VFA : motion corrected The resolution is 1mm"
+   ]
+  }
+ },
+ "head+mov": {
+  "classes": {
+   "AB adjacent, nominal": 15,
+   "AB with words between": 2,
+   "BA (reversed)": 5
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "head",
+    "movements",
+    8
+   ],
+   [
+    "AB adjacent, nominal",
+    "head",
+    "movement",
+    7
+   ],
+   [
+    "BA (reversed)",
+    "head",
+    "move",
+    3
+   ],
+   [
+    "AB with words between",
+    "head",
+    "movements",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "head",
+    "moves",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "head",
+    "movements",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "in caricature runs viewed an animated head model with movements caricatured at four levels along",
+    "frequency in which they made voluntary head/neck and eye movements."
+   ],
+   "BA (reversed)": [
+    "one in which the subject deliberately moves their head in the scanner, giving",
+    "body to avoid muscle artifacts and move their head as little as possible.",
+    "body to avoid muscle artifacts and move his head as little as possible.",
+    "to avoid muscle artifacts and to move their head as little as possible.",
+    "on the screen and minimize eye movements and head motions."
+   ]
+  }
+ },
+ "data+acqui": {
+  "classes": {
+   "AB with words between": 181,
+   "BA (reversed)": 37,
+   "AB adjacent, nominal": 105,
+   "AB adjacent, verbal": 64
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "data",
+    "acquired",
+    155
+   ],
+   [
+    "AB adjacent, nominal",
+    "data",
+    "acquisition",
+    101
+   ],
+   [
+    "AB adjacent, verbal",
+    "data",
+    "acquired",
+    56
+   ],
+   [
+    "AB with words between",
+    "dataset",
+    "acquired",
+    17
+   ],
+   [
+    "BA (reversed)",
+    "data",
+    "acquired",
+    13
+   ],
+   [
+    "BA (reversed)",
+    "data",
+    "acquisition",
+    9
+   ],
+   [
+    "AB adjacent, verbal",
+    "dataset",
+    "acquired",
+    7
+   ],
+   [
+    "BA (reversed)",
+    "data",
+    "acquire",
+    6
+   ],
+   [
+    "AB with words between",
+    "data",
+    "acquisition",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "data",
+    "acquiring",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "dataset",
+    "acquisition",
+    4
+   ],
+   [
+    "AB with words between",
+    "dataset",
+    "acquisition",
+    3
+   ],
+   [
+    "AB adjacent, nominal",
+    "data",
+    "acquisitionstarter",
+    2
+   ],
+   [
+    "AB adjacent, verbal",
+    "datasets",
+    "acquired",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "datasets",
+    "acquiring",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "data",
+    "acquisitions",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "data",
+    "acquired",
+    1
+   ],
+   [
+    "AB with words between",
+    "datasets",
+    "acquired",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Ex vivo data were acquired on a 9.4T Bruker",
+    "MRI data were acquired using a Siemens Prisma scanner",
+    "Image acquisition: All imaging data were acquired using a 3T Siemens",
+    "### EEG EEG data were acquired with a BioSemi ActiveTwo system",
+    "Extensive behavioral data was acquired in both protocols.",
+    ": PET data - The PET data are shared as-acquired after BIDS conversion.",
+    "Continuous MEG and EMG data were acquired on a CTF-275 system (",
+    "The data were acquired with a 275-channel"
+   ],
+   "BA (reversed)": [
+    "Alongside the acquired data, we provide source code",
+    "mapping task that was performed whilst acquiring functional BOLD data (fMRI).",
+    "## Acquisition Data were acquired on a 3",
+    "# EEG Acquisition EEG data were collected using an MR",
+    "with automatic shimming enabled, to acquire T2*-weighted data sensitive to the blood-",
+    "Inc. EEG system running under Window98 acquired the data.",
+    "description of all the pitfalls in acquiring these data is given here: https://layerfmri.com/2018/04/12/ss-si-vaso-pitfalls-in-visual-cortex/",
+    "enter distinct 15 emotion states during acquisition of high-density EEG data."
+   ],
+   "AB adjacent, verbal": [
+    "### Additional data acquired",
+    "with simultaneous in-scanner pupillometry data acquired from each subject.",
+    "### Additional data acquired",
+    "**Additional data acquired:** Participant Enrollment Questionnaire",
+    "**Additional data acquired:** Participant Enrollment Questionnaire",
+    "VASO and anatomical ME-GRE data acquired at 0.9mm and 0.35",
+    "comprises electroencephalography, physiological and behavioural data acquired from 103 healthy individuals (",
+    "**Additional data acquired:**"
+   ]
+  }
+ },
+ "function+connect": {
+  "classes": {
+   "AB adjacent, nominal": 92,
+   "AB with words between": 8,
+   "BA (reversed)": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "functional",
+    "connectivity",
+    89
+   ],
+   [
+    "AB with words between",
+    "functional",
+    "connectivity",
+    8
+   ],
+   [
+    "AB adjacent, nominal",
+    "functional",
+    "connections",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "functional",
+    "connectomes",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "functional",
+    "connectivity",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Pain-free resting-state functional brain connectivity predicts individual pain sensitivity,",
+    "Pain-free resting-state functional brain connectivity predicts individual pain sensitivity,",
+    "variability biofeedback on cardiac regulation and functional brain connectivity",
+    "week HRV-biofeedback intervention on functional brain connectivity in healthy subjects.",
+    "biofeedback is accompanied by changes in functional brain connectivity during resting state.",
+    ", and in vivo 7 Tesla functional MRI to map the connectivity of a subcortical arousal network",
+    "on behavioural deficits and structural- and functional brain connectivity caused by severe damage of",
+    "contextually meaningful way, focusing on functional and dynamic connectivity."
+   ],
+   "BA (reversed)": [
+    "- Coupling between white matter structural connectivity and functional dynamics in autism"
+   ]
+  }
+ },
+ "object+recogni": {
+  "classes": {
+   "AB adjacent, nominal": 23,
+   "BA (reversed)": 3
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "object",
+    "recognition",
+    23
+   ],
+   [
+    "BA (reversed)",
+    "objects",
+    "recognize",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "objects",
+    "recognition",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Relating visual production and recognition of objects in human visual cortex",
+    "The human brain can rapidly recognize meaningful objects from natural scenes encountered in",
+    "The human brain can rapidly recognize meaningful objects from natural scenes encountered in"
+   ]
+  }
+ },
+ "emotion+regulat": {
+  "classes": {
+   "AB adjacent, nominal": 24,
+   "BA (reversed)": 1,
+   "AB with words between": 7,
+   "AB adjacent, verbal": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "emotion",
+    "regulation",
+    24
+   ],
+   [
+    "AB with words between",
+    "emotion",
+    "regulation",
+    7
+   ],
+   [
+    "BA (reversed)",
+    "emotional",
+    "regulate",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "emotion",
+    "regulaton",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "up-regulate or down-regulate their emotional responses to picture stimuli."
+   ],
+   "AB with words between": [
+    "Emotion down-regulation targets interoceptive brain regions while",
+    "regulation targets interoceptive brain regions while emotion up-regulation targets other affective brain regions",
+    "The task was an emotion processing and regulation task based on visual stimuli",
+    "# Emotion Processing and Regulation Task (Static Stimuli)",
+    "behavioral data from the **Emotion Processing and Regulation** task conducted with",
+    "# Emotion Processing and Regulation Task (Static Stimuli)",
+    "behavioral data from the **Emotion Processing and Regulation** task with static"
+   ],
+   "AB adjacent, verbal": [
+    "heart rate variability biofeedback and emotion regulaton"
+   ]
+  }
+ },
+ "stimul+present": {
+  "classes": {
+   "AB adjacent, nominal": 53,
+   "BA (reversed)": 69,
+   "AB with words between": 121,
+   "AB adjacent, verbal": 18
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "stimuli",
+    "presented",
+    66
+   ],
+   [
+    "AB adjacent, nominal",
+    "stimulus",
+    "presentation",
+    44
+   ],
+   [
+    "AB with words between",
+    "stimulus",
+    "presented",
+    40
+   ],
+   [
+    "BA (reversed)",
+    "stimulus",
+    "presented",
+    22
+   ],
+   [
+    "BA (reversed)",
+    "stimuli",
+    "presented",
+    16
+   ],
+   [
+    "BA (reversed)",
+    "stimulus",
+    "presentation",
+    11
+   ],
+   [
+    "BA (reversed)",
+    "stimuli",
+    "presentation",
+    10
+   ],
+   [
+    "AB adjacent, verbal",
+    "stimuli",
+    "presented",
+    10
+   ],
+   [
+    "AB adjacent, verbal",
+    "stimulus",
+    "presented",
+    8
+   ],
+   [
+    "AB adjacent, nominal",
+    "stimuli",
+    "presentation",
+    6
+   ],
+   [
+    "AB with words between",
+    "stimuli",
+    "presentation",
+    5
+   ],
+   [
+    "AB with words between",
+    "stimulus",
+    "presentation",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "stimulation",
+    "presented",
+    3
+   ],
+   [
+    "AB adjacent, nominal",
+    "stimulus",
+    "presentations",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "stimuli",
+    "presenting",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "stimulation",
+    "presentation",
+    2
+   ],
+   [
+    "AB with words between",
+    "stimulus",
+    "present",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "stimuli",
+    "presentations",
+    1
+   ],
+   [
+    "AB with words between",
+    "stimuli",
+    "presentations",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "stimulus",
+    "presentations",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "stimuli",
+    "present",
+    1
+   ],
+   [
+    "AB with words between",
+    "stimulation",
+    "presentation",
+    1
+   ],
+   [
+    "AB with words between",
+    "stimuli/",
+    "presentation",
+    1
+   ],
+   [
+    "AB with words between",
+    "stimulus",
+    "presentations",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "stimuli",
+    "presentations",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Stim channel indicating the presentation times of the audio stimuli: UPPT001 (#1",
+    "During the experiment, participants were presented with visual stimuli while their brain activity was",
+    "stimulus file name of the image presented in a stimulus block ('n/",
+    "event ('image': presentation of stimulus image, 'fixation_change'",
+    "Following the presentation of each laser stimulus, there was a pause",
+    ": duration of the fixation dot presentation before stimulus onset (should be between",
+    "Each musical piece was presented in two consecutive excerpt stimuli (listen1-playback1-",
+    "Each trial presented a pseudo randomly chosen stimulus (A, V,"
+   ],
+   "AB with words between": [
+    "The acoustic stimuli were presented through a MR -compatible loudspeaker",
+    "For the main task, stimuli are natural images presented on a grey background with",
+    "The stimulus item was then presented for 150ms, followed by",
+    "Target prompts and stimuli were presented in white, while fixation",
+    "Stimuli were presented and played during the \u2018",
+    "salty, umami, and tasteless stimuli were presented in a block design across",
+    "The audiovisual stimulus was a simultaneous presentation of both.",
+    "Stimuli were presented using Python and PsychoPy software"
+   ],
+   "AB adjacent, verbal": [
+    "If the current letter matched the stimulus presented N trials ago, subjects",
+    "as possible upon detecting a shadow stimulus (presented at 20% probability)",
+    "90 trials** (all stimuli presented once per run) -",
+    ", where participants indicated whether the stimulus presented was a word or pseudo",
+    "This task included a stimulus presented to the left or right",
+    "coil allowed participants to view the stimuli presented on a screen.",
+    "Stimuli presented to the left hand are",
+    "- `task-*` : stimulus presented (5' movie clip"
+   ]
+  }
+ },
+ "distortion+correct": {
+  "classes": {
+   "AB adjacent, nominal": 47,
+   "BA (reversed)": 10,
+   "AB adjacent, verbal": 14,
+   "AB with words between": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "distortion",
+    "correction",
+    47
+   ],
+   [
+    "AB adjacent, verbal",
+    "distortion",
+    "corrected",
+    14
+   ],
+   [
+    "BA (reversed)",
+    "distortions",
+    "correct",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "distortions",
+    "correction",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "distortions",
+    "corrected",
+    2
+   ],
+   [
+    "AB with words between",
+    "distortion_corrected",
+    "corrected",
+    1
+   ],
+   [
+    "AB with words between",
+    "distortion",
+    "correction",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "distortions",
+    "correcting",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "but with a scanner-side correction for geometric distortions applied (also include correction",
+    "available in the fmap folder to correct distortions.",
+    "To correct for susceptibility-induced distortions in the echoplanar images,",
+    "available in the fmap folder to correct distortions.",
+    "field maps were also acquired to correct for susceptibility-induced geometric distortions.",
+    "runs), in order to correct for distortions in functional data.",
+    "To enable the correction of the distortions in the EPI images,",
+    "Diffusion MRI data were corrected for susceptibility-induced distortions, eddy-current effects"
+   ],
+   "AB adjacent, verbal": [
+    "volumetric data such as motion and distortion-corrected BOLD timeseries, confound regressors",
+    "The resulting distortion-corrected EPIs were then processed separately",
+    "-forrestgump_acq-dico_run-01_bold.nii.gz Motion and distortion-corrected data",
+    "data was motion corrected, susceptibility distortion corrected, and aligned to the",
+    "Additionally, partially preprocessed files (distortion corrected, despiked, slice-",
+    "`: Diffeomorphic warp between the distortion corrected image space and template space",
+    "technique, intensity normalized, and distortion corrected.",
+    "step, the EPI timeseries were distortion-corrected along the encoding axis ("
+   ],
+   "AB with words between": [
+    "* `distortion_corrected`: MRI scans corrected for scanner gradient miscalibration (",
+    "same pre-processing steps for distortion and motion correction (Sotiropoulos et al."
+   ]
+  }
+ },
+ "brain+extract": {
+  "classes": {
+   "AB with words between": 4,
+   "AB adjacent, nominal": 7,
+   "AB adjacent, verbal": 4,
+   "BA (reversed)": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "brain",
+    "extraction",
+    7
+   ],
+   [
+    "AB adjacent, verbal",
+    "brain",
+    "extracted",
+    4
+   ],
+   [
+    "AB with words between",
+    "brain",
+    "extracted",
+    2
+   ],
+   [
+    "AB with words between",
+    "brain.nii.gz",
+    "extracted",
+    1
+   ],
+   [
+    "AB with words between",
+    "brain_12dof.nii.gz",
+    "extracted",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "brains",
+    "extracted",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "./derivatives/templates/t1w/brain.nii.gz Brain extracted template image",
+    "templates/t1w/in_mni/brain_12dof.nii.gz Brain extracted template image projected into MNI",
+    "Cortical and subcortical brain measures extracted using FreeSurfer v5.3 are provided",
+    "MRI FILES Each T1w MPRAGE brain scan was brain extracted using HDBET (https://github.com/MIC-DKFZ/HD-BET)"
+   ],
+   "AB adjacent, verbal": [
+    "GM) was performed on the brain-extracted T1w using fast (FSL",
+    "(ANTs 2.3.3), using brain-extracted versions of both T1w reference",
+    "- Anatomical brain-extracted T1w image - Functional brain",
+    "- Anatomical brain-extracted T1w image - Functional brain"
+   ],
+   "BA (reversed)": [
+    "faced\" anatomical data are all extracted (masked) brains."
+   ]
+  }
+ },
+ "slice+tim": {
+  "classes": {
+   "AB adjacent, nominal": 227,
+   "BA (reversed)": 4,
+   "AB with words between": 9
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "slice",
+    "time",
+    201
+   ],
+   [
+    "AB adjacent, nominal",
+    "slice",
+    "timing",
+    24
+   ],
+   [
+    "AB with words between",
+    "slice",
+    "time",
+    4
+   ],
+   [
+    "AB with words between",
+    "slices",
+    "time",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "slices",
+    "time",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "slice",
+    "tim",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "slice",
+    "timings",
+    1
+   ],
+   [
+    "AB with words between",
+    "slice_timings.tsv",
+    "timings",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "slices",
+    "timings",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "runs - scanner used (Siemens Tim Trio was in bay3) - slice order (AFNI convention)",
+    "Voxel size = 1mm isotropic Time = 5m25s 176 slices",
+    "Voxel size = 1mm isotropic Time = 4m26s 192 slices",
+    "mm Time = 3m38s 44 slices"
+   ],
+   "AB with words between": [
+    "This resulted in a slice acquisition time of 50 ms.",
+    "of slices according to the reference slice, (3) BOLD time-series co-registration",
+    "MRI data were collected (256 slices; repetition time, TR=2500ms; echo time",
+    "* `slice_timings.tsv`, `fsl_slice_timings.txt` - Slice timings for functional scans.",
+    "slice thickness 1, space between slices 1, echo time 0.002943, repetition time 0.0065",
+    "standard head-motion correction and slice scan time correction using the first slice",
+    "slice thickness 4, space between slices 4, echo time 0.035, repetition time 3",
+    "Parameters of the sequence were: slice thickness: 1 mm, repetition time TR = 2300 ms,"
+   ]
+  }
+ },
+ "bias+correct": {
+  "classes": {
+   "AB with words between": 9,
+   "AB adjacent, verbal": 2
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "bias",
+    "correction",
+    5
+   ],
+   [
+    "AB with words between",
+    "bias",
+    "corrected",
+    4
+   ],
+   [
+    "AB adjacent, verbal",
+    "bias",
+    "corrected",
+    2
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Bias field correction can optionally be performed using",
+    ", it contains the N4-bias-field-corrected TOF-MRA volume and",
+    "volume and the corresponding N4-bias-field-corrected skull-stripped volume.",
+    "it contains the corresponding N4-bias-field-corrected skull-stripped TOF-",
+    ", T1-weighted scans underwent bias field correction, skull stripping, and",
+    "sub-01_ses-01_T1w_downsampled.nii.gz_, but B1-bias-field-corrected.",
+    "the MNI152 template, with N4 bias field correction (AFNI) followed by",
+    "-uniformity correction performed using N4 bias field correction (AFNI)."
+   ],
+   "AB adjacent, verbal": [
+    "The images have been field-bias corrected using FSL and skull-",
+    "preprocess/** - N4-bias-corrected anatomical images (T1-"
+   ]
+  }
+ },
+ "image+view": {
+  "classes": {
+   "AB adjacent, nominal": 7,
+   "BA (reversed)": 25,
+   "AB with words between": 3
+  },
+  "forms": [
+   [
+    "BA (reversed)",
+    "images",
+    "viewed",
+    13
+   ],
+   [
+    "BA (reversed)",
+    "images",
+    "viewing",
+    7
+   ],
+   [
+    "AB adjacent, nominal",
+    "image",
+    "viewing",
+    6
+   ],
+   [
+    "BA (reversed)",
+    "image",
+    "viewed",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "images",
+    "views",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "images",
+    "viewrandom",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "image",
+    "viewing",
+    1
+   ],
+   [
+    "AB with words between",
+    "images",
+    "views",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "images",
+    "view",
+    1
+   ],
+   [
+    "AB with words between",
+    "imagery",
+    "viewing",
+    1
+   ],
+   [
+    "AB with words between",
+    "images",
+    "viewed",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "recorded from 49 participants while they viewed spider-related images.",
+    "The experiment consisted of human subjects viewing contrast-based images of 12 x 12 flickering",
+    "-selective ventral temporal regions Participants viewed sequences of images, each of which contained",
+    "In 'viewRandom' runs, random images were presented as visual stimuli",
+    "Viewing images of foods evokes taste quality",
+    "the passive viewing task, participants viewed rapid (RSVP) streams of images, and pressed a button",
+    "On each trial, they viewed a static image for 5 s and either",
+    "On each trial, they viewed a static image for 5 s and either"
+   ],
+   "AB with words between": [
+    "to human faces, only animal images with front-facing views and neutral expressions were selected",
+    "from five participants performing kinesthetic motor imagery (KI) while viewing themselves walking in an exoskeleton",
+    "- Structural scans: T1\u2011weighted anatomical images - Functional scans (fMRI): Participants viewed a 10\u2011minute video of themselves"
+   ]
+  }
+ },
+ "eye+track": {
+  "classes": {
+   "AB adjacent, nominal": 103,
+   "AB with words between": 6
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "eye",
+    "tracking",
+    93
+   ],
+   [
+    "AB adjacent, nominal",
+    "eye",
+    "tracker",
+    9
+   ],
+   [
+    "AB with words between",
+    "eyelink",
+    "tracking",
+    2
+   ],
+   [
+    "AB with words between",
+    "eyelink",
+    "tracker",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "eyelink",
+    "tracker",
+    1
+   ],
+   [
+    "AB with words between",
+    "eye",
+    "tracked",
+    1
+   ],
+   [
+    "AB with words between",
+    "eyes",
+    "tracking",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "using a MR-compatible infrared EyeLink 1000 Plus eye-tracking system (SR Research Ltd.",
+    "An EyeLink 1000 recorded eye-tracking data from within the scanning",
+    "gaze position with an SR Research Eyelink 1000 tracker.",
+    "gaze position using an SR Research Eyelink 1000 tracker.",
+    "Eye movements were tracked with an infrared eye tracker",
+    "-based gaze-decoding for eyes-closed eye-tracking in fMRI\"."
+   ]
+  }
+ },
+ "nuisance+regress": {
+  "classes": {
+   "AB adjacent, nominal": 7
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "nuisance",
+    "regressors",
+    7
+   ]
+  ],
+  "samples": {}
+ },
+ "motor+learn": {
+  "classes": {
+   "BA (reversed)": 1,
+   "AB with words between": 6,
+   "AB adjacent, nominal": 5
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "motor",
+    "learning",
+    6
+   ],
+   [
+    "AB adjacent, nominal",
+    "motor",
+    "learning",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "motor",
+    "learning",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Learning and memory: motor skill consolidation and intermanual transfer"
+   ],
+   "AB with words between": [
+    "operculum temporal difference signals and social motor response learning.",
+    "Motor sequence learning",
+    "### Motor sequence learning",
+    "-evaluation of fMRI signatures of motor sequence learning\" (https://elifesciences.org/articles/55241).",
+    "and Syntactic Prediction and Visuo-Motor Statistical Learning in Adult Readers with and",
+    "Motor skill learning and consolidation"
+   ]
+  }
+ },
+ "sleep+depriv": {
+  "classes": {
+   "AB adjacent, nominal": 4,
+   "AB adjacent, verbal": 1,
+   "AB with words between": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "sleep",
+    "deprivation",
+    4
+   ],
+   [
+    "AB adjacent, verbal",
+    "sleep",
+    "deprived",
+    1
+   ],
+   [
+    "AB with words between",
+    "sleep",
+    "deprivation(sd",
+    1
+   ]
+  ],
+  "samples": {
+   "AB adjacent, verbal": [
+    ". rested awake, 2. sleep-deprived awake, and 3."
+   ],
+   "AB with words between": [
+    "who underwent two experiments involving normal sleep (NS---session1) and sleep deprivation(SD---session2)"
+   ]
+  }
+ },
+ "pain+stimul": {
+  "classes": {
+   "AB adjacent, nominal": 11,
+   "BA (reversed)": 8,
+   "AB with words between": 3
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "pain",
+    "stimuli",
+    7
+   ],
+   [
+    "BA (reversed)",
+    "pain",
+    "stimulation",
+    6
+   ],
+   [
+    "AB with words between",
+    "pain",
+    "stimulation",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "pain",
+    "stimulation",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "pain",
+    "stimulis",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "pain",
+    "stimuli",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "pain",
+    "stimulus",
+    1
+   ],
+   [
+    "AB with words between",
+    "pain",
+    "stimulus",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "painful",
+    "stimulation",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "After each stimulation, participants provided pain ratings individually.",
+    "the experiment): Participants received laser stimulation and subsequently provided pain intensity ratings one by one",
+    ", each participant underwent 30 laser stimulis and provided verbal pain ratings one by one.",
+    ", each participant underwent 30 laser stimuli and provided verbal pain ratings one by one.",
+    "After each stimulation, participants provided pain ratings individually.",
+    "the experiment): Participants received laser stimulation and subsequently provided pain intensity ratings one by one",
+    "the experiment): Participants received laser stimulation and subsequently provided pain intensity ratings one by one",
+    "consistent brain activity changes during mechanical stimulation in post-surgical pain, central processing of pain"
+   ],
+   "AB with words between": [
+    "instructed to verbally report the perceived pain intensity of each laser stimulation using a numerical rating scale",
+    "| `trial_type` | `pain` = heat stimulus, `rating` =",
+    "anticipation (15 neutral, 15 pain) - 30 stimulation (10 pain, 20"
+   ]
+  }
+ },
+ "spatial+normali": {
+  "classes": {
+   "AB adjacent, verbal": 5,
+   "AB adjacent, nominal": 7,
+   "AB with words between": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "spatial",
+    "normalization",
+    6
+   ],
+   [
+    "AB adjacent, verbal",
+    "spatially",
+    "normalized",
+    3
+   ],
+   [
+    "AB with words between",
+    "spatial",
+    "normalization",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "spatial",
+    "normalisation",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "spatially",
+    "normalize",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "spatially",
+    "normalised",
+    1
+   ]
+  ],
+  "samples": {
+   "AB adjacent, verbal": [
+    "images were co-registered and spatially normalized into the standard Montreal Neurological",
+    ", and segmentation, and then spatially normalized to a standard MNI (",
+    "applying parameters from structural images to spatially normalize functional images into Montreal Neurological",
+    "These images were then spatially normalized to the Montreal Neurological Institute",
+    ", including motion-corrected, spatially normalised, and surface-projected"
+   ],
+   "AB with words between": [
+    "Data were preprocessed, which included spatial motion correction and spatial normalization that was automatically generated by"
+   ]
+  }
+ },
+ "imag+regist": {
+  "classes": {
+   "AB with words between": 8,
+   "BA (reversed)": 12,
+   "AB adjacent, nominal": 3,
+   "AB adjacent, verbal": 1
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "images",
+    "registered",
+    7
+   ],
+   [
+    "BA (reversed)",
+    "images",
+    "registered",
+    6
+   ],
+   [
+    "AB adjacent, nominal",
+    "image",
+    "registration",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "image",
+    "registration",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "image",
+    "register",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "image",
+    "registered",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "images",
+    "registration",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "images",
+    "register",
+    1
+   ],
+   [
+    "AB with words between",
+    "imaging",
+    "registered",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "image",
+    "registered",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Functional and anatomical images were co-registered and spatially normalized into the",
+    "session-average T1 and T2 images linearly registered to atlas (Talaraich)",
+    "structural (MP-RAGE) images were co-registered via mutual information and functional",
+    "Positron Emission Tomography (PET) images, co-registered defaced 3D anatomical Magnetic Resonanace",
+    "Positron Emission Tomography (PET) images, co-registered defaced 3D anatomical Magnetic Resonanace",
+    "Positron Emission Tomography (PET) images, co-registered defaced 3D anatomical Magnetic Resonanace",
+    "are L-[1- 11 C]Leucine 4D PET images, co-registered defaced 3D anatomical Magnetic Resonanace",
+    "\", which respectively contain functional imaging data registered to different standard spaces."
+   ],
+   "BA (reversed)": [
+    "Co-registration to the anatomical image was done with flirt using",
+    "correction using fMRIprep, co-registered our functional images to our T1w images using",
+    "used FreeSurfer and ANTs to nonlinearly register structural T1w images to the MNI152NLin6Asym template (",
+    "` function, then co-registered to the rCPS derivative images, and then defaced with",
+    "BOLD time-series co-registration to the T1w reference image, (4) head",
+    "` function, then co-registered to the rCPS derivative images, and then defaced with",
+    "` function, then co-registered to the rCPS derivative images, and then defaced with",
+    "` function, then co-registered to the rCPS derivative images, and then defaced with"
+   ],
+   "AB adjacent, verbal": [
+    ": - Anatomical T2w spinal cord image registered to PAM50 template - Segmentation"
+   ]
+  }
+ },
+ "reinforc+learn": {
+  "classes": {
+   "AB adjacent, nominal": 23,
+   "BA (reversed)": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "reinforcement",
+    "learning",
+    22
+   ],
+   [
+    "BA (reversed)",
+    "reinforcer",
+    "learning",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "reinforcement",
+    "learning.](https://www.biorxiv.org",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Two reversal learning tasks with different reinforcer (monetary reward vs. primary"
+   ]
+  }
+ },
+ "eye+clos": {
+  "classes": {
+   "AB adjacent, verbal": 56,
+   "AB with words between": 22,
+   "BA (reversed)": 32,
+   "AB adjacent, nominal": 3
+  },
+  "forms": [
+   [
+    "AB adjacent, verbal",
+    "eyes",
+    "closed",
+    56
+   ],
+   [
+    "AB with words between",
+    "eyes",
+    "closed",
+    20
+   ],
+   [
+    "BA (reversed)",
+    "eyes",
+    "closed",
+    16
+   ],
+   [
+    "BA (reversed)",
+    "eyes",
+    "close",
+    15
+   ],
+   [
+    "AB adjacent, nominal",
+    "eye",
+    "closure",
+    2
+   ],
+   [
+    "AB with words between",
+    "eye",
+    "closed",
+    1
+   ],
+   [
+    "AB with words between",
+    "eyes",
+    "close",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "eye",
+    "closed",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "eyes",
+    "closed",
+    1
+   ]
+  ],
+  "samples": {
+   "AB adjacent, verbal": [
+    "instructed to lie awake with their eyes closed.",
+    "was always recorded first with the eyes closed and then with the eyes",
+    "They were asked to keep their eyes closed and all lighting in the",
+    "each liquid and to keep their eyes closed during the entire run.",
+    "They kept their eyes closed.",
+    "15 seconds each) and two eyes-closed blocks (2 minutes and",
+    ", end 102 - 5 minutes eyes closed resting, control condition,",
+    "Participants were asked to keep their eyes closed, and all lighting in"
+   ],
+   "AB with words between": [
+    "data at two resting conditions: eyes open (EO) and eyes closed (EC).",
+    "\u2014 participants alternated between eyes open and eyes closed conditions.",
+    "programming language, with instructions for eyes open & eyes closed Triggers included for instructed one",
+    "completed a visual task with their eyes open or closed.",
+    "resting-state EEG data (eyes open,partially eyes closed) from 71 participants who",
+    "Participant stands facing a wall with eyes open (or closed) for 1 min.",
+    "were performed: resting state (eyes open and closed), checkerboard (15Hz",
+    ") and resting-state (eyes-open and eyes-closed; 69 participants)."
+   ],
+   "BA (reversed)": [
+    "Resting state with closed eyes for patients with depression and",
+    "fMRI, they were asked to close their eyes.",
+    "Two sessions of resting state with closed eyes for patients with depression in",
+    "contains the EEG resting state-closed eyes recordings from 88 subjects in",
+    ", following instructions to open or close their eyes and fixate on a central",
+    "based on the prompt, then close their eyes and imagine the image they",
+    ", following instructions to open or close their eyes and fixate on a central",
+    ", following instructions to open or close their eyes and fixate on a central"
+   ]
+  }
+ },
+ "eye+open": {
+  "classes": {
+   "AB adjacent, verbal": 105,
+   "BA (reversed)": 26,
+   "AB with words between": 8,
+   "AB adjacent, nominal": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, verbal",
+    "eyes",
+    "open",
+    101
+   ],
+   [
+    "BA (reversed)",
+    "eyes",
+    "open",
+    26
+   ],
+   [
+    "AB with words between",
+    "eyes",
+    "open",
+    8
+   ],
+   [
+    "AB adjacent, verbal",
+    "eye",
+    "open",
+    3
+   ],
+   [
+    "AB adjacent, nominal",
+    "eyes",
+    "open",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "eyes",
+    "opened",
+    1
+   ]
+  ],
+  "samples": {
+   "AB adjacent, verbal": [
+    "eyes closed followed by four minutes eyes open) and na LDAEP paradigm",
+    ") and a 15-minute eyes-open resting-state session (",
+    "1) a 3-minute eyes-open resting state and 2)",
+    "119 - 5 minutes eyes open resting, shock condition,",
+    "Participants performed 3 tasks outside: eyes open/eyes close, standing",
+    "x 5 minute resting sessions, eyes open",
+    "to stay awake, keep their eyes open and focus on a cross",
+    "periods of spontaneous, resting, eye-open wakefulness immediately preceding the game"
+   ],
+   "BA (reversed)": [
+    "was presented, asking them to open their eyes and rate their familiarity and",
+    "chin rest, following instructions to open or close their eyes and fixate on a central",
+    "eight minutes, where periods of open and closed eyes were included (each period",
+    "in front of the participant (open eyes) with 50% On",
+    "- Theta band features - Second open-eyes epoch - Channel C15 (",
+    "Participants were instructed to maintain open eyes and attend to visual cues",
+    "chin rest, following instructions to open or close their eyes and fixate on a central",
+    "chin rest, following instructions to open or close their eyes and fixate on a central"
+   ],
+   "AB with words between": [
+    "Then 1 min of eyes closed (or open).",
+    "min resting-state alternating between eyes closed and eyes open (30 sec each)",
+    "The resting-state EEG with eyes closed and eyes open was measured before and after",
+    "Resting state EEG with closed eyes and open eyes in females from 60",
+    "four 1-minute blocks of eyes-closed and eyes-open resting, followed by 3",
+    "epoch: `C` = Eyes closed; `O` = Eyes open | | *",
+    "subject: - 2 closed-eyes: `EP_C_1`, `EP_C_2` - 2 open-eyes: `EP_O_1",
+    "Sequence: - 4 min alternating eyes closed/open (COCO: Closed-"
+   ]
+  }
+ },
+ "task+switch": {
+  "classes": {
+   "AB adjacent, nominal": 11,
+   "AB with words between": 6,
+   "BA (reversed)": 4
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "task",
+    "switching",
+    8
+   ],
+   [
+    "AB with words between",
+    "task",
+    "switching",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "task",
+    "switching",
+    4
+   ],
+   [
+    "AB adjacent, nominal",
+    "task",
+    "switch",
+    3
+   ],
+   [
+    "AB with words between",
+    "task](http://sites.wustl.edu",
+    "switching",
+    1
+   ],
+   [
+    "AB with words between",
+    "tasks",
+    "switch",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "# Tasks ## Task Description: Cued Task-Switching (Cuedts)",
+    "Task Description: Cued Task-Switching (Cuedts) ----------------------------------------------",
+    "## Task Description: Cued Task-Switching (Cuedts) --- The",
+    "[DMCC Cued task-switching task](http://sites.wustl.edu/dualmechanisms/task-switching) included trial pre-",
+    "(go/no-go task), task switching (letter categorization task)",
+    "- Subjects 2 - Session Available Tasks: Resting-State, Antisaccade, Category-Switch, Color-Shape,"
+   ],
+   "BA (reversed)": [
+    "Each participant completed a language switching task to assess language control and",
+    "assess language control and a rule switching task to evaluate cognitive control while",
+    "Bilingual speech production in language switching task with functional localizers",
+    "## Cross-sensory attentional switching task (Beep-Flash_run)"
+   ]
+  }
+ },
+ "movie+watch": {
+  "classes": {
+   "BA (reversed)": 22,
+   "AB adjacent, nominal": 48,
+   "AB with words between": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "movie",
+    "watching",
+    48
+   ],
+   [
+    "BA (reversed)",
+    "movies",
+    "watched",
+    12
+   ],
+   [
+    "BA (reversed)",
+    "movie",
+    "watched",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "movie",
+    "watch",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "movies",
+    "watching",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "movie",
+    "watching",
+    1
+   ],
+   [
+    "AB with words between",
+    "movies",
+    "watched",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "movies",
+    "watch",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Movie Watching**: Participants watched four short movies with different themes, with",
+    "Movie Watching**: Participants watched four short movies with different themes, with",
+    "were asked to hold still and watch clips from cartoon movies.",
+    "Movie Watching**: Participants watched four short movies with different themes, with",
+    "The second group watched the movie and the twist came at",
+    "Movie Watching**: Participants watched four short movies with different themes, with",
+    "The participants were instructed to watch a silent video (movie/cartoon) of their",
+    "were instructed to focus and enjoy watching the movie."
+   ],
+   "AB with words between": [
+    "-second long clips extracted from movies that they had previously watched."
+   ]
+  }
+ },
+ "finger+tap": {
+  "classes": {
+   "BA (reversed)": 3,
+   "AB adjacent, nominal": 18
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "finger",
+    "tapping",
+    17
+   ],
+   [
+    "BA (reversed)",
+    "fingers",
+    "tap",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "finger",
+    "taps",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "finger",
+    "tap",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "displayed and subjects were asked to tap their right-hand fingers while looking at the center",
+    ": 12 min).Participants were instructed to tap each finger to the thumb, from",
+    "blocks, participants were instructed to tap the indicated hand\u2019s fingers against the thumb in a"
+   ]
+  }
+ },
+ "story+listen": {
+  "classes": {
+   "BA (reversed)": 8,
+   "AB adjacent, nominal": 2
+  },
+  "forms": [
+   [
+    "BA (reversed)",
+    "storybook",
+    "listened",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "story",
+    "listening",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "story",
+    "listening",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "story1",
+    "listened",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "story2",
+    "listened",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "story1_synonyms",
+    "listened",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "story",
+    "listened",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "descriptions: * 18 subjects that listened to Story1 \"milky_audio.wav\" (sub-01",
+    "sub-18) * 18 subjects that listened to Story2 \"vodka_audio.wav\" (sub-19",
+    "* 18 subjects that listened to both Story1_synonyms \"synonyms.wav\" and Story2_scrambled",
+    "Participants then listened passively to the audio storybook.",
+    "Participants then listened passively to the audio storybook.",
+    "The participants listened to a 30-minute story with over 5,000 words.",
+    "total of 68 participants when they listening a 10 mins story in Chinese, a 10",
+    "total of 68 participants when they listening a 10 mins story in Chinese, a 10"
+   ]
+  }
+ },
+ "high+filter": {
+  "classes": {
+   "AB with words between": 21,
+   "BA (reversed)": 4,
+   "AB adjacent, nominal": 3
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "high",
+    "filter",
+    10
+   ],
+   [
+    "AB with words between",
+    "high",
+    "filtering",
+    9
+   ],
+   [
+    "AB adjacent, nominal",
+    "highpass",
+    "filtering",
+    3
+   ],
+   [
+    "AB with words between",
+    "high",
+    "filtered",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "high",
+    "filter",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "high",
+    "filtered",
+    2
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "motion correction, linear detrending, high-pass filtering (140 s cutoff)",
+    "sampled online at 1 kHz, high-pass filtered at 0.03 Hz, and",
+    "A temporal high-pass filter with a cut-off",
+    "time constant: 0.3s, and high frequency filter at 70 Hz.",
+    "A high-pass filter at 1 HZ using an",
+    "included slice-timing correction, high-pass filtering (>100 s)",
+    "from white matter and CSF after high-pass filtering (128s cutoff).",
+    "Germany) with a 0.016 Hz high-pass filter during data acquisition"
+   ],
+   "BA (reversed)": [
+    "and a 40Hz low-pass filter to remove high frequency artifacts not associated with",
+    "SEP stimulation artefact, we first filtered the EEG (high pass cutoff = 200 Hz",
+    "SEP stimulation artefact, we first filtered the ECoG (high pass cutoff = 200 Hz",
+    "(1) a cutoff frequency filter with 1 Hz high pass and 40.0 Hz low"
+   ]
+  }
+ },
+ "skull+strip": {
+  "classes": {
+   "AB adjacent, verbal": 32,
+   "AB adjacent, nominal": 7
+  },
+  "forms": [
+   [
+    "AB adjacent, verbal",
+    "skull",
+    "stripped",
+    32
+   ],
+   [
+    "AB adjacent, nominal",
+    "skull",
+    "stripping",
+    6
+   ],
+   [
+    "AB adjacent, nominal",
+    "skull",
+    "stripped",
+    1
+   ]
+  ],
+  "samples": {
+   "AB adjacent, verbal": [
+    "an anatomical scan that has been skull-stripped using AFNI's 3dSkullStrip.",
+    "2. **Skull-stripped anatomical data aligned to the",
+    "-bias-field-corrected skull-stripped TOF-MRA volume using",
+    "Files included are: A) Skull-stripped and defaced T1w and T2w",
+    "-bias-field-corrected skull-stripped volume.",
+    "Files included are: A) Skull-stripped and defaced T1w and T2w",
+    "-bias corrected using FSL and skull-stripped (derivatives folder).",
+    "The T1w-reference was then skull-stripped with a Nipype implementation of"
+   ]
+  }
+ },
+ "speech+perce": {
+  "classes": {
+   "BA (reversed)": 4,
+   "AB with words between": 6,
+   "AB adjacent, nominal": 10
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "speech",
+    "perception",
+    10
+   ],
+   [
+    "AB with words between",
+    "speech",
+    "perception",
+    6
+   ],
+   [
+    "BA (reversed)",
+    "speech",
+    "perception",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "speech",
+    "perceive",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "participant that are involved in the perception and production of speech.",
+    "EEG: silent and perceive speech on 30 Spanish sentences Large",
+    "comprises four segments: rest, perception, preparation, and silent speech production.",
+    "as a separation marker between the perception and silent speech production tasks."
+   ],
+   "AB with words between": [
+    "Language, speech, auditory and visual perception",
+    "our understanding of the neurobiology of speech learning and perception.",
+    "in the left temporal cortex predicts speech-in-noise perception deficit in children with autism",
+    "Vowels in the Left Hemisphere Predicts Speech-in-Noise Perception Deficit in Children with Autism",
+    "vowels in the left hemisphere predicts speech-in-noise perception deficit in children with autism",
+    "updating and statistical learning, and speech-in-noise perception and auditory selective attention."
+   ]
+  }
+ },
+ "cortical+thick": {
+  "classes": {
+   "AB adjacent, nominal": 15
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "cortical",
+    "thickness",
+    14
+   ],
+   [
+    "AB adjacent, nominal",
+    "cortical",
+    "thicknesses",
+    1
+   ]
+  ],
+  "samples": {}
+ },
+ "mental+rotat": {
+  "classes": {
+   "AB adjacent, verbal": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, verbal",
+    "mentally",
+    "rotate",
+    1
+   ]
+  ],
+  "samples": {
+   "AB adjacent, verbal": [
+    "either manipulate (add 3 or mentally rotate 90 clockwise the spatial pattern"
+   ]
+  }
+ },
+ "language+learn": {
+  "classes": {
+   "BA (reversed)": 3,
+   "AB adjacent, nominal": 11
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "language",
+    "learning",
+    6
+   ],
+   [
+    "AB adjacent, nominal",
+    "language",
+    "learners",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "language",
+    "learned",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "language",
+    "learning",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "languages",
+    "learning",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "for factors including if the individual learned their second language as a child or later",
+    "either intermediate or advanced levels of learning the same second language.",
+    "articulations but also enabling robust transfer learning studies for other alphabetic languages."
+   ]
+  }
+ },
+ "spatial+smooth": {
+  "classes": {
+   "AB adjacent, nominal": 8,
+   "AB with words between": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "spatial",
+    "smoothing",
+    8
+   ],
+   [
+    "AB with words between",
+    "spatial",
+    "smoothing",
+    2
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "correction, slice timing correction, spatial normalization, and smoothing.",
+    "Motion correction - B0 unwarping - Spatial normalization to MNI152 - Smoothing (8mm FWHM)"
+   ]
+  }
+ },
+ "brain+stimulat": {
+  "classes": {
+   "AB adjacent, nominal": 23,
+   "BA (reversed)": 11,
+   "AB with words between": 10
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "brain",
+    "stimulation",
+    23
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "stimulation",
+    10
+   ],
+   [
+    "AB with words between",
+    "brain",
+    "stimulation",
+    8
+   ],
+   [
+    "AB with words between",
+    "brains",
+    "stimulation",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "brain",
+    "stimulated",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Modeling an auditory stimulated brain under altered states of consciousness",
+    "profile curve identification to understand electrical stimulation effects in human brain networks",
+    "profile curve identification to understand electrical stimulation effects in human brain networks' by Miller,",
+    "brain in response to focused ultrasound stimulation of the brain.",
+    "study contains open-loop electrical stimulation of the brain during encoding.",
+    "study contains open-loop electrical stimulation of the brain during encoding.",
+    "study contains open-loop electrical stimulation of the brain during encoding or retrieval.",
+    "study contains closed-loop electrical stimulation of the brain during encoding."
+   ],
+   "AB with words between": [
+    "experiment was designed to entrain the brain oscillations through synthetic auditory stimulation conducted on a group of",
+    "experiment was designed to entrain the brain oscillations through synthetic auditory stimulation conducted on a group of",
+    "General anesthetics, isoflurane, reverses brain-wide activation by DRN stimulation - Functional map was correlated",
+    "Human brain responses to concomitant stimulation of A\ufffd\ufffd and",
+    "Persistent Effects: tDUS effects on brain activity persisted after stimulation ceased.",
+    "While fMRI studies show consistent brain activity changes during mechanical stimulation in post-surgical pain",
+    "images measure the temperature of the brain in response to ultrasound stimulation.",
+    "hemisphere to enable access to the brain for electrophysiological recording and stimulation."
+   ]
+  }
+ },
+ "attention+shift": {
+  "classes": {
+   "AB adjacent, nominal": 3,
+   "BA (reversed)": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "attention",
+    "shift",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "attention",
+    "shifted",
+    2
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "If infants shifted their attention away from the screen,",
+    "If infants shifted their attention away from the screen,"
+   ]
+  }
+ },
+ "band+filter": {
+  "classes": {
+   "AB adjacent, nominal": 8,
+   "AB with words between": 23,
+   "BA (reversed)": 11,
+   "AB adjacent, verbal": 2
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "band",
+    "filter",
+    8
+   ],
+   [
+    "AB adjacent, nominal",
+    "bandpass",
+    "filter",
+    7
+   ],
+   [
+    "AB with words between",
+    "band",
+    "filtered",
+    7
+   ],
+   [
+    "AB with words between",
+    "band",
+    "filtering",
+    5
+   ],
+   [
+    "AB with words between",
+    "bandpower",
+    "filtered",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "band",
+    "filtered",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "band",
+    "filtering",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "band",
+    "filter",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "bandpass",
+    "filtering",
+    2
+   ],
+   [
+    "AB adjacent, verbal",
+    "bandpassed",
+    "filtered",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "bandpass",
+    "filtered",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "bandpass",
+    "filtered",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "bandpass",
+    "filtering",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "bandwidth",
+    "filter",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Hz and 0.5-30 Hz band-pass filtering respectively.",
+    "presentation are filtered with a Butterworth band stop filter (58-62 Hz",
+    "Bandpower of the filtered signal with a laplacian centred",
+    "Next, we band-pass filtered the data by applying a",
+    "applied a 0.5-40 Hz band-pass filter to remove slow DC drifts",
+    "After the data acquisition, a band-pass filter (0.5\u2013100 Hz) and",
+    "were sampled at 2 kHz and band-pass filtered between 0.03 and 600 Hz",
+    "bar stimuli consisting of curved, band-pass filtered lines that were swept across"
+   ],
+   "BA (reversed)": [
+    "method contains information about the laplacian filtered used and the frequency band of interest.",
+    "reference) 4. **Filtering**: - Bandpass FIR: 1-40",
+    "Filtering included band pass, first round of",
+    "Filtering included band pass, first round of",
+    "The first one has a filter band of 0.5-80 Hz",
+    "and the second one has a filter band of 0.5-30 Hz",
+    "$x$ is the EEG signal filtered into a frequency band and $\\sigma^2$ is",
+    "preprocessing) - **Online filtering**: 0.1-100 Hz bandpass - **Setup*"
+   ],
+   "AB adjacent, verbal": [
+    "regressors (all nuisance regressors were bandpassed filtered with the same filter as",
+    "were sampled at 1,000 Hz and bandpass-filtered online between 0 and 500"
+   ]
+  }
+ },
+ "source+locali": {
+  "classes": {
+   "AB adjacent, nominal": 8,
+   "BA (reversed)": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "source",
+    "localization",
+    8
+   ],
+   [
+    "BA (reversed)",
+    "sources",
+    "localize",
+    2
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "initially tested in their ability to localize elevated sound sources.",
+    "initially tested in their ability to localize elevated sound sources."
+   ]
+  }
+ },
+ "language+comprehen": {
+  "classes": {
+   "AB adjacent, nominal": 9,
+   "BA (reversed)": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "language",
+    "comprehension",
+    9
+   ],
+   [
+    "BA (reversed)",
+    "language",
+    "comprehensive",
+    2
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "standard scores \u2265 80 on the Comprehensive Assessment of Spoken Language, 2nd Edition.",
+    "T scanners, along with a comprehensive behavioral assessment of bilingual language experience using both questionnaires and"
+   ]
+  }
+ },
+ "motor+imag": {
+  "classes": {
+   "AB adjacent, nominal": 34,
+   "AB with words between": 6
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "motor",
+    "imagery",
+    33
+   ],
+   [
+    "AB with words between",
+    "motor",
+    "imagery",
+    5
+   ],
+   [
+    "AB adjacent, nominal",
+    "motor",
+    "imagery(mi",
+    1
+   ],
+   [
+    "AB with words between",
+    "motor",
+    "imaging",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "the start of the Task (Motor Execution Motor Imagery or Neurofeedback) Warning :",
+    "the start of the Task (Motor Execution Motor Imagery or Neurofeedback) Warning :",
+    "EEG Motor Movement/Imagery Dataset",
+    "This is a motor neuron disease (MND) imaging dataset generated by the Steyn",
+    "\"Basketball Motor Observation and Motor Imagery EEG Dataset\" \"=",
+    "participants performing 3 basketball-related motor observation and motor imagery tasks.\""
+   ]
+  }
+ },
+ "word+read": {
+  "classes": {
+   "BA (reversed)": 8,
+   "AB adjacent, nominal": 3,
+   "AB with words between": 3,
+   "AB adjacent, verbal": 1
+  },
+  "forms": [
+   [
+    "BA (reversed)",
+    "words",
+    "reading",
+    4
+   ],
+   [
+    "AB adjacent, nominal",
+    "word",
+    "reading",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "word",
+    "readme",
+    2
+   ],
+   [
+    "AB with words between",
+    "words",
+    "reading",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "words",
+    "read",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "words",
+    "read",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "words",
+    "reading",
+    1
+   ],
+   [
+    "AB with words between",
+    "word",
+    "reading",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "word",
+    "reading",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "Emojis influence autobiographical memory retrieval from reading words: An fMRI-based",
+    ", the participants are instructed to read attentively the presented words and think about its related",
+    "# **README** **Data for Engaging in word recognition elicits highly specific modulations",
+    "* Reading_Speed: reading speed in words per minute.",
+    "# README Word Processing Task from the PURSUE",
+    "Bilingual language processing: reading words, sentences, and narratives",
+    "baseline (false fonts): - reading lists of words (1s per word,",
+    "Reading materials with word-level coordinate information."
+   ],
+   "AB with words between": [
+    "All targets and flankers were content words under a 6th grade reading level; plural words and",
+    "All targets and flankers were content words under a 6th grade reading level; plural words and",
+    "lists of words (1s per word, 30 words per block) - reading lists of unrelated sentences ("
+   ],
+   "AB adjacent, verbal": [
+    ") reading speed, expressed in words read per minute, and 4"
+   ]
+  }
+ },
+ "music+listen": {
+  "classes": {
+   "AB adjacent, nominal": 12,
+   "BA (reversed)": 21,
+   "AB with words between": 5
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "music",
+    "listening",
+    12
+   ],
+   [
+    "BA (reversed)",
+    "music",
+    "listened",
+    10
+   ],
+   [
+    "BA (reversed)",
+    "music",
+    "listening",
+    8
+   ],
+   [
+    "AB with words between",
+    "music",
+    "listening",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "music\u052d",
+    "listening",
+    1
+   ],
+   [
+    "AB with words between",
+    "music",
+    "listener",
+    1
+   ],
+   [
+    "AB with words between",
+    "musicians",
+    "listen",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "musical",
+    "listened",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "music",
+    "listen",
+    1
+   ],
+   [
+    "AB with words between",
+    "musical",
+    "listen",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "EEG-fMRI modality while they listened to a set of music stimuli chosen and generated to",
+    "66, 18 female) while listening to the music clips, together with the",
+    ", 21 males) while they listened to various music pieces.",
+    "during approach-withdrawal behaviour while listening to music.",
+    "Participants listened to musical sequences with varying levels of",
+    "\u201csub-sid001401/2548/2564/2566/2589\u201d) listened to music clips of Bach chorals and",
+    "During the \"Listen\" condition, participants heard a music stimulus which was an excerpt",
+    "time control of the system while listening to the music clips, together with the"
+   ],
+   "AB with words between": [
+    "the first 20 s, the music clip places the listener in emotional state A,",
+    "The musicians were instructed to listen to chord progressions, that",
+    "Type of event (either 'Music' for music listening or 'Rating' for",
+    "and attend to visual cues (musical note symbol: listen to music; dash:",
+    "musical note symbol: listen to music; dash: silence) while listening to the auditory stimuli."
+   ]
+  }
+ },
+ "sentence+comprehen": {
+  "classes": {
+   "AB with words between": 2,
+   "BA (reversed)": 2,
+   "AB adjacent, nominal": 1
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "sentences",
+    "comprehension",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "sentences",
+    "comprehension",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "sentence",
+    "comprehension",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "Participants were asked to read sentences silently for comprehension and no response was required",
+    "L2 speakers were asked to read sentences silently for comprehension and no response was required"
+   ],
+   "BA (reversed)": [
+    "this research was to characterize the comprehension of metaphorical sentences with functional connectivity in a",
+    ", 2nd Edition), language comprehension (Formulated Sentences and Understanding Spoken Paragraphs from"
+   ]
+  }
+ },
+ "face+recogni": {
+  "classes": {
+   "AB with words between": 1,
+   "AB adjacent, nominal": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "face",
+    "recognition",
+    2
+   ],
+   [
+    "AB with words between",
+    "face",
+    "recognition",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "8th IEEE International Conference on Automatic Face and Gesture Recognition."
+   ]
+  }
+ },
+ "picture+nam": {
+  "classes": {
+   "AB with words between": 1,
+   "BA (reversed)": 6,
+   "AB adjacent, nominal": 12
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "picture",
+    "naming",
+    12
+   ],
+   [
+    "BA (reversed)",
+    "pictures",
+    "name",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "picture",
+    "name",
+    2
+   ],
+   [
+    "AB with words between",
+    "picture",
+    "naming",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "pictures",
+    "named",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "for the 2 s prior to picture onset, a word naming that picture was presented on"
+   ],
+   "BA (reversed)": [
+    "* Visual naming-->subject asked to name 80 pictures.",
+    "Participants were required to name the pictures shown on a screen.",
+    "and were instructed to retrieve the name of the pictures covertly and judge whether the",
+    "on white to-be-named line drawings, with 50 pictures in the Semantic category and",
+    "semantically related, were the same name as the picture, or were unrelated to",
+    "Participants were told to name each picture as quickly as possible in"
+   ]
+  }
+ },
+ "sequence+learn": {
+  "classes": {
+   "AB adjacent, nominal": 14,
+   "BA (reversed)": 3,
+   "AB with words between": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "sequence",
+    "learning",
+    14
+   ],
+   [
+    "BA (reversed)",
+    "sequences",
+    "learned",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "sequence",
+    "learningblock",
+    1
+   ],
+   [
+    "AB with words between",
+    "sequence",
+    "learned",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "reaction time task during the \"learningblock\" scans, during which sequence exposure occurred.",
+    "activity should increase with MDL for learned sequences, and decrease with MDL",
+    "activity should increase with MDL for learned sequences, and decrease with MDL"
+   ],
+   "AB with words between": [
+    "**Task:** Visual sequence mismatch detection (VISSEQ) \u2014 participants learned five-object sequences defined"
+   ]
+  }
+ },
+ "video+view": {
+  "classes": {
+   "BA (reversed)": 34,
+   "AB with words between": 2,
+   "AB adjacent, nominal": 3,
+   "AB adjacent, verbal": 1
+  },
+  "forms": [
+   [
+    "BA (reversed)",
+    "videos",
+    "watched",
+    8
+   ],
+   [
+    "BA (reversed)",
+    "video",
+    "watch",
+    6
+   ],
+   [
+    "BA (reversed)",
+    "video",
+    "viewed",
+    5
+   ],
+   [
+    "BA (reversed)",
+    "videos",
+    "viewed",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "video",
+    "watched",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "video",
+    "watching",
+    3
+   ],
+   [
+    "BA (reversed)",
+    "videos",
+    "watching",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "videos",
+    "watch",
+    2
+   ],
+   [
+    "AB adjacent, nominal",
+    "video",
+    "watching",
+    2
+   ],
+   [
+    "AB with words between",
+    "videos",
+    "viewing",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "video",
+    "viewing",
+    1
+   ],
+   [
+    "AB with words between",
+    "video",
+    "watched",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "video",
+    "watch",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "They were instructed to watch the LCD video monitor that was at a",
+    "-isolating booth and rested or watched silent videos with closed captioning.",
+    "Participants were asked to watch the 20-second videos and press a button on",
+    "The participants were instructed to watch a silent video (movie/cartoon)",
+    "We recorded EEG data while participants viewed rapid streams of videos adapted from the Validated Touch",
+    "Functional scans (fMRI): Participants viewed a 10\u2011minute video of themselves walking in the",
+    "acquired in two runs while participants viewed a 10-minute video, along with a separate",
+    "passively listened to background sentences while watching a video."
+   ],
+   "AB with words between": [
+    "own- and other-infant affective videos and viewing and labeling adult affective faces",
+    "two images, one from the video they had just watched, the other taken from"
+   ],
+   "AB adjacent, verbal": [
+    "- Video: watch a video of a fish"
+   ]
+  }
+ },
+ "verb+generat": {
+  "classes": {
+   "AB adjacent, nominal": 2
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "verb",
+    "generation",
+    2
+   ]
+  ],
+  "samples": {}
+ },
+ "fear+condition": {
+  "classes": {
+   "AB with words between": 2,
+   "AB adjacent, verbal": 1,
+   "AB adjacent, nominal": 4
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "fear",
+    "conditioning",
+    4
+   ],
+   [
+    "AB with words between",
+    "fearful",
+    "condition",
+    1
+   ],
+   [
+    "AB adjacent, verbal",
+    "fear",
+    "conditioned",
+    1
+   ],
+   [
+    "AB with words between",
+    "fear",
+    "conditioned",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "presented with dynamic visual sequences of fearful faces (aversive condition), interleaved with sequences",
+    ": the neural correlates of differential fear acquisision to imagined conditioned stimuli"
+   ],
+   "AB adjacent, verbal": [
+    "can generate and regulate acquired differential fear conditioned reactivity"
+   ]
+  }
+ },
+ "face+perce": {
+  "classes": {
+   "AB adjacent, nominal": 5,
+   "AB with words between": 2,
+   "BA (reversed)": 3
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "face",
+    "perception",
+    5
+   ],
+   [
+    "AB with words between",
+    "faces",
+    "perceived",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "faces",
+    "perception",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "face",
+    "perceive",
+    1
+   ],
+   [
+    "BA (reversed)",
+    "faces",
+    "perceived",
+    1
+   ],
+   [
+    "AB with words between",
+    "face",
+    "perception",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "and dim blocks (when no faces should have been perceived), the instruction was",
+    "Face and object perception"
+   ],
+   "BA (reversed)": [
+    "implementation thereof for HYPerrealistic reconstruction of PERception (HYPER) of faces from brain recordings.",
+    "by acquiring fMRI data as participants perceive face images synthesized by the generator",
+    "emotional arousal would affect people's perceived realness of others' faces, given ambiguous information."
+   ]
+  }
+ },
+ "word+generat": {
+  "classes": {
+   "AB adjacent, nominal": 1
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "word",
+    "generation",
+    1
+   ]
+  ],
+  "samples": {}
+ },
+ "source+reconstruct": {
+  "classes": {
+   "BA (reversed)": 3,
+   "AB adjacent, nominal": 4
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "source",
+    "reconstruction",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "source",
+    "reconstruction",
+    2
+   ],
+   [
+    "BA (reversed)",
+    "sources",
+    "reconstructed",
+    1
+   ]
+  ],
+  "samples": {
+   "BA (reversed)": [
+    "used for connectivity analysis, alongside reconstructed beamforming EEG sources that can enable further cognitive",
+    "used for coregistration and cortical surface reconstruction for source analysis.",
+    "used for coregistration and cortical surface reconstruction for source analysis."
+   ]
+  }
+ },
+ "reward+learn": {
+  "classes": {
+   "AB with words between": 4,
+   "BA (reversed)": 1,
+   "AB adjacent, nominal": 1
+  },
+  "forms": [
+   [
+    "AB with words between",
+    "reward",
+    "learning",
+    4
+   ],
+   [
+    "BA (reversed)",
+    "reward",
+    "learning",
+    1
+   ],
+   [
+    "AB adjacent, nominal",
+    "reward",
+    "learning",
+    1
+   ]
+  ],
+  "samples": {
+   "AB with words between": [
+    "contains raw imaging data for the reward based motor learning task reported in Nick et",
+    "Reconfigurations of cortical manifold structure during reward-based motor learning.",
+    "- [ ] Reward-based motor learning task",
+    "Elekta Neuromag System) of the Reward Positivity during reinforcement learning."
+   ],
+   "BA (reversed)": [
+    "Visuomotor Rotation Learning and Reward-based motor learning"
+   ]
+  }
+ },
+ "emotion+recogni": {
+  "classes": {
+   "AB adjacent, nominal": 5
+  },
+  "forms": [
+   [
+    "AB adjacent, nominal",
+    "emotion",
+    "recognition",
+    5
+   ]
+  ],
+  "samples": {}
+ }
+}

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phrase review</title>
+<style>
+:root { --bg:#fbfaf8; --fg:#1d1d1b; --muted:#6b6862; --line:#e2dfd8; --card:#ffffff;
+        --accent:#2f5d8a; --mark:#fbe7a1; --on:#2f5d8a; --onfg:#ffffff; --warn:#a8461c; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#171716; --fg:#ecebe7; --muted:#a19d95; --line:#33322f;
+    --card:#1f1f1d; --accent:#8db4dc; --mark:#5c4b12; --on:#8db4dc; --onfg:#111; --warn:#e59a6f; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:16px; }
+header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; }
+h1 { font-size:20px; margin:0; }
+h2 { font-size:14px; margin:0 0 6px; color:var(--muted); font-weight:600; }
+.muted { color:var(--muted); }
+.warn { color:var(--warn); font-weight:600; }
+.bar { height:4px; background:var(--line); border-radius:2px; margin:10px 0 16px; }
+.bar div { height:100%; background:var(--accent); border-radius:2px; width:0; }
+.phrase { font-size:26px; font-weight:650; margin:4px 0 2px; }
+.facts { display:flex; flex-wrap:wrap; gap:6px 18px; margin:6px 0 14px; }
+.facts b { font-variant-numeric:tabular-nums; }
+.q { margin:0 0 8px; }
+.opts { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+.opts button { background:var(--card); color:var(--fg); border:1px solid var(--line);
+               border-radius:8px; padding:9px 10px; cursor:pointer; text-align:left; font:inherit; }
+.opts button.on { background:var(--on); color:var(--onfg); border-color:var(--on); }
+.k { display:inline-block; min-width:1.4em; font-weight:700; opacity:.7; }
+textarea { width:100%; background:var(--card); color:var(--fg); border:1px solid var(--line);
+           border-radius:8px; padding:8px; margin-top:12px; min-height:2.6em; font:inherit; }
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; min-width:0; }
+.snip { margin:0 0 10px; overflow-wrap:anywhere; }
+.snip .ds { color:var(--muted); font-size:12px; margin-right:6px; }
+mark { background:var(--mark); color:inherit; padding:0 2px; border-radius:3px; }
+.nav { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:16px; }
+.nav button, .nav label { background:var(--card); color:var(--fg); border:1px solid var(--line);
+             border-radius:8px; padding:7px 12px; cursor:pointer; font:inherit; }
+details { margin-top:18px; }
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } .opts { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Phrase review</h1>
+  <span class="muted" id="progress"></span>
+</header>
+<div class="bar"><div id="bar"></div></div>
+
+<p class="q muted">Is this a term? If yes, a search for it should match its words only when they stand together.</p>
+<div class="phrase" id="phrase"></div>
+<div class="facts" id="facts"></div>
+
+<div class="opts" id="opts"></div>
+<textarea id="note" placeholder="Note (optional)"></textarea>
+
+<div class="cols">
+  <div class="card"><h2>Written as the phrase</h2><div id="ex"></div></div>
+  <div class="card"><h2>Words in the text, but not together</h2><div id="apart"></div></div>
+</div>
+
+<div class="nav">
+  <button id="prev">← Back</button>
+  <button id="next">Next →</button>
+  <button id="skip">First unreviewed</button>
+  <button id="export">Export labels (JSON)</button>
+  <label>Import labels <input type="file" id="import" accept="application/json" hidden></label>
+  <span id="unsaved"></span>
+</div>
+<p class="muted">Keys: 1–4 label and advance, ← →, N note. Sorted by the number of datasets that contain all the words.</p>
+
+<details>
+  <summary>What the options mean</summary>
+  <p><b>Term</b>: the words together name one thing (a task, construct, condition, region, method or
+  acquisition setting). A search for it should require the words close together.<br>
+  <b>Boilerplate</b>: README housekeeping (licences, consent, ethics, curator notes, file layout). Nobody
+  searches for it; its words should not make a dataset match a search for something else.<br>
+  <b>Not a term</b>: words that often stand together but name nothing (names, "took place", URL pieces).<br>
+  <b>Unsure</b>: can't tell from the phrase and the examples.</p>
+  <p class="muted">Counts: <i>as phrase</i> = datasets that write the words together (space, hyphen or as one
+  word; never across a full stop or comma); <i>words anywhere</i> = datasets that contain all the words;
+  <i>short fields</i> = datasets whose name, description, study fields or LLM-read conditions have the phrase.
+  Labels are kept in this browser; export them, the file is what counts. Set __SET_ID__.</p>
+</details>
+</main>
+
+<script>
+const DATA = __DATA__;
+const KEY = "phrases:" + DATA.set_id;
+const OPTIONS = [["term", "Term"], ["boilerplate", "Boilerplate"], ["not_term", "Not a term"], ["unsure", "Unsure"]];
+const C = DATA.candidates;
+let store = {labels: {}, exported: 0};
+try { store = Object.assign(store, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+const labels = store.labels;
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+let i = 0;
+const done = () => C.filter(c => labels[c.id] && labels[c.id].label).length;
+const firstOpen = () => { const k = C.findIndex(c => !(labels[c.id] && labels[c.id].label)); return k < 0 ? 0 : k; };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+
+function snippets(list, empty) {
+  if (!list.length) return `<p class="snip muted">${empty}</p>`;
+  return list.map(s => `<p class="snip"><span class="ds">${esc(s.dataset)}</span>${esc(s.before)}` +
+                       `<mark>${esc(s.match)}</mark>${esc(s.after)}</p>`).join("");
+}
+
+function render() {
+  const c = C[i], cur = labels[c.id] || {};
+  $("phrase").textContent = c.forms.join(" / ");
+  const sp = Object.entries(c.spellings).map(([k, v]) => `${k} ${v}`).join(", ");
+  $("facts").innerHTML =
+    `<span>as phrase <b>${c.datasets_phrase}</b></span>` +
+    `<span>words anywhere <b>${c.datasets_words_anywhere}</b></span>` +
+    `<span>short fields <b>${c.datasets_phrase_short_fields}</b></span>` +
+    `<span class="muted">spellings: ${esc(sp)}</span>` +
+    `<span class="muted">from: ${esc(c.sources.join(", "))}</span>`;
+  $("ex").innerHTML = snippets(c.examples, "No example.");
+  $("apart").innerHTML = snippets(c.words_apart, "Every dataset with these words has them together.");
+  $("opts").innerHTML = OPTIONS.map(([v, t], k) =>
+    `<button data-v="${v}" class="${cur.label === v ? "on" : ""}"><span class="k">${k + 1}</span>${t}</button>`).join("");
+  $("note").value = cur.note || "";
+  const n = done();
+  $("progress").textContent = `${i + 1} of ${C.length} · ${n} reviewed`;
+  $("bar").style.width = (100 * n / C.length) + "%";
+  const pending = n - (store.exported || 0);
+  $("unsaved").innerHTML = pending > 0 ? `<span class="warn">${pending} not exported yet</span>` : "";
+}
+
+function setLabel(v) {
+  const c = C[i];
+  labels[c.id] = Object.assign({}, labels[c.id], {label: v, phrase: c.phrase, at: new Date().toISOString()});
+  save();
+  if (i < C.length - 1) i++;
+  render();
+}
+
+$("opts").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setLabel(b.dataset.v); });
+$("note").addEventListener("input", e => {
+  const c = C[i]; labels[c.id] = Object.assign({}, labels[c.id], {phrase: c.phrase, note: e.target.value}); save(); });
+$("prev").onclick = () => { if (i > 0) { i--; render(); } };
+$("next").onclick = () => { if (i < C.length - 1) { i++; render(); } };
+$("skip").onclick = () => { i = firstOpen(); render(); };
+$("export").onclick = () => {
+  const blob = new Blob([JSON.stringify({set_id: DATA.set_id, labels}, null, 1)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "phrase_labels.json"; a.click();
+  store.exported = done(); save(); render();
+};
+$("import").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => {
+    const d = JSON.parse(t);
+    if (d.set_id !== DATA.set_id) { alert(`This file is for set ${d.set_id}, not ${DATA.set_id}.`); return; }
+    Object.assign(labels, d.labels || {}); store.exported = done(); save(); i = firstOpen(); render();
+  }).catch(() => alert("Not a label file."));
+};
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "TEXTAREA") { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.key >= "1" && e.key <= "4") setLabel(OPTIONS[+e.key - 1][0]);
+  else if (e.key === "ArrowLeft") $("prev").click();
+  else if (e.key === "ArrowRight") $("next").click();
+  else if (e.key === "n" || e.key === "N") { e.preventDefault(); $("note").focus(); }
+});
+i = firstOpen();
+render();
+</script>
+</body>
+</html>
