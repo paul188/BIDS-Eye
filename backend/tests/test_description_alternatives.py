@@ -14,7 +14,7 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 from services.results import query_filters  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
-from services.fulltext import ranking, text_search, uncertain_tier, word_frequencies  # noqa: E402
+from services.fulltext import ranking, text_search, tier_text, word_frequencies  # noqa: E402
 
 
 def _plan(**fields) -> pp.QueryPlan:
@@ -98,7 +98,7 @@ def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
 
     # Only the user's own words get a weaker form, not the alternatives; and
     # "people" alone is none (without counts the longer word would be kept).
-    relaxed, _ = uncertain_tier.relax_text_condition(sql)
+    relaxed, _ = tier_text.relax_text_condition(sql)
     assert relaxed is None or ("mortem" not in relaxed and "vivo" not in relaxed)
     assert relaxed is None or "'people'" not in relaxed
 

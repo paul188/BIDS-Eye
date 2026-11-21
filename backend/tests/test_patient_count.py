@@ -20,7 +20,7 @@ from preprocess import (  # noqa: E402
     ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement,
     _build_augmented_question,
 )
-from services.fulltext import uncertain_tier  # noqa: E402
+from services.fulltext import tier_classify, uncertain_tier  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql  # noqa: E402
 
 PD = ResolvedTerms(field=RAGField.DIAGNOSIS, term_to_codes={
@@ -152,7 +152,7 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
     import sqlglot
     expanded = cohort_count.confirmed_sql(["parkinsons_disease"], 40)
     select = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {expanded}", read="postgres")
-    soft = uncertain_tier.classify(select.args["where"].this, "d")
+    soft = tier_classify.classify(select.args["where"].this, "d")
     assert soft is not None and soft.kind == "patient_count"
     assert soft.known is None and "cohort_k" in soft.probable
 
@@ -160,7 +160,7 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
 def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
     from services.catalogue import schema_capabilities
     monkeypatch.setattr(schema_capabilities, "_has_subject_counts", True)
-    soft = uncertain_tier._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
+    soft = tier_classify._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
     assert "d.n_subjects" in soft.probable and "bids_objects" not in soft.probable
 
 

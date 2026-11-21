@@ -5,5 +5,10 @@
   ranking.py           the text rank and the rank string
   word_frequencies.py  how many datasets match a tsquery
   vectors.py           the stored vectors and the switches that choose them
-  uncertain_tier.py    the tier of datasets a filter cannot check
+  uncertain_tier.py    the tier of datasets a filter cannot check, and its parts:
+    tier_classify.py   which states a condition can take
+    tier_text.py       weaker forms of a text search
+    tier_sex.py        participant sex in the text
+    tier_scanner.py    field strength, vendor and model in the text
+    tier_conditions.py SoftCondition and what the parts share
 """

@@ -114,13 +114,13 @@ def test_other_words_stay_a_text_search() -> None:
 def test_uncertain_tier_keeps_readme_mentions_as_probable() -> None:
     pytest.importorskip("sqlglot")
     import sqlglot
-    from services.fulltext import uncertain_tier
+    from services.fulltext import tier_classify, uncertain_tier
 
     sql = _expanded(age_condition(["children"]))
     tree = sqlglot.parse_one(sql, read="postgres")
     kinds = []
     for node in uncertain_tier._flatten_and(tree.args["where"].this):
-        condition = uncertain_tier.classify(node, "d", papers=True)
+        condition = tier_classify.classify(node, "d", papers=True)
         kinds.append(condition.kind if condition else None)
         if condition and condition.kind == "age":
             assert "children" in condition.probable and "adolescents" in condition.probable

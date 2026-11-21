@@ -19,7 +19,7 @@ import word_forms
 from services.results import query_filters as qf
 from services.catalogue import schema_capabilities as caps
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
-from services.fulltext import uncertain_tier as ut
+from services.fulltext import tier_text, uncertain_tier as ut
 from services.catalogue import word_form_store
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from word_forms import WordEvidence
@@ -267,10 +267,10 @@ def test_a_negated_guard_is_not_a_search_word(exact) -> None:
 
 def test_guard_for_follows_the_words_that_remain() -> None:
     guard = "(ageing:AB | aging:AB) & weight:AB"
-    assert ut.guard_for("ageing & brain", guard) == "(ageing | aging)"
-    assert ut.guard_for("brain", guard) is None
-    assert ut.guard_for("weight & ageing", guard) == "(ageing | aging) & weight"
-    assert ut.guard_for("ageing", None) is None
+    assert tier_text.guard_for("ageing & brain", guard) == "(ageing | aging)"
+    assert tier_text.guard_for("brain", guard) is None
+    assert tier_text.guard_for("weight & ageing", guard) == "(ageing | aging) & weight"
+    assert tier_text.guard_for("ageing", None) is None
 
 
 def test_the_weaker_form_keeps_the_word_forms(exact, monkeypatch) -> None:
@@ -288,7 +288,7 @@ def test_the_weaker_form_keeps_the_word_forms(exact, monkeypatch) -> None:
 
 
 def test_scope_widening_keeps_the_guard_without_labels(exact) -> None:
-    relaxed, words = ut.relax_text_condition(
+    relaxed, words = tier_text.relax_text_condition(
         "d.search_tsv @@ TO_TSQUERY('english', 'weight:AB') "
         "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight:AB | weights:AB)')")
     assert relaxed == ("(d.search_tsv @@ TO_TSQUERY('english', 'weight') "

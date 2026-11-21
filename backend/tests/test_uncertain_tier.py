@@ -6,7 +6,7 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
-from services.fulltext import tsquery, uncertain_tier as ut, word_frequencies  # noqa: E402
+from services.fulltext import tier_conditions, tier_text, tsquery, uncertain_tier as ut, word_frequencies  # noqa: E402
 
 BASE = (
     "SELECT d.id, d.name, d.accession_id, COUNT(DISTINCT o.subject) AS subject_count "
@@ -27,24 +27,24 @@ def _counts(monkeypatch):
 
 
 def test_relax_keeps_the_rarer_half_and_drops_scope_labels() -> None:
-    assert ut.relax_tsquery("young & children") == "children"
-    assert ut.relax_tsquery("evaluated & resective & surgery") == "resective & surgery"
-    assert ut.relax_tsquery("language:AB") == "language"
-    assert ut.relax_tsquery("children") is None
+    assert tier_text.relax_tsquery("young & children") == "children"
+    assert tier_text.relax_tsquery("evaluated & resective & surgery") == "resective & surgery"
+    assert tier_text.relax_tsquery("language:AB") == "language"
+    assert tier_text.relax_tsquery("children") is None
 
 
 def test_age_range_and_group_words() -> None:
     sql = ("(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
            "AND p2.age BETWEEN 10 AND 19) OR d.age_min >= 10)")
-    low, high = ut.asked_age_range(sql)
+    low, high = tier_text.asked_age_range(sql)
     assert (low, high) == (10, 19)
-    words = ut.age_group_words(low, high)
+    words = tier_text.age_group_words(low, high)
     assert "adolescents" in words and "children" not in words and "adults" not in words
-    assert "adolescent" not in ut.age_group_words(18, 120)
-    older = ut.age_group_words(60, 120)
+    assert "adolescent" not in tier_text.age_group_words(18, 120)
+    older = tier_text.age_group_words(60, 120)
     assert "elderly" in older and "adults" not in older and "aging" not in older
-    assert "elderly" not in ut.age_group_words(18, 65)
-    assert ut.age_group_words(0, 120) == []
+    assert "elderly" not in tier_text.age_group_words(18, 65)
+    assert tier_text.age_group_words(0, 120) == []
 
 
 def test_modality_stays_hard_and_text_becomes_a_tier() -> None:
@@ -111,7 +111,7 @@ def test_paper_text_is_second_tier_evidence() -> None:
     tiered = ut.apply(sql, papers=True)
     assert ("d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo') "
             "AND NOT d.search_tsv @@ TO_TSQUERY('english', 'placebo')") in tiered
-    assert ut.PAPER_REASON in tiered
+    assert tier_conditions.PAPER_REASON in tiered
     # Confirmation still uses the dataset's own text.
     assert "(d.search_tsv @@ TO_TSQUERY('english', 'placebo')) AS confirmed_0" in tiered
     assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN ev.probable_0 THEN 1 ELSE 9 END AS u0" in tiered
@@ -155,7 +155,7 @@ def test_modifiers_are_not_kept_alone() -> None:
     original = word_frequencies._lookup_counts
     word_frequencies._lookup_counts = lambda qs: [{"young": 54, "children": 63}.get(q, 1000) for q in qs]
     try:
-        assert ut.relax_tsquery("young & children") == "children"
+        assert tier_text.relax_tsquery("young & children") == "children"
     finally:
         word_frequencies._lookup_counts = original
 
@@ -226,4 +226,4 @@ def test_guarded_pair_in_extra_parentheses_stays_whole() -> None:
 
 def test_rare_never_stands_for_rare_diseases() -> None:
     # "rare" alone found the RARE MRI sequence of mouse studies (live, 2026-11-20).
-    assert ut.relax_tsquery("rare & diseases") is None
+    assert tier_text.relax_tsquery("rare & diseases") is None

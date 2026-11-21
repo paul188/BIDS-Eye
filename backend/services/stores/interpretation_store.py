@@ -69,6 +69,11 @@ _VERSION_FILES = (
     _BACKEND / "services" / "translate" / "text_to_sql.py",
     _BACKEND / "services" / "translate" / "value_check.py",
     _BACKEND / "services" / "fulltext" / "uncertain_tier.py",
+    _BACKEND / "services" / "fulltext" / "tier_classify.py",
+    _BACKEND / "services" / "fulltext" / "tier_conditions.py",
+    _BACKEND / "services" / "fulltext" / "tier_scanner.py",
+    _BACKEND / "services" / "fulltext" / "tier_sex.py",
+    _BACKEND / "services" / "fulltext" / "tier_text.py",
     _BACKEND / "services" / "catalogue" / "word_form_store.py",
     _BACKEND / "worker_db.py",
 )

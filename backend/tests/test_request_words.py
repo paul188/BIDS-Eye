@@ -1,6 +1,6 @@
 """Fixes from the 70-request gold set (benchmarks/demand/results/2026-11-15_failure_causes_5f91230.md)."""
 import preprocess
-from services.fulltext import uncertain_tier
+from services.fulltext import tier_text
 
 
 def test_request_words_are_not_searched_as_text():
@@ -12,9 +12,9 @@ def test_request_words_are_not_searched_as_text():
 def test_a_generic_word_is_no_weak_evidence(monkeypatch):
     from services.fulltext import word_frequencies
     monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda parts: [5 for _ in parts])
-    assert uncertain_tier.relax_tsquery("resting:AB & state:AB") is None
-    assert uncertain_tier.relax_tsquery("bipolar:AB & syndrome:AB") == "bipolar"
-    assert uncertain_tier.relax_tsquery("young & children") == "children"
+    assert tier_text.relax_tsquery("resting:AB & state:AB") is None
+    assert tier_text.relax_tsquery("bipolar:AB & syndrome:AB") == "bipolar"
+    assert tier_text.relax_tsquery("young & children") == "children"
 
 
 def test_text_filters_the_sql_model_invented_are_dropped():

@@ -14,7 +14,7 @@ import uuid
 
 import pytest
 
-from services.fulltext import uncertain_tier as ut
+from services.fulltext import tier_scanner, uncertain_tier as ut
 
 from tests.test_scanner_sex_venues import (
     FEMALE, GE_OR_PHILIPS, ONLY_FEMALE, PRISMA, STRENGTH_7T, STRENGTH_7T_FMRI, _HEAD)
@@ -182,9 +182,9 @@ def test_field_strength_pattern_is_the_same_in_python_and_postgres(strengths):
         "ses-7T", "7 T1w", "200 T/m/s", "1.5T", "1,5 T", "1.5 Tesla", "11.5T", "3T", "3.0 T",
         "a 3T scanner", "9.4T", "10.5 T", "14T", "4.7T", "TESLA", "7TESLA", "x7T", "7Tx", "_7T",
     ]
-    python = re.compile(ut.field_strength_regex(strengths))
-    postgres = ut.field_strength_regex(strengths, postgres=True)
-    prefilter = ut._strength_tsquery(strengths)
+    python = re.compile(tier_scanner.field_strength_regex(strengths))
+    postgres = tier_scanner.field_strength_regex(strengths, postgres=True)
+    prefilter = tier_scanner._strength_tsquery(strengths)
 
     async def compare():
         engine = create_async_engine(DSN)

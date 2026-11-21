@@ -10,7 +10,7 @@ import pytest
 import sqlglot
 from sqlglot import exp
 
-from services.fulltext import uncertain_tier as ut
+from services.fulltext import tier_classify, tier_scanner, uncertain_tier as ut
 from services.results import query_filters as qf
 
 _HEAD = "SELECT d.id, d.name FROM bids_datasets AS d WHERE "
@@ -40,7 +40,7 @@ def _node(condition: str):
 
 
 def _classify(condition: str):
-    return ut.classify(_node(condition), "d")
+    return tier_classify.classify(_node(condition), "d")
 
 
 # ── Field strength: what is asked, and the pattern ────────────────────────────
@@ -56,7 +56,7 @@ def _classify(condition: str):
 ])
 def test_asked_field_strengths(condition, expected):
     node = _node(f"EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND {condition})")
-    assert ut.asked_field_strengths(node) == expected
+    assert tier_scanner.asked_field_strengths(node) == expected
 
 
 @pytest.mark.parametrize(("text", "hit"), [
@@ -74,11 +74,11 @@ def test_asked_field_strengths(condition, expected):
     ("3T Prisma", False),
 ])
 def test_field_strength_regex_in_python(text, hit):
-    assert bool(re.search(ut.field_strength_regex([7.0]), text)) is hit
+    assert bool(re.search(tier_scanner.field_strength_regex([7.0]), text)) is hit
 
 
 def test_postgres_form_has_no_backslashes():
-    pattern = ut.field_strength_regex([1.5, 7.0], postgres=True)
+    pattern = tier_scanner.field_strength_regex([1.5, 7.0], postgres=True)
     assert "\\" not in pattern and "[[:alnum:]_" in pattern and "1[.,]50*" in pattern
     # SQLAlchemy's text() would read ":7" / ":T" after "(?" as bind parameters.
     assert "(?:" not in pattern
@@ -93,9 +93,9 @@ def _as_run(sql: str) -> str:
     from sqlalchemy import text
     from sqlalchemy.dialects.postgresql import asyncpg
     return str(text(sql).compile(dialect=asyncpg.dialect()))
-    assert ut.field_strength_regex([]) is None
+    assert tier_scanner.field_strength_regex([]) is None
     # Display and translation share one pattern.
-    assert qf.field_strength_pattern([7.0]).pattern == ut.field_strength_regex([7.0])
+    assert qf.field_strength_pattern([7.0]).pattern == tier_scanner.field_strength_regex([7.0])
 
 
 # ── Sidecar conditions in the tier ────────────────────────────────────────────

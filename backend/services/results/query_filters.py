@@ -292,7 +292,7 @@ def _age_label(node) -> Optional[str]:
         columns = {c.name.lower() for c in node.find_all(exp.Column)}
         if not columns & {"age_min", "age_max"}:
             return None
-        from services.fulltext.uncertain_tier import asked_age_range
+        from services.fulltext.tier_text import asked_age_range
         lo, hi = asked_age_range(node.sql(dialect="postgres"))
         low = (lo, True) if lo > 0 else None
         high = (hi, True) if hi < 120 else None
@@ -452,16 +452,16 @@ def _venue_words(node) -> List[str]:
     the chip is labelled by the modality it shares a condition with: the
     page and highlight_field_strengths read it as a strength). Age words
     come with the age chip."""
-    from services.fulltext import uncertain_tier as tier
+    from services.fulltext import tier_scanner, tier_sex
     words: List[str] = []
-    sex = tier.asked_sex(node)
+    sex = tier_sex.asked_sex(node)
     if sex:
-        words.extend(tier.SEX_WORDS[sex])
-    words.extend(f"{strength:g}T" for strength in tier.asked_field_strengths(node))
+        words.extend(tier_sex.SEX_WORDS[sex])
+    words.extend(f"{strength:g}T" for strength in tier_scanner.asked_field_strengths(node))
     for key in ("Manufacturer", "ManufacturerModelName"):
-        values = tier._key_values(node, key)
+        values = tier_scanner._key_values(node, key)
         if values:
-            words.extend(tier.sidecar_words(key, values))
+            words.extend(tier_scanner.sidecar_words(key, values))
     return words
 
 
@@ -558,7 +558,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         # A README naming the age group is evidence too (the uncertain
         # tier's probable form, services/fulltext/uncertain_tier.py): its
         # words are what the page marks for a match on recorded ages.
-        from services.fulltext.uncertain_tier import age_group_words, asked_age_range
+        from services.fulltext.tier_text import age_group_words, asked_age_range
         group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
         searched.extend(w for w in group_words if w not in searched)
         return chip("age", "Age", age)
@@ -1018,7 +1018,7 @@ def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
 FIELD_STRENGTH_FIELD = "Magnetic field strength"
 # The strengths scanners are sold at (defined with the README venue of the
 # uncertain tier, which the translation uses; this module only displays).
-from services.fulltext.uncertain_tier import NOMINAL_TESLA  # noqa: E402
+from services.fulltext.tier_scanner import NOMINAL_TESLA  # noqa: E402
 _NUMBER = r"\d+(?:\.\d+)?"
 _RANGE_LABEL_RE = re.compile(rf"^({_NUMBER})–({_NUMBER})$")
 _BOUND_LABEL_RE = re.compile(rf"^(=|≥|>|≤|<) ({_NUMBER})$")
@@ -1065,7 +1065,7 @@ def field_strength_pattern(strengths: Iterable[float]) -> Optional["re.Pattern[s
     ("200 T/m/s"). Spaces include the thin ones some READMEs use. Checked on
     the 1,720 OpenNeuro READMEs of 2026-11: no false matches found.
     """
-    from services.fulltext.uncertain_tier import field_strength_regex
+    from services.fulltext.tier_scanner import field_strength_regex
     pattern = field_strength_regex(strengths)
     return re.compile(pattern) if pattern else None
 

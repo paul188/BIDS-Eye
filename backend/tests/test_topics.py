@@ -15,7 +15,7 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 import senses  # noqa: E402
 from services.results import query_filters  # noqa: E402
-from services.fulltext import text_search, tsquery, uncertain_tier, word_frequencies  # noqa: E402
+from services.fulltext import text_search, tier_text, tsquery, word_frequencies  # noqa: E402
 from text_terms import parse_alternatives  # noqa: E402
 
 SOCIAL = pp.Topic(
@@ -172,18 +172,18 @@ NEAR = "(social <1> conflict | social <2> conflict | conflict <1> social | confl
 
 
 def test_near_relaxes_to_all_words_never_to_the_head_alone() -> None:
-    assert uncertain_tier.relax_tsquery(f"{NEAR} | aggression") == "(social & conflict) | aggression"
-    assert uncertain_tier.query_words(NEAR) == ["social", "conflict"]
+    assert tier_text.relax_tsquery(f"{NEAR} | aggression") == "(social & conflict) | aggression"
+    assert tier_text.query_words(NEAR) == ["social", "conflict"]
 
 
 def test_excluded_meaning_demotes_instead_of_removing() -> None:
     sql = ("(d.search_tsv @@ TO_TSQUERY('english', '" + NEAR + "') OR "
            "(d.search_tsv @@ TO_TSQUERY('english', 'aggression') AND NOT "
            "d.search_tsv @@ TO_TSQUERY('english', 'stroop')))")
-    relaxed, words = uncertain_tier.relax_text_condition(sql)
+    relaxed, words = tier_text.relax_text_condition(sql)
     assert "'(social & conflict)'" in relaxed
     assert "'aggression'" in relaxed            # kept, without the NOT
-    reason = uncertain_tier.partial_reason(words)
+    reason = tier_text.partial_reason(words)
     assert reason == ("the words social, conflict occur, but not together, or a related term "
                       "occurs next to a meaning the search excludes (stroop)")
 
@@ -192,7 +192,7 @@ def test_only_the_phrase_of_a_topic_is_loosened() -> None:
     sql = ("(d.search_tsv @@ TO_TSQUERY('english', '" + NEAR + "') OR "
            "d.search_tsv @@ TO_TSQUERY('english', '(interpersonal <1> conflict | "
            "conflict <1> interpersonal)'))")
-    relaxed, _ = uncertain_tier.relax_text_condition(sql)
+    relaxed, _ = tier_text.relax_text_condition(sql)
     assert relaxed == "d.search_tsv @@ TO_TSQUERY('english', '(social & conflict)')"
 
 
