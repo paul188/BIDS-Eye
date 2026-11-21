@@ -41,12 +41,14 @@ RANK_NORMALIZATION = 32
 # search_tsv_exact, and the search that 'also' words widen. Not a tsquery
 # character.
 RANK_SEPARATOR = "#"
-# Taken off the text rank of a dataset that matches only the other words
-# ('also') of a search and not the search itself. Every ordering adds the
-# text rank (0..1) to the score of the matched codes (a sum of at most a few
-# dozen scores up to 1), so this puts such a dataset below every dataset
-# that matches the user's own words, and keeps the order among them.
-ALSO_ONLY_PENALTY = 100
+# Some searches get other words added: "dead people" also searches
+# "post-mortem | ex vivo", written text_match('post-mortem | ex vivo', 'also').
+# A dataset that has only those other words, not the user's own, goes after
+# every dataset that has the user's words: its text rank loses this much.
+# Why 100: results sort by matched codes (each up to 1, a few dozen at most)
+# plus the text rank (0..1), so nothing else can make up 100. All such
+# datasets lose the same amount, so their order among themselves stays.
+OTHER_WORDS_ONLY_GO_LAST = 100
 
 
 def join_rank(stemmed: Optional[str], exact: Optional[str],
@@ -86,14 +88,14 @@ def rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
 
     0..1; with both parts the raw ranks are added before scaling, as one
     query over one vector would have done. A dataset that matches only the
-    other words of a search ('also') gets ALSO_ONLY_PENALTY taken off.
+    other words of a search ('also') loses OTHER_WORDS_ONLY_GO_LAST.
     """
     expression = _plain_rank_expression(alias, rank)
     own = rank_own(rank)
     if expression is None or not own:
         return expression
     return (f"({expression} - CASE WHEN {alias}.{FTS_COLUMN} @@ "
-            f"to_tsquery('{TS_CONFIG}', '{own}') THEN 0 ELSE {ALSO_ONLY_PENALTY} END)")
+            f"to_tsquery('{TS_CONFIG}', '{own}') THEN 0 ELSE {OTHER_WORDS_ONLY_GO_LAST} END)")
 
 
 def _plain_rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:

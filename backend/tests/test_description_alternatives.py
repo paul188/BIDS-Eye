@@ -172,7 +172,7 @@ def test_a_match_on_the_alternatives_only_ranks_below_the_users_words() -> None:
     expression = ranking.rank_expression("ft", rank)
     assert expression.endswith(
         "- CASE WHEN ft.search_tsv @@ to_tsquery('english', '(test <-> retest) & reliability') "
-        f"THEN 0 ELSE {ranking.ALSO_ONLY_PENALTY} END)")
+        f"THEN 0 ELSE {ranking.OTHER_WORDS_ONLY_GO_LAST} END)")
     # Without the 'also' part every match ranks alike, as a 'near' search does.
     flat = ranking.without_own(rank)
     assert flat == stemmed and "CASE" not in ranking.rank_expression("ft", flat)
