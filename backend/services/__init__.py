@@ -9,7 +9,7 @@ The stages it calls:
   translate/   question to SQL: model calls, the deterministic compiler, SQL rewrites
   fulltext/    full-text search inside the SQL, word form counts, and the tier of
                unconfirmed datasets
-  catalogue/   what the database contains: declared tables, column coverage, known values
+  catalogue/   what the database contains: column coverage, known values
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
   indexing/    offline LLM jobs over datasets (scripts/ and the crawler, not requests)

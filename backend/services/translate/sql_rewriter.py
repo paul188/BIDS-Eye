@@ -41,7 +41,7 @@ import cohort_count as _cohort_count  # noqa: E402
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
 from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
-from services.catalogue.tables import (  # noqa: E402
+from services.schema.tables import (  # noqa: E402
     dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
 )
 from services.translate import value_check as _value_check  # noqa: E402

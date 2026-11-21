@@ -249,7 +249,7 @@ def _file_set(inner: str, files: List[str], columns: set) -> Tuple[str, Optional
     where = " AND ".join(f"({p})" for p in files)
     try:
         from services.catalogue.catalogue import Catalogue, catalogue
-        from services.catalogue.tables import dataset_facets
+        from services.schema.tables import dataset_facets
         facets = catalogue.summaries.facets
     except ImportError:  # pragma: no cover
         facets = False

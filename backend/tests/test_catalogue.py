@@ -1,5 +1,5 @@
 """What the catalogue database holds, counted, and the startup schema check
-(services/catalogue/catalogue.py, services/catalogue/tables.py)."""
+(services/catalogue/catalogue.py, services/schema/)."""
 
 from __future__ import annotations
 
@@ -10,9 +10,9 @@ import pytest
 from sqlalchemy.exc import ProgrammingError
 
 from constants import OPTIONAL_DATASET_COLUMNS
-from services.catalogue import tables
-from services.catalogue.catalogue import (Catalogue, ColumnCoverage, MissingSchemaError, Summaries,
-                                          ValueCounts, catalogue, check_schema)
+from services.catalogue.catalogue import Catalogue, ColumnCoverage, Summaries, ValueCounts, catalogue
+from services.schema import tables
+from services.schema.check import MissingSchemaError, check_schema
 
 # Coded values as load() fills them: value → datasets.
 KNOWN = {
@@ -223,7 +223,7 @@ def test_the_shared_instance_starts_empty() -> None:
 # ── Schema ────────────────────────────────────────────────────────────────────
 
 def _all_columns(*, without=()):
-    return [(table.name, column.name) for table in tables.metadata.sorted_tables
+    return [(table.name, column.name) for table in tables.MIGRATED_TABLES
             for column in table.columns if (table.name, column.name) not in without]
 
 
@@ -278,3 +278,23 @@ def test_start_checks_the_schema_before_loading() -> None:
     with pytest.raises(MissingSchemaError):
         asyncio.run(state.start(_Engine(connection)))
     assert connection.reads == []
+
+
+def test_only_columns_from_a_migration_are_checked() -> None:
+    # name is created by BIDS-SQL itself; the same table object has it.
+    assert "name" in tables.datasets.c and "search_tsv" in tables.datasets.c
+    asyncio.run(check_schema(_Connection(columns=_all_columns(without={("bids_datasets", "name")}))))
+
+
+def test_bids_sql_neither_maps_nor_creates_the_added_columns() -> None:
+    from sqlalchemy import select
+    from sqlalchemy.dialects import postgresql
+    from sqlalchemy.schema import CreateTable
+
+    from db.models import BIDSDataset
+
+    assert tables.datasets is BIDSDataset.__table__
+    loads = str(select(BIDSDataset).compile(dialect=postgresql.dialect()))
+    creates = str(CreateTable(tables.datasets).compile(dialect=postgresql.dialect()))
+    assert "search_tsv" not in loads and "search_tsv" not in creates
+    assert "accession_id" in loads and "accession_id" in creates

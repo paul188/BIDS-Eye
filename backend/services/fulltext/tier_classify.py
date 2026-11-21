@@ -167,7 +167,7 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
     stored = None
     try:
         from services.catalogue.catalogue import catalogue
-        from services.catalogue.tables import datasets
+        from services.schema.tables import datasets
         if catalogue.summaries.subject_counts:
             stored = f"COALESCE({alias}.{datasets.c.n_subjects.name}, 0)"
     except ImportError:

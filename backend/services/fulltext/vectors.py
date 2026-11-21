@@ -21,8 +21,8 @@ How a search uses them: services/fulltext/text_search.py.
 
 from __future__ import annotations
 
-from services.catalogue import tables
-from services.catalogue.tables import datasets
+from services.schema import tables
+from services.schema.tables import datasets
 
 TS_CONFIG = "english"
 FTS_COLUMN = datasets.c.search_tsv.name

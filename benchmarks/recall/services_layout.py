@@ -29,7 +29,8 @@ GROUPS = {
     "fulltext": ("text_search", "tsquery", "ranking", "vectors", "word_frequencies",
                  "word_form_counts", "uncertain_tier", "tier_classify", "tier_conditions",
                  "tier_scanner", "tier_sex", "tier_text"),
-    "catalogue": ("catalogue", "tables", "schema_capabilities", "catalogue_values"),
+    "catalogue": ("catalogue", "schema_capabilities", "catalogue_values"),
+    "schema": ("tables", "check"),
     "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),
     "stores": ("interpretations", "translated_queries"),
     "indexing": ("readme_profile", "dataset_description"),
@@ -40,6 +41,9 @@ OLD_NAMES = {
     "word_form_counts": ("catalogue", "word_form_store"),
     "interpretations": ("stores", "interpretation_store"),
     "translated_queries": ("stores", "query_cache"),
+    "tables": ("catalogue", "tables"),
+    # check_schema was part of catalogue.py.
+    "check": ("catalogue", "catalogue"),
 }
 
 
@@ -63,8 +67,10 @@ class _OlderLayout(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         parts = name.split(".")
         if parts[0] != "services" or len(parts) not in (2, 3) or parts[1] not in GROUPS:
             return None
-        if len(parts) == 2:  # the group itself: an empty package in a flat backend
-            return importlib.util.spec_from_loader(name, self, is_package=True) if self._flat else None
+        if len(parts) == 2:
+            # The group itself, which this backend lacks (the finder is asked last): an
+            # empty package. A flat backend has no group, an older grouped one not all.
+            return importlib.util.spec_from_loader(name, self, is_package=True)
         if parts[2] not in GROUPS[parts[1]]:
             return None
         found = self._target(parts[1], parts[2])

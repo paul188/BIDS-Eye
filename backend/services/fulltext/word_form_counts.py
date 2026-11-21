@@ -35,7 +35,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from sqlalchemy import text
 
 import worker_db
-from services.catalogue.tables import datasets, word_forms
+from services.schema.tables import datasets, word_forms
 from services.fulltext import vectors
 
 from word_forms import WordEvidence
