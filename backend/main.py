@@ -33,7 +33,7 @@ import models     # noqa: F401 — registers backend-only models (query_log, etc
 import place_index
 import worker_db
 from db.db import create_all_tables, engine
-from services.catalogue.schema_capabilities import refresh_available_columns
+from services.catalogue.catalogue import catalogue
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -49,9 +49,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await create_all_tables()
     log.info("Database tables verified.")
 
-    # Record which optional dataset columns (README, OpenNeuro metadata,
-    # institutions) this database has filled; prompts only mention those.
-    await refresh_available_columns(engine)
+    # Stop when a migration is missing, then count what the catalogue holds:
+    # prompts mention only the columns enough datasets fill
+    # (services/catalogue/catalogue.py).
+    await catalogue.start(engine)
 
     # Distinct bids_datasets.institutions values, for resolving institution
     # names in questions (RAG/institution_index.py). Falls back to

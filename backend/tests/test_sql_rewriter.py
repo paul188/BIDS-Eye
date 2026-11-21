@@ -59,16 +59,14 @@ def test_rewrite_generated_sql_strips_bad_outer_filters_and_adds_vocab_miss_clau
         "text_match('alcohol', 'loose')]"
     )
 
-    # A database without the full-text column: the placeholder becomes ILIKE.
     rewritten = SERVICE.rewrite_generated_sql(raw_sql, augmented_question)
 
     assert "o.task = 'complex_motor_task'" not in rewritten.sql
     assert "text_match" not in rewritten.sql.lower()
-    assert "d.name ILIKE '%alcohol%'" in rewritten.sql
-    assert "d.description_text ILIKE '%alcohol%'" in rewritten.sql
+    assert "d.search_tsv @@ to_tsquery('english', 'alcohol')" in rewritten.sql
     assert "d.dataset_type = 'raw'" in rewritten.sql
     assert rewritten.params == {}
-    assert rewritten.rank_tsquery is None
+    assert rewritten.rank_tsquery == "alcohol"
 
 
 def test_build_count_and_page_sql_wrap_base_query() -> None:

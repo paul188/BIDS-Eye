@@ -200,7 +200,7 @@ def test_only_the_phrase_of_a_topic_is_loosened() -> None:
 
 def _expanded(condition: str) -> str:
     sql = f"SELECT d.id FROM bids_datasets AS d WHERE {condition} AND d.license = 'CC0' GROUP BY d.id"
-    return text_search.expand_text_search(sql, fts=True, papers=False).sql
+    return text_search.expand_text_search(sql, papers=False).sql
 
 
 def test_topic_gives_a_topic_chip_and_a_removable_exclusion() -> None:

@@ -55,11 +55,11 @@ _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 _VERSION_FILES = (
     _BACKEND / "constants.py",
     _BACKEND / "few_shot_examples.json",
-    _BACKEND / "services" / "catalogue" / "catalogue_values.py",
+    _BACKEND / "services" / "catalogue" / "catalogue.py",
+    _BACKEND / "services" / "catalogue" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
     _BACKEND / "services" / "translate" / "participant_query_compiler.py",
     _BACKEND / "services" / "query_guard.py",
-    _BACKEND / "services" / "catalogue" / "schema_capabilities.py",
     _BACKEND / "services" / "translate" / "sql_rewriter.py",
     _BACKEND / "services" / "fulltext" / "text_search.py",
     _BACKEND / "services" / "fulltext" / "tsquery.py",

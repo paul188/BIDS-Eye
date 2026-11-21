@@ -31,14 +31,15 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from sqlalchemy import text
 
 import worker_db
-from services.catalogue import schema_capabilities
+from services.catalogue.tables import datasets, word_forms
+from services.fulltext import vectors
 
 from word_forms import WordEvidence
 
 log = logging.getLogger(__name__)
 
-TABLE = "bids_word_forms"
-SOURCE_COLUMN = "search_tsv_exact"
+TABLE = word_forms.name
+SOURCE_COLUMN = datasets.c.search_tsv_exact.name
 
 TABLES_SQL: Tuple[str, ...] = (
     """CREATE TABLE IF NOT EXISTS bids_word_forms (
@@ -170,7 +171,7 @@ def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
     raises is a bug.
     """
     asked = [w for w in dict.fromkeys(words) if _WORD_RE.fullmatch(w)]
-    if not asked or not schema_capabilities.has_word_forms():
+    if not asked or not vectors.exact_enabled():
         return {}
     if _lookup is None:
         return {}

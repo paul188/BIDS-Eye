@@ -6,10 +6,10 @@ import pytest
 
 pytest.importorskip("sqlglot")
 
-from services.catalogue.catalogue_values import catalogue_values as cv  # noqa: E402
+from services.catalogue.catalogue import ValueCounts, catalogue  # noqa: E402
 from services.translate import value_check as vc  # noqa: E402
 
-# The cache as catalogue_values.load() fills it: value → datasets.
+# The values as catalogue.load() reads them: value → datasets.
 KNOWN = {
     "datatype": {"functional_mri": 40, "anatomical_mri": 55},
     "suffix": {"fmri_bold": 38, "t1_weighted_mri": 52},
@@ -21,8 +21,8 @@ LEAVES = {"suffix": {"bold": "fmri_bold", "t1w": "t1_weighted_mri"},
 
 
 @pytest.fixture(autouse=True)
-def catalogue(monkeypatch):
-    monkeypatch.setattr(cv, "_counts", dict(KNOWN))
+def known_values(monkeypatch):
+    monkeypatch.setattr(catalogue, "values", ValueCounts(dict(KNOWN)))
     monkeypatch.setattr(vc, "_vocabulary", lambda: (GROUPS, LEAVES))
     monkeypatch.delenv(vc.ENV, raising=False)
 
@@ -106,20 +106,20 @@ def test_off_without_known_values_or_by_switch(monkeypatch) -> None:
     monkeypatch.setenv(vc.ENV, "false")
     assert vc.check_sql(original) == (original, [])
     monkeypatch.delenv(vc.ENV)
-    cv.clear()
+    catalogue.clear()
     assert vc.check_sql(original) == (original, [])
 
 
 def test_off_while_only_the_participant_fields_are_cached(monkeypatch) -> None:
     # Facets table missing or incomplete: every suffix would look unknown.
-    monkeypatch.setattr(cv, "_counts", {"diagnosis": {"epilepsy": 7}, "sex": {}, "handedness": {}})
+    monkeypatch.setattr(catalogue, "values", ValueCounts({"diagnosis": {"epilepsy": 7}, "sex": {}, "handedness": {}}))
     original = _exists("o2.suffix = 'bold'")
     assert vc.check_sql(original) == (original, [])
 
 
 def test_diagnosis_values_are_never_checked(monkeypatch) -> None:
     # A dropped required diagnosis would widen the search to everything else.
-    monkeypatch.setattr(cv, "_counts", {**KNOWN, "diagnosis": {"epilepsy": 7}})
+    monkeypatch.setattr(catalogue, "values", ValueCounts({**KNOWN, "diagnosis": {"epilepsy": 7}}))
     original = ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM bids_participants AS p2 "
                 "WHERE p2.dataset_id = d.id AND p2.diagnosis = 'frontotemporal_dementia') GROUP BY d.id")
     assert vc.check_sql(original) == (original, [])
@@ -144,7 +144,7 @@ def test_rewriter_runs_the_check_and_reports_it() -> None:
 
 def test_real_vocabulary_knows_the_raw_suffixes(monkeypatch) -> None:
     monkeypatch.undo()  # the real vocabulary, RAG/value_mappings.yaml
-    monkeypatch.setattr(cv, "_counts", dict(KNOWN))
+    monkeypatch.setattr(catalogue, "values", ValueCounts(dict(KNOWN)))
     if vc._vocabulary() is None:  # pragma: no cover - vocabulary not on the path
         pytest.skip("vocabulary not importable")
     assert vc.correction("suffix", "bold") == ["fmri_bold"]
@@ -155,7 +155,7 @@ def test_an_unloadable_vocabulary_is_tried_once(monkeypatch) -> None:
     import builtins
 
     monkeypatch.undo()
-    monkeypatch.setattr(cv, "_counts", dict(KNOWN))
+    monkeypatch.setattr(catalogue, "values", ValueCounts(dict(KNOWN)))
     real_import = builtins.__import__
     attempts = []
 

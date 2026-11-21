@@ -331,7 +331,7 @@ def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
             # Don't teach the generator an unavailable-column query or SQL the
             # static safety guard would reject. Runtime EXPLAIN is not repeated
             # here: it depends on the live database and would add latency.
-            if _uses_unavailable_column(ex["sql"]):
+            if _catalogue.coverage.uses_unusable_column(ex["sql"]):
                 continue
             guard_reason = _static_guard_reason(ex["sql"])
             if guard_reason:
@@ -497,10 +497,7 @@ from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noq
 from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
 from services.translate.sql_rewriter import finish_corrected_sql as _finish_corrected_sql  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
-from services.catalogue.schema_capabilities import (  # noqa: E402
-    available_columns as _available_columns,
-    uses_unavailable_column as _uses_unavailable_column,
-)
+from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
 from services.translate.participant_query_compiler import (  # noqa: E402
     compile_plan as _compile_plan,
 )
@@ -519,7 +516,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     except ImportError as exc:
         log.warning("Gemini correction unavailable: %s", exc)
         return sql
-    schema_ddl = build_schema_ddl(_available_columns())
+    schema_ddl = build_schema_ddl(_catalogue.coverage.usable_columns())
 
     prompt = (
         "A PostgreSQL query failed. Fix it and return ONLY the corrected SQL — "
@@ -554,13 +551,13 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     except ImportError as exc:
         log.warning("Gemini SQL generation unavailable: %s", exc)
         return _FALLBACK_SQL
-    schema_ddl = build_schema_ddl(_available_columns())
+    schema_ddl = build_schema_ddl(_catalogue.coverage.usable_columns())
 
     # The model never writes a text predicate itself. It copies or writes
     # text_match('...') placeholders, which services/fulltext/text_search.py expands
-    # into full-text search (or ILIKE on a database without search_tsv).
+    # into full-text search.
     long_text_cols = ["d.description_text"]
-    if "readme_text" in _available_columns():
+    if _catalogue.coverage.usable("readme_text"):
         long_text_cols.append("d.readme_text")
     long_text_phrase = " or ".join(long_text_cols)
 
@@ -721,7 +718,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     # Stages 1 + 2
     augmented_plan = run_pipeline(
         question, retriever=retriever, api_key=api_key,
-        available_columns=_available_columns(),
+        available_columns=_catalogue.coverage.usable_columns(),
     )
     augmented_question = augmented_plan.augmented_question
     query_family = augmented_plan.plan.query_family.value
@@ -826,14 +823,13 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     """Plain keyword search when no language model answered.
 
     Matches any content word of the question in the dataset text and ranks by
-    full-text rank, so the best matches come first. Without the full-text
-    column, or without usable words, the bounded sample as before.
+    full-text rank, so the best matches come first. Without usable words,
+    the bounded sample as before.
     """
     from services.fulltext import tsquery, vectors
-    from services.catalogue.schema_capabilities import has_fts
     from services.translate.sql_rewriter import DEFAULT_DATASET_PROJECTION
 
-    query = tsquery.keyword_query(question) if has_fts() else None
+    query = tsquery.keyword_query(question)
     if not query:
         return TextToSQLResult(sql=_FALLBACK_SQL, explanation=explanation + " Showing a sample of datasets.")
     sql = (

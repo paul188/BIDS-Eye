@@ -16,7 +16,6 @@ import logging
 from typing import Any, Callable, List, Optional, Sequence
 
 import worker_db
-from services.catalogue import schema_capabilities
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
 
 log = logging.getLogger(__name__)
@@ -54,13 +53,11 @@ def _count_statement(queries: List[str], guards: Optional[List[Optional[str]]]):
 
 def _database_counts(queries: List[str],
                      guards: Optional[List[Optional[str]]] = None) -> Optional[List[int]]:
-    """The counts from the database (worker_db.current()); None without search_tsv.
+    """The counts from the database (worker_db.current()).
 
     Called from the translation worker thread, which cannot use the app's
     engine itself.
     """
-    if not schema_capabilities.has_fts():
-        return None
     from sqlalchemy import text
 
     sql, params = _count_statement(queries, guards)

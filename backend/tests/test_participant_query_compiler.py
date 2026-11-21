@@ -215,18 +215,13 @@ def test_the_wrapper_returns_only_the_sql() -> None:
 
 def test_compiled_sql_passes_the_rewriter_and_the_guard() -> None:
     from services import query_guard
-    from services.catalogue import schema_capabilities as caps
     from services.translate.sql_rewriter import rewrite_generated_sql
-    caps.set_fts(True)
-    try:
-        plan = _plan(["schizophrenia"], ["healthy controls"],
-                     scan_requirements=[ScanRequirement(scan_terms=["fMRI"])])
-        augmented = _augmented(f'  scan "fMRI": {FMRI_LINE}')
-        rewritten = rewrite_generated_sql(pqc.compile_plan(plan, RESOLVED, augmented).sql, augmented)
-        assert "{{COLS}}" not in rewritten.sql and "text_match(" not in rewritten.sql
-        assert query_guard.check_static(rewritten.sql) is None
-    finally:
-        caps.set_fts(False)
+    plan = _plan(["schizophrenia"], ["healthy controls"],
+                 scan_requirements=[ScanRequirement(scan_terms=["fMRI"])])
+    augmented = _augmented(f'  scan "fMRI": {FMRI_LINE}')
+    rewritten = rewrite_generated_sql(pqc.compile_plan(plan, RESOLVED, augmented).sql, augmented)
+    assert "{{COLS}}" not in rewritten.sql and "text_match(" not in rewritten.sql
+    assert query_guard.check_static(rewritten.sql) is None
 
 
 # ── The model path keeps the groups apart too (preprocess._diagnosis_lines) ────

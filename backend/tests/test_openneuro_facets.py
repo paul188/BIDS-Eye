@@ -199,9 +199,9 @@ def test_label_guard_survives_the_uncertain_tier_paper_evidence() -> None:
             f"WHERE {condition} GROUP BY d.id")
     from services.fulltext.text_search import expand_text_search
     tiered = uncertain_tier.apply(expand_text_search(base, papers=False).sql, papers=True)
-    guard = "NOT (COALESCE(d.study_longitudinal, '') ~* 'cross' AND COALESCE(d.study_longitudinal, '') !~* 'longitudinal')"
+    guard = "NOT (COALESCE(d.study_longitudinal, '') ~* 'cross' AND NOT COALESCE(d.study_longitudinal, '') ~* 'longitudinal')"
     where = tiered.split("WHERE", 1)[1]
     assert guard in where
     # the guard is a conjunct of its own, never inside an OR with the paper evidence
     for part in where.split(" OR "):
-        assert "search_tsv_papers" not in part or "!~* 'longitudinal')" not in part
+        assert "search_tsv_papers" not in part or "'cross'" not in part

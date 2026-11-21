@@ -155,9 +155,7 @@ def test_without_the_column_only_text_search_is_used() -> None:
     assert "institution \"Stanford\": text_match('stanford')" in augmented
 
 
-@pytest.mark.parametrize("fts", [False, True])
-def test_array_filter_survives_sql_rewrite(fts: bool) -> None:
-    from services.catalogue import schema_capabilities as caps
+def test_array_filter_survives_sql_rewrite() -> None:
     from services.translate.sql_rewriter import rewrite_generated_sql
 
     sql = (
@@ -165,17 +163,12 @@ def test_array_filter_survives_sql_rewrite(fts: bool) -> None:
         "AND o.subject IS NOT NULL WHERE (d.institutions && ARRAY['Queen''s University']::text[] "
         "OR text_match('queens university', 'short')) GROUP BY d.id"
     )
-    previous = caps.has_fts()
-    caps.set_fts(fts)
-    try:
-        rewritten = rewrite_generated_sql(sql, "").sql
-    finally:
-        caps.set_fts(previous)
+    rewritten = rewrite_generated_sql(sql, "").sql
     # sqlglot may render the cast as ::text[] or CAST(... AS TEXT[]); only the
     # overlap on the exact, quote-escaped name matters.
     assert re.search(r"d\.institutions && (?:CAST\()?ARRAY\['Queen''s University'\]", rewritten)
     assert "text_match" not in rewritten
-    assert ("search_tsv @@" in rewritten) == fts
+    assert "search_tsv @@" in rewritten
 
 
 def test_retriever_resolves_institutions_from_shared_index(tmp_path) -> None:

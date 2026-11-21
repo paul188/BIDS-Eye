@@ -110,7 +110,8 @@ def test_paper_and_readme_venues():
     paper = ("(d.search_tsv @@ to_tsquery('english', 'sleep') OR "
              "d.search_tsv_papers @@ to_tsquery('english', 'sleep'))")
     assert _kinds(_plans(paper)["Text"]) == [mr.TEXT, mr.PAPER]
-    readme = "(d.readme_text ILIKE '%sleep%' OR d.description_text ILIKE '%sleep%')"
+    # A URL fragment stays a substring search (text_search.convert_long_text_ilike).
+    readme = "(d.readme_text ILIKE '%doi.org%' OR d.description_text ILIKE '%doi.org%')"
     assert _kinds(_plans(readme)["Text"]) == [mr.README, mr.SHORT_TEXT]
 
 

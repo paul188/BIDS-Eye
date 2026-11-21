@@ -88,7 +88,7 @@ def test_words_no_dataset_says_stay_when_they_are_the_whole_question(monkeypatch
 def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
     sql = text_search.expand_text_search(
         f"SELECT d.id FROM bids_datasets AS d WHERE {CONDITION} GROUP BY d.id",
-        fts=True, papers=False).sql
+        papers=False).sql
     assert "'dead & people'" in sql
     assert "(post <-> mortem) | (ex <1> vivo" in sql and "| deceased'" in sql
 
@@ -160,7 +160,7 @@ def test_rare_words_next_to_another_filter_are_still_not_searched(monkeypatch) -
 def _rank(condition: str) -> str:
     return text_search.expand_text_search(
         f"SELECT d.id FROM bids_datasets AS d WHERE {condition} GROUP BY d.id",
-        fts=True, papers=False).rank_tsquery
+        papers=False).rank_tsquery
 
 
 def test_a_match_on_the_alternatives_only_ranks_below_the_users_words() -> None:
@@ -194,7 +194,7 @@ def test_the_page_orders_by_the_penalised_rank() -> None:
         "SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets AS d "
         "LEFT JOIN bids_objects AS o ON o.dataset_id = d.id WHERE "
         "(text_match('dead people') OR text_match('ex vivo', 'also')) GROUP BY d.id",
-        fts=True, papers=False)
+        papers=False)
     page, _ = sql_rewriter.build_page_sql(
         base_sql=expanded.sql, scored_filters=[], apply_relevance=True, limit=20, offset=0,
         rank_tsquery=expanded.rank_tsquery)

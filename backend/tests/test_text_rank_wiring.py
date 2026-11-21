@@ -13,7 +13,7 @@ import pytest
 
 import preprocess
 import retriever
-from services.catalogue import schema_capabilities as caps
+from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import word_frequencies
 from services.translate import text_to_sql
 from services.translate.sql_rewriter import build_page_sql
@@ -26,12 +26,10 @@ BASE = (
 
 @pytest.fixture(autouse=True)
 def _full_text_available():
-    caps.set_fts(True)
-    caps.set_available_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     yield
-    caps.set_fts(False)
-    caps.set_available_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
 
 
@@ -81,13 +79,3 @@ def test_run_local_has_no_rank_query_without_text_terms(monkeypatch) -> None:
     result = text_to_sql._run_local("CC0 datasets", "dummy-key")
 
     assert result.rank_tsquery is None
-
-
-def test_run_local_has_no_rank_query_without_the_search_column(monkeypatch) -> None:
-    caps.set_fts(False)
-    _fake_pipeline(monkeypatch, BASE + "WHERE text_match('ketamine') GROUP BY d.id")
-
-    result = text_to_sql._run_local("datasets mentioning ketamine", "dummy-key")
-
-    assert result.rank_tsquery is None
-    assert "search_tsv" not in result.sql

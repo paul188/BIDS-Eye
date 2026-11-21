@@ -122,7 +122,7 @@ def test_species_condition_stays_hard_in_the_uncertain_tier() -> None:
             "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
             "AND o2.datatype = 'functional_mri') AND {cond}")
     expanded = text_search.expand_text_search(base.format(cond=species_condition(["mouse"])),
-                                              fts=True, papers=True).sql
+                                              papers=True).sql
     assert uncertain_tier.apply(expanded, papers=True) == expanded
 
 
@@ -135,7 +135,7 @@ def test_human_condition_is_hard_in_the_tier_and_a_human_chip() -> None:
             "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
             "AND o2.datatype = 'functional_mri') AND {cond}")
     expanded = text_search.expand_text_search(base.format(cond=species_condition([HUMAN])),
-                                              fts=True, papers=True).sql
+                                              papers=True).sql
     # The animal words stay negated on the name and description.
     assert "AND NOT d.search_tsv @@ to_tsquery('english', 'mouse:AB | mice:AB" in expanded
     assert uncertain_tier.apply(expanded, papers=True) == expanded

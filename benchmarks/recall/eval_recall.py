@@ -90,15 +90,22 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     from services.stores.query_cache import CachedQuery, query_cache
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.translate.text_to_sql import text_to_sql
-    from services.catalogue.schema_capabilities import refresh_available_columns
+    try:
+        from services.catalogue.catalogue import catalogue
+        start_catalogue = catalogue.start
+    except ImportError:  # backend before catalogue.py
+        from services.catalogue.schema_capabilities import refresh_available_columns as start_catalogue
     # Optional pieces: present only in newer versions of the search code. The
     # harness must also run against older versions (e.g. the live one) to
     # measure them on the same questions.
     try:
-        from services.catalogue.schema_capabilities import has_fts
         from services.fulltext import word_frequencies
     except ImportError:
-        has_fts, word_frequencies = (lambda: False), None
+        word_frequencies = None
+    try:
+        from services.catalogue.schema_capabilities import has_fts
+    except ImportError:  # since catalogue.py the full-text column is required
+        has_fts = (lambda: word_frequencies is not None)
     try:
         import institution_index
     except ImportError:
@@ -127,7 +134,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     print(f"label={label!r} database={meta['database']}", file=sys.stderr, flush=True)
     # Warm up the same read-only capabilities as app startup without calling
     # main.lifespan(), which runs create_all_tables() and may issue DDL.
-    await refresh_available_columns(engine)
+    await start_catalogue(engine)
     if institution_index is not None:
         await institution_index.refresh_from_db(engine)
     try:

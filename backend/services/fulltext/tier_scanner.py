@@ -248,12 +248,14 @@ def _file_set(inner: str, files: List[str], columns: set) -> Tuple[str, Optional
     """
     where = " AND ".join(f"({p})" for p in files)
     try:
-        from services.catalogue import schema_capabilities
-        facets = schema_capabilities.has_dataset_facets()
+        from services.catalogue.catalogue import Catalogue, catalogue
+        from services.catalogue.tables import dataset_facets
+        facets = catalogue.summaries.facets
     except ImportError:  # pragma: no cover
         facets = False
-    if facets and columns <= {"datatype", "suffix", "task"}:
-        return f"SELECT {inner}.dataset_id FROM bids_dataset_facets AS {inner} WHERE {where}", None
+    if facets and columns <= set(Catalogue.FACET_FIELDS):
+        return (f"SELECT {inner}.dataset_id FROM {dataset_facets.name} AS {inner} WHERE {where}",
+                None)
     select = f"SELECT DISTINCT {inner}.dataset_id FROM bids_objects AS {inner} WHERE {where}"
     name = _cte_name(select)
     return f"SELECT dataset_id FROM {name}", (name, select)

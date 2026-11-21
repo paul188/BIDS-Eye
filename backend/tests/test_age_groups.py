@@ -30,7 +30,7 @@ def _expanded(condition: str) -> str:
     base = ("SELECT d.id, d.name FROM bids_datasets AS d WHERE "
             "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
             "AND o2.datatype = 'functional_mri') AND {cond} GROUP BY d.id")
-    return text_search.expand_text_search(base.format(cond=condition), fts=True, papers=True).sql
+    return text_search.expand_text_search(base.format(cond=condition), papers=True).sql
 
 
 # ── Codes ─────────────────────────────────────────────────────────────────────

@@ -67,7 +67,7 @@ def test_a_place_alone_compiles_and_reads_as_a_location_chip() -> None:
     compiled = pqc.compile_plan(plan, [], augmented)
     assert compiled.sql and "sp.city = 'Bonn'" in compiled.sql, compiled.reason
 
-    expanded = text_search.expand_text_search(compiled.sql, fts=True, papers=False).sql
+    expanded = text_search.expand_text_search(compiled.sql, papers=False).sql
     chip = query_filters.describe(expanded)[0]
     assert (chip.field, chip.label) == ("Location", "Bonn")
 
@@ -94,7 +94,7 @@ def test_an_institution_is_also_found_through_its_ror_name() -> None:
     line = next(ln for ln in question.splitlines() if ln.startswith('  institution "University of Bonn"'))
     assert "sp.institution = ANY(ARRAY['University of Bonn']::text[])" in line
     sql = ("SELECT d.id FROM bids_datasets AS d WHERE " + line.split(": ", 1)[1] + " GROUP BY d.id")
-    expanded = text_search.expand_text_search(sql, fts=True, papers=False).sql
+    expanded = text_search.expand_text_search(sql, papers=False).sql
     chip = query_filters.describe(expanded)[0]
     assert (chip.field, chip.label) == ("Institution", "University of Bonn")
 

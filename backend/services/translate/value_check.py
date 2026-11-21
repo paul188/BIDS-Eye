@@ -11,8 +11,8 @@ of 7,878 searches held such a value: invented task codes ('social_cognition',
 'cognitive_tasks'), raw BIDS suffixes ('bold', 't1w'), a suffix written as a
 task ('recognition').
 
-The known values are those of services/catalogue/catalogue_values.py; while
-none are loaded the check is off.
+The known values are those of services/catalogue/catalogue.py (catalogue.values);
+while none are loaded the check is off.
 
 An unknown value is
   corrected   to the stored code the vocabulary gives for it
@@ -35,7 +35,7 @@ import re
 from functools import lru_cache
 from typing import Any, List, Optional, Tuple
 
-from services.catalogue.catalogue_values import catalogue_values
+from services.catalogue.catalogue import Catalogue, catalogue
 
 try:
     import sqlglot
@@ -51,7 +51,7 @@ ENV = "CATALOGUE_VALUE_CHECK"
 # The fields checked. Not the participant fields the catalogue also caches:
 # dropping a required diagnosis condition would widen the search to every
 # dataset the rest of the query allows.
-FIELDS = catalogue_values.FACET_FIELDS
+FIELDS = Catalogue.FACET_FIELDS
 
 
 # ── Corrections ───────────────────────────────────────────────────────────────
@@ -73,7 +73,7 @@ def _vocabulary() -> Optional[Tuple[dict, dict]]:
 
 def correction(field: str, value: str) -> List[str]:
     """Known codes the vocabulary gives for an unknown *value*; [] if none."""
-    known = catalogue_values.known_values(field)
+    known = catalogue.values.known_values(field)
     forms = list(dict.fromkeys(f for f in (
         value, value.strip(), value.strip().lower(),
         value.strip().lower().replace("-", "_").replace(" ", "_"),
@@ -115,7 +115,7 @@ def enabled() -> bool:
     Without known values every value would look unknown and be dropped, so
     "nothing loaded" means "do not check".
     """
-    return (all(catalogue_values.loaded(field) for field in FIELDS)
+    return (all(catalogue.values.loaded(field) for field in FIELDS)
             and os.getenv(ENV, "true").strip().lower() not in ("false", "0", "no", "off"))
 
 
@@ -181,7 +181,7 @@ def _shown(codes: List[str]) -> str:
 def _like_matches(field: str, pattern: str, case_insensitive: bool) -> bool:
     regex = "".join(".*" if c == "%" else "." if c == "_" else re.escape(c) for c in pattern)
     flags = re.IGNORECASE if case_insensitive else 0
-    return any(re.fullmatch(regex, value, flags) for value in catalogue_values.known_values(field))
+    return any(re.fullmatch(regex, value, flags) for value in catalogue.values.known_values(field))
 
 
 # One function per kind of condition. Each changes the tree in place and
@@ -194,7 +194,7 @@ def _check_in_list(node: Any, field: str) -> List[str]:
     values = [s for v in literals if (s := _string(v)) is not None]
     if not literals or len(values) < len(literals) or node.args.get("query"):
         return []
-    known = catalogue_values.known_values(field)
+    known = catalogue.values.known_values(field)
     unknown = [v for v in values if v not in known]
     if not unknown:
         return []
@@ -223,7 +223,7 @@ def _check_comparison(node: Any, field: str, column: Any, value_node: Any) -> Li
     """field = 'x' / field != 'x': replace an unknown value; else drop an =
     (it matches nothing) and keep a != (it excludes nothing)."""
     value = _string(value_node)
-    if value is None or value in catalogue_values.known_values(field):
+    if value is None or value in catalogue.values.known_values(field):
         return []
     fixed = correction(field, value)
     if fixed:

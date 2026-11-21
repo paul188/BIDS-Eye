@@ -126,13 +126,13 @@ def test_field_strength_from_sidecars_then_text():
         fmri = await _tiers(session, ids, STRENGTH_7T_FMRI)
         assert set(fmri) == {"sidecar_7t", "readme_7t_func"}   # the anatomy-only one has no fMRI
         # The same with the file part read from the facets summary.
-        from services.catalogue import schema_capabilities
-        facets = schema_capabilities.has_dataset_facets
-        schema_capabilities.has_dataset_facets = lambda: True
+        from services.catalogue.catalogue import Summaries, catalogue
+        summaries = catalogue.summaries
+        catalogue.summaries = Summaries(facets=True)
         try:
             assert await _tiers(session, ids, STRENGTH_7T_FMRI) == fmri
         finally:
-            schema_capabilities.has_dataset_facets = facets
+            catalogue.summaries = summaries
         # With a 'possible' level the full recorded check gives the same states.
         os.environ["UNCERTAIN_POSSIBLE"] = "true"
         try:

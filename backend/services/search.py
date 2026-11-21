@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions.domain import DomainError
 from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
 from single_flight import SingleFlight
-from services.catalogue.catalogue_values import catalogue_values
+from services.catalogue.catalogue import catalogue
 from services.stores import interpretation_store
 from services.results import query_filters
 from services import search_runner
@@ -89,7 +89,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
     page, page_size = search_runner.clamp_page(1, search_runner.DEFAULT_PAGE_SIZE)
     # The same question gets the same translation every time (the models that
     # write it are not repeatable): reuse a stored one when there is one.
-    await catalogue_values.refresh_if_stale(session)
+    await catalogue.refresh_if_stale(session)
     stored = await interpretation_store.get(session, question)
     if stored is not None:
         translation = TextToSQLResult(

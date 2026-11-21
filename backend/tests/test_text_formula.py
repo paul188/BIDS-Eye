@@ -134,7 +134,7 @@ def test_healthy_inside_a_formula_is_not_searched() -> None:
 def test_an_or_has_no_weaker_form_in_the_tier() -> None:
     sql = text_search.expand_text_search(
         "SELECT d.id FROM bids_datasets AS d WHERE text_match('drawings | art') GROUP BY d.id",
-        fts=True, papers=False).sql
+        papers=False).sql
     assert "to_tsquery('english', 'drawings | art')" in sql
     # Its weaker form is the same search: no single word ("art") on its own.
     relaxed, _ = tier_text.relax_text_condition(sql)
@@ -279,8 +279,6 @@ def test_a_formula_line_is_not_taken_for_alternatives() -> None:
 
 @pytest.fixture
 def full_text(monkeypatch):
-    from services.catalogue import schema_capabilities
-    monkeypatch.setattr(schema_capabilities, "has_fts", lambda: True)
     monkeypatch.setattr(vectors, "papers_enabled", lambda: False)
 
 

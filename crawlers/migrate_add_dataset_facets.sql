@@ -9,8 +9,8 @@
 -- Additive: nothing existing is changed. Both are copies and go stale when a
 -- crawl changes bids_objects; crawlers/openneuro-crawler/remote/dataset_facets.py
 -- refreshes them after each crawl (post_crawl.py) and can check them.
--- The backend uses them only when they exist and cover every dataset
--- (backend/services/schema_capabilities.py); restart it after this migration.
+-- The backend needs them at startup and uses them while they cover every
+-- dataset (backend/services/catalogue/catalogue.py, checked every 10 minutes).
 --
 -- On a busy database run the ALTER TABLE as its own short transaction with
 -- SET LOCAL lock_timeout = '3s' and retry: searches hold locks on bids_datasets.

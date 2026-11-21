@@ -22,7 +22,6 @@ import pytest
 
 from criteria import age_condition, species_condition
 from schemas import DatasetSchema, ParticipantSummarySchema
-from services.catalogue import schema_capabilities
 from services.fulltext import text_search
 from services.results import match_reasons, query_filters, readme_snippets
 
@@ -177,15 +176,10 @@ def test_diagnosis_and_species_venues():
 def test_readme_excerpt_marks_the_age_group_words():
     async def check(session, ids):
         sql, page = await _page(session, ids, age_condition(["infants"]))
-        before = schema_capabilities.available_columns()
-        schema_capabilities.set_display_columns({"readme_text"})
-        try:
-            datasets = list(page.values())
-            await readme_snippets.attach_snippets(
-                session, datasets, query_filters.highlight_terms(sql),
-                query_filters.highlight_exact_words(sql), query_filters.highlight_field_strengths(sql))
-        finally:
-            schema_capabilities.set_display_columns(before)
+        datasets = list(page.values())
+        await readme_snippets.attach_snippets(
+            session, datasets, query_filters.highlight_terms(sql),
+            query_filters.highlight_exact_words(sql), query_filters.highlight_field_strengths(sql))
         assert "⟦infant⟧" in page["words"].snippet
         # No age word in this README: its start, unmarked; the reason line explains it.
         assert "⟦" not in page["ages"].snippet

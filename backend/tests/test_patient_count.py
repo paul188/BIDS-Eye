@@ -158,8 +158,8 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
 
 
 def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
-    from services.catalogue import schema_capabilities
-    monkeypatch.setattr(schema_capabilities, "_has_subject_counts", True)
+    from services.catalogue.catalogue import Summaries, catalogue
+    monkeypatch.setattr(catalogue, "summaries", Summaries(subject_counts=True))
     soft = tier_classify._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
     assert "d.n_subjects" in soft.probable and "bids_objects" not in soft.probable
 

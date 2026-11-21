@@ -1,30 +1,18 @@
+"""What the SQL model is shown: the schema with the usable optional columns,
+and few-shot examples that use only those (constants.build_schema_ddl,
+text_to_sql._pick_examples; usable columns from services/catalogue/catalogue.py)."""
+
 from __future__ import annotations
 
-import asyncio
-import contextlib
 import json
 import re
 from pathlib import Path
 
-import pytest
-from sqlalchemy.exc import ProgrammingError
-
 import constants
-from services.catalogue import schema_capabilities as caps
+from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.translate import text_to_sql
 
 FEW_SHOT_PATH = Path(__file__).resolve().parents[1] / "few_shot_examples.json"
-
-
-@pytest.fixture(autouse=True)
-def _reset_capabilities():
-    caps.set_available_columns(())
-    caps.set_display_columns(())
-    caps.set_fts(False)
-    yield
-    caps.set_available_columns(())
-    caps.set_display_columns(())
-    caps.set_fts(False)
 
 
 def _dataset_table(ddl: str) -> str:
@@ -81,7 +69,7 @@ def test_examples_using_unavailable_columns_are_never_selected() -> None:
     picked = text_to_sql._pick_examples(pool, "description_search", n=5, seed=seed)
     assert [ex["sql"] for ex in picked] == [pool["description_search"][1]["sql"]]
 
-    caps.set_available_columns({"readme_text"})
+    catalogue.coverage = ColumnCoverage.full({"readme_text"})
     picked = text_to_sql._pick_examples(pool, "description_search", n=5, seed=seed)
     assert len(picked) == 2
     assert all("institutions" not in ex["sql"] for ex in picked)
@@ -132,7 +120,6 @@ def test_empty_query_metadata_does_not_invent_intent_categories() -> None:
 
 def test_full_sql_prompt_budget_drops_only_whole_lower_ranked_examples(monkeypatch) -> None:
     monkeypatch.setattr(constants, "build_schema_ddl", lambda _columns: "schema")
-    monkeypatch.setattr(text_to_sql, "_available_columns", lambda: set())
     captured = {}
 
     def fake_llm(prompt, **kwargs):
@@ -154,161 +141,6 @@ def test_full_sql_prompt_budget_drops_only_whole_lower_ranked_examples(monkeypat
     assert prompt.count("[SQL]") == prompt.count("[/SQL]")
     assert prompt.index("<current_request>") > prompt.index("<examples")
     assert "current request" in prompt
-
-
-def test_disease_fallback_grows_with_available_columns() -> None:
-    assert caps.disease_text_columns() == ["name", "description_text"]
-    caps.set_available_columns({"dx_status", "study_domain", "readme_text"})
-    assert caps.disease_text_columns() == ["name", "description_text", "dx_status", "study_domain"]
-
-
-def test_set_available_columns_rejects_unknown_names() -> None:
-    with pytest.raises(ValueError):
-        caps.set_available_columns({"no_such_column"})
-
-
-class _FakeResult:
-    def __init__(self, rows):
-        self._rows = rows
-
-    def __iter__(self):
-        return iter(self._rows)
-
-    def mappings(self):
-        return self
-
-    def one(self):
-        return self._rows[0]
-
-    def all(self):
-        return self._rows
-
-    def scalar(self):
-        return None  # no summary table, no stored subject count
-
-
-class _FakeConnection:
-    """Answers the two detection queries from canned data."""
-
-    def __init__(self, columns, counts):
-        self._columns = columns
-        self._counts = counts
-        self.statements = []
-
-    async def execute(self, statement, params=None):
-        sql = str(statement)
-        self.statements.append(sql)
-        if "information_schema.columns" in sql:
-            return _FakeResult([(name,) for name in self._columns])
-        if "count(DISTINCT dataset_id)" in sql:  # catalogue_values: no coded values
-            return _FakeResult([])
-        return _FakeResult([self._counts])
-
-    def begin_nested(self):
-        return contextlib.nullcontext()
-
-
-def test_detection_requires_column_to_exist_and_hold_data() -> None:
-    connection = _FakeConnection(
-        columns=["id", "name", "description_text", "institutions", "readme_text", "dx_status"],
-        # institutions exists but is empty; dx_status is below the coverage floor
-        counts={"total": 1000, "institutions": 0, "readme_text": 850, "dx_status": 49},
-    )
-    detected = asyncio.run(caps.detect_available_columns(connection))
-    assert detected == frozenset({"readme_text"})
-    assert not caps.has_display_column("deprecated_reason")
-    # Columns that are not in the table are never queried.
-    assert "size_bytes" not in connection.statements[-1]
-
-
-class _Engine:
-    def __init__(self, error: BaseException):
-        self.error = error
-
-    def connect(self):
-        raise self.error
-
-
-def test_detection_failure_hides_every_optional_column() -> None:
-    caps.set_available_columns({"readme_text"})
-    caps.set_summaries(True, True)
-    engine = _Engine(ConnectionRefusedError("database unreachable"))
-    assert asyncio.run(caps.refresh_available_columns(engine)) == frozenset()
-    assert caps.available_columns() == frozenset()
-    assert not caps.has_dataset_facets() and not caps.has_subject_counts()
-
-
-def test_a_bug_in_the_detection_is_not_taken_for_an_unreachable_database() -> None:
-    with pytest.raises(KeyError):
-        asyncio.run(caps.refresh_available_columns(_Engine(KeyError("total"))))
-
-
-class _SummaryFailsConnection(_FakeConnection):
-    """The facets coverage query fails, as in a database without bids_objects."""
-
-    def __init__(self, columns, counts):
-        super().__init__(columns, counts)
-        self.savepoints = []
-
-    async def execute(self, statement, params=None):
-        sql = str(statement)
-        if "to_regclass" in sql:
-            self.statements.append(sql)
-            return _ScalarResult(True)
-        if "NOT EXISTS" in sql:
-            self.statements.append(sql)
-            raise ProgrammingError(sql, {}, Exception('relation "bids_objects" does not exist'))
-        return await super().execute(statement, params)
-
-    def begin_nested(self):
-        connection = self
-
-        class _Savepoint:
-            async def __aenter__(self):
-                return self
-
-            async def __aexit__(self, exc_type, exc, tb):
-                connection.savepoints.append("rolled back" if exc_type else "released")
-                return False
-
-        return _Savepoint()
-
-
-class _ScalarResult:
-    def __init__(self, value):
-        self.value = value
-
-    def scalar(self):
-        return self.value
-
-    def scalar_one(self):
-        return self.value
-
-
-def test_a_failed_summary_query_leaves_the_other_checks_running() -> None:
-    # Before 2026-11-18 the failure aborted the startup transaction, the
-    # column counts failed after it, and full-text search was switched off.
-    connection = _SummaryFailsConnection(
-        columns=["id", "name", "search_tsv", "readme_text"],
-        counts={"total": 1000, "readme_text": 850},
-    )
-    detected = asyncio.run(caps.detect_available_columns(connection))
-    try:
-        assert detected == frozenset({"readme_text"})
-        assert caps.has_fts() and not caps.has_dataset_facets()
-        # The failed summary read, then catalogue_values reading the participants.
-        assert connection.savepoints == ["rolled back", "released"]
-    finally:
-        caps.set_fts(False)
-
-
-def test_display_column_needs_only_to_exist() -> None:
-    connection = _FakeConnection(
-        columns=["id", "name", "deprecated_reason"],
-        counts={"total": 1000},
-    )
-    asyncio.run(caps.detect_available_columns(connection))
-    assert caps.has_display_column("deprecated_reason")
 
 
 def test_size_limit_becomes_a_filter_only_when_the_column_is_available() -> None:

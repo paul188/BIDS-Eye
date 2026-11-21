@@ -129,8 +129,8 @@ def test_field_strength_with_a_file_part_keeps_it():
 
 
 def test_file_part_reads_the_facets_summary_when_it_covers_every_dataset(monkeypatch):
-    from services.catalogue import schema_capabilities
-    monkeypatch.setattr(schema_capabilities, "has_dataset_facets", lambda: True)
+    from services.catalogue.catalogue import Summaries, catalogue
+    monkeypatch.setattr(catalogue, "summaries", Summaries(facets=True))
     soft = _classify(STRENGTH_7T_FMRI)
     assert len(soft.ctes) == 1   # only the sidecar lookup
     assert soft.probable.endswith(

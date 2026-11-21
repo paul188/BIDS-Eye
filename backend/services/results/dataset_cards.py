@@ -20,7 +20,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
 from services.indexing import dataset_description
-from services.catalogue.schema_capabilities import has_display_column
 
 log = logging.getLogger(__name__)
 
@@ -77,10 +76,9 @@ async def deprecations_for(
     """Return {dataset_id: reason} for datasets marked deprecated.
 
     Read with its own query instead of through the generated SQL, so the
-    projection the LLM pipeline relies on stays unchanged, and databases that
-    do not have the column yet keep working.
+    projection the LLM pipeline relies on stays unchanged.
     """
-    if not dataset_ids or not has_display_column("deprecated_reason"):
+    if not dataset_ids:
         return {}
     rows = await session.execute(
         text(
@@ -139,8 +137,7 @@ async def attach_descriptions(session: AsyncSession, datasets: list[DatasetSchem
     """The generated summary of a thin README, and the linked paper when it was
     checked to report the dataset (services/indexing/dataset_description.py). Its own
     query, like deprecations_for; a failure leaves the page without them."""
-    if not datasets or not (has_display_column("paper_relation")
-                            and has_display_column("dataset_summary")):
+    if not datasets:
         return
     sql = (
         "SELECT d.id, d.dataset_summary, d.paper_relation->>'relation', "

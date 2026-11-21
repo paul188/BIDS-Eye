@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple
 
-from services.catalogue import schema_capabilities
 from services.fulltext.tsquery import is_safe_tsquery
+from services.fulltext import vectors
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
 
 # ts_rank_cd weights in the order {D, C, B, A}: README, LLM profile of the
@@ -85,7 +85,7 @@ def rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
 
 def _plain_rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
     stemmed, exact = split_rank(rank)
-    if exact and not schema_capabilities.has_exact_fts():
+    if exact and not vectors.exact_enabled():
         exact = None
     if stemmed and not exact:
         return text_rank_expression(f"{alias}.{FTS_COLUMN}", stemmed)

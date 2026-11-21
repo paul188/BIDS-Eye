@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import re
 import sys
 from pathlib import Path
@@ -18,8 +17,8 @@ if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
 import word_forms  # noqa: E402
-from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.catalogue import word_form_store as store  # noqa: E402
+from services.fulltext import vectors  # noqa: E402
 from worker_db import WorkerDbError  # noqa: E402
 from word_forms import WordEvidence  # noqa: E402
 
@@ -142,10 +141,10 @@ def test_the_shipped_list_is_consistent() -> None:
 # ── Store ─────────────────────────────────────────────────────────────────────
 
 @pytest.fixture
-def word_forms_table():
-    caps.set_exact_fts(True, word_forms=True)
+def word_forms_table(monkeypatch):
+    # Words are looked up only while exact search is on (it needs the table).
+    monkeypatch.setenv(vectors.EXACT_ENV, "true")
     yield
-    caps.set_exact_fts(False)
     store.reset_lookup()
 
 
@@ -163,7 +162,7 @@ def test_lookup_parses_rows_and_skips_what_cannot_be_a_word(word_forms_table) ->
                                             (("age", 220), ("aging", 34), ("ageing", 4)))}
 
 
-def test_lookup_never_breaks_a_search(word_forms_table) -> None:
+def test_lookup_never_breaks_a_search(word_forms_table, monkeypatch) -> None:
     def broken(words):
         raise WorkerDbError("database gone")
 
@@ -173,9 +172,9 @@ def test_lookup_never_breaks_a_search(word_forms_table) -> None:
     assert store.lookup(["ageing"]) == {}
     store.set_lookup(None)
     assert store.lookup(["ageing"]) == {}
-    # Without the table nothing is asked at all.
-    caps.set_exact_fts(True, word_forms=False)
-    store.set_lookup(lambda words: pytest.fail("looked up without the table"))
+    # With exact search off nothing is asked at all.
+    monkeypatch.delenv(vectors.EXACT_ENV)
+    store.set_lookup(lambda words: pytest.fail("looked up with exact search off"))
     assert store.lookup(["ageing"]) == {}
 
 
@@ -244,45 +243,6 @@ class _Result:
     def scalar(self):
         row = self._rows[0]
         return row[0] if isinstance(row, tuple) else None
-
-
-class _Connection:
-    def __init__(self, columns, tables=()):
-        self._columns, self._tables = columns, tables
-
-    async def execute(self, statement, params=None):
-        sql = str(statement)
-        if "information_schema.columns" in sql:
-            return _Result([(name,) for name in self._columns])
-        if "to_regclass" in sql:
-            return _Result([((params or {}).get("table") in self._tables,)])
-        if "count(DISTINCT dataset_id)" in sql:  # catalogue_values: no coded values
-            return _Result([])
-        return _Result([{"total": 10}])
-
-    def begin_nested(self):
-        return contextlib.nullcontext()
-
-
-def test_exact_capabilities_follow_columns_and_table() -> None:
-    try:
-        asyncio.run(caps.detect_available_columns(_Connection(
-            ["search_tsv", "search_tsv_papers", "search_tsv_exact", "search_tsv_exact_papers"],
-            tables=["bids_word_forms"])))
-        assert caps.has_exact_fts() and caps.has_exact_paper_fts() and caps.has_word_forms()
-        # The paper twin needs the stemmed paper column too; the table is separate.
-        asyncio.run(caps.detect_available_columns(_Connection(
-            ["search_tsv", "search_tsv_exact", "search_tsv_exact_papers"])))
-        assert caps.has_exact_fts() and not caps.has_exact_paper_fts()
-        assert not caps.has_word_forms()
-        # Nothing exact without the stemmed column it guards.
-        asyncio.run(caps.detect_available_columns(_Connection(["search_tsv_exact"])))
-        assert not caps.has_exact_fts()
-    finally:
-        caps.set_fts(False)
-        caps.set_paper_fts(False)
-        caps.set_exact_fts(False)
-        caps.set_display_columns(())
 
 
 def test_a_bug_in_a_word_form_lookup_is_raised(word_forms_table) -> None:

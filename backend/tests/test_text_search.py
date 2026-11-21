@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import re
 import sys
 from pathlib import Path
@@ -14,7 +13,6 @@ if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
 import text_terms  # noqa: E402
-from services.catalogue import schema_capabilities as caps  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E402
 import worker_db  # noqa: E402
@@ -29,13 +27,9 @@ BASE = (
 
 
 @pytest.fixture(autouse=True)
-def _full_text_available():
-    caps.set_fts(True)
-    caps.set_available_columns(())
+def _no_word_counts():
     word_frequencies.set_frequency_lookup(None)
     yield
-    caps.set_fts(False)
-    caps.set_available_columns(())
     word_frequencies.set_frequency_lookup(None)
 
 
@@ -76,17 +70,12 @@ def test_task_text_fallback_drops_query_scaffolding_but_keeps_the_construct() ->
 
 
 def test_task_text_fallback_requires_every_word_of_the_phrase() -> None:
-    # In 'loose' mode, without search_tsv, only the longest word was searched:
-    # "working memory" → %working%, "face perception" → %perception%.
     for phrase, words in (("working memory", ("working", "memory")),
                           ("face perception", ("face", "perception")),
                           ("cognitive control", ("cognitive", "control"))):
         macro = text_terms.format_task_text_match([phrase])
-        sql = text_search.expand_text_search(f"SELECT 1 FROM bids_datasets d WHERE {macro}", fts=False).sql
-        for word in words:
-            assert f"ILIKE '%{word}%'" in sql, (phrase, sql)
-        assert sql.count(" AND ") >= 1, (phrase, sql)
-        assert "readme_text" not in sql
+        sql = text_search.expand_text_search(f"SELECT 1 FROM bids_datasets d WHERE {macro}").sql
+        assert f"{words[0]}:AB & {words[1]}:AB" in sql, (phrase, sql)
 
 
 def test_task_text_fallback_skips_short_lone_words() -> None:
@@ -253,15 +242,6 @@ def test_by_default_counts_come_from_the_worker_db(canned_db) -> None:
                                                                   ["tracking & eye"]]
 
 
-def test_database_counts_stay_off_without_the_column(canned_db) -> None:
-    canned_db()
-    caps.set_fts(False)
-    try:
-        assert word_frequencies._lookup_counts(["eye"]) is None
-    finally:
-        caps.set_fts(True)
-
-
 def test_counts_on_the_event_loop_are_skipped_not_blocked() -> None:
     word_frequencies.reset_frequency_lookup()
     try:
@@ -325,29 +305,6 @@ def test_stray_ilike_on_long_text_becomes_full_text_search() -> None:
     assert "d.readme_text ILIKE '%doi.org%'" in expanded.sql
     assert "d.license ILIKE '%CC0%'" in expanded.sql
 
-
-def test_without_the_column_placeholders_fall_back_to_ilike() -> None:
-    caps.set_fts(False)
-    caps.set_available_columns({"dx_status", "study_domain"})
-    sql = BASE + (
-        "WHERE text_match('epilepsy | seizure disorder', 'short') "
-        "AND text_match('drinking alcohol', 'loose') "
-        "AND d.description_text ILIKE '%pain%' GROUP BY d.id"
-    )
-    expanded = text_search.expand_text_search(sql)
-    assert "search_tsv" not in expanded.sql
-    assert expanded.rank_tsquery is None
-    assert "d.dx_status ILIKE '%epilepsy%'" in expanded.sql
-    assert "d.name ILIKE '%seizure%'" in expanded.sql and "d.name ILIKE '%disorder%'" in expanded.sql
-    assert "ILIKE '%drinking%'" in expanded.sql and "%alcohol%" not in expanded.sql
-    assert "readme_text" not in expanded.sql
-    negated = text_search.expand_text_search(BASE + "WHERE NOT text_match('eye tracking') GROUP BY d.id")
-    assert "NOT ((d.name ILIKE '%eye%'" in negated.sql
-    # Stray ILIKE is left alone: there is nothing better to turn it into.
-    assert "d.description_text ILIKE '%pain%'" in expanded.sql
-
-
-# ── Rewriter integration ──────────────────────────────────────────────────────
 
 def test_rewriter_expands_and_returns_the_rank_query() -> None:
     rewritten = SERVICE.rewrite_generated_sql(
@@ -478,49 +435,6 @@ def test_resolved_task_filter_keeps_a_readme_text_fallback(monkeypatch) -> None:
 
 
 # ── Capability detection and DDL ──────────────────────────────────────────────
-
-class _FakeResult:
-    def __init__(self, rows):
-        self._rows = rows
-
-    def __iter__(self):
-        return iter(self._rows)
-
-    def mappings(self):
-        return self
-
-    def one(self):
-        return self._rows[0]
-
-    def all(self):
-        return self._rows
-
-    def scalar(self):
-        return None  # no summary table
-
-
-class _FakeConnection:
-    def __init__(self, columns):
-        self._columns = columns
-
-    async def execute(self, statement, params=None):
-        if "information_schema.columns" in str(statement):
-            return _FakeResult([(name,) for name in self._columns])
-        if "count(DISTINCT dataset_id)" in str(statement):  # catalogue_values: no coded values
-            return _FakeResult([])
-        return _FakeResult([{"total": 10}])
-
-    def begin_nested(self):
-        return contextlib.nullcontext()
-
-
-def test_full_text_capability_follows_the_column() -> None:
-    caps.set_fts(False)
-    asyncio.run(caps.detect_available_columns(_FakeConnection(["id", "name", "search_tsv"])))
-    assert caps.has_fts()
-    asyncio.run(caps.detect_available_columns(_FakeConnection(["id", "name"])))
-    assert not caps.has_fts()
-
 
 def test_migration_and_crawler_define_the_same_search_vector() -> None:
     from remote import openneuro_metadata as meta

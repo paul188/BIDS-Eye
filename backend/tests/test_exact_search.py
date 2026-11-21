@@ -17,7 +17,7 @@ import yaml
 import preprocess as pp
 import word_forms
 from services.results import query_filters as qf
-from services.catalogue import schema_capabilities as caps
+from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
 from services.fulltext import tier_text, uncertain_tier as ut
 from services.catalogue import word_form_store
@@ -45,22 +45,16 @@ def _condition(expanded: ts.ExpandedSearch) -> str:
 
 @pytest.fixture(autouse=True)
 def _database_with_full_text(tmp_path, monkeypatch):
-    """Full text with both exact vectors, no counts, and an empty reviewed list."""
+    """Exact search off, no counts, and an empty reviewed list."""
     path = tmp_path / "word_forms.yaml"
     path.write_text("{}")
     monkeypatch.setattr(word_forms, "_PATH", path)
     word_forms._reviewed.cache_clear()
     monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
-    caps.set_fts(True)
-    caps.set_paper_fts(True)
-    caps.set_exact_fts(True, papers=True, word_forms=True)
-    caps.set_available_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     word_form_store.set_lookup(None)
     yield path
-    caps.set_fts(False)
-    caps.set_paper_fts(False)
-    caps.set_exact_fts(False)
     word_frequencies.set_frequency_lookup(None)
     word_form_store.reset_lookup()
     word_forms._reviewed.cache_clear()
@@ -73,16 +67,11 @@ def exact(monkeypatch):
 
 # ── Switch ────────────────────────────────────────────────────────────────────
 
-def test_without_the_switch_nothing_changes(monkeypatch) -> None:
+def test_without_the_switch_nothing_changes() -> None:
     sql = _where("text_match('quantitative mri ageing') AND NOT text_match('weight', 'short')")
     plain = ts.expand_text_search(sql)
     assert ts.expand_text_search(sql, exact_forms=FORMS) == plain
     assert "search_tsv_exact" not in plain.sql and "#" not in plain.rank_tsquery
-    # The switch alone is not enough: the column must exist.
-    monkeypatch.setenv(vectors.EXACT_ENV, "true")
-    caps.set_exact_fts(False)
-    assert not vectors.exact_enabled()
-    assert ts.expand_text_search(sql, exact_forms=FORMS) == plain
 
 
 # ── What the search writes ────────────────────────────────────────────────────
@@ -134,10 +123,6 @@ def test_paper_text_uses_the_paper_twin_of_the_guard(exact) -> None:
         in with_papers
     without = ts.expand_text_search(sql, papers=False, exact_forms=FORMS).sql
     assert ts.with_paper_text(without) == ts.expand_text_search(
-        sql, papers=True, exact_forms=FORMS).sql
-    # Without the paper twin the guard reads the dataset's own text.
-    caps.set_exact_fts(True, papers=False)
-    assert "d.search_tsv_exact @@" in ts.expand_text_search(
         sql, papers=True, exact_forms=FORMS).sql
 
 
@@ -200,7 +185,7 @@ def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
 
 # ── Ranking ───────────────────────────────────────────────────────────────────
 
-def test_exact_words_rank_on_the_unstemmed_vector(exact) -> None:
+def test_exact_words_rank_on_the_unstemmed_vector(exact, monkeypatch) -> None:
     alone = ts.expand_text_search(_where("text_match('ageing')"), exact_forms=FORMS)
     assert alone.rank_tsquery == "#(ageing | aging)"
     mixed = ts.expand_text_search(_where("text_match('quantitative mri ageing')"),
@@ -219,8 +204,8 @@ def test_exact_words_rank_on_the_unstemmed_vector(exact) -> None:
     assert "ft.search_tsv, to_tsquery('english', 'quantitative & mri & ageing'), 0)" in both
     assert "ft.search_tsv_exact, to_tsquery('simple', '(ageing | aging)'), 0)" in both
     assert ranking.rank_expression("ft", None) is None
-    # A cached rank from before a rollback: the exact part is ignored.
-    caps.set_exact_fts(False)
+    # A cached rank from before the switch went off: the exact part is ignored.
+    monkeypatch.delenv(vectors.EXACT_ENV)
     assert ranking.rank_expression("ft", mixed.rank_tsquery) == ranking.text_rank_expression(
         "ft.search_tsv", "quantitative & mri & ageing")
     assert ranking.rank_expression("ft", "#(ageing | aging)") is None
@@ -305,9 +290,6 @@ def test_paper_evidence_needs_the_word_forms_in_the_paper(exact) -> None:
         "AND NOT (d.search_tsv @@ TO_TSQUERY('english', 'ageing') "
         "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(ageing | aging)'))") in tiered
     sqlglot.parse_one(tiered, read="postgres")
-    # No unstemmed paper vector: a paper is no evidence for an exact word.
-    caps.set_exact_fts(True, papers=False)
-    assert ut.apply(sql, papers=True) == sql
 
 
 # ── README excerpts ───────────────────────────────────────────────────────────
@@ -355,12 +337,8 @@ def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
         # No exact form in this README: the stemmed passage, marks filtered.
         (UUID(int=2), "Mean ⟦age⟧ 25 years.", ["age"], ["age", "age"], "Mean age 25 years."),
     ])
-    caps.set_display_columns({"readme_text"})
-    try:
-        asyncio.run(readme_snippets.attach_snippets(
-            session, datasets, [("ageing",), ("aging",)], {"ageing", "aging"}))
-    finally:
-        caps.set_display_columns(())
+    asyncio.run(readme_snippets.attach_snippets(
+        session, datasets, [("ageing",), ("aging",)], {"ageing", "aging"}))
     sql, params = session.calls[0]
     assert "ts_headline('simple'" in sql and params["exact_q"] == "ageing | aging"
     assert datasets[0].snippet == "… a study of healthy ⟦ageing⟧ in adults …"

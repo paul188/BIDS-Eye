@@ -51,8 +51,8 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
     Labels are dropped: paper text carries the lowest weight, so a search
     scoped to the name and short fields could never reach it.
     """
-    from services.catalogue import schema_capabilities
-    from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, PAPER_FTS_COLUMN
+    from services.fulltext.vectors import (EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN,
+                                           PAPER_FTS_COLUMN)
     spans = negated_spans(sql)
     atoms = []
     for match in TSQUERY_RE.finditer(sql):
@@ -60,12 +60,9 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
             continue
         query = LABEL_RE.sub("", match.group("query"))
         paper = f"{alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')"
-        own = f"{alias}.search_tsv @@ TO_TSQUERY('english', '{query}')"
+        own = f"{alias}.{FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')"
         if match.group("guard"):
             # Exact word forms count in the paper as in the dataset's text.
-            # Without the unstemmed paper vector a paper is no evidence for them.
-            if not schema_capabilities.has_exact_paper_fts():
-                continue
             guard = LABEL_RE.sub("", match.group("guard"))
             paper = f"({paper} AND {alias}.{EXACT_PAPER_FTS_COLUMN} @@ TO_TSQUERY('simple', '{guard}'))"
             own = f"({own} AND {alias}.{EXACT_FTS_COLUMN} @@ TO_TSQUERY('simple', '{guard}'))"
@@ -169,9 +166,10 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
     codes, minimum = parsed
     stored = None
     try:
-        from services.catalogue import schema_capabilities
-        if schema_capabilities.has_subject_counts():
-            stored = f"COALESCE({alias}.{schema_capabilities.SUBJECT_COUNT_COLUMN}, 0)"
+        from services.catalogue.catalogue import catalogue
+        from services.catalogue.tables import datasets
+        if catalogue.summaries.subject_counts:
+            stored = f"COALESCE({alias}.{datasets.c.n_subjects.name}, 0)"
     except ImportError:
         pass
     return SoftCondition(

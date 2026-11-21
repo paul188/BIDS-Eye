@@ -40,7 +40,8 @@ import cohort_count as _cohort_count  # noqa: E402
 
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
-from services.catalogue import schema_capabilities as _schema_capabilities  # noqa: E402
+from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
+from services.catalogue.tables import dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects  # noqa: E402
 from services.translate import value_check as _value_check  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -440,7 +441,7 @@ class SqlRewriteService:
     # Applied to the SQL that runs, never to the stored translation: the
     # cache, the filter chips and the logs keep the query as it was written.
 
-    _FACET_COLUMNS = frozenset({"dataset_id", "datatype", "suffix", "task"})
+    _FACET_COLUMNS = frozenset(_dataset_facets.c.keys())
 
     def _use_summaries(self, sql: str) -> str:
         """Read bids_dataset_facets and bids_datasets.n_subjects where that gives the same rows.
@@ -451,9 +452,9 @@ class SqlRewriteService:
         seconds for "resting-state fMRI") and sorted all of it to count
         subjects (2 to 4 seconds on every search).
         """
-        facets = _schema_capabilities.has_dataset_facets()
-        counts = _schema_capabilities.has_subject_counts()
-        if parse_one is None or exp is None or not (facets or counts) or "bids_objects" not in sql:
+        facets = _catalogue.summaries.facets
+        counts = _catalogue.summaries.subject_counts
+        if parse_one is None or exp is None or not (facets or counts) or _objects.name not in sql:
             return sql
         try:
             parsed = parse_one(sql, read="postgres")
@@ -528,8 +529,8 @@ class SqlRewriteService:
         if f"{d}.id".lower() not in grouped:
             return False
         stored = (
-            f"COALESCE({d}.{_schema_capabilities.SUBJECT_COUNT_COLUMN}, "
-            f"(SELECT COUNT(DISTINCT sc.subject) FROM bids_objects AS sc "
+            f"COALESCE({d}.{_datasets.c.n_subjects.name}, "
+            f"(SELECT COUNT(DISTINCT sc.subject) FROM {_objects.name} AS sc "
             f"WHERE sc.dataset_id = {d}.id AND NOT sc.subject IS NULL))"
         )
         for count in counts:
@@ -569,9 +570,9 @@ class SqlRewriteService:
                     return False
         if any(isinstance(n, exp.Star) for n in select.find_all(exp.Star)):
             return False
-        table.set("this", exp.to_identifier(_schema_capabilities.FACETS_TABLE))
+        table.set("this", exp.to_identifier(_dataset_facets.name))
         if not table.alias:
-            table.set("alias", exp.TableAlias(this=exp.to_identifier("bids_objects")))
+            table.set("alias", exp.TableAlias(this=exp.to_identifier(_objects.name)))
         return True
 
     def _normalize_sql(self, sql: str) -> str:

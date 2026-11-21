@@ -53,7 +53,7 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from services.catalogue import schema_capabilities
+from services.catalogue.catalogue import catalogue
 
 log = logging.getLogger(__name__)
 
@@ -133,13 +133,11 @@ def should_rerank(apply_relevance: bool, total: int, is_fallback: bool) -> bool:
 
 def _details_sql() -> str:
     cols = ["d.id", "d.accession_id", "d.name"]
-    available = schema_capabilities.available_columns()
     for column in ("dx_status", "study_domain", "study_design", "age_min", "age_max", "size_bytes"):
-        if column in available:
+        if catalogue.coverage.usable(column):
             cols.append(f"d.{column}")
-    if schema_capabilities.has_display_column(PROFILE_COLUMN):
-        cols.append(f"d.{PROFILE_COLUMN}")
-    if "readme_text" in available:
+    cols.append(f"d.{PROFILE_COLUMN}")
+    if catalogue.coverage.usable("readme_text"):
         cols.append(f"left(d.readme_text, {README_EXCERPT_CHARS}) AS readme_excerpt")
     return f"SELECT {', '.join(cols)} FROM bids_datasets d WHERE d.id = ANY(:ids)"
 

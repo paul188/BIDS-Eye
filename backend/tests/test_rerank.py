@@ -11,7 +11,7 @@ import pytest
 
 from llm_client import LLMAllFailedError
 from services.results import rerank
-from services.catalogue import schema_capabilities as caps
+from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 
 IDS = [str(UUID(int=i)) for i in range(1, 7)]
@@ -25,11 +25,9 @@ BASE = (
 def _env(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test")
     monkeypatch.setenv("RERANK_ENABLED", "true")
-    caps.set_available_columns({"readme_text", "dx_status"})
-    caps.set_display_columns({"llm_profile"})
+    catalogue.coverage = ColumnCoverage.full({"readme_text", "dx_status"})
     yield
-    caps.set_available_columns(())
-    caps.set_display_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
 
 
 def test_order_puts_good_matches_first_and_misses_last() -> None:

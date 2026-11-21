@@ -31,6 +31,13 @@ class _FakeResult:
     def mappings(self):
         return _FakeMappingsResult(self._rows)
 
+    # The page's own queries (README excerpts, deprecations, descriptions): no rows.
+    def __iter__(self):
+        return iter(())
+
+    def all(self):
+        return []
+
 
 class _FakeSession:
     """Minimal AsyncSession stand-in for the router integration test."""
@@ -172,9 +179,7 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
     asyncio.run(run())
 
 
-def test_deprecated_reason_is_attached_only_when_the_column_exists() -> None:
-    from services.catalogue import schema_capabilities as caps
-
+def test_deprecated_reason_is_read_with_its_own_query() -> None:
     dataset_id = UUID("00000000-0000-0000-0000-000000000001")
     other_id = UUID("00000000-0000-0000-0000-000000000002")
 
@@ -187,19 +192,9 @@ def test_deprecated_reason_is_attached_only_when_the_column_exists() -> None:
             return [(dataset_id, "No longer available on OpenNeuro")]
 
     async def scenario() -> None:
-        # Database without the column (production before the migration): no query at all.
-        caps.set_display_columns(())
-        session = _Session()
-        assert await dataset_cards.deprecations_for(session, [dataset_id, other_id]) == {}
-        assert session.statements == []
-
-        caps.set_display_columns({"deprecated_reason"})
         session = _Session()
         found = await dataset_cards.deprecations_for(session, [dataset_id, other_id])
         assert found == {dataset_id: "No longer available on OpenNeuro"}
         assert "deprecated_reason IS NOT NULL" in session.statements[0]
 
-    try:
-        asyncio.run(scenario())
-    finally:
-        caps.set_display_columns(())
+    asyncio.run(scenario())

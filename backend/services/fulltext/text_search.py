@@ -18,15 +18,11 @@ Queries are inlined as literals, not bound as parameters. They consist of
 round trips in services/translate/sql_rewriter.py unchanged, which a `:name` parameter
 does not in every sqlglot version.
 
-On a database without search_tsv the placeholders expand to ILIKE on the short
-text columns, and there is no text rank.
-
 Paper text (TEXT_SEARCH_PAPERS=true). search_tsv_papers is search_tsv plus,
 at weight D, the title, abstract and keywords of the papers the dataset names
-as its own (crawlers/paper_enrichment_plan.md). With the switch on and the
-column present, a positive text_match() filters on it, so a dataset whose own
-text lacks a word but whose paper has it is found. Everything else stays on
-search_tsv:
+as its own (crawlers/paper_enrichment_plan.md). With the switch on, a
+positive text_match() filters on it, so a dataset whose own text lacks a word
+but whose paper has it is found. Everything else stays on search_tsv:
   - the rank, so a dataset found only through its paper sorts after every
     dataset that matches on its own text (paper text adds results, it never
     promotes them);
@@ -78,7 +74,6 @@ from text_terms import (
     split_words,
 )
 
-from services.catalogue import schema_capabilities
 from services.fulltext import ranking, tsquery, vectors
 from services.fulltext.vectors import (
     EXACT_FTS_COLUMN,
@@ -124,26 +119,6 @@ def _dataset_alias(sql: str) -> str:
         if alias.lower() not in _SQL_KEYWORDS:
             return alias
     return "d"
-
-
-def _ilike_fallback(terms: Sequence[Term], mode: str, alias: str) -> str:
-    """Substring search on the short text columns, for databases without search_tsv."""
-    columns = schema_capabilities.disease_text_columns()
-    alternatives = []
-    for term in terms:
-        words = [max(term, key=lambda w: sum(len(p) for p in w))] if mode == MODE_LOOSE else term
-        word_conditions = []
-        for word in words:
-            pattern = "%" + "%".join(word) + "%"
-            word_conditions.append(
-                "(" + " OR ".join(f"{alias}.{column} ILIKE '{pattern}'" for column in columns) + ")"
-            )
-        alternatives.append(" AND ".join(word_conditions))
-    # Always one parenthesised unit, so a preceding NOT or a surrounding
-    # AND / OR applies to the whole search.
-    if len(alternatives) == 1:
-        return alternatives[0] if len(alternatives[0].split(" AND ")) == 1 else f"({alternatives[0]})"
-    return "(" + " OR ".join(f"({alt})" if " AND " in alt else alt for alt in alternatives) + ")"
 
 
 def convert_long_text_ilike(sql: str) -> str:
@@ -214,7 +189,7 @@ def with_paper_text(sql: str) -> str:
     both from one translation (benchmarks/recall/paired_papers_run.py).
     """
     spans = negated_spans(sql)
-    exact_papers = schema_capabilities.has_exact_paper_fts()
+    exact_papers = vectors.exact_enabled()
 
     def replace(match: re.Match) -> str:
         if match.group("negated") or _is_negated(match.start(), spans):
@@ -231,11 +206,7 @@ def with_paper_text(sql: str) -> str:
 
 def _exact_column(column: str) -> str:
     """The unstemmed twin of a full-text column."""
-    if column == PAPER_FTS_COLUMN and schema_capabilities.has_exact_paper_fts():
-        return EXACT_PAPER_FTS_COLUMN
-    # Without the paper twin the guard reads the dataset's own text: a word
-    # that must match exactly is then not found through a paper alone.
-    return EXACT_FTS_COLUMN
+    return EXACT_PAPER_FTS_COLUMN if column == PAPER_FTS_COLUMN else EXACT_FTS_COLUMN
 
 
 _GUARD_RE = re.compile(
@@ -257,20 +228,17 @@ def is_guarded_pair(node: Any) -> bool:
 
 
 def expand_text_search(
-    sql: str, fts: Optional[bool] = None, papers: Optional[bool] = None,
+    sql: str, papers: Optional[bool] = None,
     exact_forms: Optional[tsquery.ExactForms] = None,
 ) -> ExpandedSearch:
     """Replace every text_match() placeholder in *sql* and build the rank queries.
 
-    *fts* and *papers* override the detected database capability and the
-    TEXT_SEARCH_PAPERS switch (tests). *exact_forms*: the word forms decided
+    *papers* overrides the TEXT_SEARCH_PAPERS switch (tests). *exact_forms*: the word forms decided
     for this question; with TEXT_SEARCH_EXACT on, those words and the ones on
     the reviewed list also need one of their forms (module docstring).
     """
-    use_fts = schema_capabilities.has_fts() if fts is None else fts
-    use_papers = use_fts and (vectors.papers_enabled() if papers is None else papers)
-    if use_fts:
-        sql = convert_long_text_ilike(sql)
+    use_papers = vectors.papers_enabled() if papers is None else papers
+    sql = convert_long_text_ilike(sql)
     alias = _dataset_alias(sql)
     rank_parts: List[str] = []
     rank_exact_parts: List[str] = []
@@ -294,8 +262,6 @@ def expand_text_search(
         if not terms:
             # Nothing searchable ("???"): the term cannot match any dataset.
             return f"{negated}FALSE"
-        if not use_fts:
-            return negated + _ilike_fallback(terms, mode, alias)
         if also and not inside_not and previous_filter:
             own_parts.append(previous_filter[-1])
         elif not inside_not:
@@ -352,16 +318,15 @@ def expand_text_search(
 
     expanded = _TEXT_MATCH_RE.sub(replace, sql)
 
-    if use_fts:
-        # A requested title word also ranks: an exact title hit comes first.
-        for match in _NAME_ILIKE_RE.finditer(expanded):
-            if match.group("negated") or match.group("inner_negated"):
-                continue
-            words = split_words(match.group("literal"))
-            if words:
-                rank_parts.append(tsquery.all_words_query(words, tsquery.NAME_LABEL))
+    # A requested title word also ranks: an exact title hit comes first.
+    for match in _NAME_ILIKE_RE.finditer(expanded):
+        if match.group("negated") or match.group("inner_negated"):
+            continue
+        words = split_words(match.group("literal"))
+        if words:
+            rank_parts.append(tsquery.all_words_query(words, tsquery.NAME_LABEL))
 
-    rank_tsquery = tsquery.any_of(rank_parts) if (use_fts and rank_parts) else None
-    rank_exact = tsquery.any_of(rank_exact_parts) if (use_fts and rank_exact_parts) else None
+    rank_tsquery = tsquery.any_of(rank_parts) if rank_parts else None
+    rank_exact = tsquery.any_of(rank_exact_parts) if rank_exact_parts else None
     own = tsquery.any_of(list(dict.fromkeys(own_parts))) if (rank_tsquery or rank_exact) and own_parts else None
     return ExpandedSearch(sql=expanded, rank_tsquery=ranking.join_rank(rank_tsquery, rank_exact, own))

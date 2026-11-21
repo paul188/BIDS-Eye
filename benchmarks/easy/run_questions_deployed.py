@@ -15,12 +15,16 @@ async def run():
     from db.db import engine
     try:
         from services.translate.text_to_sql import text_to_sql
-        from services.catalogue.schema_capabilities import refresh_available_columns
+        try:
+            from services.catalogue.catalogue import catalogue
+            start_catalogue = catalogue.start
+        except ImportError:  # backend before catalogue.py
+            from services.catalogue.schema_capabilities import refresh_available_columns as start_catalogue
     except ImportError:  # backend before services/ was grouped (piped in: no helper)
         from services.text_to_sql import text_to_sql
-        from services.schema_capabilities import refresh_available_columns
+        from services.schema_capabilities import refresh_available_columns as start_catalogue
     engine.sync_engine.echo = False
-    await refresh_available_columns(engine)
+    await start_catalogue(engine)
     try:
         import institution_index
         await institution_index.refresh_from_db(engine)
@@ -28,18 +32,18 @@ async def run():
         pass
     try:
         try:
-            from services.fulltext import word_frequencies
-            from services.catalogue.schema_capabilities import has_fts
-        except ImportError:  # backend before text_search.py was split
-            try:
-                from services.fulltext import text_search as word_frequencies
-                from services.catalogue.schema_capabilities import has_fts
-            except ImportError:  # backend before services/ was grouped
-                from services import text_search as word_frequencies
-                from services.schema_capabilities import has_fts
-        try:
             import worker_db
         except ImportError:  # backend before worker_db.py
+            try:
+                from services.fulltext import word_frequencies
+                from services.catalogue.schema_capabilities import has_fts
+            except ImportError:  # backend before text_search.py was split
+                try:
+                    from services.fulltext import text_search as word_frequencies
+                    from services.catalogue.schema_capabilities import has_fts
+                except ImportError:  # backend before services/ was grouped
+                    from services import text_search as word_frequencies
+                    from services.schema_capabilities import has_fts
             if has_fts():
                 word_frequencies.set_frequency_lookup(
                     word_frequencies.make_frequency_lookup(engine, asyncio.get_running_loop()))

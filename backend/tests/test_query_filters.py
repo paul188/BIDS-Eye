@@ -280,7 +280,6 @@ def test_phrase_digits_pair_but_never_stand_alone():
 
 def test_attach_snippets_marks_field_strengths():
     from services.results import readme_snippets
-    from services.catalogue import schema_capabilities as caps
 
     # ts_headline marked the Postgres words; the pattern decides: "1.5 mm" is no strength.
     session = _SnippetSession([
@@ -288,11 +287,7 @@ def test_attach_snippets_marks_field_strengths():
          ["1.5", "1.5", "bold"], ["bold"]),
     ])
     datasets = [_dataset(1)]
-    caps.set_display_columns({"readme_text"})
-    try:
-        asyncio.run(readme_snippets.attach_snippets(session, datasets, [("BOLD",)], (), [1.5]))
-    finally:
-        caps.set_display_columns(())
+    asyncio.run(readme_snippets.attach_snippets(session, datasets, [("BOLD",)], (), [1.5]))
     assert session.calls[0][1]["q"] == "bold | 1.5"
     assert datasets[0].snippet == "… scanned on a ⟦1.5T⟧ Siemens with 1.5 mm voxels; ⟦BOLD⟧ runs …"
 
@@ -350,7 +345,6 @@ def _dataset(n: int):
 
 def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
     from services.results import readme_snippets
-    from services.catalogue import schema_capabilities as caps
 
     long_start = "Plain README start. " * 30
     session = _SnippetSession([
@@ -359,12 +353,8 @@ def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
         (UUID(int=2), long_start, [], ["parkinson", "diseas", "fmri"]),
     ])
     datasets = [_dataset(1), _dataset(2), _dataset(3)]
-    caps.set_display_columns({"readme_text"})
-    try:
-        asyncio.run(readme_snippets.attach_snippets(
-            session, datasets, [("parkinson", "disease"), ("fMRI",)]))
-    finally:
-        caps.set_display_columns(())
+    asyncio.run(readme_snippets.attach_snippets(
+        session, datasets, [("parkinson", "disease"), ("fMRI",)]))
 
     sql, params = session.calls[0]
     assert "ts_headline" in sql
@@ -378,15 +368,6 @@ def test_attach_snippets_marks_matches_and_falls_back_to_the_start():
     assert datasets[1].snippet.endswith(" …") and len(datasets[1].snippet) <= 330
     assert "⟦" not in datasets[1].snippet
     assert datasets[2].snippet is None
-
-
-def test_attach_snippets_without_the_column_does_nothing():
-    from services.results import readme_snippets
-
-    session = _SnippetSession([])
-    datasets = [_dataset(1)]
-    asyncio.run(readme_snippets.attach_snippets(session, datasets, [("x",)]))
-    assert session.calls == [] and datasets[0].snippet is None
 
 
 def test_source_chip_reads_openneuro():

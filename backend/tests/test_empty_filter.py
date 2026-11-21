@@ -11,7 +11,7 @@ import pytest
 
 import preprocess
 import retriever
-from services.catalogue import schema_capabilities as caps
+from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import word_frequencies
 from services.translate import text_to_sql
 from services.translate.text_to_sql import keeps_every_dataset
@@ -24,12 +24,10 @@ BASE = (
 
 @pytest.fixture(autouse=True)
 def _full_text_available():
-    caps.set_fts(True)
-    caps.set_available_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     yield
-    caps.set_fts(False)
-    caps.set_available_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
 
 

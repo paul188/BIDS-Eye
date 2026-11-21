@@ -19,7 +19,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
 from services.results import query_filters
-from services.catalogue.schema_capabilities import has_display_column
 
 log = logging.getLogger(__name__)
 
@@ -134,10 +133,10 @@ async def attach_snippets(
     "1.5" there); the marks come from query_filters.field_strength_pattern.
 
     Read with its own query, like services/results/dataset_cards.py, so the generated SQL stays
-    unchanged and databases without readme_text keep working. A failure leaves
+    unchanged. A failure leaves
     the page without excerpts rather than failing it.
     """
-    if not datasets or not has_display_column("readme_text"):
+    if not datasets:
         return
     ids = [d.id for d in datasets]
     strength_pattern = query_filters.field_strength_pattern(strengths)

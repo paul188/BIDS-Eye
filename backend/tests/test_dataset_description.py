@@ -276,7 +276,6 @@ class _Session:
 def test_attach_descriptions_shows_the_paper_line_and_summary():
     from services.results import dataset_cards
     from schemas import DatasetSchema
-    from services.catalogue import schema_capabilities as caps
 
     def dataset(n):
         return DatasetSchema(id=UUID(int=n), name=f"d{n}", dataset_type="raw",
@@ -287,11 +286,7 @@ def test_attach_descriptions_shows_the_paper_line_and_summary():
         (UUID(int=2), "Generated text.", "related_study", None, None, None, None, None, None),
     ])
     datasets = [dataset(1), dataset(2), dataset(3)]
-    caps.set_display_columns({"paper_relation", "dataset_summary"})
-    try:
-        asyncio.run(dataset_cards.attach_descriptions(session, datasets))
-    finally:
-        caps.set_display_columns(())
+    asyncio.run(dataset_cards.attach_descriptions(session, datasets))
 
     assert datasets[0].linked_paper.relation_label == "reports this dataset"
     assert datasets[0].linked_paper.url == "https://doi.org/10.1/x"

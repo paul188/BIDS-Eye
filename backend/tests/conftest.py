@@ -15,15 +15,18 @@ def _fresh_rate_limits():
 
 
 @pytest.fixture(autouse=True)
-def _empty_catalogue_values(monkeypatch):
-    """Every test starts with nothing cached in catalogue_values, freshly
-    loaded. A test that loads values (through schema_capabilities) would
-    otherwise leave them for the next, and preprocessing answers its DB
-    back-check from that cache."""
+def _empty_catalogue(monkeypatch):
+    """Every test starts with an empty catalogue, freshly loaded: no usable
+    optional column, no summaries, no coded values. A test may assign its
+    own parts (catalogue.coverage = ColumnCoverage.full([...])); they are
+    put back afterwards. Preprocessing answers its DB back-check from
+    catalogue.values, so values left by one test would change the next."""
     import time
 
-    from services.catalogue.catalogue_values import catalogue_values
+    from services.catalogue.catalogue import ColumnCoverage, Summaries, ValueCounts, catalogue
 
-    monkeypatch.setattr(catalogue_values, "_counts", {})
+    monkeypatch.setattr(catalogue, "coverage", ColumnCoverage())
+    monkeypatch.setattr(catalogue, "summaries", Summaries())
+    monkeypatch.setattr(catalogue, "values", ValueCounts())
     # As after startup: a search does not reload before REFRESH_SECONDS.
-    monkeypatch.setattr(catalogue_values, "_last_attempt", time.monotonic())
+    monkeypatch.setattr(catalogue, "_last_attempt", time.monotonic())

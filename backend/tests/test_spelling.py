@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 
 import word_forms
-from services.catalogue import schema_capabilities as caps
+from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import tsquery, vectors, word_frequencies
 from word_forms import plural_variants, search_variants, spelling_variants
 
@@ -55,11 +55,9 @@ def test_two_changes_in_one_word() -> None:
 
 @pytest.fixture
 def full_text():
-    caps.set_fts(True)
-    caps.set_available_columns(())
+    catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     yield
-    caps.set_fts(False)
     word_frequencies.set_frequency_lookup(None)
 
 
@@ -95,12 +93,10 @@ def test_the_exact_guard_accepts_both_spellings(tmp_path, monkeypatch, full_text
     monkeypatch.setattr(word_forms, "_PATH", path)
     monkeypatch.setenv(vectors.EXACT_ENV, "true")
     word_forms._reviewed.cache_clear()
-    caps.set_exact_fts(True, word_forms=True)
     try:
         guard = tsquery.exact_guard([("localizer",)])
         assert guard == "(localizer | localiser | localizers | localisers)"
     finally:
-        caps.set_exact_fts(False)
         word_forms._reviewed.cache_clear()
 
 
