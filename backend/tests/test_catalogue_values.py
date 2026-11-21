@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import time
+
 import pytest
 
 from services.catalogue import catalogue_values as cv
@@ -18,7 +20,7 @@ KNOWN = {
 def catalogue():
     cv.set_known(KNOWN)
     yield
-    cv.set_known({})
+    cv.clear()
 
 
 class _Result:
@@ -30,6 +32,9 @@ class _Result:
 
     def all(self):
         return self._rows
+
+    def scalars(self):
+        return self
 
 
 class _Savepoint:
@@ -50,7 +55,6 @@ class _Connection:
     def __init__(self, uncovered: int, load_fails: bool = False):
         self.uncovered = uncovered
         self.load_fails = load_fails
-        self.loads = 0
         self.savepoints = []
 
     def begin_nested(self):
@@ -64,11 +68,11 @@ class _Connection:
             return _Result(True)
         if "NOT EXISTS" in sql:
             return _Result(self.uncovered)
-        if "UNION ALL" in sql:
-            self.loads += 1
+        if "SELECT DISTINCT" in sql:
             if self.load_fails:
                 raise ProgrammingError(sql, None, Exception("permission denied for table"))
-            return _Result(rows=[("suffix", "fmri_bold"), ("task", "n_back"), ("datatype", "functional_mri")])
+            field = sql.split()[2]
+            return _Result(rows={"datatype": ["functional_mri"], "suffix": ["fmri_bold"], "task": ["n_back"]}[field])
         return _Result(1)
 
 
@@ -81,7 +85,7 @@ def _detect(uncovered: int, connection=None) -> None:
 
 
 def test_values_are_loaded_with_complete_facets() -> None:
-    cv.set_known({})
+    cv.clear()
     _detect(uncovered=0)
     assert cv.loaded() and cv.is_known("suffix", "fmri_bold") and not cv.is_known("suffix", "bold")
 
@@ -108,11 +112,11 @@ def test_a_failed_reload_keeps_the_old_values_and_waits_before_trying_again(monk
     from services.catalogue import schema_capabilities
 
     monkeypatch.setattr(schema_capabilities, "has_dataset_facets", lambda: True)
-    monkeypatch.setattr(cv, "_loaded_at", cv._loaded_at - cv.REFRESH_SECONDS - 1)
+    monkeypatch.setattr(cv, "_last_attempt", time.monotonic() - cv.REFRESH_SECONDS - 1)
     session = _Connection(uncovered=0, load_fails=True)
     asyncio.run(cv.refresh_if_stale(session))
     asyncio.run(cv.refresh_if_stale(session))
-    assert session.loads == 1 and session.savepoints == ["rolled back"]
+    assert session.savepoints == ["rolled back"]  # one load; the second call waits
     assert cv.is_known("suffix", "fmri_bold") and cv.is_known("task", "resting_state")
 
 
@@ -124,7 +128,7 @@ def test_an_error_that_is_not_a_database_error_is_not_swallowed(monkeypatch) -> 
         raise TypeError("a bug in load()")
 
     monkeypatch.setattr(schema_capabilities, "has_dataset_facets", lambda: True)
-    monkeypatch.setattr(cv, "_loaded_at", None)
+    monkeypatch.setattr(cv, "_last_attempt", None)
     monkeypatch.setattr(cv, "load", broken)
     with pytest.raises(TypeError):
         asyncio.run(cv.refresh_if_stale(_Connection(uncovered=0)))

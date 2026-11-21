@@ -69,7 +69,7 @@ def _vocabulary() -> Optional[Tuple[dict, dict]]:
 
 def correction(field: str, value: str) -> List[str]:
     """Known codes the vocabulary gives for an unknown *value*; [] if none."""
-    known = catalogue_values.known(field)
+    known = catalogue_values.known_values(field)
     forms = list(dict.fromkeys(f for f in (
         value, value.strip(), value.strip().lower(),
         value.strip().lower().replace("-", "_").replace(" ", "_"),
@@ -176,7 +176,7 @@ def _shown(codes: List[str]) -> str:
 def _like_matches(field: str, pattern: str, case_insensitive: bool) -> bool:
     regex = "".join(".*" if c == "%" else "." if c == "_" else re.escape(c) for c in pattern)
     flags = re.IGNORECASE if case_insensitive else 0
-    return any(re.fullmatch(regex, value, flags) for value in catalogue_values.known(field))
+    return any(re.fullmatch(regex, value, flags) for value in catalogue_values.known_values(field))
 
 
 # One function per kind of condition. Each changes the tree in place and

@@ -25,7 +25,7 @@ def catalogue(monkeypatch):
     monkeypatch.setattr(vc, "_vocabulary", lambda: (GROUPS, LEAVES))
     monkeypatch.delenv(vc.ENV, raising=False)
     yield
-    cv.set_known({})
+    cv.clear()
 
 
 def _exists(condition: str) -> str:
@@ -107,7 +107,7 @@ def test_off_without_known_values_or_by_switch(monkeypatch) -> None:
     monkeypatch.setenv(vc.ENV, "false")
     assert vc.check_sql(original) == (original, [])
     monkeypatch.delenv(vc.ENV)
-    cv.set_known({})
+    cv.clear()
     assert vc.check_sql(original) == (original, [])
 
 

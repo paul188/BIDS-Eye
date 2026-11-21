@@ -149,16 +149,9 @@ async def _detect_summaries(connection: Any, present: Collection[str]) -> None:
         _has_facets = _has_subject_counts = False
     # The values generated SQL is checked against (services/catalogue/catalogue_values.py).
     from services.catalogue import catalogue_values
-    if not _has_facets:
-        catalogue_values.set_known({})
-    else:
-        try:
-            await catalogue_values.load(connection)
-        except catalogue_values.CatalogueLoadError as exc:
-            # The facets still serve the search; only the value check is off
-            # until refresh_if_stale reads the values.
-            log.warning("%s; catalogue value check off for now", exc)
-            catalogue_values.set_known({})
+    catalogue_values.clear()
+    if _has_facets:
+        await catalogue_values.try_load(connection)
     log.info("Dataset summaries: facets table %s, stored subject count %s",
              "used" if _has_facets else "not used", "used" if _has_subject_counts else "not used")
 # The two vectors without stemming, and the catalogue's word forms; see
@@ -340,7 +333,7 @@ async def refresh_available_columns(engine: Any) -> FrozenSet[str]:
         log.warning("Could not inspect optional dataset columns (%s) — hiding all of them", exc)
         from services.catalogue import catalogue_values
         set_summaries(False, False)
-        catalogue_values.set_known({})
+        catalogue_values.clear()
         _available = frozenset()
         _present_display = frozenset()
         _has_fts = False
