@@ -1658,8 +1658,6 @@ diagnosis:
       weight: 0.8
     - term: seizure disorders
       weight: 0.8
-    - term: TLE
-      weight: 0.32
     - term: refractory epilepsy
       weight: 0.32
     - term: epileptic disorder
@@ -1669,12 +1667,6 @@ diagnosis:
     - term: epileptic syndrome
       weight: 0.1
     - term: epileptic syndromes
-      weight: 0.1
-    - term: temporal lobe epilepsy
-      weight: 0.1
-    - term: mesial temporal lobe epilepsy
-      weight: 0.1
-    - term: mTLE
       weight: 0.1
     - term: drug-resistant epilepsy
       weight: 0.1
@@ -1696,6 +1688,31 @@ diagnosis:
       weight: 0.1
     codes:
     - epileptic
+  temporal_lobe_epilepsy:
+    label: temporal lobe epilepsy
+    standard_code: temporal_lobe_epilepsy
+    broader:
+    - epilepsy
+    description: Focal epilepsy with seizures arising in the temporal lobe, mesial
+      (hippocampus, amygdala) or lateral. Added 2026-11-21, when "TLE" and
+      "temporal lobe epilepsy" were synonyms of epilepsy and searched every
+      epilepsy code.
+    synonyms:
+    - term: TLE
+      weight: 0.9
+    - term: temporal-lobe epilepsy
+      weight: 0.9
+    - term: mesial temporal lobe epilepsy
+      weight: 0.8
+    - term: medial temporal lobe epilepsy
+      weight: 0.8
+    - term: mTLE
+      weight: 0.8
+    - term: lateral temporal lobe epilepsy
+      weight: 0.5
+    codes:
+    - tle
+    - mtle
   epilepsy_syndromes:
     is_group: true
     broader:
@@ -2137,7 +2154,7 @@ diagnosis:
     label: hippocampal sclerosis
     standard_code: hippocampal_sclerosis
     broader:
-    - epilepsy
+    - temporal_lobe_epilepsy
     description: Neuronal loss and gliosis (scarring) in the hippocampus, a primary
       cause of mesial temporal lobe epilepsy.
     synonyms:

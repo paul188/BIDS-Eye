@@ -278,3 +278,17 @@ def test_brain_trauma_is_traumatic_brain_injury(term: str) -> None:
 def test_glioblastoma_is_grade_4_glioma(term: str) -> None:
     # Was a synonym of tumors_lesions: meningioma, CNS lymphoma, brain abscess.
     assert _resolve_yaml_term("diagnosis", term) == ["grade_4_glioma"]
+
+
+@pytest.mark.parametrize("term", ["TLE", "temporal lobe epilepsy", "mTLE", "mesial temporal lobe epilepsy",
+                                  "immune-mediated temporal lobe epilepsy"])
+def test_temporal_lobe_epilepsy_is_not_every_epilepsy(term: str) -> None:
+    # TLE was a synonym of epilepsy and searched all 13 epilepsy codes:
+    # "20 patients with TLE" confirmed an FCD and a paediatric dataset (2026-11-18).
+    assert _resolve_yaml_term("diagnosis", term) == ["temporal_lobe_epilepsy", "hippocampal_sclerosis"]
+
+
+def test_epilepsy_still_covers_temporal_lobe_epilepsy() -> None:
+    codes = _resolve_yaml_term("diagnosis", "epilepsy")
+    assert codes[0] == "epilepsy"
+    assert {"temporal_lobe_epilepsy", "hippocampal_sclerosis", "focal_cortical_dysplasia"} <= set(codes)
