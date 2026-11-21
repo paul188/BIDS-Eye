@@ -9,18 +9,17 @@ import pytest
 
 from services.catalogue import catalogue_values as cv
 
+# The cache as catalogue_values.load() fills it.
 KNOWN = {
-    "datatype": {"functional_mri", "anatomical_mri"},
-    "suffix": {"fmri_bold", "t1_weighted_mri"},
-    "task": {"resting_state", "n_back", "face_recognition", "object_recognition_general"},
+    "datatype": frozenset({"functional_mri", "anatomical_mri"}),
+    "suffix": frozenset({"fmri_bold", "t1_weighted_mri"}),
+    "task": frozenset({"resting_state", "n_back", "face_recognition", "object_recognition_general"}),
 }
 
 
 @pytest.fixture(autouse=True)
-def catalogue():
-    cv.set_known(KNOWN)
-    yield
-    cv.clear()
+def catalogue(monkeypatch):
+    monkeypatch.setattr(cv, "_known", KNOWN)
 
 
 class _Result:
@@ -87,7 +86,8 @@ def _detect(uncovered: int, connection=None) -> None:
 def test_values_are_loaded_with_complete_facets() -> None:
     cv.clear()
     _detect(uncovered=0)
-    assert cv.loaded() and cv.is_known("suffix", "fmri_bold") and not cv.is_known("suffix", "bold")
+    assert cv.loaded() and "fmri_bold" in cv.known_values("suffix")
+    assert "bold" not in cv.known_values("suffix")
 
 
 def test_incomplete_facets_switch_the_check_off() -> None:
@@ -117,7 +117,7 @@ def test_a_failed_reload_keeps_the_old_values_and_waits_before_trying_again(monk
     asyncio.run(cv.refresh_if_stale(session))
     asyncio.run(cv.refresh_if_stale(session))
     assert session.savepoints == ["rolled back"]  # one load; the second call waits
-    assert cv.is_known("suffix", "fmri_bold") and cv.is_known("task", "resting_state")
+    assert "fmri_bold" in cv.known_values("suffix") and "resting_state" in cv.known_values("task")
 
 
 def test_an_error_that_is_not_a_database_error_is_not_swallowed(monkeypatch) -> None:

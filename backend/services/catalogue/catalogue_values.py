@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Iterable, Mapping
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -49,16 +48,6 @@ def known_values(field: str) -> frozenset[str]:
     return (_known or {}).get(field, frozenset())
 
 
-def is_known(field: str, value: str) -> bool:
-    return value in known_values(field)
-
-
-def set_known(values: Mapping[str, Iterable[str]]) -> None:
-    """Replace the cached values. Called by load() and by tests."""
-    global _known
-    _known = {field: frozenset(values.get(field, ())) for field in FIELDS}
-
-
 def clear() -> None:
     """Drop the cached values, which switches the value check off."""
     global _known
@@ -80,7 +69,7 @@ async def load(connection: AsyncConnection | AsyncSession) -> None:
     a search. refresh_if_stale() tries again after REFRESH_SECONDS. The
     reads run in a savepoint, so the caller's transaction stays usable.
     """
-    global _last_attempt
+    global _known, _last_attempt
     values: dict[str, list[str]] = {}
     try:
         async with connection.begin_nested():
@@ -93,7 +82,7 @@ async def load(connection: AsyncConnection | AsyncSession) -> None:
         log.warning("Reading %s from %s failed (%s); %s", ", ".join(FIELDS), FACETS_TABLE, exc,
                     "keeping the old values" if loaded() else "value check off for now")
     else:
-        set_known(values)
+        _known = {field: frozenset(values[field]) for field in FIELDS}
         log.info("Catalogue values: %s",
                  ", ".join(f"{len(field_values)} {field}" for field, field_values in values.items()))
     # Set only after the read succeeded or failed with a database error. A

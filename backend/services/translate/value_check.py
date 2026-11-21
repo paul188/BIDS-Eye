@@ -189,7 +189,8 @@ def _check_in_list(node: Any, field: str) -> List[str]:
     values = [s for v in literals if (s := _string(v)) is not None]
     if not literals or len(values) < len(literals) or node.args.get("query"):
         return []
-    unknown = [v for v in values if not catalogue_values.is_known(field, v)]
+    known = catalogue_values.known_values(field)
+    unknown = [v for v in values if v not in known]
     if not unknown:
         return []
     fixes = {v: correction(field, v) for v in unknown}
@@ -217,7 +218,7 @@ def _check_comparison(node: Any, field: str, column: Any, value_node: Any) -> Li
     """field = 'x' / field != 'x': replace an unknown value; else drop an =
     (it matches nothing) and keep a != (it excludes nothing)."""
     value = _string(value_node)
-    if value is None or catalogue_values.is_known(field, value):
+    if value is None or value in catalogue_values.known_values(field):
         return []
     fixed = correction(field, value)
     if fixed:

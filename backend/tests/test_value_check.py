@@ -9,10 +9,11 @@ pytest.importorskip("sqlglot")
 from services.catalogue import catalogue_values as cv  # noqa: E402
 from services.translate import value_check as vc  # noqa: E402
 
+# The cache as catalogue_values.load() fills it.
 KNOWN = {
-    "datatype": {"functional_mri", "anatomical_mri"},
-    "suffix": {"fmri_bold", "t1_weighted_mri"},
-    "task": {"resting_state", "n_back", "face_recognition", "object_recognition_general"},
+    "datatype": frozenset({"functional_mri", "anatomical_mri"}),
+    "suffix": frozenset({"fmri_bold", "t1_weighted_mri"}),
+    "task": frozenset({"resting_state", "n_back", "face_recognition", "object_recognition_general"}),
 }
 GROUPS = {"task": {"recognition": ["face_recognition", "object_recognition_general", "never_recorded"]}}
 LEAVES = {"suffix": {"bold": "fmri_bold", "t1w": "t1_weighted_mri"},
@@ -21,11 +22,9 @@ LEAVES = {"suffix": {"bold": "fmri_bold", "t1w": "t1_weighted_mri"},
 
 @pytest.fixture(autouse=True)
 def catalogue(monkeypatch):
-    cv.set_known(KNOWN)
+    monkeypatch.setattr(cv, "_known", KNOWN)
     monkeypatch.setattr(vc, "_vocabulary", lambda: (GROUPS, LEAVES))
     monkeypatch.delenv(vc.ENV, raising=False)
-    yield
-    cv.clear()
 
 
 def _exists(condition: str) -> str:
@@ -130,7 +129,7 @@ def test_rewriter_runs_the_check_and_reports_it() -> None:
 
 def test_real_vocabulary_knows_the_raw_suffixes(monkeypatch) -> None:
     monkeypatch.undo()  # the real vocabulary, RAG/value_mappings.yaml
-    cv.set_known(KNOWN)
+    monkeypatch.setattr(cv, "_known", KNOWN)
     if vc._vocabulary() is None:  # pragma: no cover - vocabulary not on the path
         pytest.skip("vocabulary not importable")
     assert vc.correction("suffix", "bold") == ["fmri_bold"]
@@ -141,7 +140,7 @@ def test_an_unloadable_vocabulary_is_tried_once(monkeypatch) -> None:
     import builtins
 
     monkeypatch.undo()
-    cv.set_known(KNOWN)
+    monkeypatch.setattr(cv, "_known", KNOWN)
     real_import = builtins.__import__
     attempts = []
 
