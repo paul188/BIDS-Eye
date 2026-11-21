@@ -18,9 +18,22 @@ from services.fulltext.tsquery import is_safe_tsquery
 from services.fulltext import vectors
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
 
-# ts_rank_cd weights in the order {D, C, B, A}: README, LLM profile of the
-# README, short fields (incl. conditions the README says were studied), name.
-RANK_WEIGHTS = "{0.05, 0.4, 0.6, 1.0}"
+# How much a match counts, by where it is. The search vectors give each part
+# of a dataset a weight label (crawlers/migrate_add_search_tsv.sql and the
+# other migrate_add_*.sql); ts_rank_cd scores a label by its weight here.
+WEIGHT_NAME = 1.0           # label A: the dataset's name
+WEIGHT_SHORT_FIELDS = 0.6   # label B: short fields, incl. conditions the README says were studied
+WEIGHT_LLM_PROFILE = 0.4    # label C: the language model's profile of the README
+WEIGHT_README = 0.05        # label D: README text, and paper text when that is on
+
+WEIGHT_BY_LABEL = {
+    "A": WEIGHT_NAME,
+    "B": WEIGHT_SHORT_FIELDS,
+    "C": WEIGHT_LLM_PROFILE,
+    "D": WEIGHT_README,
+}
+# ts_rank_cd takes the weights as one array in the order D, C, B, A.
+RANK_WEIGHTS = "{" + ", ".join(str(WEIGHT_BY_LABEL[label]) for label in "DCBA") + "}"
 # 32 scales the rank into 0..1 (rank / (rank + 1)), the range RAG scores use.
 RANK_NORMALIZATION = 32
 

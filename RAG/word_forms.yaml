@@ -2,19 +2,24 @@
 #
 # The search matches a word by its stem, so "depression" also finds
 # "depressive". Some stems merge words that mean different things: "severe"
-# and "several", "ageing" and "age". For those, a search for one word requires
-# the forms listed with it.
+# and "several", "ageing" and "age". Whether two forms may match is a decision
+# about the pair, in one direction: "ageing" must not find "age", while "age"
+# may find "ageing". A pair not listed here keeps matching by stem.
 #
-# exact    groups of forms that mean the same. A search for any of them
-#          (or its plural or singular) matches these forms only.
-#            forms     the forms that count
-#            excludes  what the stem also matches and the search must not;
-#                      documentation, checked by backend/tests/test_word_forms.py
+# exact    one group per decision.
+#            forms     forms that mean the same; the decision is about a search
+#                      for any of them (or its plural, singular, other spelling)
+#            excludes  forms of the stem that are different from each of them:
+#                      such a search does not match these. Every other form of
+#                      the stem still matches.
 #            why       one line
+#          A pair goes one way only; for both, list two groups (object and
+#          objective).
 # stemmed  groups whose stem is right although the catalogue's counts look
-#          like a collision. Listed so the language model is not asked each time.
+#          like a collision: every pair of their forms matches. Listed so the
+#          language model is not asked each time.
 #
-# This list wins over the language model's choice for the same word, and it
+# This list wins over the language model's choice for the same pair, and it
 # also covers words the question did not contain (vocabulary synonyms,
 # alternatives the model wrote).
 #
@@ -31,13 +36,13 @@ exact:
     excludes: [several]
     why: "'several' shares the stem"
   - forms: [weight, weights]
-    excludes: [weighted, weighting]
+    excludes: [weighted, weighting, weightings]
     why: "body weight, not T1-weighted images"
   - forms: [structural, structurally]
     excludes: [structure, structures, structured]
     why: "structural imaging, not the Brain Imaging Data Structure every README names"
   - forms: [function, functions, functioning]
-    excludes: [functional, functionally]
+    excludes: [functional, functionally, functionals]
     why: "a function (executive, cognitive), not functional MRI"
   - forms: [lateral, laterally, laterality, lateralization, lateralized]
     excludes: [later]
@@ -52,7 +57,7 @@ exact:
     excludes: [object, objects]
     why: "an aim or an objective measure, not objects shown"
   - forms: [object, objects]
-    excludes: [objective, objectives, objectively]
+    excludes: [objective, objectives, objectively, objectivity]
     why: "objects shown or recognised, not a study's objective"
   - forms: [personality]
     excludes: [person, persons, personal, personalized, personally]
@@ -61,7 +66,7 @@ exact:
     excludes: [experiment, experiments]
     why: "what someone experiences, not the experiment"
   - forms: [comprehension]
-    excludes: [comprehensive, comprehensively]
+    excludes: [comprehensive, comprehensively, comprehensiveness]
     why: "understanding language, not a comprehensive dataset"
   - forms: [identity, identities]
     excludes: [identical, identically]
@@ -73,22 +78,22 @@ exact:
     excludes: [format, formats, formatted, formatting]
     why: "hippocampal or memory formation, not the file format"
   - forms: [selective, selectively, selectivity]
-    excludes: [selected, selection, select, selecting]
+    excludes: [selected, selection, selections, select, selecting, selectable]
     why: "selective attention or tuning, not selected participants"
   - forms: [dependence, dependency]
-    excludes: [dependent, depending, depends, depend]
+    excludes: [dependent, depending, depends, depend, depended, dependant]
     why: "substance dependence, not level-dependent signals or dependent variables"
   - forms: [hand, hands]
-    excludes: [handed]
+    excludes: [handed, handeness]
     why: "the hand, not right-handed participants"
   - forms: [localizer, localizers]
-    excludes: [local, localization, localized, localize]
+    excludes: [local, locally, locale, localization, localizations, localized, localize, localizing]
     why: "a functional localizer scan, not local or localized"
   - forms: [direction, directions, directional]
-    excludes: [direct, directly, directed]
+    excludes: [direct, directly, directed, directing]
     why: "direction of motion or phase encoding, not direct or directly"
   - forms: [positive, positively, positivity]
-    excludes: [position, positions, positioned, positioning]
+    excludes: [position, positions, positioned, positioning, positional, posit]
     why: "positive valence or findings, not head position"
   - forms: [position, positions, positioned, positioning]
     excludes: [positive, positively, positivity]

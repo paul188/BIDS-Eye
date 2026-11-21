@@ -36,7 +36,7 @@ _TEXT_MATCH_WORDS_RE = re.compile(r"text_match\(\s*'([^']*)'", re.IGNORECASE)
 
 
 def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]]) -> None:
-    """Log searched words whose stem collides but whose forms nobody decided.
+    """Log searched words with colliding forms nobody judged against them.
 
     These come from the vocabulary or from the model's own wording, not from
     the question, so the model was not asked about them. They are searched by
@@ -50,14 +50,15 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
     searched = list(dict.fromkeys(
         word for terms in _TEXT_MATCH_WORDS_RE.findall(augmented_question)
         for word in re.findall(r"[a-z]+", terms.lower())))
-    open_words = [w for w in searched if w not in decided and not word_forms.reviewed(w)[0]]
+    open_words = [w for w in searched if w not in decided]
     # {} when the catalogue cannot answer (lookup catches that).
     undecided = [e for e in word_form_store.lookup(open_words).values()
-                 if word_forms.is_collision(e)]
+                 if word_forms.open_forms(e)]
     for item in undecided:
-        log.info("Searched by stem although it collides: %s (%d datasets; own forms %d; %s)",
+        log.info("Searched by stem although it collides: %s (%d datasets; own forms %d; "
+                 "nobody judged %s)",
                  item.word, item.stem_docs, word_forms.family_docs(item),
-                 ", ".join(f"{form} {n}" for form, n in item.forms[:5]))
+                 ", ".join(f"{form} {item.count(form)}" for form in word_forms.open_forms(item)[:5]))
 
 
 # Words that say a name is a person: "datasets by Huntington", "the Wilson lab".
