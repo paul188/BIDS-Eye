@@ -93,7 +93,7 @@ def test_page_query_puts_the_tier_first() -> None:
 
 def test_keyword_query_drops_question_noise() -> None:
     query = tsquery.keyword_query("Find EEG datasets of children with ADHD please")
-    assert query == "eeg | children | adhd"
+    assert query == "eeg | children | child | adhd"      # every word in its other forms too
     assert tsquery.keyword_query("show me all datasets") is None
 
 

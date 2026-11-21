@@ -34,7 +34,7 @@ from text_terms import (
     parse_alternatives,
     split_words,
 )
-from word_forms import forms_for
+from word_forms import forms_for, search_variants
 
 from services.fulltext import vectors, word_frequencies
 
@@ -55,7 +55,10 @@ def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple
     """
     if len(word) != 1 or not vectors.exact_enabled():
         return None
-    return forms_for(word[0], exact_forms)
+    forms = forms_for(word[0], exact_forms)
+    if not forms:
+        return forms
+    return tuple(dict.fromkeys(f for form in forms for f in (form, *search_variants(form))))
 
 
 def _form_group(forms: Sequence[str], label: str = "") -> str:
@@ -74,11 +77,16 @@ def exact_guard(term: Term, label: str = "",
     return " & ".join(groups) or None
 
 
+def _spelled(part: str, label: str = "") -> str:
+    """A word in all its spellings and numbers: "(behaviour | behavior)", "(stimulus | stimuli)"."""
+    return _form_group([part, *search_variants(part)], label)
+
+
 def _word_query(word: Word, label: str = "") -> str:
-    """One word; the parts of a hyphenated compound must be adjacent."""
+    """One word in every spelling and number; the parts of a hyphenated compound must be adjacent."""
     if len(word) == 1:
-        return f"{word[0]}{label}"
-    return "(" + " <-> ".join(f"{part}{label}" for part in word) + ")"
+        return _spelled(word[0], label)
+    return "(" + " <-> ".join(_spelled(part, label) for part in word) + ")"
 
 
 def all_words_query(term: Term, label: str = "") -> str:
@@ -117,8 +125,23 @@ def _near_query(term: Term, label: str = "") -> str:
     return "(" + " | ".join(variants) + ")"
 
 
+# A word in all its forms: "(mouse:AB | mice:AB)", or a single word.
+_WORD_GROUP_RE = re.compile(r"\([a-z0-9:AB]+(?: \| [a-z0-9:AB]+)+\)|[a-z0-9:AB]+")
+
+
 def any_of(queries: Sequence[str]) -> str:
     queries = list(dict.fromkeys(q for q in queries if q))
+    if len(queries) == 1:
+        return queries[0]
+    # Inside an OR, a word's forms join the OR: a list that names "mouse" and
+    # "mice" gives "mouse | mice", not "(mouse | mice) | (mice | mouse)".
+    flat: List[str] = []
+    for query in queries:
+        if _WORD_GROUP_RE.fullmatch(query):
+            flat.extend(query.strip("()").split(" | "))
+        else:
+            flat.append(query)
+    queries = list(dict.fromkeys(flat))
     if len(queries) == 1:
         return queries[0]
     return " | ".join(f"({q})" if (" " in q and not _is_parenthesised(q)) else q for q in queries)
@@ -287,7 +310,7 @@ def keyword_query(question: str) -> Optional[str]:
     words = [word for word in split_words(question)
              if not (len(word) == 1 and (word[0] in _QUESTION_NOISE or len(word[0]) < 2))]
     queries = list(dict.fromkeys(_word_query(word) for word in words))
-    query = " | ".join(queries[:12])
+    query = any_of(queries[:12]) if queries else ""
     return query if query and is_safe_tsquery(query) else None
 
 
