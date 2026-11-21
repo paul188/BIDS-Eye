@@ -334,7 +334,7 @@ def test_an_or_is_one_search_with_one_chip(monkeypatch, full_text) -> None:
     assert "& art" not in sql and "drawings &" not in sql
     # No "matches only part of the search" tier: neither word alone is weaker.
     assert "missing:" not in sql
-    assert result.rank_tsquery and "drawings | art" in result.rank_tsquery
+    assert result.rank_query and "drawings | art" in result.rank_query.stemmed
     assert [(c.field, c.label, c.negated) for c in chips] == [("Text", "“drawings” or “art”", False)]
 
 

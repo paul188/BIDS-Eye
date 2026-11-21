@@ -13,6 +13,7 @@ from llm_client import LLMAllFailedError
 from services.results import rerank
 from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
+from services.fulltext.ranking import RankQuery
 
 IDS = [str(UUID(int=i)) for i in range(1, 7)]
 BASE = (
@@ -137,7 +138,7 @@ def test_rerank_gives_up_quietly_on_errors_and_timeouts(monkeypatch) -> None:
 
 def test_page_sql_applies_the_reranked_order_after_sqlglot() -> None:
     base = SqlRewriteService().rewrite_generated_sql(BASE, "q").sql
-    sql, params = build_page_sql(base, [], True, 20, 0, rank_tsquery="bipolar",
+    sql, params = build_page_sql(base, [], True, 20, 0, rank_query=RankQuery("bipolar"),
                                  rerank_ordered=[IDS[2], IDS[0]], rerank_demoted=[IDS[1]])
     assert params["_rr_top"] == [IDS[2], IDS[0]] and params["_rr_low"] == [IDS[1]]
     assert ":_rr_top" in sql and "%(" not in sql

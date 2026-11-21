@@ -299,7 +299,7 @@ def test_papers_switch_widens_positive_matches_only(monkeypatch) -> None:
     assert "NOT d.search_tsv @@" in on.sql                      # migraine
     assert "OR d.search_tsv @@" in on.sql                       # dementia, inside NOT ( … )
     # Ranking never reads paper text.
-    assert on.rank_tsquery == off.rank_tsquery
+    assert on.rank_query == off.rank_query
     # The benchmark's rewrite of the off-SQL gives the same as expanding with papers on.
     assert text_search.with_paper_text(off.sql) == on.sql
 

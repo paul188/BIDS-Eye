@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from services.translate.sql_rewriter import FALLBACK_SQL, SqlRewriteService, build_count_sql, build_page_sql
+from services.fulltext.ranking import RankQuery
 
 
 SERVICE = SqlRewriteService()
@@ -66,7 +67,7 @@ def test_rewrite_generated_sql_strips_bad_outer_filters_and_adds_vocab_miss_clau
     assert "d.search_tsv @@ to_tsquery('english', 'alcohol')" in rewritten.sql
     assert "d.dataset_type = 'raw'" in rewritten.sql
     assert rewritten.params == {}
-    assert rewritten.rank_tsquery == "alcohol"
+    assert rewritten.rank_query == RankQuery("alcohol")
 
 
 def test_build_count_and_page_sql_wrap_base_query() -> None:

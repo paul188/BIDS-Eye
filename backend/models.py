@@ -28,7 +28,7 @@ class QueryInterpretation(Base):
     pipeline_version: Mapped[str] = mapped_column(String(16), index=True)
     question: Mapped[str] = mapped_column(Text)
     question_normalized: Mapped[str] = mapped_column(Text, index=True)
-    # JSON: sql, params, scored_filters, apply_relevance, rank_tsquery,
+    # JSON: sql, params, scored_filters, apply_relevance, rank_query,
     # explanation, filter_sql, relaxed_sql, relaxed
     payload: Mapped[str] = mapped_column(Text)
     total_at_creation: Mapped[int] = mapped_column(Integer)

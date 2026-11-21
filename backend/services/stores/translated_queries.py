@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from services.fulltext.ranking import RankQuery
+
 # Tunables
 _TTL_SECONDS = 30 * 60  # query_ids expire 30 min after creation
 _MAX_ENTRIES = 500      # hard cap; oldest entries evicted first (LRU-ish)
@@ -38,7 +40,7 @@ class CachedQuery:
     params: Dict[str, Any]
     scored_filters: List[Dict[str, Any]]
     apply_relevance: bool
-    rank_tsquery: Optional[str] = None
+    rank_query: Optional[RankQuery] = None
     explanation: Optional[str] = None
     # LLM re-ranking (services/results/rerank.py), done once on the first page.
     rerank_done: bool = False

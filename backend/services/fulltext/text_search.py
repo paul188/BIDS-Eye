@@ -49,10 +49,9 @@ weight labels. Whatever reads the SQL afterwards treats the pair as one
 condition (is_guarded_pair): the filter chips, the uncertain tier. A
 placeholder with several alternatives becomes one pair per alternative that
 has an exact word, ORed with the rest. The word counts count such words in
-their forms, and they are ranked on search_tsv_exact: the rank query then
-has two parts, "stemmed#exact" (ranking.join_rank, ranking.rank_expression), and travels as
-one string like before. With paper text on, the guard reads
-search_tsv_exact_papers.
+their forms, and they are ranked on search_tsv_exact: the RankQuery then has
+a stemmed and an exact part (ranking.rank_expression). With paper text on,
+the guard reads search_tsv_exact_papers.
 """
 
 from __future__ import annotations
@@ -107,10 +106,8 @@ _URL_FRAGMENT_RE = re.compile(r"[./:@]")
 @dataclass(slots=True)
 class ExpandedSearch:
     sql: str
-    # What ranks the result: a tsquery for search_tsv, "stemmed#exact" when
-    # words are ranked on search_tsv_exact, or "stemmed#exact#own" when other
-    # words widen a search (ranking.join_rank).
-    rank_tsquery: Optional[str]
+    # What ranks the result by its text; None without text terms.
+    rank_query: Optional[ranking.RankQuery]
 
 
 def _dataset_alias(sql: str) -> str:
@@ -326,7 +323,9 @@ def expand_text_search(
         if words:
             rank_parts.append(tsquery.all_words_query(words, tsquery.NAME_LABEL))
 
-    rank_tsquery = tsquery.any_of(rank_parts) if rank_parts else None
+    rank_stemmed = tsquery.any_of(rank_parts) if rank_parts else None
     rank_exact = tsquery.any_of(rank_exact_parts) if rank_exact_parts else None
-    own = tsquery.any_of(list(dict.fromkeys(own_parts))) if (rank_tsquery or rank_exact) and own_parts else None
-    return ExpandedSearch(sql=expanded, rank_tsquery=ranking.join_rank(rank_tsquery, rank_exact, own))
+    if not (rank_stemmed or rank_exact):
+        return ExpandedSearch(sql=expanded, rank_query=None)
+    own = tsquery.any_of(list(dict.fromkeys(own_parts))) if own_parts else None
+    return ExpandedSearch(sql=expanded, rank_query=ranking.RankQuery(rank_stemmed, rank_exact, own))

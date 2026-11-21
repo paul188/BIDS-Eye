@@ -53,7 +53,7 @@ def test_no_condition_becomes_a_keyword_search(monkeypatch) -> None:
     result = text_to_sql._run_local("bonn", "dummy-key")
 
     assert "search_tsv @@" in result.sql
-    assert "bonn" in result.rank_tsquery
+    assert "bonn" in result.rank_query.stemmed
     assert not keeps_every_dataset(result.sql)
     assert result.explanation.startswith("Datasets related to Bonn. No search condition")
     assert "keyword search" in result.explanation

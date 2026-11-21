@@ -2,17 +2,15 @@
 services/fulltext/ranking.py
 ----------------------------
 The text rank of a result: SQL for ts_rank_cd over the stored vectors, and the
-rank string that carries its queries from the translation to the result page.
-
-The rank string is one tsquery for search_tsv, or "stemmed#exact" when words
-with decided forms rank on search_tsv_exact, or "stemmed#exact#alternative" when
-alternative words ('also') widen a search (join_rank, split_rank). It is stored with a
-translation and travels as one string.
+RankQuery that carries its tsqueries from the translation to the result page.
+A RankQuery is kept with a translation (as JSON, rank_to_json) and with every
+page of it (services/stores/translated_queries.py).
 """
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from dataclasses import asdict, dataclass, fields, replace
+from typing import Any, Dict, Optional
 
 from services.fulltext.tsquery import is_safe_tsquery
 from services.fulltext import vectors
@@ -40,10 +38,6 @@ TS_RANK_WEIGHTS = "{" + ", ".join(str(TS_WEIGHT_BY_LABEL[label]) for label in "D
 TS_RANK_NORMALIZATION_NONE = 0
 TS_RANK_NORMALIZATION_RANK_PLUS_ONE = 32
 
-# Between the parts of a rank query: the tsquery for search_tsv, the one for
-# search_tsv_exact, and the one for a search with alternative words ('also'). Not a tsquery
-# character.
-RANK_SEPARATOR = "#"
 # Some searches get other words added: "dead people" also searches
 # "post-mortem | ex vivo", written text_match('post-mortem | ex vivo', 'also').
 # A dataset that has only those other words, not the user's own, goes after
@@ -54,59 +48,67 @@ RANK_SEPARATOR = "#"
 OTHER_WORDS_ONLY_GO_LAST = 100
 
 
-def join_rank(stemmed: Optional[str], exact: Optional[str],
-              alternative: Optional[str] = None) -> Optional[str]:
-    """One rank string from its parts; the stemmed query alone as it is."""
-    if alternative:
-        return f"{stemmed or ''}{RANK_SEPARATOR}{exact or ''}{RANK_SEPARATOR}{alternative}"
-    if not exact:
-        return stemmed or None
-    return f"{stemmed or ''}{RANK_SEPARATOR}{exact}"
+@dataclass(frozen=True)
+class RankQuery:
+    """The tsqueries that rank a result by its text; each is None when absent.
 
-
-def _rank_parts(rank: Optional[str]) -> List[Optional[str]]:
-    parts = (rank or "").split(RANK_SEPARATOR, 2)
-    parts += [""] * (3 - len(parts))
-    return [part if is_safe_tsquery(part) else None for part in parts]
-
-
-def split_rank(rank: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
-    """(stemmed, exact) of a rank string; a part is None when absent or unsafe."""
-    stemmed, exact, _alternative = _rank_parts(rank)
-    return stemmed, exact
-
-
-def rank_alternative(rank: Optional[str]) -> Optional[str]:
-    """The third part, present when alternative words ('also') widen a search.
-
-    It holds the search as the user wrote it: a dataset that matches only the
-    alternative words does not match it. None when there is none.
+    stemmed      ranks on search_tsv
+    exact        ranks the words with decided forms on search_tsv_exact
+    alternative  the search as the user wrote it, when alternative words
+                 ('also') widen it: a dataset that matches only the
+                 alternative words does not match this one
     """
-    return _rank_parts(rank)[2]
+    stemmed: Optional[str] = None
+    exact: Optional[str] = None
+    alternative: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        # Each part is inlined into SQL (rank_expression).
+        for part in fields(self):
+            query = getattr(self, part.name)
+            if query is not None and not is_safe_tsquery(query):
+                raise ValueError(f"unsafe {part.name} tsquery")
+
+    def without_alternative(self) -> RankQuery:
+        """The same ranking without the alternative part: every match ranks alike."""
+        return replace(self, alternative=None)
 
 
-def without_alternative(rank: Optional[str]) -> Optional[str]:
-    """The rank string without the alternative part: every match ranks alike."""
-    return join_rank(*split_rank(rank))
+def rank_to_json(rank: Optional[RankQuery]) -> Optional[Dict[str, Optional[str]]]:
+    return asdict(rank) if rank is not None else None
 
 
-def rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
+def rank_from_json(data: Any) -> Optional[RankQuery]:
+    """The RankQuery that rank_to_json wrote; None for anything else.
+
+    A part that is not a safe tsquery is dropped, as the stored JSON is read
+    back into SQL.
+    """
+    if not isinstance(data, dict):
+        return None
+    parts = {part.name: data.get(part.name) for part in fields(RankQuery)}
+    safe = {name: query for name, query in parts.items() if isinstance(query, str) and is_safe_tsquery(query)}
+    return RankQuery(**safe) if safe.get("stemmed") or safe.get("exact") else None
+
+
+def rank_expression(alias: str, rank: Optional[RankQuery]) -> Optional[str]:
     """SQL for the text rank of the dataset row *alias*; None without a rank.
 
     0..1; with both parts the raw ranks are added before scaling, as one
     query over one vector would have done. A dataset that matches only the
     other words of a search ('also') loses OTHER_WORDS_ONLY_GO_LAST.
     """
+    if rank is None:
+        return None
     expression = _plain_rank_expression(alias, rank)
-    alternative = rank_alternative(rank)
-    if expression is None or not alternative:
+    if expression is None or not rank.alternative:
         return expression
     return (f"({expression} - CASE WHEN {alias}.{FTS_COLUMN} @@ "
-            f"to_tsquery('{TS_CONFIG}', '{alternative}') THEN 0 ELSE {OTHER_WORDS_ONLY_GO_LAST} END)")
+            f"to_tsquery('{TS_CONFIG}', '{rank.alternative}') THEN 0 ELSE {OTHER_WORDS_ONLY_GO_LAST} END)")
 
 
-def _plain_rank_expression(alias: str, rank: Optional[str]) -> Optional[str]:
-    stemmed, exact = split_rank(rank)
+def _plain_rank_expression(alias: str, rank: RankQuery) -> Optional[str]:
+    stemmed, exact = rank.stemmed, rank.exact
     if exact and not vectors.exact_enabled():
         exact = None
     if stemmed and not exact:

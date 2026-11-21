@@ -161,7 +161,7 @@ async def rerank_once(
         return
     candidate_sql, params = build_page_sql(
         cached.base_sql, cached.scored_filters, True,
-        rerank_settings()["candidates"], 0, rank_tsquery=cached.rank_tsquery,
+        rerank_settings()["candidates"], 0, rank_query=cached.rank_query,
     )
     # In a savepoint: a failed read only skips the re-ranking.
     try:
@@ -248,7 +248,7 @@ async def _run_page_unguarded(
             cached.apply_relevance and ranked,
             page_size,
             offset,
-            rank_tsquery=cached.rank_tsquery if ranked else None,
+            rank_query=cached.rank_query if ranked else None,
             rerank_ordered=cached.rerank_ordered,
             rerank_demoted=cached.rerank_demoted,
         )

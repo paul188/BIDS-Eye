@@ -18,6 +18,7 @@ from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E4
 import worker_db  # noqa: E402
 from worker_db import WorkerDbError  # noqa: E402
 from services.translate.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
+from services.fulltext.ranking import RankQuery  # noqa: E402
 
 SERVICE = SqlRewriteService()
 BASE = (
@@ -265,8 +266,7 @@ def test_expand_replaces_placeholders_and_collects_the_rank_query() -> None:
     assert "text_match" not in expanded.sql.lower()
     assert "d.search_tsv @@ to_tsquery('english', 'epilepsy:AB | epileptic:AB')" in expanded.sql
     assert "d.search_tsv @@ to_tsquery('english', 'alcohol')" in expanded.sql
-    assert expanded.rank_tsquery == "(epilepsy | epileptic) | alcohol"
-    assert tsquery.is_safe_tsquery(expanded.rank_tsquery)
+    assert expanded.rank_query == RankQuery("(epilepsy | epileptic) | alcohol")
 
 
 def test_negated_and_unsearchable_placeholders() -> None:
@@ -276,7 +276,7 @@ def test_negated_and_unsearchable_placeholders() -> None:
     assert "NOT d.search_tsv @@ to_tsquery('english', 'control')" in expanded.sql
     assert "AND FALSE" in expanded.sql
     # What the user excluded must not pull datasets up.
-    assert expanded.rank_tsquery is None
+    assert expanded.rank_query is None
 
 
 def test_expand_uses_the_dataset_alias_of_the_query() -> None:
@@ -289,7 +289,7 @@ def test_expand_uses_the_dataset_alias_of_the_query() -> None:
 def test_title_search_stays_ilike_but_ranks_on_the_name() -> None:
     expanded = text_search.expand_text_search(BASE + "WHERE d.name ILIKE '%Stroop%' GROUP BY d.id")
     assert "d.name ILIKE '%Stroop%'" in expanded.sql
-    assert expanded.rank_tsquery == "stroop:A"
+    assert expanded.rank_query == RankQuery("stroop:A")
 
 
 def test_stray_ilike_on_long_text_becomes_full_text_search() -> None:
@@ -312,7 +312,7 @@ def test_rewriter_expands_and_returns_the_rank_query() -> None:
     )
     assert "search_tsv @@" in rewritten.sql
     assert rewritten.params == {}
-    assert rewritten.rank_tsquery == "ketamine"
+    assert rewritten.rank_query == RankQuery("ketamine")
 
 
 def test_vocabulary_miss_filter_is_added_once_and_keeps_or_groups_intact() -> None:
@@ -327,7 +327,7 @@ def test_vocabulary_miss_filter_is_added_once_and_keeps_or_groups_intact() -> No
     if sql_rewriter.parse_one is not None:
         # The old filter is parenthesised, so its OR cannot bypass the new one.
         assert re.search(r"@@ TO_TSQUERY\('english', 'tracking'\) AND \(", rewritten.sql, re.I)
-    assert rewritten.rank_tsquery == "eye | tracking"
+    assert rewritten.rank_query == RankQuery("eye | tracking")
 
     copied = BASE + "WHERE TEXT_MATCH('eye tracking', 'loose') GROUP BY d.id"
     again = SERVICE.rewrite_generated_sql(copied, augmented)
@@ -341,23 +341,23 @@ def test_page_sql_orders_by_structured_score_plus_text_rank() -> None:
     page_sql, params = build_page_sql(
         base.sql,
         scored_filters=[{"field": "diagnosis", "code": "epilepsy", "score": 0.9}],
-        apply_relevance=True, limit=20, offset=0, rank_tsquery=base.rank_tsquery,
+        apply_relevance=True, limit=20, offset=0, rank_query=base.rank_query,
     )
     assert "matched_codes" in page_sql and "TS_RANK_CD" in page_sql.upper()
     assert re.search(r"relevance_score \+ ranked\.text_rank DESC", page_sql)
     assert params == {"_limit": 20, "_offset": 0}
 
     # Text terms alone are enough to rank.
-    text_only, _ = build_page_sql(base.sql, [], True, 20, 0, rank_tsquery="epilepsy")
+    text_only, _ = build_page_sql(base.sql, [], True, 20, 0, rank_query=RankQuery("epilepsy"))
     assert "matched_codes" not in text_only and "text_rank" in text_only
 
     # The user asked for an order: nothing is layered on top.
-    plain, _ = build_page_sql(base.sql, [], False, 20, 0, rank_tsquery="epilepsy")
+    plain, _ = build_page_sql(base.sql, [], False, 20, 0, rank_query=RankQuery("epilepsy"))
     assert "text_rank" not in plain
 
-    # A query this module did not build is never inlined.
-    unsafe, _ = build_page_sql(base.sql, [], True, 20, 0, rank_tsquery="x'); DROP TABLE users; --")
-    assert "DROP TABLE" not in unsafe and "text_rank" not in unsafe
+    # A query this module did not build is never inlined: it cannot become a RankQuery.
+    with pytest.raises(ValueError):
+        RankQuery("x'); DROP TABLE users; --")
 
 
 def test_generated_sql_survives_the_sqlglot_round_trip() -> None:
@@ -370,7 +370,7 @@ def test_generated_sql_survives_the_sqlglot_round_trip() -> None:
     base = SERVICE.rewrite_generated_sql(
         BASE + "WHERE text_match('resting-state | n-back', 'short') GROUP BY d.id", "q"
     )
-    page_sql, _ = build_page_sql(base.sql, [], True, 20, 0, rank_tsquery=base.rank_tsquery)
+    page_sql, _ = build_page_sql(base.sql, [], True, 20, 0, rank_query=base.rank_query)
     for sql in (build_count_sql(base.sql), page_sql):
         assert "%(" not in sql
         assert "(resting:AB <-> state:AB) | (n:AB <-> back:AB)" in sql

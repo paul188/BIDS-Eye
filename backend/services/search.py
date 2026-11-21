@@ -22,6 +22,7 @@ from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
 from single_flight import SingleFlight
 from services.catalogue.catalogue import catalogue
 from services.stores import interpretations
+from services.fulltext import ranking
 from services.results import query_filters
 from services import search_runner
 from services.stores.translated_queries import CachedQuery, query_cache
@@ -96,7 +97,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
             sql=stored["sql"], explanation=stored.get("explanation") or "",
             scored_filters=stored.get("scored_filters") or [],
             apply_relevance=bool(stored.get("apply_relevance")),
-            params=stored.get("params") or {}, rank_tsquery=stored.get("rank_tsquery"),
+            params=stored.get("params") or {}, rank_query=ranking.rank_from_json(stored.get("rank_query")),
             filter_sql=stored.get("filter_sql"), relaxed_sql=stored.get("relaxed_sql"),
         )
     else:
@@ -107,7 +108,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
         params=translation.params,
         scored_filters=translation.scored_filters,
         apply_relevance=translation.apply_relevance,
-        rank_tsquery=translation.rank_tsquery,
+        rank_query=translation.rank_query,
         explanation=translation.explanation,
         self_corrected=translation.self_corrected,
         filter_sql=translation.filter_sql,
@@ -132,7 +133,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
     payload = {
         "sql": cached.base_sql, "params": cached.params,
         "scored_filters": cached.scored_filters, "apply_relevance": cached.apply_relevance,
-        "rank_tsquery": cached.rank_tsquery, "explanation": cached.explanation,
+        "rank_query": ranking.rank_to_json(cached.rank_query), "explanation": cached.explanation,
         "filter_sql": cached.filter_sql,
         "relaxed_sql": None if cached.relaxed else cached.relaxed_sql,
         "relaxed": cached.relaxed,

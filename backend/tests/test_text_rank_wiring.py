@@ -1,7 +1,7 @@
 """The full-text rank query must travel from the SQL rewriter to the page query.
 
-The rewriter computes ``rank_tsquery`` and the router passes
-``translation.rank_tsquery`` to ``build_page_sql``. ``_run_local`` sits between
+The rewriter computes ``rank_query`` and the router passes
+``translation.rank_query`` to ``build_page_sql``. ``_run_local`` sits between
 the two; when it dropped the value, results were filtered by full-text search
 but never ordered by it.
 """
@@ -17,6 +17,7 @@ from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import word_frequencies
 from services.translate import text_to_sql
 from services.translate.sql_rewriter import build_page_sql
+from services.fulltext.ranking import RankQuery
 
 BASE = (
     "SELECT {{COLS}} FROM bids_datasets d "
@@ -61,13 +62,13 @@ def test_run_local_passes_the_rank_query_on(monkeypatch) -> None:
     result = text_to_sql._run_local("datasets mentioning ketamine", "dummy-key")
 
     assert "search_tsv @@" in result.sql
-    assert result.rank_tsquery == "ketamine"
+    assert result.rank_query == RankQuery("ketamine")
     # What the router does with it: the page query orders by the text rank.
     # Compared in lower case: with sqlglot installed the rewriter re-renders
     # function names and keywords in upper case.
     page_sql, _ = build_page_sql(
         result.sql, result.scored_filters, result.apply_relevance, 20, 0,
-        rank_tsquery=result.rank_tsquery,
+        rank_query=result.rank_query,
     )
     assert "ts_rank_cd" in page_sql.lower()
     assert "ranked.relevance_score + ranked.text_rank desc" in page_sql.lower()
@@ -78,4 +79,4 @@ def test_run_local_has_no_rank_query_without_text_terms(monkeypatch) -> None:
 
     result = text_to_sql._run_local("CC0 datasets", "dummy-key")
 
-    assert result.rank_tsquery is None
+    assert result.rank_query is None

@@ -16,6 +16,13 @@ from eval_recall import load_held_out, ndcg
 PAGE = 20
 
 
+def _rank_text(rank):
+    """The rank of a result file as text: a RankQuery dict, or the old "stemmed#exact" string."""
+    if isinstance(rank, dict):
+        return " # ".join(f"{name}: {query}" for name, query in rank.items() if query) or None
+    return rank
+
+
 def metrics(returned, truth):
     relevant = set(truth["relevant"])
     partial = set(truth.get("partially_relevant", []))
@@ -51,7 +58,7 @@ def main() -> None:
         rows.append({
             "id": qid,
             "total": a.get("total"),
-            "tsq": a.get("rank_tsquery"),
+            "tsq": _rank_text(a.get("rank_query") or a.get("rank_tsquery")),
             "fallback": a.get("fallback"),
             "error": a.get("error"),
             "same_set": set(a["returned"]) == set(b["returned"]),

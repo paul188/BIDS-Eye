@@ -89,6 +89,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     sys.path.insert(0, backend_dir)
     from services_layout import use_either_layout  # older backends: flat services/
     use_either_layout()
+    from rank_compat import rank_json, rank_kwargs, rank_of  # rank_tsquery before RankQuery
     import main  # noqa: F401  — sets up import paths exactly as the app does
     from settings import settings_obj
     from sqlalchemy import text
@@ -138,20 +139,23 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     async def rows_for(session, raw_sql, question, forms, translation,
                        flat: bool = False) -> Dict[str, Any]:
         rewritten = await asyncio.to_thread(rewrite, raw_sql, question, forms)
-        # without_own on backends before the rename.
-        without = getattr(ranking, "without_alternative", None) or ranking.without_own
-        rank = without(rewritten.rank_tsquery) if flat else rewritten.rank_tsquery
+        rank = rank_of(rewritten)
+        if flat and rank is not None:
+            # A RankQuery; before it a string, flattened by ranking.without_alternative
+            # (without_own before that rename).
+            rank = (rank.without_alternative() if hasattr(rank, "without_alternative")
+                    else (getattr(ranking, "without_alternative", None) or ranking.without_own)(rank))
         page_sql, extra = build_page_sql(
             base_sql=rewritten.sql, scored_filters=translation.scored_filters,
             apply_relevance=translation.apply_relevance, limit=ALL_ROWS, offset=0,
-            rank_tsquery=rank)
+            **rank_kwargs(build_page_sql, rank))
         await session.execute(text("SET TRANSACTION READ ONLY"))
         await session.execute(text("SET LOCAL statement_timeout = '600s'"))
         rows = (await session.execute(text(page_sql), {**rewritten.params, **extra})).mappings().all()
         await session.rollback()
         returned = [r["accession_id"] or str(r["id"]) for r in rows]
         return {"returned": returned, "total": len(returned), "sql": rewritten.sql,
-                "rank_tsquery": rank,
+                "rank_query": rank_json(rank),
                 "levels": {(r["accession_id"] or str(r["id"])): int(r.get("uncertain_level") or 0)
                            for r in rows} if rows and "uncertain_level" in rows[0] else {}}
 

@@ -159,7 +159,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
                 explanation=translation.explanation,
                 self_corrected=translation.self_corrected,
             )
-            for name in ("rank_tsquery", "relaxed_sql"):  # newer versions carry more ranking input
+            for name in ("rank_query", "rank_tsquery", "relaxed_sql"):  # newer versions carry more ranking input
                 if hasattr(translation, name) and hasattr(cached, name):
                     setattr(cached, name, getattr(translation, name))
             query_id = query_cache.put(cached)
@@ -177,8 +177,9 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
                     limit=max(total, 1),
                     offset=0,
                 )
-                if "rank_tsquery" in page_params:
-                    kwargs["rank_tsquery"] = getattr(cached, "rank_tsquery", None)
+                for name in ("rank_query", "rank_tsquery"):  # rank_tsquery before RankQuery
+                    if name in page_params:
+                        kwargs[name] = getattr(cached, name, None)
                 if "rerank_ordered" in page_params:
                     kwargs["rerank_ordered"] = cached.rerank_ordered
                     kwargs["rerank_demoted"] = cached.rerank_demoted

@@ -12,6 +12,8 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from typing_extensions import Annotated
 
+from services.fulltext.ranking import RankQuery
+
 
 class ParticipantSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -101,9 +103,9 @@ class TextToSQLResult(BaseModel):
     # base SELECT can be cached and reused across pages.
     scored_filters: List[Dict[str, Any]] = []
     apply_relevance: bool = False
-    # Full-text query that ranks the result (services/fulltext/text_search.py); None
-    # when the question has no text terms or the database has no search_tsv.
-    rank_tsquery: Optional[str] = None
+    # Full-text queries that rank the result (services/fulltext/ranking.py); None
+    # when the question has no text terms.
+    rank_query: Optional[RankQuery] = None
     # Number of first candidates an LLM judged and reordered; None = not re-ranked.
     reranked: Optional[int] = None
     # The query before the uncertain tier wraps it, read for the filter chips

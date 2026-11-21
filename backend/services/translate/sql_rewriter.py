@@ -201,7 +201,7 @@ class RewriteResult:
     params: dict[str, Any]
     # What ranks the result by its text (services/fulltext/text_search.rank_expression);
     # None without text terms.
-    rank_tsquery: Optional[str] = None
+    rank_query: Optional[ranking.RankQuery] = None
     # The query before the uncertain tier wraps it: its WHERE conditions are
     # the filter chips (services/results/query_filters.py). Equals sql without the tier.
     filter_sql: Optional[str] = None
@@ -321,7 +321,7 @@ class SqlRewriteService:
             # Keep datasets a filter cannot check, as a second tier
             # (services/fulltext/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)
-        return RewriteResult(sql=sql, params={}, rank_tsquery=expanded.rank_tsquery,
+        return RewriteResult(sql=sql, params={}, rank_query=expanded.rank_query,
                              filter_sql=filter_sql, relaxed_sql=relaxed_sql,
                              value_fixes=value_fixes)
 
@@ -366,7 +366,7 @@ class SqlRewriteService:
         apply_relevance: bool,
         limit: int,
         offset: int,
-        rank_tsquery: Optional[str] = None,
+        rank_query: Optional[ranking.RankQuery] = None,
         rerank_ordered: Optional[Sequence[str]] = None,
         rerank_demoted: Optional[Sequence[str]] = None,
     ) -> tuple[str, dict[str, Any]]:
@@ -382,7 +382,7 @@ class SqlRewriteService:
         otherwise re-render them.
         """
         ordered = (
-            self._inject_relevance_cte(base_sql, scored_filters, rank_tsquery)
+            self._inject_relevance_cte(base_sql, scored_filters, rank_query)
             if apply_relevance else base_sql
         )
         ranked = ordered != base_sql
@@ -1725,7 +1725,7 @@ class SqlRewriteService:
         return parsed.sql(dialect="postgres")
 
     def _inject_relevance_cte(
-        self, sql: str, scored_filters: list, rank_tsquery: Optional[str] = None
+        self, sql: str, scored_filters: list, rank_query: Optional[ranking.RankQuery] = None
     ) -> str:
         """Wrap the base SQL so each row gets a score and the result is ordered by it.
 
@@ -1763,7 +1763,7 @@ class SqlRewriteService:
             field_cols[field] = col_info
             rows.append(f"('{field}', '{code}', {float(score):.4f})")
 
-        text_rank = ranking.rank_expression("ft", rank_tsquery)
+        text_rank = ranking.rank_expression("ft", rank_query)
         use_text_rank = text_rank is not None
         if not rows and not use_text_rank:
             return sql
@@ -1850,11 +1850,11 @@ def build_page_sql(
     apply_relevance: bool,
     limit: int,
     offset: int,
-    rank_tsquery: Optional[str] = None,
+    rank_query: Optional[ranking.RankQuery] = None,
     rerank_ordered: Optional[Sequence[str]] = None,
     rerank_demoted: Optional[Sequence[str]] = None,
 ) -> tuple[str, dict[str, Any]]:
     return sql_rewrite_service.build_page_sql(
-        base_sql, scored_filters, apply_relevance, limit, offset, rank_tsquery=rank_tsquery,
+        base_sql, scored_filters, apply_relevance, limit, offset, rank_query=rank_query,
         rerank_ordered=rerank_ordered, rerank_demoted=rerank_demoted,
     )

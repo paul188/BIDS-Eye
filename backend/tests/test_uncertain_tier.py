@@ -7,6 +7,7 @@ import pytest
 sqlglot = pytest.importorskip("sqlglot")
 
 from services.fulltext import tier_conditions, tier_text, tsquery, uncertain_tier as ut, word_frequencies  # noqa: E402
+from services.fulltext.ranking import RankQuery  # noqa: E402
 
 BASE = (
     "SELECT d.id, d.name, d.accession_id, COUNT(DISTINCT o.subject) AS subject_count "
@@ -87,7 +88,7 @@ def test_negated_and_unparseable_queries_are_left_alone() -> None:
 def test_page_query_puts_the_tier_first() -> None:
     from services.translate.sql_rewriter import build_page_sql
     sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'young & children')")
-    page_sql, _ = build_page_sql(ut.apply(sql), [], True, 20, 0, rank_tsquery="young | children")
+    page_sql, _ = build_page_sql(ut.apply(sql), [], True, 20, 0, rank_query=RankQuery("young | children"))
     assert "ORDER BY page_result.uncertain_level, page_result.relevance_score + page_result.text_rank DESC" in page_sql
 
 

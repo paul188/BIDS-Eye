@@ -22,6 +22,7 @@ from services.fulltext import ranking, text_search as ts, tsquery, vectors, word
 from services.fulltext import tier_text, uncertain_tier as ut
 from services.fulltext import word_form_counts
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
+from services.fulltext.ranking import RankQuery
 from word_forms import WordEvidence
 
 SERVICE = SqlRewriteService()
@@ -71,7 +72,7 @@ def test_without_the_switch_nothing_changes() -> None:
     sql = _where("text_match('quantitative mri ageing') AND NOT text_match('weight', 'short')")
     plain = ts.expand_text_search(sql)
     assert ts.expand_text_search(sql, exact_forms=FORMS) == plain
-    assert "search_tsv_exact" not in plain.sql and "#" not in plain.rank_tsquery
+    assert "search_tsv_exact" not in plain.sql and plain.rank_query.exact is None
 
 
 # ── What the search writes ────────────────────────────────────────────────────
@@ -187,37 +188,38 @@ def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
 
 def test_exact_words_rank_on_the_unstemmed_vector(exact, monkeypatch) -> None:
     alone = ts.expand_text_search(_where("text_match('ageing')"), exact_forms=FORMS)
-    assert alone.rank_tsquery == "#(ageing | aging)"
+    assert alone.rank_query == RankQuery(exact="(ageing | aging)")
     mixed = ts.expand_text_search(_where("text_match('quantitative mri ageing')"),
                                   exact_forms=FORMS)
     # Next to other words the term still ranks where all of them meet.
-    assert mixed.rank_tsquery == "quantitative & mri & ageing#(ageing | aging)"
-    assert ranking.split_rank(mixed.rank_tsquery) == ("quantitative & mri & ageing", "(ageing | aging)")
-    assert ranking.split_rank("memory") == ("memory", None)
-    assert ranking.split_rank("memory#x'; DROP") == ("memory", None)
-    assert ranking.join_rank("memory", None) == "memory" and ranking.join_rank(None, None) is None
+    assert mixed.rank_query == RankQuery("quantitative & mri & ageing", "(ageing | aging)")
+    # Stored with a translation as JSON; a part that is not a safe tsquery is dropped.
+    assert ranking.rank_from_json(ranking.rank_to_json(mixed.rank_query)) == mixed.rank_query
+    assert ranking.rank_from_json({"stemmed": "memory", "exact": "x'; DROP"}) == RankQuery("memory")
+    assert ranking.rank_from_json("memory#(ageing | aging)") is None
 
-    assert ranking.rank_expression("ft", "memory") == ranking.ts_rank_cd_expression("ft.search_tsv", "memory")
-    assert ranking.rank_expression("ft", "#(ageing | aging)") == ranking.ts_rank_cd_expression(
+    assert ranking.rank_expression("ft", RankQuery("memory")) == ranking.ts_rank_cd_expression(
+        "ft.search_tsv", "memory")
+    assert ranking.rank_expression("ft", alone.rank_query) == ranking.ts_rank_cd_expression(
         "ft.search_tsv_exact", "(ageing | aging)", "simple")
-    both = ranking.rank_expression("ft", mixed.rank_tsquery)
+    both = ranking.rank_expression("ft", mixed.rank_query)
     assert "ft.search_tsv, to_tsquery('english', 'quantitative & mri & ageing'), 0)" in both
     assert "ft.search_tsv_exact, to_tsquery('simple', '(ageing | aging)'), 0)" in both
     assert ranking.rank_expression("ft", None) is None
     # A cached rank from before the switch went off: the exact part is ignored.
     monkeypatch.delenv(vectors.EXACT_ENV)
-    assert ranking.rank_expression("ft", mixed.rank_tsquery) == ranking.ts_rank_cd_expression(
+    assert ranking.rank_expression("ft", mixed.rank_query) == ranking.ts_rank_cd_expression(
         "ft.search_tsv", "quantitative & mri & ageing")
-    assert ranking.rank_expression("ft", "#(ageing | aging)") is None
+    assert ranking.rank_expression("ft", alone.rank_query) is None
 
 
 def test_the_page_query_orders_by_both_ranks(exact) -> None:
     rewritten = SERVICE.rewrite_generated_sql(
         "SELECT d.id FROM bids_datasets d WHERE text_match('healthy ageing') GROUP BY d.id",
         "healthy ageing", FORMS)
-    assert rewritten.rank_tsquery == "healthy & ageing#(ageing | aging)"
+    assert rewritten.rank_query == RankQuery("healthy & ageing", "(ageing | aging)")
     assert "d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)')" in rewritten.sql
-    page, _ = build_page_sql(rewritten.sql, [], True, 20, 0, rank_tsquery=rewritten.rank_tsquery)
+    page, _ = build_page_sql(rewritten.sql, [], True, 20, 0, rank_query=rewritten.rank_query)
     assert "ft.search_tsv_exact" in page and "AS text_rank" in page
     sqlglot.parse_one(page, read="postgres")
 

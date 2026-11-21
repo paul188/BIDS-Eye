@@ -43,6 +43,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     sys.path.insert(0, backend_dir)
     from services_layout import use_either_layout  # older backends: flat services/
     use_either_layout()
+    from rank_compat import rank_json, rank_kwargs, rank_of  # rank_tsquery before RankQuery
     import main  # noqa: F401  — sets up import paths exactly as the app does
     from settings import settings_obj
     from sqlalchemy import text
@@ -94,13 +95,13 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
         per_variant: Dict[str, Dict[str, Any]] = {v: {} for v in variants}
         try:
             translation = await text_to_sql(q["question"])
-            rank_tsquery = getattr(translation, "rank_tsquery", None)
+            rank = rank_of(translation)
             cached = CachedQuery(
                 base_sql=translation.sql,
                 params=translation.params,
                 scored_filters=translation.scored_filters,
                 apply_relevance=translation.apply_relevance,
-                rank_tsquery=rank_tsquery,
+                **rank_kwargs(CachedQuery, rank),
                 explanation=translation.explanation,
                 self_corrected=translation.self_corrected,
             )
@@ -121,7 +122,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
                         apply_relevance=cached.apply_relevance,
                         limit=ALL_ROWS,
                         offset=0,
-                        rank_tsquery=rank_tsquery,
+                        **rank_kwargs(build_page_sql, rank),
                     )
                     rows = (await session.execute(
                         text(page_sql), {**cached.params, **extra}
@@ -140,7 +141,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
                 self_corrected=bool(cached.self_corrected),
                 reranked=0,
                 apply_relevance=bool(cached.apply_relevance),
-                rank_tsquery=rank_tsquery,
+                rank_query=rank_json(rank),
                 explanation=translation.explanation,
                 sql=cached.base_sql,
             )

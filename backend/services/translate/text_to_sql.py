@@ -787,7 +787,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         params=rewritten.params,
         # Without this the router ranks by code matches only: the text rank
         # (ts_rank_cd over search_tsv) is silently left out.
-        rank_tsquery=rewritten.rank_tsquery,
+        rank_query=rewritten.rank_query,
         filter_sql=rewritten.filter_sql,
         relaxed_sql=rewritten.relaxed_sql,
         value_fixes=rewritten.value_fixes,
@@ -827,6 +827,7 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     the bounded sample as before.
     """
     from services.fulltext import tsquery, vectors
+    from services.fulltext.ranking import RankQuery
     from services.translate.sql_rewriter import DEFAULT_DATASET_PROJECTION
 
     query = tsquery.keyword_query(question)
@@ -841,7 +842,7 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     )
     return TextToSQLResult(
         sql=sql, explanation=explanation + " Showing a plain keyword search for your question instead.",
-        apply_relevance=True, rank_tsquery=query, filter_sql=sql,
+        apply_relevance=True, rank_query=RankQuery(stemmed=query), filter_sql=sql,
     )
 
 
