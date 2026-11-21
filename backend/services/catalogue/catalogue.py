@@ -328,7 +328,7 @@ async def check_schema(connection: AsyncConnection | AsyncSession) -> None:
 
 def _needed(info: Mapping[str, object]) -> bool:
     flag = info.get(tables.FLAG)
-    return flag is None or tables.switched_on(str(flag))
+    return flag is None or tables.is_flag(str(flag))
 
 
 # The instance the backend uses: main.py starts it, search.py refreshes it.
