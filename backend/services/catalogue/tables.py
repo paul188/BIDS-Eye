@@ -35,14 +35,7 @@ FLAG = "flag"
 PAPERS_FLAG = "TEXT_SEARCH_PAPERS"
 EXACT_FLAG = "TEXT_SEARCH_EXACT"
 
-
-def switched_on(flag: str) -> bool:
-    """True when the environment switch *flag* is on.
-
-    Read on every call, so a one-off container can set the variable.
-    """
-    return os.getenv(flag, "false").strip().lower() in ("1", "true", "yes", "on")
-
+# The migrations in crawlers/ that the declarations below name.
 _SEARCH_TSV = "crawlers/migrate_add_search_tsv.sql"
 _PAPER_SEARCH = "crawlers/migrate_add_paper_search.sql"
 _EXACT_SEARCH = "crawlers/migrate_add_exact_search.sql"
@@ -51,6 +44,14 @@ _OPENNEURO = "crawlers/migrate_add_openneuro_metadata.sql"
 _INSTITUTIONS = "crawlers/migrate_add_institutions.sql"
 _PROFILES = "crawlers/migrate_add_readme_profiles.sql"
 _DESCRIPTIONS = "crawlers/migrate_add_dataset_descriptions.sql"
+
+
+def switched_on(flag: str) -> bool:
+    """True when the environment switch *flag* is on.
+
+    Read on every call, so a one-off container can set the variable.
+    """
+    return os.getenv(flag, "false").strip().lower() in ("1", "true", "yes", "on")
 
 
 def _added(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]], migration: str,
