@@ -9,7 +9,7 @@ import routers.query as query_router
 from schemas import DatasetSchema, TextToSQLResult
 from services.results import dataset_cards
 from services import search, search_runner
-from services.stores.query_cache import query_cache
+from services.stores.translated_queries import query_cache
 
 
 class _FakeMappingsResult:

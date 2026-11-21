@@ -2,7 +2,7 @@
 The API must run as one process. Three things keep their state in a dict in
 memory and are only correct when every request reaches the same process:
 
-- the query cache (services/stores/query_cache.py): paging a query_id made by
+- the query cache (services/stores/translated_queries.py): paging a query_id made by
   another process fails,
 - the rate-limit counts (rate_limits.py): each process would count on its own,
 - the searches running now (services/search.py ``_in_flight``): a repeated

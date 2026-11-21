@@ -28,7 +28,7 @@ from exceptions.expected import ExpectedError
 from schemas import DatasetSchema
 from services.results import dataset_cards, match_reasons, query_filters, readme_snippets
 from services import query_guard
-from services.stores.query_cache import CachedQuery, query_cache
+from services.stores.translated_queries import CachedQuery, query_cache
 from services.results.rerank import rerank_candidates, settings as rerank_settings, should_rerank
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
 from services.translate.text_to_sql import _correct_sql_with_gemini

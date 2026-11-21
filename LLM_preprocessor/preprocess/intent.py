@@ -90,13 +90,13 @@ def word_evidence(query: str) -> Dict[str, Any]:
     try:
         import word_forms
         vectors = _catalogue.vectors()  # backend/services
-        word_form_store = _catalogue.word_form_store()
+        word_form_counts = _catalogue.word_form_counts()
     except ImportError:  # outside the backend
         return {}
     if not vectors.exact_enabled():
         return {}
-    # {} when the catalogue cannot answer (word_form_store.lookup catches that).
-    return word_form_store.lookup(word_forms.question_words(query))
+    # {} when the catalogue cannot answer (word_form_counts.lookup catches that).
+    return word_form_counts.lookup(word_forms.question_words(query))
 
 
 def preprocess_query(

@@ -1,6 +1,6 @@
 """
-services/stores/interpretation_store.py
----------------------------------------
+services/stores/interpretations.py
+----------------------------------
 Durable record of how each question was translated into SQL.
 
 Why: the translation is made by language models and is not repeatable. The
@@ -47,7 +47,7 @@ _VERSION_DIRS = (_BACKEND.parent / "LLM_preprocessor", _BACKEND.parent / "LLM_pr
                  _BACKEND.parent / "RAG")
 _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # The backend modules the translation imports (text_to_sql.py and everything
-# it reaches; test_interpretation_store.py checks this list against the
+# it reaches; test_interpretations.py checks this list against the
 # imports), and the few-shot examples. models.py and schemas.py are left out:
 # they define the shape of rows and responses, not the translation; so is
 # exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers,
@@ -74,7 +74,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "fulltext" / "tier_scanner.py",
     _BACKEND / "services" / "fulltext" / "tier_sex.py",
     _BACKEND / "services" / "fulltext" / "tier_text.py",
-    _BACKEND / "services" / "catalogue" / "word_form_store.py",
+    _BACKEND / "services" / "fulltext" / "word_form_counts.py",
     _BACKEND / "worker_db.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",

@@ -1,5 +1,5 @@
 """
-services/catalogue/word_form_store.py
+services/fulltext/word_form_counts.py
 -------------------------------------
 The catalogue's word forms: which forms each stem merges, and in how many
 datasets each form occurs.
@@ -110,7 +110,7 @@ async def refresh(conn: Any) -> Dict[str, int]:
     first, second = [(await conn.execute(text("SELECT pg_current_xact_id()"))).scalar_one()
                      for _ in range(2)]
     if first != second:
-        raise RuntimeError("word_form_store.refresh() needs a transaction; "
+        raise RuntimeError("word_form_counts.refresh() needs a transaction; "
                            "the connection commits each statement (AUTOCOMMIT?)")
     present = (await conn.execute(text(
         "SELECT count(*) FROM information_schema.columns "

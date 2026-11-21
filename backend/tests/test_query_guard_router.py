@@ -11,7 +11,7 @@ import pytest
 import routers.query as query_router
 from services.results import dataset_cards, readme_snippets
 from services import query_guard, search_runner
-from services.stores.query_cache import CachedQuery, query_cache
+from services.stores.translated_queries import CachedQuery, query_cache
 from services.translate.sql_rewriter import FALLBACK_SQL
 
 _SAFE = ("SELECT d.id FROM bids_datasets AS d LEFT JOIN bids_objects AS o ON o.dataset_id = d.id "

@@ -24,7 +24,7 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 scripts/describe_datasets.py). Only what is missing or stale.
                 Needs GEMINI_API_KEY; the text goes to Gemini only.
   3. word forms  rebuild bids_word_forms, the catalogue's word forms per stem
-                (backend/services/catalogue/word_form_store.py). No LLM, no network;
+                (backend/services/fulltext/word_form_counts.py). No LLM, no network;
                 the whole catalogue, not only the indexed datasets.
   4. vacuum     VACUUM (ANALYZE) of the file table, bids_objects. A search
                 counts subjects from an index alone
@@ -132,7 +132,7 @@ def _backend_services_available() -> bool:
     if path is not None and str(path) not in sys.path:
         sys.path.insert(0, str(path))
     try:
-        from services.catalogue import word_form_store  # noqa: F401
+        from services.fulltext import word_form_counts  # noqa: F401
     except ImportError as exc:
         log.warning("[post-crawl] Word forms skipped: %s", exc)
         return False
@@ -140,11 +140,11 @@ def _backend_services_available() -> bool:
 
 
 async def refresh_word_forms(engine) -> Dict[str, int]:
-    """Step 3. Returns the counts of word_form_store.refresh."""
-    from services.catalogue import word_form_store
+    """Step 3. Returns the counts of word_form_counts.refresh."""
+    from services.fulltext import word_form_counts
 
     async with engine.begin() as conn:
-        return await word_form_store.refresh(conn)
+        return await word_form_counts.refresh(conn)
 
 
 async def vacuum_file_table(engine) -> None:

@@ -44,7 +44,7 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
     """
     try:
         import word_forms
-        word_form_store = _catalogue.word_form_store()
+        word_form_counts = _catalogue.word_form_counts()
     except ImportError:  # outside the backend
         return
     searched = list(dict.fromkeys(
@@ -52,7 +52,7 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
         for word in re.findall(r"[a-z]+", terms.lower())))
     open_words = [w for w in searched if w not in decided]
     # {} when the catalogue cannot answer (lookup catches that).
-    undecided = [e for e in word_form_store.lookup(open_words).values()
+    undecided = [e for e in word_form_counts.lookup(open_words).values()
                  if word_forms.open_forms(e)]
     for item in undecided:
         log.info("Searched by stem although it collides: %s (%d datasets; own forms %d; "

@@ -87,7 +87,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker, engine
-    from services.stores.query_cache import CachedQuery, query_cache
+    from services.stores.translated_queries import CachedQuery, query_cache
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.translate.text_to_sql import text_to_sql
     try:

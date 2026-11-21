@@ -5,9 +5,9 @@ A natural-language search from question to result page.
 
 ask() is the entry point: identical questions running at the same time share
 one search, whoever asked them. answer_question is that one search. It translates the question once: a stored translation of the
-same question (services/stores/interpretation_store.py) is reused, otherwise the
+same question (services/stores/interpretations.py) is reused, otherwise the
 Text-To-SQL layer writes one (services/translate/text_to_sql.py). The resulting base
-SELECT is cached under an opaque ``query_id`` (services/stores/query_cache.py), the
+SELECT is cached under an opaque ``query_id`` (services/stores/translated_queries.py), the
 first page is run (services/search_runner.py), and the search is logged and,
 when it worked, stored for the next time. next_page fetches further pages of
 a cached query without another language-model call.
@@ -21,10 +21,10 @@ from exceptions.domain import DomainError
 from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
 from single_flight import SingleFlight
 from services.catalogue.catalogue import catalogue
-from services.stores import interpretation_store
+from services.stores import interpretations
 from services.results import query_filters
 from services import search_runner
-from services.stores.query_cache import CachedQuery, query_cache
+from services.stores.translated_queries import CachedQuery, query_cache
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
 from services.translate.text_to_sql import text_to_sql
 
@@ -58,7 +58,7 @@ def _worth_storing(cached: CachedQuery, total: int) -> bool:
 
 
 # Searches running now, by normalised question. The answer does not depend on
-# who asks (the stored translations in interpretation_store are shared the same
+# who asks (the stored translations in interpretations are shared the same
 # way), so a double submit, a retry, a second tab or another user asking the
 # same thing gets the running search's answer without another language-model
 # call. One uvicorn process serves the API (backend/Dockerfile;
@@ -77,7 +77,7 @@ async def ask(session: AsyncSession, question: str) -> QueryResponse:
     Raises query_guard.SearchBusyError when no slot for generated SQL frees up.
     """
     return await _in_flight.run(
-        interpretation_store.normalize(question), lambda: answer_question(session, question)
+        interpretations.normalize(question), lambda: answer_question(session, question)
     )
 
 
@@ -90,7 +90,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
     # The same question gets the same translation every time (the models that
     # write it are not repeatable): reuse a stored one when there is one.
     await catalogue.refresh_if_stale(session)
-    stored = await interpretation_store.get(session, question)
+    stored = await interpretations.get(session, question)
     if stored is not None:
         translation = TextToSQLResult(
             sql=stored["sql"], explanation=stored.get("explanation") or "",
@@ -138,13 +138,13 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
         "relaxed": cached.relaxed,
     }
     # Every search is recorded for good, whatever it found.
-    await interpretation_store.log_query(
+    await interpretations.log_query(
         session, question, payload, total, from_cache=stored is not None,
         relaxed=cached.relaxed, self_corrected=bool(cached.self_corrected),
         fallback=cached.base_sql == _FALLBACK_SQL,
     )
     if stored is None and _worth_storing(cached, total):
-        await interpretation_store.put(session, question, payload, total)
+        await interpretations.put(session, question, payload, total)
 
     return QueryResponse(
         message=_found_message(total),

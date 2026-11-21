@@ -13,7 +13,7 @@ second.
 For such a word the search can require the forms that may match
 (backend/services/fulltext/text_search.py writes the condition). This module decides
 which forms those are. It has no database access; the catalogue's forms come
-in as WordEvidence (backend/services/catalogue/word_form_store.py).
+in as WordEvidence (backend/services/fulltext/word_form_counts.py).
 
 Whether a form may match is a question about two words, never about one: a
 search for "ageing" must not find "age", but a search for "aged" may well find

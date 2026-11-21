@@ -1,11 +1,17 @@
-"""Let the benchmarks import backend/services by its grouped paths from any backend.
+"""Let the benchmarks import backend/services by its current paths from any backend.
 
 The harnesses run against older backends too, e.g. the live one inside its
-container, whose services/ is still flat (services/text_search.py rather than
-services/fulltext/text_search.py). After use_either_layout(), an import such
-as `from services.fulltext import text_search` loads services/text_search.py
-from such a backend; with a grouped backend it changes nothing. Both names
-then refer to the same module object, so patching one patches the other.
+container. Two kinds of older layout are handled:
+
+- a flat services/ (services/text_search.py rather than
+  services/fulltext/text_search.py): after use_either_layout(), an import such
+  as `from services.fulltext import text_search` loads services/text_search.py;
+- a module that has since been renamed (OLD_NAMES): `from services.stores
+  import translated_queries` loads services/stores/query_cache.py, or
+  services/query_cache.py from a flat backend.
+
+Both names then refer to the same module object, so patching one patches the
+other. With a current backend nothing changes.
 
 Call it after the backend folder is on sys.path and before importing services.
 """
@@ -21,37 +27,59 @@ GROUPS = {
     "translate": ("text_to_sql", "participant_query_compiler", "sql_rewriter", "concept_keys",
                   "value_check"),
     "fulltext": ("text_search", "tsquery", "ranking", "vectors", "word_frequencies",
-                 "uncertain_tier", "tier_classify", "tier_conditions", "tier_scanner", "tier_sex",
-                 "tier_text"),
-    "catalogue": ("schema_capabilities", "catalogue_values", "word_form_store"),
+                 "word_form_counts", "uncertain_tier", "tier_classify", "tier_conditions",
+                 "tier_scanner", "tier_sex", "tier_text"),
+    "catalogue": ("catalogue", "tables", "schema_capabilities", "catalogue_values"),
     "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),
-    "stores": ("interpretation_store", "query_cache"),
+    "stores": ("interpretations", "translated_queries"),
     "indexing": ("readme_profile", "dataset_description"),
 }
 
+# Current module name -> (its group before the rename, its name before the rename).
+OLD_NAMES = {
+    "word_form_counts": ("catalogue", "word_form_store"),
+    "interpretations": ("stores", "interpretation_store"),
+    "translated_queries": ("stores", "query_cache"),
+}
 
-class _FlatLayout(importlib.abc.MetaPathFinder, importlib.abc.Loader):
-    """Finds services.<group>[.<module>] in a flat services/ folder."""
+
+class _OlderLayout(importlib.abc.MetaPathFinder, importlib.abc.Loader):
+    """Finds services.<group>[.<module>] under the name an older backend gives it."""
+
+    def __init__(self, flat: bool):
+        self._flat = flat
+        self._targets: dict[str, str] = {}
+        self._own_specs = {}
+
+    def _target(self, group: str, module: str) -> str | None:
+        old_group, old_name = OLD_NAMES.get(module, (None, None))
+        if self._flat:
+            candidates = [f"services.{module}"] + ([f"services.{old_name}"] if old_name else [])
+        else:
+            candidates = [f"services.{old_group}.{old_name}"] if old_name else []
+        return next((c for c in candidates if importlib.util.find_spec(c) is not None), None)
 
     def find_spec(self, name, path=None, target=None):
         parts = name.split(".")
         if parts[0] != "services" or len(parts) not in (2, 3) or parts[1] not in GROUPS:
             return None
-        if len(parts) == 3 and (parts[2] not in GROUPS[parts[1]]
-                                or importlib.util.find_spec(f"services.{parts[2]}") is None):
+        if len(parts) == 2:  # the group itself: an empty package in a flat backend
+            return importlib.util.spec_from_loader(name, self, is_package=True) if self._flat else None
+        if parts[2] not in GROUPS[parts[1]]:
+            return None
+        found = self._target(parts[1], parts[2])
+        if found is None:
             return None  # a module this backend does not have: a normal ImportError
-        return importlib.util.spec_from_loader(name, self, is_package=len(parts) == 2)
-
-    def __init__(self):
-        self._own_specs = {}
+        self._targets[name] = found
+        return importlib.util.spec_from_loader(name, self, is_package=False)
 
     def create_module(self, spec):
-        parts = spec.name.split(".")
-        if len(parts) == 3:
-            module = importlib.import_module(f"services.{parts[2]}")
-            self._own_specs[spec.name] = module.__spec__
-            return module
-        return None  # the group itself: an empty package
+        found = self._targets.pop(spec.name, None)
+        if found is None:
+            return None
+        module = importlib.import_module(found)
+        self._own_specs[spec.name] = module.__spec__
+        return module
 
     def exec_module(self, module):
         # The import system sets __spec__ to the alias's spec; give the module its own back.
@@ -61,12 +89,11 @@ class _FlatLayout(importlib.abc.MetaPathFinder, importlib.abc.Loader):
 
 
 def use_either_layout() -> bool:
-    """Install the flat-layout finder if the backend on sys.path needs it; True if it did."""
-    if any(isinstance(f, _FlatLayout) for f in sys.meta_path):
-        return True
+    """Install the finder for older layouts; True if the backend on sys.path is flat."""
+    if any(isinstance(f, _OlderLayout) for f in sys.meta_path):
+        return any(isinstance(f, _OlderLayout) and f._flat for f in sys.meta_path)
     if importlib.util.find_spec("services") is None:
         return False
-    if importlib.util.find_spec("services.translate") is not None:
-        return False  # grouped layout: nothing to do
-    sys.meta_path.append(_FlatLayout())
-    return True
+    flat = importlib.util.find_spec("services.translate") is None
+    sys.meta_path.append(_OlderLayout(flat))
+    return flat

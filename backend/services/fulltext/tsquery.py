@@ -51,9 +51,9 @@ _SAFE_TSQUERY_RE = re.compile(r"^[a-z0-9 &|()<>:AB-]+$")
 def _catalogue_forms(word: str) -> Optional[WordEvidence]:
     """The catalogue's forms of *word*, for a reviewed word the question's
     decisions do not cover (word_forms.forms_for)."""
-    # Imported here: word_form_store imports text_search, which imports this module.
-    from services.catalogue import word_form_store
-    return word_form_store.cached_evidence(word)
+    # Imported here: word_form_counts imports text_search, which imports this module.
+    from services.fulltext import word_form_counts
+    return word_form_counts.cached_evidence(word)
 
 
 def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple[str, ...]]:

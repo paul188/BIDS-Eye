@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # The translation worker thread asks the database for word counts
     # (services/fulltext/word_frequencies.py) and word forms
-    # (services/catalogue/word_form_store.py); its queries run here, on this
+    # (services/fulltext/word_form_counts.py); its queries run here, on this
     # event loop, with the pooled engine.
     worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
 

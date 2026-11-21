@@ -7,7 +7,7 @@ The translation pipeline runs in asyncio.to_thread. The app's database engine
 belongs to the event loop of the main thread: an asyncio connection cannot be
 used from another thread or another loop. Code in the worker thread that needs
 the database (word counts in services/fulltext/text_search.py, word forms in
-services/catalogue/word_form_store.py) asks the installed WorkerDb instead:
+services/fulltext/word_form_counts.py) asks the installed WorkerDb instead:
 
     PooledWorkerDb         sends the query to the app's event loop, which runs
                            it with the app's pooled engine; main.py installs

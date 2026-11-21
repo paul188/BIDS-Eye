@@ -1,5 +1,5 @@
 """Word forms: the catalogue's forms per stem and which of them a search keeps
-(RAG/word_forms.py, services/catalogue/word_form_store.py, crawlers/migrate_add_exact_search.sql)."""
+(RAG/word_forms.py, services/fulltext/word_form_counts.py, crawlers/migrate_add_exact_search.sql)."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
 import word_forms  # noqa: E402
-from services.catalogue import word_form_store as store  # noqa: E402
+from services.fulltext import word_form_counts as store  # noqa: E402
 from services.fulltext import vectors  # noqa: E402
 from worker_db import WorkerDbError  # noqa: E402
 from word_forms import WordEvidence  # noqa: E402

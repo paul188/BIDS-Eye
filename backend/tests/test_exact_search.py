@@ -20,7 +20,7 @@ from services.results import query_filters as qf
 from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
 from services.fulltext import tier_text, uncertain_tier as ut
-from services.catalogue import word_form_store
+from services.fulltext import word_form_counts
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from word_forms import WordEvidence
 
@@ -53,10 +53,10 @@ def _database_with_full_text(tmp_path, monkeypatch):
     monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
     catalogue.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
-    word_form_store.set_lookup(None)
+    word_form_counts.set_lookup(None)
     yield path
     word_frequencies.set_frequency_lookup(None)
-    word_form_store.reset_lookup()
+    word_form_counts.reset_lookup()
     word_forms._reviewed.cache_clear()
 
 
@@ -423,7 +423,7 @@ def test_structured_output_schema_includes_conditional_word_forms(monkeypatch) -
 
 
 def test_the_pipeline_hands_the_decided_forms_to_the_search(exact, monkeypatch) -> None:
-    word_form_store.set_lookup(lambda words: [
+    word_form_counts.set_lookup(lambda words: [
         ("ageing", "age", 291, ["age:220", "aged:44", "aging:34", "ages:30", "ageing:4"])])
     _model(monkeypatch, {**PLAN, "word_forms": [{"word": "ageing", "keep": ["aging", "ageing"]}]})
     augmented = pp.run_pipeline("Quantitative MRI datasets on ageing", api_key="k")
@@ -437,7 +437,7 @@ def test_the_pipeline_hands_the_decided_forms_to_the_search(exact, monkeypatch) 
 
 
 def test_the_pipeline_is_untouched_without_the_switch(monkeypatch) -> None:
-    word_form_store.set_lookup(lambda words: pytest.fail("looked up with the switch off"))
+    word_form_counts.set_lookup(lambda words: pytest.fail("looked up with the switch off"))
     prompts = _model(monkeypatch, PLAN)
     augmented = pp.run_pipeline("Quantitative MRI datasets on ageing", api_key="k")
     assert augmented.word_forms == {} and "word_forms" not in prompts[0]

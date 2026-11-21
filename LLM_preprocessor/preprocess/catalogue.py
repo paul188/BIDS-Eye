@@ -23,10 +23,10 @@ def vectors():
     return vectors
 
 
-def word_form_store():
-    """backend/services/catalogue/word_form_store: the catalogue's word forms."""
-    from services.catalogue import word_form_store
-    return word_form_store
+def word_form_counts():
+    """backend/services/fulltext/word_form_counts: the catalogue's word forms."""
+    from services.fulltext import word_form_counts
+    return word_form_counts
 
 
 def value_counts():

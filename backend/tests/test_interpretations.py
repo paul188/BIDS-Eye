@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from services.stores import interpretation_store as store
+from services.stores import interpretations as store
 
 _BACKEND = Path(store.__file__).resolve().parents[2]
 _ROOT = _BACKEND.parent
 # Imported by the translation, but they only define the shape of rows and
-# responses (see interpretation_store._VERSION_FILES).
+# responses (see interpretations._VERSION_FILES).
 _NOT_TRANSLATION = {_BACKEND / "models.py", _BACKEND / "schemas.py",
                     _BACKEND / "exceptions" / "domain.py",
                     _BACKEND / "exceptions" / "expected.py"}
@@ -128,7 +128,7 @@ def test_only_a_translation_that_ran_as_written_is_stored(total, fallback, self_
                                                           relaxed, expected):
     from services import search
     from services.translate.sql_rewriter import FALLBACK_SQL
-    from services.stores.query_cache import CachedQuery
+    from services.stores.translated_queries import CachedQuery
 
     cached = CachedQuery(base_sql=FALLBACK_SQL if fallback else "SELECT 1",
                          params={}, scored_filters=[], apply_relevance=False)

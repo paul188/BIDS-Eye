@@ -19,7 +19,7 @@ from db.base import Base
 
 
 class QueryInterpretation(Base):
-    """How one question was translated into SQL (services/stores/interpretation_store.py)."""
+    """How one question was translated into SQL (services/stores/interpretations.py)."""
 
     __tablename__ = "query_interpretations"
 
@@ -47,7 +47,7 @@ class QueryInterpretation(Base):
 class QueryLog(Base):
     """Every search that was run: the question, its translation and what it found.
 
-    Permanent, unlike services/stores/query_cache.py (in memory, 30 minutes) and
+    Permanent, unlike services/stores/translated_queries.py (in memory, 30 minutes) and
     unlike the interpretation cache, which keeps one translation per question
     and none that found nothing.
 

@@ -37,7 +37,7 @@
 -- Keep the expressions in sync with EXACT_SEARCH_VECTOR_EXPRESSION in
 -- crawlers/openneuro-crawler/remote/openneuro_metadata.py,
 -- PAPER_EXACT_SEARCH_VECTOR_EXPRESSION in remote/paper_store.py and
--- TABLES_SQL in backend/services/word_form_store.py
+-- TABLES_SQL in backend/services/fulltext/word_form_counts.py
 -- (backend/tests/test_word_forms.py checks this).
 
 BEGIN;

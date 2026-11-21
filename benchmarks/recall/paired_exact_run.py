@@ -57,7 +57,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
         from routers.query import _count_with_base_correction as count_with_base_correction
     from services.fulltext import word_frequencies
     from services.translate import text_to_sql as translator
-    from services.stores.query_cache import CachedQuery, query_cache
+    from services.stores.translated_queries import CachedQuery, query_cache
     from services.catalogue.schema_capabilities import (
         has_exact_fts, has_fts, has_word_forms, refresh_available_columns)
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql

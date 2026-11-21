@@ -7,17 +7,22 @@ The request flow stays at this level:
 
 The stages it calls:
   translate/   question to SQL: model calls, the deterministic compiler, SQL rewrites
-  fulltext/    full-text search inside the SQL, and the tier of unconfirmed datasets
-  catalogue/   what the database contains: optional columns, known values, word forms
+  fulltext/    full-text search inside the SQL, word form counts, and the tier of
+               unconfirmed datasets
+  catalogue/   what the database contains: declared tables, column coverage, known values
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
   indexing/    offline LLM jobs over datasets (scripts/ and the crawler, not requests)
 
+A module is named for what it holds, a noun phrase with the main noun last
+(word_form_counts, interpretations, translated_queries). The package already
+says the role, so no _store, _service, _manager or _utils suffix.
+
 The groups are by subject, not by order, because one search calls the
 language model up to three times and several groups serve more than one step
-(catalogue/ word forms feed the intent prompt and the SQL rewrites). In order:
+(fulltext/ word form counts feed the intent prompt and the SQL rewrites). In order:
 
-  1. stored translation   stores/interpretation_store: the same question gets
+  1. stored translation   stores/interpretations: the same question gets
                           the same translation; a hit skips steps 2-4
   2. preprocessing        LLM_preprocessor/ (outside backend/): vocabulary,
                           word forms and topic counts, then the INTENT MODEL
