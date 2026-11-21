@@ -41,7 +41,9 @@ import cohort_count as _cohort_count  # noqa: E402
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
 from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
-from services.catalogue.tables import dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects  # noqa: E402
+from services.catalogue.tables import (  # noqa: E402
+    dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
+)
 from services.translate import value_check as _value_check  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -55,8 +57,8 @@ DEFAULT_DATASET_PROJECTION = (
 )
 _FALLBACK_SQL = (
     f"SELECT {DEFAULT_DATASET_PROJECTION}\n"
-    "FROM bids_datasets d\n"
-    "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
+    f"FROM {_datasets.name} d\n"
+    f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
     "GROUP BY d.id\n"
     "ORDER BY d.name\n"
     "LIMIT 200"
@@ -153,7 +155,7 @@ _TASK_CONCEPT_DROP = {"cognitive", "social", "emotional", "linguistic", "sensory
 # bids_participants is sparsely populated; o.subject is the reliable count source.
 _PARTICIPANTS_COUNT_WHERE_RE = re.compile(
     r"AND\s*\(\s*SELECT\s+COUNT\s*\(\s*DISTINCT\s+\w+\.participant_id\s*\)\s+"
-    r"FROM\s+bids_participants\s+\w+\s+WHERE\s+\w+\.dataset_id\s*=\s*d\.id\s*\)\s*"
+    rf"FROM\s+{_participants.name}\s+\w+\s+WHERE\s+\w+\.dataset_id\s*=\s*d\.id\s*\)\s*"
     r"(>=|>|<=|<|=)\s*(\d+)",
     re.IGNORECASE | re.DOTALL,
 )
@@ -162,7 +164,7 @@ _PARTICIPANTS_COUNT_WHERE_RE = re.compile(
 _PARTICIPANTS_COUNT_SUBQUERY_RE = re.compile(
     r"(?<!GREATEST\(COUNT\(DISTINCT o\.subject\), )"
     r"\(\s*SELECT\s+COUNT\s*\(\s*(?:DISTINCT\s+\w+\.participant_id|\*)\s*\)\s+"
-    r"FROM\s+bids_participants\s+(?:AS\s+)?\w+\s+WHERE\s+\w+\.dataset_id\s*=\s*d\.id\s*\)",
+    rf"FROM\s+{_participants.name}\s+(?:AS\s+)?\w+\s+WHERE\s+\w+\.dataset_id\s*=\s*d\.id\s*\)",
     re.IGNORECASE | re.DOTALL,
 )
 
@@ -227,7 +229,7 @@ class SqlRewriteService:
             return None
         try:
             parsed = parse_one(
-                f"SELECT {self.projection} FROM bids_datasets d",
+                f"SELECT {self.projection} FROM {_datasets.name} d",
                 read="postgres",
             )
         except SqlglotError as exc:  # pragma: no cover - depends on sqlglot availability
@@ -484,14 +486,14 @@ class SqlRewriteService:
         """
         source = select.args.get("from") or select.args.get("from_")
         table = source.this if source is not None else None
-        if not isinstance(table, exp.Table) or table.name.lower() != "bids_datasets":
+        if not isinstance(table, exp.Table) or table.name.lower() != _datasets.name:
             return False
         d = table.alias_or_name
         joins = select.args.get("joins") or []
         target = None
         for join in joins:
             t = join.this
-            if isinstance(t, exp.Table) and t.name.lower() == "bids_objects" and (join.side or "").upper() == "LEFT":
+            if isinstance(t, exp.Table) and t.name.lower() == _objects.name and (join.side or "").upper() == "LEFT":
                 target = join
                 break
         if target is None:
@@ -552,7 +554,7 @@ class SqlRewriteService:
         """EXISTS / IN subquery on bids_objects that looks only at datatype, suffix, task."""
         source = select.args.get("from") or select.args.get("from_")
         table = source.this if source is not None else None
-        if not isinstance(table, exp.Table) or table.name.lower() != "bids_objects":
+        if not isinstance(table, exp.Table) or table.name.lower() != _objects.name:
             return False
         if any(select.args.get(k) for k in ("joins", "group", "having", "limit", "order", "distinct")):
             return False
@@ -1062,7 +1064,7 @@ class SqlRewriteService:
         Left alone when a condition mixes participant and other columns, or a
         participant column is used outside an aggregate in HAVING/ORDER BY.
         """
-        if parse_one is None or exp is None or not re.search(r"\bJOIN\s+bids_participants\b", sql, re.IGNORECASE):
+        if parse_one is None or exp is None or not re.search(rf"\bJOIN\s+{_participants.name}\b", sql, re.IGNORECASE):
             return sql
         try:
             select = parse_one(sql, read="postgres")
@@ -1071,8 +1073,8 @@ class SqlRewriteService:
         if not isinstance(select, exp.Select):
             return sql
         joins = select.args.get("joins") or []
-        part = [j for j in joins if isinstance(j.this, exp.Table) and j.this.name.lower() == "bids_participants"]
-        if len(part) != 1 or not any(isinstance(j.this, exp.Table) and j.this.name.lower() == "bids_objects"
+        part = [j for j in joins if isinstance(j.this, exp.Table) and j.this.name.lower() == _participants.name]
+        if len(part) != 1 or not any(isinstance(j.this, exp.Table) and j.this.name.lower() == _objects.name
                                      for j in joins):
             return sql
         from_ = select.args.get("from_") or select.args.get("from")
@@ -1117,7 +1119,7 @@ class SqlRewriteService:
         def scoped(inner: str) -> str:
             cond = " AND ".join([f"{p_alias}.dataset_id = {d_alias}.id"]
                                 + [c.sql(dialect="postgres") for c in conditions])
-            return f"(SELECT {inner} FROM bids_participants AS {p_alias} WHERE {cond})"
+            return f"(SELECT {inner} FROM {_participants.name} AS {p_alias} WHERE {cond})"
 
         for key in ("having", "order"):
             part_node = select.args.get(key)
@@ -1237,7 +1239,7 @@ class SqlRewriteService:
                 continue
             tables = {t.name.lower() for t in inner.find_all(exp.Table)}
             columns = {c.name.lower() for c in inner.find_all(exp.Column)}
-            if tables == {"bids_participants"} and "diagnosis" in columns:
+            if tables == {_participants.name} and "diagnosis" in columns:
                 return True
         return False
 
@@ -1253,7 +1255,7 @@ class SqlRewriteService:
         participant rows at all. Left alone when the query reads any other
         column of the joined participants (a count of filtered participants).
         """
-        if parse_one is None or exp is None or "bids_participants" not in sql.lower():
+        if parse_one is None or exp is None or _participants.name not in sql.lower():
             return sql
         try:
             parsed = parse_one(sql, read="postgres")
@@ -1262,12 +1264,12 @@ class SqlRewriteService:
                 return sql
             source = select.args.get("from") or select.args.get("from_")
             table = source.this if source is not None else None
-            if not isinstance(table, exp.Table) or table.name.lower() != "bids_datasets":
+            if not isinstance(table, exp.Table) or table.name.lower() != _datasets.name:
                 return sql
             d = table.alias_or_name.lower()
             joins = list(select.args.get("joins") or [])
             target = next((j for j in joins if isinstance(j.this, exp.Table)
-                           and j.this.name.lower() == "bids_participants"), None)
+                           and j.this.name.lower() == _participants.name), None)
             if target is None:
                 return sql
             p = target.this.alias_or_name.lower()
@@ -1288,9 +1290,9 @@ class SqlRewriteService:
             if not counts:
                 return sql
             files = next((j.this.alias_or_name for j in joins if isinstance(j.this, exp.Table)
-                          and j.this.name.lower() == "bids_objects"), None)
+                          and j.this.name.lower() == _objects.name), None)
             subjects = (f"COUNT(DISTINCT {files}.subject)" if files else
-                        f"(SELECT COUNT(DISTINCT cnt_o.subject) FROM bids_objects AS cnt_o "
+                        f"(SELECT COUNT(DISTINCT cnt_o.subject) FROM {_objects.name} AS cnt_o "
                         f"WHERE cnt_o.dataset_id = {table.alias_or_name}.id)")
             for count in {id(c): c for c in counts}.values():
                 count.replace(parse_one(subjects, read="postgres"))
@@ -1793,7 +1795,7 @@ class SqlRewriteService:
         text_join = ""
         if use_text_rank:
             text_rank_expr = text_rank  # type: ignore[assignment]
-            text_join = "\n  LEFT JOIN bids_datasets ft ON ft.id = base.id"
+            text_join = f"\n  LEFT JOIN {_datasets.name} ft ON ft.id = base.id"
 
         # ORDER BY cannot add two output aliases in the same SELECT, hence the
         # extra level.
