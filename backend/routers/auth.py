@@ -24,10 +24,13 @@ logger = logging.getLogger(__name__)
 # signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
 # every /api request; the frontend never sees the value.
 #
-# The server keeps nothing about a user: the cookie holds the GitHub login and
-# the sign-in time, and nothing else is asked from GitHub or stored (no e-mail
-# address, no users table). The site's privacy notice says so
-# (frontend/src/components/CookieBanner.vue); tests/test_auth_session.py checks it.
+# Signing in stores nothing on the server: the cookie holds the GitHub login,
+# GitHub's number for the account and the sign-in time, and nothing else is
+# asked from GitHub or stored (no e-mail address, no users table). The site's
+# privacy notice says so (frontend/src/components/CookieBanner.vue);
+# tests/test_auth_session.py checks it. The account number is what a user's
+# saved searches are kept under, once they turn that on
+# (services/stores/search_history.py).
 #
 # Nothing is kept on the server, so a session cannot be withdrawn one by one:
 # - GITHUB_ORG membership is checked at sign-in only. Someone removed from the
@@ -184,6 +187,17 @@ def session_user(session: MutableMapping) -> dict | None:
     return user
 
 
+def user_id(user: dict) -> int | None:
+    """GitHub's number for the signed-in account; None in a session from
+    before sign-in kept it (at most SESSION_DAYS old).
+
+    Unlike the login it never changes hands: a login can be renamed, and a
+    released one can be registered by someone else.
+    """
+    uid = user.get("uid")
+    return uid if isinstance(uid, int) and not isinstance(uid, bool) else None
+
+
 def require_auth(request: Request) -> dict:
     """The signed-in user, or 401.
 
@@ -277,6 +291,13 @@ def _github_login(user_resp) -> str:
     data = _json(user_resp) if user_resp.status_code == 200 else None
     login = data.get("login") if isinstance(data, dict) else None
     return login.strip() if isinstance(login, str) else ""
+
+
+def _github_account_id(user_resp) -> int | None:
+    """The account's number from GitHub's /user answer, or None."""
+    data = _json(user_resp) if user_resp.status_code == 200 else None
+    account_id = data.get("id") if isinstance(data, dict) else None
+    return account_id if isinstance(account_id, int) and not isinstance(account_id, bool) else None
 
 
 async def _exchange_code(
@@ -374,6 +395,7 @@ async def github_callback(request: Request):
                 }
                 user_resp = await github.get("https://api.github.com/user", headers=gh_headers)
                 github_login_name = _github_login(user_resp)
+                github_account_id = _github_account_id(user_resp)
                 if not github_login_name:
                     raise GitHubLoginMissingError(f"/user answered {user_resp.status_code}")
                 if settings.GITHUB_ORG:
@@ -387,7 +409,10 @@ async def github_callback(request: Request):
 
     # A fresh session for the new login: nothing from before it carries over.
     request.session.clear()
-    request.session["user"] = {"sub": github_login_name, "iat": int(time.time())}
+    user = {"sub": github_login_name, "iat": int(time.time())}
+    if github_account_id is not None:
+        user["uid"] = github_account_id
+    request.session["user"] = user
 
     # Relative on purpose: the cookie was just set on this host, so the app
     # must open on this host too.

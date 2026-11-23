@@ -8,7 +8,12 @@ import { ref } from 'vue'
 // backend/models.py; tests/test_query_logging.py checks no row records the
 // asker) and sent to Google's Gemini API on a paid key, whose prompts Google
 // does not train on. Nothing about a user is stored on the server (no users
-// table, no e-mail address; backend/routers/auth.py, backend/models.py).
+// table, no e-mail address; backend/routers/auth.py, backend/models.py),
+// with one exception the user has to turn on: "Remember my searches and
+// search results" (App.vue) keeps their searches under their GitHub account
+// number for 12 months, until they turn it off
+// (backend/services/stores/search_history.py; RETENTION_DAYS there is the
+// "12 months" below, tests/test_search_history.py checks the rules).
 // Keep this text in line with the backend. If a tracking or third-party
 // cookie is ever added, this must become a real consent choice that is asked
 // before that cookie is set.
@@ -45,7 +50,8 @@ function dismiss() {
         BIDS-Eye uses only the cookies it needs to work: no tracking or advertising.
         Your searches are sent to Google's Gemini AI to interpret them, and stored
         anonymously, without your name, so we can improve search quality. We keep
-        no account data.
+        nothing under your account unless you turn on "Remember my searches and
+        search results".
       </p>
 
       <div v-if="showDetails" class="mt-3 space-y-3 text-xs text-muted leading-relaxed">
@@ -53,8 +59,9 @@ function dismiss() {
           <p class="font-medium text-ink">Cookies and browser storage</p>
           <ul class="mt-1 space-y-1">
             <li>
-              <span class="font-mono text-ink">bids_eye_session</span> — your sign-in,
-              set when you sign in with GitHub, expires after 7 days or when you sign out.
+              <span class="font-mono text-ink">bids_eye_session</span> — your sign-in
+              (GitHub username and account number), set when you sign in with GitHub,
+              expires after 7 days or when you sign out.
             </li>
             <li>
               <span class="font-mono text-ink">bids_eye_csrf</span> — a random token that
@@ -81,10 +88,19 @@ function dismiss() {
               Please don't type personal information into the search.
             </li>
             <li>
-              We keep no account data. Signing in with GitHub only puts your
-              username into the sign-in cookie; we don't ask GitHub for your email
-              address. For the daily limit your searches are counted in the server's
-              memory, never written down.
+              Signing in stores nothing on our server. It only puts your GitHub
+              username and account number into the sign-in cookie; we don't ask GitHub
+              for your email address. For the daily limit your searches are counted in
+              the server's memory, never written down.
+            </li>
+            <li>
+              Only if you turn on "Remember my searches and search results" in the
+              history panel: from then on each of your questions, how it was understood
+              and its first page of results are also stored on our server under your
+              GitHub account number, so your history is there in every browser you sign
+              in from. This rests on your consent. Each search is deleted after 12
+              months; you can delete single searches in the history panel, and turning
+              the switch off withdraws your consent and deletes all of them at once.
             </li>
           </ul>
         </div>

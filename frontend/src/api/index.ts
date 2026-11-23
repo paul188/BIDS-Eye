@@ -82,6 +82,31 @@ export interface QueryResponse {
   page: number
   page_size: number
   has_more: boolean
+  /** The saved-search entry this answer was stored as; null unless the user
+   *  turned on "Remember my searches and search results". */
+  history_id?: string | null
+}
+
+/** One saved search in the list (backend/routers/history.py). */
+export interface HistoryEntrySummary {
+  id: string
+  asked_at: string
+  question: string
+  total: number
+}
+
+export interface HistoryList {
+  enabled: boolean
+  retention_days: number
+  entries: HistoryEntrySummary[]
+}
+
+export interface HistoryEntry {
+  id: string
+  asked_at: string
+  question: string
+  /** The answer as it was given then; its query_id has usually expired. */
+  answer: QueryResponse
 }
 
 // A 429 from the backend's rate limiter (backend/rate_limits.py): which kind
@@ -139,6 +164,24 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>
 }
 
+// PUT and DELETE, for the saved searches. The error carries the backend's own
+// sentence (``detail``), which is written for the user. A 204 has no body.
+async function change<T>(method: 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...csrfHeader() },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
+  await throwIfRateLimited(res)
+  if (!res.ok) {
+    const detail = await res.json().then(data => data?.detail, () => null)
+    throw new Error(typeof detail === 'string' ? detail : `${res.status} ${res.statusText}`)
+  }
+  return (res.status === 204 ? undefined : await res.json()) as T
+}
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { credentials: 'same-origin' })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
@@ -160,4 +203,18 @@ export const api = {
 
   logout: () =>
     post<{ ok: boolean }>('/auth/logout', {}),
+
+  // Saved searches on the server, for a user who turned them on.
+  history: () =>
+    get<HistoryList>('/history'),
+
+  // Off deletes everything saved for the user.
+  setHistoryEnabled: (enabled: boolean) =>
+    change<{ enabled: boolean }>('PUT', '/history/enabled', { enabled }),
+
+  historyEntry: (id: string) =>
+    get<HistoryEntry>(`/history/${encodeURIComponent(id)}`),
+
+  deleteHistoryEntry: (id: string) =>
+    change<void>('DELETE', `/history/${encodeURIComponent(id)}`),
 }

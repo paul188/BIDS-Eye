@@ -18,6 +18,10 @@ the code that raises it, without knowing about FastAPI:
                               GitHubOrgCheckError       502
                               GitHubUnreachableError    502
     rate_limits.py            RateLimitError            429
+    services/stores/search_history.py
+                              HistoryUnavailableError   503
+                              HistoryEntryNotFoundError 404
+    routers/history.py        SignInAgainError          409
 
 Each class names the status and text the client gets on its class line,
 

@@ -33,7 +33,7 @@ def _github(request: httpx.Request) -> httpx.Response:
     if request.url.path == "/login/oauth/access_token":
         return httpx.Response(200, json={"access_token": "gh-token"})
     if request.url.path == "/user":
-        return httpx.Response(200, json={"login": "octo"})
+        return httpx.Response(200, json={"login": "octo", "id": 583231})
     if request.url.path == "/user/emails":
         return httpx.Response(200, json=[{"email": "octo@example.org", "primary": True, "verified": True}])
     if request.url.path == REVOKE_PATH and request.method == "DELETE":
@@ -173,7 +173,8 @@ def test_callback_sets_httponly_cookie_and_keeps_token_out_of_url(client: TestCl
 
 def test_sign_in_asks_and_keeps_only_the_login(client: TestClient, github_calls: list) -> None:
     # The privacy notice (frontend/src/components/CookieBanner.vue): no e-mail
-    # address is asked for, and the session holds the login and its time only.
+    # address is asked for, and the session holds the login, GitHub's number
+    # for the account and the sign-in time only.
     # Nothing is written to the database (auth.py has no database code at all).
     resp = client.get("/api/auth/github", follow_redirects=False)
     scope = parse_qs(urlsplit(resp.headers["location"]).query)["scope"][0]
@@ -183,7 +184,8 @@ def test_sign_in_asks_and_keeps_only_the_login(client: TestClient, github_calls:
     # The last call has GitHub delete the access token again.
     assert github_calls == ["/login/oauth/access_token", "/user", REVOKE_PATH]
     assert set(_session_data(client)) == {"user"}
-    assert set(_session_data(client)["user"]) == {"sub", "iat"}
+    assert set(_session_data(client)["user"]) == {"sub", "uid", "iat"}
+    assert _session_data(client)["user"]["uid"] == 583231
     assert not hasattr(auth, "_remember_user")
 
 

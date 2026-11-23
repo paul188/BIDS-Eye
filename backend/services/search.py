@@ -72,9 +72,11 @@ async def ask(session: AsyncSession, question: str) -> QueryResponse:
     """The answer to *question*, from the search for it already running if
     there is one.
 
-    Who asked is not stored anywhere: the only record of a search is its
-    anonymous query_log row (models.QueryLog), as the site's privacy notice
-    says (frontend/src/components/CookieBanner.vue).
+    Who asked is not known here: the search's record is its anonymous
+    query_log row (models.QueryLog), as the site's privacy notice says
+    (frontend/src/components/CookieBanner.vue). The answer is saved under a
+    user's account only by the router, and only for a user who turned their
+    history on (services/stores/search_history.py).
 
     Raises query_guard.SearchBusyError when no slot for generated SQL frees up.
     """

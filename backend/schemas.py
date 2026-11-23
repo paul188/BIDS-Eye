@@ -6,6 +6,7 @@ Pydantic response models for the BIDS-Eye API.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -158,4 +159,33 @@ class QueryResponse(BaseModel):
     page: int = 1
     page_size: int = 20
     has_more: bool = False
+    # The search_history row this answer was saved as; None for a user who
+    # has not turned the history on (services/stores/search_history.py).
+    history_id: Optional[str] = None
+
+
+class HistoryEntrySummary(BaseModel):
+    id: str
+    asked_at: datetime
+    question: str
+    total: int
+
+
+class HistoryList(BaseModel):
+    """A user's saved searches, newest first; none while ``enabled`` is false."""
+    enabled: bool
+    retention_days: int
+    entries: List[HistoryEntrySummary] = []
+
+
+class HistoryEntry(BaseModel):
+    id: str
+    asked_at: datetime
+    question: str
+    # The answer as it was given then. Its query_id has usually expired.
+    answer: QueryResponse
+
+
+class HistoryEnabled(BaseModel):
+    enabled: bool
 

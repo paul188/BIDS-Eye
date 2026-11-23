@@ -1,7 +1,10 @@
 """Every search is recorded in query_log, anonymously, and the row is really committed.
 
-The only record of a search is its query_log row: nothing stores who asked.
-The site's privacy notice says so (frontend/src/components/CookieBanner.vue).
+A search's query_log row never says who asked, and for a user who has not
+turned on "Remember my searches and search results" it is the only record
+(the saved searches are services/stores/search_history.py, checked in
+tests/test_search_history.py). The site's privacy notice says so
+(frontend/src/components/CookieBanner.vue).
 Until November 2026 a second table, user_queries, kept each question with the
 asker's GitHub login; it was removed for that notice.
 

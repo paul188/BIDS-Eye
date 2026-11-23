@@ -18,6 +18,7 @@ async function logout() {
   } catch {
     // Signed out locally either way; the cookie expires on its own.
   }
+  store.forgetServerHistory()
   isLoggedIn.value = false
 }
 
@@ -59,6 +60,28 @@ const input = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
 const inputBar = ref<InstanceType<typeof InputBar> | null>(null)
 const drawerOpen = ref(false)
+
+// "Remember my searches and search results": the user's consent to keeping
+// their searches on the server (backend/services/stores/search_history.py).
+// Turning it off deletes them there, so it asks first.
+const rememberBusy = ref(false)
+async function toggleRemember() {
+  if (rememberBusy.value) return
+  const turnOn = !store.rememberOnServer
+  if (!turnOn && !window.confirm(
+    'Delete your saved searches from the server? Searches made in this browser stay in its history.'
+  )) return
+  rememberBusy.value = true
+  try {
+    await store.setRememberOnServer(turnOn)
+  } finally {
+    rememberBusy.value = false
+  }
+}
+const retentionText = computed(() => {
+  const months = Math.round(store.retentionDays / 30.4)
+  return months >= 2 ? `${months} months` : `${store.retentionDays} days`
+})
 
 // History: one entry per search page, newest first; the empty start page is not listed.
 const historyEntries = computed(() =>
@@ -166,12 +189,14 @@ onMounted(() => {
   api.me()
     .then(() => {
       isLoggedIn.value = true
+      void store.loadServerHistory()
     })
     .catch(() => {
       isLoggedIn.value = false
     })
 
   window.addEventListener('bids-unauthorized', () => {
+    store.forgetServerHistory()
     isLoggedIn.value = false
   })
 })
@@ -253,6 +278,42 @@ onUnmounted(() => {
           </svg>
           New search
         </button>
+
+        <div class="mt-3 px-1">
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="store.rememberOnServer"
+            :disabled="rememberBusy"
+            class="w-full flex items-start gap-2.5 text-left disabled:opacity-60"
+            @click="toggleRemember"
+          >
+            <span
+              class="mt-0.5 flex-shrink-0 w-8 h-[18px] rounded-full transition-colors relative"
+              :class="store.rememberOnServer ? 'bg-accent' : 'bg-border-input'"
+              aria-hidden="true"
+            >
+              <span
+                class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform"
+                :class="store.rememberOnServer ? 'translate-x-3.5' : ''"
+              />
+            </span>
+            <span class="text-sm text-ink leading-snug">Remember my searches and search results</span>
+          </button>
+          <p class="mt-1.5 text-xs text-muted leading-relaxed">
+            <template v-if="store.rememberOnServer">
+              Saved on our server under your GitHub account for {{ retentionText }}, so you
+              find them in every browser you sign in from. Turning this off deletes them there.
+            </template>
+            <template v-else>
+              Off: your history stays in this browser only. On: new searches are also saved
+              on our server under your GitHub account for {{ retentionText }}.
+            </template>
+          </p>
+          <p v-if="store.rememberError" class="mt-1.5 text-xs text-danger-ink" role="alert">
+            {{ store.rememberError }}
+          </p>
+        </div>
       </div>
 
       <div class="flex-1 overflow-y-auto pb-2">

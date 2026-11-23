@@ -21,6 +21,9 @@ marked public; see api_security.py):
   GET  /api/auth/me              — the signed-in user's GitHub login
   POST /api/query                — natural-language dataset search
   POST /api/query/page           — another page of a search's results
+  GET  /api/history              — the user's saved searches, if they turned that on
+  PUT  /api/history/enabled      — turn saving on, or off (deletes them)
+  GET, DELETE /api/history/{id}  — one saved search
   GET  /health                   — liveness check, no login
 """
 
@@ -40,6 +43,7 @@ from api_security import install_security_middleware
 from db.db import create_all_tables, engine
 from exceptions.handlers import add_error_handlers
 from routers.auth import require_auth, router as auth_router
+from routers.history import router as history_router
 from routers.query import router as query_router
 from services import in_process_crawler
 from services.database_stats.database_stats import database_stats
@@ -103,6 +107,7 @@ add_error_handlers(app)
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])
+app.include_router(history_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 
 @app.get("/health")
