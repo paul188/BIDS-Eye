@@ -64,6 +64,7 @@ from .plan import (  # noqa: F401
     ResolvedTopic,
     ScanRequirement,
     ScoredFilter,
+    TermAlternatives,
     Topic,
 )
 from .prompt import (  # noqa: F401
@@ -83,6 +84,7 @@ from .topics import (  # noqa: F401
     _detach_topic_terms,
     _keep_ambiguity_topics,
     check_description_alternatives,
+    check_scan_term_alternatives,
     resolve_topic,
     resolve_topics,
 )

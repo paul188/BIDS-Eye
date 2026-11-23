@@ -11,7 +11,7 @@ from . import catalogue as _catalogue
 from .plan import AugmentedQueryPlan, ParticipantGroup, QueryFamily, QueryPlan, RAGField, ScanRequirement
 from .intent import preprocess_query, word_evidence
 from .rag import build_rag_requests
-from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, resolve_topics
+from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, check_scan_term_alternatives, resolve_topics
 from .augment import augment_with_rag
 
 log = logging.getLogger("preprocess")
@@ -159,9 +159,11 @@ def run_pipeline(
         count_matches = functools.partial(_count_topic_matches, exact_forms=decided)
         topics = resolve_topics(plan, retriever, count_matches)
         check_description_alternatives(plan, count_matches)
+        check_scan_term_alternatives(plan, count_matches)
     else:
         topics = resolve_topics(plan, retriever)
         check_description_alternatives(plan)
+        check_scan_term_alternatives(plan)
 
     def finished(augmented: AugmentedQueryPlan) -> AugmentedQueryPlan:
         augmented.word_forms = decided

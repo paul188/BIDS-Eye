@@ -125,28 +125,21 @@ def _detach_topic_terms(plan: QueryPlan) -> None:
 _DESCRIPTION_MAX_ALTERNATIVES = 8
 
 
-def check_description_alternatives(plan: QueryPlan,
-                                   count_matches: Any = _count_topic_matches) -> Dict[str, str]:
-    """Keep the other words for description_search that are worth searching.
+def _checked_alternatives(own_text: str, alternatives: List[str],
+                          count_matches: Any) -> "tuple[List[str], Dict[str, str]]":
+    """The alternatives worth searching for *own_text*, and the dropped ones with the reason.
 
-    "dead people" found nothing: the datasets say "post-mortem" and "ex vivo"
-    (2026-11-15). The language model lists such words in
-    description_alternatives; like a topic's alternatives they are dropped
-    when they only repeat the user's words, match no dataset, or match too
-    many to say anything (_topic_max_matches). Without counts (outside the
-    backend) they are kept unchecked.
-
-    Changes plan.description_alternatives in place; returns what was dropped
-    and why.
+    Dropped: repeats of the user's own words, alternatives no dataset uses,
+    and those too many datasets use to say anything (_topic_max_matches).
+    Without counts (outside the backend) they are kept unchecked.
     """
     dropped: Dict[str, str] = {}
-    own = _word_set(plan.description_search or "")
+    own = _word_set(own_text or "")
     if not own:
-        plan.description_alternatives = []
-        return dropped
+        return [], dropped
     kept: List[str] = []
     seen: set = set()
-    for alternative in plan.description_alternatives[:_DESCRIPTION_MAX_ALTERNATIVES]:
+    for alternative in alternatives[:_DESCRIPTION_MAX_ALTERNATIVES]:
         words = _word_set(alternative)
         if not words or words in seen or words == own:
             continue
@@ -164,10 +157,58 @@ def check_description_alternatives(plan: QueryPlan,
             else:
                 checked.append(alternative)
         kept = checked
+    return kept, dropped
+
+
+def check_description_alternatives(plan: QueryPlan,
+                                   count_matches: Any = _count_topic_matches) -> Dict[str, str]:
+    """Keep the other words for description_search that are worth searching.
+
+    "dead people" found nothing: the datasets say "post-mortem" and "ex vivo"
+    (2026-11-15). The language model lists such words in
+    description_alternatives; like a topic's alternatives they are dropped
+    when they only repeat the user's words, match no dataset, or match too
+    many to say anything (_topic_max_matches). Without counts (outside the
+    backend) they are kept unchecked.
+
+    Changes plan.description_alternatives in place; returns what was dropped
+    and why.
+    """
+    kept, dropped = _checked_alternatives(plan.description_search or "", plan.description_alternatives,
+                                          count_matches)
     if kept or dropped:
         log.info("Description search %r: alternatives=%s dropped=%s",
                  plan.description_search, kept, dropped)
     plan.description_alternatives = kept
+    return dropped
+
+
+def check_scan_term_alternatives(plan: QueryPlan,
+                                 count_matches: Any = _count_topic_matches) -> Dict[str, str]:
+    """Keep the other words for each scan term that are worth searching.
+
+    Datasets name a task family by its instances: an ERP study says "oddball"
+    or "P300", a natural-image study "ImageNet" or "photographs". The model
+    lists such words per scan term (scan_term_alternatives); they are checked
+    like description_alternatives. Entries for a term that is no longer a
+    scan term are dropped.
+
+    Changes plan.scan_term_alternatives in place; returns what was dropped.
+    """
+    dropped: Dict[str, str] = {}
+    scan_terms = {t.strip().lower() for r in plan.scan_requirements for t in r.scan_terms}
+    kept_entries = []
+    for entry in plan.scan_term_alternatives:
+        if entry.term.strip().lower() not in scan_terms:
+            continue
+        kept, gone = _checked_alternatives(entry.term, entry.alternatives, count_matches)
+        dropped.update({f"{entry.term}: {k}": v for k, v in gone.items()})
+        if kept or gone:
+            log.info("Scan term %r: alternatives=%s dropped=%s", entry.term, kept, gone)
+        if kept:
+            entry.alternatives = kept
+            kept_entries.append(entry)
+    plan.scan_term_alternatives = kept_entries
     return dropped
 
 

@@ -185,6 +185,16 @@ class Topic(BaseModel):
                     "dataset description would use for them. Empty when the head has one meaning.")
 
 
+class TermAlternatives(BaseModel):
+    """Other words a dataset description uses for one scan term."""
+    term: str = Field(description="The scan term exactly as in scan_terms")
+    alternatives: List[str] = Field(
+        default_factory=list,
+        description="Up to 8 words or short phrases a dataset description writes for exactly "
+                    "this thing or a specific kind of it: named paradigms, tasks, stimuli, "
+                    "stimulus sets, measures. Never broader terms or merely related topics.")
+
+
 class QueryPlan(BaseModel):
     """
     Complete structured representation of a user query.
@@ -214,6 +224,12 @@ class QueryPlan(BaseModel):
     scan_requirements: List[ScanRequirement] = Field(
         default_factory=list,
         description="Each entry is one modality/task constraint on the dataset's files"
+    )
+
+    scan_term_alternatives: List[TermAlternatives] = Field(
+        default_factory=list,
+        description="For scan terms that name a task, paradigm, stimulus or measure: the words "
+                    "dataset descriptions use for it instead. See section 1.3.3.",
     )
 
     # ── Subject matter ────────────────────────────────────────────────────────

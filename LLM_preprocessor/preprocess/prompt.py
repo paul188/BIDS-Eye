@@ -207,6 +207,41 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "MEG datasets with grasping and pointing tasks"   (both are wanted)
           → [{scan_terms: ["MEG", "grasping"]}, {scan_terms: ["MEG", "pointing"]}]
 
+    #### 1.3.3 Other words for scan terms
+    Dataset descriptions often name a task family, paradigm or kind of stimulus
+    by its specific instances rather than by the general word the user typed.
+    For every scan term that names a task, paradigm, stimulus kind, recording
+    condition or measure, add an entry to scan_term_alternatives with up to 8
+    words or short phrases (one to three words) a dataset description would
+    write for exactly that thing or for a specific kind of it: named paradigms
+    and tasks, stimuli and stimulus sets, measures and components, synonyms
+    and abbreviations. Each one must by itself identify the thing: nothing
+    broader, no merely related topic, no general word ("task", "stimuli",
+    "participants") alone. No entry for a modality or file type ("fMRI",
+    "EEG", "T1w", "diffusion", "bold") or for a term that is already the
+    usual word with no other names.
+
+    Examples:
+      "vestibular experiments with MEG"
+          → scan_requirements: [{scan_terms: ["MEG"]}, {scan_terms: ["vestibular"]}]
+            scan_term_alternatives: [{term: "vestibular",
+                alternatives: ["galvanic vestibular stimulation", "GVS",
+                               "caloric stimulation", "self-motion",
+                               "passive rotation"]}]
+      "body ownership illusions with EEG"
+          → scan_requirements: [{scan_terms: ["EEG"]}, {scan_terms: ["body ownership illusion"]}]
+            scan_term_alternatives: [{term: "body ownership illusion",
+                alternatives: ["rubber hand illusion", "full-body illusion",
+                               "enfacement", "visuotactile stimulation"]}]
+
+    These entries never change where a term goes. Route every concept by
+    sections 1.2, 1.3 and 2 first, then add entries only for what ended up
+    in scan_terms. A diagnosis or condition stays in diagnosis_terms; a
+    description, property or stimulus the user describes in words stays
+    whole in description_search, with its other words in
+    description_alternatives (section 2.1). Never move a concept into
+    scan_terms, and never split a description, to give it alternatives.
+
     ### 1.4 Dataset-level filters
     Put author names in author_names; funding agencies in funding_terms.
     The RAG resolves these to exact DB strings.
@@ -342,14 +377,16 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
           → description_search: "alcohol consumption OR alcohol dependence"
 
     ### 2.1 Other words for description_search
-    Users often name a population, a state or a kind of material in everyday
-    words, while dataset descriptions use the field's own terms. When
-    description_search is such a word, list in description_alternatives up to
-    8 words or phrases a dataset author would write for exactly the same
-    thing: the technical term, its spelling variants (hyphenated and joined),
-    close synonyms, and the expression a methods section uses for such
-    material or recordings (Latin and technical expressions count: "ex vivo",
-    "in vitro"). Keep each to one or two words: every word of an alternative
+    Users often name a population, a state, a kind of stimulus or material in
+    everyday or general words, while dataset descriptions use the field's own
+    terms or name a specific kind. When description_search is such a word,
+    list in description_alternatives up to 8 words or phrases a dataset author
+    would write for exactly the same thing or for a specific kind of it: the
+    technical term, its spelling variants (hyphenated and joined), close
+    synonyms, the expression a methods section uses for such material or
+    recordings (Latin and technical expressions count: "ex vivo", "in vitro"),
+    and for a general description the named paradigms, stimuli, stimulus sets
+    or measures that are instances of it. Keep each to one or two words: every word of an alternative
     must occur in the description, so "microgravity" finds more than
     "microgravity exposure in humans". Each one must by itself identify the
     thing: no general word ("participants", "brain", "study") added or alone,

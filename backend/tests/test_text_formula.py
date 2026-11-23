@@ -98,7 +98,7 @@ def test_alternatives_join_an_or_but_not_a_negation() -> None:
     question = _question(description_search="dead people or corpses",
                          description_alternatives=["post-mortem"])
     assert ("dataset text: (text_match('dead people | corpses') OR "
-            "text_match('post-mortem', 'near'))") in question
+            "text_match('post-mortem', 'also'))") in question
     negated = _question(description_search="dead people and not mice",
                         description_alternatives=["post-mortem"])
     assert "post-mortem" not in negated

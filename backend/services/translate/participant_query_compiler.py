@@ -54,6 +54,7 @@ _KNOWN_PLAN_FIELDS = frozenset({
     "order_direction",   # only meaningful with order_by, which must be unset
     # Written by preprocess/ as complete filter lines, read from there:
     "age_groups", "description_search", "description_alternatives", "request_wishes",
+    "scan_term_alternatives",
     "species", "study_structure", "max_size_gb", "min_size_gb", "topics", "name_search",
     "location_terms",
     "excluded_diagnosis_terms",   # the "not diagnosis" lines

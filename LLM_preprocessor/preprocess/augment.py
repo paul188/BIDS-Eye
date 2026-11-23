@@ -10,6 +10,7 @@ from join_registry import (
 )
 from text_terms import (
     MODE_ALL as _MODE_ALL,
+    MODE_ALSO as _MODE_ALSO,
     MODE_LOOSE as _MODE_LOOSE,
     MODE_NEAR as _MODE_NEAR,
     MODE_SHORT as _MODE_SHORT,
@@ -632,6 +633,20 @@ def _build_augmented_question(
                 label = label_map.get(r.field, r.field.value)
                 non_scan_lines.append(f"  {label}: {', '.join(r.all_codes)}")
 
+    # Other words for a scan term (scan_term_alternatives, checked against the
+    # catalogue by check_scan_term_alternatives): an ERP study that says only
+    # "oddball" or "P300". Searched next to the term's own text search; a
+    # dataset that has only them ranks after those with the user's words.
+    term_alternatives = {_term_key(e.term): e.alternatives
+                         for e in getattr(plan, "scan_term_alternatives", []) or [] if e.alternatives}
+
+    def with_alternatives(term: str, text: Optional[str]) -> Optional[str]:
+        alternatives = term_alternatives.get(_term_key(term))
+        other = _format_text_match(alternatives, _MODE_ALSO) if alternatives else None
+        if not other:
+            return text
+        return f"({text} OR {other})" if text else other
+
     # Contradiction detection: build flat {field_name: [codes]} from all resolved data.
     _flat: Dict[str, List[str]] = {}
     for _term_field_codes in scan_by_term.values():
@@ -747,7 +762,7 @@ def _build_augmented_question(
             if len(all_conds) > 1:
                 or_part = f"({or_part})"
             condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})"
-            text_fallback = _format_task_text_match([term])
+            text_fallback = with_alternatives(term, _format_task_text_match([term]))
             if text_fallback:
                 condition = f"({condition} OR {text_fallback})"
             add_scan_line(term, condition)
@@ -770,7 +785,7 @@ def _build_augmented_question(
                 if len(task_conds) > 1:
                     where_part = f"({where_part})"
                 condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {where_part})"
-                text_fallback = _format_task_text_match([term])
+                text_fallback = with_alternatives(term, _format_task_text_match([term]))
                 if text_fallback:
                     condition = f"({condition} OR {text_fallback})"
                 add_scan_line(term, condition)
@@ -786,7 +801,7 @@ def _build_augmented_question(
                 continue
             for field_name, missed in unresolved_terms.items():
                 if field_name != RAGField.INSTITUTION.value and any(_term_key(m) == _term_key(term) for m in missed):
-                    text_only = _format_text_match([term], _MODE_LOOSE)
+                    text_only = with_alternatives(term, _format_text_match([term], _MODE_LOOSE))
                     if text_only:
                         held[_term_key(term)] = text_only
                         unresolved_terms[field_name] = [m for m in missed if _term_key(m) != _term_key(term)]
@@ -873,7 +888,7 @@ def _build_augmented_question(
     # search, so they are used only when it is one text search: a phrase or
     # phrases joined by OR, not "memory AND NOT sleep".
     single_search = formula is not None and _text_formula.placeholder(formula) is not None
-    other_words = (_format_text_match(plan.description_alternatives, _MODE_NEAR)
+    other_words = (_format_text_match(plan.description_alternatives, _MODE_ALSO)
                    if single_search else None)
     # Other conditions of the question; "[...]" lines are notes, not filters.
     filters_besides_text = bool(
@@ -976,7 +991,7 @@ def _build_augmented_question(
         text_suggestions = []
         for terms in unresolved_terms.values():
             for term in terms:
-                suggestion = _format_text_match([term], _MODE_LOOSE)
+                suggestion = with_alternatives(term, _format_text_match([term], _MODE_LOOSE))
                 if suggestion and suggestion not in text_suggestions:
                     text_suggestions.append(suggestion)
         ilike_hint = ""

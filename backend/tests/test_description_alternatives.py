@@ -55,8 +55,10 @@ def test_without_counts_alternatives_are_kept_unchecked() -> None:
     assert plan.description_alternatives == ["post-mortem"]
 
 
+# 'also': searched like 'near', but a dataset that has only the other words
+# ranks after those with the user's own (services/fulltext/ranking.py).
 CONDITION = ("(text_match('dead people') OR "
-             "text_match('post-mortem | ex vivo | deceased', 'near'))")
+             "text_match('post-mortem | ex vivo | deceased', 'also'))")
 
 
 def test_filter_line_adds_the_alternatives_to_the_users_words() -> None:
