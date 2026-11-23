@@ -2,13 +2,20 @@
 
 The only place this package reaches into backend/services. Each accessor
 raises ImportError outside the backend (no services/ on the path), as the
-import itself did before, so the callers' fallbacks are unchanged.
+import itself did before, so the callers' fallbacks are unchanged. tables()
+has no fallback: the SQL this package writes needs the table names.
 verify_codes() falls back by itself.
 """
 
 from __future__ import annotations
 
 from typing import Any
+
+
+def tables():
+    """backend/services/schema/tables: the catalogue's tables, for their names."""
+    from services.schema import tables
+    return tables
 
 
 def tsquery():

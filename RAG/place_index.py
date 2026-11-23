@@ -143,14 +143,17 @@ async def refresh_from_db(engine: Any) -> int:
 
     from sqlalchemy import text
     from sqlalchemy.exc import SQLAlchemyError
+    from services.schema.tables import site_places
+
+    table = site_places.name
 
     try:
         async with engine.connect() as connection:
             rows = await connection.execute(text(
-                "SELECT DISTINCT 'city', city FROM bids_site_places WHERE city <> '' "
-                "UNION SELECT DISTINCT 'region', region FROM bids_site_places WHERE region <> '' "
-                "UNION SELECT DISTINCT 'country', country FROM bids_site_places WHERE country <> '' "
-                "UNION SELECT DISTINCT 'institution', institution FROM bids_site_places "
+                f"SELECT DISTINCT 'city', city FROM {table} WHERE city <> '' "
+                f"UNION SELECT DISTINCT 'region', region FROM {table} WHERE region <> '' "
+                f"UNION SELECT DISTINCT 'country', country FROM {table} WHERE country <> '' "
+                f"UNION SELECT DISTINCT 'institution', institution FROM {table} "
                 "WHERE institution <> ''"
             ))
             places = [(row[0], row[1]) for row in rows]

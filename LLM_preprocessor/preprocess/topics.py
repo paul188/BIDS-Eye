@@ -247,7 +247,8 @@ def _topic_condition(resolved: ResolvedTopic) -> Optional[str]:
     if resolved.codes:
         values = ", ".join(f"'{c}'" for c in resolved.codes)
         task = f"o2.task = {values}" if len(resolved.codes) == 1 else f"o2.task IN ({values})"
-        parts.append(f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {task})")
+        objects = _catalogue.tables().objects.name
+        parts.append(f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {task})")
     phrase_match = _format_text_match(_topic_phrase_terms(resolved.topic), _MODE_NEAR)
     if phrase_match:
         parts.append(phrase_match)

@@ -8,6 +8,7 @@ from join_registry import (
     field_to_db_col as _field_to_db_col,
 )
 
+from . import catalogue as _catalogue
 from .plan import ParticipantGroup, QueryPlan, RAGField, RAGRequest, ScoredFilter
 
 log = logging.getLogger("preprocess")
@@ -72,7 +73,8 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
         wanted = {_SEX_VALUES[v.lower().strip()] for v in group.sex if v.lower().strip() in _SEX_VALUES}
         return ", ".join(f"'{v}'" for v in next(iter(wanted))) if len(wanted) == 1 else None
 
-    rows = "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND "
+    participants = _catalogue.tables().participants.name
+    rows = f"EXISTS (SELECT 1 FROM {participants} p2 WHERE p2.dataset_id = d.id AND "
     all_sexes = {s for s in (sex_values(g) for g in plan.groups) if s}
     lines: List[str] = []
 
@@ -100,7 +102,7 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
         if _ONLY_RE.search(plan.natural_language_summary or ""):
             # "Only female participants": every participant row says so. A sex
             # recorded for part of the participants is no evidence.
-            condition += (" AND NOT EXISTS (SELECT 1 FROM bids_participants p3 "
+            condition += (f" AND NOT EXISTS (SELECT 1 FROM {participants} p3 "
                           "WHERE p3.dataset_id = d.id AND (p3.sex IS NULL "
                           f"OR LOWER(p3.sex) NOT IN ({values})))")
         lines.append(f"  participant sex: {condition}")

@@ -166,7 +166,9 @@ def _institution_lines(
             if names:
                 parts.append(f"d.institutions && {_array(names)}")
             if ror_names:
-                parts.append("EXISTS (SELECT 1 FROM bids_dataset_sites AS s JOIN bids_site_places AS sp "
+                tables = _catalogue.tables()
+                parts.append(f"EXISTS (SELECT 1 FROM {tables.dataset_sites.name} AS s "
+                             f"JOIN {tables.site_places.name} AS sp "
                              "ON sp.name_raw = s.name_raw WHERE s.dataset_id = d.id "
                              f"AND sp.institution = ANY({_array(ror_names)}))")
             text_part = _format_text_match(alternatives, _MODE_SHORT)
@@ -202,7 +204,9 @@ def _location_lines(plan: QueryPlan) -> List[str]:
         place = index.resolve(term)
         if place:
             column, value = place
-            sites = ("EXISTS (SELECT 1 FROM bids_dataset_sites AS s JOIN bids_site_places AS sp "
+            tables = _catalogue.tables()
+            sites = (f"EXISTS (SELECT 1 FROM {tables.dataset_sites.name} AS s "
+                     f"JOIN {tables.site_places.name} AS sp "
                      "ON sp.name_raw = s.name_raw WHERE s.dataset_id = d.id "
                      f"AND sp.{column} = '{value.replace(chr(39), chr(39) * 2)}')")
             text_part = _format_text_match(list(dict.fromkeys([term, value])), _MODE_SHORT)
@@ -452,7 +456,7 @@ def _diagnosis_condition(term_to_codes: Dict[str, List[str]], qualifier: List[st
         return None
     vals = ", ".join(f"'{c}'" for c in codes)
     condition = (
-        f"EXISTS (SELECT 1 FROM bids_participants p2 "
+        f"EXISTS (SELECT 1 FROM {_catalogue.tables().participants.name} p2 "
         f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
     )
     # Structured diagnosis rows are sparse: back them up with the user's words
@@ -619,6 +623,7 @@ def _build_augmented_question(
     # the modality by EITHER its folder (datatype) OR its file suffix.
     # Task gets a separate EXISTS so compound terms like "resting state fMRI"
     # correctly emit both a modality filter and a task filter.
+    objects = _catalogue.tables().objects.name
     for term, field_codes in scan_by_term.items():
         modality_conds: List[str] = []   # datatype + suffix codes
         task_conds: List[str] = []       # task codes
@@ -669,7 +674,7 @@ def _build_augmented_question(
             or_part = " OR ".join(all_conds)
             if len(all_conds) > 1:
                 or_part = f"({or_part})"
-            condition = f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {or_part})"
+            condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})"
             text_fallback = _format_task_text_match([term])
             if text_fallback:
                 condition = f"({condition} OR {text_fallback})"
@@ -683,7 +688,7 @@ def _build_augmented_question(
                     or_part = f"({or_part})"
                 add_scan_line(
                     term,
-                    f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {or_part})",
+                    f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})",
                 )
 
             # Task EXISTS: separate from modality so both constraints apply independently.
@@ -692,7 +697,7 @@ def _build_augmented_question(
                 where_part = " OR ".join(task_conds)
                 if len(task_conds) > 1:
                     where_part = f"({where_part})"
-                condition = f"EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id AND {where_part})"
+                condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {where_part})"
                 text_fallback = _format_task_text_match([term])
                 if text_fallback:
                     condition = f"({condition} OR {text_fallback})"

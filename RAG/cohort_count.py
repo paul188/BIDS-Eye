@@ -39,6 +39,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from services.schema.tables import objects as _objects, participants as _participants  # backend/ is on the path wherever RAG runs
+
 log = logging.getLogger(__name__)
 
 _VOCABULARY = Path(__file__).resolve().parent / "value_mappings.yaml"
@@ -155,7 +157,7 @@ def confirmed_sql(codes: Sequence[str], n: int, alias: str = "d") -> str:
     labels = labels_for(codes)
     if labels:
         has_it = f"({has_it} OR {_label_match('cohort_n', labels)})"
-    return (f"(SELECT COUNT(DISTINCT cohort_n.participant_id) FROM bids_participants AS cohort_n "
+    return (f"(SELECT COUNT(DISTINCT cohort_n.participant_id) FROM {_participants.name} AS cohort_n "
             f"WHERE cohort_n.dataset_id = {alias}.id AND {has_it}) >= {int(n)}")
 
 
@@ -168,15 +170,15 @@ def unknown_sql(codes: Sequence[str], n: int, alias: str = "d",
     """
     codes = valid_codes(codes)
     recognised = labels_for(codes) + [c for c in control_labels() if c not in labels_for(codes)]
-    rows = f"SELECT 1 FROM bids_participants AS cohort_k WHERE cohort_k.dataset_id = {alias}.id"
+    rows = f"SELECT 1 FROM {_participants.name} AS cohort_k WHERE cohort_k.dataset_id = {alias}.id"
     known = (f"(EXISTS({rows}) AND NOT EXISTS({rows} AND cohort_k.diagnosis IS NULL "
              f"AND NOT {_label_match('cohort_k', recognised)}))")
     # *subject_count*: a stored count of the dataset's subjects, when the database has one.
     subjects = subject_count or (
-        f"(SELECT COUNT(DISTINCT cohort_s.subject) FROM bids_objects AS cohort_s "
+        f"(SELECT COUNT(DISTINCT cohort_s.subject) FROM {_objects.name} AS cohort_s "
         f"WHERE cohort_s.dataset_id = {alias}.id)")
     size = (f"GREATEST({subjects}, "
-            f"(SELECT COUNT(*) FROM bids_participants AS cohort_k WHERE cohort_k.dataset_id = {alias}.id))")
+            f"(SELECT COUNT(*) FROM {_participants.name} AS cohort_k WHERE cohort_k.dataset_id = {alias}.id))")
     return f"(NOT {known} AND {size} >= {int(n)})"
 
 

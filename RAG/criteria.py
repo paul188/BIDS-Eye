@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
+from services.schema.tables import participants as _participants  # backend/ is on the path wherever RAG runs
 from text_terms import MODE_ALL, MODE_SHORT, format_text_match
 
 
@@ -293,7 +294,7 @@ def _recorded_age_in(low: float, high: Optional[float]) -> str:
     bounds = [f"pa.age >= {_num(low)}" if low > 0 else "pa.age > 0"]
     if high is not None:
         bounds.append(f"pa.age < {_num(high)}")
-    rows = ("EXISTS (SELECT 1 FROM bids_participants pa WHERE pa.dataset_id = d.id AND "
+    rows = (f"EXISTS (SELECT 1 FROM {_participants.name} pa WHERE pa.dataset_id = d.id AND "
             + " AND ".join(bounds) + ")")
     if high is None:
         dataset = f"(d.age_max >= {_num(low)} OR d.age_min >= {_num(low)})"
@@ -312,7 +313,7 @@ def _recorded_age_in(low: float, high: Optional[float]) -> str:
 
 # No age above 0 anywhere (see _recorded_age_in).
 AGE_UNKNOWN = ("(COALESCE(d.age_min, 0) <= 0 AND COALESCE(d.age_max, 0) <= 0 AND NOT EXISTS "
-               "(SELECT 1 FROM bids_participants pa WHERE pa.dataset_id = d.id AND pa.age > 0))")
+               f"(SELECT 1 FROM {_participants.name} pa WHERE pa.dataset_id = d.id AND pa.age > 0))")
 
 # Animal ages are in days or weeks: a non-human dataset is never a human age
 # group (ds004819, pigs aged 0-14). The species default decides for datasets

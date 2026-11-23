@@ -397,11 +397,12 @@ async def refresh_from_db(engine: Any) -> int:
 
     from sqlalchemy import text
     from sqlalchemy.exc import SQLAlchemyError
+    from services.schema.tables import datasets
 
     try:
         async with engine.connect() as connection:
             rows = await connection.execute(text(
-                "SELECT DISTINCT inst FROM bids_datasets d, unnest(d.institutions) AS inst "
+                f"SELECT DISTINCT inst FROM {datasets.name} d, unnest(d.institutions) AS inst "
                 "WHERE btrim(inst) <> ''"
             ))
             names = [row[0] for row in rows]
