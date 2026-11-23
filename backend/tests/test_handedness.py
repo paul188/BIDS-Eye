@@ -20,22 +20,21 @@ SERVICE = SqlRewriteService()
     ("left handers", "left_handed"), ("LH", "left_handed"), ("left_handed", "left_handed"),
     ("right", "right_handed"), ("R", "right_handed"), ("right-handed", "right_handed"),
     ("Ambidextrous", "ambidextrous"), ("mixed", "ambidextrous"),
-    ("unknown", "unknown_handedness"),
 ])
 def test_equality_becomes_the_stored_code(value: str, code: str) -> None:
     sql = f"WHERE p.handedness = '{value}'"
-    assert SERVICE._handedness_codes(sql) == f"WHERE LOWER(p.handedness) = '{code}'"
+    assert SERVICE._handedness_codes(sql) == f"WHERE p.handedness = '{code}'"
 
 
 def test_negation_kept() -> None:
     assert SERVICE._handedness_codes("WHERE p.handedness <> 'right'") == (
-        "WHERE LOWER(p.handedness) <> 'right_handed'")
+        "WHERE p.handedness <> 'right_handed'")
 
 
 def test_in_list() -> None:
     sql = "WHERE p2.handedness IN ('L', 'left', 'ambidextrous')"
     assert SERVICE._handedness_codes(sql) == (
-        "WHERE LOWER(p2.handedness) IN ('left_handed', 'ambidextrous')")
+        "WHERE p2.handedness IN ('left_handed', 'ambidextrous')")
 
 
 @pytest.mark.parametrize("condition", [
@@ -44,18 +43,19 @@ def test_in_list() -> None:
 ])
 def test_patterns_become_the_stored_code(condition: str) -> None:
     assert SERVICE._handedness_codes(f"WHERE {condition}") == (
-        "WHERE LOWER(p.handedness) = 'left_handed'")
+        "WHERE p.handedness = 'left_handed'")
 
 
 def test_negated_pattern() -> None:
     assert SERVICE._handedness_codes("WHERE p.handedness NOT ILIKE '%right%'") == (
-        "WHERE LOWER(p.handedness) <> 'right_handed'")
+        "WHERE p.handedness <> 'right_handed'")
 
 
 @pytest.mark.parametrize("sql", [
     "WHERE LOWER(p.handedness) = 'left_handed'",
     "WHERE p.handedness IS NOT NULL",
     "WHERE p.handedness = '3.34'",                  # an Edinburgh score, not a code
+    "WHERE p.handedness = 'unknown'",               # not known is NULL, not a code
     "WHERE p.handedness IN ('left', '3.34')",
     "WHERE p.handedness IN (SELECT x FROM t)",
     "WHERE p.handedness ~* '(left|right)'",          # two codes: not ours to pick
@@ -73,7 +73,7 @@ def test_logged_request_finds_left_handed_participants() -> None:
         "FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.handedness = 'left') >= 20"
     )
     rewritten = SERVICE.rewrite_generated_sql(raw_sql, "Dataset with at least 20 patients all left handed").sql
-    assert "LOWER(p2.handedness) = 'left_handed'" in rewritten
+    assert "p2.handedness = 'left_handed'" in rewritten
     assert "handedness = 'left'" not in rewritten
 
 

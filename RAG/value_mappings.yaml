@@ -64780,6 +64780,8 @@ handedness:
       weight: 0.1
     - term: dextrals
       weight: 0.1
+    - term: dextral
+      weight: 0.1
     - term: RH participants
       weight: 0.1
     - term: RH subjects
@@ -65209,6 +65211,8 @@ handedness:
       weight: 0.1
     - term: cross-dominant
       weight: 0.1
+    - term: either
+      weight: 0.1
     codes:
     - a
     - ambi
@@ -65269,6 +65273,8 @@ handedness:
     codes:
     - unknown_handedness
     - unknown
+    - n/a
+    - na
 sex:
   male:
     label: male

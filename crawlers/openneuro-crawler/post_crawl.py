@@ -7,8 +7,9 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 reads (remote/dataset_facets.refresh). No network.
   -. groups     participant diagnoses from a group column and participants.json
                 (remote/participant_groups.run). OpenNeuro's public S3 only.
-  -. sex        participant sex as typed ('F', 'Female', 'woman') rewritten
-                to the vocabulary's standard code (remote/participant_sex.run).
+  -. codes      participant sex and handedness as typed ('F', 'Female',
+                'Ambidextrous') rewritten to the vocabulary's standard codes
+                (remote/participant_codes.run).
                 participants.json from OpenNeuro's public S3, only for values
                 the vocabulary does not list.
   0. links      derivatives (OpenNeuro's preprocessing bucket and the
@@ -38,7 +39,7 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
 
 Environment:
     CRAWL_PARTICIPANT_GROUPS "false" skips decoding participant groups (default on)
-    CRAWL_PARTICIPANT_SEX   "false" skips rewriting participant sex to standard codes (default on)
+    CRAWL_PARTICIPANT_CODES "false" skips rewriting participant sex and handedness to standard codes (default on)
     CRAWL_LINKS             "false" skips step 0 (default on)
     CRAWL_SITE_PLACES       "false" skips matching site names to places (default on)
     CRAWL_PAPER_AFFILIATIONS "false" skips the lead authors' institutions as sites (default on)
@@ -203,20 +204,21 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         except Exception as exc:
             log.error("[post-crawl] Participant groups failed: %s", exc, exc_info=True)
 
-    # Participant sex as typed ('F', 'Female', 'woman') becomes the
-    # vocabulary's standard code (remote/participant_sex.py). A crawl writes
-    # the typed value again, so this runs after every cycle.
-    if _flag("CRAWL_PARTICIPANT_SEX"):
+    # Participant sex and handedness as typed ('F', 'Female', 'Ambidextrous')
+    # become the vocabulary's standard codes (remote/participant_codes.py). A
+    # crawl writes the typed value again, so this runs after every cycle.
+    if _flag("CRAWL_PARTICIPANT_CODES"):
         try:
-            from remote import participant_sex
+            from remote import participant_codes
 
             async with engine.begin() as conn:
-                reports = await participant_sex.run(conn, accessions, apply=True)
-            log.info("[post-crawl] Participant sex: %d rows rewritten in %d datasets, %d of them values nothing names",
-                     sum(r["written"] for r in reports), len(reports),
+                reports = await participant_codes.run(conn, accessions, apply=True)
+            log.info("[post-crawl] Participant codes: %d rows rewritten in %d datasets, "
+                     "%d of them values nothing names",
+                     sum(r["written"] for r in reports), len({r["accession"] for r in reports}),
                      sum(sum(r["unknown"].values()) for r in reports))
         except Exception as exc:
-            log.error("[post-crawl] Participant sex failed: %s", exc, exc_info=True)
+            log.error("[post-crawl] Participant codes failed: %s", exc, exc_info=True)
 
     if _flag("CRAWL_LINKS"):
         try:

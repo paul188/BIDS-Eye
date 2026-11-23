@@ -18,7 +18,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sex_codes import sex_code  # RAG/ is on the path wherever the backend runs
+from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
 
 from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
 from services.indexing import dataset_description
@@ -60,7 +60,7 @@ def summarize_participants(participants: Sequence[ParticipantSchema]) -> Optiona
         label = (p.diagnosis or "").strip()
         if label:
             diagnoses[label] = diagnoses.get(label, 0) + 1
-        # The column holds standard codes (the crawler's remote/participant_sex.py);
+        # The column holds standard codes (the crawler's remote/participant_codes.py);
         # a row crawled since the last rewrite is read through the vocabulary.
         sex = sex_code(p.sex)
         if sex == "female":

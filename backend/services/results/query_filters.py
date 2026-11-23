@@ -604,7 +604,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 
     sexes = _literals_for(node, ["sex"])
     if sexes:
-        from sex_codes import sex_code   # RAG/, the vocabulary's spellings
+        from participant_codes import sex_code   # RAG/, the vocabulary's spellings
         return chip("sex", "Sex", list(dict.fromkeys(sex_code(s) or s for s in sexes)))
 
     hands = _literals_for(node, ["handedness"])
@@ -612,7 +612,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         # The stored codes (sql_rewriter._handedness_codes); without this the
         # chip showed the raw SQL ("Condition · EXISTS(SELECT 1 …").
         hand_names = {"left_handed": "left-handed", "right_handed": "right-handed",
-                      "ambidextrous": "ambidextrous", "unknown_handedness": "not recorded"}
+                      "ambidextrous": "ambidextrous"}
         return chip("field", "Handedness", [hand_names.get(h.lower(), h) for h in hands])
 
     size = _size_label(node)

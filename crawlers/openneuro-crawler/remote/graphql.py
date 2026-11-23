@@ -199,7 +199,7 @@ async def _upsert_participants(
     Create one participant row per subject the API lists (age, sex, group).
 
     Values are stored as OpenNeuro reports them; the post-crawl step
-    remote/participant_sex.py rewrites sex to its standard code afterwards,
+    remote/participant_codes.py rewrites sex to its standard code afterwards,
     as it does for participants.tsv rows.
     The group label is kept in `extra` — it is free text, not a canonical
     diagnosis code.

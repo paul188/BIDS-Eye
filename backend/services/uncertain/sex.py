@@ -17,7 +17,7 @@ except ImportError:  # pragma: no cover
 from services.uncertain import reason_texts
 from services.uncertain.conditions import sql_literal
 from services.schema.tables import participants as _participants
-from sex_codes import sex_code  # RAG/ is on the path wherever the backend runs
+from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
 
 
 # Words a README uses for each sex (stemmed by the english configuration:
@@ -39,7 +39,7 @@ def asked_sex(node) -> Optional[str]:
         if not any(c.name.lower() == "sex" for c in comparison.find_all(exp.Column)):
             continue
         for literal in comparison.find_all(exp.Literal):
-            # Which literal stands for which sex: the vocabulary (RAG/sex_codes.py).
+            # Which literal stands for which sex: the vocabulary (RAG/participant_codes.py).
             if literal.is_string and sex_code(literal.this) in SEX_WORDS:
                 values.add(sex_code(literal.this))
     return next(iter(values)) if len(values) == 1 else None

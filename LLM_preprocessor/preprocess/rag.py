@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import re
 from typing import Dict, List, Optional
-from sex_codes import sex_code
+from participant_codes import sex_code
 from join_registry import (
     field_to_db_col as _field_to_db_col,
 )
@@ -66,7 +66,7 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
 
     def sex_values(group: ParticipantGroup) -> Optional[str]:
         # The code the column holds for the words the plan gives ("women",
-        # "F"): the vocabulary, RAG/sex_codes.py.
+        # "F"): the vocabulary, RAG/participant_codes.py.
         wanted = {code for v in group.sex if (code := sex_code(v))}
         return f"'{next(iter(wanted))}'" if len(wanted) == 1 else None
 

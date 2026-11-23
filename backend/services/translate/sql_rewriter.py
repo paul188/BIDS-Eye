@@ -37,7 +37,7 @@ from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
-from sex_codes import sex_code as _sex_code  # noqa: E402
+from participant_codes import handedness_code as _handedness_code, sex_code as _sex_code  # noqa: E402
 
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
@@ -886,7 +886,7 @@ class SqlRewriteService:
         """Write each sex literal as the code the column holds.
 
         bids_participants.sex holds 'male', 'female' or 'other_diverse' (the
-        crawler's remote/participant_sex.py; RAG/sex_codes.py). The SQL model
+        crawler's remote/participant_codes.py; RAG/participant_codes.py). The SQL model
         still writes 'F', 'Female' or IN ('M', 'male'): each literal the
         vocabulary knows becomes its code, so that p.sex = 'F' does not come
         back empty. A literal it does not know is left as written.
@@ -923,30 +923,17 @@ class SqlRewriteService:
     _HANDEDNESS_PATTERN_RE = re.compile(
         r"(?<![\w.(])(\w+\.handedness)\s+(NOT\s+I?LIKE|I?LIKE|!~\*?|~\*?)\s+(?:E)?'((?:[^']|'')*)'",
         re.IGNORECASE)
-    # The stored codes (RAG/value_mappings.yaml, handedness) and what a
-    # request or the SQL model says for them.
-    _HANDEDNESS_CODES = ("right_handed", "left_handed", "ambidextrous", "unknown_handedness")
-    _HANDEDNESS_SYNONYMS = {
-        **dict.fromkeys(("l", "lh", "left", "lefthanded", "left_hander", "lefthander",
-                         "left_handers", "lefthanders", "sinistral", "sinistrals", "lefty"),
-                        "left_handed"),
-        **dict.fromkeys(("r", "rh", "right", "righthanded", "right_hander", "righthander",
-                         "right_handers", "righthanders", "dextral", "dextrals"),
-                        "right_handed"),
-        **dict.fromkeys(("a", "ambi", "ambidexter", "ambidextrals", "mixed", "mixed_handed",
-                         "both", "either"),
-                        "ambidextrous"),
-        **dict.fromkeys(("unknown", "n/a", "na"), "unknown_handedness"),
-    }
 
     @classmethod
     def _handedness_code(cls, literal: str) -> Optional[str]:
         """The stored code a handedness value stands for, or None if unclear."""
+        # What a request or the SQL model says for each code: the vocabulary
+        # (RAG/participant_codes.py). A word it does not list is read by its
+        # beginning ('lefty', 'right-dominant people').
+        code = _handedness_code(literal)
+        if code is not None:
+            return code
         value = re.sub(r"[\s-]+", "_", literal.strip().lower())
-        if value in cls._HANDEDNESS_CODES:
-            return value
-        if value in cls._HANDEDNESS_SYNONYMS:
-            return cls._HANDEDNESS_SYNONYMS[value]
         for prefix, code in (("left", "left_handed"), ("right", "right_handed"), ("ambi", "ambidextrous")):
             if value.startswith(prefix):
                 return code
@@ -962,17 +949,16 @@ class SqlRewriteService:
     def _handedness_codes(self, sql: str) -> str:
         """Compare participant handedness with the stored codes.
 
-        participants.tsv values are stored as right_handed, left_handed,
-        ambidextrous (a few 'Ambidextrous' / 'AMBIDEXTROUS') and
-        unknown_handedness. The SQL model wrote p2.handedness = 'left' and
+        The column holds right_handed, left_handed or ambidextrous, NULL when
+        not known (the crawler's remote/participant_codes.py). The SQL model wrote p2.handedness = 'left' and
         p.handedness ~* '\\mleft\\M' (the underscore is a word character, so
         \\M never matches inside 'left_handed'): four real requests for
         left-handed participants found 0 datasets (2026-11-18), where 99
         datasets list left-handed participants and 16 list at least 20.
 
         Each equality, IN list, LIKE / ILIKE or regex match on a handedness
-        column becomes LOWER(col) compared with the stored code. A value or
-        pattern that names no handedness ('3.34', '%' alone) is left as it is.
+        column is compared with the stored code. A value or pattern that
+        names no handedness ('3.34', 'unknown', '%' alone) is left as it is.
         """
         def quoted(values: list[str]) -> str:
             return ", ".join(f"'{v}'" for v in dict.fromkeys(values))
@@ -981,7 +967,7 @@ class SqlRewriteService:
             code = self._handedness_code(m.group(3))
             if code is None:
                 return m.group(0)
-            return f"LOWER({m.group(1)}) {'=' if m.group(2) == '=' else '<>'} '{code}'"
+            return f"{m.group(1)} {'=' if m.group(2) == '=' else '<>'} '{code}'"
 
         def in_list(m: re.Match) -> str:
             literals = re.findall(r"'((?:[^']|'')*)'", m.group(3))
@@ -991,14 +977,14 @@ class SqlRewriteService:
                      if (code := self._handedness_code(lit.replace("''", "'"))) is not None]
             if len(codes) < len(literals):
                 return m.group(0)  # a value with no stored code
-            return f"LOWER({m.group(1)}) {m.group(2).upper()} ({quoted(codes)})"
+            return f"{m.group(1)} {m.group(2).upper()} ({quoted(codes)})"
 
         def pattern(m: re.Match) -> str:
             code = self._handedness_pattern_code(m.group(3).replace("''", "'"))
             if code is None:
                 return m.group(0)
             negated = m.group(2).upper().startswith(("NOT", "!"))
-            return f"LOWER({m.group(1)}) {'<>' if negated else '='} '{code}'"
+            return f"{m.group(1)} {'<>' if negated else '='} '{code}'"
 
         rewritten = self._HANDEDNESS_PATTERN_RE.sub(
             pattern, self._HANDEDNESS_IN_RE.sub(in_list, self._HANDEDNESS_EQ_RE.sub(eq, sql)))

@@ -60,8 +60,8 @@ def test_no_design_asked_no_line() -> None:
 # ── participant sex ───────────────────────────────────────────────────────────
 
 # The column holds 'male', 'female' or 'other_diverse' (the crawler's
-# remote/participant_sex.py); the rewriter writes whatever the SQL model
-# typed as that code, from the vocabulary (RAG/sex_codes.py).
+# remote/participant_codes.py); the rewriter writes whatever the SQL model
+# typed as that code, from the vocabulary (RAG/participant_codes.py).
 
 def test_a_sex_literal_becomes_the_stored_code() -> None:
     for typed in ("female", "Female", "FEMALE", "F", "women"):
