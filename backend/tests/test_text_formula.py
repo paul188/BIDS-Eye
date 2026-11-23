@@ -114,6 +114,33 @@ def test_rare_parts_are_not_searched_but_a_negation_stays(monkeypatch) -> None:
     assert "not searchable (add NO condition for these): zyx" in question
 
 
+def test_a_part_left_out_is_named_in_the_explanation(monkeypatch) -> None:
+    """"epilepsy ONLY postictal" listed every epilepsy dataset and said nothing
+    about "postictal", which no dataset mentions (live, 2026-11-23)."""
+    import retriever
+    from services.translate import text_to_sql
+
+    monkeypatch.setattr(pp.augment, "_matches_too_few", lambda text: text == "postictal")
+    plan = pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH,
+                        natural_language_summary="Epilepsy datasets about the postictal state.",
+                        description_search="postictal", name_search="epilepsy")
+    augmented = pp.augment_with_rag(plan, {})
+    assert augmented.unmatched_text == ["postictal"]
+    # A request wish is not searchable either, but that is no news to the user.
+    wish = pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH, natural_language_summary="test",
+                        name_search="epilepsy", request_wishes=["for machine learning"])
+    assert pp.augment_with_rag(wish, {}).unmatched_text == []
+
+    monkeypatch.setattr(pp, "run_pipeline", lambda *args, **kwargs: augmented)
+    monkeypatch.setattr(retriever, "MetadataRetriever", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        text_to_sql, "_gemini_sql_generation",
+        lambda *args, **kwargs: "SELECT {{COLS}} FROM bids_datasets d WHERE d.name ILIKE '%epilepsy%' GROUP BY d.id")
+    explanation = text_to_sql._run_local("epilepsy ONLY postictal", "dummy-key").explanation
+    assert explanation == ("Epilepsy datasets about the postictal state. Fewer than three datasets "
+                           'mention "postictal", so the search ran without it.')
+
+
 def test_an_or_counts_its_phrases_together(monkeypatch) -> None:
     monkeypatch.setattr(tsquery, "count_matches",
                         lambda alternatives, mode="near": [2 if a == "drawings" else 1 for a in alternatives])

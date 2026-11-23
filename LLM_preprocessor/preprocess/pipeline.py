@@ -255,15 +255,18 @@ def run_pipeline(
         term_map = rag_results[field]
         new_term_map: Dict[str, List[str]] = {}
         for term, codes in term_map.items():
-            live, miss = _catalogue.verify_codes(field, codes, retriever)
-            if not live and codes and field == RAGField.DIAGNOSIS.value:
-                # No participant row carries the diagnosis yet, but it is
-                # known: keep it, so the diagnosis line searches its words
-                # in the dataset titles and labels. As a DB MISS the SQL
-                # model was told to use the parent code: "frontotemporal
+            if field == RAGField.DIAGNOSIS.value:
+                # A diagnosis keeps the codes no participant row carries yet:
+                # they cost nothing in the IN list, and the first code names
+                # the diagnosis, so the diagnosis line searches its words in
+                # the dataset titles and labels. With them dropped, "TLE"
+                # (tle and mtle have no rows) was read as its narrower
+                # hippocampal sclerosis only (2026-11-23). As a DB MISS the
+                # SQL model was told to use the parent code: "frontotemporal
                 # dementia" became every dementia (2026-11-17).
                 new_term_map[term] = codes
                 continue
+            live, miss = _catalogue.verify_codes(field, codes, retriever)
             if miss:
                 db_miss_terms.setdefault(field, []).extend(miss)
             if live:

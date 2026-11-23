@@ -119,3 +119,30 @@ def test_a_known_diagnosis_without_participant_rows_keeps_its_line(monkeypatch) 
     augmented = p.run_pipeline("frontotemporal dementia", retriever=Retriever()).augmented_question
     assert "DB MISS" not in augmented
     assert "p2.diagnosis IN ('frontotemporal_dementia')" in augmented
+
+
+def test_a_diagnosis_keeps_its_own_code_when_only_a_narrower_one_has_rows(monkeypatch) -> None:
+    """Participant rows say hippocampal_sclerosis, none says temporal_lobe_epilepsy. "TLE" must stay
+    temporal lobe epilepsy: its code first, its words searched in the dataset text."""
+    import preprocess as p
+
+    from services.catalogue.catalogue import ValueCounts
+    from services.catalogue.catalogue import catalogue as backend_catalogue
+
+    monkeypatch.setattr(backend_catalogue, "values",
+                        ValueCounts({"diagnosis": {"hippocampal_sclerosis": 1}}))
+    codes = _resolve_yaml_term("diagnosis", "TLE")
+    assert codes == ["temporal_lobe_epilepsy", "hippocampal_sclerosis"]
+
+    class Retriever:
+        def retrieve_for_field_multi_scored(self, field, terms):
+            return {t: [(code, 1.0) for code in codes] for t in terms}
+
+    plan = p.QueryPlan(query_family="concept_query", natural_language_summary="TLE",
+                       groups=[p.ParticipantGroup(group_name="g", diagnosis_terms=["TLE"])])
+    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question, api_key=None: plan)
+    augmented = p.run_pipeline("20 patients with TLE", retriever=Retriever()).augmented_question
+    line = next(ln for ln in augmented.splitlines() if ln.startswith("  diagnosis:"))
+    assert "DB MISS" not in augmented
+    assert "p2.diagnosis IN ('temporal_lobe_epilepsy', " in line
+    assert "temporal lobe epilepsy" in line

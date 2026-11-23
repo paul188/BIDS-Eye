@@ -86,6 +86,7 @@ def augment_with_rag(
                 scored_filters.append(
                     ScoredFilter(field="task", code=code, score=topic.scores.get(code, 1.0)))
 
+    unmatched_text: List[str] = []
     aug = AugmentedQueryPlan(
         plan=plan,
         resolved=resolved,
@@ -93,8 +94,9 @@ def augment_with_rag(
         topics=topics,
         augmented_question=_build_augmented_question(
             plan, resolved, unresolved_terms or {}, db_miss_terms or {},
-            available_columns, topics,
+            available_columns, topics, unmatched_text,
         ),
+        unmatched_text=unmatched_text,
     )
     return aug
 
@@ -533,9 +535,13 @@ def _build_augmented_question(
     db_miss_terms: Optional[Dict[str, List[str]]] = None,
     available_columns: Collection[str] = (),
     topics: Sequence[ResolvedTopic] = (),
+    unmatched_text: Optional[List[str]] = None,
 ) -> str:
     """
     Inject resolved canonical codes into the natural-language summary.
+
+    *unmatched_text*, when given, receives the description phrases left out
+    because too few datasets say them (AugmentedQueryPlan.unmatched_text).
 
     *available_columns* names the optional bids_datasets columns the database
     has populated (backend/services/catalogue/catalogue.py). A filter on a
@@ -887,6 +893,8 @@ def _build_augmented_question(
         for part in _text_formula.conjuncts(formula):
             if not isinstance(part, _text_formula.Not) and _formula_matches_too_few(part):
                 not_searched.append(_text_formula.render(part))
+                if unmatched_text is not None:
+                    unmatched_text.append(_text_formula.render(part))
                 continue
             kept_parts.append(part)
         formula = _text_formula.And(tuple(kept_parts)) if len(kept_parts) > 1 else (

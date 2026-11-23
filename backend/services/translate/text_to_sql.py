@@ -724,6 +724,14 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     augmented_question = augmented_plan.augmented_question
     query_family = augmented_plan.plan.query_family.value
     explanation = augmented_plan.plan.natural_language_summary
+    # A phrase too few datasets say is left out of the search
+    # (preprocess/augment.py): "epilepsy ONLY postictal" listed every epilepsy
+    # dataset and said nothing about "postictal" (live, 2026-11-23).
+    unmatched_text = list(getattr(augmented_plan, "unmatched_text", None) or [])
+    if unmatched_text:
+        named = ", ".join(f'"{phrase}"' for phrase in unmatched_text)
+        explanation = ((explanation or "").rstrip() + f" Fewer than three datasets mention {named},"
+                       f" so the search ran without {'it' if len(unmatched_text) == 1 else 'them'}.").strip()
 
     # Stage 3: compile cohort plans (diagnosis groups, optionally with scan
     # requirements) deterministically. The LLM has already interpreted the

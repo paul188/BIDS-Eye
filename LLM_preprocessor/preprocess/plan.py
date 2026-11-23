@@ -439,6 +439,9 @@ class AugmentedQueryPlan(BaseModel):
     # forms that may match ("ageing": ["ageing", "aging"]); RAG/word_forms.py.
     # The SQL rewriter passes them to the text search.
     word_forms: Dict[str, List[str]] = Field(default_factory=dict)
+    # Phrases of description_search left out of the search because fewer than
+    # three datasets say them ("postictal"). The explanation names them.
+    unmatched_text: List[str] = Field(default_factory=list)
 
     def codes_for(self, field: RAGField) -> List[str]:
         for r in self.resolved:
