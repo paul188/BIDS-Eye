@@ -23,6 +23,7 @@ import place_index as _place_index
 from cohort_count import placeholder as _patients_placeholder
 import text_formula as _text_formula
 from criteria import species_condition as _species_condition
+from criteria import without_diagnosis as _without_diagnosis
 from criteria import normalise_age_groups as _normalise_age_groups, age_condition as _age_condition, \
     age_group_label as _age_group_label
 
@@ -468,6 +469,48 @@ def _diagnosis_condition(term_to_codes: Dict[str, List[str]], qualifier: List[st
     return f"({condition} AND {required})" if required else condition
 
 
+def _excluded_diagnosis_keys(plan: QueryPlan) -> set:
+    """The excluded diagnosis terms, as _term_key. A term a group also asks
+    for stays asked: the planner contradicted itself, and a search that
+    excludes what it looks for finds nothing."""
+    asked = {_term_key(t) for g in plan.groups for t in g.diagnosis_terms}
+    return {_term_key(t) for t in plan.excluded_diagnosis_terms
+            if t and t.strip() and not _is_healthy_term(t)} - asked
+
+
+def _excluded_diagnosis_lines(plan: QueryPlan, resolved: List[ResolvedTerms],
+                              unresolved: List[str]) -> List[str]:
+    """One line per diagnosis the dataset must not have.
+
+    The condition is the negation of the one a request for the diagnosis
+    uses (_diagnosis_condition): a participant coded with it, or its words in
+    the name, description, study fields or dx_status. A dataset that records
+    no diagnosis passes: what is not stated is not there (RAG/criteria.py
+    Criterion.default). A README mention alone does not exclude. A term the
+    vocabulary does not know is excluded by its words in the short fields.
+    """
+    excluded = _excluded_diagnosis_keys(plan)
+    if not excluded:
+        return []
+    conditions: Dict[str, str] = {}
+    for r in resolved:
+        if r.field != RAGField.DIAGNOSIS:
+            continue
+        for term, codes in r.term_to_codes.items():
+            if _term_key(term) not in excluded or not codes:
+                continue
+            stated = _diagnosis_condition({term: codes}, _diagnosis_qualifier(term, codes))
+            if stated:
+                conditions.setdefault(term, stated)
+    for term in unresolved:
+        text = _format_text_match([term], _MODE_SHORT)
+        if _term_key(term) in excluded and text:
+            conditions.setdefault(term, text)
+    return [f'  not diagnosis "{term.replace(chr(34), chr(39))}" (complete, datasets that record '
+            f'no diagnosis stay): {_without_diagnosis(stated)}'
+            for term, stated in conditions.items()]
+
+
 def _build_augmented_question(
     plan: QueryPlan,
     resolved: List[ResolvedTerms],
@@ -517,6 +560,7 @@ def _build_augmented_question(
             and not design_cond and not species_cond and not age_cond
             and not plan.institution_terms
             and not plan.excluded_institution_terms
+            and not plan.excluded_diagnosis_terms
             and not plan.location_terms
             and not unresolved_terms and not db_miss_terms
             and not any(t.condition for t in topics)):
@@ -530,6 +574,8 @@ def _build_augmented_question(
     non_scan_lines: List[str] = []
     context_lines: List[str] = []
 
+    excluded_diagnoses = _excluded_diagnosis_keys(plan)
+
     label_map = {
         RAGField.DIAGNOSIS: "diagnosis codes",
         RAGField.AUTHOR:    "author names (exact DB strings)",
@@ -542,7 +588,9 @@ def _build_augmented_question(
                 if codes:
                     scan_by_term.setdefault(term, {})[r.field] = codes
         elif r.field == RAGField.DIAGNOSIS:
-            for label, term_to_codes in _diagnosis_lines(plan, r.term_to_codes):
+            # Excluded diagnoses have lines of their own (_excluded_diagnosis_lines).
+            asked = {t: cs for t, cs in r.term_to_codes.items() if _term_key(t) not in excluded_diagnoses}
+            for label, term_to_codes in _diagnosis_lines(plan, asked):
                 # A term whose codes miss one of its disease words ("Lewy body
                 # dementia" → the dementia group) needs those words in the
                 # dataset text; such terms get a condition of their own.
@@ -569,8 +617,11 @@ def _build_augmented_question(
         for _rag_field, _codes in _term_field_codes.items():
             _flat.setdefault(_rag_field.value, []).extend(_codes)
     for _r in resolved:
-        if _r.field == RAGField.DIAGNOSIS and _r.all_codes:
-            _flat.setdefault(_r.field.value, []).extend(_r.all_codes)
+        if _r.field == RAGField.DIAGNOSIS:
+            _asked_codes = [c for t, cs in _r.term_to_codes.items()
+                            if _term_key(t) not in excluded_diagnoses for c in cs]
+            if _asked_codes:
+                _flat.setdefault(_r.field.value, []).extend(_asked_codes)
 
     _contradictions = _check_contradictions(_flat)
     if _contradictions:
@@ -746,6 +797,14 @@ def _build_augmented_question(
         available_columns,
     ))
     context_lines.extend(_location_lines(plan))
+    # Excluded diagnoses the vocabulary does not know are excluded by their
+    # words, not searched for by the VOCABULARY MISS block below.
+    _unknown_diagnoses = unresolved_terms.pop(RAGField.DIAGNOSIS.value, [])
+    context_lines.extend(_excluded_diagnosis_lines(
+        plan, resolved, [t for t in _unknown_diagnoses if _term_key(t) in excluded_diagnoses]))
+    _unknown_diagnoses = [t for t in _unknown_diagnoses if _term_key(t) not in excluded_diagnoses]
+    if _unknown_diagnoses:
+        unresolved_terms[RAGField.DIAGNOSIS.value] = _unknown_diagnoses
 
     # Inject free-text hints for qualitative/adjectival terms that the
     # preprocessing LLM routed to description_search / name_search because they
@@ -768,7 +827,8 @@ def _build_augmented_question(
     not_searched = [w for w in plan.request_wishes if w.strip()]
     # Who the participants are is decided by the participant lines, never by
     # a text search for "healthy", "adult" or "male".
-    said_healthy = any(_is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
+    said_healthy = any(_is_healthy_term(t) for t in plan.excluded_diagnosis_terms) or any(
+        _is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
 
     def searched_words(phrase: str) -> str:
         nonlocal said_healthy

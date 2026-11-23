@@ -203,6 +203,12 @@ class QueryPlan(BaseModel):
         default="AND",
         description="AND = dataset must contain ALL groups; OR = any one suffices"
     )
+    excluded_diagnosis_terms: List[str] = Field(
+        default_factory=list,
+        description="Diagnoses or conditions the dataset must NOT include ('without epilepsy "
+                    "patients' → ['epilepsy'], 'excluding stroke' → ['stroke']), as written by "
+                    "the user. Never also list them in a group's diagnosis_terms."
+    )
 
     # ── Scan / modality requirements ─────────────────────────────────────────
     scan_requirements: List[ScanRequirement] = Field(

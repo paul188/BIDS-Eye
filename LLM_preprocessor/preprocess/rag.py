@@ -172,6 +172,11 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
                           and not _is_healthy_term(t)]
         _merge(RAGField.DIAGNOSIS, real_diagnoses)
         _merge(RAGField.TASK,      grp.task_terms)
+    # Excluded diagnoses resolve like asked ones: the exclusion is the
+    # negation of the same condition (RAG/criteria.py without_diagnosis).
+    _merge(RAGField.DIAGNOSIS, [t for t in plan.excluded_diagnosis_terms
+                                if t and t.strip() and t.lower().strip() not in generic_words
+                                and not _is_healthy_term(t)])
 
     # Dataset-level text fields
     _merge(RAGField.AUTHOR,  plan.author_names)

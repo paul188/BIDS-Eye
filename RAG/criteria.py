@@ -28,7 +28,13 @@ class Criterion:
     evidence: Tuple[str, ...]       # what answers it, strongest first
     not_evidence: Tuple[str, ...]   # what must not count
     when_missing: str               # behaviour when the dataset does not record it
-    default: Optional[str] = None   # the value assumed when nothing says otherwise
+    # The general rule needs no entry: a value counts only when something
+    # states it, so a dataset that states nothing does not have it. It fails
+    # a request for the value and passes a request without it, for every
+    # diagnosis, institution, task or scan alike. A default is named only
+    # where the unstated case is itself a value people ask for (species:
+    # human), and only when the unlabelled datasets are measured to be it.
+    default: Optional[str] = None
 
 
 # ── Species ──────────────────────────────────────────────────────────────────
@@ -343,3 +349,52 @@ def age_condition(codes: Sequence[str], has_species_column: bool = True) -> Opti
 def age_group_label(codes: Sequence[str]) -> str:
     """"children", "children or older adults": for the filter line."""
     return " or ".join(code.replace("_", " ") for code in normalise_age_groups(codes))
+
+
+# ── Diagnosis ────────────────────────────────────────────────────────────────
+
+DIAGNOSIS = Criterion(
+    name="diagnosis",
+    phrasings=("Parkinson's patients", "people with epilepsy", "depression and controls",
+               "without epilepsy patients", "no stroke patients", "excluding schizophrenia"),
+    evidence=(
+        "bids_participants.diagnosis: a participant coded with the diagnosis",
+        "the short fields naming it: name, description, study fields and the "
+        "uploader's dx_status",
+    ),
+    not_evidence=(
+        "nothing recorded, as a sign of health: it only says the dataset does not have the "
+        "diagnosis asked about, never that its participants are healthy",
+        "the README alone, when a diagnosis is excluded: READMEs name diseases in "
+        "citations and comparisons",
+    ),
+    when_missing="a dataset that states no diagnosis does not have the one asked about: "
+                 "it fails a request for the diagnosis and passes a request without it "
+                 "(the general rule, see Criterion.default)",
+)
+
+# The general rule, measured for diagnoses. Live database, 2026-11-23: of the 586 datasets with a dx_status, 23
+# name epilepsy, the most common disease (4%); of the 965 datasets with no
+# dx_status and no coded participant, 3 name epilepsy in their name or
+# description, 3 Parkinson's, 0 Huntington's. "Healthy" is no such default:
+# 464 of the 586 are healthy/control only (79%), so an empty field is healthy
+# in about four of five cases, not nearly always.
+
+
+def without_diagnosis(stated: str) -> str:
+    """The condition for datasets that do not have a diagnosis.
+
+    *stated* is the condition that finds the datasets stating it, the one a
+    request for the diagnosis uses. Its negation keeps every dataset that
+    states nothing.
+    """
+    return f"NOT ({stated})"
+
+
+def diagnosis_unknown(alias: str = "d") -> str:
+    """True for a dataset that records no diagnosis at all: no coded
+    participant and no dx_status. An excluded diagnosis is absent there
+    because nothing is stated, not by a record (the result card says so)."""
+    return (f"(NOT EXISTS (SELECT 1 FROM {_participants.name} dx_any "
+            f"WHERE dx_any.dataset_id = {alias}.id AND dx_any.diagnosis IS NOT NULL) "
+            f"AND COALESCE(BTRIM({alias}.dx_status), '') = '')")

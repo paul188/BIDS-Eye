@@ -109,6 +109,16 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       "datasets with both depression and anxiety patients"
           → groups: [{diagnosis_terms: ["depression"]}, {diagnosis_terms: ["anxiety"]}],
             group_operator: "AND"
+    A condition the dataset must NOT include goes in excluded_diagnosis_terms
+    and in no group: "without epilepsy patients", "no stroke patients",
+    "excluding schizophrenia", "not Parkinson's".
+      "fMRI datasets without epilepsy patients"
+          → excluded_diagnosis_terms: ["epilepsy"], no group
+      "depression datasets, excluding bipolar disorder"
+          → groups: [{diagnosis_terms: ["depression"]}],
+            excluded_diagnosis_terms: ["bipolar disorder"]
+    Only a named condition: "no patients", "non-clinical", "healthy only"
+    name none and stay out (see "healthy" above).
     Species words ("animals", "rats", "mice", "monkeys", "non-human") are not
     diagnoses either: they go into species (codes: mouse, rat, primate, pig,
     sheep, dog, cat, ferret, bat, bird, zebrafish, any_animal, human) and nowhere

@@ -140,3 +140,82 @@ def test_human_condition_is_hard_in_the_tier_and_a_human_chip() -> None:
     assert "AND NOT d.search_tsv @@ to_tsquery('english', 'mouse:AB | mice:AB" in expanded
     assert uncertain_tier.apply(expanded, papers=True) == expanded
     assert ("Species", "human") in [(c.field, c.label) for c in query_filters.describe(expanded)]
+
+
+# ── Diagnosis: not stated means not there ─────────────────────────────────────
+
+EPILEPSY_STATED = ("(EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+                   "AND p2.diagnosis IN ('epilepsy'))")
+
+
+def _without(excluded, resolved_terms=None, unresolved=None, groups=()):
+    from preprocess import (ParticipantGroup, QueryPlan, RAGField, ResolvedTerms,
+                            _build_augmented_question)
+
+    plan = QueryPlan(
+        query_family="combined_filter",
+        natural_language_summary="Find datasets without these patients.",
+        groups=[ParticipantGroup(group_name=f"g{i}", diagnosis_terms=list(terms))
+                for i, terms in enumerate(groups)],
+        excluded_diagnosis_terms=excluded,
+    )
+    resolved = ([ResolvedTerms(field=RAGField.DIAGNOSIS, term_to_codes=resolved_terms)]
+                if resolved_terms else [])
+    return plan, resolved, _build_augmented_question(plan, resolved, unresolved_terms=unresolved)
+
+
+def test_an_unstated_diagnosis_is_absent_without_a_named_default() -> None:
+    from criteria import DIAGNOSIS, diagnosis_unknown, without_diagnosis
+
+    # The general rule, not a named default like species = human.
+    assert DIAGNOSIS.default is None and SPECIES.default == "human"
+    assert without_diagnosis("text_match('epilepsy', 'short')") == "NOT (text_match('epilepsy', 'short'))"
+    # No coded participant and no dx_status: nothing is recorded.
+    assert "dx_any.diagnosis IS NOT NULL" in diagnosis_unknown("x") and "x.dx_status" in diagnosis_unknown("x")
+
+
+def test_an_excluded_diagnosis_is_the_negated_request_for_it() -> None:
+    from preprocess import RAGField, build_rag_requests
+
+    plan, _, augmented = _without(["epilepsy"], {"epilepsy": ["epilepsy"]})
+    assert [r.terms for r in build_rag_requests(plan) if r.field == RAGField.DIAGNOSIS] == [["epilepsy"]]
+    line = next(row for row in augmented.splitlines() if row.startswith('  not diagnosis "epilepsy"'))
+    # A dataset that records no diagnosis fails every part of the inner
+    # condition, so the NOT keeps it.
+    assert line.split(": ", 1)[1].startswith(f"NOT ({EPILEPSY_STATED} OR text_match('")
+    assert "'short')" in line and "IS NULL" not in line
+    # Not also asked for.
+    assert not any(row.startswith("  diagnosis") for row in augmented.splitlines())
+
+
+def test_asked_and_excluded_diagnoses_get_separate_lines() -> None:
+    _, _, augmented = _without(["bipolar disorder"],
+                               {"depression": ["major_depressive_disorder"],
+                                "bipolar disorder": ["bipolar_disorder"]},
+                               groups=[["depression"]])
+    lines = augmented.splitlines()
+    asked = next(row for row in lines if row.startswith("  diagnosis"))
+    excluded = next(row for row in lines if row.startswith("  not diagnosis"))
+    assert "major_depressive_disorder" in asked and "bipolar_disorder" not in asked
+    assert "bipolar_disorder" in excluded and "major_depressive_disorder" not in excluded
+
+
+def test_an_excluded_diagnosis_outside_the_vocabulary_is_excluded_by_its_words() -> None:
+    _, _, augmented = _without(["moyamoya"], unresolved={"diagnosis": ["moyamoya"]})
+    assert ('not diagnosis "moyamoya" (complete, datasets that record no diagnosis stay): '
+            "NOT (text_match('moyamoya', 'short'))") in augmented
+    assert "VOCABULARY MISS" not in augmented   # not searched for
+
+
+def test_excluding_healthy_people_is_no_condition() -> None:
+    plan, _, augmented = _without(["healthy controls"])
+    assert "not diagnosis" not in augmented
+
+
+def test_an_excluded_diagnosis_compiles() -> None:
+    from services.translate import participant_query_compiler as pqc
+
+    plan, resolved, augmented = _without(["epilepsy"], {"epilepsy": ["epilepsy"]})
+    compiled = pqc.compile_plan(plan, resolved, augmented)
+    assert compiled.sql is not None, compiled.reason
+    assert f"WHERE NOT ({EPILEPSY_STATED} OR text_match('" in compiled.sql

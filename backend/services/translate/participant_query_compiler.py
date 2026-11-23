@@ -9,7 +9,8 @@ variation without adding information: the same request came back as 0, 23 or
 
   - diagnosis groups from the typed plan (AND or OR between groups, the
     diagnoses of a group are alternatives, "at least N patients with X");
-  - every filter line that is a complete condition, ANDed;
+  - every filter line that is a complete condition, ANDed (an excluded
+    diagnosis is one: "not diagnosis", RAG/criteria.py);
   - fixed conditions for plan fields that have no line: a primary paper
     (doi_required), sessions per subject (min_sessions), a named
     preprocessing pipeline (fMRIPrep, MRIQC, ... from bids_derivatives).
@@ -55,6 +56,7 @@ _KNOWN_PLAN_FIELDS = frozenset({
     "age_groups", "description_search", "description_alternatives", "request_wishes",
     "species", "study_structure", "max_size_gb", "min_size_gb", "topics", "name_search",
     "location_terms",
+    "excluded_diagnosis_terms",   # the "not diagnosis" lines
     # Built here (_fixed_conditions):
     "doi_required", "min_sessions",
 })
@@ -275,6 +277,7 @@ _COMPLETE_LINE_RE = re.compile(
     r"|scan any of \"[^\"]*\"(?:, \"[^\"]*\")+ \(alternatives, one is enough\)"
     r"|participant sex|participant age|participant sex and age"
     r"|species \(complete, no other species condition\)"
+    r"|not diagnosis \"[^\"]*\" \(complete, datasets that record no diagnosis stay\)"
     r"|study design|age group [a-z ]+ \(complete, no other age condition\)"
     r"|topic \"[^\"]*\"|location \"[^\"]*\"|dataset text|dataset name|dataset size): (?P<condition>.+)$")
 _HAVING_LINE_RE = re.compile(r"^  subject count: HAVING (?P<condition>.+?)(?: \[.*\])?$")

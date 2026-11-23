@@ -53,6 +53,8 @@ SHORT_TEXT = "short_text"  # name or description only (ILIKE, or search_tsv word
 README = "readme"
 FIELD = "field"            # the dataset's own columns
 ASSUMED = "assumed"        # the column is empty and its default holds (_DEFAULT_PHRASES)
+# An excluded diagnosis the dataset passes because it records none (criteria.DIAGNOSIS).
+ASSUMED_ABSENT = "assumed_absent"
 
 _PHRASES = {
     FILES: "in the dataset's files",
@@ -62,6 +64,7 @@ _PHRASES = {
     TEXT: "named in the README or description",
     SHORT_TEXT: "named in the title or description",
     README: "named in the README",
+    ASSUMED_ABSENT: "no diagnosis recorded, assumed absent",
 }
 
 _TABLE_VENUES = {
@@ -256,10 +259,25 @@ def _is_age_species_guard(node, age_nodes: list) -> bool:
     return any(other is age for age in age_nodes)
 
 
+def _assumed_absent(chip, alias: str) -> Optional[ChipPlan]:
+    """The one thing worth saying about an excluded diagnosis: the dataset
+    passes because it records no diagnosis at all, not because a record
+    rules the diagnosis out. Other negated chips are not explained."""
+    if chip.kind != "diagnosis":
+        return None
+    try:
+        from criteria import diagnosis_unknown
+    except ImportError:  # the RAG package is not on the path
+        return None
+    return ChipPlan(field=f"No {chip.label}", kind=chip.kind,
+                    branches=[(diagnosis_unknown(alias), Venue(ASSUMED_ABSENT))])
+
+
 def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
     """The dataset alias and the chips worth explaining: not negated, with
     at least two kinds of venue (a modality chip only ever matches files),
-    and not the species check of an age condition."""
+    and not the species check of an age condition. An excluded diagnosis is
+    explained where it holds by default (_assumed_absent)."""
     if exp is None:
         return None, []
     alias, conditions = query_filters.where_conditions(sql)
@@ -269,6 +287,9 @@ def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
     plans = []
     for chip, node in conditions:
         if chip.negated:
+            assumed = _assumed_absent(chip, alias)
+            if assumed is not None:
+                plans.append(assumed)
             continue
         if chip.field == "Species" and _is_age_species_guard(node, age_nodes):
             continue

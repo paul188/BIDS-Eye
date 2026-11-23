@@ -92,8 +92,9 @@ def test_task_reads_files_and_text_species_reads_label_and_text():
 
 
 def test_single_venue_negated_and_having_chips_are_not_explained():
-    # A modality only ever matches files; a negated chip matched by not holding.
-    assert _plans(MODALITY, f"NOT {DIAGNOSIS}") == {}
+    # A modality only ever matches files; a negated chip matched by not holding
+    # (an excluded diagnosis has its own reason, see the default test below).
+    assert _plans(MODALITY, f"NOT {TASK}") == {}
     sql = (_HEAD + "WHERE " + MODALITY + " GROUP BY d.id HAVING "
            "COUNT(DISTINCT o.subject) >= 20")
     assert mr.plan(sql)[1] == []
@@ -303,3 +304,18 @@ def test_a_failing_query_leaves_the_page_without_reasons():
     session = _Session(error=OperationalError("SELECT", {}, Exception("canceling statement due to statement timeout")))
     asyncio.run(mr.attach_match_reasons(session, [dataset], _sql(DIAGNOSIS)))
     assert dataset.match_reasons == []
+
+
+def test_reason_for_an_excluded_diagnosis_that_holds_by_default():
+    from criteria import without_diagnosis
+
+    plans = mr.plan(_sql(without_diagnosis(DIAGNOSIS)))[1]
+    assert len(plans) == 1 and plans[0].field.startswith("No ")
+    assert _kinds(plans[0]) == [mr.ASSUMED_ABSENT]
+    sql = mr.build_sql("d", plans)
+    assert "dx_any.diagnosis IS NOT NULL" in sql and "d.dx_status" in sql
+    field = plans[0].field
+    # Nothing recorded: absent by default. Something else recorded: no reason needed.
+    assert mr.reasons_for(plans, {"h0_0": True}, None) == [
+        f"{field}: no diagnosis recorded, assumed absent"]
+    assert mr.reasons_for(plans, {"h0_0": False}, None) == []
