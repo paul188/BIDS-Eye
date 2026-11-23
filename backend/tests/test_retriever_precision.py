@@ -333,6 +333,9 @@ def test_eupd_is_borderline_personality_disorder(term: str) -> None:
     ("suffix", "apt", ["apt"]),            # typed in small letters, still the shorthand
     ("suffix", "CTs", ["ct_scan"]),        # plural of a capitalised shorthand
     ("diagnosis", "TBI", ["traumatic_brain_injury"]),
+    # Time-of-flight images are angiograms or venograms; the gold request for
+    # "TOF or SWI images" lost one of eight datasets as a text search.
+    ("suffix", "TOF", ["mr_venography", "mr_angiography"]),
     ("diagnosis", "MS", ["multiple_sclerosis"]),
 ])
 def test_a_shorthand_resolves_only_through_its_listing(field: str, term: str, codes: list) -> None:

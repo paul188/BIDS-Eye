@@ -62258,6 +62258,8 @@ suffix:
     broader:
     - mri_anatomical
     synonyms:
+    - term: TOF
+      weight: 0.5
     - term: MR-venography
       weight: 0.38
     - term: BOLD MR-venography
@@ -62308,6 +62310,8 @@ suffix:
     broader:
     - mri_anatomical
     synonyms:
+    - term: TOF
+      weight: 0.5
     - term: MRA
       weight: 0.67
     - term: 3D MRA
