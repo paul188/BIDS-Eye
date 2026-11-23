@@ -74,6 +74,9 @@ shorthand_db: set = set()
 # The labels of the entries that list a shorthand, groups included:
 #   shorthand_label_db {category: {shorthand_lower: [label, ...]}}
 shorthand_label_db: Dict[str, Dict[str, List[str]]] = {}
+# The label of every entry by its key, groups included (hierarchy_db has leaves only):
+#   entry_label_db {category: {key_lower: label}}
+entry_label_db: Dict[str, Dict[str, str]] = {}
 _SHORTHAND_RE = _re.compile(r"[A-Za-z][A-Za-z0-9]{1,5}")
 
 
@@ -88,6 +91,7 @@ def _collect_shorthands(category: str, concepts: Dict[str, dict]) -> None:
         if not isinstance(value, dict):
             continue
         label = value.get("label") or str(key).replace("_", " ")
+        entry_label_db.setdefault(category, {})[str(key).lower()] = label
         names = [value.get("label") or ""] + [t for t, _ in _extract_synonyms(value.get("synonyms"))]
         for name in names:
             if looks_like_shorthand(name):

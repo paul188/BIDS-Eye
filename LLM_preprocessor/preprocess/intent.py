@@ -90,9 +90,7 @@ listings say it stands for. Several entries are several possible meanings.
   diagnosis_terms, description_search, topics) and in
   natural_language_summary. Do not write it out and do not pick one meaning.
 - Take its meaning only from this list, to decide which field it belongs to
-  and which other words describe it.
-- An empty list means the meaning is unknown. Do not guess it: route the
-  abbreviation by the words around it and give it no alternatives."""
+  and which other words describe it."""
 
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]*")
 
@@ -100,13 +98,14 @@ _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]*")
 def listed_shorthands(query: str) -> Dict[str, List[str]]:
     """The abbreviations of *query* with what the listings say they stand for.
 
-    {"ERP": ["event-related potential"], "XYZ": []}; {} when the query has
-    none or the vocabulary is not importable. The language model gets this
+    {"ERP": ["event-related potential"]}; {} when the query has none that a
+    listing explains besides the plain scan abbreviations, or the vocabulary
+    is not importable. The language model gets this
     instead of interpreting the letters itself: it read "APT" as "Arterial
     Perfusion Tagging" (2026-11-23).
     """
     try:
-        from retriever import is_shorthand, shorthand_meanings
+        from retriever import _PURE_MODALITY_TERMS, is_shorthand, shorthand_meanings
         from text_terms import POSTGRES_STOPWORDS
     except ImportError as exc:
         log.warning("Shorthands left out of the prompt (%s)", exc)
@@ -115,7 +114,18 @@ def listed_shorthands(query: str) -> Dict[str, List[str]]:
     for token in _TOKEN_RE.findall(query or ""):
         if token in found or token.lower() in POSTGRES_STOPWORDS or not is_shorthand(token):
             continue
-        found[token] = shorthand_meanings(token)
+        if token.lower() in _PURE_MODALITY_TERMS:
+            # "fMRI", "EEG", "MRI": the model knows them and 60 of the 70 gold
+            # requests carry one. Listing them changed plans that were right
+            # ("MRI" became "functional MRI", "M/EEG" two required scans):
+            # recall 72% -> 65% (2026-11-23).
+            continue
+        meanings = shorthand_meanings(token)
+        if meanings:
+            # One no listing explains ("TR", "GB", "JSON", a dataset's name)
+            # is left to the model as before; the other words it proposes
+            # for such a term are dropped (topics._checked_alternatives).
+            found[token] = meanings
     return found
 
 

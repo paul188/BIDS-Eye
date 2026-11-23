@@ -80,6 +80,7 @@ from yaml_to_llamaindex import (
     looks_like_shorthand as _looks_like_shorthand,
     shorthand_db,
     shorthand_label_db,
+    entry_label_db,
     measures_db,
     EmbeddingIndexError,
     build_embedding_index,
@@ -138,7 +139,6 @@ _PURE_MODALITY_TERMS = {
     "fmri", "mri", "meg", "eeg", "dti", "dwi", "ieeg", "ecog",
     "fnirs", "nirs", "pet", "asl", "mrs", "bold", "mr", "ct",
     "bld", "t1", "t2", "t1w", "t2w",
-    "apt", "aptw",   # amide proton transfer; "APT" matched the task synonym "APTS"
     # Short phrases with modality abbreviation
     "fmri scan", "fmri data", "eeg data", "meg data",
     "eeg recording", "meg recording", "mri scan", "mri data",
@@ -525,6 +525,8 @@ def shorthand_meanings(term: str) -> List[str]:
         # The entry that lists the shorthand names it; a group's first task
         # does not ("DBS" was "Deep Brain Stimulation (high frequency)").
         labels = list(shorthand_label_db.get(field, {}).get(key, []))
+        if not labels and key in entry_label_db.get(field, {}):
+            labels = [entry_label_db[field][key]]       # the shorthand is the entry's key ("mri")
         if not labels:
             label = (hierarchy_db.get(codes[0]) or {}).get("label")
             if not label:

@@ -313,7 +313,7 @@ def test_apt_is_the_scan_type(term: str) -> None:
     # "Dataset with epilepsy patients and APT" asked for the task tactile
     # stimulation, through its synonym "APTS" (live, 2026-11-23).
     assert _resolve_yaml_term("suffix", term) == ["apt"]
-    assert term.lower() not in ("apt", "aptw") or term.lower() in retriever._PURE_MODALITY_TERMS
+    assert _resolve_yaml_term("task", term) == []
 
 
 @pytest.mark.parametrize("term", ["EUPD", "emotionally unstable personality disorder"])
