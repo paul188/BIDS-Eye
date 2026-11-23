@@ -223,6 +223,24 @@ def test_an_error_that_is_not_a_database_error_is_not_swallowed() -> None:
     assert state._last_attempt is None  # the next search tries again
 
 
+def test_each_part_names_the_modules_that_use_it() -> None:
+    # The "Used by" lists in catalogue.py are kept by hand; this keeps them complete.
+    import re
+    from pathlib import Path
+
+    backend = Path(__file__).resolve().parents[1]
+    own = backend / "services" / "catalogue" / "catalogue.py"
+    folders = (backend, backend.parent / "LLM_preprocessor", backend.parent / "RAG")
+    sources = [path for folder in folders for path in folder.rglob("*.py")
+               if "tests" not in path.parts and path != own]
+    for part, cls in (("coverage", ColumnCoverage), ("summaries", Summaries), ("values", ValueCounts)):
+        users = {path.name for path in sources
+                 if re.search(rf"catalogue\.{part}\b", path.read_text(encoding="utf-8"))}
+        assert users, part
+        missing = sorted(name for name in users if name not in cls.__doc__)
+        assert missing == [], f"{cls.__name__} does not name {missing} under 'Used by'"
+
+
 def test_the_shared_instance_starts_empty() -> None:
     # conftest empties it before every test.
     assert catalogue.coverage == ColumnCoverage() and not catalogue.values.loaded("task")

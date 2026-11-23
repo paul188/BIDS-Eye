@@ -60,7 +60,19 @@ log = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class ColumnCoverage:
-    """How many of the datasets fill each optional bids_datasets column."""
+    """How many of the datasets fill each optional bids_datasets column.
+
+    Used by:
+      services/translate/optional_columns.py   the only reader of the counts.
+          It decides from them which columns are usable.
+      Handed to it, unread, by those that apply the decision:
+      services/translate/text_to_sql.py        the SQL model's schema, the
+          few-shot examples, the compiled conditions of preprocessing.
+      services/results/rerank.py               the columns a dataset is
+          described with.
+      main.py, services/search.py              the log of the usable columns
+          after a load.
+    """
 
     total: int = 0
     filled: Mapping[str, int] = field(default_factory=dict)
@@ -76,7 +88,19 @@ class ColumnCoverage:
 
 @dataclass(frozen=True)
 class Summaries:
-    """Whether the per-dataset summaries can stand in for bids_objects."""
+    """Whether the per-dataset summaries can stand in for bids_objects.
+
+    Used by:
+      services/translate/sql_rewriter.py       _use_summaries: executed SQL
+          reads the facets table and n_subjects instead of bids_objects
+          (facets, subject_counts).
+      services/fulltext/tier_scanner.py        the datasets a scan condition
+          holds for, from the facets table (facets).
+      services/fulltext/tier_classify.py       the subject count of a cohort
+          condition, from n_subjects (subject_counts).
+      Catalogue._read_values                   the facet values are read only
+          while the facets table is complete (facets).
+    """
 
     # bids_dataset_facets has rows for every dataset that has files.
     facets: bool = False
@@ -88,7 +112,18 @@ class Summaries:
 class ValueCounts:
     """Per coded field, each value and the number of datasets that have it.
 
-    A field is missing until its table was read.
+    A field is missing until its table was read. "Not read" and "no dataset
+    has it" call for opposite answers (do not check; reject the value), so
+    callers ask loaded() first. The other two parts need no such question:
+    unread, they say what an empty catalogue says.
+
+    Used by:
+      services/translate/value_check.py        datatype, suffix and task
+          values in generated SQL are corrected or dropped when no dataset
+          has them (loaded, known_values).
+      LLM_preprocessor/preprocess/catalogue.py verify_codes: vocabulary codes
+          no dataset has are left out of the resolved filters
+          (loaded, dataset_count).
     """
 
     counts: Mapping[str, Mapping[str, int]] = field(default_factory=dict)
