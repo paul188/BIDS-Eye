@@ -21,6 +21,9 @@ from exceptions.handlers import add_error_handlers
 from routers import auth
 
 SECRET = "test-secret-" + "x" * 40
+CLIENT_ID = "test-client-id"
+CLIENT_SECRET = "test-client-secret"
+REVOKE_PATH = f"/applications/{CLIENT_ID}/token"
 HOST = "testserver"
 CALLBACK = f"https://{HOST}/api/auth/github/callback"
 _REAL_ASYNC_CLIENT = httpx.AsyncClient  # before any test patches it
@@ -33,7 +36,38 @@ def _github(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json={"login": "octo"})
     if request.url.path == "/user/emails":
         return httpx.Response(200, json=[{"email": "octo@example.org", "primary": True, "verified": True}])
+    if request.url.path == REVOKE_PATH and request.method == "DELETE":
+        return httpx.Response(204)
     return httpx.Response(404)
+
+
+def _set_github_env(monkeypatch: pytest.MonkeyPatch, org: str | None = None) -> None:
+    """A complete sign-in configuration: open to every account, or to one organization."""
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    monkeypatch.setenv("GITHUB_CLIENT_ID", CLIENT_ID)
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", CLIENT_SECRET)
+    monkeypatch.setenv("GITHUB_REDIRECT_URI", CALLBACK)
+    if org is None:
+        monkeypatch.delenv("GITHUB_ORG", raising=False)
+        monkeypatch.setenv("ALLOW_ANY_GITHUB_USER", "true")
+    else:
+        monkeypatch.setenv("GITHUB_ORG", org)
+        monkeypatch.delenv("ALLOW_ANY_GITHUB_USER", raising=False)
+
+
+def _answer_with(monkeypatch: pytest.MonkeyPatch, answer) -> list[httpx.Request]:
+    """Let ``answer`` play GitHub; returns the requests it gets, in order."""
+    seen: list[httpx.Request] = []
+
+    def record(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return answer(request)
+
+    monkeypatch.setattr(
+        auth.httpx, "AsyncClient",
+        lambda **kw: _REAL_ASYNC_CLIENT(transport=httpx.MockTransport(record), **kw),
+    )
+    return seen
 
 
 def _session_data(client: TestClient) -> dict:
@@ -44,11 +78,11 @@ def _session_data(client: TestClient) -> dict:
     return json.loads(base64.b64decode(payload + "=" * (-len(payload) % 4)))
 
 
-def _build_app(monkeypatch: pytest.MonkeyPatch, frontend_url: str = "*") -> FastAPI:
-    monkeypatch.setenv("SESSION_SECRET", SECRET)
+def _build_app(
+    monkeypatch: pytest.MonkeyPatch, frontend_url: str = "*", org: str | None = None
+) -> FastAPI:
+    _set_github_env(monkeypatch, org)
     monkeypatch.setenv("FRONTEND_URL", frontend_url)
-    monkeypatch.setenv("GITHUB_REDIRECT_URI", CALLBACK)
-    monkeypatch.delenv("GITHUB_ORG", raising=False)
 
     app = FastAPI()
     api_security.install_security_middleware(app)
@@ -146,7 +180,8 @@ def test_sign_in_asks_and_keeps_only_the_login(client: TestClient, github_calls:
     assert scope == "read:org"
 
     _callback(client, parse_qs(urlsplit(resp.headers["location"]).query)["state"][0])
-    assert github_calls == ["/login/oauth/access_token", "/user"]
+    # The last call has GitHub delete the access token again.
+    assert github_calls == ["/login/oauth/access_token", "/user", REVOKE_PATH]
     assert set(_session_data(client)) == {"user"}
     assert set(_session_data(client)["user"]) == {"sub", "iat"}
     assert not hasattr(auth, "_remember_user")
@@ -264,6 +299,126 @@ def test_missing_github_login_is_an_error(
     assert client.get("/api/auth/me").status_code == 401
 
 
+def test_cancel_at_github_returns_to_the_login_page(client: TestClient, github_calls: list) -> None:
+    state = _start_login(client)
+    resp = client.get(
+        f"/api/auth/github/callback?error=access_denied&state={state}", follow_redirects=False
+    )
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == f"/?login={auth.LOGIN_CANCELLED}"
+    assert github_calls == []  # no empty code sent to the token endpoint
+    assert client.get("/api/auth/me").status_code == 401
+    # The state is used up like after any other callback.
+    assert _callback(client, state).status_code == 400
+
+
+def test_other_github_error_returns_to_the_login_page(client: TestClient) -> None:
+    state = _start_login(client)
+    resp = client.get(
+        f"/api/auth/github/callback?error=application_suspended&state={state}",
+        follow_redirects=False,
+    )
+    assert resp.headers["location"] == f"/?login={auth.LOGIN_REFUSED}"
+    assert client.get("/api/auth/me").status_code == 401
+
+
+@pytest.mark.parametrize("failure", [httpx.ConnectTimeout, httpx.ConnectError])
+def test_unreachable_github_is_a_502(
+    app: FastAPI, monkeypatch: pytest.MonkeyPatch, failure: type[httpx.HTTPError]
+) -> None:
+    def down(request: httpx.Request) -> httpx.Response:
+        raise failure("no route", request=request)
+
+    _answer_with(monkeypatch, down)
+    client = _browser(app)
+    resp = _login(client)
+    assert resp.status_code == 502
+    assert resp.json() == {"detail": auth.GitHubUnreachableError.detail}
+    assert client.get("/api/auth/me").status_code == 401
+
+
+# ── Access token ─────────────────────────────────────────────────────────────
+
+
+def test_access_token_is_revoked_with_the_app_credentials(
+    app: FastAPI, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import base64
+    import json
+
+    seen = _answer_with(monkeypatch, _github)
+    _login(_browser(app))
+
+    revoke = seen[-1]
+    assert (revoke.method, revoke.url.path) == ("DELETE", REVOKE_PATH)
+    basic = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
+    assert revoke.headers["authorization"] == f"Basic {basic}"
+    assert json.loads(revoke.content) == {"access_token": "gh-token"}
+
+
+@pytest.mark.parametrize("failure", [500, httpx.ReadTimeout])
+def test_failed_revocation_does_not_undo_the_sign_in(
+    app: FastAPI, monkeypatch: pytest.MonkeyPatch, failure
+) -> None:
+    def answer(request: httpx.Request) -> httpx.Response:
+        if request.url.path == REVOKE_PATH:
+            if isinstance(failure, int):
+                return httpx.Response(failure)
+            raise failure("slow", request=request)
+        return _github(request)
+
+    _answer_with(monkeypatch, answer)
+    client = _browser(app)
+    assert _login(client).headers["location"] == "/"
+    assert client.get("/api/auth/me").json() == {"login": "octo"}
+
+
+# ── Organization membership ──────────────────────────────────────────────────
+
+ORG = "some org"  # the space shows the name is quoted in the URL
+MEMBERS_PATH = "/orgs/some org/members/octo"
+
+
+def _org_client(monkeypatch: pytest.MonkeyPatch, membership_status: int):
+    def answer(request: httpx.Request) -> httpx.Response:
+        if request.url.path == MEMBERS_PATH:
+            return httpx.Response(membership_status)
+        return _github(request)
+
+    seen = _answer_with(monkeypatch, answer)
+    return _browser(_build_app(monkeypatch, org=ORG)), seen
+
+
+def test_org_member_signs_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    client, seen = _org_client(monkeypatch, 204)
+    assert _login(client).headers["location"] == "/"
+    assert client.get("/api/auth/me").json() == {"login": "octo"}
+    assert b"/orgs/some%20org/members/octo" in seen[2].url.raw_path
+
+
+@pytest.mark.parametrize("status", [404, 302])
+def test_non_member_is_refused(monkeypatch: pytest.MonkeyPatch, status: int) -> None:
+    client, seen = _org_client(monkeypatch, status)
+    resp = _login(client)
+    assert resp.status_code == 403
+    assert client.get("/api/auth/me").status_code == 401
+    # Revoked although the sign-in was refused.
+    assert seen[-1].url.path == REVOKE_PATH
+
+
+@pytest.mark.parametrize("status", [403, 429, 500, 503])
+def test_unanswered_membership_check_is_not_called_non_membership(
+    monkeypatch: pytest.MonkeyPatch, status: int
+) -> None:
+    # 5xx: GitHub is down. 403: the organization restricts third-party apps and
+    # has not approved this one. Neither says the user is not a member.
+    client, _ = _org_client(monkeypatch, status)
+    resp = _login(client)
+    assert resp.status_code == 502
+    assert resp.json() == {"detail": auth.GitHubOrgCheckError.detail}
+    assert client.get("/api/auth/me").status_code == 401
+
+
 # ── Middleware: login by default, CSRF, CORS ─────────────────────────────────
 
 
@@ -328,6 +483,7 @@ def test_cors_only_for_the_configured_frontend(
 def test_missing_or_placeholder_secret_refuses_to_start(
     monkeypatch: pytest.MonkeyPatch, value: str | None
 ) -> None:
+    _set_github_env(monkeypatch)
     if value is None:
         monkeypatch.delenv("SESSION_SECRET", raising=False)
     else:
@@ -340,5 +496,60 @@ def test_missing_or_placeholder_secret_refuses_to_start(
 
 
 def test_real_secret_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    _set_github_env(monkeypatch)
     assert auth.AuthSettings().SESSION_SECRET.get_secret_value() == SECRET
+
+
+# ── Who may sign in ──────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("org", [None, "", "   "])
+@pytest.mark.parametrize("allow_any", [None, "false"])
+def test_missing_org_refuses_to_start_unless_open_is_asked_for(
+    monkeypatch: pytest.MonkeyPatch, org: str | None, allow_any: str | None
+) -> None:
+    # A lost or blank GITHUB_ORG must not open the site to every GitHub account.
+    _set_github_env(monkeypatch)
+    for name, value in (("GITHUB_ORG", org), ("ALLOW_ANY_GITHUB_USER", allow_any)):
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
+    with pytest.raises(ValidationError, match="ALLOW_ANY_GITHUB_USER"):
+        api_security.install_security_middleware(FastAPI())
+
+
+def test_org_or_explicit_open_starts(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_github_env(monkeypatch)
+    settings = auth.AuthSettings()
+    assert (settings.GITHUB_ORG, settings.ALLOW_ANY_GITHUB_USER) == ("", True)
+
+    _set_github_env(monkeypatch, org=" my-lab ")
+    settings = auth.AuthSettings()
+    assert (settings.GITHUB_ORG, settings.ALLOW_ANY_GITHUB_USER) == ("my-lab", False)
+
+
+def test_org_together_with_open_refuses_to_start(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_github_env(monkeypatch, org="my-lab")
+    monkeypatch.setenv("ALLOW_ANY_GITHUB_USER", "true")
+    with pytest.raises(ValidationError, match="contradict"):
+        auth.AuthSettings()
+
+
+@pytest.mark.parametrize("name", ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"])
+@pytest.mark.parametrize("value", [None, "", "   "])
+def test_missing_oauth_app_credentials_refuse_to_start(
+    monkeypatch: pytest.MonkeyPatch, name: str, value: str | None
+) -> None:
+    _set_github_env(monkeypatch)
+    if value is None:
+        monkeypatch.delenv(name, raising=False)
+    else:
+        monkeypatch.setenv(name, value)
+    with pytest.raises(ValidationError, match=name):
+        api_security.install_security_middleware(FastAPI())
+
+
+def test_client_secret_stays_out_of_error_and_repr(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_github_env(monkeypatch)
+    assert CLIENT_SECRET not in repr(auth.AuthSettings())

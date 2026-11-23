@@ -103,7 +103,8 @@ app = FastAPI(
 from api_security import install_security_middleware               # noqa: E402
 
 # CORS, CSRF, the signed HttpOnly session cookie and login-by-default for /api
-# (see api_security.py). Raises when SESSION_SECRET is missing or too short.
+# (see api_security.py). Raises when SESSION_SECRET or a GitHub sign-in setting
+# is missing or unusable (routers/auth.py, AuthSettings).
 install_security_middleware(app)
 
 from exceptions.handlers import add_error_handlers                 # noqa: E402

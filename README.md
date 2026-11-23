@@ -123,6 +123,19 @@ npm run dev
 
 If you prefer Docker, use the repository's compose setup instead of running the services separately.
 
+### Sign-in
+
+Users sign in with GitHub. The backend refuses to start until `.env` (see [`.env.example`](./.env.example)) has
+`SESSION_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and one of `GITHUB_ORG=<org>` (members only) or
+`ALLOW_ANY_GITHUB_USER=true` (every GitHub account).
+
+The session is a signed cookie; the server keeps no list of sessions. What follows from that:
+
+- Organization membership is checked at sign-in only. Someone removed from the organization keeps access until
+  their cookie expires, at most `SESSION_DAYS` (7, in [`backend/routers/auth.py`](./backend/routers/auth.py)).
+- Signing out deletes the cookie in that browser. A copied cookie stays valid until it expires.
+- **To sign everyone out at once**, set a new `SESSION_SECRET` and restart the backend.
+
 ## Project Layout
 
 ```text

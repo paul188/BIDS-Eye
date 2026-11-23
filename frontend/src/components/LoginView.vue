@@ -1,5 +1,25 @@
 <script setup lang="ts">
 import LogoMark from './LogoMark.vue'
+
+// The backend sends the browser back to /?login=<reason> when a sign-in ended
+// at GitHub without one (routers/auth.py: LOGIN_CANCELLED, LOGIN_REFUSED).
+const LOGIN_NOTICES: Record<string, string> = {
+  cancelled: 'Sign-in was cancelled. You can try again whenever you like.',
+  refused: 'GitHub did not complete the sign-in. Please try again.',
+}
+
+function takeLoginNotice(): string {
+  const params = new URLSearchParams(window.location.search)
+  const reason = params.get('login')
+  if (reason === null) return ''
+  // Shown once: a reload or a shared link should not repeat it.
+  params.delete('login')
+  const query = params.toString()
+  window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : ''))
+  return LOGIN_NOTICES[reason] ?? ''
+}
+
+const loginNotice = takeLoginNotice()
 </script>
 
 <template>
@@ -27,6 +47,9 @@ import LogoMark from './LogoMark.vue'
         </svg>
         Sign in with GitHub
       </a>
+      <p v-if="loginNotice" role="status" class="mt-4 text-sm text-muted leading-relaxed">
+        {{ loginNotice }}
+      </p>
     </div>
   </div>
 </template>

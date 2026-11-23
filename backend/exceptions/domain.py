@@ -15,6 +15,8 @@ the code that raises it, without knowing about FastAPI:
                               GitHubTokenError          400
                               GitHubLoginMissingError   502
                               NotInGitHubOrgError       403
+                              GitHubOrgCheckError       502
+                              GitHubUnreachableError    502
     rate_limits.py            RateLimitError            429
 
 Each class names the status and text the client gets on its class line,

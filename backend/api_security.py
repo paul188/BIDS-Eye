@@ -80,8 +80,14 @@ def _needs_login(path: str) -> bool:
 
 
 def install_security_middleware(app: FastAPI) -> None:
-    """Add the middleware stack. Raises when SESSION_SECRET is missing or too short."""
-    secret = AuthSettings().SESSION_SECRET.get_secret_value()
+    """Add the middleware stack and leave the sign-in settings in app.state.
+
+    Raises when a setting is missing or unusable: SESSION_SECRET, the GitHub
+    OAuth App's credentials, or the choice of who may sign in (AuthSettings).
+    """
+    settings = AuthSettings()
+    app.state.auth_settings = settings  # read by routers/auth.py at each sign-in
+    secret = settings.SESSION_SECRET.get_secret_value()
 
     # add_middleware wraps the app: the last one added runs first.
     app.add_middleware(RequireLoginMiddleware)

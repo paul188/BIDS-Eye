@@ -85,6 +85,10 @@ jobs:
       METADATA_DB_HOST: localhost
       METADATA_DB_PORT: "5432"
       SESSION_SECRET: ci-only-not-a-secret-ci-only-not-a-secret
+      # The app refuses to start without the sign-in settings (routers/auth.py).
+      GITHUB_CLIENT_ID: ci
+      GITHUB_CLIENT_SECRET: ci-only-not-a-secret
+      ALLOW_ANY_GITHUB_USER: "true"
       # A scratch database for the tests that need real SQL
       # (tests/test_match_reasons_postgres.py); on its own port so nothing
       # finds it under METADATA_DB_*.

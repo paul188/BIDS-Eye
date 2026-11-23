@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import logging
 import secrets
 import time
 from collections.abc import MutableMapping
@@ -9,11 +9,13 @@ from urllib.parse import quote, urlsplit
 import httpx
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
+
+logger = logging.getLogger(__name__)
 
 
 # ── Settings ──────────────────────────────────────────────────────────────────
@@ -26,6 +28,14 @@ from rate_limits import Category, rate_limit
 # the sign-in time, and nothing else is asked from GitHub or stored (no e-mail
 # address, no users table). The site's privacy notice says so
 # (frontend/src/components/CookieBanner.vue); tests/test_auth_session.py checks it.
+#
+# Nothing is kept on the server, so a session cannot be withdrawn one by one:
+# - GITHUB_ORG membership is checked at sign-in only. Someone removed from the
+#   organization keeps access until their cookie expires, at most SESSION_DAYS.
+# - Logging out deletes the cookie in that browser; a copy of it stays valid
+#   until it expires.
+# Shorten SESSION_DAYS if that is too long. To sign everyone out at once,
+# change SESSION_SECRET and restart the backend (README, "Sign-in").
 SESSION_COOKIE = "bids_eye_session"
 SESSION_DAYS = 7
 _SESSION_MAX_AGE = SESSION_DAYS * 24 * 3600
@@ -33,7 +43,11 @@ _OAUTH_STATE_SECONDS = 10 * 60
 
 
 class AuthSettings(BaseSettings):
-    """Read from the environment when api_security.py builds the middleware."""
+    """Read from the environment once, when api_security.py builds the middleware.
+
+    A missing or contradictory value stops the app from starting, instead of
+    showing up at the first sign-in or, worse, not at all.
+    """
 
     model_config = SettingsConfigDict(str_strip_whitespace=True, hide_input_in_errors=True)
 
@@ -43,6 +57,44 @@ class AuthSettings(BaseSettings):
     # placeholder is shorter). Generate one with
     #   python3 -c "import secrets; print(secrets.token_urlsafe(64))"
     SESSION_SECRET: SecretStr = Field(min_length=32)
+
+    # The GitHub OAuth App the sign-in goes through.
+    GITHUB_CLIENT_ID: str = Field(min_length=1)
+    GITHUB_CLIENT_SECRET: SecretStr = Field(min_length=1)
+    # The callback URL registered in the OAuth App. Set it in production: behind
+    # a proxy that ends TLS or rewrites Host, the URL built from the request
+    # can come out as http:// or on the wrong host.
+    GITHUB_REDIRECT_URI: str = ""
+
+    # Who may sign in: members of GITHUB_ORG, or every GitHub account. The
+    # second has to be asked for by name, so that a lost or misspelt GITHUB_ORG
+    # stops the start instead of quietly opening the site to everyone.
+    GITHUB_ORG: str = ""
+    ALLOW_ANY_GITHUB_USER: bool = False
+
+    @field_validator("GITHUB_CLIENT_SECRET")
+    @classmethod
+    def _secret_not_blank(cls, value: SecretStr) -> SecretStr:
+        if not value.get_secret_value().strip():
+            raise ValueError("must not be blank")
+        return value
+
+    @model_validator(mode="after")
+    def _org_or_explicit_open(self) -> AuthSettings:
+        if not self.GITHUB_ORG and not self.ALLOW_ANY_GITHUB_USER:
+            raise ValueError(
+                "Set GITHUB_ORG, or ALLOW_ANY_GITHUB_USER=true to let every GitHub account sign in"
+            )
+        if self.GITHUB_ORG and self.ALLOW_ANY_GITHUB_USER:
+            raise ValueError(
+                "GITHUB_ORG and ALLOW_ANY_GITHUB_USER=true contradict each other; set only one"
+            )
+        return self
+
+
+def _settings(request: Request) -> AuthSettings:
+    """The settings install_security_middleware (api_security.py) read at startup."""
+    return request.app.state.auth_settings
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -77,6 +129,24 @@ class NotInGitHubOrgError(
     detail="Access restricted to members of the required GitHub organization.",
 ):
     """The user is not a member of GITHUB_ORG."""
+
+
+class GitHubOrgCheckError(
+    DomainError,
+    status_code=502,
+    detail="GitHub could not confirm the organization membership. Please try again later.",
+):
+    """GitHub answered the membership check with neither yes nor no.
+
+    An outage (5xx), a rate limit, or a 403 because the organization restricts
+    third-party apps and has not approved this OAuth App (see .env.example).
+    """
+
+
+class GitHubUnreachableError(
+    DomainError, status_code=502, detail="GitHub could not be reached. Please try again."
+):
+    """A call to GitHub timed out or the connection failed."""
 
 
 # ── Session ───────────────────────────────────────────────────────────────────
@@ -131,10 +201,16 @@ def require_auth(request: Request) -> dict:
 # ── GitHub login ──────────────────────────────────────────────────────────────
 
 GITHUB_SCOPE = "read:org"
+_GITHUB_TIMEOUT_SECONDS = 15
+
+# Where the browser lands when a sign-in ends at GitHub without a code:
+# /?login=<reason>. LoginView.vue has the sentence for each reason.
+LOGIN_CANCELLED = "cancelled"
+LOGIN_REFUSED = "refused"
 
 
 def _github_redirect_uri(request: Request) -> str:
-    return os.getenv("GITHUB_REDIRECT_URI") or str(request.url_for("github_callback"))
+    return _settings(request).GITHUB_REDIRECT_URI or str(request.url_for("github_callback"))
 
 
 @router.get("/github", dependencies=[rate_limit(Category.LOGIN)])
@@ -144,7 +220,8 @@ async def github_login(request: Request):
     # The OAuth state lives in the session cookie, and cookies belong to one
     # host. If the login starts on another host than the one GitHub returns to
     # (www.bidseye.xyz vs bidseye.xyz), restart it on the callback's host first,
-    # or the callback would not see the state. One hop at most.
+    # or the callback would not see the state. One hop at most: behind a proxy
+    # that rewrites Host every login takes the hop, and no more than that.
     target = urlsplit(redirect_uri)
     if (
         target.netloc
@@ -158,7 +235,7 @@ async def github_login(request: Request):
 
     auth_url = (
         "https://github.com/login/oauth/authorize"
-        f"?client_id={quote(os.getenv('GITHUB_CLIENT_ID', ''))}"
+        f"?client_id={quote(_settings(request).GITHUB_CLIENT_ID, safe='')}"
         f"&redirect_uri={quote(redirect_uri, safe='')}"
         # read:org only for the GITHUB_ORG membership check; the login name
         # itself needs no scope.
@@ -202,50 +279,111 @@ def _github_login(user_resp) -> str:
     return login.strip() if isinstance(login, str) else ""
 
 
-@router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
-async def github_callback(request: Request):
-    code = request.query_params.get("code", "")
-
-    if not _take_oauth_state(request, request.query_params.get("state", "")):
-        raise OAuthStateError()
-
-    # Exchange code for GitHub access token
-    async with httpx.AsyncClient() as client:
-        token_resp = await client.post(
-            "https://github.com/login/oauth/access_token",
-            json={
-                "client_id": os.getenv("GITHUB_CLIENT_ID"),
-                "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-                "code": code,
-                "redirect_uri": _github_redirect_uri(request),
-            },
-            headers={"Accept": "application/json"},
-            timeout=15,
-        )
+async def _exchange_code(
+    github: httpx.AsyncClient, settings: AuthSettings, code: str, redirect_uri: str
+) -> str:
+    """The access token GitHub gives for the login code."""
+    token_resp = await github.post(
+        "https://github.com/login/oauth/access_token",
+        json={
+            "client_id": settings.GITHUB_CLIENT_ID,
+            "client_secret": settings.GITHUB_CLIENT_SECRET.get_secret_value(),
+            "code": code,
+            "redirect_uri": redirect_uri,
+        },
+        headers={"Accept": "application/json"},
+    )
     token_data = _json(token_resp)
     access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
-    if not access_token:
+    if not isinstance(access_token, str) or not access_token:
         raise GitHubTokenError(f"token exchange answered {token_resp.status_code}")
+    return access_token
 
-    gh_headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 
-    async with httpx.AsyncClient() as client:
-        user_resp = await client.get("https://api.github.com/user", headers=gh_headers, timeout=10)
+async def _require_org_member(
+    github: httpx.AsyncClient, gh_headers: dict, org: str, login: str
+) -> None:
+    """Raise unless GitHub says ``login`` is a member of ``org``.
 
-    github_login_name = _github_login(user_resp)
-    if not github_login_name:
-        raise GitHubLoginMissingError(f"/user answered {user_resp.status_code}")
+    204 is yes. 404 is no; so is 302, GitHub's answer when the account asking
+    is itself outside the organization. Anything else is no answer at all, and
+    is not held against the user.
+    """
+    membership = await github.get(
+        f"https://api.github.com/orgs/{quote(org, safe='')}/members/{quote(login, safe='')}",
+        headers=gh_headers,
+    )
+    if membership.status_code == 204:
+        return
+    if membership.status_code in (302, 404):
+        raise NotInGitHubOrgError(f"{login} not in {org}")
+    raise GitHubOrgCheckError(f"membership check for {org} answered {membership.status_code}")
 
-    github_org = os.getenv("GITHUB_ORG", "").strip()
-    if github_org:
-        async with httpx.AsyncClient() as client:
-            membership = await client.get(
-                f"https://api.github.com/orgs/{github_org}/members/{github_login_name}",
-                headers=gh_headers,
-                timeout=10,
+
+async def _revoke_token(
+    github: httpx.AsyncClient, settings: AuthSettings, access_token: str
+) -> None:
+    """Have GitHub delete the access token: the sign-in is done with it.
+
+    Otherwise it would stay valid at GitHub with read:org although nothing
+    here keeps it. A failure is logged and does not undo the sign-in.
+    """
+    try:
+        revoked = await github.request(
+            "DELETE",
+            f"https://api.github.com/applications/{quote(settings.GITHUB_CLIENT_ID, safe='')}/token",
+            auth=(settings.GITHUB_CLIENT_ID, settings.GITHUB_CLIENT_SECRET.get_secret_value()),
+            json={"access_token": access_token},
+            headers={"Accept": "application/vnd.github+json"},
+        )
+    except httpx.HTTPError as exc:
+        logger.warning("GitHub access token not revoked: %s", type(exc).__name__)
+        return
+    if revoked.status_code != 204:
+        logger.warning("GitHub access token not revoked: answered %s", revoked.status_code)
+
+
+@router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
+async def github_callback(request: Request):
+    settings = _settings(request)
+    params = request.query_params
+    state_ok = _take_oauth_state(request, params.get("state", ""))
+
+    # GitHub returns ?error=... and no code when the user pressed "Cancel" on
+    # its consent screen (access_denied), or when it refuses the app's request.
+    # Nobody is signed in either way; back to the login page with the reason.
+    error = params.get("error", "")
+    if error:
+        if error != "access_denied":
+            logger.warning("GitHub refused the sign-in: %r", error[:80])
+        reason = LOGIN_CANCELLED if error == "access_denied" else LOGIN_REFUSED
+        return RedirectResponse(f"/?login={reason}")
+
+    if not state_ok:
+        raise OAuthStateError()
+
+    try:
+        async with httpx.AsyncClient(timeout=_GITHUB_TIMEOUT_SECONDS) as github:
+            access_token = await _exchange_code(
+                github, settings, params.get("code", ""), _github_redirect_uri(request)
             )
-        if membership.status_code != 204:
-            raise NotInGitHubOrgError(f"{github_login_name} not in {github_org}")
+            try:
+                gh_headers = {
+                    "Authorization": f"Bearer {access_token}",
+                    "Accept": "application/json",
+                }
+                user_resp = await github.get("https://api.github.com/user", headers=gh_headers)
+                github_login_name = _github_login(user_resp)
+                if not github_login_name:
+                    raise GitHubLoginMissingError(f"/user answered {user_resp.status_code}")
+                if settings.GITHUB_ORG:
+                    await _require_org_member(
+                        github, gh_headers, settings.GITHUB_ORG, github_login_name
+                    )
+            finally:
+                await _revoke_token(github, settings, access_token)
+    except httpx.HTTPError as exc:
+        raise GitHubUnreachableError(type(exc).__name__) from exc
 
     # A fresh session for the new login: nothing from before it carries over.
     request.session.clear()
