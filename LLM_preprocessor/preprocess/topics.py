@@ -145,6 +145,11 @@ def _checked_alternatives(own_text: str, alternatives: List[str],
         if not words or words in seen or words == own:
             continue
         seen.add(words)
+        if len(_searched_words(alternative)) < 2 <= len(_split_words(alternative)):
+            # As for a topic (resolve_topic): "after seizure" for "postictal"
+            # is searched as "seizure".
+            dropped[alternative] = "one word is left once the search drops its stop words"
+            continue
         kept.append(alternative)
     counts = count_matches(kept) if (kept and count_matches) else None
     if counts is not None and len(counts) == len(kept):

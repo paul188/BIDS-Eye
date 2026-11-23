@@ -42,6 +42,16 @@ def test_alternatives_are_checked_against_the_catalogue() -> None:
     assert dropped == {"cadaver": "no dataset uses it", "brain": "too common (900 datasets)"}
 
 
+def test_an_alternative_the_search_cuts_to_one_word_is_dropped() -> None:
+    # "epilepsy ONLY postictal": "after seizure" is searched as "seizure" and
+    # gave 25 epilepsy datasets (live, 2026-11-23).
+    plan = _plan(description_search="postictal",
+                 description_alternatives=["after seizure", "post-event", "seizure recovery"])
+    dropped = pp.check_description_alternatives(plan, _counts({}))
+    assert plan.description_alternatives == ["post-event", "seizure recovery"]
+    assert dropped == {"after seizure": "one word is left once the search drops its stop words"}
+
+
 def test_without_a_description_search_nothing_is_added() -> None:
     plan = _plan(description_alternatives=["post-mortem"])
     pp.check_description_alternatives(plan, _counts({}))
