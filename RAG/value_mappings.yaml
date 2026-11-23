@@ -55847,10 +55847,6 @@ task:
       weight: 0.1
     - term: Transcranial random noise stimulation
       weight: 0.1
-    - term: DBS
-      weight: 0.1
-    - term: Deep brain stimulation
-      weight: 0.1
     - term: iES
       weight: 0.1
     - term: Intracranial electrical stimulation
@@ -55894,10 +55890,23 @@ task:
     - raw: stim
       datasets:
       - ds005498
+  deep_brain_stimulation:
+    label: Deep brain stimulation
+    is_group: true
+    broader:
+    - neuromodulation
+    description: Tasks recorded during deep brain stimulation. Added 2026-11-23,
+      when "DBS" was a synonym of the whole neuromodulation group (neurofeedback
+      and TMS tasks included) and of electrical stimulation.
+    synonyms:
+    - DBS
+    - deep brain stimulation
+    - deep-brain stimulation
   deep_brain_stimulation_high_frequency:
     label: Deep Brain Stimulation (high frequency)
     standard_code: deep_brain_stimulation_high_frequency
     broader:
+    - deep_brain_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: A task performed during high-frequency deep brain stimulation.
@@ -55950,6 +55959,7 @@ task:
     label: Deep Brain Stimulation (low frequency)
     standard_code: deep_brain_stimulation_low_frequency
     broader:
+    - deep_brain_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: A task performed during low-frequency deep brain stimulation.
@@ -55998,6 +56008,7 @@ task:
     label: Deep Brain Stimulation (variable frequency)
     standard_code: deep_brain_stimulation_variable_frequency
     broader:
+    - deep_brain_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: A task performed during variable frequency deep brain stimulation.
@@ -61488,10 +61499,6 @@ task:
     - term: transcranial stimulation
       weight: 0.9
     - term: cortical stimulation
-      weight: 0.8
-    - term: deep brain stimulation
-      weight: 0.95
-    - term: DBS
       weight: 0.8
     - term: TMS
       weight: 0.85

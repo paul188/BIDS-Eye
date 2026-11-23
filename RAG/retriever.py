@@ -79,6 +79,7 @@ from yaml_to_llamaindex import (
     hierarchy_db,
     looks_like_shorthand as _looks_like_shorthand,
     shorthand_db,
+    shorthand_label_db,
     measures_db,
     EmbeddingIndexError,
     build_embedding_index,
@@ -515,16 +516,22 @@ def shorthand_meanings(term: str) -> List[str]:
     """
     from text_terms import _lookup_strings
     kinds = (("diagnosis", "diagnosis"), ("task", "task"), ("suffix", "scan type"), ("datatype", "scan type"))
+    key = _normalize_term(term)
     meanings: List[str] = []
     for field, kind in kinds:
         codes = [code for code, _ in _match_shorthand(field, term)]
         if not codes:
             continue
-        label = (hierarchy_db.get(codes[0]) or {}).get("label")
-        if not label:
-            strings = _lookup_strings(codes[0])
-            label = strings[0][0] if strings else codes[0].replace("_", " ")
-        meanings.append(f"{label} ({kind})")
+        # The entry that lists the shorthand names it; a group's first task
+        # does not ("DBS" was "Deep Brain Stimulation (high frequency)").
+        labels = list(shorthand_label_db.get(field, {}).get(key, []))
+        if not labels:
+            label = (hierarchy_db.get(codes[0]) or {}).get("label")
+            if not label:
+                strings = _lookup_strings(codes[0])
+                label = strings[0][0] if strings else codes[0].replace("_", " ")
+            labels = [label]
+        meanings.extend(f"{label} ({kind})" for label in labels)
     meanings.extend(_shorthands.written_out(term))
     return list(dict.fromkeys(meanings))
 

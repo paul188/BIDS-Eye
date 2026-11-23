@@ -352,6 +352,19 @@ def test_an_english_word_in_small_letters_is_not_a_shorthand() -> None:
     assert not retriever.is_shorthand("resting state") and not retriever.is_shorthand("memory")
 
 
+DBS_TASKS = ["deep_brain_stimulation_high_frequency", "deep_brain_stimulation_low_frequency",
+             "deep_brain_stimulation_variable_frequency"]
+
+
+@pytest.mark.parametrize("term", ["DBS", "dbs", "deep brain stimulation"])
+def test_dbs_is_deep_brain_stimulation(term: str) -> None:
+    # "DBS" was a synonym of the whole neuromodulation group: 42 tasks,
+    # neurofeedback and TMS among them (2026-11-23).
+    assert _resolve_yaml_term("task", term) == DBS_TASKS
+    assert set(DBS_TASKS) <= set(_resolve_yaml_term("task", "neuromodulation"))
+    assert retriever.shorthand_meanings("DBS") == ["Deep brain stimulation (task)"]
+
+
 def test_meanings_come_from_the_listings() -> None:
     assert retriever.shorthand_meanings("APT") == ["amide proton transfer imaging (APT) (scan type)"]
     assert retriever.shorthand_meanings("ERP") == ["event-related potential"]
