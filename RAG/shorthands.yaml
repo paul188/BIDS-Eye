@@ -1,0 +1,51 @@
+# What a shorthand stands for, when value_mappings.yaml has no code for it
+# (RAG/shorthands.py).
+#
+# A shorthand in a question is not interpreted by the language model: on
+# 2026-11-23 it read "APT" as "Arterial Perfusion Tagging". A shorthand that
+# names a diagnosis, task or scan type is a synonym in value_mappings.yaml and
+# becomes a code. Every other one is searched as typed, and the written-out
+# forms listed here are its other words: a dataset that says only
+# "event-related potential" still answers "ERP", after those that say "ERP".
+#
+# One entry per shorthand, every meaning it has in neuroimaging; all of them
+# are searched, none is chosen. Keep entries to what the letters stand for: no
+# narrower terms, no paradigms (the scan-term alternatives of the plan name
+# those). Not reviewed by Paul yet (2026-11-23).
+
+ADNI: [Alzheimer's Disease Neuroimaging Initiative]
+AEP: [auditory evoked potential]
+AVH: [auditory verbal hallucinations]
+BCI: [brain-computer interface]
+BMI: [body mass index]
+CEST: [chemical exchange saturation transfer]
+CO2: [carbon dioxide]
+CSF: [cerebrospinal fluid]
+DMN: [default mode network]
+DoC: [disorders of consciousness]
+EDA: [electrodermal activity]
+EOG: [electrooculography, electrooculogram]
+ERP: [event-related potential]
+FDG: [fluorodeoxyglucose]
+GAD: [generalized anxiety disorder, generalised anxiety disorder]
+GLM: [general linear model]
+GSR: [galvanic skin response]
+HCP: [Human Connectome Project]
+HIV: [human immunodeficiency virus]
+HRF: [hemodynamic response function, haemodynamic response function]
+ICA: [independent component analysis]
+IQ: [intelligence quotient]
+ISC: [inter-subject correlation]
+LFP: [local field potential]
+MEP: [motor evoked potential]
+MMN: [mismatch negativity]
+# Two meanings: the contrast and the visual area.
+MT: [magnetization transfer, magnetisation transfer, middle temporal area]
+MVPA: [multivariate pattern analysis, multi-voxel pattern analysis]
+NREM: [non-rapid eye movement sleep, non-REM sleep]
+REM: [rapid eye movement sleep]
+ROI: [region of interest]
+SPM: [statistical parametric mapping]
+SSVEP: [steady-state visual evoked potential, steady-state visually evoked potential]
+TOF: [time-of-flight angiography, time of flight]
+WCST: [Wisconsin Card Sorting Test]

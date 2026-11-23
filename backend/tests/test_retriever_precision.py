@@ -320,3 +320,39 @@ def test_apt_is_the_scan_type(term: str) -> None:
 def test_eupd_is_borderline_personality_disorder(term: str) -> None:
     # ds000214 "EUPD Cyberball" was missing from a borderline personality search.
     assert _resolve_yaml_term("diagnosis", term) == ["borderline_personality_disorder"]
+
+
+# ── Shorthands resolve through a listing of exactly that shorthand ─────────────
+
+@pytest.mark.parametrize("field, term, codes", [
+    ("task", "APT", []),                   # was tactile_stimulation, through the plural "APTS"
+    ("task", "ASL", []),                   # was two statistical-learning tasks
+    ("diagnosis", "MRI", []),              # was two epilepsy codes
+    ("suffix", "CEST", []),                # no code; RAG/shorthands.yaml writes it out
+    ("suffix", "apt", ["apt"]),            # typed in small letters, still the shorthand
+    ("suffix", "CTs", ["ct_scan"]),        # plural of a capitalised shorthand
+    ("diagnosis", "TBI", ["traumatic_brain_injury"]),
+    ("diagnosis", "MS", ["multiple_sclerosis"]),
+])
+def test_a_shorthand_resolves_only_through_its_listing(field: str, term: str, codes: list) -> None:
+    assert _resolve_yaml_term(field, term) == codes
+
+
+def test_a_shorthand_with_two_listings_keeps_both() -> None:
+    # Parkinson's disease and the prisoner's dilemma: nothing in "PD" says which.
+    assert "parkinsons_disease" in _resolve_yaml_term("diagnosis", "PD")
+    assert _resolve_yaml_term("task", "PD") == ["strategic_interaction_game"]
+    assert retriever.shorthand_meanings("PD") == [
+        "Parkinson's disease (diagnosis)", "Strategic interaction game (task)"]
+
+
+def test_an_english_word_in_small_letters_is_not_a_shorthand() -> None:
+    assert retriever.is_shorthand("ALL") and not retriever.is_shorthand("all")
+    assert retriever.is_shorthand("tle") and retriever.is_shorthand("mTLE")
+    assert not retriever.is_shorthand("resting state") and not retriever.is_shorthand("memory")
+
+
+def test_meanings_come_from_the_listings() -> None:
+    assert retriever.shorthand_meanings("APT") == ["amide proton transfer imaging (APT) (scan type)"]
+    assert retriever.shorthand_meanings("ERP") == ["event-related potential"]
+    assert retriever.shorthand_meanings("XQZ") == []

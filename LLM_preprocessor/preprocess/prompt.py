@@ -35,9 +35,11 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     qualifies such a word so that only one meaning fits, put the subject in
     `topics` and NOT in scan_terms or description_search. The qualifier stays
     bound to its word: it is never searched apart from it, and the word is
-    never searched without it. Also use a topic when the user abbreviates or
-    clips the subject's word; write it out in `phrase`, keep the typed form
-    in `typed`.
+    never searched without it. Also use a topic when the user clips the
+    subject's word ("soc. conflicts"); write it out in `phrase`, keep the
+    typed form in `typed`. An abbreviation ("ERP", "TLE", "APT") is not a
+    clipped word: it stays exactly as typed in every field and is never
+    written out (see "Shorthands" below the search input, when present).
 
     A plain task, paradigm or modality without such a qualifier ("n-back",
     "resting state", "EEG") stays in scan_terms. A property word ("complex",
@@ -45,7 +47,7 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     stays in diagnosis_terms.
 
     Fill every topic:
-      phrase        the subject in standard words, abbreviations written out
+      phrase        the subject in standard words; abbreviations stay as typed
       typed         the words as typed
       head          the noun the qualifiers modify
       qualifiers    the words that select the meaning

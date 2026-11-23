@@ -67,6 +67,27 @@ leaf_codes_db: Dict[str, Dict[str, List[str]]] = {}
 display_codes_db: Dict[str, Dict[str, List[str]]] = {}
 
 
+# Shorthands the vocabulary lists, lower-cased: a label or synonym written as
+# one short token with at least two capitals ("APT", "TLE", "fMRI", "T1w").
+# A term typed as one of them, in any case, is a shorthand (retriever.is_shorthand).
+shorthand_db: set = set()
+_SHORTHAND_RE = _re.compile(r"[A-Za-z][A-Za-z0-9]{1,5}")
+
+
+def looks_like_shorthand(term: str) -> bool:
+    """One token of two to six letters and digits with at least two capitals."""
+    term = (term or "").strip()
+    return bool(_SHORTHAND_RE.fullmatch(term)) and sum(c.isupper() for c in term) >= 2
+
+
+def _collect_shorthands(concepts: Dict[str, dict]) -> None:
+    for value in concepts.values():
+        if not isinstance(value, dict):
+            continue
+        names = [value.get("label") or ""] + [t for t, _ in _extract_synonyms(value.get("synonyms"))]
+        shorthand_db.update(n.strip().lower() for n in names if looks_like_shorthand(n))
+
+
 def _add_code(index: Dict[str, Dict[str, List[str]]], category: str, term: str, code: str) -> None:
     codes = index.setdefault(category, {}).setdefault(term, [])
     if code not in codes:
@@ -302,6 +323,7 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
             cat, cat_data,
             leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db,
         )
+        _collect_shorthands(cat_data)
 
     return leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db
 

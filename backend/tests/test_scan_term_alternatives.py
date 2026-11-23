@@ -41,8 +41,32 @@ def test_alternatives_are_checked_against_the_catalogue() -> None:
     })
     dropped = pp.check_scan_term_alternatives(plan, _counts({"brain": 900, "N2pc": 0}))
     assert [(e.term, e.alternatives) for e in plan.scan_term_alternatives] == [
-        ("ERP", ["oddball", "P300", "event-related potential"])]
+        # The listed written-out form (RAG/shorthands.yaml) first, then the model's.
+        ("ERP", ["event-related potential", "oddball", "P300"])]
     assert dropped == {"ERP: brain": "too common (900 datasets)", "ERP: N2pc": "no dataset uses it"}
+
+
+def test_a_shorthand_gets_its_listed_forms_without_the_model() -> None:
+    # The model listed nothing for "CEST"; shorthands.yaml says what it stands for.
+    plan = _plan(["CEST"], {})
+    pp.check_scan_term_alternatives(plan, _counts({}))
+    assert [(e.term, e.alternatives) for e in plan.scan_term_alternatives] == [
+        ("CEST", ["chemical exchange saturation transfer"])]
+
+
+def test_a_listed_form_is_never_too_common() -> None:
+    plan = _plan(["ERP"], {"ERP": ["oddball"]})
+    pp.check_scan_term_alternatives(plan, _counts({"event-related potential": 400, "oddball": 400}))
+    assert plan.scan_term_alternatives[0].alternatives == ["event-related potential"]
+
+
+def test_what_the_model_proposes_for_an_unexplained_shorthand_is_dropped() -> None:
+    # No listing knows "XQZ": the model's words for it are guesses, as
+    # "Arterial Perfusion Tagging" was for "APT" (2026-11-23).
+    plan = _plan(["XQZ"], {"XQZ": ["cross quantile zoning", "quantile maps"]})
+    dropped = pp.check_scan_term_alternatives(plan, _counts({}))
+    assert plan.scan_term_alternatives == []
+    assert set(dropped.values()) == {"no listing says what the shorthand stands for"}
 
 
 def test_a_resolved_task_term_searches_its_alternatives_too() -> None:

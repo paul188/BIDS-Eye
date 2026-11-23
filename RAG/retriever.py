@@ -77,6 +77,8 @@ from yaml_to_llamaindex import (
     group_db,
     group_display_db,
     hierarchy_db,
+    looks_like_shorthand as _looks_like_shorthand,
+    shorthand_db,
     measures_db,
     EmbeddingIndexError,
     build_embedding_index,
@@ -84,6 +86,7 @@ from yaml_to_llamaindex import (
 from join_registry import field_to_db_col as _field_to_db_col
 import institution_index as _institution_index
 import reference_vocabulary as _reference
+import shorthands as _shorthands
 
 log = logging.getLogger(__name__)
 
@@ -482,6 +485,74 @@ def _normalize_term(term: str) -> str:
     return term.lower().strip().replace("\u2019", "'")
 
 
+# Listed shorthands that are also English words. Typed in small letters they
+# are the word ("all", "brief", "mid"); with capitals the shorthand ("ALL").
+_WORDS_NOT_SHORTHANDS = frozenset({
+    "all", "bat", "brief", "cal", "chi", "doc", "east", "eat", "fires", "lop", "lot", "mast",
+    "mat", "matt", "met", "mi", "mid", "mist", "nibs", "pact", "pal", "pit", "ram", "spit",
+    "swan", "tap", "taps", "tens", "tom", "zap",
+})
+
+
+def is_shorthand(term: str) -> bool:
+    """True for an abbreviation: typed with capitals ("APT", "mTLE"), or one the listings know ("tle")."""
+    term = (term or "").strip()
+    if _looks_like_shorthand(term):
+        return True
+    key = term.lower()
+    return (" " not in term and key not in _WORDS_NOT_SHORTHANDS
+            and (key in shorthand_db or bool(_shorthands.written_out(term))))
+
+
+def shorthand_meanings(term: str) -> List[str]:
+    """What the listings say a shorthand stands for, every meaning; [] when none knows it.
+
+    Labels of the vocabulary entries that list it, each with its kind
+    ("temporal lobe epilepsy (diagnosis)", "EEG (scan type)"), then the
+    written-out forms of RAG/shorthands.yaml. Given to the language model with
+    the question, so that it does not guess ("APT" as "Arterial Perfusion
+    Tagging", 2026-11-23).
+    """
+    from text_terms import _lookup_strings
+    kinds = (("diagnosis", "diagnosis"), ("task", "task"), ("suffix", "scan type"), ("datatype", "scan type"))
+    meanings: List[str] = []
+    for field, kind in kinds:
+        codes = [code for code, _ in _match_shorthand(field, term)]
+        if not codes:
+            continue
+        label = (hierarchy_db.get(codes[0]) or {}).get("label")
+        if not label:
+            strings = _lookup_strings(codes[0])
+            label = strings[0][0] if strings else codes[0].replace("_", " ")
+        meanings.append(f"{label} ({kind})")
+    meanings.extend(_shorthands.written_out(term))
+    return list(dict.fromkeys(meanings))
+
+
+def _match_shorthand(field: str, term: str) -> List[tuple[str, float]]:
+    """A shorthand resolves through a listing of exactly that shorthand, or not at all.
+
+    Similarity says nothing about three or four letters: "APT" matched the
+    task synonym "APTS" (the plural variant), "CEST" the synonym "APT-CEST",
+    "MRI" two epilepsy diagnoses (2026-11-23). What a shorthand means is
+    listed (value_mappings.yaml, the reference vocabulary, the Cognitive
+    Atlas constructs); several listings all count, each with its share.
+    """
+    key = _normalize_term(term)
+    plural = term.strip().endswith("s") and term.strip()[:-1].isupper()   # "EEGs", "CTs"
+    forms = [key] + ([key[:-1]] if plural else [])
+    for form in forms:
+        if form in group_db.get(field, {}):
+            return [(c, 1.0) for c in group_db[field][form]]
+        if form in leaf_codes_db.get(field, {}):
+            return _shared(leaf_codes_db[field][form])
+    if field == "task":
+        return _resolve_via_constructs(key, fuzzy=False)
+    if field == "diagnosis":
+        return _reference.match("diagnosis", term)
+    return []
+
+
 def _plural_variants(term: str) -> List[str]:
     """Simple singular/plural/possessive variants to improve exact-match recall."""
     variants = [term]
@@ -632,6 +703,9 @@ def _match_yaml_term(field: str, term: str) -> List[tuple[str, float]]:
     # Task field uses a higher threshold — construct path handles the heavy
     # lifting for construct-level terms, so fuzzy only fires on strong hits.
     _sem = _TASK_SEMANTIC_THRESHOLD if field == "task" else _SEMANTIC_THRESHOLD
+
+    if is_shorthand(term):
+        return _match_shorthand(field, term)
 
     term_lower = _normalize_term(term)
 

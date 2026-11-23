@@ -12,9 +12,11 @@ from text_terms import (
     split_words as _split_words,
 )
 import senses as _senses
+import shorthands as _shorthands
+from retriever import is_shorthand as _is_shorthand, shorthand_meanings as _shorthand_meanings
 
 from . import catalogue as _catalogue
-from .plan import QueryPlan, ResolvedTopic, ScanRequirement, Topic
+from .plan import QueryPlan, ResolvedTopic, ScanRequirement, TermAlternatives, Topic
 
 log = logging.getLogger("preprocess")
 
@@ -126,6 +128,24 @@ def _detach_topic_terms(plan: QueryPlan) -> None:
 _DESCRIPTION_MAX_ALTERNATIVES = 8
 
 
+def _listed_forms(term: str) -> Optional[List[str]]:
+    """The listed written-out forms of a shorthand; None when *term* is not one.
+
+    What a shorthand stands for is listed (RAG/shorthands.yaml, the
+    vocabulary), not asked from the language model: it read "APT" as
+    "Arterial Perfusion Tagging" (2026-11-23).
+    """
+    term = (term or "").strip()
+    if not term or not _is_shorthand(term):
+        return None
+    return _shorthands.written_out(term)
+
+
+def _unknown_shorthand(term: str) -> bool:
+    """A shorthand no listing explains: whatever the model proposes for it is a guess."""
+    return _listed_forms(term) is not None and not _shorthand_meanings(term)
+
+
 def _checked_alternatives(own_text: str, alternatives: List[str],
                           count_matches: Any) -> "tuple[List[str], Dict[str, str]]":
     """The alternatives worth searching for *own_text*, and the dropped ones with the reason.
@@ -133,8 +153,18 @@ def _checked_alternatives(own_text: str, alternatives: List[str],
     Dropped: repeats of the user's own words, alternatives no dataset uses,
     and those too many datasets use to say anything (_topic_max_matches).
     Without counts (outside the backend) they are kept unchecked.
+
+    A shorthand's listed written-out forms (_listed_forms) come first and
+    are never too common. For a shorthand no listing explains, the given
+    alternatives are guesses and are dropped.
     """
     dropped: Dict[str, str] = {}
+    listed = _listed_forms(own_text) or []
+    if _unknown_shorthand(own_text):
+        dropped.update(dict.fromkeys(alternatives, "no listing says what the shorthand stands for"))
+        alternatives = []
+    # Listed forms first, then what the model proposed for a meaning it was told.
+    alternatives = listed + [a for a in alternatives if a not in listed]
     own = _word_set(own_text or "")
     if not own:
         return [], dropped
@@ -145,7 +175,7 @@ def _checked_alternatives(own_text: str, alternatives: List[str],
         if not words or words in seen or words == own:
             continue
         seen.add(words)
-        if len(_searched_words(alternative)) < 2 <= len(_split_words(alternative)):
+        if alternative not in listed and len(_searched_words(alternative)) < 2 <= len(_split_words(alternative)):
             # As for a topic (resolve_topic): "after seizure" for "postictal"
             # is searched as "seizure".
             dropped[alternative] = "one word is left once the search drops its stop words"
@@ -158,7 +188,7 @@ def _checked_alternatives(own_text: str, alternatives: List[str],
         for alternative, count in zip(kept, counts):
             if count == 0:
                 dropped[alternative] = "no dataset uses it"
-            elif count > limit:
+            elif count > limit and alternative not in listed:
                 dropped[alternative] = f"too common ({count} datasets)"
             else:
                 checked.append(alternative)
@@ -204,7 +234,14 @@ def check_scan_term_alternatives(plan: QueryPlan,
     dropped: Dict[str, str] = {}
     scan_terms = {t.strip().lower() for r in plan.scan_requirements for t in r.scan_terms}
     kept_entries = []
-    for entry in plan.scan_term_alternatives:
+    entries = list(plan.scan_term_alternatives)
+    have = {entry.term.strip().lower() for entry in entries}
+    for requirement in plan.scan_requirements:
+        for term in requirement.scan_terms:
+            if term.strip().lower() not in have and _listed_forms(term):
+                have.add(term.strip().lower())
+                entries.append(TermAlternatives(term=term, alternatives=[]))
+    for entry in entries:
         if entry.term.strip().lower() not in scan_terms:
             continue
         kept, gone = _checked_alternatives(entry.term, entry.alternatives, count_matches)
