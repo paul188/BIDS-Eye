@@ -12,14 +12,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from services.evidence import base, reason_texts
-from services.evidence.base import Evidence, Strength
+from services.evidence import reason_texts
+from services.evidence.base import Evidence, EvidenceSource, Strength
 
 
 @dataclass(frozen=True)
 class AsAsked(Evidence):
     """The condition holds as the search wrote it."""
-    source: str = field(default=base.CONDITION, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.CONDITION, kw_only=True)
     strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
 
 
@@ -27,7 +27,7 @@ class AsAsked(Evidence):
 class PaperOnly(Evidence):
     """The search words match a paper the dataset names, not its own text."""
     reason: str = reason_texts.PAPER
-    source: str = field(default=base.PAPER, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.PAPER, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
 
@@ -36,7 +36,7 @@ class WeakerSearch(Evidence):
     """A text search of the condition matches in a weaker form: some of its
     words, the words apart, only further down in the README
     (services/uncertain/text.py)."""
-    source: str = field(default=base.TEXT, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.TEXT, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
 
@@ -44,7 +44,7 @@ class WeakerSearch(Evidence):
 class NamedInText(Evidence):
     """The dataset's own text names the value the condition asks of a field:
     "22 women", "infants", "7T" (services/uncertain/fields/, scanner.py)."""
-    source: str = field(default=base.TEXT, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.TEXT, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
 
@@ -58,7 +58,7 @@ class OtherValuesRecorded(Evidence):
     listed before it counts although other values are recorded (so far only
     the text evidence for a diagnosis: coded diagnoses are often incomplete).
     """
-    source: str = field(default=base.FIELD, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.FIELD, kw_only=True)
     strength: Strength = field(default=Strength.CONTRADICTED, kw_only=True)
 
 
@@ -73,5 +73,5 @@ class NotRecorded(Evidence):
     count of a dataset large enough to hold the patients).
     """
     sql: Optional[str] = None
-    source: str = field(default=base.NOT_RECORDED, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.NOT_RECORDED, kw_only=True)
     strength: Strength = field(default=Strength.POSSIBLE, kw_only=True)

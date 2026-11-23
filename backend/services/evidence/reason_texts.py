@@ -35,21 +35,21 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
-from services.evidence import base
+from services.evidence.base import EvidenceSource
 
 # ── A confirmed match: where the value was found ──────────────────────────────
 
 # By the source of the evidence, for the sources that need no numbers.
 FOUND_IN = {
-    base.FILES: "in the dataset's files",
-    base.DERIVATIVES: "in its derivatives",
-    base.SITES: "at a listed site",
-    base.PAPER: "named in a linked paper",
-    base.TEXT: "named in the README or description",
-    base.SHORT_TEXT: "named in the title or description",
-    base.README: "named in the README",
+    EvidenceSource.FILES: "in the dataset's files",
+    EvidenceSource.DERIVATIVES: "in its derivatives",
+    EvidenceSource.SITES: "at a listed site",
+    EvidenceSource.PAPER: "named in a linked paper",
+    EvidenceSource.TEXT: "named in the README or description",
+    EvidenceSource.SHORT_TEXT: "named in the title or description",
+    EvidenceSource.README: "named in the README",
     # An excluded diagnosis the dataset passes because it records none.
-    base.ASSUMED_ABSENT: "no diagnosis recorded, assumed absent",
+    EvidenceSource.ASSUMED_ABSENT: "no diagnosis recorded, assumed absent",
 }
 
 # Columns with a default (RAG/criteria.py): the column is empty and its

@@ -35,8 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
 from services.evidence import reason_texts
-from services.evidence.base import (ASSUMED_ABSENT, DERIVATIVES, FILES, PAPER, PARTICIPANTS,
-                                    README, SHORT_TEXT, SITES, TEXT, Evidence)
+from services.evidence.base import Evidence, EvidenceSource
 from services.evidence.confirmed import Assumed, FieldValue, ParticipantRows, found
 from services.results import query_filters
 from services.schema import tables as _tables
@@ -51,21 +50,21 @@ log = logging.getLogger(__name__)
 # One OR branch of a condition is one piece of evidence (services/evidence/):
 # where the value was found, and the text the card shows for it.
 _TABLE_SOURCES = {
-    _tables.participants.name: PARTICIPANTS,
-    _tables.objects.name: FILES,
-    "bids_files": FILES,  # not a catalogue table, kept as it was
-    _tables.dataset_facets.name: FILES,
-    _tables.derivatives.name: DERIVATIVES,
-    _tables.dataset_sites.name: SITES,
-    _tables.site_places.name: SITES,
-    _tables.dataset_papers.name: PAPER,
-    _tables.papers.name: PAPER,
+    _tables.participants.name: EvidenceSource.PARTICIPANTS,
+    _tables.objects.name: EvidenceSource.FILES,
+    "bids_files": EvidenceSource.FILES,  # not a catalogue table, kept as it was
+    _tables.dataset_facets.name: EvidenceSource.FILES,
+    _tables.derivatives.name: EvidenceSource.DERIVATIVES,
+    _tables.dataset_sites.name: EvidenceSource.SITES,
+    _tables.site_places.name: EvidenceSource.SITES,
+    _tables.dataset_papers.name: EvidenceSource.PAPER,
+    _tables.papers.name: EvidenceSource.PAPER,
 }
 _TEXT_COLUMNS = {
-    "search_tsv": TEXT, "search_tsv_exact": TEXT,
-    "search_tsv_papers": PAPER, "search_tsv_exact_papers": PAPER,
-    "readme_text": README,
-    "name": SHORT_TEXT, "description_text": SHORT_TEXT,
+    "search_tsv": EvidenceSource.TEXT, "search_tsv_exact": EvidenceSource.TEXT,
+    "search_tsv_papers": EvidenceSource.PAPER, "search_tsv_exact_papers": EvidenceSource.PAPER,
+    "readme_text": EvidenceSource.README,
+    "name": EvidenceSource.SHORT_TEXT, "description_text": EvidenceSource.SHORT_TEXT,
 }
 
 
@@ -155,14 +154,16 @@ def classify_branch(branch, alias: str) -> Optional[Evidence]:
         source = _TEXT_COLUMNS.get(column.name.lower())
         if source is None or _under_not(column, branch):
             continue
-        if source == SHORT_TEXT and not isinstance(column.parent, (exp.ILike, exp.Like)):
+        if (source == EvidenceSource.SHORT_TEXT
+                and not isinstance(column.parent, (exp.ILike, exp.Like))):
             continue   # d.name = 'x' is a field, not a text search
         text_sources.append(source)
-    if TEXT in text_sources:
+    if EvidenceSource.TEXT in text_sources:
         queries = _branch_tsqueries(branch)
         if queries and all(short_fields_only(q) for q in queries):
-            return found(SHORT_TEXT, sql)
-    for source in (TEXT, SHORT_TEXT, README, PAPER):
+            return found(EvidenceSource.SHORT_TEXT, sql)
+    for source in (EvidenceSource.TEXT, EvidenceSource.SHORT_TEXT, EvidenceSource.README,
+                   EvidenceSource.PAPER):
         if source in text_sources:
             return found(source, sql)
 
@@ -173,7 +174,7 @@ def classify_branch(branch, alias: str) -> Optional[Evidence]:
         sources = [_TABLE_SOURCES[t] for t in tables if t in _TABLE_SOURCES]
         if not sources:
             continue
-        if sources[0] != PARTICIPANTS:
+        if sources[0] != EvidenceSource.PARTICIPANTS:
             return found(sources[0], sql)
         countable = (isinstance(select.parent, exp.Exists)
                      and not select.args.get("group") and not select.args.get("having"))
@@ -228,7 +229,7 @@ def _assumed_absent(chip, alias: str) -> Optional[ChipPlan]:
     except ImportError:  # the RAG package is not on the path
         return None
     return ChipPlan(field=f"No {chip.label}", kind=chip.kind,
-                    branches=[found(ASSUMED_ABSENT, diagnosis_unknown(alias))])
+                    branches=[found(EvidenceSource.ASSUMED_ABSENT, diagnosis_unknown(alias))])
 
 
 def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:

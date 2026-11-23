@@ -181,25 +181,27 @@ def test_a_match_on_the_alternatives_only_ranks_below_the_users_words() -> None:
                  "text_match('reproducibility | stability', 'also'))")
     assert "reproducibility" in rank.stemmed and "reliability" in rank.stemmed and rank.exact is None
     assert rank.alternative == "(test <-> retest) & reliability"
-    expression = ranking.rank_expression("ft", rank)
-    assert expression.endswith(
-        "- CASE WHEN ft.search_tsv @@ to_tsquery('english', '(test <-> retest) & reliability') "
-        f"THEN 0 ELSE {ranking.OTHER_WORDS_ONLY_GO_LAST} END)")
+    # Its own column, not part of the rank: the ranker says where such a dataset goes.
+    assert ranking.other_words_only_expression("ft", rank) == (
+        "(ft.search_tsv @@ to_tsquery('english', '(test <-> retest) & reliability')) IS NOT TRUE")
+    assert "reliability')) IS" not in ranking.rank_expression("ft", rank)
     # Without the alternative part every match ranks alike, as a 'near' search does.
     flat = rank.without_alternative()
-    assert flat == ranking.RankQuery(rank.stemmed) and "CASE" not in ranking.rank_expression("ft", flat)
+    assert flat == ranking.RankQuery(rank.stemmed)
+    assert ranking.other_words_only_expression("ft", flat) is None
+    assert ranking.rank_expression("ft", flat) == ranking.rank_expression("ft", rank)
 
 
 def test_other_searches_rank_as_before() -> None:
     rank = _rank("text_match('ketamine') AND text_match('social conflict', 'near')")
     assert rank.alternative is None
-    assert "CASE" not in ranking.rank_expression("ft", rank)
+    assert ranking.other_words_only_expression("ft", rank) is None
     # 'also' without a search before it has nothing to rank below.
     alone = _rank("text_match('post-mortem | ex vivo', 'also')")
     assert alone is not None and alone.alternative is None
 
 
-def test_the_page_orders_by_the_penalised_rank() -> None:
+def test_the_page_puts_the_users_words_before_the_other_words() -> None:
     from services.translate import sql_rewriter
 
     expanded = text_search.expand_text_search(
@@ -210,5 +212,6 @@ def test_the_page_orders_by_the_penalised_rank() -> None:
     page, _ = sql_rewriter.build_page_sql(
         base_sql=expanded.sql, scored_filters=[], apply_relevance=True, limit=20, offset=0,
         rank_query=expanded.rank_query)
-    assert "THEN 0 ELSE 100 END" in page and "AS text_rank" in page
-    assert "relevance_score + page_result.text_rank DESC" in page
+    assert "AS text_rank" in page and "AS other_words_only" in page
+    assert ("ORDER BY page_result.other_words_only, "
+            "page_result.relevance_score + page_result.text_rank DESC") in page

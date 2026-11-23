@@ -68,6 +68,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "fulltext" / "ranking.py",
     _BACKEND / "services" / "fulltext" / "vectors.py",
     _BACKEND / "services" / "fulltext" / "word_frequencies.py",
+    _BACKEND / "services" / "results" / "rankers.py",
     _BACKEND / "services" / "translate" / "text_to_sql.py",
     _BACKEND / "services" / "translate" / "value_check.py",
     _BACKEND / "services" / "uncertain" / "tier.py",

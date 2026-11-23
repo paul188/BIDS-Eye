@@ -136,7 +136,7 @@ def _flag_names(i: int, condition: SoftCondition) -> List[str]:
     for each but the last: "paper_0" for evidence found in a paper."""
     names: List[str] = []
     for j, piece in enumerate(condition.weaker[:-1]):
-        name = f"{piece.source}_{i}"
+        name = f"{piece.source.value}_{i}"
         names.append(f"{name}_{j}" if name in names else name)
     return names
 

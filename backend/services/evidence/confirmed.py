@@ -16,13 +16,13 @@ from typing import List, Optional, Tuple
 
 from sqlglot import exp
 
-from services.evidence import base, reason_texts
-from services.evidence.base import Evidence, Strength
+from services.evidence import reason_texts
+from services.evidence.base import Evidence, EvidenceSource, Strength
 
 _MAX_VALUE_CHARS = 60
 
 
-def found(source: str, sql: str) -> Evidence:
+def found(source: EvidenceSource, sql: str) -> Evidence:
     """Confirmed evidence that says only where the value was found."""
     return Evidence(sql, reason_texts.FOUND_IN[source], source=source, strength=Strength.CONFIRMED)
 
@@ -37,7 +37,7 @@ class ParticipantRows(Evidence):
     participant_rows: Optional[exp.Select] = None
     age_column: Optional[exp.Column] = None   # the age column that SELECT compares
     reads_diagnosis: bool = False
-    source: str = field(default=base.PARTICIPANTS, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.PARTICIPANTS, kw_only=True)
     strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
 
     def number_columns(self, name: str) -> List[str]:
@@ -72,7 +72,7 @@ class FieldValue(Evidence):
     """Columns of the dataset itself hold the asked value; the card shows it:
     "dataset age range 6–11 years", "species label “mouse”"."""
     columns: Tuple[str, ...] = ()
-    source: str = field(default=base.FIELD, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.FIELD, kw_only=True)
     strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
 
     def read_columns(self) -> Tuple[str, ...]:
@@ -104,7 +104,7 @@ class Assumed(Evidence):
     """The column is empty and its default holds: "no species label, assumed
     human" (the defaults: RAG/criteria.py; their wording: reason_texts.ASSUMED)."""
     columns: Tuple[str, ...] = ()
-    source: str = field(default=base.ASSUMED, kw_only=True)
+    source: EvidenceSource = field(default=EvidenceSource.ASSUMED, kw_only=True)
     strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
 
     def read_columns(self) -> Tuple[str, ...]:

@@ -11,7 +11,8 @@ import sqlglot
 from criteria import age_condition, species_condition
 from schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
-from services.evidence import base as ev, reason_texts
+from services.evidence import reason_texts
+from services.evidence.base import EvidenceSource
 from services.results import match_reasons as mr
 
 _HEAD = (
@@ -54,7 +55,7 @@ def _kinds(plan) -> list:
 def test_infant_age_group_has_four_venues():
     plans = _plans(age_condition(["infants"]))
     age = plans["Age"]
-    assert _kinds(age) == [ev.PARTICIPANTS, ev.FIELD, ev.FIELD, ev.SHORT_TEXT]
+    assert _kinds(age) == [EvidenceSource.PARTICIPANTS, EvidenceSource.FIELD, EvidenceSource.FIELD, EvidenceSource.SHORT_TEXT]
     participants = age.branches[0]
     assert participants.participant_rows is not None and participants.age_column is not None
     # Either age bound alone is read as the whole range.
@@ -75,21 +76,21 @@ def test_a_species_asked_for_is_explained_next_to_an_age_group(order):
     assert [p.field for p in plans] == (
         ["Species", "Age"] if order == "species first" else ["Age", "Species"])
     species = next(p for p in plans if p.field == "Species")
-    assert _kinds(species) == [ev.FIELD, ev.ASSUMED]
+    assert _kinds(species) == [EvidenceSource.FIELD, EvidenceSource.ASSUMED]
 
 
 def test_diagnosis_reads_the_participant_list_and_the_text():
     diagnosis = _plans(DIAGNOSIS)["Diagnosis"]
     # 'parkinson:AB' reaches the name and description only (weights A, B).
-    assert _kinds(diagnosis) == [ev.PARTICIPANTS, ev.SHORT_TEXT]
-    assert _kinds(_plans(DIAGNOSIS.replace(":AB", ""))["Diagnosis"]) == [ev.PARTICIPANTS, ev.TEXT]
+    assert _kinds(diagnosis) == [EvidenceSource.PARTICIPANTS, EvidenceSource.SHORT_TEXT]
+    assert _kinds(_plans(DIAGNOSIS.replace(":AB", ""))["Diagnosis"]) == [EvidenceSource.PARTICIPANTS, EvidenceSource.TEXT]
     assert diagnosis.branches[0].reads_diagnosis
     assert diagnosis.branches[0].age_column is None
 
 
 def test_task_reads_files_and_text_species_reads_label_and_text():
-    assert _kinds(_plans(TASK)["Task"]) == [ev.FILES, ev.SHORT_TEXT]
-    assert _kinds(_plans(species_condition(["mouse"]))["Species"]) == [ev.FIELD, ev.SHORT_TEXT]
+    assert _kinds(_plans(TASK)["Task"]) == [EvidenceSource.FILES, EvidenceSource.SHORT_TEXT]
+    assert _kinds(_plans(species_condition(["mouse"]))["Species"]) == [EvidenceSource.FIELD, EvidenceSource.SHORT_TEXT]
 
 
 def test_single_venue_negated_and_having_chips_are_not_explained():
@@ -111,10 +112,10 @@ def test_a_branch_on_the_outer_join_is_left_out():
 def test_paper_and_readme_venues():
     paper = ("(d.search_tsv @@ to_tsquery('english', 'sleep') OR "
              "d.search_tsv_papers @@ to_tsquery('english', 'sleep'))")
-    assert _kinds(_plans(paper)["Text"]) == [ev.TEXT, ev.PAPER]
+    assert _kinds(_plans(paper)["Text"]) == [EvidenceSource.TEXT, EvidenceSource.PAPER]
     # A URL fragment stays a substring search (text_search.convert_long_text_ilike).
     readme = "(d.readme_text ILIKE '%doi.org%' OR d.description_text ILIKE '%doi.org%')"
-    assert _kinds(_plans(readme)["Text"]) == [ev.README, ev.SHORT_TEXT]
+    assert _kinds(_plans(readme)["Text"]) == [EvidenceSource.README, EvidenceSource.SHORT_TEXT]
 
 
 @pytest.mark.parametrize(("tsquery", "short"), [
@@ -140,7 +141,7 @@ def test_a_word_form_guard_does_not_decide_the_text_venue():
                "EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
                "AND p2.age >= 60))")
     plans = mr.plan(_HEAD + "WHERE " + guarded + " GROUP BY d.id")[1]
-    assert [e.source for p in plans for e in p.branches] == [ev.SHORT_TEXT, ev.PARTICIPANTS]
+    assert [e.source for p in plans for e in p.branches] == [EvidenceSource.SHORT_TEXT, EvidenceSource.PARTICIPANTS]
 
 
 def test_participants_in_an_in_subquery_are_not_counted():
@@ -148,7 +149,7 @@ def test_participants_in_an_in_subquery_are_not_counted():
                  "OR d.search_tsv @@ to_tsquery('english', 'adhd:AB'))")
     branch = _plans(condition)
     venue = next(iter(branch.values())).branches[0]
-    assert venue.source == ev.PARTICIPANTS and venue.participant_rows is None
+    assert venue.source == EvidenceSource.PARTICIPANTS and venue.participant_rows is None
 
 
 def test_unreadable_sql_has_no_plan():
@@ -191,7 +192,7 @@ def _age_plans():
 def test_reason_for_the_species_default():
     plans = mr.plan(_sql(species_condition(["human"])))[1]
     assert [p.field for p in plans] == ["Species"]
-    assert _kinds(plans[0]) == [ev.FIELD, ev.ASSUMED]
+    assert _kinds(plans[0]) == [EvidenceSource.FIELD, EvidenceSource.ASSUMED]
     assert mr.reasons_for(plans, {"h0_0": True, "f_species": "Human"}, None) == [
         "Species: species label “Human”"]
     assert mr.reasons_for(plans, {"h0_1": True, "f_species": None}, None) == [
@@ -312,7 +313,7 @@ def test_reason_for_an_excluded_diagnosis_that_holds_by_default():
 
     plans = mr.plan(_sql(without_diagnosis(DIAGNOSIS)))[1]
     assert len(plans) == 1 and plans[0].field.startswith("No ")
-    assert _kinds(plans[0]) == [ev.ASSUMED_ABSENT]
+    assert _kinds(plans[0]) == [EvidenceSource.ASSUMED_ABSENT]
     sql = mr.build_sql("d", plans)
     assert "dx_any.diagnosis IS NOT NULL" in sql and "d.dx_status" in sql
     field = plans[0].field

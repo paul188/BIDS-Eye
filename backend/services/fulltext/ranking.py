@@ -40,12 +40,10 @@ TS_RANK_NORMALIZATION_RANK_PLUS_ONE = 32
 
 # Some searches get other words added: "dead people" also searches
 # "post-mortem | ex vivo", written text_match('post-mortem | ex vivo', 'also').
-# A dataset that has only those other words, not the user's own, goes after
-# every dataset that has the user's words: its text rank loses this much.
-# Why 100: results sort by matched codes (each up to 1, a few dozen at most)
-# plus the text rank (0..1), so nothing else can make up 100. All such
-# datasets lose the same amount, so their order among themselves stays.
-OTHER_WORDS_ONLY_GO_LAST = 100
+# Whether a dataset has only those other words, not the user's own, is a
+# column of its own (other_words_only_expression), not part of its rank:
+# where such datasets go is for the ranker to say (services/results/rankers.py).
+OTHER_WORDS_COLUMN = "other_words_only"
 
 
 @dataclass(frozen=True)
@@ -57,6 +55,7 @@ class RankQuery:
     alternative  the search as the user wrote it, when alternative words
                  ('also') widen it: a dataset that matches only the
                  alternative words does not match this one
+                 (other_words_only_expression)
     """
     stemmed: Optional[str] = None
     exact: Optional[str] = None
@@ -95,19 +94,10 @@ def rank_expression(alias: str, rank: Optional[RankQuery]) -> Optional[str]:
     """SQL for the text rank of the dataset row *alias*; None without a rank.
 
     0..1; with both parts the raw ranks are added before scaling, as one
-    query over one vector would have done. A dataset that matches only the
-    other words of a search ('also') loses OTHER_WORDS_ONLY_GO_LAST.
+    query over one vector would have done.
     """
     if rank is None:
         return None
-    expression = _plain_rank_expression(alias, rank)
-    if expression is None or not rank.alternative:
-        return expression
-    return (f"({expression} - CASE WHEN {alias}.{FTS_COLUMN} @@ "
-            f"to_tsquery('{TS_CONFIG}', '{rank.alternative}') THEN 0 ELSE {OTHER_WORDS_ONLY_GO_LAST} END)")
-
-
-def _plain_rank_expression(alias: str, rank: RankQuery) -> Optional[str]:
     stemmed, exact = rank.stemmed, rank.exact
     if exact and not vectors.exact_enabled():
         exact = None
@@ -123,6 +113,16 @@ def _plain_rank_expression(alias: str, rank: RankQuery) -> Optional[str]:
            f"to_tsquery('{EXACT_TS_CONFIG}', '{exact}'), {TS_RANK_NORMALIZATION_NONE}), 0)")
     # TS_RANK_NORMALIZATION_RANK_PLUS_ONE, applied to the sum.
     return f"(({raw}) / (({raw}) + 1))"
+
+
+def other_words_only_expression(alias: str, rank: Optional[RankQuery]) -> Optional[str]:
+    """SQL that is true for a dataset row *alias* that matches only the
+    words a search was widened with ('also'), not the search as the user
+    wrote it. None when the search was not widened or has no text rank."""
+    if rank is None or not rank.alternative or rank_expression(alias, rank) is None:
+        return None
+    return (f"({alias}.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', '{rank.alternative}')) "
+            "IS NOT TRUE")
 
 
 def ts_rank_cd_expression(vector_sql: str, rank_tsquery: str, config: str = TS_CONFIG) -> str:

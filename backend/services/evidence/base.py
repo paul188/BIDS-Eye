@@ -8,39 +8,42 @@ of evidence are and who uses them: services/evidence/__init__.py.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import List, Optional, Tuple
 
 
 # ── Where evidence is found ───────────────────────────────────────────────────
 
-CONDITION = "condition"        # the condition as the search wrote it, whatever it reads
-PARTICIPANTS = "participants"  # rows of the participant list
-FIELD = "field"                # the dataset's own columns
-FILES = "files"
-DERIVATIVES = "derivatives"
-SITES = "sites"
-SHORT_TEXT = "short_text"      # name or description only (ILIKE, or search_tsv words labelled :AB)
-TEXT = "text"                  # search_tsv: name, description, study fields, README
-README = "readme"
-PAPER = "paper"                # a paper the dataset names
-ASSUMED = "assumed"            # the column is empty and its default holds
-ASSUMED_ABSENT = "assumed_absent"  # an excluded diagnosis, and the dataset records none
-NOT_RECORDED = "not_recorded"  # the dataset does not record the field
+class EvidenceSource(str, Enum):
+    """Where a piece of evidence was found."""
+    CONDITION = "condition"        # the condition as the search wrote it, whatever it reads
+    PARTICIPANTS = "participants"  # rows of the participant list
+    FIELD = "field"                # the dataset's own columns
+    FILES = "files"
+    DERIVATIVES = "derivatives"
+    SITES = "sites"
+    SHORT_TEXT = "short_text"      # name or description only (ILIKE, or search_tsv words labelled :AB)
+    TEXT = "text"                  # search_tsv: name, description, study fields, README
+    README = "readme"
+    PAPER = "paper"                # a paper the dataset names
+    ASSUMED = "assumed"            # the column is empty and its default holds
+    ASSUMED_ABSENT = "assumed_absent"  # an excluded diagnosis, and the dataset records none
+    NOT_RECORDED = "not_recorded"  # the dataset does not record the field
+
+    def __str__(self) -> str:
+        # The value, on every Python version (format() of a str enum changed in 3.11).
+        return self.value
 
 
 # ── What evidence proves ──────────────────────────────────────────────────────
 
 class Strength(IntEnum):
-    """What one piece of evidence says about a condition, strongest first.
-
-    The numbers are the values of the uncertain_level column
-    (services/uncertain/tier.py) and sort results: lower comes first.
-    """
+    """What the evidence says about one AND condition of a search. A dataset
+    is as strong as its weakest condition (the uncertain_level column)."""
     CONFIRMED = 0      # the condition holds
-    PROBABLE = 1       # a weaker form holds
-    POSSIBLE = 2       # the field is not recorded and nothing hints either way
-    CONTRADICTED = 9   # the dataset records the field and it does not fit
+    PROBABLE = 1       # a weaker form of it holds
+    POSSIBLE = 2       # what it asks about is not recorded, and nothing hints either way
+    CONTRADICTED = 9   # recorded, and it does not fit
 
 
 # ── One piece of evidence ─────────────────────────────────────────────────────
@@ -59,7 +62,7 @@ class Evidence:
     # What the result card says when this evidence decides; "" says nothing.
     # The wordings: reason_texts.py.
     reason: str = ""
-    source: str = field(kw_only=True)
+    source: EvidenceSource = field(kw_only=True)
     strength: Strength = field(kw_only=True)
 
     # ── Evidence that shows numbers or values on the card (confirmed.py) ──────
@@ -78,6 +81,6 @@ class Evidence:
         return self.reason or None
 
     @property
-    def key(self) -> Tuple[str, Tuple[str, ...]]:
+    def key(self) -> Tuple[EvidenceSource, Tuple[str, ...]]:
         """Two pieces of evidence with one key are the same way of matching."""
         return self.source, self.read_columns()

@@ -40,6 +40,8 @@ import cohort_count as _cohort_count  # noqa: E402
 from participant_codes import handedness_code as _handedness_code, sex_code as _sex_code  # noqa: E402
 
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
+from services.fulltext.ranking import other_words_only_expression as _other_words_only  # noqa: E402
+from services.results import rankers as _rankers  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
 from services.schema.tables import (  # noqa: E402
@@ -370,8 +372,12 @@ class SqlRewriteService:
         rank_query: Optional[ranking.RankQuery] = None,
         rerank_ordered: Optional[Sequence[str]] = None,
         rerank_demoted: Optional[Sequence[str]] = None,
+        ranker: _rankers.Ranker = _rankers.DEFAULT_RANKER,
     ) -> tuple[str, dict[str, Any]]:
         """Wrap a cached base query for one page of results.
+
+        The order of the page is *ranker*'s (services/results/rankers.py);
+        this method only tells it what the rows carry.
 
         Relevance ordering is layered on only when requested so the cached base
         query can be reused across pages without rebaking the sort order.
@@ -383,61 +389,40 @@ class SqlRewriteService:
         otherwise re-render them.
         """
         ordered = (
-            self._inject_relevance_cte(base_sql, scored_filters, rank_query)
+            self._inject_relevance_cte(base_sql, scored_filters, rank_query, ranker)
             if apply_relevance else base_sql
         )
         ranked = ordered != base_sql
         ordered = self._use_summaries(self._normalize_sql(ordered))
         params: dict[str, Any] = {"_limit": limit, "_offset": offset}
-        # Confirmed results first, then the uncertain tier (services/uncertain/tier.py).
-        tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
-        tier_key = f"page_result.{_uncertain_tier.LEVEL_COLUMN}, " if tiered else ""
-        order_clause = ""
-        if tiered and not (rerank_ordered or rerank_demoted):
-            order_clause = "ORDER BY " + tier_key + (
-                "page_result.relevance_score + page_result.text_rank DESC, " if ranked else ""
-            ) + "page_result.subject_count DESC NULLS LAST, page_result.id\n"
-        if rerank_ordered or rerank_demoted:
+        judged = bool(rerank_ordered or rerank_demoted)
+        if judged:
             params["_rr_top"] = [str(i) for i in (rerank_ordered or [])]
             params["_rr_low"] = [str(i) for i in (rerank_demoted or [])]
-            tail = (
-                "page_result.relevance_score + page_result.text_rank DESC, "
-                if ranked else ""
-            ) + "page_result.subject_count DESC NULLS LAST, page_result.id"
-            order_clause = (
-                f"ORDER BY {tier_key}CASE WHEN page_result.id = ANY(CAST(:_rr_top AS uuid[])) THEN 0\n"
-                "              WHEN page_result.id = ANY(CAST(:_rr_low AS uuid[])) THEN 2\n"
-                "              ELSE 1 END,\n"
-                "         array_position(CAST(:_rr_top AS uuid[]), page_result.id),\n"
-                f"         {tail}\n"
-            )
-        if not order_clause:
-            order_clause = self._stable_page_order(base_sql, ranked)
+        # Confirmed results first, then the uncertain tier (services/uncertain/tier.py).
+        tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
+        if not (tiered or judged or ranked) and _has_top_level_order(base_sql):
+            # An order the user asked for ("the largest first") is kept:
+            # sorting the page again would undo the request.
+            order_clause = ""
+        else:
+            # Postgres does not promise to keep a subquery's order, and
+            # LIMIT/OFFSET over an unordered or tied result can repeat or skip
+            # rows between pages. So the page orders itself.
+            order_clause = _rankers.order_by(ranker, _rankers.ResultColumns(
+                row="page_result",
+                has_evidence=tiered,
+                has_judgment=judged,
+                has_other_words=ranked and _other_words_only("ft", rank_query) is not None,
+                has_scores=ranked,
+                has_subjects=tiered or judged or ranked or "subject_count" in base_sql,
+            )) + "\n"
         sql = (
             f"SELECT * FROM (\n{ordered}\n) AS page_result\n"
             f"{order_clause}"
             "LIMIT :_limit OFFSET :_offset"
         )
         return sql, params
-
-    @staticmethod
-    def _stable_page_order(base_sql: str, ranked: bool) -> str:
-        """The page's ORDER BY when neither the tier nor the re-ranker sets one.
-
-        Postgres does not promise to keep a subquery's order, and LIMIT/OFFSET
-        over an unordered or tied result can repeat or skip rows between
-        pages. So the page orders itself, with the dataset id as the last key.
-        A query whose own top-level ORDER BY the user asked for ("the largest
-        first") keeps that order: re-sorting it here would undo the request.
-        """
-        if ranked:
-            return ("ORDER BY page_result.relevance_score + page_result.text_rank DESC, "
-                    "page_result.subject_count DESC NULLS LAST, page_result.id\n")
-        if _has_top_level_order(base_sql):
-            return ""
-        if "subject_count" in base_sql:
-            return "ORDER BY page_result.subject_count DESC NULLS LAST, page_result.id\n"
-        return "ORDER BY page_result.id\n"
 
     # ── Executed SQL: per-dataset summaries instead of the file table ─────────
     #
@@ -1707,20 +1692,23 @@ class SqlRewriteService:
         return parsed.sql(dialect="postgres")
 
     def _inject_relevance_cte(
-        self, sql: str, scored_filters: list, rank_query: Optional[ranking.RankQuery] = None
+        self, sql: str, scored_filters: list, rank_query: Optional[ranking.RankQuery] = None,
+        ranker: _rankers.Ranker = _rankers.DEFAULT_RANKER,
     ) -> str:
-        """Wrap the base SQL so each row gets a score and the result is ordered by it.
+        """Wrap the base SQL so each row gets its scores, ordered as *ranker* says.
 
         relevance_score  sum of the RAG scores of the canonical codes the
                          dataset really has (structured match)
         text_rank        0..1 full-text rank of the dataset text against the
-                         question's free-text terms (services/fulltext/text_search.py);
-                         far below 0 for a dataset that matches only the
-                         other words of a search, not the user's own
+                         question's free-text terms (services/fulltext/ranking.py)
+        other_words_only only for a search widened with other words: true
+                         for a dataset that matches those and not the
+                         user's own
 
-        Datasets are ordered by the sum, so a dataset with a diagnosis row and
-        the term in its title beats one with only either, and a dataset that
-        merely mentions the term in its README comes last.
+        The default ranker orders by the sum of the two scores, so a dataset
+        with a diagnosis row and the term in its title beats one with only
+        either, and a dataset that merely mentions the term in its README
+        comes last.
         """
         rows: list[str] = []
         field_cols: dict[str, tuple[str, str]] = {}
@@ -1775,9 +1763,16 @@ class SqlRewriteService:
 
         text_rank_expr = "0"
         text_join = ""
+        other_words_column = ""
         if use_text_rank:
             text_rank_expr = text_rank  # type: ignore[assignment]
             text_join = f"\n  LEFT JOIN {_datasets.name} ft ON ft.id = base.id"
+            other_words = _other_words_only("ft", rank_query)
+            if other_words is not None:
+                other_words_column = f",\n  {other_words} AS {ranking.OTHER_WORDS_COLUMN}"
+        order = _rankers.order_by(ranker, _rankers.ResultColumns(
+            row="ranked", has_other_words=bool(other_words_column), has_scores=True,
+            has_subjects=True))
 
         # ORDER BY cannot add two output aliases in the same SELECT, hence the
         # extra level.
@@ -1786,11 +1781,10 @@ class SqlRewriteService:
             "SELECT * FROM (\n"
             "  SELECT base.*,\n"
             f"  {relevance_expr} AS relevance_score,\n"
-            f"  {text_rank_expr} AS text_rank\n"
+            f"  {text_rank_expr} AS text_rank{other_words_column}\n"
             f"  FROM (\n{base_sql}\n) AS base{text_join}\n"
             ") AS ranked\n"
-            "ORDER BY ranked.relevance_score + ranked.text_rank DESC, "
-            "ranked.subject_count DESC NULLS LAST, ranked.id"
+            f"{order}"
         )
 
 
@@ -1835,8 +1829,9 @@ def build_page_sql(
     rank_query: Optional[ranking.RankQuery] = None,
     rerank_ordered: Optional[Sequence[str]] = None,
     rerank_demoted: Optional[Sequence[str]] = None,
+    ranker: _rankers.Ranker = _rankers.DEFAULT_RANKER,
 ) -> tuple[str, dict[str, Any]]:
     return sql_rewrite_service.build_page_sql(
         base_sql, scored_filters, apply_relevance, limit, offset, rank_query=rank_query,
-        rerank_ordered=rerank_ordered, rerank_demoted=rerank_demoted,
+        rerank_ordered=rerank_ordered, rerank_demoted=rerank_demoted, ranker=ranker,
     )
