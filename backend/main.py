@@ -34,6 +34,7 @@ import place_index
 import worker_db
 from db.db import create_all_tables, engine
 from services.catalogue.catalogue import catalogue
+from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -49,10 +50,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await create_all_tables()
     log.info("Database tables verified.")
 
-    # Stop when a migration is missing, then count what the catalogue holds:
-    # prompts mention only the columns enough datasets fill
-    # (services/catalogue/catalogue.py).
+    # Stop when a migration is missing, then count what the catalogue holds
+    # (services/catalogue/catalogue.py). Prompts mention only the columns
+    # enough datasets fill (services/translate/optional_columns.py).
     await catalogue.start(engine)
+    optional_columns.log_changes(catalogue.coverage)
 
     # Distinct bids_datasets.institutions values, for resolving institution
     # names in questions (RAG/institution_index.py). Falls back to

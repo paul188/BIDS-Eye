@@ -1,6 +1,6 @@
 """What the SQL model is shown: the schema with the usable optional columns,
 and few-shot examples that use only those (constants.build_schema_ddl,
-text_to_sql._pick_examples; usable columns from services/catalogue/catalogue.py)."""
+text_to_sql._pick_examples; usable columns from services/translate/optional_columns.py)."""
 
 from __future__ import annotations
 

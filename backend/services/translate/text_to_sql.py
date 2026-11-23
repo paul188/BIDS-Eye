@@ -331,7 +331,7 @@ def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
             # Don't teach the generator an unavailable-column query or SQL the
             # static safety guard would reject. Runtime EXPLAIN is not repeated
             # here: it depends on the live database and would add latency.
-            if _catalogue.coverage.uses_unusable_column(ex["sql"]):
+            if _optional_columns.uses_unusable_column(_catalogue.coverage, ex["sql"]):
                 continue
             guard_reason = _static_guard_reason(ex["sql"])
             if guard_reason:
@@ -498,6 +498,7 @@ from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa:
 from services.translate.sql_rewriter import finish_corrected_sql as _finish_corrected_sql  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
+from services.translate import optional_columns as _optional_columns  # noqa: E402
 from services.schema.tables import datasets as _datasets, objects as _objects, participants as _participants  # noqa: E402
 from services.translate.participant_query_compiler import (  # noqa: E402
     compile_plan as _compile_plan,
@@ -517,7 +518,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     except ImportError as exc:
         log.warning("Gemini correction unavailable: %s", exc)
         return sql
-    schema_ddl = build_schema_ddl(_catalogue.coverage.usable_columns())
+    schema_ddl = build_schema_ddl(_optional_columns.usable_columns(_catalogue.coverage))
 
     prompt = (
         "A PostgreSQL query failed. Fix it and return ONLY the corrected SQL — "
@@ -552,13 +553,13 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     except ImportError as exc:
         log.warning("Gemini SQL generation unavailable: %s", exc)
         return _FALLBACK_SQL
-    schema_ddl = build_schema_ddl(_catalogue.coverage.usable_columns())
+    schema_ddl = build_schema_ddl(_optional_columns.usable_columns(_catalogue.coverage))
 
     # The model never writes a text predicate itself. It copies or writes
     # text_match('...') placeholders, which services/fulltext/text_search.py expands
     # into full-text search.
     long_text_cols = ["d.description_text"]
-    if _catalogue.coverage.usable("readme_text"):
+    if _optional_columns.usable(_catalogue.coverage, "readme_text"):
         long_text_cols.append("d.readme_text")
     long_text_phrase = " or ".join(long_text_cols)
 
@@ -719,7 +720,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     # Stages 1 + 2
     augmented_plan = run_pipeline(
         question, retriever=retriever, api_key=api_key,
-        available_columns=_catalogue.coverage.usable_columns(),
+        available_columns=_optional_columns.usable_columns(_catalogue.coverage),
     )
     augmented_question = augmented_plan.augmented_question
     query_family = augmented_plan.plan.query_family.value

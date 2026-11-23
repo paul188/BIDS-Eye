@@ -55,6 +55,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from services.catalogue.catalogue import catalogue
 from services.schema.tables import datasets as _datasets
+from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
 
@@ -135,10 +136,10 @@ def should_rerank(apply_relevance: bool, total: int, is_fallback: bool) -> bool:
 def _details_sql() -> str:
     cols = ["d.id", "d.accession_id", "d.name"]
     for column in ("dx_status", "study_domain", "study_design", "age_min", "age_max", "size_bytes"):
-        if catalogue.coverage.usable(column):
+        if optional_columns.usable(catalogue.coverage, column):
             cols.append(f"d.{column}")
     cols.append(f"d.{PROFILE_COLUMN}")
-    if catalogue.coverage.usable("readme_text"):
+    if optional_columns.usable(catalogue.coverage, "readme_text"):
         cols.append(f"left(d.readme_text, {README_EXCERPT_CHARS}) AS readme_excerpt")
     return f"SELECT {', '.join(cols)} FROM {_datasets.name} d WHERE d.id = ANY(:ids)"
 

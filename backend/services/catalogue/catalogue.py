@@ -10,10 +10,8 @@ they are, and Catalogue keeps that in three parts:
 
   coverage   ColumnCoverage: per optional bids_datasets column
              (constants.OPTIONAL_DATASET_COLUMNS), how many datasets fill it.
-             A column filled in at least MIN_COVERAGE of the datasets is
-             usable: it is rendered into the SQL model's schema, and few-shot
-             examples that use another one are dropped. A filter on a column
-             that is nearly empty would discard almost every dataset.
+             Only the counts: which columns the search then uses is decided
+             in services/translate/optional_columns.py.
   summaries  Summaries: whether bids_dataset_facets covers every dataset that
              has files and bids_datasets.n_subjects is filled. The executed
              SQL then reads them instead of bids_objects
@@ -41,8 +39,6 @@ search never sees half of a reload.
 from __future__ import annotations
 
 import logging
-import math
-import re
 import time
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
@@ -58,9 +54,6 @@ from services.schema.check import check_schema
 from services.schema.tables import dataset_facets, datasets, objects, participants
 
 log = logging.getLogger(__name__)
-
-# A column counts as usable when at least this share of datasets fills it.
-MIN_COVERAGE = 0.05
 
 
 # ── The three parts ───────────────────────────────────────────────────────────
@@ -79,21 +72,6 @@ class ColumnCoverage:
         if unknown:
             raise ValueError(f"not optional dataset columns: {sorted(unknown)}")
         return cls(total=1, filled=dict.fromkeys(columns, 1))
-
-    def usable(self, column: str) -> bool:
-        """True when at least MIN_COVERAGE of the datasets fill *column*."""
-        return self.filled.get(column, 0) >= max(1, math.ceil(MIN_COVERAGE * self.total))
-
-    def usable_columns(self) -> frozenset[str]:
-        return frozenset(column for column in OPTIONAL_DATASET_COLUMNS if self.usable(column))
-
-    def uses_unusable_column(self, sql: str) -> bool:
-        """True if *sql* names an optional column that is not usable."""
-        unusable = set(OPTIONAL_DATASET_COLUMNS) - self.usable_columns()
-        if not unusable:
-            return False
-        pattern = r"\b(?:" + "|".join(sorted(map(re.escape, unusable))) + r")\b"
-        return re.search(pattern, sql) is not None
 
 
 @dataclass(frozen=True)
@@ -148,6 +126,8 @@ class Catalogue:
         self.values = ValueCounts()
         # time.monotonic() of the last load(), whether it succeeded or not.
         self._last_attempt: float | None = None
+        # True while refresh_if_stale() is reading.
+        self._refreshing = False
 
     def clear(self) -> None:
         """Forget everything read: no optional column, no summaries, no values."""
@@ -162,11 +142,21 @@ class Catalogue:
             await self.load(connection)
 
     async def refresh_if_stale(self, connection: AsyncConnection | AsyncSession) -> None:
-        """load() when the last load is REFRESH_SECONDS old."""
+        """load() when the last load is REFRESH_SECONDS old.
+
+        One search reloads at a time. A search that arrives meanwhile does not
+        wait and does not read again: it uses what the catalogue holds.
+        """
+        if self._refreshing:
+            return
         if (self._last_attempt is not None
                 and time.monotonic() - self._last_attempt < self.REFRESH_SECONDS):
             return
-        await self.load(connection)
+        self._refreshing = True
+        try:
+            await self.load(connection)
+        finally:
+            self._refreshing = False
 
     async def load(self, connection: AsyncConnection | AsyncSession) -> None:
         """Read coverage, summaries and values.
@@ -177,8 +167,6 @@ class Catalogue:
         """
         coverage = await self._read_coverage(connection)
         if coverage is not None:
-            if coverage.usable_columns() != self.coverage.usable_columns():
-                _log_coverage(coverage)
             self.coverage = coverage
         summaries = await self._read_summaries(connection)
         if summaries is not None:
@@ -190,9 +178,7 @@ class Catalogue:
         self.values = await self._read_values(connection)
         # Set only after the reads succeeded or failed with a database error. A
         # bug (any other exception) skips this line, so every search fails until
-        # it is fixed instead of the bug going quiet for REFRESH_SECONDS. Two
-        # searches arriving together may both reload; that is only duplicate
-        # queries.
+        # it is fixed instead of the bug going quiet for REFRESH_SECONDS.
         self._last_attempt = time.monotonic()
 
     # ── Reading ───────────────────────────────────────────────────────────────
@@ -277,14 +263,6 @@ def _filled(column: Column) -> ColumnElement[bool]:
     if isinstance(column.type, Text):
         return func.nullif(func.btrim(column), "").is_not(None)
     return column.is_not(None)
-
-
-def _log_coverage(coverage: ColumnCoverage) -> None:
-    needed = max(1, math.ceil(MIN_COVERAGE * coverage.total))
-    for name in OPTIONAL_DATASET_COLUMNS:
-        filled = coverage.filled.get(name, 0)
-        log.info("Optional dataset column %-18s %5d / %d datasets → %s", name, filled,
-                 coverage.total, "shown to the SQL model" if filled >= needed else "hidden (too sparse)")
 
 
 # The instance the backend uses: main.py starts it, search.py refreshes it.

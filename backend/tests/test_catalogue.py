@@ -111,22 +111,11 @@ def _load(connection: _Connection, into: Catalogue | None = None) -> Catalogue:
 
 # ── Coverage ──────────────────────────────────────────────────────────────────
 
-def test_a_column_is_usable_once_five_percent_of_the_datasets_fill_it() -> None:
-    coverage = _load(_Connection(total=1000, filled={"readme_text": 850, "dx_status": 49,
-                                                     "institutions": 50})).coverage
-    assert coverage.usable_columns() == {"readme_text", "institutions"}
-    assert not coverage.usable("dx_status")
-
-
-def test_an_empty_catalogue_has_no_usable_column() -> None:
-    assert ColumnCoverage().usable_columns() == frozenset()
-    assert _load(_Connection(total=0)).coverage.usable_columns() == frozenset()
-
-
-def test_examples_naming_an_unusable_column_are_recognised() -> None:
-    coverage = ColumnCoverage.full({"readme_text"})
-    assert not coverage.uses_unusable_column("SELECT 1 FROM bids_datasets d WHERE d.readme_text ILIKE '%x%'")
-    assert coverage.uses_unusable_column("SELECT 1 FROM unnest(d.institutions) AS inst")
+def test_coverage_counts_the_datasets_that_fill_each_optional_column() -> None:
+    coverage = _load(_Connection(total=1000, filled={"readme_text": 850, "dx_status": 49})).coverage
+    assert coverage.total == 1000
+    assert coverage.filled["readme_text"] == 850 and coverage.filled["dx_status"] == 49
+    assert coverage.filled["institutions"] == 0
 
 
 def test_full_coverage_rejects_unknown_names() -> None:
@@ -184,7 +173,7 @@ def test_a_failed_read_keeps_that_part_and_the_others_still_load() -> None:
     state.coverage = ColumnCoverage.full({"readme_text"})
     connection = _Connection(fails=("coverage", tables.dataset_facets.name))
     _load(connection, into=state)
-    assert state.coverage.usable_columns() == {"readme_text"}
+    assert state.coverage.filled == {"readme_text": 1}
     assert state.summaries.facets
     assert not state.values.loaded("suffix") and state.values.loaded("diagnosis")
     # Each read in its own savepoint: only the failed ones are rolled back.
@@ -202,6 +191,25 @@ def test_a_failed_reload_keeps_the_old_values_and_waits_before_trying_again() ->
     assert connection.reads.count("coverage") == 1   # one load; the second call waits
     assert state.values.dataset_count("task", "resting_state") == 20
     assert state.values.dataset_count("diagnosis", "parkinsons_disease") == 9
+
+
+def test_searches_arriving_during_a_reload_do_not_reload_too() -> None:
+    class _Slow(_Connection):
+        async def execute(self, statement, params=None):
+            await asyncio.sleep(0)
+            return await super().execute(statement, params)
+
+    async def three_searches() -> None:
+        await asyncio.gather(*(state.refresh_if_stale(connection) for _ in range(3)))
+
+    state, connection = Catalogue(), _Slow(filled={"readme_text": 850})
+    asyncio.run(three_searches())
+    assert connection.reads.count("coverage") == 1
+    assert state.coverage.filled["readme_text"] == 850
+    # A reload that ends, by success or by error, lets the next stale search reload.
+    state._last_attempt = time.monotonic() - Catalogue.REFRESH_SECONDS - 1
+    asyncio.run(three_searches())
+    assert connection.reads.count("coverage") == 2
 
 
 def test_an_error_that_is_not_a_database_error_is_not_swallowed() -> None:

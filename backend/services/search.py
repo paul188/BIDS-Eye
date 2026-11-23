@@ -26,6 +26,7 @@ from services.fulltext import ranking
 from services.results import query_filters
 from services import search_runner
 from services.stores.translated_queries import CachedQuery, query_cache
+from services.translate import optional_columns
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL
 from services.translate.text_to_sql import text_to_sql
 
@@ -91,6 +92,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
     # The same question gets the same translation every time (the models that
     # write it are not repeatable): reuse a stored one when there is one.
     await catalogue.refresh_if_stale(session)
+    optional_columns.log_changes(catalogue.coverage)
     stored = await interpretations.get(session, question)
     if stored is not None:
         translation = TextToSQLResult(

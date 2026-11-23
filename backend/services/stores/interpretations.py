@@ -59,6 +59,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "schema" / "check.py",
     _BACKEND / "services" / "schema" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
+    _BACKEND / "services" / "translate" / "optional_columns.py",
     _BACKEND / "services" / "translate" / "participant_query_compiler.py",
     _BACKEND / "services" / "query_guard.py",
     _BACKEND / "services" / "translate" / "sql_rewriter.py",
