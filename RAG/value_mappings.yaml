@@ -6729,6 +6729,7 @@ task:
     label: Resting-state TMS-EEG
     standard_code: resting_state_tms_eeg
     broader:
+    - tms_eeg
     - resting_state
     - neuromodulation
     description: Resting-state brain activity is recorded using EEG while participants
@@ -54337,8 +54338,6 @@ task:
     is_group: true
     broader: []
     synonyms:
-    - TMS-EEG
-    - tDCS
     - exogenous brain stimulation
     - invasive recording
     - biofeedback
@@ -55009,6 +55008,7 @@ task:
     label: TMS Training Block 1
     standard_code: tms_training_block_1
     broader:
+    - transcranial_magnetic_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: The first block of training trials for a real-time brain state-dependent
@@ -55058,6 +55058,7 @@ task:
     label: TMS Training Block 2
     standard_code: tms_training_block_2
     broader:
+    - transcranial_magnetic_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: The second block of training trials for a real-time brain state-dependent
@@ -55103,6 +55104,7 @@ task:
     label: TMS Training Block 3
     standard_code: tms_training_block_3
     broader:
+    - transcranial_magnetic_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: The third block of training trials for a real-time brain state-dependent
@@ -55150,6 +55152,7 @@ task:
     label: TMS Training Block 4
     standard_code: tms_training_block_4
     broader:
+    - transcranial_magnetic_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: The fourth block of training trials for a real-time brain state-dependent
@@ -55193,6 +55196,7 @@ task:
     label: TMS Training Block 5
     standard_code: tms_training_block_5
     broader:
+    - transcranial_magnetic_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: The fifth block of training trials for a real-time brain state-dependent
@@ -55242,6 +55246,7 @@ task:
     label: TMS Training Block 6
     standard_code: tms_training_block_6
     broader:
+    - transcranial_magnetic_stimulation
     - physiological_neurostimulation
     - neuromodulation
     description: The sixth block of training trials for a real-time brain state-dependent
@@ -55285,6 +55290,7 @@ task:
     label: TMS-EEG stimulation (variant 1)
     standard_code: tms_eeg_stimulation_variant1
     broader:
+    - tms_eeg
     - physiological_neurostimulation
     - neuromodulation
     description: Participants receive single-pulse open-loop transcranial magnetic
@@ -55330,6 +55336,7 @@ task:
     label: TMS-EEG stimulation (variant 2)
     standard_code: tms_eeg_stimulation_variant2
     broader:
+    - tms_eeg
     - physiological_neurostimulation
     - neuromodulation
     description: Participants receive single-pulse open-loop transcranial magnetic
@@ -55839,6 +55846,8 @@ task:
       weight: 0.38
     - term: Transcranial direct current stimulation
       weight: 0.1
+    - term: tDCS
+      weight: 0.1
     - term: tACS
       weight: 0.1
     - term: Transcranial alternating current stimulation
@@ -56053,6 +56062,18 @@ task:
     - raw: taskVFS
       datasets:
       - ds005849
+  tms_eeg:
+    label: TMS-EEG
+    is_group: true
+    broader:
+    - transcranial_magnetic_stimulation
+    description: EEG recorded during transcranial magnetic stimulation. Added
+      2026-11-23, when "TMS-EEG" was a synonym of the whole physiological or
+      neurostimulation group (67 tasks, meditation and sleepiness among them).
+    synonyms:
+    - TMS-EEG
+    - TMS EEG
+    - concurrent TMS-EEG
   transcranial_magnetic_stimulation:
     label: Transcranial Magnetic Stimulation
     standard_code: transcranial_magnetic_stimulation
@@ -61500,14 +61521,6 @@ task:
       weight: 0.9
     - term: cortical stimulation
       weight: 0.8
-    - term: TMS
-      weight: 0.85
-    - term: transcranial magnetic stimulation
-      weight: 0.95
-    - term: tDCS
-      weight: 0.8
-    - term: transcranial direct current stimulation
-      weight: 0.9
     - term: focused ultrasound
       weight: 0.85
     - term: MRgFUS

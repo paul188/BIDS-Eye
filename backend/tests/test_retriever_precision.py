@@ -370,3 +370,29 @@ def test_meanings_come_from_the_listings() -> None:
     assert retriever.shorthand_meanings("APT") == ["amide proton transfer imaging (APT) (scan type)"]
     assert retriever.shorthand_meanings("ERP") == ["event-related potential"]
     assert retriever.shorthand_meanings("XQZ") == []
+
+
+TMS_EEG_TASKS = ["resting_state_tms_eeg", "tms_eeg_stimulation_variant1", "tms_eeg_stimulation_variant2"]
+
+
+@pytest.mark.parametrize("term", ["TMS", "tms", "transcranial magnetic stimulation"])
+def test_tms_is_the_tms_tasks(term: str) -> None:
+    # "TMS" was a synonym of the whole neuromodulation group: 42 tasks,
+    # neurofeedback and deep brain stimulation among them (2026-11-23).
+    codes = _resolve_yaml_term("task", term)
+    assert codes[0] == "transcranial_magnetic_stimulation" and len(codes) == 10
+    assert set(TMS_EEG_TASKS) < set(codes) and "tms_training_block_1" in codes
+    assert not any("neurofeedback" in c or "deep_brain" in c for c in codes)
+    assert set(codes) <= set(_resolve_yaml_term("task", "neuromodulation"))
+
+
+def test_tms_eeg_is_the_three_tms_eeg_tasks() -> None:
+    # Was a synonym of "physiological or neurostimulation task": 67 tasks, meditation among them.
+    assert _resolve_yaml_term("task", "TMS-EEG") == TMS_EEG_TASKS
+
+
+@pytest.mark.parametrize("term", ["tDCS", "tdcs", "transcranial direct current stimulation"])
+def test_tdcs_is_electrical_stimulation(term: str) -> None:
+    # Was a synonym of two groups: 80 tasks. No task code is tDCS alone; it
+    # is electrical stimulation, with tES, tACS and tRNS.
+    assert _resolve_yaml_term("task", term) == ["electrical_stimulation"]
