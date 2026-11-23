@@ -62818,8 +62818,6 @@ suffix:
       weight: 0.8
     - term: APT imaging
       weight: 0.8
-    - term: APT-CEST
-      weight: 0.5
   magnetization_transfer_saturation:
     label: magnetization transfer saturation MRI
     standard_code: magnetization_transfer_saturation
