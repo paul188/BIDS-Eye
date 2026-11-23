@@ -8,6 +8,7 @@ from text_terms import (
     MODE_NEAR as _MODE_NEAR,
     MODE_SHORT as _MODE_SHORT,
     format_text_match as _format_text_match,
+    searched_words as _searched_words,
     split_words as _split_words,
 )
 import senses as _senses
@@ -355,6 +356,11 @@ def resolve_topic(
             dropped[alternative] = "only the head word or a qualifier"
         elif any(n <= words for n in not_meant_sets):
             dropped[alternative] = "names a meaning the search excludes"
+        elif not curated and len(_searched_words(alternative)) < 2 <= len(_split_words(alternative)):
+            # "after seizure" for "postictal state" is searched as "seizure":
+            # 25 epilepsy datasets, none about the postictal state (live,
+            # 2026-11-23).
+            dropped[alternative] = "one word is left once the search drops its stop words"
         else:
             kept.append((alternative, curated))
 

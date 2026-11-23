@@ -306,3 +306,17 @@ def test_asl_includes_the_files_only_asl_has(term: str) -> None:
 def test_cbf_and_m0_alone_stay_narrow() -> None:
     assert _resolve_yaml_term("suffix", "CBF") == ["cerebral_blood_flow"]
     assert _resolve_yaml_term("suffix", "M0") == ["m0_scan"]
+
+
+@pytest.mark.parametrize("term", ["APT", "APTw", "amide proton transfer"])
+def test_apt_is_the_scan_type(term: str) -> None:
+    # "Dataset with epilepsy patients and APT" asked for the task tactile
+    # stimulation, through its synonym "APTS" (live, 2026-11-23).
+    assert _resolve_yaml_term("suffix", term) == ["apt"]
+    assert term.lower() not in ("apt", "aptw") or term.lower() in retriever._PURE_MODALITY_TERMS
+
+
+@pytest.mark.parametrize("term", ["EUPD", "emotionally unstable personality disorder"])
+def test_eupd_is_borderline_personality_disorder(term: str) -> None:
+    # ds000214 "EUPD Cyberball" was missing from a borderline personality search.
+    assert _resolve_yaml_term("diagnosis", term) == ["borderline_personality_disorder"]

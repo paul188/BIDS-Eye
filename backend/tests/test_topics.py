@@ -84,6 +84,18 @@ def test_alternatives_are_checked_before_they_are_searched() -> None:
     assert "conflict" not in resolved.alternatives
 
 
+def test_an_alternative_the_search_cuts_to_one_word_is_dropped() -> None:
+    """"after seizure" for "postictal state": PostgreSQL drops "after", and the
+    search for "seizure" gave 25 epilepsy datasets (live, 2026-11-23)."""
+    postictal = pp.Topic(typed="postictal", phrase="postictal state", head="state",
+                         qualifiers=["postictal"],
+                         alternatives=["after seizure", "post-seizure recovery", "between the seizures"])
+    resolved = pp.resolve_topic(postictal, None, _counts({}))
+    assert resolved.dropped["after seizure"] == "one word is left once the search drops its stop words"
+    assert resolved.dropped["between the seizures"] == resolved.dropped["after seizure"]
+    assert resolved.alternatives == ["post-seizure recovery"]
+
+
 def test_curated_alternatives_are_not_too_common() -> None:
     # "aggression" is in senses.yaml; a broad count does not drop it.
     resolved = pp.resolve_topic(SOCIAL, None, _counts({"aggression": 500}))

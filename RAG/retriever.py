@@ -134,6 +134,7 @@ _PURE_MODALITY_TERMS = {
     "fmri", "mri", "meg", "eeg", "dti", "dwi", "ieeg", "ecog",
     "fnirs", "nirs", "pet", "asl", "mrs", "bold", "mr", "ct",
     "bld", "t1", "t2", "t1w", "t2w",
+    "apt", "aptw",   # amide proton transfer; "APT" matched the task synonym "APTS"
     # Short phrases with modality abbreviation
     "fmri scan", "fmri data", "eeg data", "meg data",
     "eeg recording", "meg recording", "mri scan", "mri data",

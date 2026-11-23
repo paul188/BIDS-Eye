@@ -76,6 +76,26 @@ _STOPWORDS = frozenset({
     "the", "to", "with",
 })
 
+# Every word PostgreSQL's 'english' configuration drops from a text and from
+# a query (english.stop). split_words() keeps most of them, so a term can
+# read as more than is searched: "after seizure" is searched as "seizure".
+POSTGRES_STOPWORDS = frozenset("""
+    i me my myself we our ours ourselves you your yours yourself yourselves he
+    him his himself she her hers herself it its itself they them their theirs
+    themselves what which who whom this that these those am is are was were be
+    been being have has had having do does did doing a an the and but if or
+    because as until while of at by for with about against between into
+    through during before after above below to from up down in out on off over
+    under again further then once here there when where why how all any both
+    each few more most other some such no nor not only own same so than too
+    very s t can will just don should now
+""".split())
+
+
+def searched_words(term: str) -> List[str]:
+    """The words of *term* PostgreSQL searches: its parts without the stop words."""
+    return [part for word in split_words(term) for part in word if part not in POSTGRES_STOPWORDS]
+
 # Everyday words that name a condition only together with "disorder",
 # "disease" or "syndrome": "eating disorders" searched as "eating" matched
 # abstracts about meals (qp08: 1 of 12 results correct). A diagnosis string

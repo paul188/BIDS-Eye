@@ -1143,6 +1143,10 @@ diagnosis:
       weight: 0.8
     - term: emotionally unstable personality
       weight: 0.7
+    - term: emotionally unstable personality disorder
+      weight: 0.7
+    - term: EUPD
+      weight: 0.7
     - term: emotional dysregulation disorder
       weight: 0.6
   eating_disorder:
@@ -62793,6 +62797,29 @@ suffix:
       weight: 0.1
     codes:
     - MPM
+  apt:
+    label: amide proton transfer imaging (APT)
+    standard_code: apt
+    broader:
+    - mri_quantitative
+    description: Amide proton transfer weighted MRI, a CEST contrast (ds004717,
+      gliomas). Added 2026-11-23, when "APT" resolved to the task tactile
+      stimulation through its synonym "APTS".
+    synonyms:
+    - term: APT
+      weight: 0.9
+    - term: APTw
+      weight: 0.9
+    - term: amide proton transfer
+      weight: 0.9
+    - term: amide proton transfer weighted imaging
+      weight: 0.8
+    - term: APT-weighted MRI
+      weight: 0.8
+    - term: APT imaging
+      weight: 0.8
+    - term: APT-CEST
+      weight: 0.5
   magnetization_transfer_saturation:
     label: magnetization transfer saturation MRI
     standard_code: magnetization_transfer_saturation
