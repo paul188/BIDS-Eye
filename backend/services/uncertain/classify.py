@@ -31,12 +31,104 @@ from services.uncertain.sex import sex_text_condition
 from services.uncertain.scanner import sidecar
 
 
-def _columns_outside_subqueries(node) -> set:
-    found = set()
-    for column in node.find_all(exp.Column):
-        if column.find_ancestor(exp.Subquery, exp.Exists) is None:
-            found.add(column.table or "")
-    return found
+# ── Which conditions may be uncertain ───────────────────────────────────────
+# This block and soft_kind() are the one place that decides it. classify()
+# below only builds the weaker forms for what soft_kind() let through.
+#
+# A condition may be uncertain when a dataset can fail it without
+# contradicting it: it reads a field a dataset may not record, or it is a
+# text search and the dataset uses other words. Which table holds the field
+# plays no part in that.
+
+# Fields a dataset may not record, and the kind of uncertain condition each
+# makes. About half the datasets have no participant ages, most no coded
+# diagnosis (tier.py).
+SOFT_FIELDS = {
+    "age": "age", "age_min": "age", "age_max": "age",
+    "diagnosis": "diagnosis", "dx_status": "diagnosis",
+    "sex": "sex",
+}
+
+# Sidecar values (field strength, echo times …) are recorded with the files.
+# Field strength and scanner make or model can be missing there and named in
+# the README instead: scanner.sidecar makes those three uncertain and leaves
+# the other keys hard.
+SIDECAR_COLUMN = "other_entities"
+
+# Fields that stay hard although a README could name the value.
+#   institutions  A resolved institution filter is evidence from the scanner
+#                 headers. Its weaker form would be the name anywhere in the
+#                 README or a paper, and those mentions are mostly suppliers,
+#                 software and citations ('kindly provided by … Harvard
+#                 Medical School', surfer.nmr.mgh.harvard.edu).
+#   species       The README of a human study says 'mouse click', and the
+#                 title/description fallback for unlabelled datasets is
+#                 already part of the condition.
+HARD_FIELDS = {"institutions", "species"}
+
+# Every field in neither list is hard: modality, file types, size, subject
+# counts and the like come from the files themselves, so a dataset that
+# fails them is contradicted.
+
+
+def _joined_row_tables(node, alias: str) -> set:
+    """The joined tables whose rows *node* reads directly, not in a subquery.
+
+    "p.age < 12" on a joined participant row is true or false per row; the
+    tier needs one answer per dataset. Inside EXISTS(…) there is one.
+    """
+    tables = {column.table or "" for column in node.find_all(exp.Column)
+              if column.find_ancestor(exp.Subquery, exp.Exists) is None}
+    return tables - {alias, ""}
+
+
+def _patient_count_parts(sql: str):
+    """(codes, minimum) of "at least N participants with a diagnosis", else None."""
+    try:
+        import cohort_count
+    except ImportError:  # the RAG package is not on the path
+        return None
+    return cohort_count.parse_expanded(sql)
+
+
+def soft_kind(node, alias: str) -> Optional[str]:
+    """The kind of uncertain condition *node* may become; None: a hard filter.
+
+    The rules, in this order:
+      1. Negated: hard.
+      2. Reads a sidecar value: "sidecar".
+      3. Reads a HARD_FIELDS column: hard.
+      4. Reads a joined table's row outside a subquery: hard.
+      5. "At least N participants with a diagnosis": "patient_count".
+      6. Reads SOFT_FIELDS of one kind: "age", "diagnosis" or "sex". Of two
+         kinds in one condition: hard.
+      7. Holds a text search: "text".
+      8. Anything else: hard.
+
+    A kind is permission, not a promise: classify() still returns None when
+    the condition has no weaker form (a one-word text search, a sidecar key
+    other than field strength, make or model).
+    """
+    if isinstance(node, exp.Not):
+        return None
+    columns = {column.name.lower() for column in node.find_all(exp.Column)}
+    if SIDECAR_COLUMN in columns:
+        return "sidecar"
+    if columns & HARD_FIELDS:
+        return None
+    if _joined_row_tables(node, alias):
+        return None
+    sql = node.sql(dialect="postgres")
+    if _patient_count_parts(sql) is not None:
+        return "patient_count"
+    kinds = {SOFT_FIELDS[column] for column in columns & SOFT_FIELDS.keys()}
+    if len(kinds) > 1:
+        return None
+    if kinds:
+        return kinds.pop()
+    if TSQUERY_RE.search(sql):
+        return "text"
+    return None
 
 
 def paper_atoms(sql: str, alias: str) -> Optional[str]:
@@ -73,43 +165,19 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     """
     if isinstance(node, exp.Paren):
         node = node.this
-    if isinstance(node, exp.Not):
+    # Whether the condition may be uncertain is decided in soft_kind() alone;
+    # from here on only its weaker forms are built.
+    kind = soft_kind(node, alias)
+    if kind is None:
         return None
     sql = node.sql(dialect="postgres")
-    columns = {column.name.lower() for column in node.find_all(exp.Column)}
-    # Sidecar values (field strength, echo times …) are recorded with the
-    # files. Field strength and scanner make can be missing there and named
-    # in the README instead (sidecar); the rest stay hard filters.
-    if "other_entities" in columns:
+    if kind == "sidecar":
         return sidecar(node, alias)
-    # A resolved institution filter is evidence from the scanner headers. Its
-    # weaker form would be the name anywhere in the README or a paper, and
-    # those mentions are mostly suppliers, software and citations ('kindly
-    # provided by … Harvard Medical School', surfer.nmr.mgh.harvard.edu).
-    # Species likewise: the README of a human study says 'mouse click', and
-    # its title/description fallback for unlabelled datasets is already
-    # part of the condition.
-    if columns & {"institutions", "species"}:
-        return None
-    # A condition on the outer join's rows (o.datatype …) is about files.
-    if _columns_outside_subqueries(node) - {alias, ""}:
-        return None
-    counted = _patient_count(sql, alias)
-    if counted is not None:
-        return counted
-    kinds = []
-    if columns & {"age", "age_min", "age_max"}:
-        kinds.append("age")
-    if columns & {"diagnosis", "dx_status"}:
-        kinds.append("diagnosis")
-    if "sex" in columns:
-        kinds.append("sex")
-    if len(kinds) > 1:
-        return None
+    if kind == "patient_count":
+        return _patient_count(sql, alias)
     relaxed, words = relax_text_condition(sql)
     paper = paper_atoms(sql, alias) if papers else None
-    if kinds:
-        kind = kinds[0]
+    if kind != "text":
         probable = relaxed
         reason_probable = partial_reason(words) if relaxed else ""
         if kind == "age":
