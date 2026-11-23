@@ -15,6 +15,7 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services.fulltext.tier_conditions import sql_literal
+from services.schema.tables import participants as _participants
 
 
 # Words a README uses for each sex (stemmed by the english configuration:
@@ -60,7 +61,7 @@ def own_text(alias: str) -> str:
 
 
 def _reads_participant_sex(node) -> bool:
-    return any(t.name.lower() == "bids_participants" for t in node.find_all(exp.Table)) and any(
+    return any(t.name.lower() == _participants.name for t in node.find_all(exp.Table)) and any(
         c.name.lower() == "sex" for c in node.find_all(exp.Column))
 
 

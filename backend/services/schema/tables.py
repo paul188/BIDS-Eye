@@ -12,9 +12,12 @@ The tables come from two places:
 
   The migrations in crawlers/, run by hand: more columns on bids_datasets
   (search vectors, OpenNeuro fields, summaries) and the tables
-  bids_dataset_facets and bids_word_forms. The columns are added to
-  BIDS-SQL's bids_datasets table with db.extensions.extend, so datasets has
-  both kinds; the tables are declared here (dataset_facets, word_forms).
+  bids_dataset_facets, bids_word_forms, bids_papers, bids_dataset_papers,
+  bids_derivatives, bids_dataset_sites and bids_site_places. The columns
+  are added to BIDS-SQL's bids_datasets table with db.extensions.extend, so
+  datasets has both kinds; the tables are declared here (dataset_facets,
+  word_forms, papers, dataset_papers, derivatives, dataset_sites,
+  site_places).
   Each names the migration that creates it, and check_schema
   (services/schema/check.py) compares them with the database at
   startup.
@@ -72,6 +75,8 @@ _OPENNEURO = "crawlers/migrate_add_openneuro_metadata.sql"
 _INSTITUTIONS = "crawlers/migrate_add_institutions.sql"
 _PROFILES = "crawlers/migrate_add_readme_profiles.sql"
 _DESCRIPTIONS = "crawlers/migrate_add_dataset_descriptions.sql"
+_DATASET_LINKS = "crawlers/migrate_add_dataset_links.sql"
+_SITE_PLACES = "crawlers/migrate_add_site_places.sql"
 
 
 def _created_by(migration: str, flag: str | None = None) -> dict[str, str]:
@@ -193,5 +198,120 @@ word_forms = Table(
     info=_created_by(_EXACT_SEARCH, EXACT_FLAG),
 )
 
+# One row per paper a dataset names, from Europe PMC, bioRxiv, arXiv or
+# OpenAlex. Filled by scripts/backfill_papers.py.
+papers = Table(
+    "bids_papers", metadata,
+    Column("id", BigInteger, primary_key=True),
+    # doi:…, pmid:…, pmcid:… or arxiv:…; unique.
+    Column("paper_key", Text),
+    # The published version's DOI; preprint_doi for the preprint.
+    Column("doi", Text),
+    Column("preprint_doi", Text),
+    Column("pmid", Text),
+    Column("pmcid", Text),
+    Column("arxiv_id", Text),
+    Column("title", Text),
+    Column("abstract", Text),
+    Column("year", Integer),
+    Column("journal", Text),
+    # True when no published version is known.
+    Column("is_preprint", Boolean),
+    Column("authors", ARRAY(Text)),
+    # Medical Subject Headings; mesh_major the main ones.
+    Column("mesh_terms", ARRAY(Text)),
+    Column("mesh_major", ARRAY(Text)),
+    Column("keywords", ARRAY(Text)),
+    Column("is_open_access", Boolean),
+    Column("license", Text),
+    # Where the record came from: europepmc, biorxiv, medrxiv, arxiv, openalex.
+    Column("source", Text),
+    Column("fetched_at", DateTime(timezone=True)),
+    info=_created_by(_PAPER_SEARCH),
+)
+
+# Which dataset names which paper, and in which role.
+dataset_papers = Table(
+    "bids_dataset_papers", metadata,
+    # bids_datasets.id.
+    Column("dataset_id", UUID(as_uuid=True), primary_key=True),
+    # bids_papers.id.
+    Column("paper_id", BigInteger, primary_key=True),
+    # 'primary', 'related', 'tool' or 'reuse'.
+    Column("role", Text),
+    # Why the link has that role.
+    Column("role_reason", Text),
+    # Where the link was read: associated, references, acknowledge, readme, reuse_field.
+    Column("sources", ARRAY(Text)),
+    # The reference string the link was read from.
+    Column("raw_ref", Text),
+    # Order within the dataset, most trusted first.
+    Column("position", Integer),
+    info=_created_by(_PAPER_SEARCH),
+)
+
+# One row per processed version of a dataset. Filled by
+# scripts/backfill_dataset_links.py and the crawler.
+derivatives = Table(
+    "bids_derivatives", metadata,
+    Column("id", BigInteger, primary_key=True),
+    # bids_datasets.id.
+    Column("dataset_id", UUID(as_uuid=True)),
+    # Normalised pipeline: 'fmriprep', 'mriqc', 'freesurfer', … 'unspecified'.
+    Column("pipeline", Text),
+    # The pipeline as the source names it, and its version (GeneratedBy).
+    Column("pipeline_name", Text),
+    Column("pipeline_version", Text),
+    # 'openneuro_derivatives' or 'in_dataset'.
+    Column("source", Text),
+    # s3://openneuro-derivatives/… or derivatives/<folder>.
+    Column("location", Text),
+    # sub-* folders in the derivative.
+    Column("n_subjects", Integer),
+    Column("fetched_at", DateTime(timezone=True)),
+    info=_created_by(_DATASET_LINKS),
+)
+
+# One row per collection site name a dataset gives, and its evidence.
+dataset_sites = Table(
+    "bids_dataset_sites", metadata,
+    Column("id", BigInteger, primary_key=True),
+    # bids_datasets.id.
+    Column("dataset_id", UUID(as_uuid=True)),
+    # The name or statement as found.
+    Column("name_raw", Text),
+    # 'dicom' (scanner headers) or 'ethics_board' (approvals).
+    Column("source", Text),
+    # Research Organization Registry id, once resolved.
+    Column("ror_id", Text),
+    # The quote, where the source is prose.
+    Column("evidence", Text),
+    info=_created_by(_DATASET_LINKS),
+)
+
+# Where the names of bids_dataset_sites are: each raw name matched to the
+# Research Organization Registry (ROR), one row per matched organisation.
+# Kept current by the crawler (remote/site_places.py).
+site_places = Table(
+    "bids_site_places", metadata,
+    # bids_dataset_sites.name_raw, as stored.
+    Column("name_raw", Text, primary_key=True),
+    # https://ror.org/…; '' when checked and not matched.
+    Column("ror_id", Text, primary_key=True),
+    # ROR display name.
+    Column("institution", Text),
+    Column("city", Text),
+    # State, province or Land, e.g. 'North Rhine-Westphalia'.
+    Column("region", Text),
+    Column("country", Text),
+    # ISO 3166-1 alpha-2.
+    Column("country_code", Text),
+    Column("lat", Double),
+    Column("lng", Double),
+    Column("matched_at", DateTime(timezone=True)),
+    info=_created_by(_SITE_PLACES),
+)
+
 # What check_schema checks: in each table, the columns a migration creates.
-MIGRATED_TABLES = (datasets, dataset_facets, word_forms)
+MIGRATED_TABLES = (datasets, dataset_facets, word_forms, papers, dataset_papers, derivatives,
+                   dataset_sites, site_places)

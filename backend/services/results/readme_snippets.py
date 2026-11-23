@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
 from services.results import query_filters
+from services.schema.tables import datasets as _datasets
 
 log = logging.getLogger(__name__)
 
@@ -157,7 +158,7 @@ async def attach_snippets(
             "WITH ORDINALITY AS w(t, n) ORDER BY w.n) AS term_lexemes"
             + (", h.hl_exact " if exact else " ") +
             "FROM (SELECT id, ts_headline('english', left(readme_text, :chars), "
-            "to_tsquery('english', :q), :opts) AS hl" + exact_headline + " FROM bids_datasets "
+            "to_tsquery('english', :q), :opts) AS hl" + exact_headline + f" FROM {_datasets.name} "
             "WHERE id = ANY(:ids) AND readme_text IS NOT NULL AND readme_text <> '') AS h"
         )
         params = {"ids": ids, "q": highlight, "opts": _HEADLINE_OPTIONS,
@@ -167,7 +168,7 @@ async def attach_snippets(
             params["exact_q"] = " | ".join(sorted(exact))
     else:
         sql = (
-            "SELECT id, left(readme_text, :chars) FROM bids_datasets "
+            f"SELECT id, left(readme_text, :chars) FROM {_datasets.name} "
             "WHERE id = ANY(:ids) AND readme_text IS NOT NULL AND readme_text <> ''"
         )
         params = {"ids": ids, "chars": _SNIPPET_PLAIN_CHARS * 4}

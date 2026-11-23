@@ -74,6 +74,7 @@ except ImportError:  # pragma: no cover
 from services.fulltext.tier_conditions import PAPER_REASON, SoftCondition, possible_enabled, sql_literal
 from services.fulltext.tier_sex import keep_only_sex_pairs
 from services.fulltext.tier_classify import classify
+from services.schema.tables import datasets as _datasets
 
 
 ENV_FLAG = "UNCERTAIN_TIER"
@@ -122,7 +123,7 @@ def _flatten_and(node) -> list:
 def _dataset_alias(select) -> Optional[str]:
     source = select.args.get("from") or select.args.get("from_")
     table = getattr(source, "this", None)
-    if isinstance(table, exp.Table) and table.name == "bids_datasets":
+    if isinstance(table, exp.Table) and table.name == _datasets.name:
         return table.alias_or_name
     return None
 
@@ -231,7 +232,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
 
     raw_sql = (
         f"SELECT {', '.join(evidence_columns)}\n"
-        f"FROM bids_datasets AS {alias}"
+        f"FROM {_datasets.name} AS {alias}"
     )
     # Evidence is looked up per candidate row (LATERAL). Two CTEs joined on id
     # read the same, but the planner then sorts every file row of the

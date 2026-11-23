@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
 from services.indexing import dataset_description
+from services.schema.tables import datasets as _datasets, papers as _papers
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ async def deprecations_for(
         return {}
     rows = await session.execute(
         text(
-            "SELECT id, deprecated_reason FROM bids_datasets "
+            f"SELECT id, deprecated_reason FROM {_datasets.name} "
             "WHERE id = ANY(:ids) AND deprecated_reason IS NOT NULL"
         ),
         {"ids": dataset_ids},
@@ -142,8 +143,8 @@ async def attach_descriptions(session: AsyncSession, datasets: list[DatasetSchem
     sql = (
         "SELECT d.id, d.dataset_summary, d.paper_relation->>'relation', "
         "       p.title, p.year, p.doi, p.pmid, p.pmcid, p.arxiv_id "
-        "FROM bids_datasets d "
-        "LEFT JOIN bids_papers p ON p.paper_key = d.paper_relation->>'paper_key' "
+        f"FROM {_datasets.name} d "
+        f"LEFT JOIN {_papers.name} p ON p.paper_key = d.paper_relation->>'paper_key' "
         "     AND (d.paper_relation->>'shown')::boolean "
         "WHERE d.id = ANY(:ids) "
         "  AND (d.dataset_summary IS NOT NULL OR (d.paper_relation->>'shown')::boolean)"

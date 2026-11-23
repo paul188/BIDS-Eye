@@ -37,6 +37,8 @@ import dataclasses
 from dataclasses import asdict, dataclass
 from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
+from services.schema import tables as _tables
+
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
     from sqlglot import exp
@@ -617,10 +619,11 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 # (2026-11-20). The exact condition stays under "Show generated SQL".
 
 _TABLE_WORDS = {
-    "bids_datasets": "Dataset", "bids_participants": "Participants", "bids_objects": "Files",
-    "bids_dataset_facets": "Files", "bids_derivatives": "Processed data",
-    "bids_dataset_papers": "Papers", "bids_papers": "Papers", "bids_dataset_sites": "Sites",
-    "bids_site_places": "Sites",
+    _tables.datasets.name: "Dataset", _tables.participants.name: "Participants",
+    _tables.objects.name: "Files", _tables.dataset_facets.name: "Files",
+    _tables.derivatives.name: "Processed data", _tables.dataset_papers.name: "Papers",
+    _tables.papers.name: "Papers", _tables.dataset_sites.name: "Sites",
+    _tables.site_places.name: "Sites",
 }
 # Join keys and row ids say nothing about what a condition asks.
 _KEY_COLUMNS = frozenset({"id", "dataset_id", "participant_id", "subject", "paper_id", "name_raw"})
@@ -834,7 +837,7 @@ def where_conditions(
         return None, []
     source = tree.args.get("from") or tree.args.get("from_")
     table = getattr(source, "this", None)
-    alias = (table.alias_or_name if isinstance(table, exp.Table) and table.name == "bids_datasets"
+    alias = (table.alias_or_name if isinstance(table, exp.Table) and table.name == _tables.datasets.name
              else None)
     found = []
     for chip_id, node in _conditions(tree):

@@ -30,6 +30,11 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from cohort_count import placeholder as patients_placeholder
 from text_terms import MODE_ALL, MODE_SHORT, diagnosis_alternatives, diagnosis_qualifier, format_text_match
 
+from services.schema.tables import (
+    dataset_papers as _dataset_papers, datasets as _datasets, derivatives as _derivatives, objects as _objects,
+    participants as _participants,
+)
+
 
 _CODE_RE = re.compile(r"^[a-z0-9_]+$")
 
@@ -186,7 +191,7 @@ def _group_condition(group: Any, resolved: Dict[str, List[str]]) -> Optional[str
         # text: each such term is its own alternative (text_terms.diagnosis_qualifier).
         for term, words in qualifiers.items():
             code_sql = ", ".join(_sql_string(code) for code in term_map[term])
-            part = ("(EXISTS (SELECT 1 FROM bids_participants p_cohort "
+            part = (f"(EXISTS (SELECT 1 FROM {_participants.name} p_cohort "
                     "WHERE p_cohort.dataset_id = d.id "
                     f"AND p_cohort.diagnosis IN ({code_sql}))")
             text = format_text_match(diagnosis_alternatives({term: term_map[term]}), MODE_SHORT)
@@ -197,7 +202,7 @@ def _group_condition(group: Any, resolved: Dict[str, List[str]]) -> Optional[str
     elif codes:
         code_sql = ", ".join(_sql_string(code) for code in codes)
         parts.append(
-            "EXISTS (SELECT 1 FROM bids_participants p_cohort "
+            f"EXISTS (SELECT 1 FROM {_participants.name} p_cohort "
             "WHERE p_cohort.dataset_id = d.id "
             f"AND p_cohort.diagnosis IN ({code_sql}))")
         text = format_text_match(diagnosis_alternatives(term_map), MODE_SHORT)
@@ -311,7 +316,7 @@ def _derivatives_condition(description: Optional[str]) -> Optional[str]:
         else:
             return None
     values = ", ".join(_sql_string(p) for p in dict.fromkeys(pipelines))
-    return ("EXISTS (SELECT 1 FROM bids_derivatives dv "
+    return (f"EXISTS (SELECT 1 FROM {_derivatives.name} dv "
             f"WHERE dv.dataset_id = d.id AND dv.pipeline IN ({values}))")
 
 
@@ -381,16 +386,16 @@ def _fixed_conditions(plan: Any) -> List[str]:
     if _value(plan, "doi_required"):
         # The dataset's own paper (bids_dataset_papers, role 'primary'), not d.doi:
         # that is the DOI of the dataset itself.
-        conditions.append("EXISTS (SELECT 1 FROM bids_dataset_papers dp "
+        conditions.append(f"EXISTS (SELECT 1 FROM {_dataset_papers.name} dp "
                           "WHERE dp.dataset_id = d.id AND dp.role = 'primary')")
     sessions = _value(plan, "min_sessions")
     if isinstance(sessions, int) and sessions > 1:
         # Every subject has at least N sessions; one grouped subquery over the
         # table (a per-dataset GROUP BY ran into the 300 s limit).
         conditions.append(
-            "d.id NOT IN (SELECT s.dataset_id FROM bids_objects s WHERE s.subject IS NOT NULL "
+            f"d.id NOT IN (SELECT s.dataset_id FROM {_objects.name} s WHERE s.subject IS NOT NULL "
             f"GROUP BY s.dataset_id, s.subject HAVING COUNT(DISTINCT s.session) < {sessions})")
-        conditions.append("EXISTS (SELECT 1 FROM bids_objects s2 WHERE s2.dataset_id = d.id "
+        conditions.append(f"EXISTS (SELECT 1 FROM {_objects.name} s2 WHERE s2.dataset_id = d.id "
                           "AND s2.subject IS NOT NULL)")
     return conditions
 
@@ -427,7 +432,7 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
     if where is None:
         return _decline(reason)
     vocabulary_scans = re.search(r"VOCABULARY MISS[^\]]*?\bscan: ", augmented_question or "")
-    if scans and not vocabulary_scans and not any("bids_objects o2" in c for c in where):
+    if scans and not vocabulary_scans and not any(f"{_objects.name} o2" in c for c in where):
         return _decline("scan requirement without a resolved condition")
 
     resolved = _resolved_diagnoses(resolved_terms)
@@ -452,8 +457,8 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
     if not where and not having:
         return _decline("nothing to filter")
     sql = ("SELECT {{COLS}}\n"
-           "FROM bids_datasets d\n"
-           "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
+           f"FROM {_datasets.name} d\n"
+           f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
            + (f"WHERE {' AND '.join(where)}\n" if where else "")
            + "GROUP BY d.id"
            + (f"\nHAVING {' AND '.join(having)}" if having else ""))

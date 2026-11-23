@@ -33,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
 from services.results import query_filters
+from services.schema import tables as _tables
 
 try:
     from sqlglot import exp
@@ -64,15 +65,15 @@ _PHRASES = {
 }
 
 _TABLE_VENUES = {
-    "bids_participants": PARTICIPANTS,
-    "bids_objects": FILES,
-    "bids_files": FILES,
-    "bids_dataset_facets": FILES,
-    "bids_derivatives": DERIVATIVES,
-    "bids_dataset_sites": SITES,
-    "bids_site_places": SITES,
-    "bids_dataset_papers": PAPER,
-    "bids_papers": PAPER,
+    _tables.participants.name: PARTICIPANTS,
+    _tables.objects.name: FILES,
+    "bids_files": FILES,  # not a catalogue table, kept as it was
+    _tables.dataset_facets.name: FILES,
+    _tables.derivatives.name: DERIVATIVES,
+    _tables.dataset_sites.name: SITES,
+    _tables.site_places.name: SITES,
+    _tables.dataset_papers.name: PAPER,
+    _tables.papers.name: PAPER,
 }
 _TEXT_COLUMNS = {
     "search_tsv": TEXT, "search_tsv_exact": TEXT,
@@ -304,7 +305,7 @@ def build_sql(alias: str, plans: Sequence[ChipPlan]) -> str:
             for name in venue.columns:
                 field_columns.setdefault(name, f"CAST({alias}.{name} AS TEXT) AS f_{name}")
     columns.extend(field_columns.values())
-    return (f"SELECT {', '.join(columns)} FROM bids_datasets AS {alias} "
+    return (f"SELECT {', '.join(columns)} FROM {_tables.datasets.name} AS {alias} "
             f"WHERE {alias}.id = ANY(:ids)")
 
 

@@ -43,15 +43,16 @@ from word_forms import WordEvidence
 log = logging.getLogger(__name__)
 
 TABLE = word_forms.name
+SOURCE_TABLE = datasets.name
 SOURCE_COLUMN = datasets.c.search_tsv_exact.name
 
 TABLES_SQL: Tuple[str, ...] = (
-    """CREATE TABLE IF NOT EXISTS bids_word_forms (
+    f"""CREATE TABLE IF NOT EXISTS {TABLE} (
         form  TEXT PRIMARY KEY,
         stem  TEXT NOT NULL,
         ndoc  INTEGER NOT NULL
     )""",
-    "CREATE INDEX IF NOT EXISTS idx_bids_word_forms_stem ON bids_word_forms (stem)",
+    f"CREATE INDEX IF NOT EXISTS idx_{TABLE}_stem ON {TABLE} (stem)",
 )
 
 # Alphabetic words only: numbers and codes ("t1w", "7t") have no word forms,
@@ -60,9 +61,9 @@ _FORM_PATTERN = "^[a-z]{2,40}$"
 _STEM_SQL = "array_to_string(tsvector_to_array(to_tsvector('english', {})), ' ')"
 
 _REFRESH_SQL = (
-    "INSERT INTO bids_word_forms (form, stem, ndoc) "
+    f"INSERT INTO {TABLE} (form, stem, ndoc) "
     "SELECT s.word, l.stem, s.ndoc "
-    f"FROM ts_stat('SELECT {SOURCE_COLUMN} FROM bids_datasets') AS s "
+    f"FROM ts_stat('SELECT {SOURCE_COLUMN} FROM {SOURCE_TABLE}') AS s "
     f"CROSS JOIN LATERAL (SELECT {_STEM_SQL.format('s.word')} AS stem) AS l "
     # A stopword has no stem and can never be searched for.
     "WHERE s.word ~ :pattern AND l.stem ~ '^[a-z0-9]+$'"
@@ -74,9 +75,9 @@ LOOKUP_TIMEOUT_SECONDS = 3.0
 
 _LOOKUP_SQL = (
     "SELECT w.word, l.stem, "
-    "       (SELECT count(*) FROM bids_datasets d "
+    f"       (SELECT count(*) FROM {SOURCE_TABLE} d "
     "         WHERE d.search_tsv @@ to_tsquery('english', w.word)) AS stem_docs, "
-    "       ARRAY(SELECT f.form || ':' || f.ndoc FROM bids_word_forms f "
+    f"       ARRAY(SELECT f.form || ':' || f.ndoc FROM {TABLE} f "
     "              WHERE f.stem = l.stem ORDER BY f.ndoc DESC, f.form LIMIT :limit) AS forms "
     "FROM unnest(CAST(:words AS text[])) AS w(word) "
     f"CROSS JOIN LATERAL (SELECT {_STEM_SQL.format('w.word')} AS stem) AS l "
@@ -114,16 +115,16 @@ async def refresh(conn: Any) -> Dict[str, int]:
                            "the connection commits each statement (AUTOCOMMIT?)")
     present = (await conn.execute(text(
         "SELECT count(*) FROM information_schema.columns "
-        "WHERE table_schema = current_schema() AND table_name = 'bids_datasets' "
-        "AND column_name = :column"), {"column": SOURCE_COLUMN})).scalar_one()
+        "WHERE table_schema = current_schema() AND table_name = :table "
+        "AND column_name = :column"), {"table": SOURCE_TABLE, "column": SOURCE_COLUMN})).scalar_one()
     if not present:
-        raise RuntimeError(f"bids_datasets.{SOURCE_COLUMN} is missing: "
+        raise RuntimeError(f"{SOURCE_TABLE}.{SOURCE_COLUMN} is missing: "
                            "run crawlers/migrate_add_exact_search.sql first")
     await ensure_tables(conn)
-    await conn.execute(text("DELETE FROM bids_word_forms"))
+    await conn.execute(text(f"DELETE FROM {TABLE}"))
     await conn.execute(text(_REFRESH_SQL), {"pattern": _FORM_PATTERN})
     row = (await conn.execute(text(
-        "SELECT count(*), count(DISTINCT stem) FROM bids_word_forms"))).one()
+        f"SELECT count(*), count(DISTINCT stem) FROM {TABLE}"))).one()
     return {"forms": int(row[0]), "stems": int(row[1])}
 
 

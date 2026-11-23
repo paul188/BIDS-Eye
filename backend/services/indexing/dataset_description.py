@@ -47,6 +47,7 @@ from datetime import datetime, timezone
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple
 
 from services.indexing.readme_profile import quote_in_source
+from services.schema.tables import dataset_papers as _dataset_papers, datasets as _datasets
 
 log = logging.getLogger(__name__)
 
@@ -494,8 +495,8 @@ _PRUNE_SQL = (
     """,
 )
 
-_WRITE_RELATION_SQL = "UPDATE bids_datasets SET paper_relation = CAST(:value AS JSONB) WHERE id = :id"
-_WRITE_SUMMARY_SQL = ("UPDATE bids_datasets SET dataset_summary = :summary, "
+_WRITE_RELATION_SQL = f"UPDATE {_datasets.name} SET paper_relation = CAST(:value AS JSONB) WHERE id = :id"
+_WRITE_SUMMARY_SQL = (f"UPDATE {_datasets.name} SET dataset_summary = :summary, "
                       "dataset_summary_meta = CAST(:meta AS JSONB) WHERE id = :id")
 
 
@@ -536,9 +537,9 @@ async def has_columns(conn: Any) -> bool:
     from sqlalchemy import text
 
     found = (await conn.execute(text(
-        "SELECT (SELECT count(*) FROM information_schema.columns WHERE table_name = 'bids_datasets' "
+        f"SELECT (SELECT count(*) FROM information_schema.columns WHERE table_name = '{_datasets.name}' "
         "        AND column_name IN ('paper_relation', 'dataset_summary', 'dataset_summary_meta')) = 3 "
-        "   AND to_regclass('bids_dataset_papers') IS NOT NULL"))).scalar()
+        f"   AND to_regclass('{_dataset_papers.name}') IS NOT NULL"))).scalar()
     return bool(found)
 
 

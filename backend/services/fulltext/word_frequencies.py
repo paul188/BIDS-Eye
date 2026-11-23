@@ -17,6 +17,7 @@ from typing import Any, Callable, List, Optional, Sequence
 
 import worker_db
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
+from services.schema.tables import datasets as _datasets
 
 log = logging.getLogger(__name__)
 
@@ -28,13 +29,13 @@ FrequencyLookup = Callable[..., Optional[List[int]]]
 FREQUENCY_TIMEOUT_SECONDS = 3.0
 
 _COUNT_SQL = (
-    f"SELECT (SELECT count(*) FROM bids_datasets d "
+    f"SELECT (SELECT count(*) FROM {_datasets.name} d "
     f"        WHERE d.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', q.tsq)) "
     "FROM unnest(CAST(:queries AS text[])) WITH ORDINALITY AS q(tsq, ord) "
     "ORDER BY q.ord"
 )
 _GUARDED_COUNT_SQL = (
-    f"SELECT (SELECT count(*) FROM bids_datasets d "
+    f"SELECT (SELECT count(*) FROM {_datasets.name} d "
     f"        WHERE d.{FTS_COLUMN} @@ to_tsquery('{TS_CONFIG}', q.tsq) "
     f"          AND (q.guard IS NULL OR "
     f"               d.{EXACT_FTS_COLUMN} @@ to_tsquery('{EXACT_TS_CONFIG}', q.guard))) "

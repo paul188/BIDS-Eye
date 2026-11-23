@@ -15,6 +15,7 @@ from typing import List, Optional, Sequence, Tuple
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
 from services.fulltext.tier_conditions import LABEL_RE, TSQUERY_RE
+from services.schema.tables import participants as _participants
 
 
 _WORD_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -385,12 +386,12 @@ def known_sql(kind: str, alias: str) -> str:
     """True when the dataset records the field the condition reads."""
     if kind == "age":
         return (f"({alias}.age_min IS NOT NULL OR {alias}.age_max IS NOT NULL OR EXISTS("
-                f"SELECT 1 FROM bids_participants AS uk WHERE uk.dataset_id = {alias}.id "
+                f"SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
                 f"AND uk.age IS NOT NULL))")
     if kind == "diagnosis":
-        return (f"EXISTS(SELECT 1 FROM bids_participants AS uk WHERE uk.dataset_id = {alias}.id "
+        return (f"EXISTS(SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
                 f"AND uk.diagnosis IS NOT NULL)")
     if kind == "sex":
-        return (f"EXISTS(SELECT 1 FROM bids_participants AS uk WHERE uk.dataset_id = {alias}.id "
+        return (f"EXISTS(SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
                 f"AND uk.sex IS NOT NULL)")
     raise ValueError(kind)

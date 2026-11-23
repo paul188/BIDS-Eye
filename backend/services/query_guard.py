@@ -57,6 +57,8 @@ from exceptions.expected import ExpectedError
 from sqlglot import exp, parse
 from sqlglot.errors import SqlglotError
 
+from services.schema.tables import datasets as _datasets, objects as _objects, participants as _participants
+
 log = logging.getLogger(__name__)
 
 
@@ -87,7 +89,7 @@ _FORBIDDEN_FUNCTIONS = frozenset({
     "database_to_xml_and_xmlschema", "dblink_connect", "dblink_open", "dblink_fetch", "dblink_send_query",
     "pg_file_write", "lo_from_bytea", "lo_put",
 })
-_PER_ROW_TABLES = ("bids_objects", "bids_participants")
+_PER_ROW_TABLES = (_objects.name, _participants.name)
 
 # The only tables generated SQL may read: the dataset catalogue, which is the
 # bids_* tables plus object_associations. The app keeps its own tables in the
@@ -319,8 +321,8 @@ async def max_plan_rows(session: Any) -> float:
         try:
             async with session.begin_nested():
                 biggest = (await session.execute(text(
-                    "SELECT max(reltuples) FROM pg_class WHERE relname IN ('bids_objects', "
-                    "'bids_participants', 'bids_datasets')"))).scalar()
+                    "SELECT max(reltuples) FROM pg_class WHERE relname = ANY(:tables)"),
+                    {"tables": [_objects.name, _participants.name, _datasets.name]})).scalar()
         except DBAPIError as exc:
             log.warning("Table sizes not read (%s); plan limit %.0f rows for this search",
                         exc.orig or exc, _PLAN_ROWS_DEFAULT)

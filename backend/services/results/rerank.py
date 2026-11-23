@@ -54,6 +54,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from services.catalogue.catalogue import catalogue
+from services.schema.tables import datasets as _datasets
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ def _details_sql() -> str:
     cols.append(f"d.{PROFILE_COLUMN}")
     if catalogue.coverage.usable("readme_text"):
         cols.append(f"left(d.readme_text, {README_EXCERPT_CHARS}) AS readme_excerpt")
-    return f"SELECT {', '.join(cols)} FROM bids_datasets d WHERE d.id = ANY(:ids)"
+    return f"SELECT {', '.join(cols)} FROM {_datasets.name} d WHERE d.id = ANY(:ids)"
 
 
 _FILES_SQL = text("""

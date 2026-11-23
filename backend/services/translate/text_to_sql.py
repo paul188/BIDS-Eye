@@ -225,9 +225,9 @@ def _sql_shape(sql: str) -> frozenset:
         features.add("text_search")
     if "paper_references" in text or "pubmed" in text or "doi" in text:
         features.add("paper_reference")
-    if "bids_participants" in text:
+    if _participants.name in text:
         features.add("participants")
-    if "bids_objects" in text:
+    if _objects.name in text:
         features.add("scan_data")
     if re.search(r"\bjoin\b", text):
         features.add("join")
@@ -498,6 +498,7 @@ from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa:
 from services.translate.sql_rewriter import finish_corrected_sql as _finish_corrected_sql  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
+from services.schema.tables import datasets as _datasets, objects as _objects, participants as _participants  # noqa: E402
 from services.translate.participant_query_compiler import (  # noqa: E402
     compile_plan as _compile_plan,
 )
@@ -835,8 +836,8 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
         return TextToSQLResult(sql=_FALLBACK_SQL, explanation=explanation + " Showing a sample of datasets.")
     sql = (
         f"SELECT {DEFAULT_DATASET_PROJECTION}\n"
-        "FROM bids_datasets d\n"
-        "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
+        f"FROM {_datasets.name} d\n"
+        f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
         f"WHERE d.{vectors.FTS_COLUMN} @@ to_tsquery('{vectors.TS_CONFIG}', '{query}')\n"
         "GROUP BY d.id"
     )

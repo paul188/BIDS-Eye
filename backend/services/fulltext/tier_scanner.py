@@ -20,6 +20,7 @@ except ImportError:  # pragma: no cover
 
 from services.fulltext.tier_conditions import SoftCondition, possible_enabled, sql_literal
 from services.fulltext.tier_sex import own_text
+from services.schema.tables import objects as _objects
 
 
 # Sidecar keys a README states as often as the sidecars do ("acquired on a
@@ -204,7 +205,7 @@ def _file_rows(select, alias: str) -> Optional[Tuple[str, List[str], List[str], 
     None for another shape (a join, a second correlation such as
     o_high.subject = o_low.subject)."""
     tables = list(select.find_all(exp.Table))
-    if len(tables) != 1 or tables[0].name.lower() != "bids_objects":
+    if len(tables) != 1 or tables[0].name.lower() != _objects.name:
         return None
     if select.args.get("joins") or select.args.get("group") or select.args.get("having"):
         return None
@@ -256,7 +257,7 @@ def _file_set(inner: str, files: List[str], columns: set) -> Tuple[str, Optional
     if facets and columns <= set(Catalogue.FACET_FIELDS):
         return (f"SELECT {inner}.dataset_id FROM {dataset_facets.name} AS {inner} WHERE {where}",
                 None)
-    select = f"SELECT DISTINCT {inner}.dataset_id FROM bids_objects AS {inner} WHERE {where}"
+    select = f"SELECT DISTINCT {inner}.dataset_id FROM {_objects.name} AS {inner} WHERE {where}"
     name = _cte_name(select)
     return f"SELECT dataset_id FROM {name}", (name, select)
 
@@ -305,7 +306,7 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
     confirmed = []
     for inner, sidecar, files, _ in rows:
         where = " AND ".join(f"({p})" for p in files + sidecar)
-        select = f"SELECT DISTINCT {inner}.dataset_id FROM bids_objects AS {inner} WHERE {where}"
+        select = f"SELECT DISTINCT {inner}.dataset_id FROM {_objects.name} AS {inner} WHERE {where}"
         name = _cte_name(select)
         ctes.append((name, select))
         confirmed.append(f"{alias}.id IN (SELECT dataset_id FROM {name})")
@@ -335,7 +336,7 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
         named = " or ".join(values)
     label = _SIDECAR_LABELS[key]
     probable = f"({text}) AND ({file_part})" if file_part else text
-    recorded = (f"EXISTS(SELECT 1 FROM bids_objects AS uk WHERE uk.dataset_id = {alias}.id "
+    recorded = (f"EXISTS(SELECT 1 FROM {_objects.name} AS uk WHERE uk.dataset_id = {alias}.id "
                 f"AND NULLIF(TRIM(uk.other_entities ->> '{key}'), '') IS NOT NULL)")
     # Whether the key is recorded matters only where the text names the value:
     # checked for those few datasets, not for every candidate (6.6 ms per
