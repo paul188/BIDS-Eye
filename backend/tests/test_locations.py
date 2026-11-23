@@ -42,15 +42,84 @@ def _plan(**fields) -> pp.QueryPlan:
 
 def test_place_names_resolve_to_the_stored_value() -> None:
     index = place_index.get_index()
-    assert index.resolve("bonn") == ("city", "Bonn")
-    assert index.resolve("Köln") == ("city", "Cologne")
-    assert index.resolve("Koeln") == ("city", "Cologne")
-    assert index.resolve("USA") == ("country", "United States")
-    assert index.resolve("NRW") == ("region", "North Rhine-Westphalia")
-    assert index.resolve("Washington") == ("city", "Washington")  # the city before the state
-    assert index.resolve("Heidelberg") is None
-    assert index.resolve("Frankfurt") == ("city", "Frankfurt am Main")
-    assert index.resolve("Saint Louis") == ("city", "St Louis")
+    assert index.readings("bonn") == [("city", "Bonn")]
+    assert index.readings("Köln") == [("city", "Cologne")]
+    assert index.readings("Koeln") == [("city", "Cologne")]
+    assert index.readings("USA") == [("country", "United States")]
+    assert index.readings("NRW") == [("region", "North Rhine-Westphalia")]
+    assert index.readings("Heidelberg") == []
+    assert index.readings("Frankfurt") == [("city", "Frankfurt am Main")]
+    assert index.readings("Saint Louis") == [("city", "St Louis")]
+
+
+# Stored (city, region, country) combinations, as bids_site_places has them.
+ROWS = [("Toluca", "México", "Mexico"), ("Mexico City", "Mexico City", "Mexico"),
+        ("Monterrey", "Nuevo León", "Mexico"), ("Albuquerque", "New Mexico", "United States"),
+        ("Washington", "District of Columbia", "United States"), ("Seattle", "Washington", "United States"),
+        ("Atlanta", "Georgia", "United States"), ("Tbilisi", "Tbilisi", "Georgia"),
+        ("New York", "New York", "United States"), ("Rochester", "New York", "United States"),
+        ("York", "England", "United Kingdom"), ("Paris", "Île-de-France", "France")]
+
+
+def test_a_name_that_is_several_places_keeps_those_not_inside_another() -> None:
+    index = place_index.set_places((), ROWS)
+    # The state of México lies in Mexico: the country finds its sites too.
+    # Before, the state won and "mexico" confirmed 1 dataset of 16 (live, 2026-11-23).
+    assert index.readings("mexico") == [("country", "Mexico")]
+    assert index.readings("México") == [("country", "Mexico")]
+    assert index.readings("New York") == [("region", "New York")]
+    # Neither lies in the other: both are meant.
+    assert index.readings("Washington") == [("city", "Washington"), ("region", "Washington")]
+    assert index.readings("Georgia") == [("region", "Georgia"), ("country", "Georgia")]
+    # Without the combinations nothing is known to lie anywhere: every reading stays.
+    pairs = place_index.set_places([("region", "México"), ("country", "Mexico")])
+    assert pairs.readings("mexico") == [("region", "México"), ("country", "Mexico")]
+
+
+def test_other_places_whose_name_contains_the_word() -> None:
+    index = place_index.set_places((), ROWS)
+    assert index.foreign_names("Mexico") == ["New Mexico"]      # not Mexico City: it is in Mexico
+    assert index.foreign_names("York") == ["New York"]
+    assert index.foreign_names("France") == []                  # Île-de-France is in France
+    assert index.foreign_names("New Mexico") == []
+    assert index.foreign_names("Heidelberg") == []
+
+
+def test_every_reading_joins_the_sites() -> None:
+    place_index.set_places((), ROWS)
+    question = pp.augment_with_rag(_plan(location_terms=["Washington"]), {}).augmented_question
+    assert "AND (sp.city = 'Washington' OR sp.region = 'Washington'))" in question
+
+
+def test_text_naming_another_place_does_not_count() -> None:
+    # "mexico" found nine University of New Mexico datasets through their READMEs.
+    from services.fulltext import uncertain_tier
+    from services.results import match_reasons
+
+    place_index.set_places((), ROWS)
+    plan = _plan(location_terms=["mexico"])
+    augmented = pp.augment_with_rag(plan, {}).augmented_question
+    sites = ("EXISTS (SELECT 1 FROM bids_dataset_sites AS s JOIN bids_site_places AS sp "
+             "ON sp.name_raw = s.name_raw WHERE s.dataset_id = d.id AND sp.country = 'Mexico')")
+    assert (f"  location \"mexico\": (({sites} OR text_match('mexico', 'short')) "
+            f"AND ({sites} OR NOT text_match('new mexico', 'near')))") in augmented
+
+    compiled = pqc.compile_plan(plan, [], augmented)
+    assert compiled.sql, compiled.reason
+    expanded = text_search.expand_text_search(compiled.sql, papers=True).sql
+    place, other = query_filters.describe(expanded)
+    assert (place.field, place.label, place.negated) == ("Location", "Mexico", False)
+    assert (other.field, other.label, other.negated) == ("Location", "New Mexico", True)
+    assert "does not count as Mexico" in other.detail
+
+    # A hard filter: the uncertain tier adds no weaker form of it, so such a
+    # README is no "probable" match either. Only the place itself has tiers.
+    tiered = uncertain_tier.apply(expanded.replace("{{COLS}}", "d.id"))
+    base, evidence = tiered.split(") AS tier_base", 1)
+    assert "NOT d.search_tsv @@ TO_TSQUERY('english', '(new <1> mexico" in base
+    assert "new <1> mexico" not in evidence and "confirmed_1" not in evidence
+    # The card explains the place, not the exclusion.
+    assert [chip.field for chip in match_reasons.plan(expanded.replace("{{COLS}}", "d.id"))[1]] == ["Location"]
 
 
 def test_a_stored_place_joins_the_sites_and_an_unknown_one_is_text() -> None:

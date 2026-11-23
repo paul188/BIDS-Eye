@@ -196,22 +196,37 @@ def _location_lines(plan: QueryPlan) -> List[str]:
                  ON sp.name_raw = s.name_raw
                  WHERE s.dataset_id = d.id AND sp.city = 'Bonn')
          OR text_match('Bonn', 'short'))
+    A name that is several places ("Washington" the city and the state) joins
+    the sites of each. A name that is also a word of another place's name
+    ("Mexico" in "New Mexico") gets a second condition: a dataset whose text
+    names that other place counts only through its sites.
+        ((EXISTS (... AND sp.country = 'Mexico') OR text_match('mexico', 'short'))
+         AND (EXISTS (... AND sp.country = 'Mexico') OR NOT text_match('new mexico', 'near')))
+    Its own top-level condition, not a NOT beside the text search: the
+    uncertain tier keeps a negated condition as a hard filter, so the README
+    of a University of New Mexico dataset is no "probable" match either, and
+    the chips show it as a location chip of its own (query_filters.py).
     A place no site is in is searched in the whole dataset text, README
     included, where labs often say where they scanned.
     """
     lines: List[str] = []
     index = _place_index.get_index()
     for term in dict.fromkeys(t.strip() for t in plan.location_terms if t and t.strip()):
-        place = index.resolve(term)
-        if place:
-            column, value = place
+        readings = index.readings(term)
+        if readings:
             tables = _catalogue.tables()
+            places = " OR ".join(f"sp.{column} = '{value.replace(chr(39), chr(39) * 2)}'"
+                                 for column, value in readings)
             sites = (f"EXISTS (SELECT 1 FROM {tables.dataset_sites.name} AS s "
                      f"JOIN {tables.site_places.name} AS sp "
                      "ON sp.name_raw = s.name_raw WHERE s.dataset_id = d.id "
-                     f"AND sp.{column} = '{value.replace(chr(39), chr(39) * 2)}')")
-            text_part = _format_text_match(list(dict.fromkeys([term, value])), _MODE_SHORT)
+                     f"AND {places if len(readings) == 1 else '(' + places + ')'})")
+            text_part = _format_text_match(
+                list(dict.fromkeys([term] + [value for _, value in readings])), _MODE_SHORT)
             condition = f"({sites} OR {text_part})" if text_part else sites
+            elsewhere = _format_text_match(index.foreign_names(term), _MODE_NEAR)
+            if text_part and elsewhere:
+                condition = f"({condition} AND ({sites} OR NOT {elsewhere}))"
         else:
             text_condition = _format_text_match([term])
             if not text_condition:

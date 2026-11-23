@@ -467,6 +467,28 @@ def _venue_words(node) -> List[str]:
     return words
 
 
+_PLACE_COLUMNS = ["city", "region", "country"]
+
+
+def _other_places(node) -> List[str]:
+    """The place names a location's second condition leaves out, [] for any
+    other condition. The shape is (a site in the place OR NOT text naming
+    another place), written by LLM_preprocessor/preprocess/augment.py
+    _location_lines for a name that is a word of another place's name:
+    "Mexico" must not be found in "University of New Mexico"."""
+    while isinstance(node, exp.Paren):
+        node = node.this
+    if not isinstance(node, exp.Or) or _tsqueries(node, negated=False):
+        return []
+    if not _literals_for(node, _PLACE_COLUMNS):
+        return []
+    names: List[str] = []
+    for query in _tsqueries(node, negated=True):
+        names.extend(tsquery_phrases(query))
+    # The search words are lower case; these are names ("New Mexico").
+    return [name.title() for name in dict.fromkeys(names)]
+
+
 def describe_condition(node, chip_id: str) -> QueryFilter:
     negated = False
     while isinstance(node, (exp.Paren, exp.Not)):
@@ -514,6 +536,17 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
             return f"Coded {noun}: {names[0]}."
         shown = ", ".join(names[:8]) + ("…" if len(names) > 8 else "")
         return f"Any of {len(names)} coded {noun}s: {shown}."
+
+    elsewhere = _other_places(node)
+    if elsewhere:
+        # Its own wording: the generic chip would read "Location: Mexico" a
+        # second time, with nothing about what the condition leaves out.
+        return QueryFilter(
+            id=chip_id, kind="field", field="Location", label=_short_list(elsewhere, " or "),
+            negated=True, values=_hidden(elsewhere),
+            detail=(f"Text that names {', '.join(elsewhere[:6])} does not count as "
+                    f"{', '.join(_literals_for(node, _PLACE_COLUMNS)[:3])}; a dataset with a site "
+                    "there still does. Remove to count such text too."))
 
     patients = _patients_label(node)
     if patients:
