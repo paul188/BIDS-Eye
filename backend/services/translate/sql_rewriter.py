@@ -37,6 +37,7 @@ from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
+from sex_codes import sex_code as _sex_code  # noqa: E402
 
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
@@ -292,7 +293,7 @@ class SqlRewriteService:
         sql = self._decorrelate_grouped_exists(sql)
         sql = self._unify_scanner_model_key(sql)
         sql = self._guard_json_number_casts(sql)
-        sql = self._case_insensitive_sex(sql)
+        sql = self._standard_sex_codes(sql)
         sql = self._handedness_codes(sql)
         sql = self._drop_invented_text_filters(sql, augmented_question)
         sql = self._inject_vocab_miss(sql, augmented_question)
@@ -876,47 +877,42 @@ class SqlRewriteService:
             parent = parent.parent
         return False
 
-    # p.sex = 'female', p2.sex IN ('F', 'female'), p.sex <> 'male' — never an
-    # expression already wrapped in LOWER(...) or UPPER(...).
+    # p.sex = 'Female', p2.sex IN ('F', 'female'), p.sex <> 'M' — never an
+    # expression wrapped in LOWER(...) or UPPER(...).
     _SEX_EQ_RE = re.compile(r"(?<![\w.(])(\w+\.sex)\s*(=|<>|!=)\s*'([^']*)'", re.IGNORECASE)
     _SEX_IN_RE = re.compile(r"(?<![\w.(])(\w+\.sex)\s+(NOT\s+IN|IN)\s*\(([^()]*)\)", re.IGNORECASE)
-    _SEX_SYNONYMS = {"f": ("female", "f"), "m": ("male", "m"), "female": ("female", "f"), "male": ("male", "m")}
 
-    @classmethod
-    def _sex_values(cls, literal: str) -> list[str]:
-        value = literal.strip().lower()
-        return list(cls._SEX_SYNONYMS.get(value, (value,)))
+    def _standard_sex_codes(self, sql: str) -> str:
+        """Write each sex literal as the code the column holds.
 
-    def _case_insensitive_sex(self, sql: str) -> str:
-        """Compare participant sex without regard to case or abbreviation.
-
-        participants.tsv values reach the database as typed: 'female' for most
-        datasets, but 'Female' in 48 and 'FEMALE' in 4 (2026-11-14), so
-        p.sex = 'female' missed 42 of the datasets OpenNeuro's sex filter
-        finds. Each equality or IN list on a sex column becomes LOWER(col)
-        compared with lower-case values, 'f'/'m' and 'female'/'male' standing
-        for each other.
+        bids_participants.sex holds 'male', 'female' or 'other_diverse' (the
+        crawler's remote/participant_sex.py; RAG/sex_codes.py). The SQL model
+        still writes 'F', 'Female' or IN ('M', 'male'): each literal the
+        vocabulary knows becomes its code, so that p.sex = 'F' does not come
+        back empty. A literal it does not know is left as written.
         """
-        def values_sql(values: list[str]) -> str:
-            return ", ".join("'" + v.replace("'", "''") + "'" for v in dict.fromkeys(values))
+        def quoted(value: str) -> str:
+            return "'" + value.replace("'", "''") + "'"
+
+        def code(literal: str) -> str:
+            return _sex_code(literal) or literal
 
         def eq(m: re.Match) -> str:
-            values = self._sex_values(m.group(3))
-            negated = m.group(2) != "="
-            if len(values) == 1:
-                return f"LOWER({m.group(1)}) {'<>' if negated else '='} {values_sql(values)}"
-            return f"LOWER({m.group(1)}) {'NOT IN' if negated else 'IN'} ({values_sql(values)})"
+            return f"{m.group(1)} {m.group(2)} {quoted(code(m.group(3)))}"
 
         def in_list(m: re.Match) -> str:
             literals = re.findall(r"'((?:[^']|'')*)'", m.group(3))
             if not literals or re.sub(r"'(?:[^']|'')*'|[\s,]", "", m.group(3)):
                 return m.group(0)  # not a plain list of string literals
-            values = [v for lit in literals for v in self._sex_values(lit.replace("''", "'"))]
-            return f"LOWER({m.group(1)}) {m.group(2).upper()} ({values_sql(values)})"
+            values = list(dict.fromkeys(code(lit.replace("''", "'")) for lit in literals))
+            negated = m.group(2).upper() != "IN"
+            if len(values) == 1:
+                return f"{m.group(1)} {'<>' if negated else '='} {quoted(values[0])}"
+            return f"{m.group(1)} {'NOT IN' if negated else 'IN'} ({', '.join(map(quoted, values))})"
 
         rewritten = self._SEX_IN_RE.sub(in_list, self._SEX_EQ_RE.sub(eq, sql))
         if rewritten != sql:
-            log.info("Made sex comparisons case-insensitive")
+            log.info("Wrote sex literals as their standard codes")
         return rewritten
 
     # p.handedness = 'left', p2.handedness IN ('L', 'left'), p.handedness ~* '\mleft\M',

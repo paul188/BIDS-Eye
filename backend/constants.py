@@ -214,7 +214,7 @@ CREATE TABLE bids_participants (
     dataset_id     UUID REFERENCES bids_datasets(id),
     participant_id TEXT,
     age            FLOAT,
-    sex            TEXT,        -- 'M', 'F', 'male', 'female', etc.
+    sex            TEXT,        -- 'male', 'female' or 'other_diverse'; NULL when not known
     handedness     TEXT,        -- 'right_handed', 'left_handed', 'ambidextrous', 'unknown_handedness'
     diagnosis      TEXT,        -- normalized standard_code, e.g. 'epilepsy', 'schizophrenia',
                              --   'healthy_control', 'major_depressive_disorder', 'adhd'

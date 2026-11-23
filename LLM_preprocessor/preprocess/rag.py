@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import re
 from typing import Dict, List, Optional
+from sex_codes import sex_code
 from join_registry import (
     field_to_db_col as _field_to_db_col,
 )
@@ -38,12 +39,6 @@ def _is_healthy_term(term: str) -> bool:
             and all(w in _HEALTHY_WORDS or w in _PERSON_WORDS for w in words))
 
 
-_SEX_VALUES = {
-    "male": ("male", "m"), "m": ("male", "m"), "men": ("male", "m"), "man": ("male", "m"),
-    "female": ("female", "f"), "f": ("female", "f"), "women": ("female", "f"), "woman": ("female", "f"),
-}
-
-
 _ADULT_AGE = 18
 
 
@@ -70,8 +65,10 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
         return str(int(x)) if float(x).is_integer() else str(x)
 
     def sex_values(group: ParticipantGroup) -> Optional[str]:
-        wanted = {_SEX_VALUES[v.lower().strip()] for v in group.sex if v.lower().strip() in _SEX_VALUES}
-        return ", ".join(f"'{v}'" for v in next(iter(wanted))) if len(wanted) == 1 else None
+        # The code the column holds for the words the plan gives ("women",
+        # "F"): the vocabulary, RAG/sex_codes.py.
+        wanted = {code for v in group.sex if (code := sex_code(v))}
+        return f"'{next(iter(wanted))}'" if len(wanted) == 1 else None
 
     participants = _catalogue.tables().participants.name
     rows = f"EXISTS (SELECT 1 FROM {participants} p2 WHERE p2.dataset_id = d.id AND "
@@ -91,20 +88,20 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
                 ([f"d.age_max >= {number(low)}"] if low is not None else [])
                 + ([f"d.age_min <= {number(high)}"] if high is not None else []))
             return [
-                f"  participant sex and age: ({rows}LOWER(p2.sex) IN ({values}) AND {per_person}) "
+                f"  participant sex and age: ({rows}p2.sex = {values} AND {per_person}) "
                 f"OR (NOT {rows}p2.age IS NOT NULL) "
-                f"AND {rows}LOWER(p2.sex) IN ({values})) AND {dataset_level}))"
+                f"AND {rows}p2.sex = {values}) AND {dataset_level}))"
             ]
 
     if len(all_sexes) == 1:
         values = next(iter(all_sexes))
-        condition = f"{rows}LOWER(p2.sex) IN ({values}))"
+        condition = f"{rows}p2.sex = {values})"
         if _ONLY_RE.search(plan.natural_language_summary or ""):
             # "Only female participants": every participant row says so. A sex
             # recorded for part of the participants is no evidence.
             condition += (f" AND NOT EXISTS (SELECT 1 FROM {participants} p3 "
                           "WHERE p3.dataset_id = d.id AND (p3.sex IS NULL "
-                          f"OR LOWER(p3.sex) NOT IN ({values})))")
+                          f"OR p3.sex <> {values}))")
         lines.append(f"  participant sex: {condition}")
     lows = [g.age_min for g in plan.groups if g.age_min is not None]
     highs = [g.age_max for g in plan.groups if g.age_max is not None]

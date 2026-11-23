@@ -30,6 +30,7 @@ py-modules = [
     "reference_vocabulary",
     "retriever",
     "senses",
+    "sex_codes",
     "shorthands",
     "text_formula",
     "text_terms",

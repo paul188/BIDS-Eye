@@ -17,6 +17,7 @@ except ImportError:  # pragma: no cover
 from services.uncertain import reason_texts
 from services.uncertain.conditions import sql_literal
 from services.schema.tables import participants as _participants
+from sex_codes import sex_code  # RAG/ is on the path wherever the backend runs
 
 
 # Words a README uses for each sex (stemmed by the english configuration:
@@ -24,7 +25,6 @@ from services.schema.tables import participants as _participants
 # "a woman's voice" in stimuli) nor "girls"/"boys" (stimuli and children's
 # books as often as participants).
 SEX_WORDS = {"female": ("female", "females", "women"), "male": ("male", "males", "men")}
-_SEX_CODES = {"f": "female", "female": "female", "m": "male", "male": "male"}
 # "Only female participants": "only" and "all" are english stopwords, so a
 # tsquery cannot say it; a regex over the dataset's own text does.
 _ONLY_SEX_RE = (r"(all[- ]?({w})|({w})[- ]only|only ({w})|exclusively ({w})"
@@ -39,8 +39,9 @@ def asked_sex(node) -> Optional[str]:
         if not any(c.name.lower() == "sex" for c in comparison.find_all(exp.Column)):
             continue
         for literal in comparison.find_all(exp.Literal):
-            if literal.is_string and literal.this.lower() in _SEX_CODES:
-                values.add(_SEX_CODES[literal.this.lower()])
+            # Which literal stands for which sex: the vocabulary (RAG/sex_codes.py).
+            if literal.is_string and sex_code(literal.this) in SEX_WORDS:
+                values.add(sex_code(literal.this))
     return next(iter(values)) if len(values) == 1 else None
 
 

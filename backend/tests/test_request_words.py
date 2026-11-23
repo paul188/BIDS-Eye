@@ -123,7 +123,7 @@ def test_sex_and_age_are_written_by_preprocessing():
     lines = preprocess._participant_conditions(plan)
     assert lines == [
         "  participant sex: EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
-        "AND LOWER(p2.sex) IN ('male', 'm'))",
+        "AND p2.sex = 'male')",
         # adults: only datasets whose recorded ages are all below 18 are excluded
         "  participant age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
         "AND p2.age >= 18) OR d.age_max >= 18 OR (d.age_min IS NULL AND d.age_max IS NULL AND NOT "
@@ -148,9 +148,9 @@ def test_a_stated_age_and_sex_describe_one_participant():
     })
     assert preprocess._participant_conditions(plan) == [
         "  participant sex and age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
-        "AND LOWER(p2.sex) IN ('male', 'm') AND p2.age >= 40 AND p2.age <= 40) "
+        "AND p2.sex = 'male' AND p2.age >= 40 AND p2.age <= 40) "
         "OR (NOT EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.age IS NOT NULL) "
-        "AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND LOWER(p2.sex) IN ('male', 'm')) "
+        "AND EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id AND p2.sex = 'male') "
         "AND d.age_max >= 40 AND d.age_min <= 40))"]
 
 
@@ -165,5 +165,5 @@ def test_only_one_sex_means_every_participant():
         "query_family": "participant_filter", "groups": [{"group_name": "a", "sex": ["female"]}],
     })
     (line,) = preprocess._participant_conditions(plan)
-    assert "LOWER(p2.sex) IN ('female', 'f'))" in line
+    assert "p2.sex = 'female')" in line and "OR p3.sex <> 'female'))" in line
     assert "NOT EXISTS (SELECT 1 FROM bids_participants p3 WHERE p3.dataset_id = d.id AND (p3.sex IS NULL" in line

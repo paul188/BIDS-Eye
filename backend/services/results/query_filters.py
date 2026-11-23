@@ -604,8 +604,8 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 
     sexes = _literals_for(node, ["sex"])
     if sexes:
-        sex_names = {"f": "female", "female": "female", "m": "male", "male": "male"}
-        return chip("sex", "Sex", [sex_names.get(s.lower(), s) for s in sexes])
+        from sex_codes import sex_code   # RAG/, the vocabulary's spellings
+        return chip("sex", "Sex", list(dict.fromkeys(sex_code(s) or s for s in sexes)))
 
     hands = _literals_for(node, ["handedness"])
     if hands:

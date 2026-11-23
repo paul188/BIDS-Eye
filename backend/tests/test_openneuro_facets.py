@@ -59,32 +59,41 @@ def test_no_design_asked_no_line() -> None:
 
 # ── participant sex ───────────────────────────────────────────────────────────
 
-def test_sex_equality_ignores_case() -> None:
-    sql = "SELECT 1 FROM bids_participants p WHERE p.sex = 'female'"
-    assert SERVICE._case_insensitive_sex(sql) == (
-        "SELECT 1 FROM bids_participants p WHERE LOWER(p.sex) IN ('female', 'f')")
+# The column holds 'male', 'female' or 'other_diverse' (the crawler's
+# remote/participant_sex.py); the rewriter writes whatever the SQL model
+# typed as that code, from the vocabulary (RAG/sex_codes.py).
+
+def test_a_sex_literal_becomes_the_stored_code() -> None:
+    for typed in ("female", "Female", "FEMALE", "F", "women"):
+        sql = f"SELECT 1 FROM bids_participants p WHERE p.sex = '{typed}'"
+        assert SERVICE._standard_sex_codes(sql) == (
+            "SELECT 1 FROM bids_participants p WHERE p.sex = 'female'")
 
 
 def test_sex_in_list_and_abbreviations() -> None:
     sql = "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.sex IN ('M', 'male'))"
-    assert SERVICE._case_insensitive_sex(sql) == (
-        "EXISTS (SELECT 1 FROM bids_participants p2 WHERE LOWER(p2.sex) IN ('male', 'm'))")
+    assert SERVICE._standard_sex_codes(sql) == (
+        "EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.sex = 'male')")
+    both = "WHERE p.sex IN ('F', 'female', 'M')"
+    assert SERVICE._standard_sex_codes(both) == "WHERE p.sex IN ('female', 'male')"
 
 
 def test_sex_negation_kept() -> None:
-    sql = "WHERE p.sex <> 'Male'"
-    assert SERVICE._case_insensitive_sex(sql) == "WHERE LOWER(p.sex) NOT IN ('male', 'm')"
+    assert SERVICE._standard_sex_codes("WHERE p.sex <> 'Male'") == "WHERE p.sex <> 'male'"
+    assert SERVICE._standard_sex_codes("WHERE p.sex NOT IN ('M', 'male')") == "WHERE p.sex <> 'male'"
 
 
-def test_other_values_only_lowered() -> None:
-    sql = "WHERE p.sex = 'other_diverse'"
-    assert SERVICE._case_insensitive_sex(sql) == "WHERE LOWER(p.sex) = 'other_diverse'"
+def test_values_the_vocabulary_does_not_know_are_left() -> None:
+    for sql in ("WHERE p.sex = 'other_diverse'", "WHERE p.sex = 'xyz'", "WHERE p.sex = '1'"):
+        assert SERVICE._standard_sex_codes(sql) == sql
 
 
-def test_already_lowered_or_null_checks_untouched() -> None:
-    for sql in ("WHERE LOWER(p.sex) = 'female'", "WHERE p.sex IS NOT NULL",
-                "WHERE p.sex ILIKE 'f%'", "WHERE p.sex IN (SELECT x FROM t)"):
-        assert SERVICE._case_insensitive_sex(sql) == sql
+def test_wrapped_columns_and_null_checks_untouched() -> None:
+    # LOWER(p.sex) IN ('female', 'f') is what stored interpretations from
+    # before the codes were unified hold; it still finds 'female'.
+    for sql in ("WHERE LOWER(p.sex) = 'female'", "WHERE LOWER(p2.sex) IN ('female', 'f')",
+                "WHERE p.sex IS NOT NULL", "WHERE p.sex ILIKE 'f%'", "WHERE p.sex IN (SELECT x FROM t)"):
+        assert SERVICE._standard_sex_codes(sql) == sql
 
 
 def test_full_rewrite_keeps_counting_comparison() -> None:
@@ -95,7 +104,7 @@ def test_full_rewrite_keeps_counting_comparison() -> None:
         "GROUP BY d.id"
     )
     rewritten = SERVICE.rewrite_generated_sql(raw_sql, "datasets with female participants").sql
-    assert "LOWER(p.sex) IN ('female', 'f')" in rewritten
+    assert "p.sex = 'female'" in rewritten
 
 
 # ── number of participants ────────────────────────────────────────────────────
