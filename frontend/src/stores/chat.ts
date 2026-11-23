@@ -54,9 +54,17 @@ function persist(conversations: Conversation[]) {
 function loadFromStorage(): Conversation[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw) as Conversation[]
+    if (raw) return (JSON.parse(raw) as Conversation[]).map(withoutInterrupted)
   } catch { /* corrupted — ignore */ }
   return []
+}
+
+// A search still loading when the page was closed never gets its answer.
+function withoutInterrupted(conv: Conversation): Conversation {
+  const messages = conv.messages.map(m => m.loading
+    ? { ...m, loading: false, error: true, content: 'This search was interrupted. Run it again to see its results.' }
+    : m)
+  return { ...conv, messages }
 }
 
 function makeConversation(): Conversation {
@@ -113,17 +121,19 @@ function _preloadNeighbors(messageId: number, msg: { queryId?: string | null; pa
 }
 
 export const useChatStore = defineStore('chat', () => {
-  const stored = loadFromStorage()
-  const conversations = ref<Conversation[]>(stored.length ? stored : [makeConversation()])
-  const currentId = ref<number>(conversations.value[conversations.value.length - 1].id)
+  const stored = loadFromStorage().filter(c => c.messages.length)
 
   // Advance _nextId past any IDs already in storage so we never collide
-  for (const c of conversations.value) {
+  for (const c of stored) {
     if (c.id >= _nextId) _nextId = c.id + 1
     for (const m of c.messages) {
       if (m.id >= _nextId) _nextId = m.id + 1
     }
   }
+
+  // Opening the site starts on an empty page; earlier searches are in History.
+  const conversations = ref<Conversation[]>([...stored, makeConversation()])
+  const currentId = ref<number>(conversations.value[conversations.value.length - 1].id)
 
   const currentConversation = computed(() =>
     conversations.value.find(c => c.id === currentId.value) ?? conversations.value[0]
