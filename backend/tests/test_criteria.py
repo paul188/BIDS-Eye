@@ -116,7 +116,8 @@ def test_animal_studies_is_not_searched_as_text() -> None:
 
 def test_species_condition_stays_hard_in_the_uncertain_tier() -> None:
     pytest.importorskip("sqlglot")
-    from services.fulltext import text_search, uncertain_tier
+    from services.fulltext import text_search
+    from services.uncertain import tier as uncertain_tier
 
     base = ("SELECT d.id, d.name FROM bids_datasets AS d WHERE "
             "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
@@ -128,7 +129,8 @@ def test_species_condition_stays_hard_in_the_uncertain_tier() -> None:
 
 def test_human_condition_is_hard_in_the_tier_and_a_human_chip() -> None:
     pytest.importorskip("sqlglot")
-    from services.fulltext import text_search, uncertain_tier
+    from services.fulltext import text_search
+    from services.uncertain import tier as uncertain_tier
     from services.results import query_filters
 
     base = ("SELECT d.id, d.name FROM bids_datasets AS d WHERE "

@@ -142,7 +142,7 @@ def test_remove_with_nothing_or_unknown_ids_keeps_the_query():
 
 
 def test_tier_still_applies_after_a_chip_is_removed(monkeypatch):
-    from services.fulltext import uncertain_tier
+    from services.uncertain import tier as uncertain_tier
 
     refined = qf.remove(_sql(MODALITY, ADULTS, TEXT), ["w2"])
     tiered = uncertain_tier.apply(refined, papers=False)

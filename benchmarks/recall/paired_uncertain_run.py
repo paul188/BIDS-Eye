@@ -1,4 +1,4 @@
-"""Paired measurement of the uncertain tier (backend/services/fulltext/uncertain_tier.py).
+"""Paired measurement of the uncertain tier (backend/services/uncertain/tier.py).
 
 Each question goes through the search pipeline once with the tier off
 (intent, vocabulary lookup, SQL generation, rewriting, COUNT with
@@ -62,7 +62,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
 
     database = f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}"
     started = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    from services.fulltext import uncertain_tier
+    from services.uncertain import tier as uncertain_tier
     variants = ("tier_off", "tier_on")
     metas = {
         v: {"label": f"{label} | uncertain tier {'ON' if v == 'tier_on' else 'OFF'} (same translation for both)",

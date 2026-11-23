@@ -1,5 +1,5 @@
 """
-services/fulltext/uncertain_tier.py
+services/uncertain/tier.py
 -----------------------------------
 Keep datasets that a filter cannot check, and show them after the confirmed
 results.
@@ -29,7 +29,7 @@ probable form: "women", "all-female", "7T", "Siemens". Modality, file
 types, size, subject counts and the other sidecar values come from the
 files themselves and stay hard filters, as does anything negated.
 
-"At least N participants with a diagnosis" is its own case (tier_classify.py):
+"At least N participants with a diagnosis" is its own case (classify.py):
 confirmed when that many are coded or labelled with it, probable when the
 dataset does not record who has the diagnosis, contradicted when its
 participant rows show fewer.
@@ -50,11 +50,11 @@ Switched on with UNCERTAIN_TIER=true; the benchmark compares both from one
 translation (benchmarks/recall/paired_uncertain_run.py).
 
 This module does the rewrite (apply). The parts it uses:
-  tier_classify.py    which states each condition can take
-  tier_text.py        weaker forms of a text search
-  tier_sex.py         participant sex in the dataset's own text
-  tier_scanner.py     field strength, vendor and model in the text
-  tier_conditions.py  SoftCondition and what the others share
+  classify.py    which states each condition can take
+  text.py        weaker forms of a text search
+  sex.py         participant sex in the dataset's own text
+  scanner.py     field strength, vendor and model in the text
+  conditions.py  SoftCondition and what the others share
 """
 
 from __future__ import annotations
@@ -71,9 +71,9 @@ except ImportError:  # pragma: no cover
     sqlglot = None  # type: ignore[assignment]
     exp = None  # type: ignore[assignment]
 
-from services.fulltext.tier_conditions import PAPER_REASON, SoftCondition, possible_enabled, sql_literal
-from services.fulltext.tier_sex import keep_only_sex_pairs
-from services.fulltext.tier_classify import classify
+from services.uncertain.conditions import PAPER_REASON, SoftCondition, possible_enabled, sql_literal
+from services.uncertain.sex import keep_only_sex_pairs
+from services.uncertain.classify import classify
 from services.schema.tables import datasets as _datasets
 
 

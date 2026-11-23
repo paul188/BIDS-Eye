@@ -210,7 +210,7 @@ AGE_GROUP = Criterion(
         "when any of its ages fall in the group",
         "the short fields (name, description, study fields) naming the group, when no age is recorded",
         "the README naming the group, when no age is recorded: probably relevant only "
-        "(services/fulltext/uncertain_tier.py)",
+        "(services/uncertain/tier.py)",
     ),
     not_evidence=(
         "a group word in a dataset whose recorded ages lie outside the group: adult datasets "

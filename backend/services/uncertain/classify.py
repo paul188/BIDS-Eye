@@ -1,5 +1,5 @@
 """
-services/fulltext/tier_classify.py
+services/uncertain/classify.py
 ----------------------------------
 Which states a top-level AND condition can take (classify): text, ages,
 diagnosis, sex, scanner fields, matches only in a paper the dataset names
@@ -16,8 +16,8 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.fulltext.tier_conditions import LABEL_RE, SoftCondition, TSQUERY_RE
-from services.fulltext.tier_text import (
+from services.uncertain.conditions import LABEL_RE, SoftCondition, TSQUERY_RE
+from services.uncertain.text import (
     age_group_words,
     asked_age_range,
     known_sql,
@@ -26,8 +26,8 @@ from services.fulltext.tier_text import (
     relax_text_condition,
     tsquery_for_words,
 )
-from services.fulltext.tier_sex import sex_text_condition
-from services.fulltext.tier_scanner import sidecar
+from services.uncertain.sex import sex_text_condition
+from services.uncertain.scanner import sidecar
 
 
 _REASON = {

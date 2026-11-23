@@ -1,7 +1,8 @@
 """A phrase is never shortened to one broad word (search-quality review 2026-11-17, point 1)."""
 import preprocess
 import text_terms
-from services.fulltext import tier_text, tsquery, word_frequencies
+from services.fulltext import tsquery, word_frequencies
+from services.uncertain import text as tier_text
 
 
 def _counts(table):

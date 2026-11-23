@@ -51,7 +51,7 @@ function go(page: number) {
       :class="{ 'opacity-50 pointer-events-none': loading }"
     >
       <template v-for="(ds, i) in datasets" :key="ds.id">
-        <!-- Banner where the uncertain tier starts (services/fulltext/uncertain_tier.py) -->
+        <!-- Banner where the uncertain tier starts (services/uncertain/tier.py) -->
         <div
           v-if="ds.uncertain_level && (i === 0 || !datasets[i - 1].uncertain_level)"
           class="my-3 px-4 py-2.5 rounded-lg bg-warn-bg text-warn-ink text-[13px] leading-relaxed"

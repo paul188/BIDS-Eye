@@ -1,5 +1,5 @@
 """
-services/fulltext/tier_text.py
+services/uncertain/text.py
 ------------------------------
 Weaker forms of a text search, the 'probable' state of a text condition:
 some of its words (relax_tsquery, relax_near), the words apart, the README
@@ -14,7 +14,7 @@ from typing import List, Optional, Sequence, Tuple
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
-from services.fulltext.tier_conditions import LABEL_RE, TSQUERY_RE
+from services.uncertain.conditions import LABEL_RE, TSQUERY_RE
 from services.schema.tables import participants as _participants
 
 

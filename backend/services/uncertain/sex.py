@@ -1,5 +1,5 @@
 """
-services/fulltext/tier_sex.py
+services/uncertain/sex.py
 -----------------------------
 Participant sex in the dataset's own text: "women", "all-female" as the
 probable form of a sex filter.
@@ -14,7 +14,7 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.fulltext.tier_conditions import sql_literal
+from services.uncertain.conditions import sql_literal
 from services.schema.tables import participants as _participants
 
 

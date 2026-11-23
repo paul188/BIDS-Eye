@@ -189,7 +189,7 @@ def test_readme_excerpt_marks_the_age_group_words():
 def test_uncertain_tier_query_still_runs_with_reasons():
     # The tier wraps the query; reasons come from the unwrapped filter SQL.
     from sqlalchemy import text
-    from services.fulltext import uncertain_tier
+    from services.uncertain import tier as uncertain_tier
 
     async def check(session, ids):
         sql = _query(age_condition(["infants"]))

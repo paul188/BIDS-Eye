@@ -1,5 +1,5 @@
 """Text venues for participant sex and scanner metadata in the uncertain tier
-(services/fulltext/uncertain_tier.py): a dataset that does not record the
+(services/uncertain/tier.py): a dataset that does not record the
 value counts as probably relevant when its own text names it."""
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import pytest
 import sqlglot
 from sqlglot import exp
 
-from services.fulltext import tier_classify, tier_scanner, uncertain_tier as ut
+from services.uncertain import classify as tier_classify, scanner as tier_scanner, tier as ut
 from services.results import query_filters as qf
 
 _HEAD = "SELECT d.id, d.name FROM bids_datasets AS d WHERE "

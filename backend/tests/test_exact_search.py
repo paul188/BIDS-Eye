@@ -19,7 +19,7 @@ import word_forms
 from services.results import query_filters as qf
 from services.catalogue.catalogue import ColumnCoverage, catalogue
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
-from services.fulltext import tier_text, uncertain_tier as ut
+from services.uncertain import text as tier_text, tier as ut
 from services.fulltext import word_form_counts
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from services.fulltext.ranking import RankQuery

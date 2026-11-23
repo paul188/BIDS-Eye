@@ -16,7 +16,8 @@ sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
 import text_formula as tf  # noqa: E402
-from services.fulltext import text_search, tier_text, tsquery, vectors, word_frequencies  # noqa: E402
+from services.fulltext import text_search, tsquery, vectors, word_frequencies  # noqa: E402
+from services.uncertain import text as tier_text  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 
 

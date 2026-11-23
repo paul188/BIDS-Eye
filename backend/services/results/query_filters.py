@@ -16,7 +16,7 @@ which becomes {field: "Diagnosis", label: "Parkinson's disease",
 text_words: ["parkinson", "parkinsons"]}.
 
 Removing a chip deletes its condition from the query before the uncertain
-tier is applied (services/fulltext/uncertain_tier.py), so a refined search runs
+tier is applied (services/uncertain/tier.py), so a refined search runs
 without another language-model call (routers/query.py, /query/refine).
 
 Chip ids are positions ("w0", "w1", "h0") in the query they were read from;
@@ -294,7 +294,7 @@ def _age_label(node) -> Optional[str]:
         columns = {c.name.lower() for c in node.find_all(exp.Column)}
         if not columns & {"age_min", "age_max"}:
             return None
-        from services.fulltext.tier_text import asked_age_range
+        from services.uncertain.text import asked_age_range
         lo, hi = asked_age_range(node.sql(dialect="postgres"))
         low = (lo, True) if lo > 0 else None
         high = (hi, True) if hi < 120 else None
@@ -454,7 +454,7 @@ def _venue_words(node) -> List[str]:
     the chip is labelled by the modality it shares a condition with: the
     page and highlight_field_strengths read it as a strength). Age words
     come with the age chip."""
-    from services.fulltext import tier_scanner, tier_sex
+    from services.uncertain import scanner as tier_scanner, sex as tier_sex
     words: List[str] = []
     sex = tier_sex.asked_sex(node)
     if sex:
@@ -510,7 +510,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     forms = guard_forms(node)
     searched = phrases + [form for form in forms if form not in phrases]
     # Words of the text venues the uncertain tier adds for fields that can be
-    # missing (services/fulltext/uncertain_tier.py): the page marks them.
+    # missing (services/uncertain/tier.py): the page marks them.
     for word in _venue_words(node):
         if word not in searched:
             searched.append(word)
@@ -591,9 +591,9 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     age = _age_label(node)
     if age:
         # A README naming the age group is evidence too (the uncertain
-        # tier's probable form, services/fulltext/uncertain_tier.py): its
+        # tier's probable form, services/uncertain/tier.py): its
         # words are what the page marks for a match on recorded ages.
-        from services.fulltext.tier_text import age_group_words, asked_age_range
+        from services.uncertain.text import age_group_words, asked_age_range
         group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
         searched.extend(w for w in group_words if w not in searched)
         return chip("age", "Age", age)
@@ -1054,7 +1054,7 @@ def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
 FIELD_STRENGTH_FIELD = "Magnetic field strength"
 # The strengths scanners are sold at (defined with the README venue of the
 # uncertain tier, which the translation uses; this module only displays).
-from services.fulltext.tier_scanner import NOMINAL_TESLA  # noqa: E402
+from services.uncertain.scanner import NOMINAL_TESLA  # noqa: E402
 _NUMBER = r"\d+(?:\.\d+)?"
 _RANGE_LABEL_RE = re.compile(rf"^({_NUMBER})–({_NUMBER})$")
 _BOUND_LABEL_RE = re.compile(rf"^(=|≥|>|≤|<) ({_NUMBER})$")
@@ -1101,7 +1101,7 @@ def field_strength_pattern(strengths: Iterable[float]) -> Optional["re.Pattern[s
     ("200 T/m/s"). Spaces include the thin ones some READMEs use. Checked on
     the 1,720 OpenNeuro READMEs of 2026-11: no false matches found.
     """
-    from services.fulltext.tier_scanner import field_strength_regex
+    from services.uncertain.scanner import field_strength_regex
     pattern = field_strength_regex(strengths)
     return re.compile(pattern) if pattern else None
 

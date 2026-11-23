@@ -27,8 +27,8 @@ GROUPS = {
     "translate": ("text_to_sql", "participant_query_compiler", "sql_rewriter", "concept_keys",
                   "value_check"),
     "fulltext": ("text_search", "tsquery", "ranking", "vectors", "word_frequencies",
-                 "word_form_counts", "uncertain_tier", "tier_classify", "tier_conditions",
-                 "tier_scanner", "tier_sex", "tier_text"),
+                 "word_form_counts"),
+    "uncertain": ("tier", "classify", "conditions", "scanner", "sex", "text"),
     "catalogue": ("catalogue", "schema_capabilities", "catalogue_values"),
     "schema": ("tables", "check"),
     "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),
@@ -44,6 +44,13 @@ OLD_NAMES = {
     "tables": ("catalogue", "tables"),
     # check_schema was part of catalogue.py.
     "check": ("catalogue", "catalogue"),
+    # The uncertain tier was part of fulltext/, its parts named tier_*.
+    "tier": ("fulltext", "uncertain_tier"),
+    "classify": ("fulltext", "tier_classify"),
+    "conditions": ("fulltext", "tier_conditions"),
+    "scanner": ("fulltext", "tier_scanner"),
+    "sex": ("fulltext", "tier_sex"),
+    "text": ("fulltext", "tier_text"),
 }
 
 

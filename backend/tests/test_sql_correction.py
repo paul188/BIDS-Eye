@@ -14,7 +14,7 @@ pytest.importorskip("sqlglot")
 
 from sqlglot import exp, parse_one  # noqa: E402
 
-from services.fulltext import uncertain_tier  # noqa: E402
+from services.uncertain import tier as uncertain_tier  # noqa: E402
 from services.translate import text_to_sql  # noqa: E402
 from services.translate.sql_rewriter import (  # noqa: E402
     FALLBACK_SQL, finish_corrected_sql, rewrite_generated_sql,

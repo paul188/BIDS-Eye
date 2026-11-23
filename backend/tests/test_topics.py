@@ -15,7 +15,8 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 import senses  # noqa: E402
 from services.results import query_filters  # noqa: E402
-from services.fulltext import text_search, tier_text, tsquery, word_frequencies  # noqa: E402
+from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E402
+from services.uncertain import text as tier_text  # noqa: E402
 from text_terms import parse_alternatives  # noqa: E402
 
 SOCIAL = pp.Topic(

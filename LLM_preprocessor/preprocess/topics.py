@@ -320,12 +320,12 @@ def _topic_condition(resolved: ResolvedTopic) -> Optional[str]:
             AND NOT text_match('<not meant>', 'near'))
 
     The phrase comes first: the uncertain tier relaxes only the first text
-    search of a topic (services/fulltext/uncertain_tier.py, relax_text_condition).
+    search of a topic (services/uncertain/tier.py, relax_text_condition).
 
     The phrase is the user's own words and needs no guard. An alternative can
     also occur in a text about another meaning ("conflict resolution task" in
     a Stroop study); such a dataset fails this condition and the uncertain
-    tier keeps it as probable (services/fulltext/uncertain_tier.py).
+    tier keeps it as probable (services/uncertain/tier.py).
     """
     parts: List[str] = []
     if resolved.codes:

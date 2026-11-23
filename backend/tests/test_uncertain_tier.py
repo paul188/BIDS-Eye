@@ -6,7 +6,8 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
-from services.fulltext import tier_conditions, tier_text, tsquery, uncertain_tier as ut, word_frequencies  # noqa: E402
+from services.fulltext import tsquery, word_frequencies  # noqa: E402
+from services.uncertain import conditions as tier_conditions, text as tier_text, tier as ut  # noqa: E402
 from services.fulltext.ranking import RankQuery  # noqa: E402
 
 BASE = (

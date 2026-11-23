@@ -14,7 +14,7 @@ import uuid
 
 import pytest
 
-from services.fulltext import tier_scanner, uncertain_tier as ut
+from services.uncertain import scanner as tier_scanner, tier as ut
 
 from tests.test_scanner_sex_venues import (
     FEMALE, GE_OR_PHILIPS, ONLY_FEMALE, PRISMA, STRENGTH_7T, STRENGTH_7T_FMRI, _HEAD)

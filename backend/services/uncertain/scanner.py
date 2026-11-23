@@ -1,5 +1,5 @@
 """
-services/fulltext/tier_scanner.py
+services/uncertain/scanner.py
 ---------------------------------
 Scanner metadata in the dataset's own text: the field strength, vendor and
 model a condition asks of the sidecar JSON (an EXISTS on bids_objects), and
@@ -18,8 +18,8 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.fulltext.tier_conditions import SoftCondition, possible_enabled, sql_literal
-from services.fulltext.tier_sex import own_text
+from services.uncertain.conditions import SoftCondition, possible_enabled, sql_literal
+from services.uncertain.sex import own_text
 from services.schema.tables import objects as _objects
 
 

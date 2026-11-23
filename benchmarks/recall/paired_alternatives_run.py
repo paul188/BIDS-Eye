@@ -94,7 +94,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from settings import settings_obj
     from sqlalchemy import text
     from db.db import async_session_maker, engine
-    from services.fulltext import ranking, tsquery, uncertain_tier, word_frequencies
+    from services.fulltext import ranking, tsquery, word_frequencies
+    from services.uncertain import tier as uncertain_tier
     from services.translate import text_to_sql as translator
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.catalogue.schema_capabilities import has_fts, refresh_available_columns

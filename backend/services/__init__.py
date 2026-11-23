@@ -7,8 +7,9 @@ The request flow stays at this level:
 
 The stages it calls:
   translate/   question to SQL: model calls, the deterministic compiler, SQL rewrites
-  fulltext/    full-text search inside the SQL, word form counts, and the tier of
-               unconfirmed datasets
+  fulltext/    full-text search inside the SQL and word form counts
+  uncertain/   the tier of datasets a filter cannot check (ages, diagnosis, sex,
+               scanner or text that a dataset does not record)
   catalogue/   what the database contains: column coverage, known values
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
@@ -32,7 +33,7 @@ language model up to three times and several groups serve more than one step
   4. SQL rewrites         translate/sql_rewriter: structural fixes, the
                           value check (translate/value_check, against the
                           values catalogue/ loaded), full-text conditions and
-                          the uncertain tier (fulltext/)
+                          (fulltext/) and the uncertain tier (uncertain/)
   5. run                  search_runner + query_guard: one page; a relaxed
                           re-run when too few datasets match
   6. result page          results/: the RERANK MODEL orders the first

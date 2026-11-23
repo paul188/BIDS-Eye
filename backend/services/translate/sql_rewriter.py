@@ -39,7 +39,7 @@ from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
 
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
-from services.fulltext import uncertain_tier as _uncertain_tier  # noqa: E402
+from services.uncertain import tier as _uncertain_tier  # noqa: E402
 from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
 from services.schema.tables import (  # noqa: E402
     dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
@@ -319,7 +319,7 @@ class SqlRewriteService:
         filter_sql = sql
         if tiered:
             # Keep datasets a filter cannot check, as a second tier
-            # (services/fulltext/uncertain_tier.py). Off unless UNCERTAIN_TIER=true.
+            # (services/uncertain/tier.py). Off unless UNCERTAIN_TIER=true.
             sql = _uncertain_tier.apply(sql)
         return RewriteResult(sql=sql, params={}, rank_query=expanded.rank_query,
                              filter_sql=filter_sql, relaxed_sql=relaxed_sql,
@@ -388,7 +388,7 @@ class SqlRewriteService:
         ranked = ordered != base_sql
         ordered = self._use_summaries(self._normalize_sql(ordered))
         params: dict[str, Any] = {"_limit": limit, "_offset": offset}
-        # Confirmed results first, then the uncertain tier (services/fulltext/uncertain_tier.py).
+        # Confirmed results first, then the uncertain tier (services/uncertain/tier.py).
         tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
         tier_key = f"page_result.{_uncertain_tier.LEVEL_COLUMN}, " if tiered else ""
         order_clause = ""

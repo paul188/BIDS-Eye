@@ -14,7 +14,8 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 from services.results import query_filters  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
-from services.fulltext import ranking, text_search, tier_text, word_frequencies  # noqa: E402
+from services.fulltext import ranking, text_search, word_frequencies  # noqa: E402
+from services.uncertain import text as tier_text  # noqa: E402
 
 
 def _plan(**fields) -> pp.QueryPlan:

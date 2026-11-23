@@ -53,10 +53,15 @@ CASES = (
 
 def _load_baseline(module_name: str, temp_dir: Path) -> ModuleType:
     """Load the committed tier implementation without replacing the working file."""
-    source = subprocess.run(
-        ["git", "show", "HEAD:backend/services/fulltext/uncertain_tier.py"],
-        cwd=ROOT, check=True, capture_output=True, text=True,
-    ).stdout
+    # The tier was services/fulltext/uncertain_tier.py before it got its own folder.
+    for committed in ("backend/services/uncertain/tier.py", "backend/services/fulltext/uncertain_tier.py"):
+        shown = subprocess.run(["git", "show", f"HEAD:{committed}"],
+                               cwd=ROOT, capture_output=True, text=True)
+        if shown.returncode == 0:
+            break
+    else:
+        raise RuntimeError("no committed uncertain tier at HEAD")
+    source = shown.stdout
     path = temp_dir / "uncertain_tier_baseline.py"
     path.write_text(source)
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -425,7 +430,7 @@ def main_cli() -> int:
     from services import query_guard
     from services.catalogue import schema_capabilities
     from services.fulltext import word_frequencies
-    from services.fulltext import uncertain_tier as working_tier
+    from services.uncertain import tier as working_tier
 
     # Keep SQL generation deterministic and offline in the default mode. The
     # live run still compares exactly these generated statements.
@@ -490,8 +495,8 @@ def main_cli() -> int:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "fixture": str(args.fixture),
-        "baseline": "git HEAD:backend/services/fulltext/uncertain_tier.py",
-        "working_tree": "backend/services/fulltext/uncertain_tier.py",
+        "baseline": "git HEAD:backend/services/uncertain/tier.py",
+        "working_tree": "backend/services/uncertain/tier.py",
         "papers_mode": args.papers,
         "remote_capabilities": remote_capabilities,
         "remote_capability_error": remote_capability_error,

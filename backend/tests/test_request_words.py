@@ -1,6 +1,6 @@
 """Fixes from the 70-request gold set (benchmarks/demand/results/2026-11-15_failure_causes_5f91230.md)."""
 import preprocess
-from services.fulltext import tier_text
+from services.uncertain import text as tier_text
 
 
 def test_request_words_are_not_searched_as_text():

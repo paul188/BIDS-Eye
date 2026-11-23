@@ -6,7 +6,7 @@ How many datasets match a tsquery, counted on search_tsv (never on paper text).
 The counts decide which words of a 'loose' term a dataset must contain
 (tsquery._loose_core), check search terms a language model proposed
 (tsquery.count_matches) and pick the parts of the uncertain tier
-(services/fulltext/uncertain_tier.py). A count may also require an unstemmed
+(services/uncertain/tier.py). A count may also require an unstemmed
 guard on search_tsv_exact (exact word forms, text_search.py).
 """
 

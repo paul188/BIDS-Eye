@@ -114,7 +114,7 @@ def test_other_words_stay_a_text_search() -> None:
 def test_uncertain_tier_keeps_readme_mentions_as_probable() -> None:
     pytest.importorskip("sqlglot")
     import sqlglot
-    from services.fulltext import tier_classify, uncertain_tier
+    from services.uncertain import classify as tier_classify, tier as uncertain_tier
 
     sql = _expanded(age_condition(["children"]))
     tree = sqlglot.parse_one(sql, read="postgres")

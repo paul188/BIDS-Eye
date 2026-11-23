@@ -192,7 +192,7 @@ def test_label_guard_survives_the_uncertain_tier_paper_evidence() -> None:
     """The tier ORs paper evidence onto text conditions; a dataset labelled
     'Cross-Sectional' must still be excluded from a longitudinal question."""
     import re as _re
-    from services.fulltext import uncertain_tier
+    from services.uncertain import tier as uncertain_tier
     augmented = _augmented("longitudinal")
     condition = _re.search(r"  study design: (.+)", augmented).group(1)
     base = ("SELECT d.id FROM bids_datasets AS d LEFT JOIN bids_objects AS o ON o.dataset_id = d.id "

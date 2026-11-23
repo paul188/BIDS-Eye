@@ -35,7 +35,7 @@ compile_formula() turns a formula into SQL over text_match() placeholders
     which is what a description search without operators always gave;
   - the other conditions of a top-level AND are separate conditions, joined
     by AND without outer parentheses, so a NOT stays a hard condition of its
-    own (backend/services/uncertain_tier.py never weakens a NOT);
+    own (backend/services/uncertain/tier.py never weakens a NOT);
   - anything else is written out with AND / OR / NOT and parentheses.
 """
 

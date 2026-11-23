@@ -64,7 +64,7 @@ class DatasetSchema(BaseModel):
     # Set when the dataset is gone from, or flagged deprecated on, its source
     # repository; None for datasets that are fine. Shown as a tag in the UI.
     deprecated_reason: Optional[str] = None
-    # Uncertain tier (services/fulltext/uncertain_tier.py): 0 or None = every filter
+    # Uncertain tier (services/uncertain/tier.py): 0 or None = every filter
     # confirmed, 1 = probably relevant, 2 = possibly relevant; with the reason
     # (e.g. "ages not recorded"). Set only when UNCERTAIN_TIER is on.
     uncertain_level: Optional[int] = None

@@ -93,7 +93,7 @@ def test_every_reading_joins_the_sites() -> None:
 
 def test_text_naming_another_place_does_not_count() -> None:
     # "mexico" found nine University of New Mexico datasets through their READMEs.
-    from services.fulltext import uncertain_tier
+    from services.uncertain import tier as uncertain_tier
     from services.results import match_reasons
 
     place_index.set_places((), ROWS)

@@ -20,7 +20,7 @@ from preprocess import (  # noqa: E402
     ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement,
     _build_augmented_question,
 )
-from services.fulltext import tier_classify, uncertain_tier  # noqa: E402
+from services.uncertain import classify as tier_classify, tier as uncertain_tier  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql  # noqa: E402
 
 PD = ResolvedTerms(field=RAGField.DIAGNOSIS, term_to_codes={

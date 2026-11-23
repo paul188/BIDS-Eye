@@ -94,9 +94,9 @@ class Summaries:
       services/translate/sql_rewriter.py       _use_summaries: executed SQL
           reads the facets table and n_subjects instead of bids_objects
           (facets, subject_counts).
-      services/fulltext/tier_scanner.py        the datasets a scan condition
+      services/uncertain/scanner.py        the datasets a scan condition
           holds for, from the facets table (facets).
-      services/fulltext/tier_classify.py       the subject count of a cohort
+      services/uncertain/classify.py       the subject count of a cohort
           condition, from n_subjects (subject_counts).
       Catalogue._read_values                   the facet values are read only
           while the facets table is complete (facets).

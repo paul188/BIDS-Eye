@@ -1,10 +1,10 @@
 """
-services/fulltext/tier_conditions.py
+services/uncertain/conditions.py
 ------------------------------------
 The pieces every part of the uncertain tier shares: the states one condition
 can take (SoftCondition), the paper reason text, the patterns that read a
 generated text search, and the switch for the 'possible' level. What the
-tier does: uncertain_tier.py.
+tier does: tier.py.
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ class SoftCondition:
     reason_possible: str
     paper: Optional[str] = None  # SQL: the terms match the dataset's paper text
     # (name, SELECT) sets the condition reads more than once: computed once
-    # as a WITH query (a sidecar lookup scans file metadata; tier_scanner.sidecar).
+    # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).
     ctes: Tuple[Tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
