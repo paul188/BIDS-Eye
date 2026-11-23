@@ -14,6 +14,7 @@ from typing import List, Optional, Sequence, Tuple
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
+from services.uncertain import reason_texts
 from services.uncertain.conditions import LABEL_RE, TSQUERY_RE
 from services.schema.tables import participants as _participants
 
@@ -243,12 +244,8 @@ def _marked_terms(words: List[str], marker: str) -> List[str]:
         t for w in words if w.startswith(marker) for t in w[len(marker):].split() if t))
 
 
-def _shown(terms: List[str], limit: int = 3) -> str:
-    return ", ".join(terms[:limit]) + (" …" if len(terms) > limit else "")
-
-
 def partial_reason(words: List[str]) -> str:
-    """Card text for a probable text match."""
+    """Card text for a probable text match (the wording: reason_texts.py)."""
     apart = _marked_terms(words, _APART)
     excluded = _marked_terms(words, _EXCLUDED)
     words = [w for w in words if not w.startswith((_APART, _EXCLUDED))]
@@ -256,28 +253,22 @@ def partial_reason(words: List[str]) -> str:
     # forms are named as alternatives: either may be why a dataset is here.
     loose = []
     if apart:
-        loose.append(f"the words {_shown(apart)} occur, but not together")
+        loose.append(reason_texts.words_apart(apart))
     if excluded:
-        loose.append(f"a related term occurs next to a meaning the search excludes "
-                     f"({_shown(excluded)})")
-    reasons = [", or ".join(loose)] if loose else []
-    if words or not reasons:
-        reasons.append(_text_reason(words))
-    return "; ".join(reasons)
+        loose.append(reason_texts.excluded_meaning(excluded))
+    parts = [", or ".join(loose)] if loose else []
+    if words or not parts:
+        parts.append(_text_reason(words))
+    return "; ".join(parts)
 
 
 def _text_reason(words: List[str]) -> str:
     missing = [w for w in words if not w.startswith(_README_ONLY)]
     if not missing:
         # _README_ONLY + the words whose scope was widened, e.g. "\x00readme harvard".
-        terms = list(dict.fromkeys(
-            t for w in words for t in w[len(_README_ONLY):].split() if t))
-        if not terms:
-            return "the search term appears only further down in the README"
-        shown = " / ".join(f'"{t}"' for t in terms[:2]) + (" …" if len(terms) > 2 else "")
-        return f"{shown} appears only further down in the README"
-    shown = ", ".join(missing[:4]) + (" …" if len(missing) > 4 else "")
-    return f"matches only part of the search; missing: {shown}"
+        return reason_texts.readme_only(list(dict.fromkeys(
+            t for w in words for t in w[len(_README_ONLY):].split() if t)))
+    return reason_texts.words_missing(missing)
 
 
 def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:

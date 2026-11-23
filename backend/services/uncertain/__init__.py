@@ -4,6 +4,7 @@
   classify.py    which states a condition can take, by kind: text, age, diagnosis,
                  sex, scanner, patient count
   conditions.py  SoftCondition and what the parts share
+  reason_texts.py     every reason a result card gives, in one list
   text.py        weaker forms of a text search
   sex.py         participant sex in the dataset's own text
   scanner.py     field strength, vendor and model in the text

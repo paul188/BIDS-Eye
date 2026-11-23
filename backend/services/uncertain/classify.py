@@ -26,15 +26,9 @@ from services.uncertain.text import (
     relax_text_condition,
     tsquery_for_words,
 )
+from services.uncertain import reason_texts
 from services.uncertain.sex import sex_text_condition
 from services.uncertain.scanner import sidecar
-
-
-_REASON = {
-    "age": "ages not recorded",
-    "diagnosis": "diagnosis not recorded",
-    "sex": "participant sex not recorded",
-}
 
 
 def _columns_outside_subqueries(node) -> set:
@@ -130,15 +124,19 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
                 vector = "search_tsv"
                 probable = (f"{alias}.{vector} @@ TO_TSQUERY('english', "
                             f"'{tsquery_for_words(group_words)}')")
-                reason_probable = "ages not recorded; the description names the age group"
+                reason_probable = reason_texts.AGE_GROUP_NAMED
         if kind == "sex":
             text = sex_text_condition(node, alias)
             if text is not None:
                 probable, reason_probable = text
+        # The card text for each state. Possible: the field is not recorded
+        # ("ages not recorded"). Probable: the more specific reason found
+        # above (the text names the age group or sex, or matches in part),
+        # else the same "not recorded".
         return SoftCondition(
             sql=sql, kind=kind, probable=probable, known=known_sql(kind, alias),
-            reason_probable=reason_probable or _REASON[kind],
-            reason_possible=_REASON[kind], paper=paper,
+            reason_probable=reason_probable or reason_texts.NOT_RECORDED[kind],
+            reason_possible=reason_texts.NOT_RECORDED[kind], paper=paper,
         )
     if relaxed or paper:
         return SoftCondition(
@@ -175,5 +173,5 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
     return SoftCondition(
         sql=sql, kind="patient_count",
         probable=cohort_count.unknown_sql(codes, minimum, alias, subject_count=stored), known=None,
-        reason_probable=cohort_count.REASON_UNKNOWN, reason_possible="",
+        reason_probable=reason_texts.PATIENT_COUNT_NOT_RECORDED, reason_possible="",
     )

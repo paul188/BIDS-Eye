@@ -18,6 +18,7 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+from services.uncertain import reason_texts
 from services.uncertain.conditions import SoftCondition, possible_enabled, sql_literal
 from services.uncertain.sex import own_text
 from services.schema.tables import objects as _objects
@@ -346,6 +347,6 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
     return SoftCondition(
         sql=" OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0],
         kind="sidecar", probable=probable, known=known,
-        reason_probable=f"{label} not in the file metadata; the description names {named}",
-        reason_possible=f"{label} not in the file metadata", ctes=tuple(ctes),
+        reason_probable=reason_texts.scanner_named(label, named),
+        reason_possible=reason_texts.scanner_not_recorded(label), ctes=tuple(ctes),
     )

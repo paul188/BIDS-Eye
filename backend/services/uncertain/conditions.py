@@ -2,7 +2,7 @@
 services/uncertain/conditions.py
 ------------------------------------
 The pieces every part of the uncertain tier shares: the states one condition
-can take (SoftCondition), the paper reason text, the patterns that read a
+can take (SoftCondition), the patterns that read a
 generated text search, and the switch for the 'possible' level. What the
 tier does: tier.py.
 """
@@ -38,17 +38,16 @@ def sql_literal(text: str) -> str:
     return "'" + text.replace("'", "''") + "'"
 
 
-PAPER_REASON = "found only in a paper the dataset names"
-
-
 @dataclass
 class SoftCondition:
     sql: str                    # the condition as generated
     kind: str                   # age, diagnosis, sex or text
     probable: Optional[str]     # SQL for the weaker form, or None
     known: Optional[str]        # SQL: the field is recorded (None for text)
-    reason_probable: str
-    reason_possible: str
+    # What the result card says for a dataset in that state; "" says nothing.
+    # The wordings are in reason_texts.py.
+    reason_probable: str        # e.g. "ages not recorded; the description names the age group"
+    reason_possible: str        # e.g. "ages not recorded"
     paper: Optional[str] = None  # SQL: the terms match the dataset's paper text
     # (name, SELECT) sets the condition reads more than once: computed once
     # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).

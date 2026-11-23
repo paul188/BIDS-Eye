@@ -7,7 +7,7 @@ import pytest
 sqlglot = pytest.importorskip("sqlglot")
 
 from services.fulltext import tsquery, word_frequencies  # noqa: E402
-from services.uncertain import conditions as tier_conditions, text as tier_text, tier as ut  # noqa: E402
+from services.uncertain import text as tier_text, tier as ut  # noqa: E402
 from services.fulltext.ranking import RankQuery  # noqa: E402
 
 BASE = (
@@ -113,7 +113,8 @@ def test_paper_text_is_second_tier_evidence() -> None:
     tiered = ut.apply(sql, papers=True)
     assert ("d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo') "
             "AND NOT d.search_tsv @@ TO_TSQUERY('english', 'placebo')") in tiered
-    assert tier_conditions.PAPER_REASON in tiered
+    from services.uncertain import reason_texts
+    assert reason_texts.PAPER in tiered
     # Confirmation still uses the dataset's own text.
     assert "(d.search_tsv @@ TO_TSQUERY('english', 'placebo')) AS confirmed_0" in tiered
     assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN ev.probable_0 THEN 1 ELSE 9 END AS u0" in tiered

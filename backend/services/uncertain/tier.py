@@ -71,7 +71,8 @@ except ImportError:  # pragma: no cover
     sqlglot = None  # type: ignore[assignment]
     exp = None  # type: ignore[assignment]
 
-from services.uncertain.conditions import PAPER_REASON, SoftCondition, possible_enabled, sql_literal
+from services.uncertain import reason_texts
+from services.uncertain.conditions import SoftCondition, possible_enabled, sql_literal
 from services.uncertain.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
 from services.schema.tables import datasets as _datasets
@@ -289,18 +290,18 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     unsure = " + ".join(f"(CASE WHEN {name} > 0 THEN 1 ELSE 0 END)" for name in names)
     evidence = " OR ".join(f"{name} <= 1" for name in names)
     level = f"GREATEST({', '.join(names)})" if len(names) > 1 else names[0]
-    reasons = []
+    cases = []
     for i, c in enumerate(soft):
         branches = []
         if c.paper:
-            branches.append(f"WHEN evidence.u{i} = 1 AND evidence.p{i} THEN {sql_literal(PAPER_REASON)}")
+            branches.append(f"WHEN evidence.u{i} = 1 AND evidence.p{i} THEN {sql_literal(reason_texts.PAPER)}")
         if c.reason_probable:
             branches.append(f"WHEN evidence.u{i} = 1 THEN {sql_literal(c.reason_probable)}")
         if c.reason_possible:
             branches.append(f"WHEN evidence.u{i} = 2 THEN {sql_literal(c.reason_possible)}")
         if branches:
-            reasons.append(f"CASE {' '.join(branches)} END")
-    reasons_sql = (f"NULLIF(CONCAT_WS('; ', {', '.join(reasons)}), '')" if reasons else "NULL")
+            cases.append(f"CASE {' '.join(branches)} END")
+    reasons_sql = (f"NULLIF(CONCAT_WS('; ', {', '.join(cases)}), '')" if cases else "NULL")
 
     ctes = [f"{name} AS MATERIALIZED ({select})"
             for name, select in dict.fromkeys(cte for c in soft for cte in c.ctes)]

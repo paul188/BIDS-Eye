@@ -202,6 +202,3 @@ def parse_expanded(sql: str) -> Optional[Tuple[List[str], int]]:
         return None
     codes = valid_codes(re.findall(r"'([^']*)'", match.group("codes")))
     return (codes, int(match.group("n"))) if codes else None
-
-
-REASON_UNKNOWN = "how many participants have the diagnosis is not recorded"

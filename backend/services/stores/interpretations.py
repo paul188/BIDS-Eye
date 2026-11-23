@@ -73,6 +73,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "uncertain" / "tier.py",
     _BACKEND / "services" / "uncertain" / "classify.py",
     _BACKEND / "services" / "uncertain" / "conditions.py",
+    _BACKEND / "services" / "uncertain" / "reason_texts.py",
     _BACKEND / "services" / "uncertain" / "scanner.py",
     _BACKEND / "services" / "uncertain" / "sex.py",
     _BACKEND / "services" / "uncertain" / "text.py",

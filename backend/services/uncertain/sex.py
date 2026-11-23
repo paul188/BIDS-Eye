@@ -14,6 +14,7 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+from services.uncertain import reason_texts
 from services.uncertain.conditions import sql_literal
 from services.schema.tables import participants as _participants
 
@@ -100,7 +101,7 @@ def sex_text_condition(node, alias: str) -> Optional[Tuple[str, str]]:
     if _only_one_sex(node):
         pattern = _ONLY_SEX_RE.format(w=_ONLY_SEX_WORDS[sex])
         return (f"{own_text(alias)} ~* {sql_literal(r'(^|[^[:alnum:]_])' + pattern + r'($|[^[:alnum:]_])')}",
-                f"participant sex not recorded; the description says all participants are {sex}")
+                reason_texts.only_sex_named(sex))
     words = " | ".join(SEX_WORDS[sex])
     return (f"{alias}.search_tsv @@ TO_TSQUERY('english', '{words}')",
-            f"participant sex not recorded; the description names {sex} participants")
+            reason_texts.sex_named(sex))

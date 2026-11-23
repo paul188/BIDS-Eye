@@ -28,7 +28,7 @@ GROUPS = {
                   "value_check"),
     "fulltext": ("text_search", "tsquery", "ranking", "vectors", "word_frequencies",
                  "word_form_counts"),
-    "uncertain": ("tier", "classify", "conditions", "scanner", "sex", "text"),
+    "uncertain": ("tier", "classify", "conditions", "reason_texts", "scanner", "sex", "text"),
     "catalogue": ("catalogue", "schema_capabilities", "catalogue_values"),
     "schema": ("tables", "check"),
     "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),
