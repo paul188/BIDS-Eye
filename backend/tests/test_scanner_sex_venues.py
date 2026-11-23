@@ -129,8 +129,8 @@ def test_field_strength_with_a_file_part_keeps_it():
 
 
 def test_file_part_reads_the_facets_summary_when_it_covers_every_dataset(monkeypatch):
-    from services.catalogue.catalogue import Summaries, catalogue
-    monkeypatch.setattr(catalogue, "summaries", Summaries(facets=True))
+    from services.database_stats.database_stats import Summaries, database_stats
+    monkeypatch.setattr(database_stats, "summaries", Summaries(facets=True))
     soft = _classify(STRENGTH_7T_FMRI)
     assert len(soft.ctes) == 1   # only the sidecar lookup
     assert soft.probable.endswith(
@@ -176,20 +176,40 @@ def test_other_sidecar_shapes_stay_hard(condition):
 
 # ── Participant sex in the tier ───────────────────────────────────────────────
 
-def test_one_sex_gets_its_words():
+def _python_pattern(probable: str) -> str:
+    return re.search(r"~\* '(.*)'$", probable).group(1).replace("''", "'").replace(
+        "[^[:alnum:]_'’]", r"[^\w'’]").replace("[^[:alnum:]_]", r"[^\w]")
+
+
+def test_one_sex_is_read_where_the_text_speaks_of_participants():
     soft = _classify(FEMALE)
-    assert soft.kind == "sex"
-    assert soft.probable == "d.search_tsv @@ TO_TSQUERY('english', 'female | females | women')"
+    assert soft.kind == "sex" and "~*" in soft.probable
     assert soft.reason_probable == "participant sex not recorded; the description names female participants"
-    male = _classify(FEMALE.replace("'female', 'f'", "'male', 'm'"))
-    assert "male | males | men" in male.probable
+    pattern = _python_pattern(soft.probable)
+    # The words around a mention decide, the same for every word.
+    for text, hit in [("22 women took part.", True), ("12 healthy young girls", True),
+                      ("Females: 14, males: 12", True), ("women (n = 14)", True),
+                      ("Female participants only.", True), ("All subjects were female.", True),
+                      ("An all-female sample of 30 adults", True),
+                      ("One woman, 34 years old", False), ("1 woman, 34 years old", True),
+                      ("a woman's voice read the story", False),
+                      ("a 34-year-old woman", True), ("voices of 2 women's choirs", False),
+                      ("one female patient", True), ("faces of women", False),
+                      ("women were excluded", False), ("22 men took part.", False)]:
+        assert bool(re.search(pattern, text, re.IGNORECASE)) is hit, text
+    male = _python_pattern(_classify(FEMALE.replace("'female', 'f'", "'male', 'm'")).probable)
+    for text, hit in [("20 men", True), ("14 boys aged 8 to 10", True), ("male volunteers", True),
+                      ("recorded on the Isle of Man", False),
+                      ("the brain of man", False), ("12 right-handed men", True), ("12 women", False),
+                      ("10 female participants", False)]:
+        assert bool(re.search(male, text, re.IGNORECASE)) is hit, text
 
 
 def test_only_one_sex_needs_the_text_to_say_only():
     soft = _classify(ONLY_FEMALE)
-    assert "~*" in soft.probable and "all[- ]?(female|females|women)" in soft.probable
+    assert "~*" in soft.probable and "all[- ]?(female|females|woman|women|girl|girls)" in soft.probable
     assert soft.reason_probable.endswith("all participants are female")
-    pattern = re.search(r"~\* '(.*)'$", soft.probable).group(1).replace("[^[:alnum:]_]", r"[^\w]")
+    pattern = _python_pattern(soft.probable)
     for text, hit in [("An all-female sample", True), ("Only women took part.", True),
                       ("female-only cohort", True), ("All participants were female.", True),
                       ("22 women and 20 men", False), ("female and male", False)]:

@@ -545,7 +545,7 @@ def _build_augmented_question(
     because too few datasets say them (AugmentedQueryPlan.unmatched_text).
 
     *available_columns* names the optional bids_datasets columns the database
-    has populated (backend/services/catalogue/catalogue.py). A filter on a
+    has populated (backend/services/database_stats/database_stats.py). A filter on a
     column that is not listed is left out rather than emitted and failing.
 
     Scan-related fields (datatype / suffix / task) are grouped by the source

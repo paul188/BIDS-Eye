@@ -1,12 +1,13 @@
 """
-services/catalogue/catalogue.py
+services/database_stats/database_stats.py
 -------------------------------
-What the catalogue database holds, counted.
+What the catalogue database holds: counts and names, kept in memory so that a
+search need not ask the database for them.
 
 The structure is fixed: the tables and columns the search reads are declared
 in services/schema/tables.py, and services/schema/check.py stops startup when
 the database lacks one of them. What changes with every crawl is how full
-they are, and Catalogue keeps that in three parts:
+they are, and DatabaseStats keeps that in four parts:
 
   coverage   ColumnCoverage: per optional bids_datasets column
              (constants.OPTIONAL_DATASET_COLUMNS), how many datasets fill it.
@@ -29,9 +30,15 @@ they are, and Catalogue keeps that in three parts:
              diagnoses). Free text (dx_status) and the optional participant
              columns are left out on purpose: they would grow with every
              dataset.
+  names      Names: the institution names of the datasets and the places and
+             institutions of their sites, as lists. Names in a question are
+             matched against them (RAG/institution_index.py,
+             RAG/place_index.py). Those two indexes are rebuilt when a load
+             finds the lists changed, so a name a crawl adds can be asked for
+             after the next load.
 
-The backend uses one shared instance, catalogue. start() checks the schema
-and reads all three at startup; refresh_if_stale() reads them again before a
+The backend uses one shared instance, database_stats. start() checks the schema
+and reads all four at startup; refresh_if_stale() reads them again before a
 search once they are REFRESH_SECONDS old. Each part is replaced whole, so a
 search never sees half of a reload.
 """
@@ -40,7 +47,7 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Collection, Mapping
+from collections.abc import Callable, Collection, Mapping
 from dataclasses import dataclass, field
 
 from sqlalchemy import ColumnElement, Text, distinct, exists, func, literal, select, union_all
@@ -49,14 +56,16 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession
 from sqlalchemy.sql.schema import Column
 
+import institution_index
+import place_index
 from constants import OPTIONAL_DATASET_COLUMNS
 from services.schema.check import check_schema
-from services.schema.tables import dataset_facets, datasets, objects, participants
+from services.schema.tables import dataset_facets, datasets, objects, participants, site_places
 
 log = logging.getLogger(__name__)
 
 
-# ── The three parts ───────────────────────────────────────────────────────────
+# ── The four parts ────────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
 class ColumnCoverage:
@@ -98,7 +107,7 @@ class Summaries:
           holds for, from the facets table (facets).
       services/uncertain/classify.py       the subject count of a cohort
           condition, from n_subjects (subject_counts).
-      Catalogue._read_values                   the facet values are read only
+      DatabaseStats._read_values                   the facet values are read only
           while the facets table is complete (facets).
     """
 
@@ -141,10 +150,50 @@ class ValueCounts:
         return self.counts.get(field, {}).get(value, 0)
 
 
-# ── The catalogue ─────────────────────────────────────────────────────────────
+@dataclass(frozen=True)
+class Names:
+    """The institution and place names that occur, each list sorted.
 
-class Catalogue:
-    """Coverage, summaries and coded values of the catalogue database."""
+    A list is None until it was read: the institution index then still works
+    from RAG/name_index.json (RAG/retriever.py), and place names are searched
+    as text.
+
+    Used by:
+      fill_name_indexes (below)                hands them to
+          RAG/institution_index.py and RAG/place_index.py, which match the
+          names in a question against them.
+    """
+
+    # Distinct, non-blank entries of bids_datasets.institutions.
+    dataset_institutions: tuple[str, ...] | None = None
+    # Distinct (city, region, country) of bids_site_places; '' for a missing one.
+    site_places: tuple[tuple[str, str, str], ...] | None = None
+    # Distinct ROR institution names of bids_site_places.
+    site_institutions: tuple[str, ...] | None = None
+
+
+def fill_name_indexes(names: Names, before: Names) -> None:
+    """Rebuild the name indexes of RAG/ whose lists differ from *before*."""
+    if names.dataset_institutions is not None and names.dataset_institutions != before.dataset_institutions:
+        institution_index.set_names(names.dataset_institutions)
+        log.info("Loaded %d distinct institution names for query matching",
+                 len(names.dataset_institutions))
+    sites = (names.site_places, names.site_institutions)
+    if None not in sites and sites != (before.site_places, before.site_institutions):
+        index = place_index.set_places([("institution", name) for name in names.site_institutions],
+                                       names.site_places)
+        log.info("Loaded %d place names for query matching", len(index))
+
+
+# ── The stats ─────────────────────────────────────────────────────────────────
+
+class DatabaseStats:
+    """Coverage, summaries, coded values and names of the catalogue database.
+
+    *on_new_names(names, before)* is called when a load read name lists that
+    differ from the ones held. The shared instance passes fill_name_indexes;
+    without it nothing outside the instance changes (tests).
+    """
 
     FACET_COLUMNS = (dataset_facets.c.datatype, dataset_facets.c.suffix, dataset_facets.c.task)
     PARTICIPANT_COLUMNS = (participants.c.diagnosis, participants.c.sex, participants.c.handedness)
@@ -155,20 +204,27 @@ class Catalogue:
     # dataset added by a crawl is missed for at most 10 minutes.
     REFRESH_SECONDS = 600
 
-    def __init__(self) -> None:
+    def __init__(self, on_new_names: Callable[[Names, Names], None] | None = None) -> None:
         self.coverage = ColumnCoverage()
         self.summaries = Summaries()
         self.values = ValueCounts()
+        self.names = Names()
+        self._on_new_names = on_new_names
         # time.monotonic() of the last load(), whether it succeeded or not.
         self._last_attempt: float | None = None
         # True while refresh_if_stale() is reading.
         self._refreshing = False
 
     def clear(self) -> None:
-        """Forget everything read: no optional column, no summaries, no values."""
+        """Forget everything read: no optional column, no summaries, no values.
+
+        The name lists are forgotten too, but the indexes of RAG/ built from
+        them stay as they are until the next load.
+        """
         self.coverage = ColumnCoverage()
         self.summaries = Summaries()
         self.values = ValueCounts()
+        self.names = Names()
 
     async def start(self, engine: AsyncEngine) -> None:
         """At startup: check_schema(), then the first load()."""
@@ -194,7 +250,7 @@ class Catalogue:
             self._refreshing = False
 
     async def load(self, connection: AsyncConnection | AsyncSession) -> None:
-        """Read coverage, summaries and values.
+        """Read coverage, summaries, values and names.
 
         A part whose read fails keeps what it held: these only decide what the
         search may use, so a failed read must not fail startup or a search.
@@ -211,6 +267,11 @@ class Catalogue:
                          "used" if summaries.subject_counts else "not used")
             self.summaries = summaries
         self.values = await self._read_values(connection)
+        names = await self._read_names(connection)
+        if names != self.names:
+            before, self.names = self.names, names
+            if self._on_new_names is not None:
+                self._on_new_names(names, before)
         # Set only after the reads succeeded or failed with a database error. A
         # bug (any other exception) skips this line, so every search fails until
         # it is fixed instead of the bug going quiet for REFRESH_SECONDS.
@@ -291,6 +352,36 @@ class Catalogue:
         return counts
 
 
+    async def _read_names(self, connection: AsyncConnection | AsyncSession) -> Names:
+        """The name lists; a list whose read fails stays as it was."""
+        dataset_institutions = self.names.dataset_institutions
+        try:
+            async with connection.begin_nested():
+                rows = (await connection.execute(
+                    select(distinct(func.unnest(datasets.c.institutions))))).all()
+        except SQLAlchemyError as exc:
+            log.warning("Reading the institution names of %s failed (%s); %s", datasets.name, exc,
+                        "using name_index.json" if dataset_institutions is None else "keeping the old names")
+        else:
+            dataset_institutions = tuple(sorted(name for (name,) in rows if name and name.strip()))
+
+        places, site_institutions = self.names.site_places, self.names.site_institutions
+        place = [func.coalesce(site_places.c[column], "") for column in place_index.COLUMNS]
+        try:
+            async with connection.begin_nested():
+                place_rows = (await connection.execute(select(*place).distinct())).all()
+                institution_rows = (await connection.execute(
+                    select(site_places.c.institution).distinct()
+                    .where(site_places.c.institution != ""))).all()
+        except SQLAlchemyError as exc:
+            log.warning("Reading the places of %s failed (%s); %s", site_places.name, exc,
+                        "place names are searched as text" if places is None else "keeping the old places")
+        else:
+            places = tuple(sorted(tuple(row) for row in place_rows if any(row)))
+            site_institutions = tuple(sorted(name for (name,) in institution_rows))
+        return Names(dataset_institutions, places, site_institutions)
+
+
 def _filled(column: Column) -> ColumnElement[bool]:
     """True for a row whose *column* holds something: not NULL, not blank, not an empty array."""
     if isinstance(column.type, ARRAY):
@@ -301,4 +392,4 @@ def _filled(column: Column) -> ColumnElement[bool]:
 
 
 # The instance the backend uses: main.py starts it, search.py refreshes it.
-catalogue = Catalogue()
+database_stats = DatabaseStats(on_new_names=fill_name_indexes)

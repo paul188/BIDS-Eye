@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 import constants
-from services.catalogue.catalogue import ColumnCoverage, catalogue
+from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.translate import text_to_sql
 
 FEW_SHOT_PATH = Path(__file__).resolve().parents[1] / "few_shot_examples.json"
@@ -69,7 +69,7 @@ def test_examples_using_unavailable_columns_are_never_selected() -> None:
     picked = text_to_sql._pick_examples(pool, "description_search", n=5, seed=seed)
     assert [ex["sql"] for ex in picked] == [pool["description_search"][1]["sql"]]
 
-    catalogue.coverage = ColumnCoverage.full({"readme_text"})
+    database_stats.coverage = ColumnCoverage.full({"readme_text"})
     picked = text_to_sql._pick_examples(pool, "description_search", n=5, seed=seed)
     assert len(picked) == 2
     assert all("institutions" not in ex["sql"] for ex in picked)

@@ -17,7 +17,7 @@ import yaml
 import preprocess as pp
 import word_forms
 from services.results import query_filters as qf
-from services.catalogue.catalogue import ColumnCoverage, catalogue
+from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
 from services.uncertain import text as tier_text, tier as ut
 from services.fulltext import word_form_counts
@@ -52,7 +52,7 @@ def _database_with_full_text(tmp_path, monkeypatch):
     monkeypatch.setattr(word_forms, "_PATH", path)
     word_forms._reviewed.cache_clear()
     monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
-    catalogue.coverage = ColumnCoverage.full(())
+    database_stats.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     word_form_counts.set_lookup(None)
     yield path

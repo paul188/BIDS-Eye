@@ -38,15 +38,15 @@ def word_form_counts():
 
 def value_counts():
     """The coded values of the backend's catalogue and their dataset counts
-    (catalogue.values, services/catalogue/catalogue.py)."""
-    from services.catalogue.catalogue import catalogue
-    return catalogue.values
+    (database_stats.values, services/database_stats/database_stats.py)."""
+    from services.database_stats.database_stats import database_stats
+    return database_stats.values
 
 
 def verify_codes(field: str, codes: list[str], retriever: Any = None) -> tuple[list[str], list[str]]:
     """(codes some dataset has, codes no dataset has) for vocabulary codes of *field*.
 
-    Asks the backend's counts of coded values (catalogue.values) when they hold
+    Asks the backend's counts of coded values (database_stats.values) when they hold
     *field*. Elsewhere (scripts, benchmarks without the backend) the
     retriever's own database check answers, if it has a database URL. When
     neither can tell, every code counts as present, as before.

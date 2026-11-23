@@ -8,6 +8,7 @@ sqlglot = pytest.importorskip("sqlglot")
 
 from services.fulltext import tsquery, word_frequencies  # noqa: E402
 from services.uncertain import text as tier_text, tier as ut  # noqa: E402
+from services.uncertain.fields import age as tier_age  # noqa: E402
 from services.fulltext.ranking import RankQuery  # noqa: E402
 
 BASE = (
@@ -38,15 +39,15 @@ def test_relax_keeps_the_rarer_half_and_drops_scope_labels() -> None:
 def test_age_range_and_group_words() -> None:
     sql = ("(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
            "AND p2.age BETWEEN 10 AND 19) OR d.age_min >= 10)")
-    low, high = tier_text.asked_age_range(sql)
+    low, high = tier_age.asked_age_range(sql)
     assert (low, high) == (10, 19)
-    words = tier_text.age_group_words(low, high)
+    words = tier_age.age_group_words(low, high)
     assert "adolescents" in words and "children" not in words and "adults" not in words
-    assert "adolescent" not in tier_text.age_group_words(18, 120)
-    older = tier_text.age_group_words(60, 120)
+    assert "adolescent" not in tier_age.age_group_words(18, 120)
+    older = tier_age.age_group_words(60, 120)
     assert "elderly" in older and "adults" not in older and "aging" not in older
-    assert "elderly" not in tier_text.age_group_words(18, 65)
-    assert tier_text.age_group_words(0, 120) == []
+    assert "elderly" not in tier_age.age_group_words(18, 65)
+    assert tier_age.age_group_words(0, 120) == []
 
 
 def test_modality_stays_hard_and_text_becomes_a_tier() -> None:
@@ -113,7 +114,7 @@ def test_paper_text_is_second_tier_evidence() -> None:
     tiered = ut.apply(sql, papers=True)
     assert ("d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo') "
             "AND NOT d.search_tsv @@ TO_TSQUERY('english', 'placebo')") in tiered
-    from services.uncertain import reason_texts
+    from services.evidence import reason_texts
     assert reason_texts.PAPER in tiered
     # Confirmation still uses the dataset's own text.
     assert "(d.search_tsv @@ TO_TSQUERY('english', 'placebo')) AS confirmed_0" in tiered
@@ -135,9 +136,18 @@ def test_each_condition_is_evaluated_once_per_evidence_kind() -> None:
     sql = BASE.format(where=f"{MODALITY} AND d.search_tsv @@ to_tsquery('english', 'placebo')")
     tiered = ut.apply(sql, papers=True)
     # State, reason and filter read the named flags; none repeats the condition.
-    for flag in ("confirmed_0", "probable_0", "paper_0"):
+    for flag in ("confirmed_0", "probable_0"):
         assert tiered.count(f"AS {flag}") == 1
+    # The paper is the only weaker evidence here: probable_0 already says it.
+    assert "paper_0" not in tiered
+    assert "WHEN evidence.u0 = 1 THEN 'found only in a paper the dataset names'" in tiered
     assert "ELSE 9 ELSE 9" not in tiered and "THEN 9 ELSE 9" not in tiered
+    # With a second kind of weaker evidence a flag tells the paper apart.
+    two = ut.apply(BASE.format(where=f"{MODALITY} AND d.search_tsv @@ "
+                                     "to_tsquery('english', 'young & children')"), papers=True)
+    assert two.count("AS paper_0") == 1 and two.count("ev.paper_0") == 1
+    assert "WHEN evidence.u0 = 1 AND evidence.paper_0 THEN 'found only in a paper" in two
+    assert "WHEN evidence.u0 = 1 THEN 'matches only part of the search; missing: young'" in two
 
 
 def test_hoisted_terms_name_each_tsquery_once_and_pass_the_guard() -> None:

@@ -126,10 +126,10 @@ def test_a_diagnosis_keeps_its_own_code_when_only_a_narrower_one_has_rows(monkey
     temporal lobe epilepsy: its code first, its words searched in the dataset text."""
     import preprocess as p
 
-    from services.catalogue.catalogue import ValueCounts
-    from services.catalogue.catalogue import catalogue as backend_catalogue
+    from services.database_stats.database_stats import ValueCounts
+    from services.database_stats.database_stats import database_stats
 
-    monkeypatch.setattr(backend_catalogue, "values",
+    monkeypatch.setattr(database_stats, "values",
                         ValueCounts({"diagnosis": {"hippocampal_sclerosis": 1}}))
     codes = _resolve_yaml_term("diagnosis", "TLE")
     assert codes == ["temporal_lobe_epilepsy", "hippocampal_sclerosis"]

@@ -2,44 +2,22 @@
 services/uncertain/text.py
 ------------------------------
 Weaker forms of a text search, the 'probable' state of a text condition:
-some of its words (relax_tsquery, relax_near), the words apart, the README
-naming the asked age group (age_group_words), and the reasons a result card
-shows for them.
+some of its words (relax_tsquery, relax_near), the words apart, and the
+reasons a result card shows for them.
 """
 
 from __future__ import annotations
 
 import re
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Tuple
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
-from services.uncertain import reason_texts
+from services.evidence import reason_texts
 from services.uncertain.conditions import LABEL_RE, TSQUERY_RE
-from services.schema.tables import participants as _participants
 
 
 _WORD_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
-_NUMBER_COMPARISON_RE = re.compile(
-    r"\bage(?:_min|_max)?\s*(?P<op><=|>=|<|>|=)\s*(?P<value>\d+(?:\.\d+)?)", re.IGNORECASE)
-_BETWEEN_RE = re.compile(
-    r"\bage(?:_min|_max)?\s+BETWEEN\s+(?P<low>\d+(?:\.\d+)?)\s+AND\s+(?P<high>\d+(?:\.\d+)?)",
-    re.IGNORECASE)
-
-# Age groups and the words a README uses for them, with the ages they cover.
-_AGE_GROUPS: Tuple[Tuple[float, float, Tuple[str, ...]], ...] = (
-    (0, 3, ("infant", "infants", "newborn", "newborns", "neonate", "neonates", "neonatal",
-            "toddler", "toddlers", "baby", "babies")),
-    (3, 12, ("child", "children", "kids", "pediatric", "paediatric", "preschool",
-             "school-age", "schoolchildren")),
-    (12, 19, ("adolescent", "adolescents", "adolescence", "teen", "teens", "teenager",
-              "teenagers", "youth", "youths")),
-    (18, 65, ("adult", "adults")),
-    # Not "aging" / "ageing" / "aged": the stemmer turns them into "age", which
-    # every README with an age range contains. Not "older" alone either.
-    (60, 120, ("older-adults", "older-adult", "older-participants", "elderly", "geriatric",
-               "seniors", "old-age")),
-)
 
 
 def _top_level_and(query: str) -> List[str]:
@@ -331,58 +309,3 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
     if not relaxed_atoms:
         return None, []
     return " OR ".join(dict.fromkeys(relaxed_atoms)), list(dict.fromkeys(words))
-
-
-def asked_age_range(sql: str) -> Tuple[float, float]:
-    """The age range an age condition asks for, read from its comparisons."""
-    low, high = 0.0, 120.0
-    for match in _BETWEEN_RE.finditer(sql):
-        low = max(low, float(match.group("low")))
-        high = min(high, float(match.group("high")))
-    for match in _NUMBER_COMPARISON_RE.finditer(sql):
-        value = float(match.group("value"))
-        op = match.group("op")
-        if op in (">", ">="):
-            low = max(low, value)
-        elif op in ("<", "<="):
-            high = min(high, value)
-    return low, high
-
-
-def age_group_words(low: float, high: float) -> List[str]:
-    """README words for the age groups that overlap [low, high]."""
-    if low <= 0 and high >= 120:
-        return []
-    words: List[str] = []
-    for group_low, group_high, group_words in _AGE_GROUPS:
-        # The group must cover a good part of the asked range, or the asked
-        # range a good part of the group: "60 and over" is not about adults
-        # in general, "18 to 65" not about older adults.
-        overlap = min(group_high, high) - max(group_low, low)
-        needed = min((high - low) / 2, (group_high - group_low) / 2)
-        if overlap > 0 and overlap >= needed:
-            words.extend(group_words)
-    return list(dict.fromkeys(words))
-
-
-def tsquery_for_words(words: Sequence[str]) -> str:
-    parts = []
-    for word in words:
-        pieces = word.split("-")
-        parts.append("(" + " <-> ".join(pieces) + ")" if len(pieces) > 1 else word)
-    return " | ".join(parts)
-
-
-def known_sql(kind: str, alias: str) -> str:
-    """True when the dataset records the field the condition reads."""
-    if kind == "age":
-        return (f"({alias}.age_min IS NOT NULL OR {alias}.age_max IS NOT NULL OR EXISTS("
-                f"SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
-                f"AND uk.age IS NOT NULL))")
-    if kind == "diagnosis":
-        return (f"EXISTS(SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
-                f"AND uk.diagnosis IS NOT NULL)")
-    if kind == "sex":
-        return (f"EXISTS(SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
-                f"AND uk.sex IS NOT NULL)")
-    raise ValueError(kind)

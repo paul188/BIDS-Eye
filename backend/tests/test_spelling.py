@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 
 import word_forms
-from services.catalogue.catalogue import ColumnCoverage, catalogue
+from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.fulltext import tsquery, vectors, word_frequencies
 from word_forms import plural_variants, search_variants, spelling_variants
 
@@ -55,7 +55,7 @@ def test_two_changes_in_one_word() -> None:
 
 @pytest.fixture
 def full_text():
-    catalogue.coverage = ColumnCoverage.full(())
+    database_stats.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     yield
     word_frequencies.set_frequency_lookup(None)

@@ -142,7 +142,7 @@ def test_with_the_tier_an_unrecorded_count_is_uncertain_and_a_smaller_one_is_out
     sql = _final_sql(monkeypatch, tier=True)
     assert uncertain_tier.LEVEL_COLUMN in sql
     assert "cohort_k.diagnosis IS NULL" in sql
-    from services.uncertain import reason_texts
+    from services.evidence import reason_texts
     assert reason_texts.PATIENT_COUNT_NOT_RECORDED in sql
     # Not confirmed and not unknown is excluded: the count has no "possible" branch.
     state = re.search(r"CASE WHEN ev\.confirmed_(\d) THEN 0 WHEN ev\.probable_\1 THEN 1 ELSE 9 END", sql)
@@ -159,8 +159,8 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
 
 
 def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
-    from services.catalogue.catalogue import Summaries, catalogue
-    monkeypatch.setattr(catalogue, "summaries", Summaries(subject_counts=True))
+    from services.database_stats.database_stats import Summaries, database_stats
+    monkeypatch.setattr(database_stats, "summaries", Summaries(subject_counts=True))
     soft = tier_classify._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
     assert "d.n_subjects" in soft.probable and "bids_objects" not in soft.probable
 

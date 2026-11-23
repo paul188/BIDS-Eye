@@ -34,8 +34,10 @@ The resolved strings become an exact array filter
 LLM_preprocessor/preprocess/. Terms that resolve to nothing fall back to
 full-text search via text_alternatives().
 
-The names are loaded from the database at backend startup
-(refresh_from_db), with RAG/name_index.json as the fallback source.
+The backend reads the names from the database and hands them to set_names()
+at startup and again when they changed
+(backend/services/database_stats/database_stats.py). Until then, and outside
+the backend, RAG/name_index.json is the source.
 """
 
 from __future__ import annotations
@@ -43,7 +45,7 @@ from __future__ import annotations
 import logging
 import re
 import unicodedata
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 from rapidfuzz.distance import OSA
 
@@ -373,7 +375,7 @@ _index: Optional[InstitutionIndex] = None
 
 
 def set_names(names: Iterable[str]) -> InstitutionIndex:
-    """Replace the shared index (startup, tests)."""
+    """Replace the shared index (the backend's database_stats, tests)."""
     global _index
     _index = InstitutionIndex(names)
     return _index
@@ -386,31 +388,3 @@ def get_index(fallback_names: Iterable[str] = ()) -> InstitutionIndex:
         _index = InstitutionIndex(fallback_names)
     return _index
 
-
-async def refresh_from_db(engine: Any) -> int:
-    """Load the distinct institution names from bids_datasets. Returns the count.
-
-    On any error (column missing, database down) the index is left unset, and
-    the retriever falls back to RAG/name_index.json.
-    """
-    import asyncio
-
-    from sqlalchemy import text
-    from sqlalchemy.exc import SQLAlchemyError
-    from services.schema.tables import datasets
-
-    try:
-        async with engine.connect() as connection:
-            rows = await connection.execute(text(
-                f"SELECT DISTINCT inst FROM {datasets.name} d, unnest(d.institutions) AS inst "
-                "WHERE btrim(inst) <> ''"
-            ))
-            names = [row[0] for row in rows]
-    # A refused connection can reach us as a bare OSError (asyncpg), a
-    # connect timeout as asyncio.TimeoutError.
-    except (SQLAlchemyError, OSError, asyncio.TimeoutError) as exc:
-        log.warning("Could not load institution names (%s) — using name_index.json", exc)
-        return 0
-    set_names(names)
-    log.info("Loaded %d distinct institution names for query matching", len(names))
-    return len(names)

@@ -12,7 +12,9 @@ words ("MRI data of 3-12 year old children" for "young & children"). On the
 misses (benchmarks/recall/work/failure_analysis/).
 
 Each top-level AND condition of the generated SQL gets one of four states for
-a dataset:
+a dataset (services/evidence/base.py, Strength). The condition lists its
+evidence in the order it counts (conditions.SoftCondition), and the first
+that holds for the dataset gives the state:
 
     0  confirmed     the condition holds
     1  probable      a weaker form holds: some of the search words, the words
@@ -50,9 +52,9 @@ Switched on with UNCERTAIN_TIER=true; the benchmark compares both from one
 translation (benchmarks/recall/paired_uncertain_run.py).
 
 This module does the rewrite (apply). The parts it uses:
-  classify.py    which states each condition can take
+  classify.py    the evidence each condition can have
   text.py        weaker forms of a text search
-  sex.py         participant sex in the dataset's own text
+  fields/        the fields a dataset may not record
   scanner.py     field strength, vendor and model in the text
   conditions.py  SoftCondition and what the others share
 """
@@ -61,7 +63,7 @@ from __future__ import annotations
 
 import os
 import re
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
@@ -71,9 +73,9 @@ except ImportError:  # pragma: no cover
     sqlglot = None  # type: ignore[assignment]
     exp = None  # type: ignore[assignment]
 
-from services.uncertain import reason_texts
-from services.uncertain.conditions import SoftCondition, possible_enabled, sql_literal
-from services.uncertain.sex import keep_only_sex_pairs
+from services.evidence.base import Strength
+from services.uncertain.conditions import SoftCondition, sql_literal
+from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
 from services.schema.tables import datasets as _datasets
 
@@ -127,6 +129,16 @@ def _dataset_alias(select) -> Optional[str]:
     if isinstance(table, exp.Table) and table.name == _datasets.name:
         return table.alias_or_name
     return None
+
+
+def _flag_names(i: int, condition: SoftCondition) -> List[str]:
+    """Column names that tell the weaker evidence of condition *i* apart, one
+    for each but the last: "paper_0" for evidence found in a paper."""
+    names: List[str] = []
+    for j, piece in enumerate(condition.weaker[:-1]):
+        name = f"{piece.source}_{i}"
+        names.append(f"{name}_{j}" if name in names else name)
+    return names
 
 
 def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] = None) -> str:
@@ -194,42 +206,29 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     terms_name = unique_cte_name("_qf_tier_terms")
     terms_alias = unique_cte_name("_qf_q")
 
+    # One row per candidate: whether the condition as asked, some weaker
+    # evidence and the record hold, and which weaker evidence it was where
+    # the card text depends on it.
     evidence_columns = [f"{alias}.id"]
     state_cases = []
-    paper_columns = []
+    flag_columns = []
+    flags = [_flag_names(i, condition) for i, condition in enumerate(soft)]
     for i, condition in enumerate(soft):
         confirmed = f"confirmed_{i}"
         probable = f"probable_{i}"
         known = f"known_{i}"
-        paper = f"paper_{i}"
         evidence_columns.extend((
             f"({condition.sql}) AS {confirmed}",
             f"({condition.probable}) AS {probable}" if condition.probable
             else f"FALSE AS {probable}",
             f"({condition.known}) AS {known}" if condition.known
             else f"TRUE AS {known}",
-            f"({condition.paper}) AS {paper}" if condition.paper
-            else f"FALSE AS {paper}",
         ))
-
-        raw = f"ev.{confirmed}"
-        weak = f"ev.{probable}"
-        recorded = f"ev.{known}"
-        possible = "2" if possible_enabled() else "9"
-        if condition.known is None:
-            state = f"CASE WHEN {raw} THEN 0 WHEN {weak} THEN 1 ELSE 9 END"
-        elif condition.kind == "diagnosis":
-            state = (f"CASE WHEN {raw} THEN 0 WHEN {weak} THEN 1 "
-                     f"WHEN NOT {recorded} THEN {possible} ELSE 9 END"
-                     if possible_enabled() else
-                     f"CASE WHEN {raw} THEN 0 WHEN {weak} THEN 1 ELSE 9 END")
-        else:
-            unknown = f"CASE WHEN {weak} THEN 1 ELSE {possible} END"
-            state = (f"CASE WHEN {raw} THEN 0 WHEN NOT {recorded} "
-                     f"THEN {unknown} ELSE 9 END")
+        for piece, flag in zip(condition.weaker, flags[i]):
+            evidence_columns.append(f"({piece.sql}) AS {flag}")
+            flag_columns.append(f"ev.{flag}")
+        state = condition.state_sql(f"ev.{confirmed}", f"ev.{probable}", f"ev.{known}")
         state_cases.append(f"{state} AS u{i}")
-        if condition.paper:
-            paper_columns.append(f"ev.{paper} AS p{i}")
 
     raw_sql = (
         f"SELECT {', '.join(evidence_columns)}\n"
@@ -282,25 +281,29 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
 
     state_sql = (
         f"SELECT ev.id, {', '.join(state_cases)}"
-        + (f", {', '.join(paper_columns)}" if paper_columns else "")
+        + (f", {', '.join(flag_columns)}" if flag_columns else "")
         + f"\nFROM (\n{raw_sql}\n) AS ev"
     )
 
+    probably, possibly = int(Strength.PROBABLE), int(Strength.POSSIBLE)
     names = [f"evidence.u{i}" for i in range(len(soft))]
-    unsure = " + ".join(f"(CASE WHEN {name} > 0 THEN 1 ELSE 0 END)" for name in names)
-    evidence = " OR ".join(f"{name} <= 1" for name in names)
+    unsure = " + ".join(f"(CASE WHEN {name} > {int(Strength.CONFIRMED)} THEN 1 ELSE 0 END)" for name in names)
+    evidence = " OR ".join(f"{name} <= {probably}" for name in names)
     level = f"GREATEST({', '.join(names)})" if len(names) > 1 else names[0]
+    # The card text: that of the first evidence that holds.
     cases = []
     for i, c in enumerate(soft):
         branches = []
-        if c.paper:
-            branches.append(f"WHEN evidence.u{i} = 1 AND evidence.p{i} THEN {sql_literal(reason_texts.PAPER)}")
-        if c.reason_probable:
-            branches.append(f"WHEN evidence.u{i} = 1 THEN {sql_literal(c.reason_probable)}")
+        for j, piece in enumerate(c.weaker):
+            if piece.reason:
+                # The last one needs no flag: nothing listed before it held.
+                flag = f" AND evidence.{flags[i][j]}" if j < len(flags[i]) else ""
+                branches.append(f"WHEN evidence.u{i} = {probably}{flag} THEN {sql_literal(piece.reason)}")
         if c.reason_possible:
-            branches.append(f"WHEN evidence.u{i} = 2 THEN {sql_literal(c.reason_possible)}")
+            branches.append(f"WHEN evidence.u{i} = {possibly} THEN {sql_literal(c.reason_possible)}")
         if branches:
             cases.append(f"CASE {' '.join(branches)} END")
+    contradicted = int(Strength.CONTRADICTED)
     reasons_sql = (f"NULLIF(CONCAT_WS('; ', {', '.join(cases)}), '')" if cases else "NULL")
 
     ctes = [f"{name} AS MATERIALIZED ({select})"
@@ -314,10 +317,5 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         f"{reasons_sql} AS {REASONS_COLUMN}\n"
         f"FROM (\n{inner_sql}\n) AS tier_base\n"
         f"CROSS JOIN LATERAL (\n{state_sql}\n) AS evidence\n"
-        f"WHERE {level} < 9 AND ({unsure}) <= {MAX_UNSURE} AND ({evidence})"
+        f"WHERE {level} < {contradicted} AND ({unsure}) <= {MAX_UNSURE} AND ({evidence})"
     )
-
-
-def confirmed_only(rows: Sequence[dict]) -> list:
-    """The rows every condition confirms (what the original query returns)."""
-    return [row for row in rows if not row.get(LEVEL_COLUMN)]

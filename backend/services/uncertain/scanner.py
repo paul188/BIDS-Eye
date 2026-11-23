@@ -18,9 +18,9 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.uncertain import reason_texts
-from services.uncertain.conditions import SoftCondition, possible_enabled, sql_literal
-from services.uncertain.sex import own_text
+from services.evidence import reason_texts
+from services.evidence.weaker import AsAsked, NamedInText, NotRecorded, OtherValuesRecorded
+from services.uncertain.conditions import SoftCondition, own_text, possible_enabled, sql_literal
 from services.schema.tables import objects as _objects
 
 
@@ -250,12 +250,12 @@ def _file_set(inner: str, files: List[str], columns: set) -> Tuple[str, Optional
     """
     where = " AND ".join(f"({p})" for p in files)
     try:
-        from services.catalogue.catalogue import Catalogue, catalogue
+        from services.database_stats.database_stats import DatabaseStats, database_stats
         from services.schema.tables import dataset_facets
-        facets = catalogue.summaries.facets
+        facets = database_stats.summaries.facets
     except ImportError:  # pragma: no cover
         facets = False
-    if facets and columns <= set(Catalogue.FACET_FIELDS):
+    if facets and columns <= set(DatabaseStats.FACET_FIELDS):
         return (f"SELECT {inner}.dataset_id FROM {dataset_facets.name} AS {inner} WHERE {where}",
                 None)
     select = f"SELECT DISTINCT {inner}.dataset_id FROM {_objects.name} AS {inner} WHERE {where}"
@@ -344,9 +344,9 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
     # dataset on the live objects table, 11 s for one question). The same
     # states while there is no 'possible' level; with it, every candidate.
     known = recorded if possible_enabled() else f"(({probable}) AND {recorded})"
-    return SoftCondition(
-        sql=" OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0],
-        kind="sidecar", probable=probable, known=known,
-        reason_probable=reason_texts.scanner_named(label, named),
-        reason_possible=reason_texts.scanner_not_recorded(label), ctes=tuple(ctes),
-    )
+    return SoftCondition(kind="sidecar", ctes=tuple(ctes), evidence=(
+        AsAsked(" OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]),
+        OtherValuesRecorded(known),
+        NamedInText(probable, reason_texts.scanner_named(label, named)),
+        NotRecorded(reason=reason_texts.scanner_not_recorded(label)),
+    ))

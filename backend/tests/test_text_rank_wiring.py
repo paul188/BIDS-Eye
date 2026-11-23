@@ -13,7 +13,7 @@ import pytest
 
 import preprocess
 import retriever
-from services.catalogue.catalogue import ColumnCoverage, catalogue
+from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.fulltext import word_frequencies
 from services.translate import text_to_sql
 from services.translate.sql_rewriter import build_page_sql
@@ -27,10 +27,10 @@ BASE = (
 
 @pytest.fixture(autouse=True)
 def _full_text_available():
-    catalogue.coverage = ColumnCoverage.full(())
+    database_stats.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
     yield
-    catalogue.coverage = ColumnCoverage.full(())
+    database_stats.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
 
 

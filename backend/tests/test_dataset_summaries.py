@@ -1,7 +1,7 @@
 """Executed SQL reads the per-dataset summaries instead of the file table (sql_rewriter._use_summaries)."""
 import pytest
 
-from services.catalogue.catalogue import Summaries, catalogue
+from services.database_stats.database_stats import Summaries, database_stats
 from services.translate.sql_rewriter import SqlRewriteService
 
 BASE = ("SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets AS d "
@@ -11,13 +11,13 @@ FMRI = "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (
 
 @pytest.fixture
 def svc():
-    catalogue.summaries = Summaries(facets=True, subject_counts=True)
+    database_stats.summaries = Summaries(facets=True, subject_counts=True)
     yield SqlRewriteService.__new__(SqlRewriteService)
-    catalogue.summaries = Summaries(facets=False, subject_counts=False)
+    database_stats.summaries = Summaries(facets=False, subject_counts=False)
 
 
 def test_nothing_changes_without_the_summaries():
-    catalogue.summaries = Summaries(facets=False, subject_counts=False)
+    database_stats.summaries = Summaries(facets=False, subject_counts=False)
     sql = BASE + "WHERE " + FMRI + " GROUP BY d.id"
     assert SqlRewriteService.__new__(SqlRewriteService)._use_summaries(sql) == sql
 

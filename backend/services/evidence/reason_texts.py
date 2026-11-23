@@ -1,13 +1,20 @@
 """
-services/uncertain/reason_texts.py
------------------------------
-Every reason a result card gives for a dataset in the uncertain tier.
+services/evidence/reason_texts.py
+---------------------------------
+Every reason a result card gives, in one list: why a dataset matched a filter
+(confirmed), and why a condition could not be confirmed for it (the uncertain
+tier). Each piece of evidence carries one of these texts
+(services/evidence/base.py); which one applies is decided where the evidence
+is built.
 
-A reason says why a condition could not be confirmed for the dataset. The
-parts of the tier decide which one applies; the wording is here, so the whole
-list can be read in one place. Reasons of several conditions are joined with
-"; " (tier.py).
+A confirmed match (results/match_reasons.py): where the value was found
+      in the participant list      participants_listed, participants_counted
+      in the dataset's own fields  dataset_age_range, field_value
+      everywhere else              FOUND_IN, by the source of the evidence
+      assumed by default           ASSUMED
 
+The uncertain tier (services/uncertain/); reasons of several conditions are
+joined with "; " (tier.py):
   the field is not recorded
       NOT_RECORDED                 ages, diagnosis, participant sex
       patient count                PATIENT_COUNT_NOT_RECORDED
@@ -26,7 +33,70 @@ list can be read in one place. Reasons of several conditions are joined with
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Optional, Sequence
+
+from services.evidence import base
+
+# ── A confirmed match: where the value was found ──────────────────────────────
+
+# By the source of the evidence, for the sources that need no numbers.
+FOUND_IN = {
+    base.FILES: "in the dataset's files",
+    base.DERIVATIVES: "in its derivatives",
+    base.SITES: "at a listed site",
+    base.PAPER: "named in a linked paper",
+    base.TEXT: "named in the README or description",
+    base.SHORT_TEXT: "named in the title or description",
+    base.README: "named in the README",
+    # An excluded diagnosis the dataset passes because it records none.
+    base.ASSUMED_ABSENT: "no diagnosis recorded, assumed absent",
+}
+
+# Columns with a default (RAG/criteria.py): the column is empty and its
+# default holds.
+ASSUMED = {"species": "no species label, assumed human"}
+
+# How a reason names a column of the dataset; others by their own name.
+FIELD_LABELS = {
+    "species": "species label",
+    "dx_status": "diagnosis label",
+    "study_design": "study design",
+    "study_domain": "study domain",
+}
+
+PARTICIPANTS_LISTED = "recorded in the participant list"
+
+
+def _number(value: float) -> str:
+    return f"{round(value, 1):g}"
+
+
+def age_span(low: float, high: float) -> str:
+    """'4–23 months' below 2 years, else '6–11 years'; one value once."""
+    if high < 2:
+        months_lo, months_hi = round(low * 12), round(high * 12)
+        return (f"{months_lo} months" if months_lo == months_hi
+                else f"{months_lo}–{months_hi} months")
+    lo, hi = _number(low), _number(high)
+    return f"{lo} years" if lo == hi else f"{lo}–{hi} years"
+
+
+def participants_counted(count: int, total: Optional[int], ages: Optional[str],
+                         diagnosis: bool) -> str:
+    """*ages*: their age span when the condition reads ages ("4–23 months")."""
+    whom = f"{count} of {total} participants" if total and total >= count else f"{count} participants"
+    if ages:
+        return f"{whom} aged {ages}"
+    return f"coded for {whom}" if diagnosis else f"recorded for {whom}"
+
+
+def dataset_age_range(ages: str) -> str:
+    return f"dataset age range {ages}"
+
+
+def field_value(column: str, value: str) -> str:
+    return f"{FIELD_LABELS.get(column, column.replace('_', ' '))} “{value}”"
+
 
 # ── The field is not recorded ─────────────────────────────────────────────────
 

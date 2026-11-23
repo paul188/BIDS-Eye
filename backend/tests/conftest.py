@@ -15,18 +15,19 @@ def _fresh_rate_limits():
 
 
 @pytest.fixture(autouse=True)
-def _empty_catalogue(monkeypatch):
-    """Every test starts with an empty catalogue, freshly loaded: no usable
-    optional column, no summaries, no coded values. A test may assign its
-    own parts (catalogue.coverage = ColumnCoverage.full([...])); they are
+def _empty_database_stats(monkeypatch):
+    """Every test starts with empty database_stats, freshly loaded: no usable
+    optional column, no summaries, no coded values, no names. A test may assign its
+    own parts (database_stats.coverage = ColumnCoverage.full([...])); they are
     put back afterwards. Preprocessing answers its DB back-check from
-    catalogue.values, so values left by one test would change the next."""
+    database_stats.values, so values left by one test would change the next."""
     import time
 
-    from services.catalogue.catalogue import ColumnCoverage, Summaries, ValueCounts, catalogue
+    from services.database_stats.database_stats import ColumnCoverage, Names, Summaries, ValueCounts, database_stats
 
-    monkeypatch.setattr(catalogue, "coverage", ColumnCoverage())
-    monkeypatch.setattr(catalogue, "summaries", Summaries())
-    monkeypatch.setattr(catalogue, "values", ValueCounts())
+    monkeypatch.setattr(database_stats, "coverage", ColumnCoverage())
+    monkeypatch.setattr(database_stats, "summaries", Summaries())
+    monkeypatch.setattr(database_stats, "values", ValueCounts())
+    monkeypatch.setattr(database_stats, "names", Names())
     # As after startup: a search does not reload before REFRESH_SECONDS.
-    monkeypatch.setattr(catalogue, "_last_attempt", time.monotonic())
+    monkeypatch.setattr(database_stats, "_last_attempt", time.monotonic())

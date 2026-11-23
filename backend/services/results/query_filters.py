@@ -294,7 +294,7 @@ def _age_label(node) -> Optional[str]:
         columns = {c.name.lower() for c in node.find_all(exp.Column)}
         if not columns & {"age_min", "age_max"}:
             return None
-        from services.uncertain.text import asked_age_range
+        from services.uncertain.fields.age import asked_age_range
         lo, hi = asked_age_range(node.sql(dialect="postgres"))
         low = (lo, True) if lo > 0 else None
         high = (hi, True) if hi < 120 else None
@@ -454,11 +454,12 @@ def _venue_words(node) -> List[str]:
     the chip is labelled by the modality it shares a condition with: the
     page and highlight_field_strengths read it as a strength). Age words
     come with the age chip."""
-    from services.uncertain import scanner as tier_scanner, sex as tier_sex
+    from services.uncertain import scanner as tier_scanner
+    from services.uncertain.fields import sex as tier_sex
     words: List[str] = []
     sex = tier_sex.asked_sex(node)
     if sex:
-        words.extend(tier_sex.SEX_WORDS[sex])
+        words.extend(tier_sex.text_words(sex))
     words.extend(f"{strength:g}T" for strength in tier_scanner.asked_field_strengths(node))
     for key in ("Manufacturer", "ManufacturerModelName"):
         values = tier_scanner._key_values(node, key)
@@ -593,7 +594,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         # A README naming the age group is evidence too (the uncertain
         # tier's probable form, services/uncertain/tier.py): its
         # words are what the page marks for a match on recorded ages.
-        from services.uncertain.text import age_group_words, asked_age_range
+        from services.uncertain.fields.age import age_group_words, asked_age_range
         group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
         searched.extend(w for w in group_words if w not in searched)
         return chip("age", "Age", age)

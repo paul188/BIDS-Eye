@@ -10,7 +10,8 @@ The stages it calls:
   fulltext/    full-text search inside the SQL and word form counts
   uncertain/   the tier of datasets a filter cannot check (ages, diagnosis, sex,
                scanner or text that a dataset does not record)
-  catalogue/   what the database contains: column coverage, known values
+  database_stats/  what the database contains, kept in memory: column
+               coverage, known values, institution and place names
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
   indexing/    offline LLM jobs over datasets (scripts/ and the crawler, not requests)
@@ -32,7 +33,7 @@ language model up to three times and several groups serve more than one step
                           plan, or translate/text_to_sql asks the SQL MODEL
   4. SQL rewrites         translate/sql_rewriter: structural fixes, the
                           value check (translate/value_check, against the
-                          values catalogue/ loaded), full-text conditions and
+                          values database_stats/ loaded), full-text conditions and
                           (fulltext/) and the uncertain tier (uncertain/)
   5. run                  search_runner + query_guard: one page; a relaxed
                           re-run when too few datasets match

@@ -3,37 +3,46 @@ main.py
 -------
 BIDS-Eye FastAPI application.
 
-Startup:
-  - Creates all DB tables (idempotent).
-  - Starts the background OpenNeuro crawler scheduler (if this process
-    should run it; in Docker the crawler runs as a separate service).
+Startup (lifespan):
+  - Creates missing DB tables.
+  - Stops when a migration is missing; reads what the catalogue database
+    holds into memory (services/database_stats/database_stats.py).
+  - Gives the translation worker thread its database access (worker_db.py).
+  - Starts the OpenNeuro crawler in this process when
+    RUN_CRAWLER_IN_PROCESS=true (services/in_process_crawler.py); in Docker
+    it runs as a separate service.
 
-Routes:
-  GET  /api/auth/github          — redirect to GitHub OAuth consent screen
-  GET  /api/auth/github/callback — OAuth callback; sets JWT and redirects to frontend
-  POST /api/auth/logout          — stateless logout
-  POST /api/query                — natural-language dataset search (requires JWT)
+Routes (every /api route needs the signed session cookie, except the three
+marked public; see api_security.py):
+  GET  /api/auth/github          — public; redirect to GitHub's consent screen
+  GET  /api/auth/github/callback — public; signs the user in (session cookie)
+                                   and redirects to the frontend
+  POST /api/auth/logout          — public; clears the session
+  GET  /api/auth/me              — the signed-in user's GitHub login
+  POST /api/query                — natural-language dataset search
+  POST /api/query/page           — another page of a search's results
+  GET  /health                   — liveness check, no login
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
-import os
-import sys
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata before create_all
-import institution_index
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
-import place_index
 import worker_db
+from api_security import install_security_middleware
 from db.db import create_all_tables, engine
-from services.catalogue.catalogue import catalogue
+from exceptions.handlers import add_error_handlers
+from routers.auth import require_auth, router as auth_router
+from routers.query import router as query_router
+from services import in_process_crawler
+from services.database_stats.database_stats import database_stats
 from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
@@ -50,19 +59,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await create_all_tables()
     log.info("Database tables verified.")
 
-    # Stop when a migration is missing, then count what the catalogue holds
-    # (services/catalogue/catalogue.py). Prompts mention only the columns
-    # enough datasets fill (services/translate/optional_columns.py).
-    await catalogue.start(engine)
-    optional_columns.log_changes(catalogue.coverage)
-
-    # Distinct bids_datasets.institutions values, for resolving institution
-    # names in questions (RAG/institution_index.py). Falls back to
-    # RAG/name_index.json when the column is missing.
-    await institution_index.refresh_from_db(engine)
-    # Cities, regions and countries of the sites (bids_site_places), for
-    # place names in questions (RAG/place_index.py).
-    await place_index.refresh_from_db(engine)
+    # Stop when a migration is missing, then read what the catalogue database
+    # holds: counts per column and coded value, and the institution and place
+    # names that questions are matched against
+    # (services/database_stats/database_stats.py). A search reads them again
+    # when they are 10 minutes old.
+    await database_stats.start(engine)
+    # Prompts mention only the columns enough datasets fill
+    # (services/translate/optional_columns.py).
+    optional_columns.log_changes(database_stats.coverage)
 
     # The translation worker thread asks the database for word counts
     # (services/fulltext/word_frequencies.py) and word forms
@@ -70,25 +75,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # event loop, with the pooled engine.
     worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
 
-    # Optionally run the crawler in-process (useful for single-container dev).
-    # In production the crawler runs as its own Docker service.
-    crawler_scheduler = None
-    if os.getenv("RUN_CRAWLER_IN_PROCESS", "false").lower() == "true":
-        _crawler_path = Path(__file__).resolve().parents[1] / "crawlers" / "openneuro-crawler"
-        if str(_crawler_path) not in sys.path:
-            sys.path.insert(0, str(_crawler_path))
-        try:
-            from crawler_service import create_scheduler
-            crawler_scheduler = create_scheduler()
-            crawler_scheduler.start()
-            log.info("Background crawler started in-process.")
-        except (ImportError, ValueError) as exc:  # crawler not importable, bad CRAWL_INTERVAL_HOURS
-            log.warning("Could not start crawler in-process: %s", exc)
-
-    yield
-
-    if crawler_scheduler is not None:
-        crawler_scheduler.shutdown(wait=False)
+    # The crawler in this process, when RUN_CRAWLER_IN_PROCESS=true
+    # (services/in_process_crawler.py).
+    async with in_process_crawler.running():
+        yield
 
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -100,23 +90,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-from api_security import install_security_middleware               # noqa: E402
-
 # CORS, CSRF, the signed HttpOnly session cookie and login-by-default for /api
 # (see api_security.py). Raises when SESSION_SECRET or a GitHub sign-in setting
 # is missing or unusable (routers/auth.py, AuthSettings).
 install_security_middleware(app)
-
-from exceptions.handlers import add_error_handlers                 # noqa: E402
 
 # Every expected failure (exceptions/domain.py) answers with its own status
 # and text, so the routers catch none of them; anything else gets a plain 500.
 add_error_handlers(app)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-
-from routers.auth import require_auth, router as auth_router      # noqa: E402
-from routers.query import router as query_router                   # noqa: E402
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])

@@ -41,7 +41,7 @@ from participant_codes import handedness_code as _handedness_code, sex_code as _
 
 from services.fulltext import ranking, text_search as _text_search  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
-from services.catalogue.catalogue import catalogue as _catalogue  # noqa: E402
+from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
 from services.schema.tables import (  # noqa: E402
     dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
 )
@@ -455,8 +455,8 @@ class SqlRewriteService:
         seconds for "resting-state fMRI") and sorted all of it to count
         subjects (2 to 4 seconds on every search).
         """
-        facets = _catalogue.summaries.facets
-        counts = _catalogue.summaries.subject_counts
+        facets = _database_stats.summaries.facets
+        counts = _database_stats.summaries.subject_counts
         if parse_one is None or exp is None or not (facets or counts) or _objects.name not in sql:
             return sql
         try:

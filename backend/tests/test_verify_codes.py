@@ -1,12 +1,12 @@
 """Preprocessing's DB back-check answered from the backend's cache of coded values
-(LLM_preprocessor/preprocess/catalogue.py verify_codes, services/catalogue/catalogue.py)."""
+(LLM_preprocessor/preprocess/catalogue.py verify_codes, services/database_stats/database_stats.py)."""
 
 from __future__ import annotations
 
 from preprocess import catalogue
 
-from services.catalogue.catalogue import ValueCounts
-from services.catalogue.catalogue import catalogue as backend_catalogue
+from services.database_stats.database_stats import ValueCounts
+from services.database_stats.database_stats import database_stats
 
 
 class _Retriever:
@@ -21,7 +21,7 @@ class _Retriever:
 
 
 def test_the_cache_answers_when_it_holds_the_field(monkeypatch) -> None:
-    monkeypatch.setattr(backend_catalogue, "values", ValueCounts({"diagnosis": {"epilepsy": 7, "healthy_control": 155}}))
+    monkeypatch.setattr(database_stats, "values", ValueCounts({"diagnosis": {"epilepsy": 7, "healthy_control": 155}}))
     retriever = _Retriever()
     live, miss = catalogue.verify_codes(
         "diagnosis", ["epilepsy", "frontotemporal_dementia", "healthy_control"], retriever)
@@ -31,7 +31,7 @@ def test_the_cache_answers_when_it_holds_the_field(monkeypatch) -> None:
 
 
 def test_the_retriever_answers_for_a_field_the_cache_does_not_hold(monkeypatch) -> None:
-    monkeypatch.setattr(backend_catalogue, "values", ValueCounts({"diagnosis": {"epilepsy": 7}}))
+    monkeypatch.setattr(database_stats, "values", ValueCounts({"diagnosis": {"epilepsy": 7}}))
     retriever = _Retriever()
     assert catalogue.verify_codes("author", ["smith"], retriever) == ([], ["smith"])
     assert retriever.asked == [("author", ["smith"])]
@@ -47,7 +47,7 @@ def test_the_pipeline_reports_a_cached_miss_as_db_miss(monkeypatch) -> None:
     with no retriever database at all (the live API)."""
     import preprocess as p
 
-    monkeypatch.setattr(backend_catalogue, "values", ValueCounts({"task": {"n_back": 4}, "suffix": {}, "datatype": {}}))
+    monkeypatch.setattr(database_stats, "values", ValueCounts({"task": {"n_back": 4}, "suffix": {}, "datatype": {}}))
 
     class Retriever:
         def retrieve_for_field_multi_scored(self, field, terms):

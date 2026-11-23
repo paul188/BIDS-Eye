@@ -1,8 +1,12 @@
 """
-services/uncertain/sex.py
------------------------------
-Participant sex in the dataset's own text: "women", "all-female" as the
-probable form of a sex filter.
+services/uncertain/fields/sex.py
+------------------------------------
+Participant sex as a field a dataset may not record (FIELD, at the end).
+
+Its text form: the dataset's own text names participants of the asked sex
+("22 women", "all-female sample"). Also here, because they read the same
+conditions: which sex a condition asks for (asked_sex) and the repair of an
+"only female participants" condition split in two (keep_only_sex_pairs).
 """
 
 from __future__ import annotations
@@ -14,22 +18,43 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.uncertain import reason_texts
-from services.uncertain.conditions import sql_literal
+from services.evidence import reason_texts
+from services.uncertain.conditions import own_text, sql_literal
+from services.uncertain.fields.base import SoftField, participant_rows_record
 from services.schema.tables import participants as _participants
 from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
+import text_evidence
 
 
-# Words a README uses for each sex (stemmed by the english configuration:
-# "females" is "femal", "women" stays). Not "man"/"woman" ("Isle of Man",
-# "a woman's voice" in stimuli) nor "girls"/"boys" (stimuli and children's
-# books as often as participants).
-SEX_WORDS = {"female": ("female", "females", "women"), "male": ("male", "males", "men")}
+# The stored codes that name one sex; a condition on any other value has no
+# text form.
+ONE_SEX = ("female", "male")
+
+
+def text_words(sex: str) -> Tuple[str, ...]:
+    """The words a dataset's text uses for participants of *sex*.
+
+    From the vocabulary (text_words of the sex entries in
+    RAG/value_mappings.yaml): every common English word, none left out by
+    hand. Whether a mention is about the participants is decided by its
+    grammar (_PARTICIPANT_RE), the same for every word: "22 women" counts;
+    generic "man" without a count ("the brain of man", "Isle of Man") and a
+    possessive ("a woman's voice") do not. Not measured against recorded sex
+    yet.
+    """
+    return text_evidence.text_words("sex").get(sex, ())
+
+
+# A sex word said of participants: after a count ("22 women", "12 healthy
+# young men", "a 34-year-old woman"), before one ("females: 12", "women
+# (n = 14)"), or with a word for the people studied ("female participants",
+# "subjects were male").
+_PARTICIPANT_RE = (r"([0-9]+[ -]([a-z-]+ ){{0,3}}({w})|({w})[ :=(]+(n ?= ?)?[0-9]+"
+                   r"|({w}) ({people})|({people}) (were|are) (all )?({w}))")
 # "Only female participants": "only" and "all" are english stopwords, so a
 # tsquery cannot say it; a regex over the dataset's own text does.
 _ONLY_SEX_RE = (r"(all[- ]?({w})|({w})[- ]only|only ({w})|exclusively ({w})"
                 r"|all (participants|subjects|volunteers) (were|are) ({w}))")
-_ONLY_SEX_WORDS = {"female": "female|females|women", "male": "male|males|men"}
 
 
 def asked_sex(node) -> Optional[str]:
@@ -40,7 +65,7 @@ def asked_sex(node) -> Optional[str]:
             continue
         for literal in comparison.find_all(exp.Literal):
             # Which literal stands for which sex: the vocabulary (RAG/participant_codes.py).
-            if literal.is_string and sex_code(literal.this) in SEX_WORDS:
+            if literal.is_string and sex_code(literal.this) in ONE_SEX:
                 values.add(sex_code(literal.this))
     return next(iter(values)) if len(values) == 1 else None
 
@@ -54,12 +79,6 @@ def _only_one_sex(node) -> bool:
                 c.name.lower() == "sex" for c in inner.find_all(exp.Column)):
             return True
     return False
-
-
-def own_text(alias: str) -> str:
-    """The dataset's own name, description and README as one text."""
-    return (f"(COALESCE({alias}.name, '') || ' ' || COALESCE({alias}.description_text, '') "
-            f"|| ' ' || COALESCE({alias}.readme_text, ''))")
 
 
 def _reads_participant_sex(node) -> bool:
@@ -97,12 +116,30 @@ def sex_text_condition(node, alias: str) -> Optional[Tuple[str, str]]:
     """(SQL, reason) for a dataset whose text names the asked sex; None if
     the condition does not ask for one sex."""
     sex = asked_sex(node)
-    if sex is None:
+    if sex is None or not text_words(sex):
         return None
+    words = "|".join(text_words(sex))
+    only = _ONLY_SEX_RE.format(w=words)
     if _only_one_sex(node):
-        pattern = _ONLY_SEX_RE.format(w=_ONLY_SEX_WORDS[sex])
-        return (f"{own_text(alias)} ~* {sql_literal(r'(^|[^[:alnum:]_])' + pattern + r'($|[^[:alnum:]_])')}",
-                reason_texts.only_sex_named(sex))
-    words = " | ".join(SEX_WORDS[sex])
-    return (f"{alias}.search_tsv @@ TO_TSQUERY('english', '{words}')",
-            reason_texts.sex_named(sex))
+        return _in_own_text(alias, only), reason_texts.only_sex_named(sex)
+    # "An all-female sample" names female participants too.
+    people = "|".join(text_evidence.people_words())
+    named = f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})"
+    return _in_own_text(alias, named), reason_texts.sex_named(sex)
+
+
+_WORD_END = "($|[^[:alnum:]_'’])"
+
+
+def _in_own_text(alias: str, pattern: str) -> str:
+    """The pattern as whole words in the dataset's own text, any case."""
+    # No apostrophe after it: "a woman's voice" names an owner, not a participant.
+    return f"{own_text(alias)} ~* {sql_literal(r'(^|[^[:alnum:]_])' + pattern + _WORD_END)}"
+
+
+FIELD = SoftField(
+    kind="sex",
+    columns=("sex",),
+    recorded=participant_rows_record("sex"),
+    named_in_text=sex_text_condition,
+)

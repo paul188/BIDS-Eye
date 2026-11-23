@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 
-from services.catalogue.catalogue import ColumnCoverage
+from services.database_stats.database_stats import ColumnCoverage
 from services.translate import optional_columns
 from services.translate.optional_columns import usable, usable_columns, uses_unusable_column
 

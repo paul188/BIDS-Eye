@@ -1,7 +1,7 @@
 """
 services/uncertain/classify.py
 ----------------------------------
-Which states a top-level AND condition can take (classify): text, ages,
+Which evidence a top-level AND condition can have (classify): text, ages,
 diagnosis, sex, scanner fields, matches only in a paper the dataset names
 (paper_atoms), and "at least N participants with a diagnosis"
 (patient_count).
@@ -9,7 +9,7 @@ diagnosis, sex, scanner fields, matches only in a paper the dataset names
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Tuple
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     from sqlglot import exp
@@ -18,16 +18,15 @@ except ImportError:  # pragma: no cover
 
 from services.uncertain.conditions import LABEL_RE, SoftCondition, TSQUERY_RE
 from services.uncertain.text import (
-    age_group_words,
-    asked_age_range,
-    known_sql,
     negated_spans,
     partial_reason,
     relax_text_condition,
-    tsquery_for_words,
 )
-from services.uncertain import reason_texts
-from services.uncertain.sex import sex_text_condition
+from services.evidence import reason_texts
+from services.evidence.base import Evidence, Strength
+from services.evidence.weaker import (AsAsked, NamedInText, NotRecorded, OtherValuesRecorded,
+                                      PaperOnly, WeakerSearch)
+from services.uncertain import fields
 from services.uncertain.scanner import sidecar
 
 
@@ -40,14 +39,9 @@ from services.uncertain.scanner import sidecar
 # text search and the dataset uses other words. Which table holds the field
 # plays no part in that.
 
-# Fields a dataset may not record, and the kind of uncertain condition each
-# makes. About half the datasets have no participant ages, most no coded
-# diagnosis (tier.py).
-SOFT_FIELDS = {
-    "age": "age", "age_min": "age", "age_max": "age",
-    "diagnosis": "diagnosis", "dx_status": "diagnosis",
-    "sex": "sex",
-}
+# Fields a dataset may not record: one file each in fields/, listed in
+# fields.FIELDS. A column of one of them makes a condition of that field's
+# kind (fields.KIND_OF_COLUMN).
 
 # Sidecar values (field strength, echo times …) are recorded with the files.
 # Field strength and scanner make or model can be missing there and named in
@@ -66,7 +60,7 @@ SIDECAR_COLUMN = "other_entities"
 #                 already part of the condition.
 HARD_FIELDS = {"institutions", "species"}
 
-# Every field in neither list is hard: modality, file types, size, subject
+# Every field neither in fields/ nor here is hard: modality, file types, size, subject
 # counts and the like come from the files themselves, so a dataset that
 # fails them is contradicted.
 
@@ -100,8 +94,8 @@ def soft_kind(node, alias: str) -> Optional[str]:
       3. Reads a HARD_FIELDS column: hard.
       4. Reads a joined table's row outside a subquery: hard.
       5. "At least N participants with a diagnosis": "patient_count".
-      6. Reads SOFT_FIELDS of one kind: "age", "diagnosis" or "sex". Of two
-         kinds in one condition: hard.
+      6. Reads columns of one field in fields/: that field's kind ("age",
+         "diagnosis", "sex"). Of two fields in one condition: hard.
       7. Holds a text search: "text".
       8. Anything else: hard.
 
@@ -121,7 +115,7 @@ def soft_kind(node, alias: str) -> Optional[str]:
     sql = node.sql(dialect="postgres")
     if _patient_count_parts(sql) is not None:
         return "patient_count"
-    kinds = {SOFT_FIELDS[column] for column in columns & SOFT_FIELDS.keys()}
+    kinds = {fields.KIND_OF_COLUMN[column] for column in columns & fields.KIND_OF_COLUMN.keys()}
     if len(kinds) > 1:
         return None
     if kinds:
@@ -158,6 +152,10 @@ def paper_atoms(sql: str, alias: str) -> Optional[str]:
     return " OR ".join(dict.fromkeys(atoms)) or None
 
 
+def _paper_only(paper: Optional[str]) -> Tuple[Evidence, ...]:
+    return (PaperOnly(paper),) if paper else ()
+
+
 def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     """A SoftCondition for a condition that may be uncertain, else None.
 
@@ -176,42 +174,29 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
     if kind == "patient_count":
         return _patient_count(sql, alias)
     relaxed, words = relax_text_condition(sql)
+    # Part of a text search the condition holds, anywhere in the text.
+    weaker_search = (WeakerSearch(relaxed, partial_reason(words)),) if relaxed else ()
     paper = paper_atoms(sql, alias) if papers else None
     if kind != "text":
-        probable = relaxed
-        reason_probable = partial_reason(words) if relaxed else ""
-        if kind == "age":
-            group_words = age_group_words(*asked_age_range(sql))
-            paper = None
-            if group_words:
-                # The dataset's own text only. Of 63 datasets without ages whose
-                # only child word was in a paper (live database, 2026-11-17),
-                # about 9 studied children; the rest were adult studies citing
-                # child work (Sherlock, BCIT) and two mouse datasets. Paper-only
-                # matches fall to 'possible' instead.
-                vector = "search_tsv"
-                probable = (f"{alias}.{vector} @@ TO_TSQUERY('english', "
-                            f"'{tsquery_for_words(group_words)}')")
-                reason_probable = reason_texts.AGE_GROUP_NAMED
-        if kind == "sex":
-            text = sex_text_condition(node, alias)
-            if text is not None:
-                probable, reason_probable = text
-        # The card text for each state. Possible: the field is not recorded
-        # ("ages not recorded"). Probable: the more specific reason found
-        # above (the text names the age group or sex, or matches in part),
-        # else the same "not recorded".
-        return SoftCondition(
-            sql=sql, kind=kind, probable=probable, known=known_sql(kind, alias),
-            reason_probable=reason_probable or reason_texts.NOT_RECORDED[kind],
-            reason_possible=reason_texts.NOT_RECORDED[kind], paper=paper,
-        )
+        # A field a dataset may not record. What is particular to the field
+        # is in its file (fields/); the steps are the same for all.
+        field = fields.BY_KIND[kind]
+        # The dataset's own text names the asked value: counts in place of a
+        # part of the search.
+        named = field.named_in_text(node, alias) if field.named_in_text else None
+        weaker: Tuple[Evidence, ...] = (NamedInText(*named),) if named is not None else weaker_search
+        if field.paper_evidence:
+            # Without it a paper-only match is 'possible' like any other
+            # dataset that records nothing.
+            weaker = _paper_only(paper) + weaker
+        record = OtherValuesRecorded(field.recorded(alias))
+        not_recorded = NotRecorded(reason=reason_texts.NOT_RECORDED[kind])
+        if field.text_beats_recorded:
+            return SoftCondition(kind=kind, evidence=(AsAsked(sql), *weaker, record, not_recorded))
+        return SoftCondition(kind=kind, evidence=(AsAsked(sql), record, *weaker, not_recorded))
     if relaxed or paper:
-        return SoftCondition(
-            sql=sql, kind="text", probable=relaxed, known=None,
-            reason_probable=partial_reason(words) if relaxed else "",
-            reason_possible="", paper=paper,
-        )
+        return SoftCondition(kind="text", evidence=(
+            AsAsked(sql), *_paper_only(paper), *weaker_search))
     return None
 
 
@@ -232,14 +217,15 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
     codes, minimum = parsed
     stored = None
     try:
-        from services.catalogue.catalogue import catalogue
+        from services.database_stats.database_stats import database_stats
         from services.schema.tables import datasets
-        if catalogue.summaries.subject_counts:
+        if database_stats.summaries.subject_counts:
             stored = f"COALESCE({alias}.{datasets.c.n_subjects.name}, 0)"
     except ImportError:
         pass
-    return SoftCondition(
-        sql=sql, kind="patient_count",
-        probable=cohort_count.unknown_sql(codes, minimum, alias, subject_count=stored), known=None,
-        reason_probable=reason_texts.PATIENT_COUNT_NOT_RECORDED, reason_possible="",
-    )
+    # Not recorded, in a dataset large enough to hold the patients.
+    unknown = cohort_count.unknown_sql(codes, minimum, alias, subject_count=stored)
+    return SoftCondition(kind="patient_count", evidence=(
+        AsAsked(sql),
+        NotRecorded(unknown, reason_texts.PATIENT_COUNT_NOT_RECORDED, strength=Strength.PROBABLE),
+    ))

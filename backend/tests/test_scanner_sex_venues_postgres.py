@@ -56,7 +56,8 @@ _DATASETS = {
     "sex_recorded_m": ("Memory task; women were excluded.", [], ["M", "M"]),
     "sex_text_women": ("22 women took part.", [], [None, None]),
     "sex_text_only": ("An all-female sample of 30 adults.", [], [None]),
-    "sex_text_mixed": ("Both women and men took part.", [], []),
+    "sex_text_mixed": ("22 women and 20 men took part.", [], []),
+    "sex_text_stimulus": ("Stories read in a woman's voice.", [], []),
 }
 
 
@@ -126,13 +127,13 @@ def test_field_strength_from_sidecars_then_text():
         fmri = await _tiers(session, ids, STRENGTH_7T_FMRI)
         assert set(fmri) == {"sidecar_7t", "readme_7t_func"}   # the anatomy-only one has no fMRI
         # The same with the file part read from the facets summary.
-        from services.catalogue.catalogue import Summaries, catalogue
-        summaries = catalogue.summaries
-        catalogue.summaries = Summaries(facets=True)
+        from services.database_stats.database_stats import Summaries, database_stats
+        summaries = database_stats.summaries
+        database_stats.summaries = Summaries(facets=True)
         try:
             assert await _tiers(session, ids, STRENGTH_7T_FMRI) == fmri
         finally:
-            catalogue.summaries = summaries
+            database_stats.summaries = summaries
         # With a 'possible' level the full recorded check gives the same states.
         os.environ["UNCERTAIN_POSSIBLE"] = "true"
         try:
@@ -166,6 +167,7 @@ def test_participant_sex_from_records_then_text():
         for key in ("sex_text_women", "sex_text_only", "sex_text_mixed"):
             assert female[key] == (1, "participant sex not recorded; the description names "
                                       "female participants"), key
+        assert female.get("sex_text_stimulus", (None,))[0] != 1   # a voice, not a participant
         only = await _tiers(session, ids, ONLY_FEMALE)
         assert set(only) == {"sex_text_only"}
         assert only["sex_text_only"][1].endswith("all participants are female")

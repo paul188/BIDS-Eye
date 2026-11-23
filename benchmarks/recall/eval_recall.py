@@ -91,10 +91,14 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.translate.text_to_sql import text_to_sql
     try:
-        from services.catalogue.catalogue import catalogue
-        start_catalogue = catalogue.start
-    except ImportError:  # backend before catalogue.py
-        from services.catalogue.schema_capabilities import refresh_available_columns as start_catalogue
+        from services.database_stats.database_stats import database_stats
+        start_catalogue = database_stats.start
+    except ImportError:  # backend before the rename to database_stats.py
+        try:
+            from services.catalogue.catalogue import catalogue
+            start_catalogue = catalogue.start
+        except ImportError:  # backend before catalogue.py
+            from services.catalogue.schema_capabilities import refresh_available_columns as start_catalogue
     # Optional pieces: present only in newer versions of the search code. The
     # harness must also run against older versions (e.g. the live one) to
     # measure them on the same questions.
@@ -135,7 +139,8 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     # Warm up the same read-only capabilities as app startup without calling
     # main.lifespan(), which runs create_all_tables() and may issue DDL.
     await start_catalogue(engine)
-    if institution_index is not None:
+    # Since database_stats.py the start above reads the institution names too.
+    if institution_index is not None and hasattr(institution_index, "refresh_from_db"):
         await institution_index.refresh_from_db(engine)
     try:
         import worker_db

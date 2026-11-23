@@ -53,7 +53,7 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from services.catalogue.catalogue import catalogue
+from services.database_stats.database_stats import database_stats
 from services.schema.tables import datasets as _datasets
 from services.translate import optional_columns
 
@@ -136,10 +136,10 @@ def should_rerank(apply_relevance: bool, total: int, is_fallback: bool) -> bool:
 def _details_sql() -> str:
     cols = ["d.id", "d.accession_id", "d.name"]
     for column in ("dx_status", "study_domain", "study_design", "age_min", "age_max", "size_bytes"):
-        if optional_columns.usable(catalogue.coverage, column):
+        if optional_columns.usable(database_stats.coverage, column):
             cols.append(f"d.{column}")
     cols.append(f"d.{PROFILE_COLUMN}")
-    if optional_columns.usable(catalogue.coverage, "readme_text"):
+    if optional_columns.usable(database_stats.coverage, "readme_text"):
         cols.append(f"left(d.readme_text, {README_EXCERPT_CHARS}) AS readme_excerpt")
     return f"SELECT {', '.join(cols)} FROM {_datasets.name} d WHERE d.id = ANY(:ids)"
 

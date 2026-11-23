@@ -4,7 +4,7 @@ services/translate/optional_columns.py
 Which optional bids_datasets columns the search uses.
 
 The catalogue counts how many datasets fill each optional column
-(services/catalogue/catalogue.py, ColumnCoverage). The rule here turns the
+(services/database_stats/database_stats.py, ColumnCoverage). The rule here turns the
 counts into a decision: a column filled in at least MIN_COVERAGE of the
 datasets is usable. A filter on a column that is nearly empty would discard
 almost every dataset.
@@ -30,7 +30,7 @@ import math
 import re
 
 from constants import OPTIONAL_DATASET_COLUMNS
-from services.catalogue.catalogue import ColumnCoverage
+from services.database_stats.database_stats import ColumnCoverage
 
 log = logging.getLogger(__name__)
 

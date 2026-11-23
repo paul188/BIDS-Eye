@@ -16,16 +16,20 @@ async def run():
     try:
         from services.translate.text_to_sql import text_to_sql
         try:
-            from services.catalogue.catalogue import catalogue
-            start_catalogue = catalogue.start
-        except ImportError:  # backend before catalogue.py
-            from services.catalogue.schema_capabilities import refresh_available_columns as start_catalogue
+            from services.database_stats.database_stats import database_stats
+            start_catalogue = database_stats.start
+        except ImportError:  # backend before the rename to database_stats.py
+            try:
+                from services.catalogue.catalogue import catalogue
+                start_catalogue = catalogue.start
+            except ImportError:  # backend before catalogue.py
+                from services.catalogue.schema_capabilities import refresh_available_columns as start_catalogue
     except ImportError:  # backend before services/ was grouped (piped in: no helper)
         from services.text_to_sql import text_to_sql
         from services.schema_capabilities import refresh_available_columns as start_catalogue
     engine.sync_engine.echo = False
     await start_catalogue(engine)
-    try:
+    try:  # since database_stats.py the start above reads the institution names too
         import institution_index
         await institution_index.refresh_from_db(engine)
     except Exception:

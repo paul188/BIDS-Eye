@@ -23,8 +23,9 @@ A place name is also a word in other place names: 'Mexico' in 'New Mexico',
 stored ones that lie elsewhere, so the text search for the place can leave
 them out ("mexico" matched nine University of New Mexico datasets).
 
-The values are loaded from the database at backend startup (refresh_from_db).
-Without the table the index is empty and every place falls back to a text
+The backend reads the values from the database and hands them to set_places()
+at startup and again when they changed
+(backend/services/database_stats/database_stats.py). Until then the index is empty and every place falls back to a text
 search (LLM_preprocessor/preprocess/augment.py, _location_lines).
 """
 
@@ -32,7 +33,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 from institution_index import InstitutionIndex, normalize
 
@@ -178,7 +179,7 @@ _index = PlaceIndex(())
 
 
 def set_places(places: Iterable[Tuple[str, str]], rows: Iterable[PlaceRow] = ()) -> PlaceIndex:
-    """Replace the shared index (startup, tests)."""
+    """Replace the shared index (the backend's database_stats, tests)."""
     global _index
     _index = PlaceIndex(places, rows)
     return _index
@@ -187,37 +188,3 @@ def set_places(places: Iterable[Tuple[str, str]], rows: Iterable[PlaceRow] = ())
 def get_index() -> PlaceIndex:
     return _index
 
-
-async def refresh_from_db(engine: Any) -> int:
-    """Load the distinct places from bids_site_places. Returns how many names.
-
-    On any error (table missing, database down) the index stays as it was, so
-    place names fall back to a text search.
-    """
-    import asyncio
-
-    from sqlalchemy import text
-    from sqlalchemy.exc import SQLAlchemyError
-    from services.schema.tables import site_places
-
-    table = site_places.name
-
-    try:
-        async with engine.connect() as connection:
-            found = await connection.execute(text(
-                f"SELECT DISTINCT COALESCE(city, ''), COALESCE(region, ''), COALESCE(country, '') "
-                f"FROM {table}"
-            ))
-            rows = [(row[0], row[1], row[2]) for row in found if any(row)]
-            found = await connection.execute(text(
-                f"SELECT DISTINCT institution FROM {table} WHERE institution <> ''"
-            ))
-            places = [("institution", row[0]) for row in found]
-    # As in institution_index.refresh_from_db; a missing table is a
-    # ProgrammingError (SQLAlchemyError).
-    except (SQLAlchemyError, OSError, asyncio.TimeoutError) as exc:
-        log.warning("Could not load site places (%s) — place names are searched as text", exc)
-        return 0
-    index = set_places(places, rows)
-    log.info("Loaded %d place names for query matching", len(index))
-    return len(index)

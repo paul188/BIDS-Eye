@@ -65282,6 +65282,9 @@ sex:
     broader: []
     description: Male sex, including binary encodings and concatenated multi-subject
       strings.
+    # The words a dataset's own text uses for participants of this sex
+    # (backend/services/uncertain/fields/sex.py). Not the request synonyms above.
+    text_words: [male, males, man, men, boy, boys]
     synonyms:
     - term: M
       weight: 0.91
@@ -65339,6 +65342,7 @@ sex:
     broader: []
     description: Female sex, including binary encodings, international labels (Hindi),
       and concatenated strings.
+    text_words: [female, females, woman, women, girl, girls]
     synonyms:
     - term: F
       weight: 0.91
@@ -66976,3 +66980,41 @@ participant_extra_fields:
     - iq
     - IQ
     - full_iq
+
+# Words a dataset's own text (name, description, README) uses, where they are
+# not the values of one column. Read by RAG/text_evidence.py for the uncertain
+# tier (backend/services/uncertain/fields/). The words for one stored code are
+# with that code instead, as its text_words (see sex).
+text_evidence:
+  # The people a study is about: "female participants", "subjects were male".
+  people_words: [participant, participants, subject, subjects, volunteer, volunteers,
+    patient, patients, control, controls, adult, adults, adolescent, adolescents,
+    individual, individuals, child, children]
+  # Age groups with the ages they cover, in years.
+  age_groups:
+    infants:
+      from: 0
+      to: 3
+      words: [infant, infants, newborn, newborns, neonate, neonates, neonatal, toddler,
+        toddlers, baby, babies]
+    children:
+      from: 3
+      to: 12
+      words: [child, children, kids, pediatric, paediatric, preschool, school-age,
+        schoolchildren]
+    adolescents:
+      from: 12
+      to: 19
+      words: [adolescent, adolescents, adolescence, teen, teens, teenager, teenagers,
+        youth, youths]
+    adults:
+      from: 18
+      to: 65
+      words: [adult, adults]
+    # Not "aging" / "ageing" / "aged": the stemmer turns them into "age", which
+    # every README with an age range contains. Not "older" alone either.
+    older_adults:
+      from: 60
+      to: 120
+      words: [older-adults, older-adult, older-participants, elderly, geriatric, seniors,
+        old-age]

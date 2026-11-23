@@ -55,7 +55,7 @@ def _extract_synonyms(raw: Any) -> List[Tuple[str, float]]:
 _CONCEPT_META = frozenset({
     "label", "standard_code", "is_group", "broader", "part_of", "description",
     "definition_text", "ca_id", "synonyms", "codes", "extra_codes",
-    "dataset_codes", "count",
+    "dataset_codes", "count", "text_words",
 })
 
 
@@ -65,6 +65,13 @@ _CONCEPT_META = frozenset({
 #   display_codes_db {category: {label_or_synonym_lower: [standard_code, ...]}}
 leaf_codes_db: Dict[str, Dict[str, List[str]]] = {}
 display_codes_db: Dict[str, Dict[str, List[str]]] = {}
+
+# What a dataset's own text says, as opposed to what a request or a column
+# value says (read through RAG/text_evidence.py):
+#   text_words_db    {category: {standard_code: [word, ...]}}  an entry's text_words
+#   text_evidence_db the vocabulary's text_evidence section as written
+text_words_db: Dict[str, Dict[str, List[str]]] = {}
+text_evidence_db: Dict[str, Any] = {}
 
 
 # Shorthands the vocabulary lists, lower-cased: a label or synonym written as
@@ -174,6 +181,10 @@ def _parse_flat(
             "label": label or key,
             "description": value.get("description", ""),
         }
+
+        text_words = [str(word).lower() for word in value.get("text_words") or []]
+        if text_words:
+            text_words_db.setdefault(category, {})[std_code] = text_words
 
     # ── Pass 2: group lookups ─────────────────────────────────────────────────
     # Build children map: concept_key → [direct child keys]
@@ -319,6 +330,9 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
             if isinstance(data, dict):
                 schema.setdefault(cat, {}).update(data)
 
+    text_evidence_db.clear()
+    text_evidence_db.update(schema.get("text_evidence") or {})
+
     leaf_db:         Dict[str, Dict[str, str]]        = {cat: {} for cat in _CATEGORIES}
     display_db:      Dict[str, Dict[str, str]]        = {cat: {} for cat in _CATEGORIES}
     group_db:        Dict[str, Dict[str, List[str]]]  = {cat: {} for cat in _CATEGORIES}
@@ -360,15 +374,6 @@ def build_measures_db(bridge_path: Optional[str] = None) -> Dict[str, List[str]]
             if task_code not in result[construct_key]:
                 result[construct_key].append(task_code)
     return result
-
-
-def get_group_summary(group_db: Dict[str, Dict[str, List[str]]]) -> Dict[str, List[str]]:
-    """Return a flat map of {category: [group_synonyms]} for use in LLM prompts."""
-    summary: Dict[str, List[str]] = {}
-    for cat, groups in group_db.items():
-        if groups:
-            summary[cat] = sorted(groups.keys())
-    return summary
 
 
 # EmbeddingIndex: {category: (terms, float32_embeddings, code_lists)}
