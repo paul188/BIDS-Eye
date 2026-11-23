@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import sys
 from pathlib import Path
@@ -367,3 +368,63 @@ def test_the_guard_of_a_reviewed_word_lists_its_stem_minus_the_excluded(
     # Without the catalogue: the group's forms.
     store.set_lookup(None)
     assert tsquery.exact_guard((("weight",),)) == "(weight | weights)"
+
+
+# ── Stored pairs (word_form_pairs.json) ───────────────────────────────────────
+
+@pytest.fixture
+def stored_pairs(tmp_path, monkeypatch, reviewed_list):
+    """Point word_forms at a pairs file of its own; returns a function that writes it."""
+    path = tmp_path / "word_form_pairs.json"
+
+    def write(content: dict) -> None:
+        path.write_text(json.dumps(content))
+        word_forms._stored_pairs.cache_clear()
+
+    monkeypatch.setattr(word_forms, "_PAIRS_PATH", path)
+    write({})
+    yield write
+    word_forms._stored_pairs.cache_clear()
+
+
+TIMING = WordEvidence("timing", "time", 500, (
+    ("time", 489), ("times", 168), ("timing", 126), ("timed", 40), ("timer", 12)))
+
+
+def test_stored_pairs_exclude_and_close_their_forms(stored_pairs) -> None:
+    stored_pairs({"different": {"timing": ["time", "times"]}, "stem": {"timing": ["timed"]}})
+    assert word_forms.excluded_forms("timing") == {"time", "times"}
+    # Plural of the asked word finds the same pairs.
+    assert word_forms.excluded_forms("timings") == {"time", "times"}
+    # Judged pairs, either way, are not asked about again.
+    assert word_forms.open_forms(TIMING) == ()
+    assert word_forms.forms_for("timing", None, lambda word: TIMING) == ("timing", "timed", "timer")
+    # Without the catalogue a stored pair cannot say what else the stem holds: stem.
+    assert word_forms.forms_for("timing") is None
+    assert word_forms.decide({"timing": TIMING}, []) == {"timing": ("timing", "timed", "timer")}
+
+
+def test_the_reviewed_list_wins_over_stored_pairs(stored_pairs, reviewed_list) -> None:
+    stored_pairs({"different": {"timing": ["time", "timed"]}})
+    reviewed_list({"exact": [{"forms": ["timing", "timed"], "excludes": ["timer"], "why": "x"}]})
+    assert word_forms.excluded_forms("timing") == {"time", "timer"}
+    reviewed_list({"stemmed": [["timing", "time"]]})
+    assert word_forms.excluded_forms("timing") == frozenset()
+
+
+def test_a_broken_pairs_file_is_ignored(stored_pairs, caplog) -> None:
+    word_forms._PAIRS_PATH.write_text("{not json")
+    word_forms._stored_pairs.cache_clear()
+    assert word_forms.excluded_forms("timing") == frozenset()
+    assert "could not be read" in caplog.text
+
+
+def test_the_shipped_pairs_are_consistent() -> None:
+    word_forms._stored_pairs.cache_clear()
+    data = json.loads((ROOT / "RAG" / "word_form_pairs.json").read_text())
+    for kind in ("different", "stem"):
+        for word, forms in data[kind].items():
+            assert re.fullmatch(r"[a-z]+", word) and all(re.fullmatch(r"[a-z]+", f) for f in forms), word
+            assert not set(forms) & word_forms.own_forms(word), word
+    for word in set(data["different"]) & set(data["stem"]):
+        assert not set(data["different"][word]) & set(data["stem"][word]), word

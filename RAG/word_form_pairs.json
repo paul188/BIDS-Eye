@@ -1,0 +1,8118 @@
+{
+ "about": "Word-form pairs judged offline: a search for the key word must not match the forms under 'different' (RAG/word_forms.py excluded_forms); the forms under 'stem' were judged too and keep matching by stem, so the language model is not asked about them per question. word_forms.yaml wins over this file.",
+ "made": "2026-11-23",
+ "how": "gemini-2.5-flash at temperature 0 judged every open colliding pair of the local catalogue copy (1,943 datasets, 2026-11-13), words and counts only (benchmarks/word_forms/results/pairs_gemini-2.5-flash_2026-11-21.json). Every 'different' answer was then reviewed with README snippets (claude.ai artifact 71DTMeR7LKUSUG13i7bGHJ): kept apart, or moved to 'stem' when it matches or depends on the dataset. Pairs under the stems of the blind label set (benchmarks/word_forms/label_set.json) are left out.",
+ "different": {
+  "acceptability": [
+   "accept",
+   "accepted"
+  ],
+  "acceptable": [
+   "accept",
+   "accepted"
+  ],
+  "accessed": [
+   "accession"
+  ],
+  "accessibility": [
+   "accession"
+  ],
+  "accessible": [
+   "accession"
+  ],
+  "accessing": [
+   "accession"
+  ],
+  "accession": [
+   "access"
+  ],
+  "accordingly": [
+   "accordance",
+   "according"
+  ],
+  "accountability": [
+   "account"
+  ],
+  "accountable": [
+   "account"
+  ],
+  "accounted": [
+   "account"
+  ],
+  "acidity": [
+   "acid"
+  ],
+  "activate": [
+   "actively",
+   "activities"
+  ],
+  "activated": [
+   "actively",
+   "activities"
+  ],
+  "activates": [
+   "actively",
+   "activities"
+  ],
+  "activating": [
+   "actively",
+   "activities"
+  ],
+  "activator": [
+   "actively",
+   "activities"
+  ],
+  "actively": [
+   "activation",
+   "activities",
+   "activity"
+  ],
+  "actually": [
+   "actual"
+  ],
+  "adapter": [
+   "adaptation",
+   "adapted",
+   "adaptive"
+  ],
+  "adaptive": [
+   "adapted"
+  ],
+  "additive": [
+   "addition",
+   "additional",
+   "additionally"
+  ],
+  "addressable": [
+   "address"
+  ],
+  "addressed": [
+   "address"
+  ],
+  "affected": [
+   "affective"
+  ],
+  "affecting": [
+   "affective"
+  ],
+  "aired": [
+   "air"
+  ],
+  "alternately": [
+   "alternative"
+  ],
+  "alternative": [
+   "alternated",
+   "alternating"
+  ],
+  "alternatively": [
+   "alternated",
+   "alternating"
+  ],
+  "alternatives": [
+   "alternated",
+   "alternating"
+  ],
+  "analogical": [
+   "analog"
+  ],
+  "analogous": [
+   "analog"
+  ],
+  "analogously": [
+   "analog"
+  ],
+  "analyzer": [
+   "analyze",
+   "analyzed",
+   "analyzing"
+  ],
+  "animate": [
+   "animal",
+   "animals"
+  ],
+  "animated": [
+   "animal",
+   "animals"
+  ],
+  "animation": [
+   "animal",
+   "animals"
+  ],
+  "animations": [
+   "animal",
+   "animals"
+  ],
+  "armed": [
+   "arm"
+  ],
+  "associative": [
+   "associated"
+  ],
+  "attribute": [
+   "attribution"
+  ],
+  "attributes": [
+   "attribution"
+  ],
+  "authority": [
+   "author",
+   "authors"
+  ],
+  "authorization": [
+   "author",
+   "authors"
+  ],
+  "authorized": [
+   "author",
+   "authors"
+  ],
+  "avail": [
+   "availability",
+   "available"
+  ],
+  "bedding": [
+   "bed"
+  ],
+  "bidding": [
+   "bids"
+  ],
+  "bodied": [
+   "body"
+  ],
+  "breaking": [
+   "break",
+   "breaks"
+  ],
+  "briefed": [
+   "brief"
+  ],
+  "brooke": [
+   "brooks"
+  ],
+  "browne": [
+   "brown"
+  ],
+  "browning": [
+   "brown"
+  ],
+  "buildings": [
+   "build"
+  ],
+  "careful": [
+   "care"
+  ],
+  "carefully": [
+   "care"
+  ],
+  "categorical": [
+   "categorization",
+   "categorized"
+  ],
+  "centrality": [
+   "central"
+  ],
+  "centralized": [
+   "central"
+  ],
+  "channeling": [
+   "channel",
+   "channels"
+  ],
+  "classifier": [
+   "classified"
+  ],
+  "classifiers": [
+   "classified"
+  ],
+  "cleared": [
+   "clear"
+  ],
+  "clipped": [
+   "clip",
+   "clips"
+  ],
+  "closely": [
+   "close",
+   "closed"
+  ],
+  "closeness": [
+   "closed"
+  ],
+  "coded": [
+   "code"
+  ],
+  "coding": [
+   "code",
+   "codes"
+  ],
+  "collective": [
+   "collect",
+   "collected",
+   "collecting",
+   "collection"
+  ],
+  "collectively": [
+   "collect",
+   "collected",
+   "collecting",
+   "collection"
+  ],
+  "commander": [
+   "command"
+  ],
+  "commonly": [
+   "commons"
+  ],
+  "completely": [
+   "completed",
+   "completeness",
+   "completing",
+   "completion"
+  ],
+  "completeness": [
+   "completed",
+   "completing"
+  ],
+  "completers": [
+   "complete",
+   "completed",
+   "completely",
+   "completeness",
+   "completing",
+   "completion"
+  ],
+  "composite": [
+   "composition"
+  ],
+  "computation": [
+   "computer"
+  ],
+  "computational": [
+   "computer"
+  ],
+  "computationally": [
+   "compute",
+   "computed",
+   "computer",
+   "computing"
+  ],
+  "computations": [
+   "computer"
+  ],
+  "compute": [
+   "computational",
+   "computer"
+  ],
+  "computed": [
+   "computational",
+   "computer"
+  ],
+  "computes": [
+   "computational",
+   "computer"
+  ],
+  "computing": [
+   "computational"
+  ],
+  "conditional": [
+   "condition",
+   "conditioning",
+   "conditions"
+  ],
+  "conditionals": [
+   "condition",
+   "conditioning",
+   "conditions"
+  ],
+  "conditioned": [
+   "condition",
+   "conditions"
+  ],
+  "conditioning": [
+   "condition",
+   "conditions"
+  ],
+  "conductance": [
+   "conducted"
+  ],
+  "conduction": [
+   "conducted"
+  ],
+  "conductive": [
+   "conducted"
+  ],
+  "conductivity": [
+   "conducted"
+  ],
+  "considerable": [
+   "considerations"
+  ],
+  "considerably": [
+   "considerations"
+  ],
+  "considerate": [
+   "considerations"
+  ],
+  "consistency": [
+   "consisted",
+   "consisting",
+   "consists"
+  ],
+  "consistent": [
+   "consisted",
+   "consisting",
+   "consists"
+  ],
+  "consistently": [
+   "consist",
+   "consisted",
+   "consisting",
+   "consists"
+  ],
+  "construct": [
+   "constructed"
+  ],
+  "constructs": [
+   "constructed"
+  ],
+  "container": [
+   "contain",
+   "contained",
+   "containing",
+   "contains"
+  ],
+  "containers": [
+   "contain",
+   "contained",
+   "containing",
+   "contains"
+  ],
+  "continuation": [
+   "continuous",
+   "continuously"
+  ],
+  "continue": [
+   "continuous",
+   "continuously"
+  ],
+  "continues": [
+   "continuous",
+   "continuously"
+  ],
+  "continuity": [
+   "continue"
+  ],
+  "contrastive": [
+   "contrast",
+   "contrasts"
+  ],
+  "conventional": [
+   "convention",
+   "conventions"
+  ],
+  "conventionally": [
+   "convention",
+   "conventions"
+  ],
+  "conversation": [
+   "conversion"
+  ],
+  "conversational": [
+   "conversion"
+  ],
+  "conversations": [
+   "conversion"
+  ],
+  "converse": [
+   "conversion"
+  ],
+  "conversely": [
+   "conversion"
+  ],
+  "converter": [
+   "convert",
+   "converted",
+   "converting"
+  ],
+  "coordinated": [
+   "coordinate",
+   "coordinates"
+  ],
+  "coordinating": [
+   "coordinate",
+   "coordinates"
+  ],
+  "coordination": [
+   "coordinate",
+   "coordinates"
+  ],
+  "coordinators": [
+   "coordinate",
+   "coordinates"
+  ],
+  "correctable": [
+   "correction",
+   "correctly"
+  ],
+  "correcting": [
+   "correctly"
+  ],
+  "corrective": [
+   "corrected",
+   "correctly"
+  ],
+  "correctly": [
+   "corrected",
+   "correction"
+  ],
+  "correctness": [
+   "corrected",
+   "correction",
+   "corrective"
+  ],
+  "curated": [
+   "curator",
+   "curators"
+  ],
+  "daniele": [
+   "daniel"
+  ],
+  "davide": [
+   "david"
+  ],
+  "declarative": [
+   "declaration"
+  ],
+  "dedicated": [
+   "dedication"
+  ],
+  "definitely": [
+   "definition",
+   "definitions"
+  ],
+  "descriptive": [
+   "description",
+   "descriptions"
+  ],
+  "descriptives": [
+   "description",
+   "descriptions"
+  ],
+  "designated": [
+   "design",
+   "designed"
+  ],
+  "designation": [
+   "design",
+   "designed"
+  ],
+  "designer": [
+   "design",
+   "designed"
+  ],
+  "determinant": [
+   "determination",
+   "determine",
+   "determined"
+  ],
+  "determinants": [
+   "determination",
+   "determine",
+   "determined"
+  ],
+  "developement": [
+   "developed"
+  ],
+  "developing": [
+   "developed"
+  ],
+  "difference": [
+   "different"
+  ],
+  "differences": [
+   "different"
+  ],
+  "differentiate": [
+   "differential"
+  ],
+  "differentiates": [
+   "differential"
+  ],
+  "differentiating": [
+   "differential"
+  ],
+  "differentiation": [
+   "differential"
+  ],
+  "diffuse": [
+   "diffusion"
+  ],
+  "diffused": [
+   "diffusion"
+  ],
+  "diffusing": [
+   "diffusion"
+  ],
+  "diffusivity": [
+   "diffuse"
+  ],
+  "digitally": [
+   "digit",
+   "digits"
+  ],
+  "digitization": [
+   "digit",
+   "digits"
+  ],
+  "digitize": [
+   "digit",
+   "digits"
+  ],
+  "digitized": [
+   "digit",
+   "digits"
+  ],
+  "digitizer": [
+   "digit",
+   "digits"
+  ],
+  "dimensionality": [
+   "dimensional"
+  ],
+  "discretion": [
+   "discrete"
+  ],
+  "displaceable": [
+   "displacement"
+  ],
+  "distinction": [
+   "distinct"
+  ],
+  "distinctive": [
+   "distinct"
+  ],
+  "distinctiveness": [
+   "distinct"
+  ],
+  "dominic": [
+   "dominant"
+  ],
+  "dotted": [
+   "dot"
+  ],
+  "edition": [
+   "edited"
+  ],
+  "effective": [
+   "effect",
+   "effects"
+  ],
+  "effectively": [
+   "effect",
+   "effects"
+  ],
+  "effectiveness": [
+   "effect",
+   "effects"
+  ],
+  "elif": [
+   "elife"
+  ],
+  "embedding": [
+   "embedded"
+  ],
+  "embeddings": [
+   "embedded"
+  ],
+  "encoder": [
+   "encode",
+   "encoded",
+   "encoding"
+  ],
+  "engineers": [
+   "engineering"
+  ],
+  "episode": [
+   "episodic"
+  ],
+  "episodes": [
+   "episodic"
+  ],
+  "episodically": [
+   "episode"
+  ],
+  "estimability": [
+   "estimate",
+   "estimated",
+   "estimates",
+   "estimating",
+   "estimation"
+  ],
+  "evaluative": [
+   "evaluated",
+   "evaluating"
+  ],
+  "evening": [
+   "even",
+   "evenly"
+  ],
+  "evenings": [
+   "even",
+   "evenly"
+  ],
+  "evident": [
+   "evidence"
+  ],
+  "examiner": [
+   "examination",
+   "examine",
+   "examined",
+   "examining"
+  ],
+  "exceptional": [
+   "except"
+  ],
+  "executable": [
+   "execute",
+   "execution",
+   "executive"
+  ],
+  "execute": [
+   "executive"
+  ],
+  "executed": [
+   "executive"
+  ],
+  "executing": [
+   "executive"
+  ],
+  "execution": [
+   "executive"
+  ],
+  "explainable": [
+   "explained"
+  ],
+  "express": [
+   "expression"
+  ],
+  "extensive": [
+   "extension"
+  ],
+  "extensively": [
+   "extension"
+  ],
+  "externalization": [
+   "external"
+  ],
+  "externalized": [
+   "external"
+  ],
+  "externalizing": [
+   "external"
+  ],
+  "externally": [
+   "externalization"
+  ],
+  "faced": [
+   "face",
+   "faces"
+  ],
+  "facing": [
+   "face",
+   "faces"
+  ],
+  "familiarization": [
+   "familiar"
+  ],
+  "familiarize": [
+   "familiar"
+  ],
+  "familiarized": [
+   "familiar"
+  ],
+  "featured": [
+   "feature",
+   "features"
+  ],
+  "featuring": [
+   "feature",
+   "features"
+  ],
+  "figural": [
+   "figure",
+   "figures"
+  ],
+  "finalized": [
+   "finally"
+  ],
+  "finally": [
+   "final"
+  ],
+  "fitness": [
+   "fit",
+   "fitting"
+  ],
+  "follow": [
+   "following"
+  ],
+  "followed": [
+   "following"
+  ],
+  "follower": [
+   "follow",
+   "followed",
+   "following",
+   "follows"
+  ],
+  "follows": [
+   "following"
+  ],
+  "forceful": [
+   "force",
+   "forced"
+  ],
+  "forces": [
+   "forced"
+  ],
+  "formed": [
+   "form",
+   "forms"
+  ],
+  "forming": [
+   "form",
+   "forms"
+  ],
+  "frontally": [
+   "frontal"
+  ],
+  "generality": [
+   "general",
+   "generalization",
+   "generalized",
+   "generally"
+  ],
+  "generalization": [
+   "general",
+   "generally"
+  ],
+  "generalize": [
+   "general",
+   "generally"
+  ],
+  "generalized": [
+   "general"
+  ],
+  "generally": [
+   "general",
+   "generalized"
+  ],
+  "generative": [
+   "generate",
+   "generated",
+   "generating",
+   "generation"
+  ],
+  "generator": [
+   "generate",
+   "generated",
+   "generating",
+   "generation"
+  ],
+  "generators": [
+   "generate",
+   "generated",
+   "generating",
+   "generation"
+  ],
+  "goodness": [
+   "good"
+  ],
+  "grande": [
+   "grand"
+  ],
+  "greene": [
+   "green"
+  ],
+  "greening": [
+   "green"
+  ],
+  "grouping": [
+   "group",
+   "groups"
+  ],
+  "groupings": [
+   "group",
+   "grouped",
+   "groups"
+  ],
+  "guids": [
+   "guided"
+  ],
+  "harding": [
+   "hard"
+  ],
+  "headed": [
+   "head"
+  ],
+  "heading": [
+   "head",
+   "heads"
+  ],
+  "headings": [
+   "head",
+   "heads"
+  ],
+  "hospitalization": [
+   "hospital"
+  ],
+  "hospitalized": [
+   "hospital"
+  ],
+  "humane": [
+   "human",
+   "humans"
+  ],
+  "humanities": [
+   "human",
+   "humans"
+  ],
+  "humanized": [
+   "human",
+   "humans"
+  ],
+  "import": [
+   "important"
+  ],
+  "importance": [
+   "import"
+  ],
+  "importantly": [
+   "import"
+  ],
+  "imported": [
+   "important"
+  ],
+  "importer": [
+   "important"
+  ],
+  "importing": [
+   "important"
+  ],
+  "incoming": [
+   "income"
+  ],
+  "indexed": [
+   "index"
+  ],
+  "indexing": [
+   "index"
+  ],
+  "indication": [
+   "indices"
+  ],
+  "indications": [
+   "indices"
+  ],
+  "indicative": [
+   "indices"
+  ],
+  "indicator": [
+   "indices"
+  ],
+  "indicators": [
+   "indices"
+  ],
+  "indices": [
+   "indicate",
+   "indicated",
+   "indicates",
+   "indicating"
+  ],
+  "individualized": [
+   "individual",
+   "individually",
+   "individuals"
+  ],
+  "individuation": [
+   "individual",
+   "individually",
+   "individuals"
+  ],
+  "induct": [
+   "induction"
+  ],
+  "inform": [
+   "information"
+  ],
+  "informally": [
+   "inform",
+   "information",
+   "informed"
+  ],
+  "informant": [
+   "information",
+   "informed"
+  ],
+  "informational": [
+   "inform",
+   "informed"
+  ],
+  "informative": [
+   "inform",
+   "information",
+   "informed"
+  ],
+  "informed": [
+   "information"
+  ],
+  "informing": [
+   "information"
+  ],
+  "initialization": [
+   "initial",
+   "initially",
+   "initiated",
+   "initiative"
+  ],
+  "initialized": [
+   "initial",
+   "initially",
+   "initiated",
+   "initiative"
+  ],
+  "initiate": [
+   "initial",
+   "initially",
+   "initiative"
+  ],
+  "initiated": [
+   "initial",
+   "initially",
+   "initiative"
+  ],
+  "initiating": [
+   "initial",
+   "initially",
+   "initiative"
+  ],
+  "initiation": [
+   "initial",
+   "initially",
+   "initiative"
+  ],
+  "initiative": [
+   "initial",
+   "initially"
+  ],
+  "initiatives": [
+   "initial",
+   "initially"
+  ],
+  "injurious": [
+   "injury"
+  ],
+  "instructional": [
+   "instructed"
+  ],
+  "instrumental": [
+   "instruments"
+  ],
+  "integral": [
+   "integrated",
+   "integration"
+  ],
+  "integrity": [
+   "integrated",
+   "integration"
+  ],
+  "interact": [
+   "interactive"
+  ],
+  "interacted": [
+   "interactive"
+  ],
+  "interacting": [
+   "interactive"
+  ],
+  "interactive": [
+   "interaction",
+   "interactions"
+  ],
+  "interesting": [
+   "interested"
+  ],
+  "interestingly": [
+   "interest",
+   "interested"
+  ],
+  "interpretability": [
+   "interpretation"
+  ],
+  "interpretable": [
+   "interpretation"
+  ],
+  "interpreter": [
+   "interpretation"
+  ],
+  "inversely": [
+   "inversion"
+  ],
+  "investigational": [
+   "investigator"
+  ],
+  "investigator": [
+   "investigate",
+   "investigated",
+   "investigating",
+   "investigation",
+   "investigations"
+  ],
+  "investigators": [
+   "investigate",
+   "investigated",
+   "investigating",
+   "investigation",
+   "investigations"
+  ],
+  "issued": [
+   "issue",
+   "issues"
+  ],
+  "julie": [
+   "july"
+  ],
+  "keyed": [
+   "key",
+   "keys"
+  ],
+  "labeling": [
+   "labeled",
+   "labels"
+  ],
+  "labelled": [
+   "labeling"
+  ],
+  "labelling": [
+   "labeled",
+   "labelled",
+   "labels"
+  ],
+  "largely": [
+   "large"
+  ],
+  "lasting": [
+   "last"
+  ],
+  "lastly": [
+   "last",
+   "lasted",
+   "lasting"
+  ],
+  "leading": [
+   "lead"
+  ],
+  "leveled": [
+   "level",
+   "levels"
+  ],
+  "lightly": [
+   "light"
+  ],
+  "limiting": [
+   "limitations"
+  ],
+  "linearized": [
+   "linear"
+  ],
+  "linguists": [
+   "linguistic"
+  ],
+  "loadings": [
+   "load"
+  ],
+  "locating": [
+   "located"
+  ],
+  "lowe": [
+   "low"
+  ],
+  "magnet": [
+   "magnetic",
+   "magnetization"
+  ],
+  "magnetically": [
+   "magnetic",
+   "magnetization"
+  ],
+  "maintainer": [
+   "maintain",
+   "maintained",
+   "maintaining"
+  ],
+  "maintainers": [
+   "maintain",
+   "maintained",
+   "maintaining"
+  ],
+  "majority": [
+   "major"
+  ],
+  "manualized": [
+   "manual",
+   "manually"
+  ],
+  "markedly": [
+   "mark",
+   "marking"
+  ],
+  "mattered": [
+   "matter"
+  ],
+  "mechanical": [
+   "mechanisms"
+  ],
+  "mechanically": [
+   "mechanisms"
+  ],
+  "meetings": [
+   "meet"
+  ],
+  "memorial": [
+   "memories",
+   "memory"
+  ],
+  "mentalizing": [
+   "mental"
+  ],
+  "mindful": [
+   "mind"
+  ],
+  "mindfulness": [
+   "mind"
+  ],
+  "minimally": [
+   "minimize"
+  ],
+  "minimization": [
+   "minimal",
+   "minimally"
+  ],
+  "minimize": [
+   "minimal"
+  ],
+  "minimized": [
+   "minimal",
+   "minimally"
+  ],
+  "minimizing": [
+   "minimal",
+   "minimally"
+  ],
+  "mirrored": [
+   "mirror"
+  ],
+  "miss": [
+   "missing"
+  ],
+  "missed": [
+   "missing"
+  ],
+  "misses": [
+   "missing"
+  ],
+  "mobilized": [
+   "mobile"
+  ],
+  "moderated": [
+   "moderate"
+  ],
+  "module": [
+   "modulate",
+   "modulated",
+   "modulates",
+   "modulating",
+   "modulation"
+  ],
+  "modules": [
+   "modulate",
+   "modulated",
+   "modulates",
+   "modulating",
+   "modulation"
+  ],
+  "morale": [
+   "moral"
+  ],
+  "multiplication": [
+   "multiple"
+  ],
+  "namely": [
+   "name",
+   "named",
+   "names",
+   "naming"
+  ],
+  "natively": [
+   "native"
+  ],
+  "naturally": [
+   "nature"
+  ],
+  "navigator": [
+   "navigation"
+  ],
+  "navigators": [
+   "navigation"
+  ],
+  "nearly": [
+   "near"
+  ],
+  "nifty": [
+   "nifti"
+  ],
+  "normale": [
+   "normalization",
+   "normalized"
+  ],
+  "normalization": [
+   "normal"
+  ],
+  "normalize": [
+   "normal"
+  ],
+  "normalized": [
+   "normal"
+  ],
+  "normally": [
+   "normalization",
+   "normalized"
+  ],
+  "numbered": [
+   "number",
+   "numbers"
+  ],
+  "numbering": [
+   "numbers"
+  ],
+  "observational": [
+   "observed"
+  ],
+  "observe": [
+   "observational"
+  ],
+  "observers": [
+   "observation",
+   "observational",
+   "observed"
+  ],
+  "observing": [
+   "observational"
+  ],
+  "oddly": [
+   "odd"
+  ],
+  "opened": [
+   "open"
+  ],
+  "opening": [
+   "open"
+  ],
+  "opposition": [
+   "opposite"
+  ],
+  "oppositional": [
+   "opposite"
+  ],
+  "optic": [
+   "optical"
+  ],
+  "organizations": [
+   "organized"
+  ],
+  "orient": [
+   "orientation",
+   "orientations"
+  ],
+  "orienting": [
+   "orientation",
+   "orientations"
+  ],
+  "originality": [
+   "original",
+   "originally"
+  ],
+  "partly": [
+   "part",
+   "parts"
+  ],
+  "paste": [
+   "past"
+  ],
+  "performance": [
+   "performed"
+  ],
+  "performances": [
+   "performed"
+  ],
+  "performers": [
+   "perform",
+   "performance",
+   "performed",
+   "performing"
+  ],
+  "phased": [
+   "phases"
+  ],
+  "physics": [
+   "physical"
+  ],
+  "plastics": [
+   "plasticity"
+  ],
+  "pointed": [
+   "point",
+   "points"
+  ],
+  "pointing": [
+   "point",
+   "points"
+  ],
+  "populated": [
+   "population"
+  ],
+  "posted": [
+   "post"
+  ],
+  "potentially": [
+   "potential",
+   "potentials"
+  ],
+  "powered": [
+   "power"
+  ],
+  "powerful": [
+   "power"
+  ],
+  "practical": [
+   "practice"
+  ],
+  "practicality": [
+   "practice",
+   "practiced"
+  ],
+  "practiced": [
+   "practical"
+  ],
+  "practicing": [
+   "practical"
+  ],
+  "preferably": [
+   "preference",
+   "preferences"
+  ],
+  "presently": [
+   "presentation",
+   "presentations",
+   "presented",
+   "presenting",
+   "presents"
+  ],
+  "principally": [
+   "principal"
+  ],
+  "procedural": [
+   "procedure",
+   "procedures"
+  ],
+  "procedurally": [
+   "procedure",
+   "procedures"
+  ],
+  "proceed": [
+   "proceedings"
+  ],
+  "proceeded": [
+   "proceedings"
+  ],
+  "proceeds": [
+   "proceedings"
+  ],
+  "profiling": [
+   "profile",
+   "profiles"
+  ],
+  "projected": [
+   "project",
+   "projects"
+  ],
+  "promptly": [
+   "prompt",
+   "prompted"
+  ],
+  "proposer": [
+   "proposed"
+  ],
+  "proposers": [
+   "proposed"
+  ],
+  "prospection": [
+   "prospective"
+  ],
+  "prospects": [
+   "prospective"
+  ],
+  "proven": [
+   "provenance"
+  ],
+  "providence": [
+   "provide",
+   "provided",
+   "provides",
+   "providing"
+  ],
+  "provider": [
+   "provide",
+   "provided",
+   "provides",
+   "providing"
+  ],
+  "providers": [
+   "provide",
+   "provided",
+   "provides",
+   "providing"
+  ],
+  "publisher": [
+   "published"
+  ],
+  "questionable": [
+   "question",
+   "questions"
+  ],
+  "rang": [
+   "range",
+   "ranged",
+   "ranging"
+  ],
+  "reactivated": [
+   "reactive",
+   "reactivity"
+  ],
+  "reactivating": [
+   "reactive",
+   "reactivity"
+  ],
+  "reactivation": [
+   "reactive",
+   "reactivity"
+  ],
+  "realness": [
+   "real"
+  ],
+  "reasonable": [
+   "reason",
+   "reasoning",
+   "reasons"
+  ],
+  "reasonably": [
+   "reason",
+   "reasoning",
+   "reasons"
+  ],
+  "reasoned": [
+   "reason",
+   "reasons"
+  ],
+  "reasoning": [
+   "reason",
+   "reasons"
+  ],
+  "receiver": [
+   "receive",
+   "received",
+   "receiving"
+  ],
+  "receivers": [
+   "receive",
+   "received",
+   "receiving"
+  ],
+  "reception": [
+   "receptive"
+  ],
+  "receptivity": [
+   "receptive"
+  ],
+  "reconstructive": [
+   "reconstructed"
+  ],
+  "refer": [
+   "reference",
+   "references"
+  ],
+  "refered": [
+   "reference",
+   "references"
+  ],
+  "referent": [
+   "refer",
+   "reference",
+   "references",
+   "referred",
+   "refers"
+  ],
+  "referred": [
+   "reference",
+   "references"
+  ],
+  "refers": [
+   "reference",
+   "references"
+  ],
+  "refresher": [
+   "refresh"
+  ],
+  "regularities": [
+   "regular"
+  ],
+  "regularity": [
+   "regular"
+  ],
+  "regularization": [
+   "regular"
+  ],
+  "regularized": [
+   "regular"
+  ],
+  "regulator": [
+   "regulations"
+  ],
+  "relate": [
+   "relative",
+   "relatively"
+  ],
+  "relates": [
+   "relative",
+   "relatively"
+  ],
+  "relating": [
+   "relative",
+   "relatively"
+  ],
+  "relation": [
+   "relative",
+   "relatively"
+  ],
+  "relational": [
+   "related",
+   "relative",
+   "relatively"
+  ],
+  "relations": [
+   "relative",
+   "relatively"
+  ],
+  "relative": [
+   "related"
+  ],
+  "relatively": [
+   "related"
+  ],
+  "relatives": [
+   "related"
+  ],
+  "reporter": [
+   "report",
+   "reported",
+   "reports"
+  ],
+  "representative": [
+   "represent",
+   "represented",
+   "representing",
+   "represents"
+  ],
+  "representatives": [
+   "represent",
+   "represented",
+   "representing",
+   "represents"
+  ],
+  "researcher": [
+   "research"
+  ],
+  "researchers": [
+   "research"
+  ],
+  "resonator": [
+   "resonance"
+  ],
+  "respect": [
+   "respective",
+   "respectively"
+  ],
+  "respects": [
+   "respective",
+   "respectively"
+  ],
+  "responsibility": [
+   "response",
+   "responses"
+  ],
+  "responsible": [
+   "response",
+   "responses"
+  ],
+  "responsive": [
+   "responsibility",
+   "responsible"
+  ],
+  "responsiveness": [
+   "responsibility",
+   "responsible"
+  ],
+  "responsivity": [
+   "responsibility",
+   "responsible"
+  ],
+  "rested": [
+   "rest",
+   "resting"
+  ],
+  "rests": [
+   "resting"
+  ],
+  "retainer": [
+   "retained"
+  ],
+  "reversal": [
+   "reverse"
+  ],
+  "reversals": [
+   "reverse"
+  ],
+  "reversible": [
+   "reverse"
+  ],
+  "reversibly": [
+   "reverse"
+  ],
+  "ringing": [
+   "ring"
+  ],
+  "rough": [
+   "roughly"
+  ],
+  "roughness": [
+   "roughly"
+  ],
+  "rowe": [
+   "row",
+   "rows"
+  ],
+  "sample": [
+   "sampling"
+  ],
+  "sampled": [
+   "sample"
+  ],
+  "searched": [
+   "search"
+  ],
+  "secondly": [
+   "second",
+   "seconds"
+  ],
+  "sectional": [
+   "section"
+  ],
+  "sectionally": [
+   "section",
+   "sections"
+  ],
+  "sensitization": [
+   "sensitive",
+   "sensitivity"
+  ],
+  "sensitized": [
+   "sensitive",
+   "sensitivity"
+  ],
+  "sensitizing": [
+   "sensitive",
+   "sensitivity"
+  ],
+  "separable": [
+   "separately"
+  ],
+  "separation": [
+   "separately"
+  ],
+  "separations": [
+   "separately"
+  ],
+  "sequenceness": [
+   "sequence",
+   "sequences"
+  ],
+  "serialization": [
+   "serial"
+  ],
+  "sexing": [
+   "sex"
+  ],
+  "shelled": [
+   "shell"
+  ],
+  "shortly": [
+   "short"
+  ],
+  "sign": [
+   "signed"
+  ],
+  "signaled": [
+   "signal",
+   "signals"
+  ],
+  "signaling": [
+   "signal",
+   "signals"
+  ],
+  "signing": [
+   "sign"
+  ],
+  "signs": [
+   "signed"
+  ],
+  "simone": [
+   "simon"
+  ],
+  "simulate": [
+   "simulator"
+  ],
+  "simulating": [
+   "simulator"
+  ],
+  "simulation": [
+   "simulator"
+  ],
+  "simulations": [
+   "simulator"
+  ],
+  "simulator": [
+   "simulated"
+  ],
+  "sinc": [
+   "since"
+  ],
+  "smoothly": [
+   "smoothed",
+   "smoothing"
+  ],
+  "spaced": [
+   "space",
+   "spaces"
+  ],
+  "spacing": [
+   "space",
+   "spaces"
+  ],
+  "spanned": [
+   "span"
+  ],
+  "spanning": [
+   "span"
+  ],
+  "specialization": [
+   "special"
+  ],
+  "specialized": [
+   "special"
+  ],
+  "specifically": [
+   "specification"
+  ],
+  "specification": [
+   "specific"
+  ],
+  "specifications": [
+   "specific"
+  ],
+  "specificity": [
+   "specific",
+   "specifically",
+   "specification",
+   "specifications"
+  ],
+  "speeded": [
+   "speed"
+  ],
+  "squared": [
+   "square"
+  ],
+  "stabilization": [
+   "stability"
+  ],
+  "stabilize": [
+   "stability"
+  ],
+  "standing": [
+   "stand"
+  ],
+  "stated": [
+   "state",
+   "states"
+  ],
+  "stating": [
+   "state",
+   "states"
+  ],
+  "stepping": [
+   "step",
+   "steps"
+  ],
+  "stimulant": [
+   "stimulated",
+   "stimulation",
+   "stimulations"
+  ],
+  "succession": [
+   "successful",
+   "successfully"
+  ],
+  "successive": [
+   "successful",
+   "successfully"
+  ],
+  "susceptible": [
+   "susceptibility"
+  ],
+  "sustainable": [
+   "sustained"
+  ],
+  "systemic": [
+   "system",
+   "systems"
+  ],
+  "timed": [
+   "time",
+   "times"
+  ],
+  "timely": [
+   "time",
+   "times",
+   "timing",
+   "timings"
+  ],
+  "timing": [
+   "time",
+   "times"
+  ],
+  "timings": [
+   "time",
+   "times"
+  ],
+  "topping": [
+   "top"
+  ],
+  "totally": [
+   "total"
+  ],
+  "tracing": [
+   "trace",
+   "traces"
+  ],
+  "transformer": [
+   "transform",
+   "transformation",
+   "transformed"
+  ],
+  "transformers": [
+   "transform",
+   "transformation",
+   "transformed"
+  ],
+  "translational": [
+   "translation"
+  ],
+  "translationally": [
+   "translation"
+  ],
+  "tri": [
+   "try"
+  ],
+  "truthful": [
+   "truth"
+  ],
+  "truthfully": [
+   "truth"
+  ],
+  "typed": [
+   "type",
+   "types"
+  ],
+  "typing": [
+   "type",
+   "types"
+  ],
+  "universal": [
+   "university"
+  ],
+  "uploader": [
+   "upload",
+   "uploaded"
+  ],
+  "useful": [
+   "use",
+   "used",
+   "uses",
+   "using"
+  ],
+  "utility": [
+   "utilized",
+   "utilizing"
+  ],
+  "utils": [
+   "utilized",
+   "utilizing"
+  ],
+  "valid": [
+   "validator"
+  ],
+  "validated": [
+   "validator"
+  ],
+  "validity": [
+   "validator"
+  ],
+  "valued": [
+   "value",
+   "values"
+  ],
+  "variability": [
+   "variables"
+  ],
+  "vertices": [
+   "vertical"
+  ],
+  "virtually": [
+   "virtual"
+  ],
+  "visualization": [
+   "visual",
+   "visually"
+  ],
+  "visualizations": [
+   "visual",
+   "visually"
+  ],
+  "visualize": [
+   "visual",
+   "visually"
+  ],
+  "visualized": [
+   "visual",
+   "visually"
+  ],
+  "visualizes": [
+   "visual",
+   "visually"
+  ],
+  "visualizing": [
+   "visual",
+   "visually"
+  ],
+  "waving": [
+   "wave"
+  ],
+  "wording": [
+   "word",
+   "words"
+  ],
+  "wordings": [
+   "word",
+   "words"
+  ],
+  "worked": [
+   "working"
+  ],
+  "working": [
+   "work"
+  ]
+ },
+ "stem": {
+  "abnormal": [
+   "abnormalities"
+  ],
+  "abstraction": [
+   "abstract"
+  ],
+  "accept": [
+   "accepted"
+  ],
+  "acceptance": [
+   "accept",
+   "accepted"
+  ],
+  "accepts": [
+   "accepted"
+  ],
+  "accessed": [
+   "access",
+   "accessible"
+  ],
+  "accessibility": [
+   "access",
+   "accessed",
+   "accessible"
+  ],
+  "accessible": [
+   "access"
+  ],
+  "accessing": [
+   "access",
+   "accessed",
+   "accessible"
+  ],
+  "accompanied": [
+   "accompanies",
+   "accompanying"
+  ],
+  "accompanies": [
+   "accompanying"
+  ],
+  "accompaniment": [
+   "accompanied",
+   "accompanies",
+   "accompanying"
+  ],
+  "accompany": [
+   "accompanying"
+  ],
+  "accordance": [
+   "according"
+  ],
+  "accounting": [
+   "account"
+  ],
+  "accumulated": [
+   "accumulation"
+  ],
+  "accurately": [
+   "accurate"
+  ],
+  "achievable": [
+   "achieve",
+   "achieved"
+  ],
+  "achieve": [
+   "achieved"
+  ],
+  "achievement": [
+   "achieve",
+   "achieved"
+  ],
+  "achieving": [
+   "achieve",
+   "achieved"
+  ],
+  "acoustically": [
+   "acoustic"
+  ],
+  "acquire": [
+   "acquired"
+  ],
+  "acquiring": [
+   "acquire",
+   "acquired"
+  ],
+  "activate": [
+   "activation",
+   "activations",
+   "active",
+   "activity"
+  ],
+  "activated": [
+   "activate",
+   "activation",
+   "activations",
+   "active",
+   "activity"
+  ],
+  "activates": [
+   "activation",
+   "activations",
+   "active",
+   "activity"
+  ],
+  "activating": [
+   "activate",
+   "activation",
+   "activations",
+   "active",
+   "activity"
+  ],
+  "activation": [
+   "active",
+   "activity"
+  ],
+  "activations": [
+   "active",
+   "activity"
+  ],
+  "activator": [
+   "activate",
+   "activation",
+   "activations",
+   "active",
+   "activity"
+  ],
+  "active": [
+   "activity"
+  ],
+  "actively": [
+   "active"
+  ],
+  "adapt": [
+   "adaptation",
+   "adapted",
+   "adaptive"
+  ],
+  "adaptability": [
+   "adaptation",
+   "adapted",
+   "adaptive"
+  ],
+  "adaptation": [
+   "adapted"
+  ],
+  "adaptations": [
+   "adapted"
+  ],
+  "adapting": [
+   "adaptation",
+   "adapted",
+   "adaptive"
+  ],
+  "adaptive": [
+   "adaptation"
+  ],
+  "addition": [
+   "additional"
+  ],
+  "additionally": [
+   "addition",
+   "additional"
+  ],
+  "addressing": [
+   "address"
+  ],
+  "adjust": [
+   "adjusted"
+  ],
+  "adjustable": [
+   "adjusted"
+  ],
+  "adjusting": [
+   "adjusted"
+  ],
+  "adjustment": [
+   "adjusted"
+  ],
+  "adjustments": [
+   "adjusted"
+  ],
+  "administering": [
+   "administered"
+  ],
+  "administrated": [
+   "administration"
+  ],
+  "adolescence": [
+   "adolescent",
+   "adolescents"
+  ],
+  "advance": [
+   "advanced"
+  ],
+  "advancement": [
+   "advance",
+   "advanced",
+   "advances",
+   "advancing"
+  ],
+  "advancements": [
+   "advance",
+   "advanced",
+   "advances",
+   "advancing"
+  ],
+  "advances": [
+   "advanced"
+  ],
+  "advancing": [
+   "advance",
+   "advanced",
+   "advances"
+  ],
+  "advertising": [
+   "advertisements"
+  ],
+  "affect": [
+   "affective"
+  ],
+  "affected": [
+   "affect"
+  ],
+  "affecting": [
+   "affect",
+   "affected"
+  ],
+  "affects": [
+   "affective"
+  ],
+  "agence": [
+   "agency"
+  ],
+  "aimed": [
+   "aim"
+  ],
+  "aiming": [
+   "aim",
+   "aimed",
+   "aims"
+  ],
+  "alcoholic": [
+   "alcohol"
+  ],
+  "align": [
+   "aligned",
+   "alignment"
+  ],
+  "aligner": [
+   "align",
+   "aligned",
+   "aligning",
+   "alignment"
+  ],
+  "aligning": [
+   "align",
+   "aligned",
+   "alignment"
+  ],
+  "alignment": [
+   "aligned"
+  ],
+  "alignments": [
+   "aligned"
+  ],
+  "aligns": [
+   "aligned",
+   "alignment"
+  ],
+  "allocate": [
+   "allocation"
+  ],
+  "allocated": [
+   "allocation"
+  ],
+  "allowed": [
+   "allow"
+  ],
+  "allowing": [
+   "allow",
+   "allowed"
+  ],
+  "alter": [
+   "altered"
+  ],
+  "alterations": [
+   "alter",
+   "altered"
+  ],
+  "altering": [
+   "alter",
+   "altered"
+  ],
+  "alternate": [
+   "alternated",
+   "alternating",
+   "alternative"
+  ],
+  "alternated": [
+   "alternating"
+  ],
+  "alternately": [
+   "alternated",
+   "alternating"
+  ],
+  "alternatively": [
+   "alternative"
+  ],
+  "alters": [
+   "altered"
+  ],
+  "amounting": [
+   "amount"
+  ],
+  "analytical": [
+   "analytic"
+  ],
+  "analytically": [
+   "analytic"
+  ],
+  "analyze": [
+   "analyzed",
+   "analyzing"
+  ],
+  "analyzes": [
+   "analyzed",
+   "analyzing"
+  ],
+  "analyzing": [
+   "analyzed"
+  ],
+  "anatomic": [
+   "anatomical"
+  ],
+  "anatomically": [
+   "anatomical"
+  ],
+  "annotate": [
+   "annotated",
+   "annotation",
+   "annotations"
+  ],
+  "annotated": [
+   "annotation",
+   "annotations"
+  ],
+  "annotating": [
+   "annotated",
+   "annotation",
+   "annotations"
+  ],
+  "annotator": [
+   "annotated",
+   "annotation",
+   "annotations"
+  ],
+  "anonymity": [
+   "anonymization",
+   "anonymized"
+  ],
+  "anonymization": [
+   "anonymized"
+  ],
+  "anonymize": [
+   "anonymity",
+   "anonymization",
+   "anonymized"
+  ],
+  "anonymous": [
+   "anonymity",
+   "anonymization",
+   "anonymized"
+  ],
+  "anonymously": [
+   "anonymity",
+   "anonymization",
+   "anonymized"
+  ],
+  "answered": [
+   "answer",
+   "answers"
+  ],
+  "answering": [
+   "answer",
+   "answered",
+   "answers"
+  ],
+  "anteriorly": [
+   "anterior"
+  ],
+  "applies": [
+   "applied"
+  ],
+  "apply": [
+   "applied"
+  ],
+  "applying": [
+   "applied",
+   "apply"
+  ],
+  "appropriately": [
+   "appropriate"
+  ],
+  "appropriateness": [
+   "appropriate"
+  ],
+  "approval": [
+   "approved"
+  ],
+  "approvals": [
+   "approved"
+  ],
+  "approximate": [
+   "approximately"
+  ],
+  "approximated": [
+   "approximately"
+  ],
+  "approximates": [
+   "approximately"
+  ],
+  "approximation": [
+   "approximately"
+  ],
+  "archival": [
+   "archived"
+  ],
+  "archive": [
+   "archived"
+  ],
+  "arithmetical": [
+   "arithmetic"
+  ],
+  "aroused": [
+   "arousal"
+  ],
+  "arrived": [
+   "arrival"
+  ],
+  "arriving": [
+   "arrival"
+  ],
+  "arteries": [
+   "arterial"
+  ],
+  "artery": [
+   "arterial"
+  ],
+  "artificially": [
+   "artificial"
+  ],
+  "ask": [
+   "asked"
+  ],
+  "asking": [
+   "asked"
+  ],
+  "assess": [
+   "assessed",
+   "assessment"
+  ],
+  "assessed": [
+   "assessment"
+  ],
+  "assesses": [
+   "assessed",
+   "assessment"
+  ],
+  "assessing": [
+   "assess",
+   "assessed",
+   "assessment",
+   "assessments"
+  ],
+  "assignment": [
+   "assigned"
+  ],
+  "assignments": [
+   "assigned"
+  ],
+  "associate": [
+   "associated",
+   "association",
+   "associations",
+   "associative"
+  ],
+  "associates": [
+   "associated",
+   "association",
+   "associations",
+   "associative"
+  ],
+  "association": [
+   "associated"
+  ],
+  "associations": [
+   "associated"
+  ],
+  "associative": [
+   "association",
+   "associations"
+  ],
+  "attach": [
+   "attached"
+  ],
+  "attachment": [
+   "attached"
+  ],
+  "attachments": [
+   "attached"
+  ],
+  "attended": [
+   "attend"
+  ],
+  "attending": [
+   "attend",
+   "attended"
+  ],
+  "attenuates": [
+   "attenuated"
+  ],
+  "attenuation": [
+   "attenuated"
+  ],
+  "attributable": [
+   "attribution"
+  ],
+  "attributed": [
+   "attribution"
+  ],
+  "authored": [
+   "author",
+   "authors"
+  ],
+  "automatically": [
+   "automatic"
+  ],
+  "automatized": [
+   "automatic",
+   "automatically"
+  ],
+  "availability": [
+   "available"
+  ],
+  "averaged": [
+   "average"
+  ],
+  "averaging": [
+   "average",
+   "averaged",
+   "averages"
+  ],
+  "awarded": [
+   "award"
+  ],
+  "aware": [
+   "awareness"
+  ],
+  "axially": [
+   "axial"
+  ],
+  "balance": [
+   "balanced"
+  ],
+  "balances": [
+   "balanced"
+  ],
+  "balancing": [
+   "balance",
+   "balanced"
+  ],
+  "bandpassed": [
+   "bandpass"
+  ],
+  "begin": [
+   "beginning"
+  ],
+  "begins": [
+   "beginning"
+  ],
+  "benchmarked": [
+   "benchmark"
+  ],
+  "benchmarking": [
+   "benchmark"
+  ],
+  "betting": [
+   "bet"
+  ],
+  "biased": [
+   "bias"
+  ],
+  "bilaterally": [
+   "bilateral"
+  ],
+  "bilingualism": [
+   "bilingual"
+  ],
+  "bind": [
+   "binding"
+  ],
+  "binds": [
+   "binding"
+  ],
+  "biological": [
+   "biology"
+  ],
+  "biologically": [
+   "biological",
+   "biology"
+  ],
+  "biomarking": [
+   "biomarker",
+   "biomarkers"
+  ],
+  "blanke": [
+   "blank"
+  ],
+  "blinded": [
+   "blind"
+  ],
+  "blinding": [
+   "blind"
+  ],
+  "blindness": [
+   "blind"
+  ],
+  "blinking": [
+   "blink"
+  ],
+  "blocked": [
+   "block",
+   "blocks"
+  ],
+  "breath": [
+   "breathing"
+  ],
+  "breathe": [
+   "breath",
+   "breathing"
+  ],
+  "broadly": [
+   "broad"
+  ],
+  "building": [
+   "build"
+  ],
+  "calculate": [
+   "calculated",
+   "calculation"
+  ],
+  "calculating": [
+   "calculate",
+   "calculated",
+   "calculation"
+  ],
+  "calculation": [
+   "calculated"
+  ],
+  "calculations": [
+   "calculated"
+  ],
+  "calibrate": [
+   "calibration"
+  ],
+  "calibrated": [
+   "calibration"
+  ],
+  "calibrating": [
+   "calibration"
+  ],
+  "call": [
+   "called"
+  ],
+  "calls": [
+   "called"
+  ],
+  "canon": [
+   "canonical"
+  ],
+  "capped": [
+   "cap"
+  ],
+  "captured": [
+   "capture"
+  ],
+  "capturing": [
+   "capture",
+   "captured"
+  ],
+  "carries": [
+   "carried"
+  ],
+  "carry": [
+   "carried"
+  ],
+  "categorization": [
+   "categorized"
+  ],
+  "categorize": [
+   "categorization",
+   "categorized"
+  ],
+  "categorizing": [
+   "categorization",
+   "categorized"
+  ],
+  "caused": [
+   "cause"
+  ],
+  "causing": [
+   "cause"
+  ],
+  "centered": [
+   "center"
+  ],
+  "centrally": [
+   "central"
+  ],
+  "centred": [
+   "centre"
+  ],
+  "certainly": [
+   "certain"
+  ],
+  "characterization": [
+   "characterize",
+   "characterizing"
+  ],
+  "characterized": [
+   "characterization",
+   "characterize",
+   "characterizing"
+  ],
+  "characterizing": [
+   "characterize"
+  ],
+  "choosing": [
+   "choose"
+  ],
+  "chronicity": [
+   "chronic"
+  ],
+  "cited": [
+   "cite",
+   "citing"
+  ],
+  "citing": [
+   "cite"
+  ],
+  "classifi": [
+   "classified"
+  ],
+  "classify": [
+   "classified"
+  ],
+  "classifying": [
+   "classified"
+  ],
+  "cleaned": [
+   "clean"
+  ],
+  "cleaning": [
+   "clean",
+   "cleaned"
+  ],
+  "clearly": [
+   "clear"
+  ],
+  "clicked": [
+   "click"
+  ],
+  "clicking": [
+   "click"
+  ],
+  "close": [
+   "closed"
+  ],
+  "closeness": [
+   "close"
+  ],
+  "closes": [
+   "closed"
+  ],
+  "closing": [
+   "close",
+   "closed"
+  ],
+  "clustering": [
+   "cluster"
+  ],
+  "coded": [
+   "codes"
+  ],
+  "coding": [
+   "coded"
+  ],
+  "coherent": [
+   "coherence"
+  ],
+  "coherently": [
+   "coherence"
+  ],
+  "collaborate": [
+   "collaboration"
+  ],
+  "collaborating": [
+   "collaboration"
+  ],
+  "collaborative": [
+   "collaboration"
+  ],
+  "collaboratively": [
+   "collaboration"
+  ],
+  "collaborators": [
+   "collaboration"
+  ],
+  "collect": [
+   "collected",
+   "collecting",
+   "collection"
+  ],
+  "collecting": [
+   "collected",
+   "collection"
+  ],
+  "collection": [
+   "collected"
+  ],
+  "collections": [
+   "collected"
+  ],
+  "collects": [
+   "collected",
+   "collecting",
+   "collection"
+  ],
+  "colored": [
+   "color"
+  ],
+  "coloring": [
+   "color",
+   "colored",
+   "colors"
+  ],
+  "coloured": [
+   "colour"
+  ],
+  "combination": [
+   "combined"
+  ],
+  "combinations": [
+   "combined"
+  ],
+  "combine": [
+   "combination",
+   "combinations",
+   "combined",
+   "combining"
+  ],
+  "combines": [
+   "combination",
+   "combinations",
+   "combined",
+   "combining"
+  ],
+  "combining": [
+   "combination",
+   "combinations",
+   "combined"
+  ],
+  "comfort": [
+   "comfortable"
+  ],
+  "comfortably": [
+   "comfortable"
+  ],
+  "coming": [
+   "comes"
+  ],
+  "commented": [
+   "comments"
+  ],
+  "commercially": [
+   "commercial"
+  ],
+  "commit": [
+   "committed"
+  ],
+  "commits": [
+   "committed"
+  ],
+  "committing": [
+   "committed"
+  ],
+  "commonly": [
+   "common"
+  ],
+  "communicated": [
+   "communication",
+   "communications"
+  ],
+  "communicative": [
+   "communication",
+   "communications"
+  ],
+  "compatibility": [
+   "compatible"
+  ],
+  "complete": [
+   "completed"
+  ],
+  "completely": [
+   "complete"
+  ],
+  "completeness": [
+   "complete",
+   "completion"
+  ],
+  "completing": [
+   "complete",
+   "completed"
+  ],
+  "completion": [
+   "complete",
+   "completed",
+   "completeness",
+   "completing"
+  ],
+  "complexities": [
+   "complex"
+  ],
+  "complexity": [
+   "complex"
+  ],
+  "componant": [
+   "component",
+   "components"
+  ],
+  "composing": [
+   "composed"
+  ],
+  "compression": [
+   "compressed"
+  ],
+  "comprised": [
+   "comprises"
+  ],
+  "comprising": [
+   "comprised",
+   "comprises"
+  ],
+  "comput": [
+   "computation",
+   "computational",
+   "compute",
+   "computed",
+   "computer",
+   "computing"
+  ],
+  "computation": [
+   "computational",
+   "computed"
+  ],
+  "computationally": [
+   "computation",
+   "computational"
+  ],
+  "computations": [
+   "computational",
+   "computed"
+  ],
+  "compute": [
+   "computation",
+   "computed",
+   "computing"
+  ],
+  "computes": [
+   "computation",
+   "computed",
+   "computing"
+  ],
+  "computing": [
+   "computation",
+   "computed",
+   "computer"
+  ],
+  "concatenating": [
+   "concatenated"
+  ],
+  "concatenation": [
+   "concatenated"
+  ],
+  "conditioned": [
+   "conditioning"
+  ],
+  "conduct": [
+   "conducted"
+  ],
+  "conducting": [
+   "conducted"
+  ],
+  "confident": [
+   "confidence"
+  ],
+  "configured": [
+   "configuration"
+  ],
+  "confirm": [
+   "confirmed"
+  ],
+  "confirmation": [
+   "confirm",
+   "confirmed"
+  ],
+  "confirming": [
+   "confirm",
+   "confirmed"
+  ],
+  "confirms": [
+   "confirmed"
+  ],
+  "conflicted": [
+   "conflict"
+  ],
+  "connect": [
+   "connected",
+   "connectivity"
+  ],
+  "connected": [
+   "connectivity"
+  ],
+  "connecting": [
+   "connected",
+   "connectivity"
+  ],
+  "connection": [
+   "connected",
+   "connectivity"
+  ],
+  "connections": [
+   "connected",
+   "connectivity"
+  ],
+  "connectomics": [
+   "connectome"
+  ],
+  "connects": [
+   "connected",
+   "connectivity"
+  ],
+  "conscious": [
+   "consciousness"
+  ],
+  "consciously": [
+   "consciousness"
+  ],
+  "consecutively": [
+   "consecutive"
+  ],
+  "consented": [
+   "consent"
+  ],
+  "consenting": [
+   "consent",
+   "consented"
+  ],
+  "consider": [
+   "considered"
+  ],
+  "considering": [
+   "consider",
+   "considered"
+  ],
+  "considers": [
+   "considered"
+  ],
+  "consisted": [
+   "consists"
+  ],
+  "consistency": [
+   "consistent"
+  ],
+  "consistently": [
+   "consistency",
+   "consistent"
+  ],
+  "consisting": [
+   "consisted",
+   "consists"
+  ],
+  "constrains": [
+   "constrained"
+  ],
+  "constructing": [
+   "constructed"
+  ],
+  "construction": [
+   "constructed"
+  ],
+  "consulting": [
+   "consult"
+  ],
+  "contacting": [
+   "contact",
+   "contacts"
+  ],
+  "contained": [
+   "contain",
+   "containing",
+   "contains"
+  ],
+  "containing": [
+   "contain",
+   "contains"
+  ],
+  "contiguously": [
+   "contiguous"
+  ],
+  "continuation": [
+   "continue"
+  ],
+  "continued": [
+   "continue",
+   "continuous",
+   "continuously"
+  ],
+  "continuing": [
+   "continue",
+   "continuous",
+   "continuously"
+  ],
+  "continuity": [
+   "continuous",
+   "continuously"
+  ],
+  "continuously": [
+   "continuous"
+  ],
+  "contraindicated": [
+   "contraindications"
+  ],
+  "contrasted": [
+   "contrast",
+   "contrasting",
+   "contrasts"
+  ],
+  "contrasting": [
+   "contrast",
+   "contrasts"
+  ],
+  "contrastive": [
+   "contrasting"
+  ],
+  "contribute": [
+   "contributed",
+   "contributions"
+  ],
+  "contributed": [
+   "contributions"
+  ],
+  "contributes": [
+   "contributed",
+   "contributions"
+  ],
+  "contributing": [
+   "contribute",
+   "contributed",
+   "contributions"
+  ],
+  "controllability": [
+   "control",
+   "controlled",
+   "controls"
+  ],
+  "controllable": [
+   "control",
+   "controlled",
+   "controls"
+  ],
+  "controlled": [
+   "control",
+   "controls"
+  ],
+  "controller": [
+   "control",
+   "controlled",
+   "controls"
+  ],
+  "controlling": [
+   "control",
+   "controlled",
+   "controls"
+  ],
+  "convert": [
+   "converted"
+  ],
+  "converting": [
+   "convert",
+   "converted"
+  ],
+  "converts": [
+   "converted"
+  ],
+  "convolution": [
+   "convolutional"
+  ],
+  "copied": [
+   "copy"
+  ],
+  "copying": [
+   "copied",
+   "copy"
+  ],
+  "correct": [
+   "corrected",
+   "correction"
+  ],
+  "correctable": [
+   "correct",
+   "corrected",
+   "corrective"
+  ],
+  "corrected": [
+   "correction"
+  ],
+  "correcting": [
+   "correct",
+   "corrected",
+   "correction",
+   "corrective"
+  ],
+  "corrective": [
+   "correct",
+   "correction"
+  ],
+  "correctly": [
+   "correct"
+  ],
+  "correctness": [
+   "correct",
+   "correctly"
+  ],
+  "correlated": [
+   "correlates",
+   "correlation"
+  ],
+  "correlating": [
+   "correlated",
+   "correlates",
+   "correlation",
+   "correlations"
+  ],
+  "correlation": [
+   "correlates"
+  ],
+  "correlational": [
+   "correlated",
+   "correlates",
+   "correlation",
+   "correlations"
+  ],
+  "correlations": [
+   "correlates"
+  ],
+  "correspond": [
+   "corresponding"
+  ],
+  "correspondance": [
+   "correspond",
+   "corresponded",
+   "correspondence",
+   "corresponding",
+   "corresponds"
+  ],
+  "corresponded": [
+   "correspond",
+   "correspondence",
+   "corresponding",
+   "corresponds"
+  ],
+  "correspondence": [
+   "correspond",
+   "corresponding",
+   "corresponds"
+  ],
+  "correspondingly": [
+   "correspond",
+   "corresponded",
+   "correspondence",
+   "corresponding",
+   "corresponds"
+  ],
+  "corresponds": [
+   "corresponding"
+  ],
+  "corrupt": [
+   "corrupted"
+  ],
+  "corruption": [
+   "corrupted"
+  ],
+  "costly": [
+   "cost"
+  ],
+  "counted": [
+   "count",
+   "counts"
+  ],
+  "counterbalancing": [
+   "counterbalanced"
+  ],
+  "counting": [
+   "count",
+   "counts"
+  ],
+  "cover": [
+   "covered",
+   "covering"
+  ],
+  "covered": [
+   "covering"
+  ],
+  "covers": [
+   "covered",
+   "covering"
+  ],
+  "coverted": [
+   "covert"
+  ],
+  "covertly": [
+   "covert"
+  ],
+  "create": [
+   "created"
+  ],
+  "creates": [
+   "created"
+  ],
+  "creating": [
+   "create",
+   "created"
+  ],
+  "creativity": [
+   "creative"
+  ],
+  "crop": [
+   "cropped"
+  ],
+  "cropping": [
+   "cropped"
+  ],
+  "cu": [
+   "cued"
+  ],
+  "cueing": [
+   "cue",
+   "cues"
+  ],
+  "cuing": [
+   "cued"
+  ],
+  "curate": [
+   "curated",
+   "curating",
+   "curation",
+   "curator",
+   "curators"
+  ],
+  "curating": [
+   "curated",
+   "curator",
+   "curators"
+  ],
+  "curation": [
+   "curated",
+   "curating",
+   "curator",
+   "curators"
+  ],
+  "currently": [
+   "current"
+  ],
+  "cutting": [
+   "cut"
+  ],
+  "darkness": [
+   "dark"
+  ],
+  "declare": [
+   "declaration"
+  ],
+  "declared": [
+   "declaration"
+  ],
+  "decode": [
+   "decoding"
+  ],
+  "decoded": [
+   "decoding"
+  ],
+  "decoder": [
+   "decoding"
+  ],
+  "decoders": [
+   "decoding"
+  ],
+  "define": [
+   "defined"
+  ],
+  "defines": [
+   "defined"
+  ],
+  "defining": [
+   "define",
+   "defined"
+  ],
+  "delayed": [
+   "delay"
+  ],
+  "deliver": [
+   "delivered"
+  ],
+  "delivering": [
+   "delivered"
+  ],
+  "delivers": [
+   "delivered"
+  ],
+  "demographically": [
+   "demographic",
+   "demographics"
+  ],
+  "demonstrate": [
+   "demonstrated"
+  ],
+  "demonstrates": [
+   "demonstrated"
+  ],
+  "demonstrating": [
+   "demonstrate",
+   "demonstrated"
+  ],
+  "demonstration": [
+   "demonstrate",
+   "demonstrated"
+  ],
+  "denoise": [
+   "denoised",
+   "denoising"
+  ],
+  "denoised": [
+   "denoising"
+  ],
+  "denote": [
+   "denoted"
+  ],
+  "denotes": [
+   "denoted"
+  ],
+  "denoting": [
+   "denoted"
+  ],
+  "densely": [
+   "dense"
+  ],
+  "depicting": [
+   "depicted"
+  ],
+  "depicts": [
+   "depicted",
+   "depicting"
+  ],
+  "deriv": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "derivates": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "derivation": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "derivations": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "derive": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "derived": [
+   "derivatives"
+  ],
+  "derives": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "deriving": [
+   "derivative",
+   "derivatives",
+   "derived"
+  ],
+  "describe": [
+   "described",
+   "describing"
+  ],
+  "describes": [
+   "described",
+   "describing"
+  ],
+  "describing": [
+   "describe",
+   "described"
+  ],
+  "designed": [
+   "design"
+  ],
+  "designing": [
+   "design",
+   "designed"
+  ],
+  "detailed": [
+   "details"
+  ],
+  "detailing": [
+   "detail",
+   "detailed",
+   "details"
+  ],
+  "detect": [
+   "detection"
+  ],
+  "detectability": [
+   "detect",
+   "detected",
+   "detecting",
+   "detection"
+  ],
+  "detectable": [
+   "detect",
+   "detected",
+   "detecting",
+   "detection"
+  ],
+  "detected": [
+   "detect",
+   "detection"
+  ],
+  "detecting": [
+   "detect",
+   "detected",
+   "detection"
+  ],
+  "determination": [
+   "determine",
+   "determined"
+  ],
+  "determine": [
+   "determined"
+  ],
+  "determines": [
+   "determined"
+  ],
+  "determining": [
+   "determination",
+   "determine",
+   "determined"
+  ],
+  "develop": [
+   "developed",
+   "developing",
+   "development"
+  ],
+  "developed": [
+   "development"
+  ],
+  "developement": [
+   "develop",
+   "developing",
+   "development"
+  ],
+  "developing": [
+   "development"
+  ],
+  "deviate": [
+   "deviation"
+  ],
+  "deviating": [
+   "deviation"
+  ],
+  "diagnose": [
+   "diagnosed"
+  ],
+  "diagnoses": [
+   "diagnosed"
+  ],
+  "diagnostically": [
+   "diagnostic"
+  ],
+  "differ": [
+   "difference",
+   "differences",
+   "different"
+  ],
+  "differed": [
+   "differ",
+   "difference",
+   "differences",
+   "different",
+   "differs"
+  ],
+  "differentially": [
+   "differential"
+  ],
+  "differently": [
+   "differ",
+   "differed",
+   "difference",
+   "differences",
+   "different",
+   "differs"
+  ],
+  "differing": [
+   "differ",
+   "differed",
+   "difference",
+   "differences",
+   "different",
+   "differs"
+  ],
+  "differs": [
+   "difference",
+   "differences",
+   "different"
+  ],
+  "diffused": [
+   "diffuse"
+  ],
+  "diffusing": [
+   "diffuse"
+  ],
+  "diffusivity": [
+   "diffusion"
+  ],
+  "digital": [
+   "digit",
+   "digitized",
+   "digits"
+  ],
+  "digitally": [
+   "digital",
+   "digitized"
+  ],
+  "digitization": [
+   "digital",
+   "digitized"
+  ],
+  "digitize": [
+   "digital",
+   "digitized"
+  ],
+  "digitized": [
+   "digital"
+  ],
+  "digitizer": [
+   "digital",
+   "digitized"
+  ],
+  "disabled": [
+   "disability"
+  ],
+  "disappearance": [
+   "disappeared"
+  ],
+  "disappears": [
+   "disappeared"
+  ],
+  "discriminability": [
+   "discrimination"
+  ],
+  "discriminate": [
+   "discrimination"
+  ],
+  "discriminated": [
+   "discrimination"
+  ],
+  "discriminating": [
+   "discrimination"
+  ],
+  "discriminative": [
+   "discrimination"
+  ],
+  "disord": [
+   "disorder",
+   "disorders"
+  ],
+  "displaced": [
+   "displacement"
+  ],
+  "display": [
+   "displayed"
+  ],
+  "displaying": [
+   "display",
+   "displayed"
+  ],
+  "displays": [
+   "displayed"
+  ],
+  "distinctness": [
+   "distinct"
+  ],
+  "distort": [
+   "distortion",
+   "distortions"
+  ],
+  "distorted": [
+   "distortion",
+   "distortions"
+  ],
+  "distorting": [
+   "distortion",
+   "distortions"
+  ],
+  "distorts": [
+   "distortion",
+   "distortions"
+  ],
+  "distribut": [
+   "distributed",
+   "distribution"
+  ],
+  "distribute": [
+   "distributed",
+   "distribution"
+  ],
+  "distribution": [
+   "distributed"
+  ],
+  "distributions": [
+   "distributed"
+  ],
+  "diversity": [
+   "diverse"
+  ],
+  "divide": [
+   "divided"
+  ],
+  "dividing": [
+   "divided"
+  ],
+  "document": [
+   "documentation",
+   "documented"
+  ],
+  "documented": [
+   "document",
+   "documentation"
+  ],
+  "documenting": [
+   "document",
+   "documentation",
+   "documented"
+  ],
+  "documents": [
+   "documentation",
+   "documented"
+  ],
+  "dominance": [
+   "dominant"
+  ],
+  "dominate": [
+   "dominant"
+  ],
+  "dominated": [
+   "dominant"
+  ],
+  "dosed": [
+   "dose"
+  ],
+  "dosing": [
+   "dose"
+  ],
+  "dotted": [
+   "dots"
+  ],
+  "doubled": [
+   "double"
+  ],
+  "doubling": [
+   "double"
+  ],
+  "downloadable": [
+   "download",
+   "downloaded"
+  ],
+  "downloaded": [
+   "download"
+  ],
+  "downloading": [
+   "download",
+   "downloaded"
+  ],
+  "downsample": [
+   "downsampled"
+  ],
+  "downsampling": [
+   "downsampled"
+  ],
+  "draw": [
+   "drawing"
+  ],
+  "drawing": [
+   "draw"
+  ],
+  "drawings": [
+   "draw"
+  ],
+  "draws": [
+   "drawing"
+  ],
+  "drifting": [
+   "drift"
+  ],
+  "driving": [
+   "drive"
+  ],
+  "drop": [
+   "dropped"
+  ],
+  "dropping": [
+   "dropped"
+  ],
+  "drops": [
+   "dropped"
+  ],
+  "dynamically": [
+   "dynamic",
+   "dynamics"
+  ],
+  "edit": [
+   "edited"
+  ],
+  "editing": [
+   "edited"
+  ],
+  "edits": [
+   "edited"
+  ],
+  "educational": [
+   "education"
+  ],
+  "effectively": [
+   "effective"
+  ],
+  "effectiveness": [
+   "effective"
+  ],
+  "efficient": [
+   "efficiency"
+  ],
+  "efficiently": [
+   "efficiency"
+  ],
+  "effortful": [
+   "effort",
+   "efforts"
+  ],
+  "electric": [
+   "electrical"
+  ],
+  "electrically": [
+   "electric",
+   "electrical"
+  ],
+  "electrods": [
+   "electrode",
+   "electrodes"
+  ],
+  "elicitation": [
+   "elicit",
+   "elicited"
+  ],
+  "elicited": [
+   "elicit"
+  ],
+  "eliciting": [
+   "elicit",
+   "elicited"
+  ],
+  "eligible": [
+   "eligibility"
+  ],
+  "embargo": [
+   "embargoed"
+  ],
+  "empirically": [
+   "empirical"
+  ],
+  "employ": [
+   "employed"
+  ],
+  "employing": [
+   "employed"
+  ],
+  "employs": [
+   "employed"
+  ],
+  "encode": [
+   "encoding"
+  ],
+  "encoded": [
+   "encode",
+   "encoding"
+  ],
+  "encodes": [
+   "encoding"
+  ],
+  "encompassed": [
+   "encompasses"
+  ],
+  "encompassing": [
+   "encompasses"
+  ],
+  "encourage": [
+   "encouraged"
+  ],
+  "encouraging": [
+   "encouraged"
+  ],
+  "ended": [
+   "end"
+  ],
+  "ending": [
+   "end",
+   "ended"
+  ],
+  "endings": [
+   "end",
+   "ended"
+  ],
+  "engage": [
+   "engaged",
+   "engagement"
+  ],
+  "engaged": [
+   "engagement"
+  ],
+  "engages": [
+   "engaged",
+   "engagement"
+  ],
+  "engaging": [
+   "engaged",
+   "engagement"
+  ],
+  "enhance": [
+   "enhanced",
+   "enhancing"
+  ],
+  "enhancement": [
+   "enhanced",
+   "enhancing"
+  ],
+  "enhances": [
+   "enhanced",
+   "enhancing"
+  ],
+  "enhancing": [
+   "enhanced"
+  ],
+  "enroll": [
+   "enrolled",
+   "enrollment"
+  ],
+  "enrolled": [
+   "enrollment"
+  ],
+  "ensured": [
+   "ensure",
+   "ensuring"
+  ],
+  "ensuring": [
+   "ensure"
+  ],
+  "enter": [
+   "entered"
+  ],
+  "entering": [
+   "entered"
+  ],
+  "entirely": [
+   "entire"
+  ],
+  "episodically": [
+   "episodic"
+  ],
+  "epoched": [
+   "epoch",
+   "epochs"
+  ],
+  "epoching": [
+   "epoch",
+   "epoched",
+   "epochs"
+  ],
+  "equipment": [
+   "equipped"
+  ],
+  "equivalency": [
+   "equivalent"
+  ],
+  "equivalently": [
+   "equivalent"
+  ],
+  "essentially": [
+   "essential"
+  ],
+  "establish": [
+   "established"
+  ],
+  "establishes": [
+   "established"
+  ],
+  "establishing": [
+   "establish",
+   "established"
+  ],
+  "estimate": [
+   "estimated"
+  ],
+  "estimates": [
+   "estimated"
+  ],
+  "estimating": [
+   "estimate",
+   "estimated",
+   "estimates",
+   "estimation"
+  ],
+  "estimation": [
+   "estimated",
+   "estimates"
+  ],
+  "estimations": [
+   "estimated",
+   "estimates"
+  ],
+  "ethical": [
+   "ethics"
+  ],
+  "ethnic": [
+   "ethnicity"
+  ],
+  "evaluate": [
+   "evaluation"
+  ],
+  "evaluated": [
+   "evaluate",
+   "evaluation"
+  ],
+  "evaluates": [
+   "evaluation"
+  ],
+  "evaluating": [
+   "evaluate",
+   "evaluated",
+   "evaluation"
+  ],
+  "evaluative": [
+   "evaluate",
+   "evaluation"
+  ],
+  "evenly": [
+   "even"
+  ],
+  "evoke": [
+   "evoked"
+  ],
+  "evokes": [
+   "evoked"
+  ],
+  "evoking": [
+   "evoked"
+  ],
+  "exactly": [
+   "exact"
+  ],
+  "examination": [
+   "examine",
+   "examined",
+   "examining"
+  ],
+  "examinations": [
+   "examine",
+   "examined",
+   "examining"
+  ],
+  "examine": [
+   "examined"
+  ],
+  "examines": [
+   "examined"
+  ],
+  "examining": [
+   "examine",
+   "examined"
+  ],
+  "exceed": [
+   "exceeded"
+  ],
+  "exceeding": [
+   "exceeded"
+  ],
+  "excellence": [
+   "excel"
+  ],
+  "excellent": [
+   "excel"
+  ],
+  "exception": [
+   "except"
+  ],
+  "exceptional": [
+   "exception",
+   "exceptions"
+  ],
+  "exceptions": [
+   "except"
+  ],
+  "exclude": [
+   "excluded",
+   "excluding"
+  ],
+  "excludes": [
+   "excluded",
+   "excluding"
+  ],
+  "excluding": [
+   "excluded"
+  ],
+  "execute": [
+   "execution"
+  ],
+  "executed": [
+   "execute",
+   "execution"
+  ],
+  "executing": [
+   "execute",
+   "execution"
+  ],
+  "exist": [
+   "existing"
+  ],
+  "existed": [
+   "exist",
+   "existing",
+   "exists"
+  ],
+  "existence": [
+   "exist",
+   "existing",
+   "exists"
+  ],
+  "existent": [
+   "exist",
+   "existing",
+   "exists"
+  ],
+  "existing": [
+   "exists"
+  ],
+  "exists": [
+   "existing"
+  ],
+  "expect": [
+   "expectation",
+   "expected"
+  ],
+  "expectancy": [
+   "expectation",
+   "expected"
+  ],
+  "expectation": [
+   "expected"
+  ],
+  "expectations": [
+   "expected"
+  ],
+  "expects": [
+   "expectation",
+   "expected"
+  ],
+  "experiencing": [
+   "experienced"
+  ],
+  "explain": [
+   "explained"
+  ],
+  "explaining": [
+   "explained"
+  ],
+  "explains": [
+   "explained"
+  ],
+  "explicitly": [
+   "explicit"
+  ],
+  "exploration": [
+   "explore"
+  ],
+  "explorative": [
+   "exploration",
+   "explore",
+   "exploring"
+  ],
+  "explored": [
+   "exploration",
+   "explore",
+   "exploring"
+  ],
+  "exploring": [
+   "exploration",
+   "explore"
+  ],
+  "export": [
+   "exported"
+  ],
+  "exporting": [
+   "export",
+   "exported"
+  ],
+  "exports": [
+   "exported"
+  ],
+  "expose": [
+   "exposed"
+  ],
+  "expressed": [
+   "express",
+   "expression",
+   "expressions"
+  ],
+  "expressing": [
+   "express",
+   "expressed",
+   "expression",
+   "expressions"
+  ],
+  "extend": [
+   "extended",
+   "extending"
+  ],
+  "extending": [
+   "extended"
+  ],
+  "extends": [
+   "extended",
+   "extending"
+  ],
+  "extensively": [
+   "extensive"
+  ],
+  "externalized": [
+   "externalization"
+  ],
+  "externalizing": [
+   "externalization"
+  ],
+  "externally": [
+   "external"
+  ],
+  "extract": [
+   "extracted",
+   "extraction"
+  ],
+  "extracting": [
+   "extract",
+   "extracted",
+   "extraction"
+  ],
+  "extraction": [
+   "extracted"
+  ],
+  "extracts": [
+   "extracted",
+   "extraction"
+  ],
+  "eyee": [
+   "eye",
+   "eyes"
+  ],
+  "faced": [
+   "facing"
+  ],
+  "facilitate": [
+   "facilitating"
+  ],
+  "facilitated": [
+   "facilitate",
+   "facilitating"
+  ],
+  "facilitates": [
+   "facilitating"
+  ],
+  "facilitative": [
+   "facilitate",
+   "facilitating"
+  ],
+  "failing": [
+   "failed"
+  ],
+  "familial": [
+   "families",
+   "family"
+  ],
+  "familiar": [
+   "familiarity"
+  ],
+  "familiarization": [
+   "familiarity"
+  ],
+  "familiarize": [
+   "familiarity"
+  ],
+  "familiarized": [
+   "familiarity"
+  ],
+  "fasted": [
+   "fast"
+  ],
+  "fasting": [
+   "fast"
+  ],
+  "fatigued": [
+   "fatigue"
+  ],
+  "fearful": [
+   "fear"
+  ],
+  "feel": [
+   "feeling"
+  ],
+  "filenaming": [
+   "filename",
+   "filenames"
+  ],
+  "fill": [
+   "filled"
+  ],
+  "filling": [
+   "filled"
+  ],
+  "filmed": [
+   "film"
+  ],
+  "filtered": [
+   "filter",
+   "filtering"
+  ],
+  "filtering": [
+   "filter"
+  ],
+  "finalized": [
+   "final"
+  ],
+  "find": [
+   "findings"
+  ],
+  "finely": [
+   "fine"
+  ],
+  "finish": [
+   "finished"
+  ],
+  "finishes": [
+   "finished"
+  ],
+  "finishing": [
+   "finished"
+  ],
+  "firstly": [
+   "first"
+  ],
+  "fitted": [
+   "fit",
+   "fitting"
+  ],
+  "fitting": [
+   "fit"
+  ],
+  "fixate": [
+   "fixation"
+  ],
+  "fixated": [
+   "fixate",
+   "fixation"
+  ],
+  "fixating": [
+   "fixate",
+   "fixation"
+  ],
+  "flash": [
+   "flashed"
+  ],
+  "flashes": [
+   "flashed"
+  ],
+  "flashing": [
+   "flash",
+   "flashed"
+  ],
+  "flicker": [
+   "flickering"
+  ],
+  "flickered": [
+   "flickering"
+  ],
+  "flipped": [
+   "flip"
+  ],
+  "focused": [
+   "focus"
+  ],
+  "focusing": [
+   "focus",
+   "focused"
+  ],
+  "follow": [
+   "followed"
+  ],
+  "follows": [
+   "followed"
+  ],
+  "force": [
+   "forced"
+  ],
+  "formally": [
+   "formal"
+  ],
+  "foundational": [
+   "foundation"
+  ],
+  "fullness": [
+   "full"
+  ],
+  "fund": [
+   "funded",
+   "funding"
+  ],
+  "funded": [
+   "funding"
+  ],
+  "gaining": [
+   "gain"
+  ],
+  "gamble": [
+   "gambling"
+  ],
+  "gambled": [
+   "gambling"
+  ],
+  "gambles": [
+   "gambling"
+  ],
+  "generalization": [
+   "generalized"
+  ],
+  "generalize": [
+   "generalization",
+   "generalized"
+  ],
+  "generate": [
+   "generated"
+  ],
+  "generates": [
+   "generated"
+  ],
+  "generating": [
+   "generate",
+   "generated",
+   "generation"
+  ],
+  "generation": [
+   "generate",
+   "generated"
+  ],
+  "generations": [
+   "generate",
+   "generated"
+  ],
+  "genetically": [
+   "genetic"
+  ],
+  "geometrical": [
+   "geometric"
+  ],
+  "getting": [
+   "get"
+  ],
+  "giving": [
+   "give",
+   "gives"
+  ],
+  "globally": [
+   "global"
+  ],
+  "going": [
+   "go"
+  ],
+  "graded": [
+   "grade"
+  ],
+  "granted": [
+   "grant"
+  ],
+  "granting": [
+   "grant"
+  ],
+  "gridded": [
+   "grid"
+  ],
+  "gridding": [
+   "grid"
+  ],
+  "grounded": [
+   "ground"
+  ],
+  "grouped": [
+   "group",
+   "groups"
+  ],
+  "grouping": [
+   "grouped"
+  ],
+  "guide": [
+   "guided"
+  ],
+  "guides": [
+   "guided"
+  ],
+  "guiding": [
+   "guided"
+  ],
+  "happiness": [
+   "happy"
+  ],
+  "hardness": [
+   "hard"
+  ],
+  "headed": [
+   "heads"
+  ],
+  "healthiness": [
+   "healthy"
+  ],
+  "hear": [
+   "hearing"
+  ],
+  "helped": [
+   "help"
+  ],
+  "helpful": [
+   "help"
+  ],
+  "helping": [
+   "help"
+  ],
+  "hemispheric": [
+   "hemisphere"
+  ],
+  "hierarchically": [
+   "hierarchical"
+  ],
+  "highly": [
+   "high"
+  ],
+  "hitting": [
+   "hit"
+  ],
+  "holding": [
+   "hold",
+   "holds"
+  ],
+  "hopefully": [
+   "hope"
+  ],
+  "hormonal": [
+   "hormone"
+  ],
+  "host": [
+   "hosted"
+  ],
+  "hosting": [
+   "hosted"
+  ],
+  "hosts": [
+   "hosted"
+  ],
+  "housed": [
+   "house"
+  ],
+  "housing": [
+   "house"
+  ],
+  "identifiable": [
+   "identified",
+   "identifier",
+   "identifiers",
+   "identify",
+   "identifying"
+  ],
+  "identifier": [
+   "identified",
+   "identify",
+   "identifying"
+  ],
+  "identifiers": [
+   "identified",
+   "identify",
+   "identifying"
+  ],
+  "identifies": [
+   "identified"
+  ],
+  "identify": [
+   "identified"
+  ],
+  "identifying": [
+   "identified",
+   "identify"
+  ],
+  "ignor": [
+   "ignore",
+   "ignored"
+  ],
+  "ignore": [
+   "ignored"
+  ],
+  "ignoring": [
+   "ignore",
+   "ignored"
+  ],
+  "ill": [
+   "illness"
+  ],
+  "imag": [
+   "imaging"
+  ],
+  "image": [
+   "imaging"
+  ],
+  "imaged": [
+   "image",
+   "images",
+   "imaging"
+  ],
+  "imagerie": [
+   "imagery"
+  ],
+  "images": [
+   "imaging"
+  ],
+  "immediate": [
+   "immediately"
+  ],
+  "impacted": [
+   "impact",
+   "impacts"
+  ],
+  "impaired": [
+   "impairment"
+  ],
+  "impairs": [
+   "impaired",
+   "impairment"
+  ],
+  "implant": [
+   "implantation",
+   "implanted"
+  ],
+  "implantable": [
+   "implantation",
+   "implanted"
+  ],
+  "implantation": [
+   "implanted"
+  ],
+  "implantations": [
+   "implanted"
+  ],
+  "implants": [
+   "implantation",
+   "implanted"
+  ],
+  "implement": [
+   "implementation",
+   "implemented"
+  ],
+  "implementation": [
+   "implemented"
+  ],
+  "implementations": [
+   "implemented"
+  ],
+  "implementing": [
+   "implementation",
+   "implemented"
+  ],
+  "implements": [
+   "implementation",
+   "implemented"
+  ],
+  "importance": [
+   "important"
+  ],
+  "importantly": [
+   "important"
+  ],
+  "imported": [
+   "import"
+  ],
+  "importer": [
+   "import"
+  ],
+  "importing": [
+   "import"
+  ],
+  "improved": [
+   "improve"
+  ],
+  "improvement": [
+   "improve",
+   "improved"
+  ],
+  "improvements": [
+   "improve",
+   "improved"
+  ],
+  "improving": [
+   "improve",
+   "improved"
+  ],
+  "incidentally": [
+   "incidental"
+  ],
+  "include": [
+   "included"
+  ],
+  "includes": [
+   "included"
+  ],
+  "including": [
+   "included",
+   "includes"
+  ],
+  "inclusive": [
+   "inclusion"
+  ],
+  "incompleteness": [
+   "incomplete"
+  ],
+  "incongruence": [
+   "incongruent"
+  ],
+  "incongruency": [
+   "incongruent"
+  ],
+  "inconsistencies": [
+   "inconsistent"
+  ],
+  "inconsistency": [
+   "inconsistent"
+  ],
+  "incorrectly": [
+   "incorrect"
+  ],
+  "increase": [
+   "increased"
+  ],
+  "increases": [
+   "increased"
+  ],
+  "increasing": [
+   "increase",
+   "increased"
+  ],
+  "increasingly": [
+   "increase",
+   "increased",
+   "increases",
+   "increasing"
+  ],
+  "indicate": [
+   "indicated"
+  ],
+  "indicates": [
+   "indicated"
+  ],
+  "indicating": [
+   "indicate",
+   "indicated"
+  ],
+  "indication": [
+   "indicate",
+   "indicated",
+   "indicates",
+   "indicating"
+  ],
+  "indications": [
+   "indicate",
+   "indicated",
+   "indicates",
+   "indicating"
+  ],
+  "indicative": [
+   "indicate",
+   "indicated",
+   "indicates",
+   "indicating"
+  ],
+  "indicator": [
+   "indicate",
+   "indicated",
+   "indicates",
+   "indicating"
+  ],
+  "indicators": [
+   "indicate",
+   "indicated",
+   "indicates",
+   "indicating"
+  ],
+  "individually": [
+   "individual",
+   "individuals"
+  ],
+  "induce": [
+   "induced"
+  ],
+  "inducing": [
+   "induced"
+  ],
+  "inductive": [
+   "induction"
+  ],
+  "inductively": [
+   "induction"
+  ],
+  "infer": [
+   "inference",
+   "inferred"
+  ],
+  "inferiorly": [
+   "inferior"
+  ],
+  "inferred": [
+   "inference"
+  ],
+  "inferring": [
+   "inference",
+   "inferred"
+  ],
+  "influenced": [
+   "influence",
+   "influences"
+  ],
+  "influencing": [
+   "influence",
+   "influences"
+  ],
+  "inform": [
+   "informed"
+  ],
+  "informant": [
+   "inform"
+  ],
+  "informational": [
+   "information"
+  ],
+  "informing": [
+   "inform",
+   "informed"
+  ],
+  "inhibit": [
+   "inhibition"
+  ],
+  "initially": [
+   "initial"
+  ],
+  "initiate": [
+   "initiated"
+  ],
+  "initiating": [
+   "initiated"
+  ],
+  "initiation": [
+   "initiated"
+  ],
+  "injected": [
+   "injection"
+  ],
+  "injects": [
+   "injection"
+  ],
+  "insert": [
+   "inserted"
+  ],
+  "insertion": [
+   "insert",
+   "inserted"
+  ],
+  "inserts": [
+   "inserted"
+  ],
+  "inspect": [
+   "inspection"
+  ],
+  "inspected": [
+   "inspection"
+  ],
+  "inspecting": [
+   "inspection"
+  ],
+  "institut": [
+   "institute",
+   "institutional"
+  ],
+  "institution": [
+   "institute",
+   "institutes",
+   "institutional"
+  ],
+  "institutional": [
+   "institute"
+  ],
+  "institutionally": [
+   "institute",
+   "institutes",
+   "institution",
+   "institutional",
+   "institutions"
+  ],
+  "institutions": [
+   "institute",
+   "institutes",
+   "institutional"
+  ],
+  "instruct": [
+   "instructed",
+   "instruction",
+   "instructions"
+  ],
+  "instruction": [
+   "instructed"
+  ],
+  "instructional": [
+   "instruction",
+   "instructions"
+  ],
+  "instructions": [
+   "instructed"
+  ],
+  "instrumentation": [
+   "instruments"
+  ],
+  "instrumented": [
+   "instruments"
+  ],
+  "integrate": [
+   "integrated",
+   "integration"
+  ],
+  "integrated": [
+   "integration"
+  ],
+  "integrates": [
+   "integrated",
+   "integration"
+  ],
+  "integrating": [
+   "integrated",
+   "integration"
+  ],
+  "intend": [
+   "intended"
+  ],
+  "intending": [
+   "intended"
+  ],
+  "interact": [
+   "interaction",
+   "interactions"
+  ],
+  "interacted": [
+   "interaction",
+   "interactions"
+  ],
+  "interacting": [
+   "interaction",
+   "interactions"
+  ],
+  "interested": [
+   "interest"
+  ],
+  "interesting": [
+   "interest"
+  ],
+  "interfacing": [
+   "interface",
+   "interfaces"
+  ],
+  "interfere": [
+   "interference"
+  ],
+  "interleaves": [
+   "interleaved"
+  ],
+  "interleaving": [
+   "interleaved"
+  ],
+  "interpolated": [
+   "interpolation"
+  ],
+  "interpolating": [
+   "interpolated",
+   "interpolation"
+  ],
+  "interpret": [
+   "interpretation"
+  ],
+  "interpreted": [
+   "interpretation"
+  ],
+  "interpreting": [
+   "interpretation"
+  ],
+  "interprets": [
+   "interpretation"
+  ],
+  "interventional": [
+   "intervention"
+  ],
+  "interviewed": [
+   "interview"
+  ],
+  "interviewer": [
+   "interview"
+  ],
+  "intracranially": [
+   "intracranial"
+  ],
+  "introduce": [
+   "introduced"
+  ],
+  "introduces": [
+   "introduced"
+  ],
+  "introducing": [
+   "introduced"
+  ],
+  "invasively": [
+   "invasive"
+  ],
+  "inverse": [
+   "inversion"
+  ],
+  "investigated": [
+   "investigate",
+   "investigating"
+  ],
+  "investigating": [
+   "investigate"
+  ],
+  "investigation": [
+   "investigate",
+   "investigated",
+   "investigating"
+  ],
+  "investigational": [
+   "investigate",
+   "investigated",
+   "investigates",
+   "investigating",
+   "investigation",
+   "investigations"
+  ],
+  "investigations": [
+   "investigate",
+   "investigated",
+   "investigating"
+  ],
+  "involve": [
+   "involved",
+   "involving"
+  ],
+  "involvement": [
+   "involved",
+   "involves",
+   "involving"
+  ],
+  "involves": [
+   "involved",
+   "involving"
+  ],
+  "involving": [
+   "involved"
+  ],
+  "isotropically": [
+   "isotropic"
+  ],
+  "jitter": [
+   "jittered"
+  ],
+  "jitters": [
+   "jittered"
+  ],
+  "jointly": [
+   "joint"
+  ],
+  "keeping": [
+   "keep"
+  ],
+  "knowing": [
+   "know"
+  ],
+  "labeled": [
+   "label",
+   "labels"
+  ],
+  "labeling": [
+   "label"
+  ],
+  "labelled": [
+   "label",
+   "labels"
+  ],
+  "labelling": [
+   "label"
+  ],
+  "lacked": [
+   "lack"
+  ],
+  "lacking": [
+   "lack"
+  ],
+  "lasted": [
+   "last"
+  ],
+  "lasting": [
+   "lasted"
+  ],
+  "lateness": [
+   "late"
+  ],
+  "layering": [
+   "layer",
+   "layers"
+  ],
+  "learn": [
+   "learning"
+  ],
+  "learned": [
+   "learn",
+   "learning"
+  ],
+  "legal": [
+   "legally"
+  ],
+  "licensed": [
+   "license",
+   "licenses"
+  ],
+  "licensing": [
+   "license",
+   "licensed",
+   "licenses"
+  ],
+  "lighting": [
+   "light"
+  ],
+  "limit": [
+   "limitations",
+   "limited"
+  ],
+  "limitation": [
+   "limited"
+  ],
+  "limitations": [
+   "limited"
+  ],
+  "limiting": [
+   "limited",
+   "limits"
+  ],
+  "limits": [
+   "limitations",
+   "limited"
+  ],
+  "linearly": [
+   "linear"
+  ],
+  "linguistically": [
+   "linguistic"
+  ],
+  "linked": [
+   "link"
+  ],
+  "linking": [
+   "link",
+   "linked",
+   "links"
+  ],
+  "listed": [
+   "list"
+  ],
+  "listen": [
+   "listened",
+   "listening"
+  ],
+  "listened": [
+   "listening"
+  ],
+  "listener": [
+   "listen",
+   "listened",
+   "listening"
+  ],
+  "listeners": [
+   "listen",
+   "listened",
+   "listening"
+  ],
+  "listing": [
+   "list",
+   "listed",
+   "lists"
+  ],
+  "live": [
+   "living"
+  ],
+  "lived": [
+   "living"
+  ],
+  "lives": [
+   "living"
+  ],
+  "loaded": [
+   "load"
+  ],
+  "loading": [
+   "load"
+  ],
+  "locate": [
+   "located",
+   "location",
+   "locations"
+  ],
+  "located": [
+   "location"
+  ],
+  "locating": [
+   "location",
+   "locations"
+  ],
+  "lock": [
+   "locked"
+  ],
+  "locking": [
+   "locked"
+  ],
+  "logged": [
+   "log",
+   "logs"
+  ],
+  "logging": [
+   "log",
+   "logged",
+   "logs"
+  ],
+  "looked": [
+   "look",
+   "looking"
+  ],
+  "looking": [
+   "look"
+  ],
+  "looped": [
+   "loop"
+  ],
+  "loudness": [
+   "loud"
+  ],
+  "lowered": [
+   "lower"
+  ],
+  "lowering": [
+   "lower"
+  ],
+  "magnetization": [
+   "magnetic"
+  ],
+  "magnitud": [
+   "magnitude"
+  ],
+  "mainly": [
+   "main"
+  ],
+  "maintainance": [
+   "maintain",
+   "maintained",
+   "maintaining"
+  ],
+  "maintained": [
+   "maintain"
+  ],
+  "maintaining": [
+   "maintain",
+   "maintained"
+  ],
+  "make": [
+   "making"
+  ],
+  "makes": [
+   "making"
+  ],
+  "mani": [
+   "many"
+  ],
+  "manipulable": [
+   "manipulated",
+   "manipulation"
+  ],
+  "manipulate": [
+   "manipulated",
+   "manipulation"
+  ],
+  "manipulated": [
+   "manipulation"
+  ],
+  "manipulating": [
+   "manipulated",
+   "manipulation"
+  ],
+  "manually": [
+   "manual"
+  ],
+  "mapped": [
+   "map",
+   "mapping",
+   "maps"
+  ],
+  "mapping": [
+   "maps"
+  ],
+  "mappings": [
+   "maps"
+  ],
+  "mark": [
+   "marked"
+  ],
+  "markedly": [
+   "marked"
+  ],
+  "marking": [
+   "mark",
+   "marked"
+  ],
+  "markings": [
+   "mark",
+   "marked"
+  ],
+  "marks": [
+   "marked"
+  ],
+  "masked": [
+   "mask",
+   "masking",
+   "masks"
+  ],
+  "masking": [
+   "mask",
+   "masks"
+  ],
+  "match": [
+   "matched"
+  ],
+  "matches": [
+   "matched"
+  ],
+  "matching": [
+   "match",
+   "matched"
+  ],
+  "matrics": [
+   "matrices"
+  ],
+  "meaningfulness": [
+   "meaningful"
+  ],
+  "meditating": [
+   "meditation"
+  ],
+  "meditative": [
+   "meditation"
+  ],
+  "meditators": [
+   "meditation"
+  ],
+  "meet": [
+   "meeting"
+  ],
+  "meeting": [
+   "meet"
+  ],
+  "meets": [
+   "meeting"
+  ],
+  "memorability": [
+   "memorized"
+  ],
+  "memorable": [
+   "memorized"
+  ],
+  "memorize": [
+   "memorized"
+  ],
+  "mentally": [
+   "mental"
+  ],
+  "mention": [
+   "mentioned"
+  ],
+  "metabol": [
+   "metabolic",
+   "metabolism"
+  ],
+  "metabolic": [
+   "metabolism"
+  ],
+  "metabolically": [
+   "metabolic",
+   "metabolism"
+  ],
+  "methodology": [
+   "methodological"
+  ],
+  "microstructural": [
+   "microstructure"
+  ],
+  "mildly": [
+   "mild"
+  ],
+  "minimally": [
+   "minimal"
+  ],
+  "minimization": [
+   "minimize"
+  ],
+  "minimized": [
+   "minimize"
+  ],
+  "minimizing": [
+   "minimize"
+  ],
+  "mismatching": [
+   "mismatch"
+  ],
+  "mobility": [
+   "mobile"
+  ],
+  "modal": [
+   "modalities",
+   "modality"
+  ],
+  "modeled": [
+   "model",
+   "modeling",
+   "modelling",
+   "models"
+  ],
+  "modeling": [
+   "model",
+   "models"
+  ],
+  "modelled": [
+   "model",
+   "modeling",
+   "modelling",
+   "models"
+  ],
+  "modelling": [
+   "model",
+   "models"
+  ],
+  "moderately": [
+   "moderate"
+  ],
+  "modulate": [
+   "modulated",
+   "modulating",
+   "modulation"
+  ],
+  "modulated": [
+   "modulation"
+  ],
+  "modulates": [
+   "modulated",
+   "modulating",
+   "modulation"
+  ],
+  "modulating": [
+   "modulated",
+   "modulation"
+  ],
+  "modulator": [
+   "modulate",
+   "modulated",
+   "modulates",
+   "modulating",
+   "modulation"
+  ],
+  "modulators": [
+   "modulate",
+   "modulated",
+   "modulates",
+   "modulating",
+   "modulation"
+  ],
+  "monitor": [
+   "monitoring"
+  ],
+  "monitored": [
+   "monitor",
+   "monitoring"
+  ],
+  "monitors": [
+   "monitoring"
+  ],
+  "monthly": [
+   "month",
+   "months"
+  ],
+  "morality": [
+   "moral"
+  ],
+  "moralization": [
+   "moral"
+  ],
+  "mount": [
+   "mounted"
+  ],
+  "mounting": [
+   "mounted"
+  ],
+  "move": [
+   "moving"
+  ],
+  "moved": [
+   "move",
+   "moving"
+  ],
+  "moves": [
+   "moving"
+  ],
+  "multimodality": [
+   "multimodal"
+  ],
+  "multivariately": [
+   "multivariate"
+  ],
+  "named": [
+   "name",
+   "names"
+  ],
+  "naming": [
+   "name",
+   "named",
+   "names"
+  ],
+  "narrated": [
+   "narrative",
+   "narratives"
+  ],
+  "narration": [
+   "narrative",
+   "narratives"
+  ],
+  "narrator": [
+   "narrative",
+   "narratives"
+  ],
+  "narrators": [
+   "narrative",
+   "narratives"
+  ],
+  "nation": [
+   "national"
+  ],
+  "naturally": [
+   "natural"
+  ],
+  "nature": [
+   "natural"
+  ],
+  "navigate": [
+   "navigation"
+  ],
+  "navigated": [
+   "navigation"
+  ],
+  "navigating": [
+   "navigation"
+  ],
+  "navigational": [
+   "navigation"
+  ],
+  "need": [
+   "needed"
+  ],
+  "needing": [
+   "need",
+   "needed",
+   "needs"
+  ],
+  "needs": [
+   "needed"
+  ],
+  "negatively": [
+   "negative"
+  ],
+  "negativity": [
+   "negative"
+  ],
+  "nerv": [
+   "nerve"
+  ],
+  "neurally": [
+   "neural"
+  ],
+  "neurobiological": [
+   "neurobiology"
+  ],
+  "neurobiologically": [
+   "neurobiology"
+  ],
+  "neuroimag": [
+   "neuroimage",
+   "neuroimaging"
+  ],
+  "neuroimage": [
+   "neuroimaging"
+  ],
+  "neuroimages": [
+   "neuroimaging"
+  ],
+  "neurologic": [
+   "neurological",
+   "neurology"
+  ],
+  "neurologically": [
+   "neurological",
+   "neurology"
+  ],
+  "neurology": [
+   "neurological"
+  ],
+  "neuromodulated": [
+   "neuromodulation"
+  ],
+  "neuronal": [
+   "neuron",
+   "neurons"
+  ],
+  "neurophysiological": [
+   "neurophysiology"
+  ],
+  "neuropsychology": [
+   "neuropsychological"
+  ],
+  "neurosci": [
+   "neuroscience"
+  ],
+  "nightly": [
+   "night"
+  ],
+  "noising": [
+   "noise"
+  ],
+  "nominally": [
+   "nominal"
+  ],
+  "normale": [
+   "normal"
+  ],
+  "normalization": [
+   "normalized"
+  ],
+  "normalize": [
+   "normalization",
+   "normalized"
+  ],
+  "normally": [
+   "normal"
+  ],
+  "noted": [
+   "note",
+   "notes"
+  ],
+  "noting": [
+   "note",
+   "noted",
+   "notes"
+  ],
+  "numbering": [
+   "number"
+  ],
+  "obliquity": [
+   "oblique"
+  ],
+  "observation": [
+   "observational",
+   "observe",
+   "observed"
+  ],
+  "observations": [
+   "observational",
+   "observe",
+   "observed"
+  ],
+  "observe": [
+   "observed"
+  ],
+  "observers": [
+   "observe"
+  ],
+  "observing": [
+   "observation",
+   "observe",
+   "observed"
+  ],
+  "obtain": [
+   "obtained"
+  ],
+  "obtaining": [
+   "obtain",
+   "obtained"
+  ],
+  "occur": [
+   "occurred"
+  ],
+  "occured": [
+   "occur",
+   "occurred",
+   "occurring",
+   "occurs"
+  ],
+  "occuring": [
+   "occur",
+   "occurred",
+   "occurring",
+   "occurs"
+  ],
+  "occurring": [
+   "occur",
+   "occurred",
+   "occurs"
+  ],
+  "occurs": [
+   "occurred"
+  ],
+  "offered": [
+   "offer",
+   "offers"
+  ],
+  "offering": [
+   "offer",
+   "offers"
+  ],
+  "officially": [
+   "official"
+  ],
+  "oldness": [
+   "old"
+  ],
+  "omit": [
+   "omitted"
+  ],
+  "omits": [
+   "omitted"
+  ],
+  "omitting": [
+   "omitted"
+  ],
+  "openly": [
+   "open"
+  ],
+  "openness": [
+   "open"
+  ],
+  "optically": [
+   "optical"
+  ],
+  "optimal": [
+   "optimization",
+   "optimized"
+  ],
+  "optimally": [
+   "optimization",
+   "optimized"
+  ],
+  "optimication": [
+   "optimization",
+   "optimized"
+  ],
+  "optimization": [
+   "optimized"
+  ],
+  "optimize": [
+   "optimization",
+   "optimized"
+  ],
+  "optimizes": [
+   "optimization",
+   "optimized"
+  ],
+  "optimizing": [
+   "optimization",
+   "optimized"
+  ],
+  "option": [
+   "optional"
+  ],
+  "optionally": [
+   "option",
+   "optional",
+   "options"
+  ],
+  "options": [
+   "optional"
+  ],
+  "orally": [
+   "oral"
+  ],
+  "ordered": [
+   "order"
+  ],
+  "ordering": [
+   "order",
+   "ordered"
+  ],
+  "orderings": [
+   "order",
+   "ordered"
+  ],
+  "organisation": [
+   "organised"
+  ],
+  "organisational": [
+   "organisation",
+   "organised"
+  ],
+  "organised": [
+   "organisation"
+  ],
+  "organization": [
+   "organized"
+  ],
+  "organize": [
+   "organization",
+   "organized",
+   "organizing"
+  ],
+  "organizes": [
+   "organization",
+   "organized",
+   "organizing"
+  ],
+  "organizing": [
+   "organization",
+   "organized"
+  ],
+  "oriented": [
+   "orientation",
+   "orientations"
+  ],
+  "origin": [
+   "original",
+   "originally"
+  ],
+  "originally": [
+   "original"
+  ],
+  "originate": [
+   "original",
+   "originally"
+  ],
+  "originated": [
+   "original",
+   "originally"
+  ],
+  "origins": [
+   "original",
+   "originally"
+  ],
+  "orthogonally": [
+   "orthogonal"
+  ],
+  "oscillating": [
+   "oscillations"
+  ],
+  "outputted": [
+   "output",
+   "outputs"
+  ],
+  "overlapped": [
+   "overlap",
+   "overlapping"
+  ],
+  "overlapping": [
+   "overlap"
+  ],
+  "overtly": [
+   "overt"
+  ],
+  "oxygenated": [
+   "oxygen",
+   "oxygenation"
+  ],
+  "oxygenation": [
+   "oxygen"
+  ],
+  "packaged": [
+   "package"
+  ],
+  "packaging": [
+   "package"
+  ],
+  "padded": [
+   "pad",
+   "padding"
+  ],
+  "padding": [
+   "pad"
+  ],
+  "paddings": [
+   "pad"
+  ],
+  "painful": [
+   "pain"
+  ],
+  "painfulness": [
+   "pain"
+  ],
+  "pair": [
+   "paired"
+  ],
+  "paired": [
+   "pair"
+  ],
+  "pairing": [
+   "pair",
+   "paired",
+   "pairs"
+  ],
+  "pairings": [
+   "pair",
+   "paired",
+   "pairs"
+  ],
+  "pairs": [
+   "paired"
+  ],
+  "paradigme": [
+   "paradigm",
+   "paradigms"
+  ],
+  "parametrically": [
+   "parametric"
+  ],
+  "parcel": [
+   "parcellation"
+  ],
+  "parcellated": [
+   "parcellation"
+  ],
+  "parcels": [
+   "parcellation"
+  ],
+  "parental": [
+   "parent"
+  ],
+  "partially": [
+   "partial"
+  ],
+  "participate": [
+   "participant",
+   "participants",
+   "participated",
+   "participation"
+  ],
+  "participated": [
+   "participant",
+   "participants"
+  ],
+  "participating": [
+   "participant",
+   "participants",
+   "participate",
+   "participated",
+   "participation"
+  ],
+  "participation": [
+   "participant",
+   "participants",
+   "participated"
+  ],
+  "particularly": [
+   "particular"
+  ],
+  "passed": [
+   "pass"
+  ],
+  "passing": [
+   "pass",
+   "passed"
+  ],
+  "passively": [
+   "passive"
+  ],
+  "pathological": [
+   "pathology"
+  ],
+  "pathologically": [
+   "pathology"
+  ],
+  "peaked": [
+   "peak"
+  ],
+  "peaking": [
+   "peak"
+  ],
+  "percept": [
+   "perception"
+  ],
+  "percepts": [
+   "perception"
+  ],
+  "perceptually": [
+   "perceptual"
+  ],
+  "perform": [
+   "performance",
+   "performed",
+   "performing"
+  ],
+  "performing": [
+   "performance",
+   "performed"
+  ],
+  "performs": [
+   "performance",
+   "performed",
+   "performing"
+  ],
+  "peripheric": [
+   "peripheral"
+  ],
+  "phased": [
+   "phase"
+  ],
+  "phenotyped": [
+   "phenotype",
+   "phenotypic"
+  ],
+  "phenotypic": [
+   "phenotype"
+  ],
+  "phenotyping": [
+   "phenotype",
+   "phenotypic"
+  ],
+  "phonologically": [
+   "phonological"
+  ],
+  "phonology": [
+   "phonological"
+  ],
+  "photographed": [
+   "photographs"
+  ],
+  "photographic": [
+   "photographs"
+  ],
+  "physically": [
+   "physical"
+  ],
+  "physiology": [
+   "physiological"
+  ],
+  "piloted": [
+   "pilot"
+  ],
+  "piloting": [
+   "pilot"
+  ],
+  "pitched": [
+   "pitch"
+  ],
+  "place": [
+   "placed"
+  ],
+  "places": [
+   "placed"
+  ],
+  "placing": [
+   "place",
+   "placed",
+   "places"
+  ],
+  "plan": [
+   "planned"
+  ],
+  "planned": [
+   "plan"
+  ],
+  "planning": [
+   "plan",
+   "planned"
+  ],
+  "plans": [
+   "planned"
+  ],
+  "plastic": [
+   "plasticity"
+  ],
+  "play": [
+   "played"
+  ],
+  "playing": [
+   "play",
+   "played"
+  ],
+  "plays": [
+   "played"
+  ],
+  "plotted": [
+   "plot"
+  ],
+  "plotting": [
+   "plot"
+  ],
+  "pointed": [
+   "pointing"
+  ],
+  "poorly": [
+   "poor"
+  ],
+  "possibilities": [
+   "possible",
+   "possibly"
+  ],
+  "possibility": [
+   "possible",
+   "possibly"
+  ],
+  "possibly": [
+   "possible"
+  ],
+  "posteriorly": [
+   "posterior"
+  ],
+  "practicality": [
+   "practical"
+  ],
+  "practiced": [
+   "practice"
+  ],
+  "practicing": [
+   "practice",
+   "practiced"
+  ],
+  "precise": [
+   "precision"
+  ],
+  "precisely": [
+   "precise",
+   "precision"
+  ],
+  "prefer": [
+   "preference",
+   "preferences"
+  ],
+  "preferred": [
+   "preference",
+   "preferences"
+  ],
+  "preparation": [
+   "prepared"
+  ],
+  "prepare": [
+   "preparation",
+   "prepared"
+  ],
+  "prepares": [
+   "preparation",
+   "prepared"
+  ],
+  "preparing": [
+   "preparation",
+   "prepared"
+  ],
+  "preprocess": [
+   "preprocessed",
+   "preprocessing"
+  ],
+  "preprocessed": [
+   "preprocessing"
+  ],
+  "preprocesses": [
+   "preprocessed",
+   "preprocessing"
+  ],
+  "present": [
+   "presentation",
+   "presented"
+  ],
+  "presentation": [
+   "presented"
+  ],
+  "presentations": [
+   "presented"
+  ],
+  "presenting": [
+   "present",
+   "presentation",
+   "presentations",
+   "presented"
+  ],
+  "presently": [
+   "present"
+  ],
+  "presents": [
+   "presentation",
+   "presented"
+  ],
+  "preserve": [
+   "preserved"
+  ],
+  "preserves": [
+   "preserved"
+  ],
+  "preserving": [
+   "preserve",
+   "preserved"
+  ],
+  "pressed": [
+   "press",
+   "pressing"
+  ],
+  "pressing": [
+   "press"
+  ],
+  "pressured": [
+   "pressure"
+  ],
+  "prevented": [
+   "prevent"
+  ],
+  "preventing": [
+   "prevent"
+  ],
+  "previous": [
+   "previously"
+  ],
+  "priming": [
+   "prime"
+  ],
+  "printed": [
+   "print"
+  ],
+  "printing": [
+   "print",
+   "printed"
+  ],
+  "probabilistically": [
+   "probabilistic"
+  ],
+  "probably": [
+   "probability"
+  ],
+  "probed": [
+   "probe"
+  ],
+  "probing": [
+   "probe"
+  ],
+  "process": [
+   "processed",
+   "processing"
+  ],
+  "processed": [
+   "processing"
+  ],
+  "processes": [
+   "processed",
+   "processing"
+  ],
+  "produce": [
+   "produced"
+  ],
+  "produces": [
+   "produced"
+  ],
+  "producing": [
+   "produce",
+   "produced"
+  ],
+  "programmed": [
+   "program",
+   "programming"
+  ],
+  "programming": [
+   "program"
+  ],
+  "progress": [
+   "progression"
+  ],
+  "progressed": [
+   "progression"
+  ],
+  "progressing": [
+   "progression"
+  ],
+  "progressive": [
+   "progression"
+  ],
+  "progressively": [
+   "progression"
+  ],
+  "projection": [
+   "project",
+   "projected",
+   "projects"
+  ],
+  "projections": [
+   "project",
+   "projected",
+   "projects"
+  ],
+  "prompt": [
+   "prompted"
+  ],
+  "prompting": [
+   "prompt",
+   "prompted"
+  ],
+  "prompts": [
+   "prompted"
+  ],
+  "properly": [
+   "proper"
+  ],
+  "proportional": [
+   "proportion"
+  ],
+  "proportionally": [
+   "proportion"
+  ],
+  "proposal": [
+   "proposed"
+  ],
+  "propose": [
+   "proposed"
+  ],
+  "prospect": [
+   "prospective"
+  ],
+  "prospectively": [
+   "prospective"
+  ],
+  "protocolls": [
+   "protocol",
+   "protocols"
+  ],
+  "provide": [
+   "provided"
+  ],
+  "provides": [
+   "provided"
+  ],
+  "providing": [
+   "provide",
+   "provided",
+   "provides"
+  ],
+  "psychological": [
+   "psychology"
+  ],
+  "psychophysical": [
+   "psychophysics"
+  ],
+  "psychophysically": [
+   "psychophysics"
+  ],
+  "publish": [
+   "published"
+  ],
+  "publishing": [
+   "published"
+  ],
+  "pulsed": [
+   "pulse",
+   "pulses"
+  ],
+  "purely": [
+   "pure"
+  ],
+  "putting": [
+   "put"
+  ],
+  "pythonic": [
+   "python"
+  ],
+  "quantitatively": [
+   "quantitative"
+  ],
+  "quick": [
+   "quickly"
+  ],
+  "quietly": [
+   "quiet"
+  ],
+  "radiological": [
+   "radiology"
+  ],
+  "ranged": [
+   "range",
+   "ranging"
+  ],
+  "ranging": [
+   "range"
+  ],
+  "rapidly": [
+   "rapid"
+  ],
+  "rarely": [
+   "rare"
+  ],
+  "rated": [
+   "rate",
+   "rating",
+   "ratings"
+  ],
+  "rating": [
+   "rate"
+  ],
+  "ratings": [
+   "rate"
+  ],
+  "reached": [
+   "reach",
+   "reaching"
+  ],
+  "reaching": [
+   "reach"
+  ],
+  "reactivated": [
+   "reactivation"
+  ],
+  "reactivating": [
+   "reactivation"
+  ],
+  "reactive": [
+   "reactivity"
+  ],
+  "readiness": [
+   "ready"
+  ],
+  "reale": [
+   "real"
+  ],
+  "reasoned": [
+   "reasoning"
+  ],
+  "receive": [
+   "received"
+  ],
+  "receives": [
+   "received"
+  ],
+  "receiving": [
+   "receive",
+   "received"
+  ],
+  "recently": [
+   "recent"
+  ],
+  "recommendation": [
+   "recommend"
+  ],
+  "recommendations": [
+   "recommend"
+  ],
+  "recommended": [
+   "recommend",
+   "recommendations"
+  ],
+  "recommending": [
+   "recommend",
+   "recommendations",
+   "recommended"
+  ],
+  "reconstruct": [
+   "reconstructed",
+   "reconstruction",
+   "reconstructions"
+  ],
+  "reconstructable": [
+   "reconstruct",
+   "reconstructed",
+   "reconstruction",
+   "reconstructions"
+  ],
+  "reconstructed": [
+   "reconstruction"
+  ],
+  "reconstructing": [
+   "reconstruct",
+   "reconstructed",
+   "reconstruction",
+   "reconstructions"
+  ],
+  "reconstructive": [
+   "reconstruct",
+   "reconstruction",
+   "reconstructions"
+  ],
+  "recruit": [
+   "recruited",
+   "recruitment"
+  ],
+  "recruiting": [
+   "recruited",
+   "recruitment"
+  ],
+  "recruitment": [
+   "recruited"
+  ],
+  "recruits": [
+   "recruited",
+   "recruitment"
+  ],
+  "reduced": [
+   "reduce"
+  ],
+  "reducing": [
+   "reduce",
+   "reduced"
+  ],
+  "refered": [
+   "refer",
+   "referred",
+   "refers"
+  ],
+  "referencing": [
+   "referenced"
+  ],
+  "referred": [
+   "refer"
+  ],
+  "reflected": [
+   "reflect",
+   "reflects"
+  ],
+  "reflecting": [
+   "reflect",
+   "reflects"
+  ],
+  "reflection": [
+   "reflect",
+   "reflects"
+  ],
+  "reflections": [
+   "reflect",
+   "reflects"
+  ],
+  "refreshing": [
+   "refresh"
+  ],
+  "regard": [
+   "regarding"
+  ],
+  "regards": [
+   "regarding"
+  ],
+  "regional": [
+   "region",
+   "regions"
+  ],
+  "register": [
+   "registered"
+  ],
+  "registering": [
+   "registered"
+  ],
+  "registers": [
+   "registered"
+  ],
+  "regress": [
+   "regression"
+  ],
+  "regressed": [
+   "regression"
+  ],
+  "regressing": [
+   "regression"
+  ],
+  "regularly": [
+   "regular"
+  ],
+  "regulate": [
+   "regulation",
+   "regulations"
+  ],
+  "regulated": [
+   "regulation",
+   "regulations"
+  ],
+  "regulates": [
+   "regulation",
+   "regulations"
+  ],
+  "regulating": [
+   "regulation",
+   "regulations"
+  ],
+  "regulator": [
+   "regulation"
+  ],
+  "reinforce": [
+   "reinforcement"
+  ],
+  "reinforced": [
+   "reinforcement"
+  ],
+  "reinforcer": [
+   "reinforcement"
+  ],
+  "reinforcing": [
+   "reinforcement"
+  ],
+  "reject": [
+   "rejected",
+   "rejection"
+  ],
+  "rejected": [
+   "rejection"
+  ],
+  "rejecting": [
+   "rejected",
+   "rejection"
+  ],
+  "relat": [
+   "related",
+   "relation",
+   "relative",
+   "relatively"
+  ],
+  "relate": [
+   "related",
+   "relation"
+  ],
+  "relates": [
+   "related",
+   "relation"
+  ],
+  "relating": [
+   "related",
+   "relation"
+  ],
+  "relation": [
+   "related"
+  ],
+  "relational": [
+   "relation"
+  ],
+  "relations": [
+   "related"
+  ],
+  "relatively": [
+   "relative"
+  ],
+  "relaxation": [
+   "relax"
+  ],
+  "relaxed": [
+   "relax"
+  ],
+  "relaxing": [
+   "relax"
+  ],
+  "released": [
+   "release"
+  ],
+  "releasing": [
+   "release",
+   "released",
+   "releases"
+  ],
+  "relevance": [
+   "relevant"
+  ],
+  "reliable": [
+   "reliability"
+  ],
+  "reliably": [
+   "reliability",
+   "reliable"
+  ],
+  "remain": [
+   "remaining"
+  ],
+  "remained": [
+   "remain",
+   "remaining"
+  ],
+  "remains": [
+   "remaining"
+  ],
+  "remembered": [
+   "remember"
+  ],
+  "remembering": [
+   "remember"
+  ],
+  "removable": [
+   "removal",
+   "remove",
+   "removed",
+   "removing"
+  ],
+  "removal": [
+   "remove",
+   "removed"
+  ],
+  "remove": [
+   "removed"
+  ],
+  "removing": [
+   "removal",
+   "remove",
+   "removed"
+  ],
+  "repeat": [
+   "repeated"
+  ],
+  "repeatability": [
+   "repeat",
+   "repeated",
+   "repeatedly",
+   "repeats"
+  ],
+  "repeatedly": [
+   "repeat",
+   "repeated"
+  ],
+  "repeating": [
+   "repeat",
+   "repeated",
+   "repeatedly",
+   "repeats"
+  ],
+  "repeats": [
+   "repeated"
+  ],
+  "repetitive": [
+   "repetition",
+   "repetitions"
+  ],
+  "replace": [
+   "replaced"
+  ],
+  "replacement": [
+   "replaced"
+  ],
+  "replaces": [
+   "replaced"
+  ],
+  "replicability": [
+   "replication"
+  ],
+  "replicate": [
+   "replication"
+  ],
+  "replicated": [
+   "replication"
+  ],
+  "replicates": [
+   "replication"
+  ],
+  "replicating": [
+   "replication"
+  ],
+  "report": [
+   "reported"
+  ],
+  "reporting": [
+   "report",
+   "reported",
+   "reports"
+  ],
+  "reports": [
+   "reported"
+  ],
+  "represent": [
+   "represented"
+  ],
+  "representational": [
+   "representation",
+   "representations"
+  ],
+  "representing": [
+   "represent",
+   "represented",
+   "represents"
+  ],
+  "represents": [
+   "represented"
+  ],
+  "reproducability": [
+   "reproduce",
+   "reproducibility"
+  ],
+  "reproduce": [
+   "reproducibility"
+  ],
+  "reproduced": [
+   "reproduce",
+   "reproducibility"
+  ],
+  "reproducible": [
+   "reproduce",
+   "reproducibility"
+  ],
+  "reproducing": [
+   "reproduce",
+   "reproducibility"
+  ],
+  "requested": [
+   "request"
+  ],
+  "require": [
+   "required"
+  ],
+  "requirement": [
+   "required",
+   "requires"
+  ],
+  "requirements": [
+   "required",
+   "requires"
+  ],
+  "requires": [
+   "required"
+  ],
+  "requiring": [
+   "required",
+   "requirements",
+   "requires"
+  ],
+  "resample": [
+   "resampled"
+  ],
+  "resampling": [
+   "resampled"
+  ],
+  "resamplings": [
+   "resampled"
+  ],
+  "resected": [
+   "resection"
+  ],
+  "resective": [
+   "resection"
+  ],
+  "resolve": [
+   "resolved"
+  ],
+  "resolving": [
+   "resolved"
+  ],
+  "reson": [
+   "resonance"
+  ],
+  "resonate": [
+   "resonance"
+  ],
+  "respective": [
+   "respectively"
+  ],
+  "responded": [
+   "respond"
+  ],
+  "respondents": [
+   "respond",
+   "responded",
+   "responding"
+  ],
+  "responder": [
+   "respond",
+   "responded",
+   "responding"
+  ],
+  "responding": [
+   "respond",
+   "responded"
+  ],
+  "responsibility": [
+   "responsible"
+  ],
+  "responsive": [
+   "response",
+   "responses"
+  ],
+  "responsiveness": [
+   "response",
+   "responses"
+  ],
+  "responsivity": [
+   "response",
+   "responses"
+  ],
+  "rest": [
+   "resting"
+  ],
+  "restrict": [
+   "restricted",
+   "restrictions"
+  ],
+  "restriction": [
+   "restricted"
+  ],
+  "restrictions": [
+   "restricted"
+  ],
+  "restricts": [
+   "restricted",
+   "restrictions"
+  ],
+  "retain": [
+   "retained"
+  ],
+  "retaining": [
+   "retained"
+  ],
+  "retains": [
+   "retained"
+  ],
+  "retested": [
+   "retest"
+  ],
+  "retrieve": [
+   "retrieval"
+  ],
+  "retrieved": [
+   "retrieval"
+  ],
+  "retrieving": [
+   "retrieval"
+  ],
+  "retrospectively": [
+   "retrospective"
+  ],
+  "returned": [
+   "return"
+  ],
+  "reused": [
+   "reuse"
+  ],
+  "reusing": [
+   "reuse"
+  ],
+  "reveal": [
+   "revealed"
+  ],
+  "revealation": [
+   "revealed",
+   "reveals"
+  ],
+  "revealing": [
+   "revealed",
+   "reveals"
+  ],
+  "reveals": [
+   "revealed"
+  ],
+  "reversal": [
+   "reversed"
+  ],
+  "reversals": [
+   "reversed"
+  ],
+  "reversed": [
+   "reverse"
+  ],
+  "reversible": [
+   "reversed"
+  ],
+  "reversibly": [
+   "reversed"
+  ],
+  "reversing": [
+   "reverse",
+   "reversed"
+  ],
+  "revised": [
+   "revision"
+  ],
+  "richly": [
+   "rich"
+  ],
+  "richness": [
+   "rich"
+  ],
+  "robustly": [
+   "robust"
+  ],
+  "robustness": [
+   "robust"
+  ],
+  "rotate": [
+   "rotation"
+  ],
+  "rotated": [
+   "rotation"
+  ],
+  "rotating": [
+   "rotation"
+  ],
+  "rotational": [
+   "rotation"
+  ],
+  "rotationally": [
+   "rotation"
+  ],
+  "routinely": [
+   "routine"
+  ],
+  "running": [
+   "run",
+   "runs"
+  ],
+  "safely": [
+   "safe"
+  ],
+  "sampled": [
+   "sampling"
+  ],
+  "samples": [
+   "sampling"
+  ],
+  "saturate": [
+   "saturation"
+  ],
+  "save": [
+   "saved"
+  ],
+  "saves": [
+   "saved"
+  ],
+  "saving": [
+   "save",
+   "saved"
+  ],
+  "scored": [
+   "score",
+   "scores"
+  ],
+  "scoring": [
+   "score",
+   "scored",
+   "scores"
+  ],
+  "scorings": [
+   "score",
+   "scored",
+   "scores"
+  ],
+  "screened": [
+   "screen",
+   "screening"
+  ],
+  "screening": [
+   "screen"
+  ],
+  "screenings": [
+   "screen"
+  ],
+  "scripting": [
+   "script",
+   "scripts"
+  ],
+  "seat": [
+   "seated"
+  ],
+  "seating": [
+   "seated"
+  ],
+  "sectionally": [
+   "sectional"
+  ],
+  "seeded": [
+   "seed"
+  ],
+  "segment": [
+   "segmentation",
+   "segmented"
+  ],
+  "segmental": [
+   "segment",
+   "segmentation",
+   "segmentations",
+   "segmented",
+   "segments"
+  ],
+  "segmentated": [
+   "segment",
+   "segmentation",
+   "segmentations",
+   "segmented",
+   "segments"
+  ],
+  "segmented": [
+   "segment",
+   "segmentation"
+  ],
+  "segmenting": [
+   "segment",
+   "segmentation",
+   "segmentations",
+   "segmented",
+   "segments"
+  ],
+  "segments": [
+   "segmentation",
+   "segmented"
+  ],
+  "semantically": [
+   "semantic"
+  ],
+  "sending": [
+   "send"
+  ],
+  "sensing": [
+   "sense"
+  ],
+  "sensitivity": [
+   "sensitive"
+  ],
+  "separable": [
+   "separate",
+   "separated",
+   "separation"
+  ],
+  "separated": [
+   "separate"
+  ],
+  "separately": [
+   "separate",
+   "separated"
+  ],
+  "separating": [
+   "separate",
+   "separated",
+   "separately",
+   "separation"
+  ],
+  "separation": [
+   "separate",
+   "separated"
+  ],
+  "separations": [
+   "separate",
+   "separated"
+  ],
+  "sequenced": [
+   "sequence",
+   "sequences"
+  ],
+  "sequencing": [
+   "sequence",
+   "sequences"
+  ],
+  "sequentially": [
+   "sequential"
+  ],
+  "served": [
+   "serve"
+  ],
+  "serving": [
+   "serve",
+   "served"
+  ],
+  "setting": [
+   "set",
+   "sets"
+  ],
+  "settings": [
+   "set",
+   "sets"
+  ],
+  "shaped": [
+   "shape",
+   "shapes"
+  ],
+  "share": [
+   "shared"
+  ],
+  "shares": [
+   "shared"
+  ],
+  "sharing": [
+   "share",
+   "shared"
+  ],
+  "shielding": [
+   "shielded"
+  ],
+  "shift": [
+   "shifted"
+  ],
+  "shifting": [
+   "shift",
+   "shifted"
+  ],
+  "shifts": [
+   "shifted"
+  ],
+  "shim": [
+   "shimming"
+  ],
+  "showed": [
+   "show"
+  ],
+  "showing": [
+   "show",
+   "showed"
+  ],
+  "shuffling": [
+   "shuffled"
+  ],
+  "significance": [
+   "significant",
+   "significantly"
+  ],
+  "significantly": [
+   "significant"
+  ],
+  "signing": [
+   "signed"
+  ],
+  "silently": [
+   "silent"
+  ],
+  "similarity": [
+   "similar"
+  ],
+  "similarly": [
+   "similar",
+   "similarity"
+  ],
+  "simulate": [
+   "simulated"
+  ],
+  "simulating": [
+   "simulated"
+  ],
+  "simulation": [
+   "simulated"
+  ],
+  "simulations": [
+   "simulated"
+  ],
+  "simultan": [
+   "simultaneous",
+   "simultaneously"
+  ],
+  "simultaneously": [
+   "simultaneous"
+  ],
+  "sitting": [
+   "sit"
+  ],
+  "sized": [
+   "size",
+   "sizes"
+  ],
+  "sizing": [
+   "size",
+   "sizes"
+  ],
+  "skip": [
+   "skipped"
+  ],
+  "skips": [
+   "skipped"
+  ],
+  "sleeping": [
+   "sleep"
+  ],
+  "sleepy": [
+   "sleepiness"
+  ],
+  "slight": [
+   "slightly"
+  ],
+  "slowed": [
+   "slow"
+  ],
+  "slowing": [
+   "slow"
+  ],
+  "smooth": [
+   "smoothed",
+   "smoothing"
+  ],
+  "smoothed": [
+   "smoothing"
+  ],
+  "smoothness": [
+   "smoothed",
+   "smoothing"
+  ],
+  "socially": [
+   "social"
+  ],
+  "sounded": [
+   "sound",
+   "sounds"
+  ],
+  "sourced": [
+   "source",
+   "sources"
+  ],
+  "spaced": [
+   "spacing"
+  ],
+  "spanned": [
+   "spanning"
+  ],
+  "spatially": [
+   "spatial"
+  ],
+  "spatiotemporally": [
+   "spatiotemporal"
+  ],
+  "speak": [
+   "speaking"
+  ],
+  "specially": [
+   "special"
+  ],
+  "specifically": [
+   "specific"
+  ],
+  "specifies": [
+   "specified"
+  ],
+  "specify": [
+   "specified"
+  ],
+  "specifying": [
+   "specified",
+   "specifies",
+   "specify"
+  ],
+  "splitting": [
+   "split"
+  ],
+  "spontaneously": [
+   "spontaneous"
+  ],
+  "stabilized": [
+   "stability"
+  ],
+  "staged": [
+   "stage",
+   "stages"
+  ],
+  "staging": [
+   "stage",
+   "stages"
+  ],
+  "standardize": [
+   "standard",
+   "standardized",
+   "standards"
+  ],
+  "standardized": [
+   "standard"
+  ],
+  "standardizes": [
+   "standard",
+   "standardized",
+   "standards"
+  ],
+  "started": [
+   "start"
+  ],
+  "starting": [
+   "start",
+   "started"
+  ],
+  "statistic": [
+   "statistical"
+  ],
+  "statistically": [
+   "statistical",
+   "statistics"
+  ],
+  "statistics": [
+   "statistical"
+  ],
+  "stayed": [
+   "stay"
+  ],
+  "staying": [
+   "stay"
+  ],
+  "stimul": [
+   "stimulated",
+   "stimulation",
+   "stimulations"
+  ],
+  "stimulate": [
+   "stimulated",
+   "stimulation",
+   "stimulations"
+  ],
+  "stimulated": [
+   "stimulation",
+   "stimulations"
+  ],
+  "stimulating": [
+   "stimulated",
+   "stimulation",
+   "stimulations"
+  ],
+  "stimulator": [
+   "stimulated",
+   "stimulation",
+   "stimulations"
+  ],
+  "stopped": [
+   "stop"
+  ],
+  "stopping": [
+   "stop",
+   "stopped"
+  ],
+  "streamed": [
+   "stream",
+   "streams"
+  ],
+  "streaming": [
+   "stream",
+   "streams"
+  ],
+  "stressful": [
+   "stress"
+  ],
+  "strongly": [
+   "strong"
+  ],
+  "studie": [
+   "study"
+  ],
+  "studied": [
+   "studies",
+   "study"
+  ],
+  "studying": [
+   "studied",
+   "studies",
+   "study"
+  ],
+  "submit": [
+   "submitted"
+  ],
+  "submitting": [
+   "submitted"
+  ],
+  "subsequently": [
+   "subsequent"
+  ],
+  "subtract": [
+   "subtraction"
+  ],
+  "subtracted": [
+   "subtraction"
+  ],
+  "subtracting": [
+   "subtraction"
+  ],
+  "success": [
+   "successful",
+   "successfully"
+  ],
+  "successful": [
+   "successfully"
+  ],
+  "sufficiently": [
+   "sufficient"
+  ],
+  "suggested": [
+   "suggest",
+   "suggesting"
+  ],
+  "suggesting": [
+   "suggest"
+  ],
+  "suggestions": [
+   "suggest",
+   "suggesting"
+  ],
+  "suggestive": [
+   "suggest",
+   "suggesting"
+  ],
+  "suitability": [
+   "suitable"
+  ],
+  "summed": [
+   "sum"
+  ],
+  "summing": [
+   "sum"
+  ],
+  "supervised": [
+   "supervision"
+  ],
+  "supplement": [
+   "supplemental"
+  ],
+  "supplemented": [
+   "supplemental"
+  ],
+  "supplements": [
+   "supplemental"
+  ],
+  "supplies": [
+   "supplied"
+  ],
+  "supplying": [
+   "supplied"
+  ],
+  "supported": [
+   "support"
+  ],
+  "supporters": [
+   "support",
+   "supported",
+   "supporting",
+   "supports"
+  ],
+  "supporting": [
+   "support",
+   "supported",
+   "supports"
+  ],
+  "suppress": [
+   "suppression"
+  ],
+  "suppressed": [
+   "suppression"
+  ],
+  "suppressing": [
+   "suppression"
+  ],
+  "surgically": [
+   "surgical"
+  ],
+  "surprised": [
+   "surprise"
+  ],
+  "surrounded": [
+   "surround"
+  ],
+  "surrounding": [
+   "surround"
+  ],
+  "sustain": [
+   "sustained"
+  ],
+  "sustaining": [
+   "sustained"
+  ],
+  "sustains": [
+   "sustained"
+  ],
+  "switch": [
+   "switching"
+  ],
+  "switched": [
+   "switching"
+  ],
+  "switches": [
+   "switching"
+  ],
+  "symbolic": [
+   "symbol",
+   "symbols"
+  ],
+  "synchronization": [
+   "synchronized"
+  ],
+  "synchronize": [
+   "synchronization",
+   "synchronized"
+  ],
+  "synchronous": [
+   "synchronization",
+   "synchronized"
+  ],
+  "synchronously": [
+   "synchronization",
+   "synchronized"
+  ],
+  "syndromic": [
+   "syndrome"
+  ],
+  "synthetically": [
+   "synthetic"
+  ],
+  "systematically": [
+   "systematic"
+  ],
+  "tabling": [
+   "table",
+   "tables"
+  ],
+  "tagged": [
+   "tag",
+   "tags"
+  ],
+  "tagging": [
+   "tag",
+   "tags"
+  ],
+  "take": [
+   "taking"
+  ],
+  "takes": [
+   "taking"
+  ],
+  "tap": [
+   "tapping"
+  ],
+  "taps": [
+   "tapping"
+  ],
+  "targeted": [
+   "target",
+   "targets"
+  ],
+  "targeting": [
+   "target",
+   "targeted",
+   "targets"
+  ],
+  "targetted": [
+   "target",
+   "targeted",
+   "targeting",
+   "targets"
+  ],
+  "tast": [
+   "taste"
+  ],
+  "tasted": [
+   "taste"
+  ],
+  "tasting": [
+   "taste"
+  ],
+  "technically": [
+   "technical"
+  ],
+  "technological": [
+   "technologies",
+   "technology"
+  ],
+  "tested": [
+   "test",
+   "testing",
+   "tests"
+  ],
+  "testing": [
+   "test"
+  ],
+  "thankful": [
+   "thank"
+  ],
+  "themed": [
+   "themes"
+  ],
+  "thick": [
+   "thickness"
+  ],
+  "thresholded": [
+   "threshold",
+   "thresholds"
+  ],
+  "thresholding": [
+   "threshold",
+   "thresholds"
+  ],
+  "timed": [
+   "timing",
+   "timings"
+  ],
+  "timestamped": [
+   "timestamps"
+  ],
+  "titled": [
+   "title"
+  ],
+  "tolerable": [
+   "tolerance"
+  ],
+  "tolerant": [
+   "tolerance"
+  ],
+  "tolerate": [
+   "tolerance"
+  ],
+  "toole": [
+   "tool",
+   "tools"
+  ],
+  "totaling": [
+   "total"
+  ],
+  "totalling": [
+   "total"
+  ],
+  "touched": [
+   "touch"
+  ],
+  "touching": [
+   "touch"
+  ],
+  "traced": [
+   "trace",
+   "traces"
+  ],
+  "track": [
+   "tracking"
+  ],
+  "tracked": [
+   "track",
+   "tracking"
+  ],
+  "tracks": [
+   "tracking"
+  ],
+  "tradition": [
+   "traditional"
+  ],
+  "train": [
+   "trained",
+   "training"
+  ],
+  "trained": [
+   "training"
+  ],
+  "trains": [
+   "trained",
+   "training"
+  ],
+  "transcranially": [
+   "transcranial"
+  ],
+  "transform": [
+   "transformation",
+   "transformed"
+  ],
+  "transformed": [
+   "transformation"
+  ],
+  "transforming": [
+   "transform",
+   "transformation",
+   "transformed"
+  ],
+  "transforms": [
+   "transformation",
+   "transformed"
+  ],
+  "translate": [
+   "translation"
+  ],
+  "translated": [
+   "translation"
+  ],
+  "treat": [
+   "treated"
+  ],
+  "treating": [
+   "treated"
+  ],
+  "tried": [
+   "try"
+  ],
+  "triggered": [
+   "trigger",
+   "triggers"
+  ],
+  "triggering": [
+   "trigger",
+   "triggers"
+  ],
+  "trying": [
+   "try"
+  ],
+  "turn": [
+   "turned"
+  ],
+  "turning": [
+   "turned"
+  ],
+  "turns": [
+   "turned"
+  ],
+  "unavailability": [
+   "unavailable"
+  ],
+  "undergo": [
+   "undergoing"
+  ],
+  "undergoes": [
+   "undergoing"
+  ],
+  "understand": [
+   "understanding"
+  ],
+  "uniform": [
+   "uniformly"
+  ],
+  "uniformity": [
+   "uniform",
+   "uniformly"
+  ],
+  "uniquely": [
+   "unique"
+  ],
+  "unpleasantness": [
+   "unpleasant"
+  ],
+  "upcomming": [
+   "upcoming"
+  ],
+  "update": [
+   "updated"
+  ],
+  "updates": [
+   "updated"
+  ],
+  "updating": [
+   "update",
+   "updated",
+   "updates"
+  ],
+  "upload": [
+   "uploaded"
+  ],
+  "uploading": [
+   "upload",
+   "uploaded"
+  ],
+  "uploads": [
+   "uploaded"
+  ],
+  "use": [
+   "used",
+   "using"
+  ],
+  "used": [
+   "using"
+  ],
+  "uses": [
+   "used",
+   "using"
+  ],
+  "utilization": [
+   "utilized",
+   "utilizing"
+  ],
+  "utilize": [
+   "utilized",
+   "utilizing"
+  ],
+  "utilizing": [
+   "utilized"
+  ],
+  "valenced": [
+   "valence"
+  ],
+  "valid": [
+   "validated",
+   "validation"
+  ],
+  "validate": [
+   "valid",
+   "validated",
+   "validation",
+   "validator"
+  ],
+  "validated": [
+   "validation"
+  ],
+  "validates": [
+   "valid",
+   "validated",
+   "validation",
+   "validator"
+  ],
+  "validating": [
+   "valid",
+   "validate",
+   "validated",
+   "validation",
+   "validator",
+   "validity"
+  ],
+  "validator": [
+   "validation"
+  ],
+  "validators": [
+   "validation"
+  ],
+  "validity": [
+   "valid",
+   "validate",
+   "validated",
+   "validation"
+  ],
+  "variability": [
+   "variable"
+  ],
+  "varies": [
+   "varied",
+   "varying"
+  ],
+  "vary": [
+   "varied",
+   "varying"
+  ],
+  "varying": [
+   "varied"
+  ],
+  "vectorized": [
+   "vector"
+  ],
+  "verbally": [
+   "verbal"
+  ],
+  "vertically": [
+   "vertical"
+  ],
+  "view": [
+   "viewed",
+   "viewing"
+  ],
+  "viewing": [
+   "view",
+   "viewed"
+  ],
+  "views": [
+   "viewed",
+   "viewing"
+  ],
+  "visibility": [
+   "visible"
+  ],
+  "visited": [
+   "visit",
+   "visits"
+  ],
+  "visiting": [
+   "visit",
+   "visits"
+  ],
+  "visualize": [
+   "visualization"
+  ],
+  "visualized": [
+   "visualization"
+  ],
+  "visualizes": [
+   "visualization"
+  ],
+  "visualizing": [
+   "visualization"
+  ],
+  "visually": [
+   "visual"
+  ],
+  "wakefulness": [
+   "wake"
+  ],
+  "waking": [
+   "wake"
+  ],
+  "walk": [
+   "walking"
+  ],
+  "walked": [
+   "walking"
+  ],
+  "wander": [
+   "wandering"
+  ],
+  "wanted": [
+   "want"
+  ],
+  "wanting": [
+   "want"
+  ],
+  "warns": [
+   "warning"
+  ],
+  "watch": [
+   "watched",
+   "watching"
+  ],
+  "watched": [
+   "watching"
+  ],
+  "weekly": [
+   "week",
+   "weeks"
+  ],
+  "widely": [
+   "wide"
+  ],
+  "windowed": [
+   "window",
+   "windows"
+  ],
+  "worked": [
+   "work"
+  ],
+  "yearly": [
+   "year",
+   "years"
+  ],
+  "zeroed": [
+   "zero"
+  ]
+ }
+}

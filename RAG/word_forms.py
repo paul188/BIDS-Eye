@@ -26,14 +26,18 @@ The pairs come from, in this order:
   1. word_forms.yaml, a short reviewed list: each form of a group against
      each of its excludes. It applies to every searched word, also to
      synonyms a vocabulary or the language model added.
-  2. the language model, for colliding pairs of the question's words that the
-     list leaves open (open_forms). It sees those forms with their dataset
+  2. word_form_pairs.json, the catalogue's colliding pairs judged offline (a
+     language model, its 'different' answers reviewed; how and when are in
+     the file). Applies like the list; the list wins where both judge a pair.
+  3. the language model, for colliding pairs of the question's words that
+     neither file judged (open_forms). It sees those forms with their dataset
      counts (prompt_block) and names the ones to keep; a form shown and not
      kept is different (decide()).
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from dataclasses import dataclass
@@ -46,6 +50,7 @@ import yaml
 log = logging.getLogger(__name__)
 
 _PATH = Path(__file__).with_name("word_forms.yaml")
+_PAIRS_PATH = Path(__file__).with_name("word_form_pairs.json")
 _WORD_RE = re.compile(r"[a-z]+")
 # A form goes into a tsquery literal as it is, so nothing else may pass.
 _FORM_RE = re.compile(r"[a-z0-9]+")
@@ -390,6 +395,12 @@ def _reviewed() -> Dict[str, Optional[_Group]]:
     return found
 
 
+def _candidates(word: str) -> List[str]:
+    """*word*, its other spellings and numbers, then their plurals and singulars."""
+    spellings = [word, *search_variants(word)]
+    return [*spellings, *sorted(set().union(*(inflections(w) for w in spellings)) - set(spellings))]
+
+
 def _entry(word: str) -> Tuple[bool, Optional[_Group]]:
     """(listed, group) for *word*; group is None when the list says to stem it.
 
@@ -398,12 +409,49 @@ def _entry(word: str) -> Tuple[bool, Optional[_Group]]:
     "localized".
     """
     table = _reviewed()
-    spellings = [word, *search_variants(word)]
-    candidates = [*spellings, *sorted(set().union(*(inflections(w) for w in spellings)) - set(spellings))]
-    for candidate in candidates:
+    for candidate in _candidates(word):
         if candidate in table:
             return True, table[candidate]
     return False, None
+
+
+# ── Pairs judged offline ──────────────────────────────────────────────────────
+
+_NO_PAIRS: Tuple[FrozenSet[str], FrozenSet[str]] = (frozenset(), frozenset())
+
+
+@lru_cache(maxsize=1)
+def _stored_pairs() -> Dict[str, Tuple[FrozenSet[str], FrozenSet[str]]]:
+    """asked word → (forms judged different, forms judged to keep matching by
+    stem). From word_form_pairs.json; {} without it."""
+    if not _PAIRS_PATH.exists():
+        return {}
+    # A broken file must not stop the search, as with word_forms.yaml.
+    try:
+        data = json.loads(_PAIRS_PATH.read_text())
+    except (OSError, ValueError) as exc:
+        log.warning("word_form_pairs.json could not be read (%s) — ignoring it", exc)
+        return {}
+    if not isinstance(data, dict):
+        log.warning("word_form_pairs.json is not a mapping — ignoring it")
+        return {}
+    kinds = []
+    for kind in ("different", "stem"):
+        table = data.get(kind) or {}
+        kinds.append({str(a).lower(): frozenset(_safe_forms(bs)) for a, bs in table.items()}
+                     if isinstance(table, dict) else {})
+    different, stem = kinds
+    return {a: (different.get(a, frozenset()), stem.get(a, frozenset()))
+            for a in set(different) | set(stem) if _FORM_RE.fullmatch(a)}
+
+
+def _stored_for(word: str) -> Tuple[FrozenSet[str], FrozenSet[str]]:
+    """(different, stem) stored for *word*, or for its other spelling or number."""
+    table = _stored_pairs()
+    for candidate in _candidates(word):
+        if candidate in table:
+            return table[candidate]
+    return _NO_PAIRS
 
 
 def reviewed(word: str) -> Tuple[bool, Optional[Tuple[str, ...]]]:
@@ -416,11 +464,15 @@ def reviewed(word: str) -> Tuple[bool, Optional[Tuple[str, ...]]]:
 
 
 def excluded_forms(word: str) -> FrozenSet[str]:
-    """The forms the reviewed list judges different from *word*."""
-    _, group = _entry(word)
-    if group is None:
-        return frozenset()
-    return frozenset(group.excludes - own_forms(word))
+    """The forms judged different from *word*: by the reviewed list, and by
+    the stored pairs where the list does not name the form as the same."""
+    listed, group = _entry(word)
+    if listed and group is None:
+        return frozenset()      # the list says the stem is right for every form
+    different = set(_stored_for(word)[0])
+    if group is not None:
+        different = (different - set(group.forms)) | group.excludes
+    return frozenset(different - own_forms(word))
 
 
 def _asked_first(word: str, forms: Iterable[str]) -> Tuple[str, ...]:
@@ -443,12 +495,13 @@ def allowed_forms(evidence: WordEvidence, different: Iterable[str]) -> Optional[
 # ── Deciding ──────────────────────────────────────────────────────────────────
 
 def open_forms(evidence: WordEvidence) -> Tuple[str, ...]:
-    """The colliding forms of the word that the reviewed list has not judged
-    against it, most frequent first."""
+    """The colliding forms of the word that neither the reviewed list nor the
+    stored pairs have judged against it, most frequent first."""
     listed, group = _entry(evidence.word)
     if listed and group is None:
         return ()       # the list says the stem is right for every form
     judged = (set(group.forms) | group.excludes) if group else set()
+    judged |= set().union(*_stored_for(evidence.word))
     return tuple(form for form in colliding_forms(evidence) if form not in judged)
 
 
@@ -528,10 +581,11 @@ def forms_for(word: str, decided: Optional[Mapping[str, Sequence[str]]] = None,
     """The forms a search for *word* requires, or None to search by stem.
 
     *decided*: the forms decide() gave for this question's words. A word it
-    does not cover that has pairs on the reviewed list (a synonym, a word the
-    model wrote) gets the forms of its stem minus the excluded ones, from
-    *catalogue*. Without the catalogue the pairs cannot say what else the stem
-    holds; such a word then matches the forms its group names.
+    does not cover that has forms judged different (a synonym, a word the
+    model wrote) gets the forms of its stem minus those, from *catalogue*.
+    Without the catalogue the pairs cannot say what else the stem holds; a
+    word on the reviewed list then matches the forms its group names, any
+    other word its stem.
     """
     listed, group = _entry(word)
     if listed and group is None:
@@ -540,9 +594,9 @@ def forms_for(word: str, decided: Optional[Mapping[str, Sequence[str]]] = None,
     chosen = (decided or {}).get(word)
     if chosen:
         return _asked_first(word, [form for form in chosen if form not in different])
-    if group is None or not different:
+    if not different:
         return None
     evidence = catalogue(word) if catalogue else None
     if evidence is not None:
         return allowed_forms(evidence, different)
-    return _asked_first(word, group.forms)
+    return _asked_first(word, group.forms) if group is not None else None
