@@ -48,6 +48,7 @@ from services.schema.coded_fields import CONCEPT_FIELDS, FILE_FIELDS  # noqa: E4
 from services.schema.tables import (  # noqa: E402
     dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
 )
+from services import sql_tree  # noqa: E402
 from services.translate import value_check as _value_check  # noqa: E402
 
 log = logging.getLogger(__name__)
@@ -124,7 +125,7 @@ _NUMBER_PATTERN = r"^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9
 # remove the filter. "naturalistic" is a paradigm category covering movie/video/narrative
 # tasks whose BIDS identifiers don't contain the word "naturalistic".
 _TASK_ILIKE_CONCEPT_RE = re.compile(
-    r"(o\d*)\.task\s+ILIKE\s+'%(\w+)%'",
+    r"o\d*\.task\s+(?:NOT\s+)?ILIKE\s+'%\w+%'",
     re.IGNORECASE,
 )
 _NATURALISTIC_TASKS = (
@@ -987,22 +988,46 @@ class SqlRewriteService:
         movie/video/narrative task identifiers that don't contain the word itself.
         "cognitive" is not a BIDS task name at all — every experimental task is
         cognitive, so we drop the filter (replaced with TRUE inside EXISTS).
-        """
-        def _expand(m: re.Match) -> str:
-            alias = m.group(1)
-            term = m.group(2).lower()
-            if term in _TASK_CONCEPT_EXPANSIONS:
-                tasks_sql = ", ".join(
-                    f"'{t}'" for t in _TASK_CONCEPT_EXPANSIONS[term]
-                )
-                log.info("Expanded task ILIKE '%%%s%%' to IN list (%d tasks)", term, len(_TASK_CONCEPT_EXPANSIONS[term]))
-                return f"{alias}.task IN ({tasks_sql})"
-            if term in _TASK_CONCEPT_DROP:
-                log.info("Dropped vague task ILIKE '%%%s%%' (not a BIDS task code)", term)
-                return "TRUE"
-            return m.group(0)
 
-        return _TASK_ILIKE_CONCEPT_RE.sub(_expand, sql)
+        Either way round of a NOT is read the same. A dropped term under a NOT
+        ("not cognitive") takes the condition it denies with it: as TRUE there
+        it would exclude every dataset with files.
+        """
+        if not _TASK_ILIKE_CONCEPT_RE.search(sql):
+            return sql
+        tree = sql_tree.parse(sql)
+        if tree is None:
+            return sql
+        changed = False
+        for node in list(tree.find_all(exp.ILike)):
+            if node.root() is not tree:
+                continue  # went with an earlier one
+            term = self._task_concept(node)
+            if term in _TASK_CONCEPT_EXPANSIONS:
+                tasks = _TASK_CONCEPT_EXPANSIONS[term]
+                node.replace(exp.In(this=node.this.copy(), expressions=[exp.Literal.string(t) for t in tasks]))
+                log.info("Expanded task ILIKE '%%%s%%' to IN list (%d tasks)", term, len(tasks))
+            elif term in _TASK_CONCEPT_DROP:
+                if sql_tree.negations(node) % 2:
+                    sql_tree.replace_by_truth(node, False)
+                else:
+                    node.replace(exp.true())
+                log.info("Dropped vague task ILIKE '%%%s%%' (not a BIDS task code)", term)
+            else:
+                continue
+            changed = True
+        return tree.sql(dialect="postgres") if changed else sql
+
+    @staticmethod
+    def _task_concept(node: Any) -> Optional[str]:
+        """The word of "o.task ILIKE '%word%'", None for any other ILIKE."""
+        column, pattern = node.this, node.expression
+        if not (isinstance(column, exp.Column) and column.name.lower() == "task"
+                and re.fullmatch(r"o\d*", column.table, re.IGNORECASE)
+                and isinstance(pattern, exp.Literal)):
+            return None
+        word = re.fullmatch(r"%(\w+)%", pattern.this)
+        return word.group(1).lower() if word else None
 
     @staticmethod
     def _ancestors(node: Any, root: Any) -> list:

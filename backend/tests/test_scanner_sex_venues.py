@@ -271,3 +271,23 @@ def test_field_strength_inside_a_modality_chip_is_still_marked():
     chip = qf.describe(_HEAD + STRENGTH_7T_FMRI)[0]
     assert chip.kind == "modality" and "7T" in chip.text_words
     assert qf.highlight_field_strengths(_HEAD + STRENGTH_7T_FMRI) == [7.0]
+
+
+@pytest.mark.parametrize("value, soft", [
+    ("o2.other_entities ->> 'Manufacturer' ILIKE '%GE%'", True),
+    ("o2.other_entities ->> 'Manufacturer' ILIKE '%GE%' AND NOT o2.other_entities ->> 'Manufacturer' IS NULL", True),
+    ("o2.other_entities ->> 'Manufacturer' ILIKE '%GE%' AND NOT CASE WHEN (o2.other_entities ->> "
+     "'Manufacturer') ~ 'a' THEN 1 END IS NULL", True),
+    ("o2.other_entities ->> 'Manufacturer' NOT ILIKE '%GE%'", False),
+    ("NOT o2.other_entities ->> 'Manufacturer' ILIKE '%GE%'", False),
+    ("NOT o2.other_entities ->> 'Manufacturer' IN ('GE')", False),
+    ("o2.other_entities ->> 'Manufacturer' <> 'GE'", False),
+])
+def test_a_denied_scanner_stays_a_hard_filter(value, soft):
+    from services import sql_tree
+    from services.uncertain.classify import classify
+
+    tree = sql_tree.parse_select(
+        "SELECT d.id FROM bids_datasets AS d WHERE EXISTS(SELECT 1 FROM bids_objects AS o2 "
+        f"WHERE o2.dataset_id = d.id AND {value})")
+    assert (classify(tree.args["where"].this, "d") is not None) is soft

@@ -63,6 +63,8 @@ def test_not_like_is_read_as_a_not(written, read):
     ("(d.name ILIKE 'a') IS NOT DISTINCT FROM FALSE", True),
     ("(d.name ILIKE 'a') IS NULL", True),
     ("(d.name ILIKE 'a') IS UNKNOWN", True),
+    ("(d.name ILIKE 'a' OR d.id = 1) IS NULL", True),
+    ("CASE WHEN d.name ~ '1' THEN 1 END IS NULL", False),
     ("NULLIF(d.name, '') IS NULL", False),   # the column is empty: no match is denied
     ("d.name ILIKE 'a' AND NOT d.species = 'b'", False),
 ])

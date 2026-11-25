@@ -13,7 +13,6 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Any, List, Optional, Tuple
 
 from sqlglot import exp
@@ -70,41 +69,42 @@ def short_fields_only(tsquery: str) -> bool:
 
 
 @dataclass(frozen=True)
-class Branch:
-    """One OR branch of a condition of a query on the dataset row *alias*."""
-    node: Any
+class EvidenceBranch:
+    """Evidence interpretation of one branch from a SQL condition."""
+    sql_branch: sql_tree.SqlBranch
     alias: str
 
-    # A cached_property writes the instance's __dict__, which frozen allows.
-    @cached_property
-    def sql(self) -> str:
-        return self.node.sql(dialect="postgres")
+    @property
+    def node(self) -> Any:
+        return self.sql_branch.node
 
-    @cached_property
+    @property
+    def sql(self) -> str:
+        return self.sql_branch.sql
+
+    @property
     def outer_columns(self) -> list:
-        """The columns read outside its subqueries."""
-        return [c for c in self.node.find_all(exp.Column) if not sql_tree.in_subquery(c, self.node)]
+        return self.sql_branch.outer_columns
 
     @property
     def reads_a_join(self) -> bool:
         """It reads a join of the outer query (o.task = …)."""
-        return any(c.table and c.table != self.alias for c in self.outer_columns)
+        return self.sql_branch.reads_a_join(self.alias)
 
     def denied(self, node) -> bool:
-        return sql_tree.under_negation(node, self.node)
+        return self.sql_branch.denied(node)
 
     @property
     def selects(self) -> list:
         """Its outermost subqueries."""
-        return [s for s in self.node.find_all(exp.Select) if not sql_tree.in_subquery(s, self.node)]
+        return self.sql_branch.outer_selects
 
     @property
     def tsqueries(self) -> List[str]:
         """The query strings of its text searches, without the word-form guards."""
         found = []
-        for call in self.node.find_all(exp.Anonymous, exp.Func):
-            name = (call.name if isinstance(call, exp.Anonymous) else call.sql_name()).lower()
-            if name != "to_tsquery" or sql_tree.in_subquery(call, self.node) or self.denied(call):
+        for call in self.sql_branch.function_calls("to_tsquery"):
+            if self.denied(call):
                 continue
             literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
             if literals and literals[0].this.lower() != "simple":   # not a word-form guard
@@ -173,10 +173,10 @@ class Branch:
             names = tuple(dict.fromkeys(("age_min", "age_max") + names))
         return FieldValue(self.sql, columns=names) if names else None
 
-    def without_papers(self) -> Optional[Branch]:
+    def without_papers(self) -> Optional[EvidenceBranch]:
         """The branch with its text searches on the dataset's own text alone;
         None when it searches no papers."""
-        own = Branch(self.node.copy(), self.alias)
+        own = EvidenceBranch(sql_tree.SqlBranch(self.node.copy()), self.alias)
         columns = [c for c in own.outer_columns
                    if c.name.lower() in _WITHOUT_PAPERS and not own.denied(c)]
         for column in columns:
@@ -184,10 +184,10 @@ class Branch:
         return own if columns else None
 
     def is_a_denial(self) -> bool:
-        return any(sql_tree.is_negation(n) for n in self.node.walk())
+        return self.sql_branch.is_a_denial()
 
 
-def classify_branch(branch: Branch) -> Optional[ConfirmedMatch]:
+def classify_branch(branch: EvidenceBranch) -> Optional[ConfirmedMatch]:
     """The evidence one OR branch is; None when it cannot be evaluated alone.
     The branch searches no papers (branch_evidence).
 
@@ -203,7 +203,7 @@ def classify_branch(branch: Branch) -> Optional[ConfirmedMatch]:
     return found
 
 
-def branch_evidence(branch: Branch) -> Tuple[ConfirmedMatch, ...]:
+def branch_evidence(branch: EvidenceBranch) -> Tuple[ConfirmedMatch, ...]:
     """The evidence of one OR branch; none when it cannot be evaluated alone.
 
     A vector with the papers also holds the dataset's own text: a search on
@@ -223,6 +223,6 @@ def confirming_evidence(node, alias: str) -> Tuple[ConfirmedMatch, ...]:
     """The ways the condition *node* can hold, in its order, each once. A branch
     that cannot be evaluated alone is left out, so these need not cover the condition."""
     ways: List[ConfirmedMatch] = []
-    for branch in sql_tree.or_branches(node):
-        ways.extend(way for way in branch_evidence(Branch(branch, alias)) if way not in ways)
+    for branch in sql_tree.Condition(node).branches:
+        ways.extend(way for way in branch_evidence(EvidenceBranch(branch, alias)) if way not in ways)
     return tuple(ways)

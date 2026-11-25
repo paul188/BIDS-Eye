@@ -19,6 +19,7 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+from services import sql_tree
 from services.uncertain.conditions import LABEL_RE, ClauseEvidence, TSQUERY_RE
 from services.uncertain.text import negated_spans, query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
@@ -87,12 +88,24 @@ def _patient_count_parts(sql: str):
     return cohort_count.parse_expanded(sql)
 
 
+def _denies_a_sidecar_value(node) -> bool:
+    """A NOT stands around a sidecar value; "IS NOT NULL" only asks that it is recorded."""
+    def asks_if_recorded(negation) -> bool:
+        inner = negation.this.unnest() if isinstance(negation, exp.Not) else None
+        return isinstance(inner, exp.Is) and isinstance(inner.expression, exp.Null)
+
+    return any(sql_tree.is_negation(a) and not asks_if_recorded(a)
+               for column in node.find_all(exp.Column) if column.name.lower() == SIDECAR_COLUMN
+               for a in sql_tree.ancestors(column, node))
+
+
 def soft_kind(node, alias: str) -> Optional[str]:
     """The kind of uncertain condition *node* may become; None: a hard filter.
 
     The rules, in this order:
       1. Negated: hard.
-      2. Reads a sidecar value: "sidecar".
+      2. Reads a sidecar value: "sidecar"; hard when it denies one
+         ("not GE"): a text naming the value is no evidence for it.
       3. Reads a HARD_FIELDS column: hard.
       4. Reads a joined table's row outside a subquery: hard.
       5. "At least N participants with a diagnosis": "patient_count".
@@ -109,7 +122,7 @@ def soft_kind(node, alias: str) -> Optional[str]:
         return None
     columns = {column.name.lower() for column in node.find_all(exp.Column)}
     if SIDECAR_COLUMN in columns:
-        return "sidecar"
+        return None if _denies_a_sidecar_value(node) else "sidecar"
     if columns & HARD_FIELDS:
         return None
     if _joined_row_tables(node, alias):
