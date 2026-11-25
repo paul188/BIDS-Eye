@@ -32,7 +32,7 @@ class Source(str, Enum):
     SHORT_TEXT = "short_text"      # name or description only (ILIKE, or search_tsv words labelled :AB)
     TEXT = "text"                  # search_tsv: name, description, study fields, README
     README = "readme"
-    PAPER = "paper"                # a paper the dataset names
+    PAPERS = "papers"              # a paper the dataset names
     ASSUMED = "assumed"            # the column is empty and its default holds
     ASSUMED_ABSENT = "assumed_absent"  # an excluded diagnosis, and the dataset records none
     NOT_RECORDED = "not_recorded"  # the dataset does not record the field
@@ -62,7 +62,7 @@ _GROUPS = {
     Source.SHORT_TEXT: SourceGroup.OWN_TEXT,
     Source.TEXT: SourceGroup.OWN_TEXT,
     Source.README: SourceGroup.OWN_TEXT,
-    Source.PAPER: SourceGroup.PAPER,
+    Source.PAPERS: SourceGroup.PAPER,
 }
 
 

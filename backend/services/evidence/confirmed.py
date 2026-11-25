@@ -81,7 +81,7 @@ class Found(ConfirmedMatch):
         Source.FILES: "in the dataset's files",
         Source.DERIVATIVES: "in its derivatives",
         Source.SITES: "at a listed site",
-        Source.PAPER: "named in a linked paper",
+        Source.PAPERS: "named in a linked paper",
         Source.TEXT: "named in the README or description",
         Source.SHORT_TEXT: "named in the title or description",
         Source.README: "named in the README",

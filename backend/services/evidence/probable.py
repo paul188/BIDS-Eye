@@ -34,7 +34,7 @@ class PaperOnly(PieceOfEvidence):
     lowest weight, so a search scoped to the name could never reach it."""
     searches: Tuple[TextSearch, ...]
     alias: str = field(kw_only=True)   # the dataset row of the query
-    source: Source = field(default=Source.PAPER, kw_only=True)
+    source: Source = field(default=Source.PAPERS, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
     def sql(self) -> Optional[str]:

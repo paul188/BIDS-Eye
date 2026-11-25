@@ -80,10 +80,10 @@ class About(str, Enum):
 
 class TextKind(str, Enum):
     """Which text a text column of bids_datasets holds."""
-    OWN = "own"        # name, description, study fields and README together
-    PAPERS = "papers"  # OWN plus the dataset's papers
+    TEXT = "text"                        # name, description, study fields and README together
+    TEXT_AND_PAPERS = "text_and_papers"  # TEXT plus the dataset's papers
     README = "readme"
-    SHORT = "short"    # the name or the description
+    SHORT_TEXT = "short_text"            # the name or the description
 
 
 # The SQL files in crawlers/ that create the declarations below.
@@ -134,13 +134,13 @@ datasets = extend(
     BIDSDataset,
     # Full-text search vectors, GENERATED: PostgreSQL recomputes them on every write.
     # Stemmed dataset text: A name, B study fields, C llm_profile, D readme_text.
-    _migration_column("search_tsv", TSVECTOR, _SEARCH_TSV, text=TextKind.OWN),
+    _migration_column("search_tsv", TSVECTOR, _SEARCH_TSV, text=TextKind.TEXT),
     # search_tsv plus the primary papers' title, abstract and keywords; only to match.
-    _migration_column("search_tsv_papers", TSVECTOR, _PAPER_SEARCH, PAPERS_FLAG, TextKind.PAPERS),
+    _migration_column("search_tsv_papers", TSVECTOR, _PAPER_SEARCH, PAPERS_FLAG, TextKind.TEXT_AND_PAPERS),
     # search_tsv unstemmed, so "ageing" does not also match "age".
-    _migration_column("search_tsv_exact", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.OWN),
+    _migration_column("search_tsv_exact", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.TEXT),
     # search_tsv_papers unstemmed.
-    _migration_column("search_tsv_exact_papers", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.PAPERS),
+    _migration_column("search_tsv_exact_papers", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.TEXT_AND_PAPERS),
 
     # Distinct subjects in bids_objects, refreshed after each crawl (dataset_facets.py).
     _migration_column("n_subjects", Integer, _FACETS),
@@ -191,7 +191,7 @@ datasets = extend(
 datasets.info[ABOUT] = About.DATASET
 # BIDS-SQL's own text columns.
 for _column in (datasets.c.name, datasets.c.description_text):
-    _column.info[TEXT] = TextKind.SHORT
+    _column.info[TEXT] = TextKind.SHORT_TEXT
 
 
 # ── Tables the migrations add ────────────────────────────────────────────────

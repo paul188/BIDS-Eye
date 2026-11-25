@@ -270,7 +270,7 @@ class QueryEvidence:
 
     def flag_columns(self, i: int) -> List[str]:
         """Columns that say which weaker pieces of condition *i* hold, one
-        per piece: "paper_0" for evidence found in a paper. None for a
+        per piece: "papers_0" for evidence found in a paper. None for a
         condition with a single weaker piece: its state says it."""
         pieces = self.conditions[i].weaker
         names: List[str] = []

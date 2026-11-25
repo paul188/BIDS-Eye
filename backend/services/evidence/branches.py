@@ -30,13 +30,13 @@ _ABOUT_SOURCES = {
     About.FILES: Source.FILES,
     About.DERIVATIVES: Source.DERIVATIVES,
     About.SITES: Source.SITES,
-    About.PAPERS: Source.PAPER,
+    About.PAPERS: Source.PAPERS,
 }
 _KIND_SOURCES = {
-    TextKind.OWN: Source.TEXT,
-    TextKind.PAPERS: Source.PAPER,
+    TextKind.TEXT: Source.TEXT,
+    TextKind.TEXT_AND_PAPERS: Source.PAPERS,
     TextKind.README: Source.README,
-    TextKind.SHORT: Source.SHORT_TEXT,
+    TextKind.SHORT_TEXT: Source.SHORT_TEXT,
 }
 _TABLE_SOURCES = {table: _ABOUT_SOURCES[about] for table, about in TABLE_ABOUT.items()
                   if about in _ABOUT_SOURCES}
@@ -129,7 +129,7 @@ def classify_branch(branch, alias: str) -> Optional[ConfirmedMatch]:
         if queries and all(short_fields_only(q) for q in queries):
             return Found(sql, source=Source.SHORT_TEXT)
     for source in (Source.TEXT, Source.SHORT_TEXT, Source.README,
-                   Source.PAPER):
+                   Source.PAPERS):
         if source in text_sources:
             return Found(sql, source=source)
 

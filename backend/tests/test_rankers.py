@@ -130,7 +130,7 @@ def test_the_query_score_multiplies_the_scores_of_its_clauses() -> None:
             "WHEN evidence.u0 = 2 THEN 0.33 ELSE 0 END)")
     # A paper and the dataset's own text are two sources: the stronger in
     # full, the other at SHARED_EVIDENCE_DISCOUNT, on the scale -ln(1 - score).
-    paper = "CASE WHEN evidence.paper_1 THEN 0.5108 ELSE 0 END"
+    paper = "CASE WHEN evidence.papers_1 THEN 0.5108 ELSE 0 END"
     own_text = "CASE WHEN evidence.text_1 THEN 0.4620 ELSE 0 END"
     text = (f"(CASE WHEN evidence.u1 = 0 THEN 1 WHEN evidence.u1 = 1 THEN 1 - EXP(-("
             f"GREATEST({paper}, {own_text}) + 0.5 * ({paper} + {own_text} - GREATEST({paper}, {own_text}))"

@@ -16,7 +16,7 @@ GROUPS = {
     SourceGroup.RECORDS: {Source.PARTICIPANTS, Source.FIELD, Source.FILES, Source.DERIVATIVES,
                           Source.SITES},
     SourceGroup.OWN_TEXT: {Source.SHORT_TEXT, Source.TEXT, Source.README},
-    SourceGroup.PAPER: {Source.PAPER},
+    SourceGroup.PAPER: {Source.PAPERS},
 }
 WITHOUT_GROUP = {Source.ASSUMED, Source.ASSUMED_ABSENT, Source.NOT_RECORDED}
 

@@ -113,7 +113,7 @@ def test_a_branch_on_the_outer_join_is_left_out():
 def test_paper_and_readme_venues():
     paper = ("(d.search_tsv @@ to_tsquery('english', 'sleep') OR "
              "d.search_tsv_papers @@ to_tsquery('english', 'sleep'))")
-    assert _kinds(_plans(paper)["Text"]) == [Source.TEXT, Source.PAPER]
+    assert _kinds(_plans(paper)["Text"]) == [Source.TEXT, Source.PAPERS]
     # A URL fragment stays a substring search (text_search.convert_long_text_ilike).
     readme = "(d.readme_text ILIKE '%doi.org%' OR d.description_text ILIKE '%doi.org%')"
     assert _kinds(_plans(readme)["Text"]) == [Source.README, Source.SHORT_TEXT]
