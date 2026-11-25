@@ -13,16 +13,14 @@ the session, never from the request.
 
 from __future__ import annotations
 
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 
-from deps import get_db
+from deps import AsyncSessionDep
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
-from routers.auth import require_auth, user_id
+from routers.auth import CurrentUserDep, user_id
 from schemas import HistoryEnabled, HistoryEntry, HistoryList
 from services.stores import search_history
 
@@ -39,8 +37,8 @@ class SignInAgainError(
 
 @router.get("", dependencies=[rate_limit(Category.LIGHT)])
 async def list_history(
-    session: Annotated[AsyncSession, Depends(get_db)],
-    user: Annotated[dict, Depends(require_auth)],
+    session: AsyncSessionDep,
+    user: CurrentUserDep,
 ) -> HistoryList:
     """Whether the user's searches are saved, and the saved ones, newest first."""
     entries = await search_history.list_entries(session, user_id(user))
@@ -54,8 +52,8 @@ async def list_history(
 @router.put("/enabled", dependencies=[rate_limit(Category.LIGHT)])
 async def set_history_enabled(
     body: HistoryEnabled,
-    session: Annotated[AsyncSession, Depends(get_db)],
-    user: Annotated[dict, Depends(require_auth)],
+    session: AsyncSessionDep,
+    user: CurrentUserDep,
 ) -> HistoryEnabled:
     """Turn saving on, or off: off deletes everything saved for the user."""
     github_id = user_id(user)
@@ -73,8 +71,8 @@ async def set_history_enabled(
 @router.get("/{entry_id}", dependencies=[rate_limit(Category.LIGHT)])
 async def get_history_entry(
     entry_id: UUID,
-    session: Annotated[AsyncSession, Depends(get_db)],
-    user: Annotated[dict, Depends(require_auth)],
+    session: AsyncSessionDep,
+    user: CurrentUserDep,
 ) -> HistoryEntry:
     """One saved search as it was answered then."""
     return await search_history.get_entry(session, user_id(user), entry_id)
@@ -83,8 +81,8 @@ async def get_history_entry(
 @router.delete("/{entry_id}", status_code=204, dependencies=[rate_limit(Category.LIGHT)])
 async def delete_history_entry(
     entry_id: UUID,
-    session: Annotated[AsyncSession, Depends(get_db)],
-    user: Annotated[dict, Depends(require_auth)],
+    session: AsyncSessionDep,
+    user: CurrentUserDep,
 ) -> None:
     """Delete one saved search."""
     await search_history.delete_entry(session, user_id(user), entry_id)

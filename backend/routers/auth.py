@@ -4,6 +4,7 @@ import logging
 import secrets
 import time
 from collections.abc import MutableMapping
+from typing import Annotated
 from urllib.parse import quote, urlsplit
 
 import httpx
@@ -210,6 +211,10 @@ def require_auth(request: Request) -> dict:
     if user is None:
         raise NotSignedInError()
     return user
+
+
+# What a route writes to get the signed-in user: ``user: CurrentUserDep``.
+CurrentUserDep = Annotated[dict, Depends(require_auth)]
 
 
 # ── GitHub login ──────────────────────────────────────────────────────────────
@@ -422,7 +427,7 @@ async def github_callback(request: Request):
 # ── Signed-in user ────────────────────────────────────────────────────────────
 
 @router.get("/me", dependencies=[rate_limit(Category.LIGHT)])
-async def me(user: dict = Depends(require_auth)):
+async def me(user: CurrentUserDep):
     return {"login": user["sub"]}
 
 

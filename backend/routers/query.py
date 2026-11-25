@@ -13,14 +13,11 @@ catches it.
 
 from __future__ import annotations
 
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from deps import get_db
+from deps import AsyncSessionDep
 from rate_limits import Category, rate_limit
-from routers.auth import require_auth, user_id
+from routers.auth import CurrentUserDep, user_id
 from schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
@@ -30,8 +27,8 @@ router = APIRouter(prefix="/query", tags=["query"])
 @router.post("", dependencies=[rate_limit(Category.SEARCH)])
 async def query_datasets(
     body: QueryRequest,
-    session: Annotated[AsyncSession, Depends(get_db)],
-    user: Annotated[dict, Depends(require_auth)],
+    session: AsyncSessionDep,
+    user: CurrentUserDep,
 ) -> QueryResponse:
     """
     Submit a natural-language question and receive the first page of matching
@@ -55,7 +52,7 @@ async def query_datasets(
 @router.post("/page", dependencies=[rate_limit(Category.PAGE)])
 async def query_page(
     body: QueryPageRequest,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: AsyncSessionDep,
 ) -> QueryResponse:
     """Fetch another page of an already-translated query, reusing its cached base
     SQL (no new LLM call)."""
