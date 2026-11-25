@@ -103,6 +103,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
             apply_relevance=bool(stored.get("apply_relevance")),
             params=stored.get("params") or {}, rank_query=ranking.rank_from_json(stored.get("rank_query")),
             filter_sql=stored.get("filter_sql"), relaxed_sql=stored.get("relaxed_sql"),
+            sql_path=stored.get("sql_path"),
         )
     else:
         translation = await text_to_sql(question)
@@ -141,6 +142,7 @@ async def answer_question(session: AsyncSession, question: str) -> QueryResponse
         "filter_sql": cached.filter_sql,
         "relaxed_sql": None if cached.relaxed else cached.relaxed_sql,
         "relaxed": cached.relaxed,
+        "sql_path": translation.sql_path,
     }
     # Every search is recorded for good, whatever it found.
     await interpretations.log_query(

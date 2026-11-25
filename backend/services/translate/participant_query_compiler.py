@@ -108,6 +108,16 @@ def _decline(reason: str) -> Compiled:
     return Compiled(sql=None, reason=reason)
 
 
+# The label a filter line starts with, before the words of the request.
+_LINE_LABEL_RE = re.compile(r'^  ([a-z][a-z /-]*?) ?[":(]')
+
+
+def _line_kind(line: str) -> str:
+    """The label of a filter line: for a log, which must not hold what people searched for."""
+    match = _LINE_LABEL_RE.match(line)
+    return match.group(1) if match else "unknown"
+
+
 def _value(obj: Any, key: str, default: Any = None) -> Any:
     if isinstance(obj, dict):
         return obj.get(key, default)
@@ -354,7 +364,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
                 continue
             match = _COMPLETE_LINE_RE.match(line)
             if not match:
-                return None, [], f"filter line not supported: {line.strip()[:40]}"
+                return None, [], f"filter line not supported: {_line_kind(line)}"
             condition = match.group("condition").strip()
             if derivatives and line.startswith("  dataset text: "):
                 condition = derivatives  # the pipeline is a recorded fact, not a README word

@@ -802,6 +802,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         filter_sql=rewritten.filter_sql,
         relaxed_sql=rewritten.relaxed_sql,
         value_fixes=rewritten.value_fixes,
+        sql_path="compiled" if compiled.sql else f"model: {compiled.reason}",
     )
 
 
@@ -853,7 +854,7 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     )
     return TextToSQLResult(
         sql=sql, explanation=explanation + " Showing a plain keyword search for your question instead.",
-        apply_relevance=True, rank_query=RankQuery(stemmed=query), filter_sql=sql,
+        apply_relevance=True, rank_query=RankQuery(stemmed=query), filter_sql=sql, sql_path="keyword",
     )
 
 

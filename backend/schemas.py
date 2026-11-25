@@ -117,6 +117,9 @@ class TextToSQLResult(BaseModel):
     # datatype / suffix / task values no dataset has, corrected or dropped
     # before the query ran (services/translate/value_check.py).
     value_fixes: List[str] = []
+    # Who wrote the SQL: "compiled", "model: <why the compiler declined>" or
+    # "keyword". For query_log only; holds no words of the question.
+    sql_path: Optional[str] = Field(default=None, exclude=True)
 
 
 class QueryFilterSchema(BaseModel):

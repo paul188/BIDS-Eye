@@ -99,7 +99,7 @@ def test_scan_conditions_come_from_the_augmented_question() -> None:
     (_plan(["schizophrenia"], scan_requirements=[ScanRequirement(scan_terms=["EEG"])]),
      _augmented("  diagnosis: (...)"), "scan requirement without a resolved condition"),
     (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)", "  institution: d.x = 1"),
-     "filter line not supported: institution: d.x = 1"),
+     "filter line not supported: institution"),
     (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)") + "\n[VOCABULARY MISS — x]",
      "vocabulary miss not understood"),
     (_plan(["schizophrenia"]), _augmented("  diagnosis: (...)", "  [DB MISS — x]"), "augmented question has DB MISS"),
