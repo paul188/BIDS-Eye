@@ -5,7 +5,7 @@ A user's saved searches: GET /history lists them and says whether saving is
 on, PUT /history/enabled turns it on or off (off deletes them),
 GET /history/{id} gives one as it was answered, DELETE /history/{id} removes
 one. The rules are in services/stores/search_history.py; this module does the
-HTTP side. A search is saved where it is answered (routers/query.py).
+HTTP side. A search is saved where it is answered (routers/search.py).
 
 Every route acts on the signed-in user's own rows only: the user comes from
 the session, never from the request.
@@ -24,7 +24,7 @@ from routers.auth import CurrentUserDep, user_id
 from schemas import HistoryEnabled, HistoryEntry, HistoryList
 from services.stores import search_history
 
-router = APIRouter(prefix="/history", tags=["history"])
+history_router = APIRouter(prefix="/history", tags=["history"])
 
 
 class SignInAgainError(
@@ -35,7 +35,7 @@ class SignInAgainError(
     """The session predates saved searches and has no GitHub account number."""
 
 
-@router.get("", dependencies=[rate_limit(Category.LIGHT)])
+@history_router.get("", dependencies=[rate_limit(Category.LIGHT)])
 async def list_history(
     session: AsyncSessionDep,
     user: CurrentUserDep,
@@ -49,7 +49,7 @@ async def list_history(
     )
 
 
-@router.put("/enabled", dependencies=[rate_limit(Category.LIGHT)])
+@history_router.put("/enabled", dependencies=[rate_limit(Category.LIGHT)])
 async def set_history_enabled(
     body: HistoryEnabled,
     session: AsyncSessionDep,
@@ -68,7 +68,7 @@ async def set_history_enabled(
     return body
 
 
-@router.get("/{entry_id}", dependencies=[rate_limit(Category.LIGHT)])
+@history_router.get("/{entry_id}", dependencies=[rate_limit(Category.LIGHT)])
 async def get_history_entry(
     entry_id: UUID,
     session: AsyncSessionDep,
@@ -78,7 +78,7 @@ async def get_history_entry(
     return await search_history.get_entry(session, user_id(user), entry_id)
 
 
-@router.delete("/{entry_id}", status_code=204, dependencies=[rate_limit(Category.LIGHT)])
+@history_router.delete("/{entry_id}", status_code=204, dependencies=[rate_limit(Category.LIGHT)])
 async def delete_history_entry(
     entry_id: UUID,
     session: AsyncSessionDep,

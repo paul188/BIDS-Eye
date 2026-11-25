@@ -168,9 +168,9 @@ def test_tier_still_applies_after_a_chip_is_removed(monkeypatch):
 def test_filters_cannot_be_changed_through_the_api():
     """The page shows the chips without remove buttons; the API has no
     endpoint that re-runs a search without some of them either."""
-    import routers.query as query_router
+    import routers.search as query_router
 
-    paths = {route.path for route in query_router.router.routes}
+    paths = {route.path for route in query_router.search_router.routes}
     assert "/query" in paths and "/query/page" in paths
     assert "/query/refine" not in paths
     assert not hasattr(query_router, "query_refine")

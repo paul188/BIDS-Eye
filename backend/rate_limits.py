@@ -3,7 +3,7 @@
 Every /api route declares what it costs by depending on exactly one limiter
 (tests/test_rate_limits.py checks that no route is left out):
 
-    @router.post("/page", dependencies=[rate_limit(Category.PAGE)])
+    @search_router.post("/page", dependencies=[rate_limit(Category.PAGE)])
 
 A search runs a language-model call and costs money, a page of results runs
 SQL, a page refresh or a status poll costs nearly nothing, so each category

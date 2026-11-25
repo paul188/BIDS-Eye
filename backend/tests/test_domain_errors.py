@@ -4,7 +4,7 @@ handler (exceptions/handlers.py); any other exception gets the handlers'
 plain 500 without its message; and identical questions sent at the same time
 over HTTP still share one search (services/search.py ``_in_flight``).
 
-Needs the backend image (routers.query imports the db package)."""
+Needs the backend image (routers.search imports the db package)."""
 from __future__ import annotations
 
 import asyncio
@@ -15,7 +15,7 @@ from fastapi import FastAPI
 
 import rate_limits
 import routers.auth as auth
-import routers.query as query_router
+import routers.search as query_router
 from deps import get_db
 from exceptions.domain import DomainError
 from exceptions.handlers import UNEXPECTED_DETAIL, add_error_handlers
@@ -27,7 +27,7 @@ from services import query_guard, search
 def _app() -> FastAPI:
     app = FastAPI()
     add_error_handlers(app)
-    app.include_router(query_router.router, prefix="/api")
+    app.include_router(query_router.search_router, prefix="/api")
 
     async def no_db():
         yield None

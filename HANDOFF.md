@@ -25,7 +25,7 @@ Rollback images exist on the server for every deploy (`bids-eye-backend:pre-live
 4. **Rewriter** (`backend/services/translate/sql_rewriter.py`): concept keys, catalogue value check (`translate/value_check.py`, against the values `database_stats/database_stats.py` counts), patient counts, participants-join fix, summary tables (`bids_dataset_facets`, `bids_datasets.n_subjects`).
 5. **Text search** (`backend/services/fulltext/`): `text_search.py` turns `text_match()` placeholders into Postgres full text (modes all / short / loose / near / also); `tsquery.py` builds the tsquery strings, `ranking.py` the text rank, `word_frequencies.py` counts matching datasets, `vectors.py` names the stored vectors and their switches.
 6. **Uncertain tier** (`backend/services/fulltext/uncertain_tier.py`): "probable" results that miss one fact or match only part of a text condition. `uncertain_tier.py` does the rewrite; `tier_classify.py` decides which states a condition can take, with `tier_text.py`, `tier_sex.py` and `tier_scanner.py` for the weaker forms and `tier_conditions.py` for what they share.
-7. **Search** (`backend/services/search.py`, `search_runner.py`; the endpoints in `backend/routers/query.py`): relaxed re-run below 3 results, self-correction, paging, interpretation cache (`interpretations.py`, every search kept in `query_log`).
+7. **Search** (`backend/services/search.py`, `search_runner.py`; the endpoints in `backend/routers/search.py`): relaxed re-run below 3 results, self-correction, paging, interpretation cache (`interpretations.py`, every search kept in `query_log`).
 
 ## 3. How good it is
 

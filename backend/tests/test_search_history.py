@@ -26,7 +26,7 @@ from sqlalchemy.pool import NullPool
 
 import rate_limits
 import routers.history as history_router
-import routers.query as query_router
+import routers.search as query_router
 from deps import get_db
 from exceptions.handlers import add_error_handlers
 from models import QueryLog, SearchHistoryConsent, SearchHistoryEntry
@@ -96,8 +96,8 @@ def test_a_session_without_account_number_saves_nothing(monkeypatch) -> None:
 def _app(user: dict, session: AsyncSession | None = None) -> FastAPI:
     app = FastAPI()
     add_error_handlers(app)
-    app.include_router(query_router.router, prefix="/api")
-    app.include_router(history_router.router, prefix="/api")
+    app.include_router(query_router.search_router, prefix="/api")
+    app.include_router(history_router.history_router, prefix="/api")
 
     async def db():
         yield session

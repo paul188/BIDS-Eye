@@ -43,9 +43,9 @@ import worker_db
 from api_security import install_security_middleware
 from db.db import create_all_tables, engine
 from exceptions.handlers import add_error_handlers
-from routers.auth import require_auth, router as auth_router
-from routers.history import router as history_router
-from routers.query import router as query_router
+from routers.auth import auth_router, require_auth
+from routers.history import history_router
+from routers.search import search_router
 from services import in_process_crawler, switches
 from services.database_stats.database_stats import database_stats
 from services.translate import optional_columns
@@ -112,7 +112,7 @@ add_error_handlers(app)
 # ── Routers ───────────────────────────────────────────────────────────────────
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])
+app.include_router(search_router, prefix="/api", dependencies=[Depends(require_auth)])
 app.include_router(history_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 
