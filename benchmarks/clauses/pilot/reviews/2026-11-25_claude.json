@@ -1,0 +1,270 @@
+{
+ "mode": "review",
+ "answers": {
+  "own-01": {
+   "v": "right"
+  },
+  "own-02": {
+   "v": "right"
+  },
+  "own-03": {
+   "v": "wrong",
+   "t": "Missing reading, same pattern as own-04: 'not bipolar' may only say which depression is meant, so a dataset with an MDD group next to a bipolar group stays (c1 = unipolar depression & c3 & c4; plan can't hold). The current tree drops any dataset with a bipolar participant."
+  },
+  "own-04": {
+   "v": "right"
+  },
+  "own-05": {
+   "v": "wrong",
+   "t": "Missing reading: 'anything but 7T' can apply to the T2/FLAIR images only (c3 same_scan:c1,c2), so a dataset with 7T fMRI but 3T T2/FLAIR stays. Both current trees drop any dataset with a 7T scan."
+  },
+  "own-06": {
+   "v": "right"
+  },
+  "own-07": {
+   "v": "right"
+  },
+  "own-08": {
+   "v": "right"
+  },
+  "own-09": {
+   "v": "right"
+  },
+  "own-10": {
+   "v": "right"
+  },
+  "own-11": {
+   "v": "right"
+  },
+  "own-12": {
+   "v": "right"
+  },
+  "own-13": {
+   "v": "right"
+  },
+  "own-14": {
+   "v": "wrong",
+   "t": "c3-c5 attach to the whole dataset, so a dataset with a separate depression group goes. 'People with chronic pain, free of depression' describes the same people, as in own-17 (same_subject:c2; plan can't hold). Missing that reading, and own-14 and own-17 should be handled the same way."
+  },
+  "own-15": {
+   "v": "right"
+  },
+  "own-16": {
+   "v": "wrong",
+   "t": "The and/or readings are fine, but c3/c4 attach to the dataset; 'autism without ID' describes the autism group (same_subject:c2), as in own-17. The same-person reading is missing."
+  },
+  "own-17": {
+   "v": "right",
+   "t": "Fine. But own-14 and own-16 have the same 'patients without comorbidity' pattern, put it at dataset level and call it representable."
+  },
+  "own-18": {
+   "v": "right"
+  },
+  "own-19": {
+   "v": "right"
+  },
+  "own-20": {
+   "v": "right"
+  },
+  "own-21": {
+   "v": "right"
+  },
+  "own-22": {
+   "v": "wrong",
+   "t": "'(fMRI, EEG, fNIRS...)' lists examples (cf. ch-33): the request is any brain-signal modality, not just these three. Mark c1-c3 as examples or widen the list (MEG, iEEG, PET ...)."
+  },
+  "own-23": {
+   "v": "right"
+  },
+  "own-24": {
+   "v": "right"
+  },
+  "own-25": {
+   "v": "right"
+  },
+  "own-26": {
+   "v": "right"
+  },
+  "own-27": {
+   "v": "right"
+  },
+  "own-28": {
+   "v": "right"
+  },
+  "own-29": {
+   "v": "wrong",
+   "t": "Should be ambiguous: 'resting-state' can cover the EEG too (c1 same_scan:c2,c3). The data holds this as attach_alternatives, but the page shows only one reading and the item is flagged not ambiguous."
+  },
+  "own-30": {
+   "v": "right"
+  },
+  "own-31": {
+   "v": "wrong",
+   "t": "c2 'decoding' is the user's analysis goal, not a property of the dataset; as a must clause it misses most fitting datasets. Drop it or make it a wish. Also 'no RS' may only say which runs are wanted (as own-11 reading 2): c1 & c3 & c4 & c5 is missing."
+  },
+  "own-32": {
+   "v": "right"
+  },
+  "own-33": {
+   "v": "wrong",
+   "t": "Missing reading: 'not MP2RAGE' may only say which anatomical scan is wanted (as own-11 reading 2), so a dataset with both MPRAGE and MP2RAGE stays: c1 & c2 & c3 & c4 & c6. 'Already looked at HCP' could also be a wish to exclude HCP."
+  },
+  "own-34": {
+   "v": "right"
+  },
+  "own-35": {
+   "v": "wrong",
+   "t": "'No paediatric cases' = adults. The plan holds age: adults (own-15), the same way own-37 turns 'no animals' into species: human. So it should be representable via c4 -> age: adults."
+  },
+  "own-36": {
+   "v": "right"
+  },
+  "own-37": {
+   "v": "right"
+  },
+  "own-38": {
+   "v": "right"
+  },
+  "own-39": {
+   "v": "right"
+  },
+  "own-40": {
+   "v": "right"
+  },
+  "ch-01": {
+   "v": "right"
+  },
+  "ch-02": {
+   "v": "right"
+  },
+  "ch-03": {
+   "v": "right",
+   "t": "'Such as' could make the list examples (cf. ch-33), but excluding any comorbidity is not a sensible intent here."
+  },
+  "ch-04": {
+   "v": "right"
+  },
+  "ch-05": {
+   "v": "right"
+  },
+  "ch-06": {
+   "v": "right"
+  },
+  "ch-07": {
+   "v": "right"
+  },
+  "ch-08": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: someone on an antipsychotic plus an SSRI passes."
+  },
+  "ch-09": {
+   "v": "right"
+  },
+  "ch-10": {
+   "v": "right"
+  },
+  "ch-11": {
+   "v": "right"
+  },
+  "ch-12": {
+   "v": "ambiguous",
+   "t": "Chia's own annotation puts 'within the last month' on drug use only: !(a | b | (c & t)), with 'no pain' meaning currently. Probably weaker than the draft's reading, but a real second reading."
+  },
+  "ch-13": {
+   "v": "right"
+  },
+  "ch-14": {
+   "v": "right"
+  },
+  "ch-15": {
+   "v": "right"
+  },
+  "ch-16": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: a GI disorder caused by another drug, in someone also on MPA, passes."
+  },
+  "ch-17": {
+   "v": "wrong",
+   "t": "Missing reading. Taken literally, the text says the criterion 'does not apply' to anyone who had a single febrile convulsion, which gives (a & !b) | c. The intended reading still excludes later seizures in such a person: (seizures other than that one febrile convulsion) | c."
+  },
+  "ch-18": {
+   "v": "right"
+  },
+  "ch-19": {
+   "v": "right"
+  },
+  "ch-20": {
+   "v": "right"
+  },
+  "ch-21": {
+   "v": "right"
+  },
+  "ch-22": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: someone on metformin plus orlistat passes."
+  },
+  "ch-23": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: someone on oral contraceptives plus another medication is included, but should not be."
+  },
+  "ch-24": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: a single childhood febrile seizure plus later epilepsy passes."
+  },
+  "ch-25": {
+   "v": "wrong",
+   "t": "The scope readings are fine. Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: under reading 1, someone on an antipsychotic plus a benzodiazepine passes."
+  },
+  "ch-26": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: childhood febrile seizures plus a later seizure disorder passes."
+  },
+  "ch-27": {
+   "v": "right",
+   "t": "The primary exposure is one substance, so a & !b is fine here."
+  },
+  "ch-28": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: someone on warfarin plus aspirin passes."
+  },
+  "ch-29": {
+   "v": "wrong",
+   "t": "Co-occurrence: a & !b lets through a person who has both. 'a other than b' means 'some a that is not b' and needs its own clause (like own-04 c3). Here: nicotine dependence plus alcohol use disorder passes."
+  },
+  "ch-30": {
+   "v": "right"
+  },
+  "ch-31": {
+   "v": "right"
+  },
+  "ch-32": {
+   "v": "right"
+  },
+  "ch-33": {
+   "v": "right"
+  },
+  "ch-34": {
+   "v": "right"
+  },
+  "ch-35": {
+   "v": "right"
+  },
+  "ch-36": {
+   "v": "right"
+  },
+  "ch-37": {
+   "v": "right",
+   "t": "a | (b & t) is not listed. That's defensible: 'permanent residual defect' covers older strokes."
+  },
+  "ch-38": {
+   "v": "right"
+  },
+  "ch-39": {
+   "v": "wrong",
+   "t": "Same structure as ch-38, which lists a | (b & t) as a second reading. Add it here, or drop it there."
+  },
+  "ch-40": {
+   "v": "right"
+  }
+ }
+}

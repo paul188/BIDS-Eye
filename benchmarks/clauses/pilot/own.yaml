@@ -1,0 +1,147 @@
+# 40 requests with gold clauses. DRAFT by an LLM (Claude), not reviewed.
+# Format and rules: README.md. c1: [field, values, op, words, attach?, strength?]
+# tree: & and, | or, ! not, a - b "a except b". Wishes stay out of the tree; a
+# clause with strength example only illustrates another one. also: other trees of
+# the same reading that a plan may use; they need not be the same logic.
+items:
+# ── explicit exclusion ──
+- {id: own-01, block: explicit_exclusion, source: written, text: "EEG datasets with a motor imagery task, but no resting-state recording",
+   clauses: {c1: [scan, [EEG], any, "EEG"], c2: [scan, [motor imagery], any, "motor imagery task"], c3: [scan, [resting state], any, "resting-state recording"]},
+   readings: [{tree: "c1 & c2 & !c3", representable: yes}]}
+- {id: own-02, block: explicit_exclusion, source: written, text: "iEEG recordings with neither scalp EEG nor MEG",
+   clauses: {c1: [scan, [iEEG], any, "iEEG recordings"], c2: [scan, [scalp EEG, EEG], any, "scalp EEG"], c3: [scan, [MEG], any, "MEG"]},
+   readings: [{tree: "c1 & !c2 & !c3", representable: yes}]}
+- {id: own-03, block: explicit_exclusion, source: written, text: "depression, not bipolar, resting-state fMRI",
+   clauses: {c1: [diagnosis, [depression], any, "depression"], c2: [diagnosis, [bipolar disorder], any, "bipolar"], c3: [scan, [resting state], any, "resting-state"], c4: [scan, [fMRI], any, "fMRI"]},
+   readings: [{tree: "c1 & !c2 & c3 & c4", representable: yes}]}
+- {id: own-04, block: explicit_exclusion, source: written, text: "epilepsy datasets except temporal lobe epilepsy",
+   clauses: {c1: [diagnosis, [epilepsy], any, "epilepsy datasets"], c2: [diagnosis, [temporal lobe epilepsy], any, "temporal lobe epilepsy"]},
+   readings: [{tree: "c1 & !c2", representable: yes, why: "a dataset with any TLE patient goes"}, {tree: "c1 - c2", representable: no, why: "a dataset with other epilepsies stays, also next to TLE"}], revised: true}
+- {id: own-05, block: explicit_exclusion, source: written, text: "T2-weighted and FLAIR images, anything but 7T",
+   clauses: {c1: [scan, [T2w], any, "T2-weighted"], c2: [scan, [FLAIR], any, "FLAIR"], c3: [sidecar, [MagneticFieldStrength 7], any, "7T"]},
+   readings: [{tree: "c1 & c2 & !c3", representable: yes}, {tree: "(c1 | c2) & !c3", representable: yes, why: "and = union"}], attach_alternatives: ["c3 same_scan:c1,c2"], revised: true}
+- {id: own-06, block: explicit_exclusion, source: written, text: "fMRI of reading, not collected in the US",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [reading], any, "reading"], c3: [location, [United States], any, "the US"]},
+   readings: [{tree: "c1 & c2 & !c3", representable: no, why: "no field for an excluded location"}]}
+# ── hidden negation, single ──
+- {id: own-07, block: hidden_single, source: written, text: "unmedicated depression patients with resting-state fMRI",
+   clauses: {c1: [text, [unmedicated, medication-free, drug-free], any, "unmedicated", "group:1"], c2: [diagnosis, [depression], any, "depression patients", "group:1"], c3: [scan, [resting state], any, "resting-state"], c4: [scan, [fMRI], any, "fMRI"]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes}], convention: wanted_phrase}
+- {id: own-08, block: hidden_single, source: written, text: "drug-naive first-episode psychosis, T1w",
+   clauses: {c1: [text, [drug-naive, medication-naive, antipsychotic-naive], any, "drug-naive", "group:1"], c2: [diagnosis, [first-episode psychosis, psychosis], any, "first-episode psychosis", "group:1"], c3: [scan, [T1w], any, "T1w"]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}], convention: wanted_phrase}
+- {id: own-09, block: hidden_single, source: written, text: "MRI-negative epilepsy patients with stereo-EEG",
+   clauses: {c1: [text, [MRI-negative, non-lesional], any, "MRI-negative", "group:1"], c2: [diagnosis, [epilepsy], any, "epilepsy patients", "group:1"], c3: [scan, [stereo-EEG, iEEG], any, "stereo-EEG"]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}], convention: wanted_phrase}
+- {id: own-10, block: hidden_single, source: written, text: "fMRI of a working memory task in non-smokers",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [working memory], any, "working memory task"], c3: [text, [non-smokers, nonsmokers], any, "non-smokers"]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}], convention: wanted_phrase}
+- {id: own-11, block: hidden_single, source: written, text: "task fMRI other than resting state",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [a task], any, "task"], c3: [scan, [resting state], any, "resting state"]},
+   readings: [{tree: "c1 & c2 & !c3", representable: yes}, {tree: "c1 & c2", representable: yes, why: "only says which runs are meant"}]}
+- {id: own-12, block: hidden_single, source: "rewritten from qf06", text: "resting-state fMRI from healthy volunteers only",
+   clauses: {c1: [scan, [resting state], any, "resting-state"], c2: [scan, [fMRI], any, "fMRI"], c3: [population, [healthy], any, "healthy volunteers"], c4: [diagnosis, [any patient group], any, "only"]},
+   readings: [{tree: "c1 & c2 & c3 & !c4", representable: no, why: "healthy adds no condition; 'no patients' has no field"}]}
+- {id: own-13, block: hidden_single, source: written, text: "T1w scans free of motion artefacts",
+   clauses: {c1: [scan, [T1w], any, "T1w scans"], c2: [text, [motion artefacts], any, "motion artefacts"]},
+   readings: [{tree: "c1", representable: yes, why: "quality wish"}, {tree: "c1 & !c2", representable: yes}]}
+# ── hidden negation over a list ──
+- {id: own-14, block: hidden_list, source: written, text: "fMRI in people with chronic pain, free of depression, anxiety or substance use",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [diagnosis, [chronic pain], any, "chronic pain", "group:1"], c3: [diagnosis, [depression], any, "depression"], c4: [diagnosis, [anxiety], any, "anxiety"], c5: [diagnosis, [substance use disorder, substance use], any, "substance use"]},
+   readings: [{tree: "c1 & c2 & !c3 & !c4 & !c5", representable: yes}, {tree: "c1 & (c2 - (c3 | c4 | c5))", representable: no, why: "the same people"}], revised: true}
+- {id: own-15, block: hidden_list, source: written, text: "adults with no history of stroke, head injury, seizures; structural MRI",
+   clauses: {c1: [age, [adults], any, "adults"], c2: [diagnosis, [stroke], any, "stroke"], c3: [diagnosis, [head injury, traumatic brain injury], any, "head injury"], c4: [diagnosis, [seizures, epilepsy], any, "seizures"], c5: [scan, [structural MRI, T1w], any, "structural MRI"]},
+   readings: [{tree: "c1 & !c2 & !c3 & !c4 & c5", representable: yes}]}
+- {id: own-16, block: hidden_list, source: written, text: "EEG in autism without intellectual disability and epilepsy",
+   clauses: {c1: [scan, [EEG], any, "EEG"], c2: [diagnosis, [autism], any, "autism", "group:1"], c3: [diagnosis, [intellectual disability], any, "intellectual disability"], c4: [diagnosis, [epilepsy], any, "epilepsy"]},
+   readings: [{tree: "c1 & c2 & !c3 & !c4", representable: yes}, {tree: "c1 & c2 & !(c3 & c4)", representable: no, why: "only the combination is excluded"}, {tree: "c1 & (c2 - (c3 | c4))", representable: no, why: "the same people"}, {tree: "c1 & (c2 - (c3 & c4))", representable: no, why: "the same people, only the combination"}], revised: true}
+- {id: own-17, block: hidden_list, source: written, text: "schizophrenia patients lacking comorbid depression, substance abuse or epilepsy; T1w",
+   clauses: {c1: [diagnosis, [schizophrenia], any, "schizophrenia patients", "group:1"], c2: [diagnosis, [depression], any, "depression", "same_subject:c1"], c3: [diagnosis, [substance abuse], any, "substance abuse", "same_subject:c1"], c4: [diagnosis, [epilepsy], any, "epilepsy", "same_subject:c1"], c5: [scan, [T1w], any, "T1w"]},
+   readings: [{tree: "(c1 - (c2 | c3 | c4)) & c5", representable: no, why: "comorbidity in one person; the plan excludes by dataset"}], revised: true}
+# ── traps: look like a negation ──
+- {id: own-18, block: trap, source: written, text: "not only EEG but also fNIRS from the same subjects",
+   clauses: {c1: [scan, [EEG], any, "EEG", "same_subject:c2"], c2: [scan, [fNIRS], any, "fNIRS", "same_subject:c1"]},
+   readings: [{tree: "c1 & c2", representable: yes}]}
+- {id: own-19, block: trap, source: written, text: "non-invasive brain stimulation (TMS or tDCS) with EEG",
+   clauses: {c1: [scan, [TMS], any, "TMS"], c2: [scan, [tDCS], any, "tDCS"], c3: [scan, [EEG], any, "EEG"], c4: [scan, [non-invasive brain stimulation], any, "non-invasive brain stimulation", dataset, optional]},
+   readings: [{tree: "(c1 | c2) & c3", representable: yes, also: ["(c4 | c1 | c2) & c3"]}]}
+- {id: own-20, block: trap, source: written, text: "fMRI with a go/no-go or stop-signal task, no larger than 30 GB",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [go/no-go], any, "go/no-go"], c3: [scan, [stop-signal], any, "stop-signal"], c4: [size, [max 30 GB], any, "no larger than 30 GB"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4", representable: yes}]}
+- {id: own-21, block: trap, source: written, text: "MEG of speech perception, language does not matter; besides that, a T1w scan",
+   clauses: {c1: [scan, [MEG], any, "MEG"], c2: [scan, [speech perception], any, "speech perception"], c3: [scan, [T1w], any, "T1w scan"]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}]}
+# ── operators carried by punctuation ──
+- {id: own-22, block: operators, source: "rewritten from qf16", text: "any public brain signals (fMRI, EEG, fNIRS...) of people after Covid-19?",
+   clauses: {c1: [scan, [fMRI], any, "fMRI", dataset, example], c2: [scan, [EEG], any, "EEG", dataset, example], c3: [scan, [fNIRS], any, "fNIRS", dataset, example], c4: [diagnosis, [COVID-19], any, "Covid-19", "group:1"]},
+   readings: [{tree: "c4", representable: yes, why: "any recording; the three are examples"}, {tree: "(c1 | c2 | c3) & c4", representable: yes}], revised: true}
+- {id: own-23, block: operators, source: "rewritten from qf08", text: "open TOF/SWI images, field strength doesn't matter",
+   clauses: {c1: [scan, [TOF], any, "TOF"], c2: [scan, [SWI], any, "SWI"]},
+   readings: [{tree: "c1 | c2", representable: yes}, {tree: "c1 & c2", representable: yes}]}
+- {id: own-24, block: operators, source: written, text: "T1w; diffusion; resting-state fMRI",
+   clauses: {c1: [scan, [T1w], any, "T1w"], c2: [scan, [diffusion], any, "diffusion"], c3: [scan, [resting state], any, "resting-state"], c4: [scan, [fMRI], any, "fMRI"]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes}]}
+- {id: own-25, block: operators, source: "rewritten from qp08", text: "anorexia nervosa, bulimia nervosa, binge-eating disorder; MRI",
+   clauses: {c1: [diagnosis, [anorexia nervosa], any, "anorexia nervosa"], c2: [diagnosis, [bulimia nervosa], any, "bulimia nervosa"], c3: [diagnosis, [binge-eating disorder], any, "binge-eating disorder"], c4: [scan, [MRI], any, "MRI"]},
+   readings: [{tree: "(c1 | c2 | c3) & c4", representable: yes}]}
+- {id: own-26, block: operators, source: "rewritten from qf14", text: "EEG of normal people as well as those suffering from Alzheimer's",
+   clauses: {c1: [scan, [EEG], any, "EEG"], c2: [population, [healthy], any, "normal people", "group:1"], c3: [diagnosis, [Alzheimer's disease], any, "Alzheimer's", "group:2"]},
+   readings: [{tree: "c1 & c2 & c3", representable: no, why: "healthy adds no condition"}]}
+- {id: own-27, block: operators, source: "rewritten from qf03", text: "resting-state fMRI, healthy controls, with alcohol consumption or dependence questionnaires (AUDIT, ADS, etc.)",
+   clauses: {c1: [scan, [resting state], any, "resting-state"], c2: [scan, [fMRI], any, "fMRI"], c3: [population, [healthy], any, "healthy controls"], c4: [text, [alcohol consumption questionnaire, alcohol consumption], any, "alcohol consumption"], c5: [text, [alcohol dependence questionnaire, AUDIT, ADS], any, ["dependence questionnaires", "AUDIT, ADS"]]},
+   readings: [{tree: "c1 & c2 & c3 & (c4 | c5)", representable: no, why: "healthy adds no condition; the rest fits"}]}
+# ── attachment and ellipsis ──
+- {id: own-28, block: attachment, source: "rewritten from qp01", text: "at least one T1w and one BOLD run per subject",
+   clauses: {c1: [scan, [T1w], any, "T1w", "same_subject:c2"], c2: [scan, [BOLD, fMRI], any, "BOLD run", "same_subject:c1"]},
+   readings: [{tree: "c1 & c2", representable: yes}]}
+- {id: own-29, block: attachment, source: written, text: "resting-state fMRI and EEG in older adults",
+   clauses: {c1: [scan, [resting state], any, "resting-state", "same_scan:c2"], c2: [scan, [fMRI], any, "fMRI"], c3: [scan, [EEG], any, "EEG"], c4: [age, [older adults], any, "older adults"]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes}], attach_alternatives: ["c1 same_scan:c2,c3"], revised: true}
+- {id: own-30, block: attachment, source: written, text: "T1 and T2 weighted images from stroke patients over 60",
+   clauses: {c1: [scan, [T1w], any, ["T1", "weighted images"]], c2: [scan, [T2w], any, "T2 weighted images"], c3: [diagnosis, [stroke], any, "stroke patients", "group:1"], c4: [age, [over 60], any, "over 60", "group:1"]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes}, {tree: "(c1 | c2) & c3 & c4", representable: yes, why: "and = union"}]}
+# ── mixed requests ──
+- {id: own-31, block: mixed, source: "rewritten from qf07", text: "I need fMRI with some decoding task: block design, 4 or more subjects (more is fine), several sessions each, localizer ok; no RS",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [decoding task, decoding], any, "decoding task"], c3: [text, [block design], any, "block design"], c4: [count, [at least 4 subjects], any, "4 or more subjects"], c5: [sessions, [at least 2 per subject], any, "several sessions each"], c6: [scan, [resting state], any, "RS"]},
+   readings: [{tree: "c1 & c2 & c3 & c4 & c5 & !c6", representable: yes}], revised: true}
+- {id: own-32, block: mixed, source: "rewritten from qf12", text: "fMRI, rest then task then rest again, all on one day. Kind of task doesn't matter",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [resting state], any, "rest"], c3: [design, [rest-task-rest in one day], any, "rest then task then rest again, all on one day"]},
+   readings: [{tree: "c1 & c2 & c3", representable: no, why: "run order has no field"}]}
+- {id: own-33, block: mixed, source: "rewritten from qf27", text: "Hello, for a student project we need 7T rs-fMRI plus an anatomical acquired as MPRAGE (not MP2RAGE), humans only. We already looked at HCP.",
+   clauses: {c1: [sidecar, [MagneticFieldStrength 7], any, "7T"], c2: [scan, [resting state], any, "rs-"], c3: [scan, [fMRI], any, "fMRI"], c4: [scan, [MPRAGE], any, "MPRAGE"], c5: [scan, [MP2RAGE], any, "MP2RAGE"], c6: [species, [human], any, "humans only"]},
+   readings: [{tree: "c1 & c2 & c3 & c4 & !c5 & c6", representable: yes}, {tree: "c1 & c2 & c3 & c4 & c6", representable: yes, why: "only says which anatomical scan is wanted"}], revised: true}
+- {id: own-34, block: mixed, source: "rewritten from qf17", text: "anyone know of data with both a language task in fMRI and DTI? I'm using HCP so far, would prefer something smaller",
+   clauses: {c1: [scan, [language task, language], any, "language task"], c2: [scan, [fMRI], any, "fMRI"], c3: [scan, [DTI, diffusion], any, "DTI"], c4: [size, [smaller], any, "something smaller", dataset, wish]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}]}
+- {id: own-35, block: mixed, source: "rewritten from qf22", text: "Diffusion data from tumor patients, ideally with T1w as well; no paediatric cases please, thanks!",
+   clauses: {c1: [scan, [diffusion], any, "Diffusion"], c2: [diagnosis, [brain tumor, tumor], any, "tumor patients", "group:1"], c3: [scan, [T1w], any, "T1w", dataset, wish], c4: [age, [children], any, "paediatric cases", "group:1"]},
+   readings: [{tree: "c1 & c2 & !c4", representable: no, why: "no NOT on an age group"}]}
+- {id: own-36, block: mixed, source: "rewritten from qp04", text: "3T, MPRAGE-like, at least one participant aged 5-21, without prospective motion correction (vNavs etc.)",
+   clauses: {c1: [sidecar, [MagneticFieldStrength 3], any, "3T"], c2: [scan, [MPRAGE], any, "MPRAGE-like"], c3: [age, [5 to 21], any, "aged 5-21"], c4: [text, [prospective motion correction, vNavs], any, ["prospective motion correction", "vNavs"]], c5: [count, [at least 1 subject], any, "at least one participant", dataset, optional]},
+   readings: [{tree: "c1 & c2 & c3 & !c4", representable: yes, also: ["c1 & c2 & c3 & c5 & !c4"]}]}
+- {id: own-37, block: mixed, source: "rewritten from a live search", text: "datset epilepsi patients + APT or CEST, min 20 subjcts, no animals pls",
+   clauses: {c1: [diagnosis, [epilepsy], any, "epilepsi patients", "group:1"], c2: [scan, [APT], any, "APT"], c3: [scan, [CEST], any, "CEST"], c4: [count, [at least 20 subjects], any, "min 20 subjcts"], c5: [species, [any animal], any, "animals"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4 & !c5", representable: no, why: "species human is close, but keeps a dataset that also has animals"}], revised: true}
+# ── not representable by the plan ──
+- {id: own-38, block: not_representable, source: written, text: "datasets with Alzheimer's patients, or any sleep EEG",
+   clauses: {c1: [diagnosis, [Alzheimer's disease], any, "Alzheimer's patients"], c2: [scan, [sleep], any, "sleep"], c3: [scan, [EEG], any, "EEG"]},
+   readings: [{tree: "c1 | (c2 & c3)", representable: no, why: "OR across fields"}]}
+- {id: own-39, block: not_representable, source: written, text: "at least two of: T1w, T2w, diffusion, ASL",
+   clauses: {c1: [scan, [T1w], any, "T1w"], c2: [scan, [T2w], any, "T2w"], c3: [scan, [diffusion], any, "diffusion"], c4: [scan, [ASL], any, "ASL"]},
+   readings: [{tree: "(c1 & c2) | (c1 & c3) | (c1 & c4) | (c2 & c3) | (c2 & c4) | (c3 & c4)", representable: no, why: "n of m"}]}
+- {id: own-40, block: not_representable, source: written, text: "Parkinson's patients over 65, controls under 40, gait task",
+   clauses: {c1: [diagnosis, [Parkinson's disease], any, "Parkinson's patients", "group:1"], c2: [age, [over 65], any, "over 65", "group:1"], c3: [population, [healthy], any, "controls", "group:2"], c4: [age, [under 40], any, "under 40", "group:2"], c5: [scan, [gait, walking], any, "gait task"]},
+   readings: [{tree: "c1 & c2 & c3 & c4 & c5", representable: no, why: "different ages per group"}]}
+# ── added 2026-11-25 to replace items that left the headline ──
+- {id: own-41, block: hidden_list, source: written, text: "resting-state EEG; leave out any dataset with epilepsy patients, sleep recordings or TMS",
+   clauses: {c1: [scan, [resting state], any, "resting-state"], c2: [scan, [EEG], any, "EEG"], c3: [diagnosis, [epilepsy], any, "epilepsy patients"], c4: [scan, [sleep], any, "sleep recordings"], c5: [scan, [TMS], any, "TMS"]},
+   readings: [{tree: "c1 & c2 & !c3 & !c4 & !c5", representable: yes}], revised: true}
+- {id: own-42, block: operators, source: written, text: "language production: fMRI, MEG, ECoG, any of these",
+   clauses: {c1: [scan, [language production], any, "language production"], c2: [scan, [fMRI], any, "fMRI"], c3: [scan, [MEG], any, "MEG"], c4: [scan, [ECoG, iEEG], any, "ECoG"]},
+   readings: [{tree: "c1 & (c2 | c3 | c4)", representable: yes}], revised: true}
+- {id: own-43, block: mixed, source: written, text: "hi! looking for movie-watching fMRI with eye tracking, 30 or more subjects; preprocessed or raw, both fine. thanks",
+   clauses: {c1: [scan, [movie watching], any, "movie-watching"], c2: [scan, [fMRI], any, "fMRI"], c3: [scan, [eye tracking], any, "eye tracking"], c4: [count, [at least 30 subjects], any, "30 or more subjects"]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes}], revised: true}
+- {id: own-44, block: mixed, source: written, text: "for a meta-analysis: stroke or aphasia patients, diffusion MRI, nothing below 10 subjects",
+   clauses: {c1: [diagnosis, [stroke], any, "stroke"], c2: [diagnosis, [aphasia], any, "aphasia patients"], c3: [scan, [diffusion], any, "diffusion MRI"], c4: [count, [at least 10 subjects], any, "nothing below 10 subjects"]},
+   readings: [{tree: "(c1 | c2) & c3 & c4", representable: yes}], revised: true}

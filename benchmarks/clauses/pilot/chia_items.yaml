@@ -1,0 +1,51 @@
+# 40 lines of the Chia corpus (Kury et al. 2020, CC BY 4.0) with corrected logic.
+# DRAFT by an LLM (Claude), not reviewed. header: which list of the protocol the
+# line is in; the tree leaves the header out. atoms: words of the line.
+items:
+# ── semicolons ──
+- {id: ch-01, block: semicolon, file: NCT00182520_exc, start: "Any other primary DSM-IV diagnosis;", atoms: {a: "Any other primary DSM-IV diagnosis", b: "body dysmorphic disorder", c: "bipolar affective disorder", d: "schizophrenia", e: "psychotic disorder", f: "current alcohol", g: "substance abuse"}, trees: ["a | b | c | d | e | f | g"]}
+- {id: ch-02, block: semicolon, file: NCT03026088_exc, start: "Received heart transplantation", atoms: {a: "heart transplantation", b: "pacemaker implantation", c: "revascularization treatment", t: "within 3 months", d: "plan to receive above treatment in 6 months"}, trees: ["a | b | (c & t) | d", "((a | b | c) & t) | d"]}
+- {id: ch-03, block: semicolon, file: NCT03177811_exc, start: "Comorbidities such as uncontrolled", atoms: {a: "unstable systemic arterial hypertension", b: "coronary artery disease", c: "previous stroke", d: "OSA", e: "pneumothorax", t: "in the last 2 months"}, trees: ["a | b | c | d | (e & t)", "(a | b | c | d | e) & t"]}
+- {id: ch-04, block: semicolon, file: NCT02269137_exc, start: "hypoglycemia SE;", atoms: {a: "hypoglycemia SE", b: "psychogenic SE", c: "any other pseudo-SE"}, trees: ["a | b | c"]}
+- {id: ch-05, block: semicolon, file: NCT03472508_exc, start: "(1)Women who are pregnant", atoms: {a: "pregnant", b: "lactating", c: "intend to conceive within a year"}, trees: ["a | b | c"]}
+# ── and/or, slash, missing separators ──
+- {id: ch-06, block: slash, file: NCT02195024_exc, start: "Have other metallic artifacts", atoms: {a: ["metallic", "artifacts"], b: ["metallic", "components"], c: "may interact with MRI"}, trees: ["(a | b) & c"]}
+- {id: ch-07, block: slash, file: NCT03366779_exc, start: "Subject has cauda equina", atoms: {a: "cauda equina syndrome", b: "neurogenic bowel", c: ["neurogenic", "bladder dysfunction"]}, trees: ["a | b | c"]}
+- {id: ch-08, block: slash, file: NCT02965443_exc, start: "Presence of psychiatric disorder", atoms: {a: "psychiatric disorder", b: "anti-depressive", c: "anti-psychotic agents", d: "benzodiazepines", e: "SSRIs", f: "SNRI's"}, trees: ["a | ((b | c) - (d | e | f))"], revised: true}
+- {id: ch-09, block: slash, file: NCT01680081_exc, start: "Contraindication of MRI Claustrophobia", atoms: {a: "Claustrophobia", b: "Metallic hazards", c: "Pacemaker implant", d: "eGFR<30 ml/min"}, trees: ["a | b | c | d"]}
+# ── negation over a list ──
+- {id: ch-10, block: negated_list, file: NCT01967420_inc, start: "Psychiatrically stable enough", atoms: {a: "Psychiatrically stable", b: "hospitalisations", c: "medication changes", t: "in last 4 weeks"}, trees: ["a & !((b | c) & t)"]}
+- {id: ch-11, block: negated_list, file: NCT01888965_exc, start: "No concurrent use of other", atoms: {a: "other investigational drugs", b: "antineoplastic therapies"}, trees: ["a | b", "!(a | b)"], note: "'No' inside an exclusion list: first reading is the probable intent, second the literal one"}
+- {id: ch-12, block: negated_list, file: NCT02595190_inc, start: "9. No pain", atoms: {a: "pain", b: "dysmenorrhea", c: "drug use", t: "within the last month"}, trees: ["!((a | b | c) & t)", "!(a | b | (c & t))"], revised: true}
+- {id: ch-13, block: negated_list, file: NCT03561753_inc, start: "Males or non-pregnant", atoms: {a: "Males", b: "females", c: "pregnant", d: "nursing"}, trees: ["a | (b & !c & !d)"]}
+- {id: ch-14, block: negated_list, file: NCT00650312_inc, start: "2. Sex: Male and", atoms: {a: "Male", b: "female", c: "pregnant", d: "lactating"}, trees: ["a | (b & !c & !d)"], note: "'and' joins two groups: union"}
+- {id: ch-15, block: negated_list, file: NCT02749617_exc, start: "Women of Childbearing potential without", atoms: {a: "Women of Childbearing potential", b: "proper contraceptive measures", c: "pregnancy", d: "breast feeding"}, trees: ["(a & !b) | c | d"]}
+- {id: ch-16, block: negated_list, file: NCT02974686_exc, start: "Evidence of any GI disorder", atoms: {a: "GI disorder", b: "an infection", c: "underlying medical condition", d: "concomitant medication", e: "MPA"}, trees: ["a & (b | c | (d - e))"], revised: true}
+- {id: ch-17, block: negated_list, file: NCT00344318_exc, start: "History of seizures (this", atoms: {a: "seizures", b: "single, uncomplicated febrile convulsion", c: "neurological disease"}, trees: ["(a & !b) | c", "(a - b) | c"], revised: true}
+- {id: ch-18, block: negated_list, file: NCT00279552_exc, start: "Patients who were pregnant", atoms: {a: "pregnant", b: "nursing", c: "able to give written informed consent"}, trees: ["a | b | !c"]}
+- {id: ch-19, block: negated_list, file: NCT03228498_exc, start: "2. Unavailability of brain MRI", atoms: {a: "brain MRI", b: "absolute contraindications", c: "cranial CT"}, trees: ["!a & !(b & c)"]}
+- {id: ch-20, block: negated_list, file: NCT02612181_exc, start: "High-grade block in the absence", atoms: {a: "High-grade block", b: "functioning pacemaker"}, trees: ["a & !b"]}
+# ── exceptions ──
+- {id: ch-21, block: exception, file: NCT02573168_exc, start: "Patients with a history of hypothyroidism", atoms: {a: "history of hypothyroidism", b: "stable dose of thyroid medication", c: "asymptomatic", d: "euthyroid", t: "for 6 months"}, trees: ["a & !(b & (c | d) & t)", "a & !((b & c) | (d & t))"]}
+- {id: ch-22, block: exception, file: NCT02743598_exc, start: "Weight loss drugs other", atoms: {a: "Weight loss drugs", b: "metformin"}, trees: ["a - b"], revised: true}
+- {id: ch-23, block: exception, file: NCT03335904_inc, start: "not taking medications other", atoms: {a: "medications", b: "oral contraceptives"}, trees: ["!(a - b)"], note: "double negation", revised: true}
+- {id: ch-24, block: exception, file: NCT00401245_exc, start: "History of a seizure disorder", atoms: {a: "seizure disorder", b: "single childhood febrile seizure"}, trees: ["a - b"], revised: true}
+- {id: ch-25, block: exception, file: NCT01696617_exc, start: "Patients taking antipsychotics", atoms: {a: "antipsychotics", b: "mood stabilizer", c: "any psychotropic medications", d: "antidepressants", e: "benzodiazepines", f: "beta blockers", g: "hypnotics"}, trees: ["(a | b | (c - d)) - (e | f | g)", "a | b | (c - (d | e | f | g))"], note: "'besides antidepressants' is an exception here; 'except' may reach over all three or only the last", revised: true}
+- {id: ch-26, block: exception, file: NCT00994786_exc, start: "Patients with a current seizure disorder", atoms: {a: "current seizure disorder", b: "organic brain disorder", c: "history of seizure disorders", d: "febrile seizures in childhood"}, trees: ["a | b | (c - d)"], revised: true}
+- {id: ch-27, block: exception, file: NCT02851303_inc, start: "Primary in-utero drug exposure", atoms: {a: "opioids", b: "buprenorphine"}, trees: ["a & !b"]}
+- {id: ch-28, block: exception, file: NCT02810704_exc, start: "Patients on chronic", atoms: {a: "anticoagulation", t: "chronic (longer than the prior 6 months)", b: "antiplatelet medications"}, trees: ["(a - b) & t"], revised: true}
+- {id: ch-29, block: exception, file: NCT01997580_exc, start: "DSM-IV-TR substance-related disorders", atoms: {a: "substance-related disorders", b: "nicotine"}, trees: ["a - b"], revised: true}
+# ── comma or 'and' lists without 'or' ──
+- {id: ch-30, block: comma_and, file: NCT02652637_exc, start: "Allergy to used drugs", atoms: {a: "PEG", b: "neomycin", c: "metronidazole", p: "Allergy"}, trees: ["p & (a | b | c)"]}
+- {id: ch-31, block: comma_and, file: NCT02056288_exc, start: "Compromised neurologic status", atoms: {p: "Compromised neurologic status on exam", a: "radial", b: "ulnar", c: "median nerve"}, trees: ["p & (a | b | c)", "p & a & b & c"], note: "'and' in an exclusion: any of the three is the probable intent"}
+- {id: ch-32, block: comma_and, file: NCT02489045_inc, start: "If a female of child-bearing", atoms: {a: "female of child-bearing potential", b: "negative pregnancy test"}, trees: ["!a | b"], note: "if-then"}
+- {id: ch-33, block: comma_and, file: NCT00752310_exc, start: "no history of allergy", atoms: {a: "allergy to drugs", b: "sulphonamides", c: "penicillins"}, trees: ["a", "!a"], note: "b and c are examples, not conditions; 'no' inside an exclusion list"}
+# ── or lists ──
+- {id: ch-34, block: or_list, file: NCT02590822_exc, start: "Current therapy with Insulin", atoms: {a: "Insulin", b: "thiazolidinediones", c: "steroids", d: "atypical antipsychotic medication"}, trees: ["a | b | c | d"]}
+- {id: ch-35, block: or_list, file: NCT02985710_exc, start: "Subjects with cognitive, psychiatric", atoms: {a: "cognitive", b: "psychiatric", c: "other problems", p: "preclude informed consent"}, trees: ["(a | b | c) & p", "a | b | (c & p)"]}
+- {id: ch-36, block: or_list, file: NCT02903407_exc, start: "patients who have suffered a neurologic event", atoms: {a: "seizure", b: "stroke", c: "baseline dementia", p: "could limit delirium assessment"}, trees: ["a | b | c", "(a | b | c) & p"], note: "'both of which could limit' reads as a reason"}
+# ── attachment ──
+- {id: ch-37, block: attachment, file: NCT00426751_exc, start: "Stroke or Transient Ischemic Attack", atoms: {a: "Stroke", b: "Transient Ischemic Attack (TIA)", t: "within the past 6 months", c: "permanent residual neurological defect"}, trees: ["((a | b) & t) | c"]}
+- {id: ch-38, block: attachment, file: NCT02225548_exc, start: "Subject with a history of myocardial", atoms: {a: "myocardial infarction", b: "stroke", c: "life-threatening arrhythmia", t: "within 6 months prior to screening"}, trees: ["(a | b | c) & t", "a | b | (c & t)"]}
+- {id: ch-39, block: attachment, file: NCT02973035_exc, start: "Stroke or coronary revascularization", atoms: {a: "Stroke", b: "coronary revascularization", t: "in the past 6 months"}, trees: ["(a | b) & t", "a | (b & t)"], revised: true}
+- {id: ch-40, block: attachment, file: NCT01684501_exc, start: "Any diagnosed cardiovascular", atoms: {a: "cardiovascular", b: "pulmonary", c: "neurological", d: "orthopedic conditions", p: "would interfere with subject participation"}, trees: ["(a | b | c | d) & p"]}

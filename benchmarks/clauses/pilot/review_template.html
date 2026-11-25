@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clause pilot</title>
+<style>
+:root{--bg:#fff;--fg:#1c1c1c;--mute:#666;--line:#ddd;--card:#f7f7f5;--acc:#0b6b58}
+@media(prefers-color-scheme:dark){:root{--bg:#16181a;--fg:#e8e8e6;--mute:#9a9a98;--line:#333;--card:#1f2225;--acc:#5cc6ab}}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;max-width:860px;margin:0 auto;padding:16px}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px;margin:14px 0;background:var(--card)}
+.text{font-size:17px;white-space:pre-wrap;overflow-wrap:anywhere}.mute{color:var(--mute);font-size:13px}
+code{font-size:14px;overflow-wrap:anywhere}table{border-collapse:collapse;font-size:13px;margin:6px 0;width:100%}td{padding:2px 8px 2px 0;vertical-align:top}
+button,label.r{font:inherit;padding:4px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);cursor:pointer;margin:2px}
+label.r:has(input:checked){border-color:var(--acc);color:var(--acc)}textarea{width:100%;box-sizing:border-box;font:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px}
+</style>
+<h1>Clause pilot</h1><p id="intro"></p><p><span id="count"></span> <button id="dl">Download answers</button></p><div id="list"></div>
+<script>
+const MODE="__MODE__",ITEMS=__ITEMS__,KEY="clause-pilot-"+MODE;let A={};try{A=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.getElementById("intro").textContent=MODE=="review"
+ ?"Is the drafted logic right? & = and, | = or, ! = not, a - b = a except b (some a that is not b). For Chia lines the inclusion or exclusion heading is not part of the logic. Answers stay in this browser until you download them."
+ :"Write the logic you read in each text: name the clauses with the words of the text and join them with & | ! - (a - b = a except b) and brackets. Write a second line if the text has a second sensible reading. Answers stay in this browser until you download them.";
+const words=w=>Array.isArray(w)?w.join(" … "):w;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(A))}catch(e){}
+ document.getElementById("count").textContent=Object.values(A).filter(a=>a.v||a.t).length+" of "+ITEMS.length+" answered"}
+const list=document.getElementById("list");
+for(const it of ITEMS){const d=document.createElement("div");d.className="card";const a=A[it.id]||(A[it.id]={});
+ let h=`<div class="mute">${esc(it.id)}${MODE=="review"?" · "+esc(it.block)+" · "+esc(it.source)+(it.revised?" · <b>revised</b>":""):""}${it.header?" · "+esc(it.header)+" list":""}</div><div class="text">${esc(it.text)}</div>`;
+ if(MODE=="review"){h+="<table>"+Object.entries(it.clauses).map(([k,c])=>`<tr><td><b>${esc(k)}</b></td><td>${c.field?esc(c.field)+": "+esc(c.values.join(" / ")):""} ${c.strength=="wish"||c.strength=="example"?"("+c.strength+")":""}</td><td>“${esc(words(c.words))}”</td><td class="mute">${c.attach&&c.attach!="dataset"?esc(c.attach):""}</td></tr>`).join("")+"</table>";
+  h+=it.readings.map((r,i)=>`<div><span class="mute">reading ${i+1}${r.representable?" · plan can hold it: "+esc(r.representable):""}</span> <code>${esc(r.tree)}</code> <span class="mute">${esc(r.why||"")}</span></div>`).join("");
+  if(it.attach_alternatives)h+=`<div class="mute">other attachment: ${esc(it.attach_alternatives.join("; "))}</div>`;
+  if(it.note)h+=`<div class="mute">${esc(it.note)}</div>`;
+  h+="<div>"+["right","wrong","ambiguous","unsure"].map(v=>`<label class="r"><input type="radio" name="${it.id}" value="${v}" ${a.v==v?"checked":""}> ${v}</label>`).join("")+"</div>"}
+ h+=`<textarea rows="${MODE=="review"?1:3}" placeholder="${MODE=="review"?"correction or comment":'e.g. A = “EEG”, B = “resting state”: A & !B'}">${esc(a.t||"")}</textarea>`;
+ d.innerHTML=h;d.addEventListener("input",e=>{if(e.target.type=="radio")a.v=e.target.value;else a.t=e.target.value;save()});list.append(d)}
+save();document.getElementById("dl").onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify({mode:MODE,answers:A},null,1)],{type:"application/json"}));
+ const l=document.createElement("a");l.href=u;l.download="clause_pilot_"+MODE+".json";l.click()};
+</script></html>
