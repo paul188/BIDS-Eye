@@ -413,6 +413,7 @@ class SqlRewriteService:
                 row="page_result",
                 has_evidence=tiered,
                 evidence_columns=tuple(_uncertain_tier.kind_level_columns(base_sql).items()),
+                has_corroboration=f" AS {_uncertain_tier.CORROBORATION_COLUMN}" in base_sql,
                 has_judgment=judged,
                 has_other_words=ranked and _other_words_only("ft", rank_query) is not None,
                 has_scores=ranked,

@@ -22,6 +22,9 @@ What a row carries (ResultColumns):
   evidence_score     0 to 1: the scores of the query's conditions multiplied,
                      each the score of the piece of evidence that decided it
                      (services/uncertain/conditions.QueryEvidence)
+  corroboration      how many more source groups (records, own text, paper)
+                     confirm its conditions than the one each needs
+                     (uncertain/conditions.QueryEvidence)
   judged_order       where the language model's judgment of the first
                      candidates put it (services/results/rerank.py)
   other_words_only   it matches only the words a search was widened with,
@@ -61,6 +64,7 @@ class ResultColumns:
     """
     row: str                      # SQL alias of the result row
     has_evidence: bool = False    # the uncertain tier ran
+    has_corroboration: bool = False  # some condition can be confirmed by two source groups
     has_judgment: bool = False    # the first candidates were judged
     has_other_words: bool = False  # the search was widened with other words
     has_scores: bool = False
@@ -78,6 +82,11 @@ class ResultColumns:
     def evidence_score(self) -> SortTerm:
         """The dataset whose evidence counts for more first."""
         return SortTerm(f"{self.row}.evidence_score", descending=True)
+
+    @property
+    def corroboration(self) -> SortTerm:
+        """Datasets more source groups confirm first."""
+        return SortTerm(f"{self.row}.corroboration", descending=True)
 
     def strength_for(self, kind: str) -> Optional[SortTerm]:
         """Datasets whose conditions of *kind* are confirmed first; None when
@@ -124,15 +133,20 @@ class Ranker(Protocol):
 
 
 class EvidenceFirst:
-    """The order of every search so far.
+    """The order of every search.
 
     1. The strength of the evidence: a result every condition confirms
        comes before one that is only probable.
     2. The language model's judgment of the first candidates.
     3. The user's own words before words the search was widened with.
-    4. The score: matched vocabulary codes plus the text rank.
-    5. The larger dataset.
+    4. Conditions confirmed by more source groups before fewer
+       (*corroboration*; False leaves this step out).
+    5. The score: matched vocabulary codes plus the text rank.
+    6. The larger dataset.
     """
+
+    def __init__(self, corroboration: bool = True) -> None:
+        self.corroboration = corroboration
 
     def sort_key(self, columns: ResultColumns) -> List[SortTerm]:
         key: List[SortTerm] = []
@@ -142,6 +156,8 @@ class EvidenceFirst:
             key.extend(columns.judged_order)
         if columns.has_other_words:
             key.append(columns.other_words_only)
+        if self.corroboration and columns.has_corroboration:
+            key.append(columns.corroboration)
         if columns.has_scores:
             key.append(columns.score)
         if columns.has_subjects:

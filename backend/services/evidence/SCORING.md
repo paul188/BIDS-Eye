@@ -88,6 +88,25 @@ Examples with λ = 0.5:
 | ages not recorded, the text names the age group (0.53) | 0.53 |
 | ages not recorded, no hint | 0.33 |
 
+## Several sources for a confirmed clause
+
+A clause that holds as generated scores 1 whichever source confirms it, so
+the score cannot order two confirmed datasets. The column `corroboration`
+does: over the confirmed clauses, the number of source groups that confirm a
+clause beyond the first, summed. A diagnosis coded for the participants and
+named in the README has 1, one of the two has 0. Pieces of one group count
+once, and an assumed default counts for nothing. The uploader's labels
+(`dx_status`, `study_domain`, `study_design`) count with the own text,
+because `search_tsv` holds them. The column exists only when
+some clause can be confirmed by two groups.
+
+`EvidenceFirst` sorts by it after the strength, the judgment and the user's
+own words, and before the score of the text and the codes. Measured on
+2026-11-25 against the order without it, same SQL for both: nDCG@10 up 0.009
+on 136 development questions (95% interval 0.002 to 0.017) and 0.011 on 56
+gold requests (-0.001 to 0.029); recall@20 did not change on development.
+Placed after the score it changes nothing. The held-out questions were not used.
+
 ## A query
 
     Q = S_weakest · (product of the other clauses' S)^κ

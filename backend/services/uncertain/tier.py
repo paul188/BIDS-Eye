@@ -102,6 +102,7 @@ def hoist_terms_enabled() -> bool:
 
 LEVEL_COLUMN = "uncertain_level"
 SCORE_COLUMN = "evidence_score"
+CORROBORATION_COLUMN = "corroboration"
 REASONS_COLUMN = "uncertain_reasons"
 
 
@@ -243,6 +244,10 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         for piece, flag in zip(condition.weaker, flags):
             evidence_columns.append(f"({piece.sql()}) AS {flag}")
             flag_columns.append(f"ev.{flag}")
+        for column, pieces in query.witness_columns(i).items():
+            holds = " OR ".join(f"({piece.sql()})" for piece in pieces)
+            evidence_columns.append(f"COALESCE({holds}, FALSE) AS {column}")
+            flag_columns.append(f"ev.{column}")
         if query.recorded_column(i):
             flag_columns.append(f"ev.{known}")
         state = condition.state_sql(f"ev.{confirmed}", weak, f"ev.{known}")
@@ -311,6 +316,9 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     kind_levels = "".join(f", {strength} AS {kind_level_column(kind)}"
                           for kind, strength in query.strength_by_kind_sql().items())
 
+    corroboration = query.corroboration_sql()
+    corroborated = f", {corroboration} AS {CORROBORATION_COLUMN}" if corroboration else ""
+
     ctes = [f"{name} AS MATERIALIZED ({select})"
             for name, select in dict.fromkeys(cte for c in soft for cte in c.ctes)]
     if terms_cte:
@@ -320,7 +328,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         f"{with_sql}"
         f"SELECT tier_base.*, {level} AS {LEVEL_COLUMN}, "
         f"{query.reason_sql()} AS {REASONS_COLUMN}{kind_levels}, "
-        f"{query.score_sql()} AS {SCORE_COLUMN}\n"
+        f"{query.score_sql()} AS {SCORE_COLUMN}{corroborated}\n"
         f"FROM (\n{inner_sql}\n) AS tier_base\n"
         f"CROSS JOIN LATERAL (\n{state_sql}\n) AS {query.row}\n"
         f"WHERE {query.kept_sql(MAX_UNSURE)}"

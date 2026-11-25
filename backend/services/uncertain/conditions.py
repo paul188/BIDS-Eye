@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from services.evidence.base import PieceOfEvidence, SourceGroup, Strength
+from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength
 from services.evidence.confirmed import ConfirmedMatch
 from services.switches import Switch
 
@@ -58,6 +58,11 @@ TSQUERY_RE = re.compile(
     re.IGNORECASE,
 )
 LABEL_RE = re.compile(r":[AB]+\b")
+
+
+# The uploader's labels that search_tsv holds beside the dataset's own text
+# (crawlers/openneuro-crawler/remote/openneuro_metadata.py).
+LABELS_IN_TEXT = frozenset({"dx_status", "study_domain", "study_design"})
 
 
 def sql_literal(text: str) -> str:
@@ -241,6 +246,20 @@ class ClauseEvidence:
             others = f"{' + '.join(above_floor)} - ({strongest} - {floor_weight})"
         return f"1 - EXP(-({strongest} + {SHARED_EVIDENCE_DISCOUNT:g} * ({others})))"
 
+    @property
+    def witnesses(self) -> Dict[SourceGroup, List[ConfirmedMatch]]:
+        """The confirming pieces by whose statement they are. An assumed
+        default states nothing, so it is none; a label that search_tsv holds
+        counts with the text, or one statement would be two witnesses."""
+        groups: Dict[SourceGroup, List[ConfirmedMatch]] = {}
+        for piece in self.confirming:
+            if piece.source in (Source.ASSUMED, Source.ASSUMED_ABSENT):
+                continue
+            label = LABELS_IN_TEXT.intersection(piece.read_columns())
+            group = SourceGroup.OWN_TEXT if label else piece.source.group
+            groups.setdefault(group, []).append(piece)
+        return groups
+
     def keep_sql(self) -> str:
         """Pre-filter: the condition is not contradicted."""
         options = [f"({self.sql})"]
@@ -325,6 +344,28 @@ class QueryEvidence:
         weakest = f"LEAST({', '.join(scores)})"
         return (f"COALESCE({weakest} * POWER(({product}) / NULLIF({weakest}, 0), "
                 f"{CLAUSE_INDEPENDENCE:g}), 0)")
+
+    def witness_columns(self, i: int) -> Dict[str, List[ConfirmedMatch]]:
+        """Columns that say which source groups confirm condition *i*, with
+        the pieces of each. None with a single group: it cannot tell datasets apart."""
+        groups = self.conditions[i].witnesses
+        if len(groups) < 2:
+            return {}
+        return {f"by_{group.value}_{i}": pieces for group, pieces in groups.items()}
+
+    def corroboration_sql(self) -> Optional[str]:
+        """How many source groups confirm the query's conditions beyond the
+        first of each (services/evidence/SCORING.md). Counted only for a
+        condition that holds as generated; None when no condition can have
+        two."""
+        counts = []
+        for i, state in enumerate(self._states()):
+            columns = self.witness_columns(i)
+            if columns:
+                held = " + ".join(f"{self.row}.{column}::int" for column in columns)
+                counts.append(f"CASE WHEN {state} = {int(Strength.CONFIRMED)} "
+                              f"THEN GREATEST({held} - 1, 0) ELSE 0 END")
+        return " + ".join(counts) or None
 
     def kept_sql(self, max_unsure: int) -> str:
         """SQL: the dataset stays in the result. No condition is
