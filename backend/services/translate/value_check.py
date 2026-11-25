@@ -35,7 +35,8 @@ import re
 from functools import lru_cache
 from typing import Any, List, Optional, Tuple
 
-from services.database_stats.database_stats import DatabaseStats, database_stats
+from services.database_stats.database_stats import database_stats
+from services.schema.coded_fields import FILE_FIELDS
 
 try:
     import sqlglot
@@ -51,7 +52,7 @@ ENV = "CATALOGUE_VALUE_CHECK"
 # The fields checked. Not the participant fields the catalogue also caches:
 # dropping a required diagnosis condition would widen the search to every
 # dataset the rest of the query allows.
-FIELDS = DatabaseStats.FACET_FIELDS
+FIELDS = FILE_FIELDS
 
 
 # ── Corrections ───────────────────────────────────────────────────────────────

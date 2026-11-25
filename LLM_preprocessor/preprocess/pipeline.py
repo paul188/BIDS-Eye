@@ -6,6 +6,7 @@ import logging
 import re
 from typing import Any, Collection, Dict, List, Optional, Tuple
 import reference_vocabulary as _reference_vocabulary
+from services.schema.coded_fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
 from .plan import AugmentedQueryPlan, ParticipantGroup, QueryFamily, QueryPlan, RAGField, ScanRequirement
@@ -203,7 +204,7 @@ def run_pipeline(
             else:
                 # Fallback for retrievers that don't yet have retrieve_scan_terms
                 scan_resolved = {}
-                for field in ("datatype", "suffix", "task"):
+                for field in FILE_FIELDS:
                     if hasattr(retriever, "retrieve_for_field_multi"):
                         tm = retriever.retrieve_for_field_multi(field, req.terms)
                     else:
@@ -284,7 +285,7 @@ def run_pipeline(
     for req in rag_requests:
         if req.field == RAGField.SCAN:
             resolved_scan: set[str] = set()
-            for sf in ("datatype", "suffix", "task"):
+            for sf in FILE_FIELDS:
                 resolved_scan.update(rag_results.get(sf, {}).keys())
             missed = [t for t in req.terms if t not in resolved_scan]
             if missed:

@@ -60,6 +60,7 @@ import institution_index
 import place_index
 from constants import OPTIONAL_DATASET_COLUMNS
 from services.schema.check import check_schema
+from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS, PARTICIPANT_FIELDS
 from services.schema.tables import dataset_facets, datasets, objects, participants, site_places
 
 log = logging.getLogger(__name__)
@@ -195,11 +196,10 @@ class DatabaseStats:
     without it nothing outside the instance changes (tests).
     """
 
-    FACET_COLUMNS = (dataset_facets.c.datatype, dataset_facets.c.suffix, dataset_facets.c.task)
-    PARTICIPANT_COLUMNS = (participants.c.diagnosis, participants.c.sex, participants.c.handedness)
-    FACET_FIELDS = tuple(column.name for column in FACET_COLUMNS)
-    PARTICIPANT_FIELDS = tuple(column.name for column in PARTICIPANT_COLUMNS)
-    FIELDS = FACET_FIELDS + PARTICIPANT_FIELDS
+    FACET_COLUMNS = tuple(dataset_facets.c[name] for name in FILE_FIELDS)
+    PARTICIPANT_COLUMNS = tuple(participants.c[name] for name in PARTICIPANT_FIELDS)
+    FACET_FIELDS = FILE_FIELDS
+    FIELDS = CODED_FIELDS
     # post_crawl.py refreshes the summaries after each crawl, so a value or
     # dataset added by a crawl is missed for at most 10 minutes.
     REFRESH_SECONDS = 600

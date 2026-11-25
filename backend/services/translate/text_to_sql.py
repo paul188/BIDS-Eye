@@ -341,7 +341,7 @@ def _pick_examples(pool: Dict[str, List[dict]], query_family: str,
     if not all_examples:
         return []
 
-    fields = ("datatype", "task", "diagnosis", "suffix")
+    fields = CONCEPT_FIELDS
     requested = {
         field: set((resolved_codes or {}).get(field, []))
         for field in fields
@@ -499,6 +499,7 @@ from services.translate.sql_rewriter import finish_corrected_sql as _finish_corr
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
 from services.translate import optional_columns as _optional_columns  # noqa: E402
+from services.schema.coded_fields import CONCEPT_FIELDS  # noqa: E402
 from services.schema.tables import datasets as _datasets, objects as _objects, participants as _participants  # noqa: E402
 from services.translate.participant_query_compiler import (  # noqa: E402
     compile_plan as _compile_plan,

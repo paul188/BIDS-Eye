@@ -44,6 +44,7 @@ from services.fulltext.ranking import other_words_only_expression as _other_word
 from services.results import rankers as _rankers  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
+from services.schema.coded_fields import CONCEPT_FIELDS, FILE_FIELDS  # noqa: E402
 from services.schema.tables import (  # noqa: E402
     dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
 )
@@ -117,7 +118,6 @@ _CODE_RE = re.compile(r"^[A-Za-z0-9_]+$")
 # A JSON text value that PostgreSQL can cast to a number (no backslashes, so
 # the pattern survives sqlglot and standard_conforming_strings unchanged).
 _NUMBER_PATTERN = r"^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$"
-_SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
 
 # Task ILIKE concept expansion: maps vague category terms to canonical task codes.
 # "cognitive" is not a BIDS task name — all experimental tasks are cognitive, so we
@@ -761,7 +761,7 @@ class SqlRewriteService:
         column = (left.name or "").lower()
         if not table.startswith("o"):
             return False
-        if column not in {"task", "datatype", "suffix"}:
+        if column not in FILE_FIELDS:
             return False
         return isinstance(right, exp.Literal)
 
@@ -1723,7 +1723,7 @@ class SqlRewriteService:
                 code = getattr(scored_filter, "code", None)
                 score = getattr(scored_filter, "score", None)
 
-            if field not in _SCORABLE_FIELDS or not code or score is None:
+            if field not in CONCEPT_FIELDS or not code or score is None:
                 continue
             if not _CODE_RE.match(str(code)):
                 continue

@@ -25,10 +25,12 @@ import re
 from functools import lru_cache
 from typing import Dict, FrozenSet, List, Optional, Tuple
 
+from services.schema.coded_fields import CONCEPT_FIELDS
+
 log = logging.getLogger(__name__)
 
 # Column name = vocabulary category, on bids_participants and bids_objects.
-FIELDS = ("diagnosis", "task", "suffix", "datatype")
+FIELDS = CONCEPT_FIELDS
 _COLUMN = r"((?:\w+\.)?(" + "|".join(FIELDS) + r"))"
 _LITERAL = r"'[^']*'"
 

@@ -59,6 +59,7 @@ _VERSION_FILES = (
     _BACKEND / "few_shot_examples.json",
     _BACKEND / "services" / "database_stats" / "database_stats.py",
     _BACKEND / "services" / "schema" / "check.py",
+    _BACKEND / "services" / "schema" / "coded_fields.py",
     _BACKEND / "services" / "schema" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
     _BACKEND / "services" / "translate" / "optional_columns.py",

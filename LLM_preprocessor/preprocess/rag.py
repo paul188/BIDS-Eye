@@ -5,6 +5,7 @@ import logging
 import re
 from typing import Dict, List, Optional
 from participant_codes import sex_code
+from services.schema.coded_fields import CONCEPT_FIELDS
 from join_registry import (
     field_to_db_col as _field_to_db_col,
 )
@@ -196,11 +197,6 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
     return list(requests.values())
 
 
-# Fields whose codes can be scored per-dataset (they map to a queryable DB
-# column via field_to_db_col). author/funding live on bids_datasets as arrays
-# (exists_alias 'none') and are excluded from relevance scoring.
-_SCORABLE_FIELDS = {"diagnosis", "task", "datatype", "suffix"}
-
 
 def _build_scored_filters(
     rag_results: Dict[str, Dict[str, List[str]]],
@@ -218,7 +214,9 @@ def _build_scored_filters(
     out: List[ScoredFilter] = []
     seen: set[tuple[str, str]] = set()
     for field, term_map in rag_results.items():
-        if field not in _SCORABLE_FIELDS or _field_to_db_col(field) is None:
+        # Only codes with a queryable column are scored: author and funding are
+        # arrays on bids_datasets (exists_alias 'none').
+        if field not in CONCEPT_FIELDS or _field_to_db_col(field) is None:
             continue
         field_scores = scores.get(field, {})
         for codes in term_map.values():

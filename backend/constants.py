@@ -1,8 +1,8 @@
 """
 Shared SQL prompt/schema constants for BIDS-Eye.
 
-This module is used by the backend text-to-SQL pipeline. It intentionally
-stays small and dependency-free.
+This module is used by the backend text-to-SQL pipeline. Names and types come
+from services/schema/tables.py; here are only the notes shown to the model.
 
 The schema shown to the SQL model is built per request by build_schema_ddl():
 columns in OPTIONAL_DATASET_COLUMNS appear only when the database really has
@@ -12,36 +12,54 @@ about but that is missing or empty produces failing or empty queries.
 
 from __future__ import annotations
 
-from typing import Collection, Dict, List, Tuple
+from typing import Any, Collection, Dict, List, Tuple
 
-# (name, type, comment lines) — always present on bids_datasets.
-_CORE_DATASET_COLUMNS: List[Tuple[str, str, List[str]]] = [
-    ("id",                "UUID PRIMARY KEY", []),
-    ("name",              "TEXT", []),
-    ("accession_id",      "TEXT", []),
-    ("bids_version",      "TEXT", []),
-    ("dataset_type",      "TEXT", []),
-    ("source_type",       "TEXT", ["e.g. 'openneuro'"]),
-    ("remote_url",        "TEXT", []),
-    ("validation_status", "TEXT", []),
-    ("authors",           "TEXT[]", ["dataset authors, e.g. ARRAY['Poldrack, R.A.', 'Gorgolewski, K.']"]),
-    ("license",           "TEXT", ["e.g. 'CC0', 'PDDL'"]),
-    ("doi",               "TEXT", ["dataset DOI"]),
-    ("paper_references",  "TEXT[]", [
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, BigInteger, JSON, String, Uuid
+from sqlalchemy.dialects.postgresql import ARRAY
+
+from services.schema.tables import datasets as _datasets
+
+
+def prompt_type(column: Column[Any]) -> str:
+    """The type of *column* as the SQL model is shown it."""
+    if isinstance(column.type, ARRAY):
+        return "TEXT[]"
+    for type_, shown in ((Uuid, "UUID"), (DateTime, "TIMESTAMPTZ"), (Boolean, "BOOLEAN"),
+                         (BigInteger, "BIGINT"), (Integer, "INTEGER"), (Float, "FLOAT"),
+                         (JSON, "JSON"), (String, "TEXT")):
+        if isinstance(column.type, type_):
+            return shown
+    raise TypeError(f"no prompt type for {column}")
+
+
+# Column → comment lines; always present on bids_datasets.
+_CORE_NOTES: Dict[str, List[str]] = {
+    "id": [],
+    "name": [],
+    "accession_id": [],
+    "bids_version": [],
+    "dataset_type": [],
+    "source_type": ["e.g. 'openneuro'"],
+    "remote_url": [],
+    "validation_status": [],
+    "authors": ["dataset authors, e.g. ARRAY['Poldrack, R.A.', 'Gorgolewski, K.']"],
+    "license": ["e.g. 'CC0', 'PDDL'"],
+    "doi": ["dataset DOI"],
+    "paper_references": [
         "linked papers / URLs (from dataset_description.json ReferencesAndLinks,",
         "with README URLs as fallback when the field is absent)",
-    ]),
-    ("funding",           "TEXT[]", ["funding sources"]),
-    ("description_text",  "TEXT", [
+    ],
+    "funding": ["funding sources"],
+    "description_text": [
         "free-text description from dataset_description.json;",
         "search it with text_match('keyword'), not ILIKE",
-    ]),
-]
+    ],
+}
 
 # Columns that exist only after a migration + backfill. Each one is shown to
 # the SQL model only when the running database has it populated.
-OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
-    "institutions": ("TEXT[]", [
+_OPTIONAL_NOTES: Dict[str, List[str]] = {
+    "institutions": [
         "scanning institutions from MRI sidecar JSONs, e.g. ARRAY['Child Mind Institute', 'NYU_Center_for_Brain_Imaging']",
         "Names come from DICOM headers — expect underscores, abbreviations, and",
         "slight variants (e.g. 'Princeton_University' alongside 'Princeton University').",
@@ -50,26 +68,26 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "copy that line verbatim. Only without such a line, match unnested elements with",
         "a case-insensitive whole-word regex (plain ILIKE '%MIT%' also hits 'Brains Unlimited'):",
         "  EXISTS (SELECT 1 FROM unnest(d.institutions) AS inst WHERE inst ~* '\\mMIT\\M')",
-    ]),
-    "readme_text": ("TEXT", [
+    ],
+    "readme_text": [
         "content of the dataset README (long free text): paper links, scanner",
         "details, task descriptions, lab names. Do not ILIKE it — text_match('keyword')",
         "searches it together with name and description_text.",
-    ]),
-    "dx_status": ("TEXT", [
+    ],
+    "dx_status": [
         "diagnosis / health status of the cohort as typed by the uploader (free text,",
         "NULL for many datasets), e.g. 'Healthy / Control', 'Epilepsy', 'Parkinson''s Disease'.",
         "Covered by text_match('term'); never compare with canonical diagnosis codes.",
-    ]),
-    "study_domain": ("TEXT", [
+    ],
+    "study_domain": [
         "research topic as typed by the uploader (free text, NULL for many datasets),",
         "e.g. 'Basal Ganglia in Parkinson', 'Language'. Covered by text_match('term').",
-    ]),
-    "study_design": ("TEXT", [
+    ],
+    "study_design": [
         "study design as typed by the uploader (free text), e.g. 'Longitudinal',",
         "'Cross-Sectional'. Search with ILIKE '%term%'.",
-    ]),
-    "species": ("TEXT", [
+    ],
+    "species": [
         "species as typed by the uploader on OpenNeuro (free text, NULL for about 40%",
         "of datasets, nearly all of them human), e.g. 'Human', 'Mouse', 'Rat', 'Macaque',",
         "'Monkey', 'Nonhunam primates (Macaca mulatta)', 'Sus scrofa domesticus', 'Phantom'.",
@@ -93,45 +111,54 @@ OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
         "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
         "             AND text_match('macaque | macaca | monkey | rhesus | marmoset | primate | baboon')))",
         "  Never search the abbreviation 'NHP' as text.",
-    ]),
-    "study_longitudinal": ("TEXT", [
+    ],
+    "study_longitudinal": [
         "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",
         "'Experimental' (NULL for about half). Longitudinal: d.study_longitudinal = 'Longitudinal'",
         "(study_design is a different free-text field, mostly 'Event-related' or 'Observational').",
-    ]),
-    "senior_author": ("TEXT", [
+    ],
+    "senior_author": [
         "senior / last author as typed by the uploader, e.g. 'Russell A. Poldrack'.",
         "For 'the X lab' compare with ILIKE '%surname%' (it is not in d.authors for every dataset).",
-    ]),
-    "publish_date": ("TIMESTAMPTZ", [
+    ],
+    "publish_date": [
         "when the dataset went public on OpenNeuro, e.g. recent datasets:",
         "d.publish_date >= now() - interval '1 year'",
-    ]),
-    "on_brainlife": ("BOOLEAN", [
+    ],
+    "on_brainlife": [
         "true when the dataset is also available for processing on brainlife.io",
-    ]),
-    "downloads": ("INTEGER", [
+    ],
+    "downloads": [
         "OpenNeuro download count of the latest snapshot (NULL for removed datasets).",
         "'most popular': ORDER BY d.downloads DESC NULLS LAST (without NULLS LAST, NULL rows come first)",
-    ]),
-    "views": ("INTEGER", [
+    ],
+    "views": [
         "OpenNeuro page views of the latest snapshot",
-    ]),
-    "age_min": ("FLOAT", [
+    ],
+    "age_min": [
         "youngest participant age reported for the dataset (NULL when not reported)",
-    ]),
-    "age_max": ("FLOAT", [
+    ],
+    "age_max": [
         "oldest participant age reported for the dataset (NULL when not reported)",
         "age_min / age_max COMPLEMENT bids_participants.age: some datasets have only one of",
         "the two. For an age filter ALWAYS OR both sources, e.g. participants under 12:",
         "  (EXISTS (SELECT 1 FROM bids_participants p WHERE p.dataset_id = d.id AND p.age < 12)",
         "   OR d.age_min < 12)",
         "and participants over 65: (EXISTS (... p.age > 65) OR d.age_max > 65).",
-    ]),
-    "size_bytes": ("BIGINT", [
+    ],
+    "size_bytes": [
         "total size of the dataset in bytes (1 GB = 1073741824);",
         "e.g. no larger than 5 GB: d.size_bytes <= 5 * 1073741824::bigint",
-    ]),
+    ],
+}
+
+# (name, type, comment lines). A note on a column tables.py lacks fails here.
+_CORE_DATASET_COLUMNS: List[Tuple[str, str, List[str]]] = [
+    (name, prompt_type(_datasets.c[name]) + (" PRIMARY KEY" if _datasets.c[name].primary_key else ""), notes)
+    for name, notes in _CORE_NOTES.items()
+]
+OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
+    name: (prompt_type(_datasets.c[name]), notes) for name, notes in _OPTIONAL_NOTES.items()
 }
 
 

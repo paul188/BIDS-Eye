@@ -89,6 +89,7 @@ from join_registry import field_to_db_col as _field_to_db_col
 import institution_index as _institution_index
 import reference_vocabulary as _reference
 import shorthands as _shorthands
+from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS  # backend/ is on the path wherever RAG runs
 
 log = logging.getLogger(__name__)
 
@@ -99,13 +100,13 @@ NAME_INDEX_PATH = _THIS_DIR / "name_index.json"
 # ── Constants ──────────────────────────────────────────────────────────────────
 
 # Fields backed by value_mappings.yaml (semantic / hierarchical matching)
-_YAML_FIELDS = {"diagnosis", "task", "suffix", "datatype", "sex", "handedness"}
+_YAML_FIELDS = set(CODED_FIELDS)
 
 # Fields backed by the flat name index (token similarity matching)
 _NAME_FIELDS = {"author", "funding"}
 
 # Fields searched together for scan/modality/task terms
-_SCAN_FIELDS = ("datatype", "suffix", "task")
+_SCAN_FIELDS = FILE_FIELDS
 
 # Institutions: exact phrase/token matching against the stored names
 # (RAG/institution_index.py), not token-set similarity — 'Beijing Normal
