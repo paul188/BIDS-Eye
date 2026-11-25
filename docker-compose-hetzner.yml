@@ -77,6 +77,8 @@ services:
     environment:
       METADATA_DB_HOST: postgres
       METADATA_DB_PORT: 5432
+      # One JSON object per log line (backend/request_log.py).
+      LOG_FORMAT: json
     restart: unless-stopped
     depends_on:
       postgres:

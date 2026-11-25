@@ -19,6 +19,7 @@ from __future__ import annotations
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+import request_log
 from exceptions.domain import DomainError
 
 UNEXPECTED_STATUS = 500
@@ -35,7 +36,12 @@ async def domain_error_response(request: Request, exc: DomainError) -> JSONRespo
 
 async def unexpected_error_response(request: Request, exc: Exception) -> JSONResponse:
     """The answer for an exception no class planned for."""
-    return JSONResponse(status_code=UNEXPECTED_STATUS, content={"detail": UNEXPECTED_DETAIL})
+    # Sent outside the request-ID middleware, so the header is added here.
+    return JSONResponse(
+        status_code=UNEXPECTED_STATUS,
+        content={"detail": UNEXPECTED_DETAIL},
+        headers=request_log.id_header(request.scope),
+    )
 
 
 def add_error_handlers(app: FastAPI) -> None:

@@ -38,6 +38,7 @@ from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata before create_all
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
+import request_log
 import worker_db
 from api_security import install_security_middleware
 from db.db import create_all_tables, engine
@@ -50,10 +51,8 @@ from services.database_stats.database_stats import database_stats
 from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
-)
+# Text or JSON lines (LOG_FORMAT), each with its request's ID (request_log.py).
+request_log.configure()
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
 
@@ -101,6 +100,10 @@ app = FastAPI(
 # (see api_security.py). Raises when SESSION_SECRET or a GitHub sign-in setting
 # is missing or unusable (routers/auth.py, AuthSettings).
 install_security_middleware(app)
+
+# Outermost: an ID per request, on its log lines and in the X-Request-ID
+# response header, and one log line per request (request_log.py).
+app.add_middleware(request_log.RequestIdMiddleware)
 
 # Every expected failure (exceptions/domain.py) answers with its own status
 # and text, so the routers catch none of them; anything else gets a plain 500.

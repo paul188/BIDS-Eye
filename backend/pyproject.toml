@@ -45,6 +45,7 @@ py-modules = [
     "deps",
     "models",
     "rate_limits",
+    "request_log",
     "schemas",
     "single_flight",
     "worker_db",
