@@ -8,6 +8,7 @@ from join_registry import (
     build_join_context_block as _build_join_context_block,
     check_contradictions as _check_contradictions,
 )
+from retriever import is_listed as _is_listed
 from text_terms import (
     MODE_ALL as _MODE_ALL,
     MODE_ALSO as _MODE_ALSO,
@@ -560,7 +561,9 @@ def _excluded_codes(term: str, field_codes: Dict[RAGField, List[str]]) -> Dict[R
     not MP2RAGE" found nothing), so a datatype counts only without a suffix.
     Empty for a term that may be a file type or a task ("attention" is the
     suffix att and tasks, "physio" a suffix and meditation tasks): a request
-    for it accepts either, but excluding both would remove too much.
+    for it accepts either, but excluding both would remove too much. Also
+    empty for a suffix or datatype the vocabulary does not list the term under:
+    "structural scan" is the anatomical datatype and only similar to T2w.
     """
     if (field_codes.get(RAGField.SUFFIX) and field_codes.get(RAGField.TASK)
             and not field_codes.get(RAGField.DATATYPE) and not _names_only_recordings(term)):
@@ -569,8 +572,14 @@ def _excluded_codes(term: str, field_codes: Dict[RAGField, List[str]]) -> Dict[R
     fields.insert(len(fields) if _names_only_recordings(term) else 0, RAGField.TASK)
     for field in fields:
         if field_codes.get(field):
-            return {field: field_codes[field]}
+            return {field: field_codes[field]} if field == RAGField.TASK or _names_codes(term, field) else {}
     return {}
+
+
+def _names_codes(term: str, field: RAGField) -> bool:
+    """True when the vocabulary lists the term in *field*, as typed or without filler ("T1w images")."""
+    bare = " ".join(w for w in term.split() if w.lower() not in _SCAN_FILLER_WORDS)
+    return any(_is_listed(field.value, form) for form in (term, bare) if form)
 
 
 def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, List[str]]],

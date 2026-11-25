@@ -18,10 +18,13 @@ from services.translate import participant_query_compiler as pqc
 CODES = {
     RAGField.DATATYPE: {"EEG": ["electroencephalography"], "MEG": ["magnetoencephalography"],
                         "fMRI": ["functional_mri"], "MPRAGE": ["anatomical_mri"],
-                        "MP2RAGE": ["anatomical_mri"], "DTI": ["diffusion_mri"]},
+                        "MP2RAGE": ["anatomical_mri"], "DTI": ["diffusion_mri"],
+                        "structural scan": ["anatomical_mri"], "T1w images": ["anatomical_mri"],
+                        "T1 weighted images": ["anatomical_mri"]},
     RAGField.SUFFIX: {"EEG": ["eeg"], "MEG": ["meg"], "fMRI": ["fmri_bold"],
                       "MPRAGE": ["t1_weighted_mri"], "MP2RAGE": ["mp2rage"],
-                      "task fMRI": ["fmri_bold", "bold_map"], "attention": ["att"]},
+                      "task fMRI": ["fmri_bold", "bold_map"], "attention": ["att"],
+                      "structural scan": ["t2_weighted_mri"], "T1w images": ["t1_weighted_mri"]},
     RAGField.TASK: {"grasping": ["grasping_task"], "reaching": ["reaching_task"],
                     "pointing": ["pointing_task"], "resting state": ["resting_state"], "attention": ["attention_task"]},
 }
@@ -131,6 +134,33 @@ def test_an_exclusion_that_covers_a_required_scan_is_left_to_the_sql_model() -> 
     plan = _plan(_need("fMRI"), _without("task fMRI"))
     assert list(_scan_lines(_augmented(plan))) == ['scan "fMRI"']
     assert _sql(plan) == pqc.Compiled(sql=None, reason="negated scan without a filter line")
+
+
+@pytest.mark.parametrize("term", [
+    "structural scan",      # l05: the datatype by name, T2w by similarity; "not T2w" kept 779 datasets
+    "T1 weighted images",   # the anatomical datatype by similarity only
+])
+def test_a_term_the_codes_do_not_name_is_left_to_the_sql_model(term) -> None:
+    plan = _plan(_need("fMRI"), _without(term))
+    assert list(_scan_lines(_augmented(plan))) == ['scan "fMRI"']
+    assert _sql(plan).reason == "negated scan without a filter line"
+
+
+def test_a_filler_word_does_not_hide_a_listed_name() -> None:
+    condition = _scan_lines(_augmented(_plan(_need("fMRI"), _without("T1w images"))))[
+        'not scan "T1w images" (complete)']
+    assert "o2.suffix = 't1_weighted_mri'" in condition and "anatomical_mri" not in condition
+
+
+@pytest.mark.parametrize("field, term, listed", [
+    ("suffix", "EEG", True), ("suffix", "T2w", True), ("suffix", "MP2-RAGE", True),
+    ("suffix", "PETs", True), ("datatype", "structural scans", True), ("datatype", "MRI", True),
+    ("suffix", "structural scan", False), ("suffix", "anatomical", False),
+    ("datatype", "T1 weighted images", False),
+])
+def test_listed_names_of_the_vocabulary(field, term, listed) -> None:
+    import retriever
+    assert retriever.is_listed(field, term) is listed
 
 
 def test_a_term_that_is_a_file_type_or_a_task_is_left_to_the_sql_model() -> None:

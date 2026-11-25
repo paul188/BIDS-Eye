@@ -579,6 +579,13 @@ def _plural_variants(term: str) -> List[str]:
     return variants
 
 
+def is_listed(field: str, term: str) -> bool:
+    """True when the vocabulary lists *term* itself in *field*, so that its
+    codes there are what it names and not only similar to it."""
+    return any(form in group_db.get(field, {}) or form in leaf_codes_db.get(field, {})
+               for form in _plural_variants(_normalize_term(term)))
+
+
 def _prune_redundant_parents(codes: List[str]) -> List[str]:
     """Remove a code if a more-specific child of it is already in the list."""
     if len(codes) < 2:
