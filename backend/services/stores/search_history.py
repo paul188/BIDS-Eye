@@ -25,10 +25,10 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
-from typing import AsyncIterator, Optional
+from typing import AsyncIterator, Optional, Sequence
 from uuid import UUID, uuid4
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import Row, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -93,8 +93,9 @@ async def _touch(session: AsyncSession, github_id: int) -> bool:
             SearchHistoryConsent.last_used_at >= _cutoff(),
         )
         .values(last_used_at=func.now())
+        .returning(SearchHistoryConsent.github_id)
     )
-    return touched.rowcount == 1
+    return touched.scalar_one_or_none() is not None
 
 
 async def enable(session: AsyncSession, github_id: int) -> None:
@@ -164,7 +165,7 @@ async def list_entries(
     async with _database(session):
         enabled = await _touch(session, github_id)
         await _delete_expired(session)
-        rows = []
+        rows: Sequence[Row] = ()
         if enabled:
             rows = (await session.execute(
                 select(SearchHistoryEntry.id, SearchHistoryEntry.asked_at,

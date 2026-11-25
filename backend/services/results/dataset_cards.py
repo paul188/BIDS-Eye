@@ -62,7 +62,7 @@ def summarize_participants(participants: Sequence[ParticipantSchema]) -> Optiona
             diagnoses[label] = diagnoses.get(label, 0) + 1
         # The column holds standard codes (the crawler's remote/participant_codes.py);
         # a row crawled since the last rewrite is read through the vocabulary.
-        sex = sex_code(p.sex)
+        sex = sex_code(p.sex or "")
         if sex == "female":
             female += 1
         elif sex == "male":

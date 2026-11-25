@@ -178,10 +178,10 @@ def fill_name_indexes(names: Names, before: Names) -> None:
         institution_index.set_names(names.dataset_institutions)
         log.info("Loaded %d distinct institution names for query matching",
                  len(names.dataset_institutions))
-    sites = (names.site_places, names.site_institutions)
-    if None not in sites and sites != (before.site_places, before.site_institutions):
-        index = place_index.set_places([("institution", name) for name in names.site_institutions],
-                                       names.site_places)
+    places, institutions = names.site_places, names.site_institutions
+    if (places is not None and institutions is not None
+            and (places, institutions) != (before.site_places, before.site_institutions)):
+        index = place_index.set_places([("institution", name) for name in institutions], places)
         log.info("Loaded %d place names for query matching", len(index))
 
 
