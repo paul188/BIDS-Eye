@@ -24,7 +24,6 @@ class SourceGroup(str, Enum):
 
 class Source(str, Enum):
     """Where a piece of evidence was found."""
-    CONDITION = "condition"        # the condition as the search wrote it, whatever it reads
     PARTICIPANTS = "participants"  # rows of the participant list
     FIELD = "field"                # the dataset's own columns
     FILES = "files"
@@ -46,11 +45,25 @@ class Source(str, Enum):
     def group(self) -> SourceGroup:
         """Whose statement it is. Evidence of one group says one thing once
         (services/evidence/SCORING.md)."""
-        if self is Source.PAPER:
-            return SourceGroup.PAPER
-        if self in (Source.SHORT_TEXT, Source.TEXT, Source.README):
-            return SourceGroup.OWN_TEXT
-        return SourceGroup.RECORDS
+        group = _GROUPS.get(self)
+        if group is None:
+            raise ValueError(f"the source {self} has no source group")
+        return group
+
+
+# Not listed: ASSUMED, ASSUMED_ABSENT and NOT_RECORDED stand for an empty
+# column, which states nothing.
+_GROUPS = {
+    Source.PARTICIPANTS: SourceGroup.RECORDS,
+    Source.FIELD: SourceGroup.RECORDS,
+    Source.FILES: SourceGroup.RECORDS,
+    Source.DERIVATIVES: SourceGroup.RECORDS,
+    Source.SITES: SourceGroup.RECORDS,
+    Source.SHORT_TEXT: SourceGroup.OWN_TEXT,
+    Source.TEXT: SourceGroup.OWN_TEXT,
+    Source.README: SourceGroup.OWN_TEXT,
+    Source.PAPER: SourceGroup.PAPER,
+}
 
 
 # ── What evidence proves ──────────────────────────────────────────────────────

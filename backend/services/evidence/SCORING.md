@@ -46,6 +46,10 @@ Each piece belongs to a source group (`Source.group`):
 - **own text**: title, description, README
 - **paper**: a paper the dataset names
 
+The other sources (an assumed default, "not recorded") have no group; asking
+for it is an error. A weaker piece without a group must be the only one of
+its clause.
+
 ## A clause
 
     S = 1    the clause holds as generated

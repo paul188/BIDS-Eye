@@ -157,6 +157,13 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
     assert soft.known is None and "cohort_k" in soft.probable
 
 
+def test_the_count_has_one_weaker_piece_so_its_score_needs_no_source_group():
+    soft = tier_classify._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
+    (piece,) = soft.weaker
+    assert soft.score_sql("u0", []) == (
+        f"CASE WHEN u0 = 0 THEN 1 WHEN u0 = 1 THEN {piece.score():g} ELSE 0 END")
+
+
 def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
     from services.database_stats.database_stats import Summaries, database_stats
     monkeypatch.setattr(database_stats, "summaries", Summaries(subject_counts=True))
