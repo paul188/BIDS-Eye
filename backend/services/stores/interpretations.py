@@ -36,6 +36,8 @@ from sqlalchemy import select, update, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from services.switches import Switch
+
 log = logging.getLogger(__name__)
 
 _BACKEND = Path(__file__).resolve().parents[2]
@@ -71,6 +73,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "results" / "rankers.py",
     _BACKEND / "services" / "translate" / "text_to_sql.py",
     _BACKEND / "services" / "translate" / "value_check.py",
+    _BACKEND / "services" / "switches.py",
     _BACKEND / "services" / "uncertain" / "tier.py",
     _BACKEND / "services" / "uncertain" / "classify.py",
     _BACKEND / "services" / "uncertain" / "conditions.py",
@@ -108,7 +111,7 @@ def version_paths() -> list:
 
 
 def enabled() -> bool:
-    return os.getenv("INTERPRETATION_CACHE", "").strip().lower() in ("1", "true", "yes", "on")
+    return Switch.INTERPRETATION_CACHE.is_on()
 
 
 def pipeline_version() -> str:

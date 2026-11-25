@@ -82,9 +82,9 @@ from services.uncertain.conditions import QueryEvidence, ClauseEvidence
 from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
 from services.schema.tables import datasets as _datasets
+from services.switches import Switch
 
 
-ENV_FLAG = "UNCERTAIN_TIER"
 # Conditions per dataset that may be unconfirmed.
 MAX_UNSURE = int(os.getenv("UNCERTAIN_MAX_UNSURE", "1"))
 
@@ -97,7 +97,7 @@ def hoist_terms_enabled() -> bool:
     database (2026-11-15, ten query shapes) two text-led shapes ran 4x faster
     and one age shape 2x slower; without it every shape ran as before.
     """
-    return os.getenv("UNCERTAIN_HOIST_TERMS", "false").strip().lower() in ("1", "true", "yes", "on")
+    return Switch.UNCERTAIN_HOIST_TERMS.is_on()
 
 
 LEVEL_COLUMN = "uncertain_level"
@@ -124,7 +124,7 @@ def kind_level_columns(tiered_sql: str) -> dict[str, str]:
 
 def enabled() -> bool:
     """True when UNCERTAIN_TIER is on. Read on every call."""
-    return os.getenv(ENV_FLAG, "false").strip().lower() in ("1", "true", "yes", "on")
+    return Switch.UNCERTAIN_TIER.is_on()
 
 
 def _flatten_and(node) -> list:

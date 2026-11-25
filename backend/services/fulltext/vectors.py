@@ -41,7 +41,7 @@ def exact_enabled() -> bool:
     The unstemmed vectors and bids_word_forms must then exist (check_schema).
     Read on every call, so a one-off container can set the variable.
     """
-    return tables.is_flag(EXACT_ENV)
+    return EXACT_ENV.is_on()
 
 
 def papers_enabled() -> bool:
@@ -50,5 +50,5 @@ def papers_enabled() -> bool:
     search_tsv_papers must then exist (check_schema). Read on every call, so
     a one-off container can set the variable.
     """
-    return tables.is_flag(PAPERS_ENV)
+    return PAPERS_ENV.is_on()
 

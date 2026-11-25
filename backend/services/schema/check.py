@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 
 from exceptions.expected import ExpectedError
 from services.schema import tables
+from services.switches import Switch
 
 
 class MissingSchemaError(ExpectedError):
@@ -56,4 +57,4 @@ async def check_schema(connection: AsyncConnection | AsyncSession) -> None:
 
 def _needed(info: Mapping[str, object]) -> bool:
     flag = info.get(tables.FLAG)
-    return flag is None or tables.is_flag(str(flag))
+    return flag is None or Switch(str(flag)).is_on()

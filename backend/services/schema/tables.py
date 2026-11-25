@@ -22,15 +22,14 @@ The tables come from two places:
   (services/schema/check.py) compares them with the database at
   startup.
 
-A flag is an environment variable that turns an optional search feature
-on. There are two, PAPERS_FLAG and EXACT_FLAG. A column or table that
+A flag is a switch (services/switches.py) that turns an optional search
+feature on. Two matter here, PAPERS_FLAG and EXACT_FLAG. A column or table that
 names a flag is needed only while that flag is on; the others are always
 needed.
 """
 
 from __future__ import annotations
 
-import os
 from typing import Any, cast
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, Double, Integer, MetaData,
@@ -41,23 +40,15 @@ from sqlalchemy.types import TypeEngine
 from db.extensions import extend
 from db.models import BIDSDataset, BIDSObject, BIDSParticipant
 
+from services.switches import Switch
+
 
 # ── Flags ────────────────────────────────────────────────────────────────────
 
 # Text matches also search the text of the papers a dataset names.
-PAPERS_FLAG = "TEXT_SEARCH_PAPERS"
+PAPERS_FLAG = Switch.TEXT_SEARCH_PAPERS
 # Words whose form is decided must match in that form.
-EXACT_FLAG = "TEXT_SEARCH_EXACT"
-
-
-def is_flag(flag: str) -> bool:
-    """True when the flag *flag* (PAPERS_FLAG or EXACT_FLAG) is on.
-
-    On means the environment variable is 1, true, yes or on; unset or
-    anything else is off. Read on every call, so a one-off container or a
-    test can set the variable after import.
-    """
-    return os.getenv(flag, "false").strip().lower() in ("1", "true", "yes", "on")
+EXACT_FLAG = Switch.TEXT_SEARCH_EXACT
 
 
 # ── What each declaration records for check_schema ───────────────────────────

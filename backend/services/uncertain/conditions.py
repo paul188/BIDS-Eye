@@ -11,13 +11,13 @@ tier does: tier.py.
 from __future__ import annotations
 
 import math
-import os
 import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from services.evidence.base import PieceOfEvidence, SourceGroup, Strength
 from services.evidence.confirmed import ConfirmedMatch
+from services.switches import Switch
 
 
 # How the pieces of evidence of a clause, and the clauses of a query, add up
@@ -45,7 +45,7 @@ def possible_enabled() -> bool:
     """Whether a missing field without any hint (state 2) may keep a dataset."""
     # Off by default: on the benchmark this level added 2,211 rows for 0.4
     # points of recall, 11% of the judged ones relevant (2026-11-13).
-    return os.getenv("UNCERTAIN_POSSIBLE", "false").strip().lower() in ("1", "true", "yes", "on")
+    return Switch.UNCERTAIN_POSSIBLE.is_on()
 
 
 # A stemmed text search, with the guard that may follow it: the word forms

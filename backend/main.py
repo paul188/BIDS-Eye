@@ -45,7 +45,7 @@ from exceptions.handlers import add_error_handlers
 from routers.auth import require_auth, router as auth_router
 from routers.history import router as history_router
 from routers.query import router as query_router
-from services import in_process_crawler
+from services import in_process_crawler, switches
 from services.database_stats.database_stats import database_stats
 from services.translate import optional_columns
 
@@ -59,6 +59,9 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Stop when a feature switch is neither true nor false.
+    switches.check()
+
     # Ensure DB schema is up to date
     await create_all_tables()
     log.info("Database tables verified.")

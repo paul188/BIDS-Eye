@@ -55,6 +55,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from services.database_stats.database_stats import database_stats
 from services.schema.tables import datasets as _datasets
+from services.switches import Switch
 from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ class RerankResult:
 def settings() -> Dict[str, Any]:
     models = os.getenv("RERANK_MODEL", "gemini-3.5-flash-lite,gemini-2.5-flash-lite")
     return {
-        "enabled": os.getenv("RERANK_ENABLED", "false").lower() in ("1", "true", "yes", "on"),
+        "enabled": Switch.RERANK_ENABLED.is_on(),
         "models": [m.strip() for m in models.split(",") if m.strip()],
         "thinking": os.getenv("RERANK_THINKING", "low") or None,
         "candidates": max(2, int(os.getenv("RERANK_CANDIDATES", "40"))),
