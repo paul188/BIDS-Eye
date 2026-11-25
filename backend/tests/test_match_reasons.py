@@ -114,6 +114,15 @@ def test_paper_and_readme_venues():
     paper = ("(d.search_tsv @@ to_tsquery('english', 'sleep') OR "
              "d.search_tsv_papers @@ to_tsquery('english', 'sleep'))")
     assert _kinds(_plans(paper)["Text"]) == [Source.TEXT, Source.PAPERS]
+    # search_tsv_papers alone holds both texts: in the own text, or only in a paper.
+    for guard in ("", " AND d.search_tsv_exact_papers @@ to_tsquery('simple', 'sleep')"):
+        both = _plans(f"(d.search_tsv_papers @@ to_tsquery('english', 'sleep'){guard})")["Text"]
+        own, only_paper = both.branches
+        assert (own.source, only_paper.source) == (Source.TEXT, Source.PAPERS)
+        assert "_papers" not in own.sql() and "search_tsv" in own.sql()
+        assert only_paper.sql().endswith(f" AND NOT ({own.sql()})")
+    # Limited to the name and description, a search never reaches a paper.
+    assert _plans("d.search_tsv_papers @@ to_tsquery('english', 'sleep:AB')") == {}
     # A URL fragment stays a substring search (text_search.convert_long_text_ilike).
     readme = "(d.readme_text ILIKE '%doi.org%' OR d.description_text ILIKE '%doi.org%')"
     assert _kinds(_plans(readme)["Text"]) == [Source.README, Source.SHORT_TEXT]

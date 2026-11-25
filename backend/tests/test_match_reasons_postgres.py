@@ -202,3 +202,20 @@ def test_uncertain_tier_query_still_runs_with_reasons():
         reasons = {d.id: d.match_reasons for d in datasets}
         assert reasons[ids["ages"]] == ["Age: 3 participants aged 4–23 months"]
     asyncio.run(_run(check))
+
+
+def test_a_paper_is_named_only_where_the_own_text_does_not_match():
+    """search_tsv_papers holds the dataset's own text too."""
+    from sqlalchemy import text
+
+    async def check(session, ids):
+        await session.execute(text("ALTER TABLE bids_datasets ADD COLUMN search_tsv_papers TSVECTOR"))
+        await session.execute(text(
+            "UPDATE bids_datasets SET search_tsv_papers = search_tsv || setweight(to_tsvector("
+            "'english', CASE WHEN id = :id THEN 'Parkinson patients' ELSE '' END), 'D')"), {"id": ids["adults"]})
+        condition = DIAGNOSIS.replace(":AB", "").replace("search_tsv", "search_tsv_papers")
+        _, page = await _page(session, ids, condition)
+        assert set(page) == {"parkinson", "pd_text", "pd_readme", "adults"}
+        assert page["pd_readme"].match_reasons == ["Diagnosis: named in the README or description"]
+        assert page["adults"].match_reasons == ["Diagnosis: named in a linked paper"]
+    asyncio.run(_run(check))

@@ -15,6 +15,7 @@ from typing import List, Optional, Tuple
 
 from services.evidence.base import Source
 from services.evidence.confirmed import Assumed, ConfirmedMatch, FieldValue, Found, ParticipantRows
+from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN, PAPER_FTS_COLUMN
 from services.schema.tables import COLUMN_TEXT, TABLE_ABOUT, About, TextKind
 
 try:
@@ -41,6 +42,8 @@ _KIND_SOURCES = {
 _TABLE_SOURCES = {table: _ABOUT_SOURCES[about] for table, about in TABLE_ABOUT.items()
                   if about in _ABOUT_SOURCES}
 _TEXT_COLUMNS = {column: _KIND_SOURCES[kind] for column, kind in COLUMN_TEXT.items()}
+# A vector that holds the papers too -> the same vector without them.
+_WITHOUT_PAPERS = {PAPER_FTS_COLUMN: FTS_COLUMN, EXACT_PAPER_FTS_COLUMN: EXACT_FTS_COLUMN}
 
 
 # ── Reading the SQL ───────────────────────────────────────────────────────────
@@ -105,6 +108,7 @@ def _branch_tsqueries(branch) -> List[str]:
 
 def classify_branch(branch, alias: str) -> Optional[ConfirmedMatch]:
     """The evidence one OR branch is; None when it cannot be evaluated alone.
+    The branch searches no papers (branch_evidence).
 
     Text first: "no ages recorded AND the description names infants" is
     evidence from the text whose other parts only say when it applies. Then
@@ -128,8 +132,7 @@ def classify_branch(branch, alias: str) -> Optional[ConfirmedMatch]:
         queries = _branch_tsqueries(branch)
         if queries and all(short_fields_only(q) for q in queries):
             return Found(sql, source=Source.SHORT_TEXT)
-    for source in (Source.TEXT, Source.SHORT_TEXT, Source.README,
-                   Source.PAPERS):
+    for source in (Source.TEXT, Source.SHORT_TEXT, Source.README):
         if source in text_sources:
             return Found(sql, source=source)
 
@@ -171,8 +174,40 @@ def classify_branch(branch, alias: str) -> Optional[ConfirmedMatch]:
     return None
 
 
+def _without_papers(branch):
+    """The branch with its text searches on the dataset's own text alone;
+    None when it searches no papers."""
+    own = branch.copy()
+    columns = [c for c in own.find_all(exp.Column)
+               if c.name.lower() in _WITHOUT_PAPERS and not _in_subquery(c, own) and not _under_not(c, own)]
+    for column in columns:
+        column.set("this", exp.to_identifier(_WITHOUT_PAPERS[column.name.lower()]))
+    return own if columns else None
+
+
+def branch_evidence(branch, alias: str) -> Tuple[ConfirmedMatch, ...]:
+    """The evidence of one OR branch; none when it cannot be evaluated alone.
+
+    A vector with the papers also holds the dataset's own text: a search on
+    it is two ways to match, in the own text and only in a paper.
+    """
+    own = _without_papers(branch)
+    found = classify_branch(branch if own is None else own, alias)
+    if found is None:
+        return ()
+    if own is None:
+        return (found,)
+    queries = _branch_tsqueries(branch)
+    if queries and all(short_fields_only(q) for q in queries):
+        return (found,)   # paper text has the lowest weight: such a search never reaches it
+    only_paper = f"({branch.sql(dialect='postgres')}) AND NOT ({own.sql(dialect='postgres')})"
+    return (found, Found(only_paper, source=Source.PAPERS))
+
+
 def confirming_evidence(node, alias: str) -> Tuple[ConfirmedMatch, ...]:
-    """The ways the condition *node* can hold, in its order. A branch that
-    cannot be evaluated alone is left out, so these need not cover the condition."""
-    return tuple(evidence for branch in or_branches(node)
-                 if (evidence := classify_branch(branch, alias)) is not None)
+    """The ways the condition *node* can hold, in its order, each once. A branch
+    that cannot be evaluated alone is left out, so these need not cover the condition."""
+    ways: List[ConfirmedMatch] = []
+    for branch in or_branches(node):
+        ways.extend(way for way in branch_evidence(branch, alias) if way not in ways)
+    return tuple(ways)
