@@ -78,7 +78,13 @@ def augment_with_rag(
         resolved.append(ResolvedTerms(field=field, term_to_codes=term_map))
 
     topics = list(topics or [])
-    scored_filters = _build_scored_filters(rag_results, scores or {})
+    # An excluded scan must not move datasets up.
+    excluded_scans = _excluded_scan_keys(plan)
+    scored_filters = _build_scored_filters(
+        {field: {term: codes for term, codes in term_map.items()
+                 if field not in _SCAN_FIELD_NAMES or _term_key(term) not in excluded_scans}
+         for field, term_map in rag_results.items()},
+        scores or {})
     seen = {(f.field, f.code) for f in scored_filters}
     for topic in topics:
         for code in topic.codes:
@@ -529,6 +535,100 @@ def _excluded_diagnosis_lines(plan: QueryPlan, resolved: List[ResolvedTerms],
             for term, stated in conditions.items()]
 
 
+_SCAN_FIELD_NAMES = frozenset(f.value for f in (RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK))
+
+
+def _excluded_scan_keys(plan: QueryPlan) -> set:
+    """The scan terms the dataset must not have, as _term_key. A term another
+    requirement asks for stays asked, as with _excluded_diagnosis_keys."""
+    asked = {_term_key(t) for r in plan.scan_requirements if r.required for t in r.scan_terms}
+    return {_term_key(t) for r in plan.scan_requirements if not r.required
+            for t in r.scan_terms if t and t.strip()} - asked
+
+
+def _names_only_recordings(term: str) -> bool:
+    """True for a term made only of modality words ("fMRI", "task fMRI", "EEG data")."""
+    words = [w for w in re.findall(r"[a-z0-9*]+", term.lower()) if w not in _SCAN_FILLER_WORDS]
+    return bool(words) and all(w in _MODALITY_WORDS for w in words)
+
+
+def _excluded_codes(term: str, field_codes: Dict[RAGField, List[str]]) -> Dict[RAGField, List[str]]:
+    """The codes that state an excluded scan term: its tasks, else its suffixes, else its datatypes.
+
+    "MP2RAGE" resolves to its suffix and to the anatomical datatype it belongs
+    to. Excluding the datatype would remove every anatomical scan ("MPRAGE,
+    not MP2RAGE" found nothing), so a datatype counts only without a suffix.
+    Empty for a term that may be a file type or a task ("attention" is the
+    suffix att and tasks, "physio" a suffix and meditation tasks): a request
+    for it accepts either, but excluding both would remove too much.
+    """
+    if (field_codes.get(RAGField.SUFFIX) and field_codes.get(RAGField.TASK)
+            and not field_codes.get(RAGField.DATATYPE) and not _names_only_recordings(term)):
+        return {}
+    fields = [RAGField.SUFFIX, RAGField.DATATYPE]
+    fields.insert(len(fields) if _names_only_recordings(term) else 0, RAGField.TASK)
+    for field in fields:
+        if field_codes.get(field):
+            return {field: field_codes[field]}
+    return {}
+
+
+def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, List[str]]],
+                         asked: Dict[str, Dict[RAGField, List[str]]],
+                         unresolved: Sequence[str]) -> List[str]:
+    """One line per scan the dataset must not have (ScanRequirement.required = False).
+
+    A task is stated by its codes or by its words in the name, description or
+    study fields; a README mention alone does not exclude (as for
+    _excluded_diagnosis_lines). Terms the vocabulary does not know are
+    excluded by those words. Terms of one kind are excluded one by one ("no
+    EEG or MEG"); a recording with its task ("no resting-state fMRI") only
+    where the dataset has both.
+
+    No line, so that the compiler leaves the plan to the SQL model: "not both
+    in one subject", an exclusion whose codes a required term has too, and a
+    term without codes to exclude (_excluded_codes).
+    """
+    objects = _catalogue.tables().objects.name
+    excluded_codes = {_term_key(t): _excluded_codes(t, codes) for t, codes in excluded.items()}
+    unknown = {_term_key(t) for t in unresolved}
+    # A required sequence does not ask for the whole datatype either.
+    asked_codes = {(field, code) for term, field_codes in asked.items()
+                   for field, codes in _excluded_codes(term, field_codes).items() for code in codes}
+
+    def stated(term: str) -> Optional[str]:
+        field_codes = excluded_codes.get(_term_key(term), {})
+        if not field_codes:
+            return _format_text_match([term], _MODE_SHORT) if _term_key(term) in unknown else None
+        (field, codes), = field_codes.items()
+        if any((field, code) in asked_codes for code in codes):
+            log.info("Excluded scan %r shares codes with a required one: no filter line", term)
+            return None
+        values = ", ".join(f"'{c}'" for c in codes)
+        match = f"= {values}" if len(codes) == 1 else f"IN ({values})"
+        condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND o2.{field.value} {match})"
+        text = _format_task_text_match([term]) if field == RAGField.TASK else None
+        return f"({condition} OR {text})" if text else condition
+
+    keys = _excluded_scan_keys(plan)
+    lines: List[str] = []
+    for requirement in plan.scan_requirements:
+        if requirement.required or requirement.same_subject:
+            continue
+        terms = [t for t in dict.fromkeys(requirement.scan_terms) if _term_key(t) in keys]
+        recordings = [t for t in terms if _term_key(t) not in unknown
+                      and RAGField.TASK not in excluded_codes.get(_term_key(t), {})]
+        together = not requirement.any_of and 0 < len(recordings) < len(terms)
+        for group in ([terms] if together else [[t] for t in terms]):
+            found = [c for c in map(stated, group) if c]
+            if len(found) < len(group):
+                continue
+            names = ", ".join('"' + t.replace('"', "'") + '"' for t in group)
+            label = "complete, only together" if len(group) > 1 else "complete"
+            lines.append(f"  not scan {names} ({label}): NOT ({' AND '.join(found)})")
+    return list(dict.fromkeys(lines))
+
+
 def _build_augmented_question(
     plan: QueryPlan,
     resolved: List[ResolvedTerms],
@@ -597,6 +697,7 @@ def _build_augmented_question(
     context_lines: List[str] = []
 
     excluded_diagnoses = _excluded_diagnosis_keys(plan)
+    excluded_scans = _excluded_scan_keys(plan)
 
     label_map = {
         RAGField.DIAGNOSIS: "diagnosis codes",
@@ -632,6 +733,15 @@ def _build_augmented_question(
             if r.all_codes:
                 label = label_map.get(r.field, r.field.value)
                 non_scan_lines.append(f"  {label}: {', '.join(r.all_codes)}")
+
+    # Excluded scans have lines of their own (_excluded_scan_lines), and are
+    # not searched for by the VOCABULARY MISS block.
+    excluded_by_term = {t: scan_by_term.pop(t) for t in list(scan_by_term) if _term_key(t) in excluded_scans}
+    unresolved_terms = {field: list(terms) for field, terms in (unresolved_terms or {}).items()}
+    unknown_scans = unresolved_terms.pop(RAGField.SCAN.value, [])
+    excluded_unknown = [t for t in unknown_scans if _term_key(t) in excluded_scans]
+    if len(unknown_scans) > len(excluded_unknown):
+        unresolved_terms[RAGField.SCAN.value] = [t for t in unknown_scans if t not in excluded_unknown]
 
     # Other words for a scan term (scan_term_alternatives, checked against the
     # catalogue by check_scan_term_alternatives): an ERP study that says only
@@ -673,7 +783,7 @@ def _build_augmented_question(
     # Alternatives ("X, Y or Z", ScanRequirement.any_of): the conditions of
     # the listed terms become ONE line joined with OR, so the SQL model copies
     # the "or" instead of deciding between AND and OR itself. A negated list
-    # needs every term excluded, which separate lines already say.
+    # has its own lines (_excluded_scan_lines).
     any_of_lists: List[List[str]] = [
         list(dict.fromkeys(t for t in req.scan_terms if t and t.strip()))
         for req in plan.scan_requirements
@@ -750,8 +860,7 @@ def _build_augmented_question(
         # is the opposite case: it names a data type, and the generic task
         # code it also matches ('bold_acquisition_general') must not replace it.
         if task_conds and RAGField.DATATYPE in field_codes:
-            words = [w for w in re.findall(r"[a-z0-9*]+", term.lower()) if w not in _SCAN_FILLER_WORDS]
-            if words and all(w in _MODALITY_WORDS for w in words):
+            if _names_only_recordings(term):
                 task_conds = []
             else:
                 modality_conds = []
@@ -793,7 +902,6 @@ def _build_augmented_question(
     # One line per list of alternatives. A listed term the vocabulary does not
     # know joins the OR as a text search and leaves the VOCABULARY MISS note,
     # whose text filters are required one by one.
-    unresolved_terms = {field: list(terms) for field, terms in (unresolved_terms or {}).items()}
     for index, terms in enumerate(any_of_lists):
         held = any_of_conditions.get(index, {})
         for term in terms:
@@ -814,6 +922,7 @@ def _build_augmented_question(
         elif listed:
             context_lines.append(f'  scan "{listed[0]}": {held[_term_key(listed[0])]}')
     unresolved_terms = {field: terms for field, terms in unresolved_terms.items() if terms}
+    context_lines.extend(_excluded_scan_lines(plan, excluded_by_term, scan_by_term, excluded_unknown))
 
     # Topics: the qualified subject as one condition (see _topic_condition).
     for topic in topics:

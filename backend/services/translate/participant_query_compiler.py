@@ -10,14 +10,14 @@ variation without adding information: the same request came back as 0, 23 or
   - diagnosis groups from the typed plan (AND or OR between groups, the
     diagnoses of a group are alternatives, "at least N patients with X");
   - every filter line that is a complete condition, ANDed (an excluded
-    diagnosis is one: "not diagnosis", RAG/criteria.py);
+    diagnosis or scan is one: "not diagnosis", "not scan");
   - fixed conditions for plan fields that have no line: a primary paper
     (doi_required), sessions per subject (min_sessions), a named
     preprocessing pipeline (fMRIPrep, MRIQC, ... from bids_derivatives).
 
 Anything that needs interpretation declines with a reason and goes through
 the SQL model: sidecar fields, ordering, comparisons, institutions, authors,
-licences, negated or per-subject scan requirements, contradictions. The check
+licences, per-subject scan requirements, contradictions. The check
 is a whitelist: a plan field this module does not know must hold its default,
 so a field added later never compiles by accident.
 """
@@ -277,10 +277,12 @@ _COMPLETE_LINE_RE = re.compile(
     r"^  (?:scan(?: task)? \"[^\"]*\""
     r"|scan any of \"[^\"]*\"(?:, \"[^\"]*\")+ \(alternatives, one is enough\)"
     r"|participant sex|participant age|participant sex and age"
+    r"|not scan \"[^\"]*\"(?:, \"[^\"]*\")* \(complete(?:, only together)?\)"
     r"|species \(complete, no other species condition\)"
     r"|not diagnosis \"[^\"]*\" \(complete, datasets that record no diagnosis stay\)"
     r"|study design|age group [a-z ]+ \(complete, no other age condition\)"
     r"|topic \"[^\"]*\"|location \"[^\"]*\"|dataset text|dataset name|dataset size): (?P<condition>.+)$")
+_EXCLUDED_SCAN_LINE_RE = re.compile(r'^  not scan (?P<terms>"[^"]*"(?:, "[^"]*")*) \(complete', re.MULTILINE)
 _HAVING_LINE_RE = re.compile(r"^  subject count: HAVING (?P<condition>.+?)(?: \[.*\])?$")
 _IGNORED_LINE_RE = re.compile(r"^  not searchable \(add NO condition for these\): ")
 _VOCAB_HINT_RE = re.compile(r"For free-text search use: (?P<hint>.+?)\]\s*$", re.MULTILINE)
@@ -384,6 +386,29 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
     return where, having, ""
 
 
+def _has_unwritten_exclusion(scans: Iterable[Any], augmented_question: Optional[str]) -> bool:
+    """True when a negated scan requirement has no "not scan" line.
+
+    preprocess/ leaves the line out when it cannot state the exclusion
+    (augment._excluded_scan_lines), and drops a term that is also required.
+    """
+    def key(term: str) -> str:
+        return " ".join(str(term).replace('"', "'").lower().split())
+
+    written = {key(term) for match in _EXCLUDED_SCAN_LINE_RE.finditer(augmented_question or "")
+               for term in re.findall(r'"([^"]*)"', match.group("terms"))}
+    scans = list(scans)
+    asked = {key(t) for scan in scans if _value(scan, "required", True) is True
+             for t in _value(scan, "scan_terms", []) or []}
+    for scan in scans:
+        if _value(scan, "required", True) is True:
+            continue
+        terms = {key(t) for t in _value(scan, "scan_terms", []) or []} - asked
+        if not terms or not terms <= written:
+            return True
+    return False
+
+
 def _fixed_conditions(plan: Any) -> List[str]:
     """Conditions for plan fields that have no filter line."""
     conditions: List[str] = []
@@ -427,16 +452,19 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
 
     scans = _value(plan, "scan_requirements", []) or []
     for scan in scans:
-        if _value(scan, "required", True) is not True or _value(scan, "same_subject", False):
-            # The scan lines do not say which requirement is negated or must
-            # hold per subject.
-            return _decline("scan requirement is negated or per subject")
+        if _value(scan, "same_subject", False):
+            # The scan lines do not say which requirement must hold per subject.
+            return _decline("scan requirement is per subject")
+    if _has_unwritten_exclusion(scans, augmented_question):
+        return _decline("negated scan without a filter line")
 
     where, having, reason = _filter_conditions(augmented_question, plan)
     if where is None:
         return _decline(reason)
     vocabulary_scans = re.search(r"VOCABULARY MISS[^\]]*?\bscan: ", augmented_question or "")
-    if scans and not vocabulary_scans and not any(f"{_objects.name} o2" in c for c in where):
+    required_scans = [s for s in scans if _value(s, "required", True) is True]
+    if required_scans and not vocabulary_scans and not any(
+            f"{_objects.name} o2" in c for c in where if not c.startswith("NOT (")):
         return _decline("scan requirement without a resolved condition")
 
     resolved = _resolved_diagnoses(resolved_terms)

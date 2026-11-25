@@ -94,10 +94,12 @@ def test_one_resolved_alternative_is_a_plain_line():
 
 
 def test_a_negated_list_keeps_one_line_per_term():
-    # "no grasping or reaching" excludes both: separate lines, as before.
+    # "no grasping or reaching" excludes both (test_plan_logic.py).
     plan = _plan(ScanRequirement(scan_terms=["grasping", "reaching"], any_of=True, required=False))
-    lines = _scan_lines(_build_augmented_question(plan, [TASKS]))
-    assert [line.split(":")[0] for line in lines] == ['scan "grasping"', 'scan "reaching"']
+    augmented = _build_augmented_question(plan, [TASKS])
+    assert _scan_lines(augmented) == []
+    assert [line.split(":")[0].strip() for line in augmented.splitlines() if "not scan" in line] == [
+        'not scan "grasping" (complete)', 'not scan "reaching" (complete)']
 
 
 def test_terms_are_matched_whatever_their_case():
