@@ -77,6 +77,38 @@ def test_another_ranker_changes_the_page_order_and_nothing_else() -> None:
     assert cut(default) == cut(swapped)
 
 
+def test_a_ranker_can_tell_apart_which_condition_is_unsure() -> None:
+    """Unsure about the ages before unsure about the text, whatever the score."""
+    class TextEvidenceFirst:
+        def sort_key(self, columns):
+            key = [columns.weakest_evidence]
+            text = columns.weakest_evidence_for("text")
+            if text is not None:
+                key.append(text)
+            assert columns.weakest_evidence_for("sex") is None   # no such condition here
+            return key + [columns.score]
+
+    ages = ("(d.age_max < 3 OR EXISTS(SELECT 1 FROM bids_participants AS p2 "
+            "WHERE p2.dataset_id = d.id AND p2.age < 3))")
+    tiered = tier.apply(BASE.replace("WHERE ", f"WHERE {ages} AND "), papers=True)
+    assert "GREATEST(evidence.u0, evidence.u1) AS uncertain_level" in tiered
+    assert ", evidence.u0 AS uncertain_level_age, evidence.u1 AS uncertain_level_text" in tiered
+    assert tier.kind_level_columns(tiered) == {"age": "uncertain_level_age",
+                                               "text": "uncertain_level_text"}
+    page, _ = build_page_sql(tiered, [], True, 20, 0, rank_query=RankQuery("young & children"),
+                             ranker=TextEvidenceFirst())
+    assert _page_order(page) == (
+        "ORDER BY page_result.uncertain_level, page_result.uncertain_level_text, "
+        "page_result.relevance_score + page_result.text_rank DESC, page_result.id")
+
+
+def test_conditions_of_one_kind_share_a_column() -> None:
+    two_texts = tier.apply(BASE.replace("GROUP BY", "AND d.search_tsv @@ to_tsquery('english', "
+                                        "'resting & state') GROUP BY"), papers=True)
+    assert "GREATEST(evidence.u0, evidence.u1) AS uncertain_level_text" in two_texts
+    assert tier.kind_level_columns(BASE) == {}
+
+
 def test_a_term_that_is_not_a_plain_column_can_be_ranked_by() -> None:
     class RecordedFirst:
         def sort_key(self, columns):

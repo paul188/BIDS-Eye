@@ -2,8 +2,9 @@
 services/uncertain/conditions.py
 ------------------------------------
 The pieces every part of the uncertain tier shares: one condition with its
-evidence in the order it counts (SoftCondition), the patterns that read a
-generated text search, and the switch for the 'possible' level. What the
+evidence in the order it counts (SoftCondition), the evidence of the whole
+query, which combines its conditions (QueryEvidence), the patterns that read
+a generated text search, and the switch for the 'possible' level. What the
 tier does: tier.py.
 """
 
@@ -12,7 +13,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from services.evidence.base import Evidence, Strength
 
@@ -48,12 +49,13 @@ def own_text(alias: str) -> str:
 
 @dataclass
 class SoftCondition:
-    """One condition of the search and the evidence for it, in the order it
-    counts: the first that holds for a dataset gives the condition's state
-    (Strength) and the text on its result card.
+    """One condition (AND clause) of the generated query that a dataset can
+    fail without contradicting it, and the evidence for a dataset it does not
+    hold for, in the order it counts. The first that holds gives the
+    condition's state (Strength); a condition that holds as generated is
+    confirmed, and a dataset none of the evidence holds for is contradicted.
 
-    The list always starts with the condition as asked (confirmed.AsAsked). What
-    follows depends on the kind:
+    What the list holds depends on the kind:
 
       a text search            [only in a paper,] a weaker form of the search
       a field that may be      other values recorded, [only in a paper,] [the
@@ -61,11 +63,10 @@ class SoftCondition:
       scanner.py)              not recorded
       the same, where text     [only in a paper,] [a weaker form,] other
       outweighs a record       values recorded, not recorded
-
-    A dataset none of them holds for is contradicted.
     """
     kind: str                         # a field in fields/ (age, diagnosis, sex), text, sidecar or patient_count
-    alias: str                        # the dataset row of the search the SQL is written for
+    alias: str                        # the dataset row of the query
+    sql: str                          # the condition as generated
     evidence: Tuple[Evidence, ...]
     # (name, SELECT) sets the condition reads more than once: computed once
     # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).
@@ -74,9 +75,9 @@ class SoftCondition:
     def __post_init__(self) -> None:
         self.evidence = tuple(self.evidence)
         strengths = [e.strength for e in self.evidence]
-        if strengths[:1] != [Strength.CONFIRMED] or strengths.count(Strength.CONFIRMED) != 1:
-            raise ValueError("a condition's evidence starts with the condition as asked")
-        if strengths.count(Strength.CONTRADICTED) > 1:
+        if Strength.CONFIRMED in strengths:
+            raise ValueError("the condition itself is what confirms it")
+        if strengths.count(Strength.CONTRADICTED) > 1 or strengths.count(Strength.POSSIBLE) > 1:
             raise ValueError("a condition has one record that contradicts it")
         if Strength.CONTRADICTED in strengths:
             at = strengths.index(Strength.CONTRADICTED)
@@ -88,14 +89,14 @@ class SoftCondition:
     # ── The parts of the list ─────────────────────────────────────────────────
 
     @property
-    def sql(self) -> str:
-        """The condition as generated."""
-        return self.evidence[0].sql(self.alias) or ""
-
-    @property
     def weaker(self) -> Tuple[Evidence, ...]:
         """The evidence for the probable state, in the order it counts."""
         return tuple(e for e in self.evidence if e.strength == Strength.PROBABLE)
+
+    @property
+    def not_recorded(self) -> Optional[Evidence]:
+        """The evidence for the possible state."""
+        return next((e for e in self.evidence if e.strength == Strength.POSSIBLE), None)
 
     @property
     def probable(self) -> Optional[str]:
@@ -118,15 +119,6 @@ class SoftCondition:
         strengths = [e.strength for e in self.evidence]
         return (Strength.CONTRADICTED in strengths
                 and Strength.PROBABLE in strengths[:strengths.index(Strength.CONTRADICTED)])
-
-    @property
-    def reason_probable(self) -> str:
-        """The card text of the weaker evidence that counts last."""
-        return self.weaker[-1].reason() if self.weaker else ""
-
-    @property
-    def reason_possible(self) -> str:
-        return next((e.reason() for e in self.evidence if e.strength == Strength.POSSIBLE), "")
 
     # ── SQL ───────────────────────────────────────────────────────────────────
 
@@ -166,3 +158,81 @@ class SoftCondition:
         if self.known and possible_enabled():
             options.append(f"NOT ({self.known})")
         return "(" + " OR ".join(options) + ")"
+
+
+@dataclass
+class QueryEvidence:
+    """The evidence a whole query has for a dataset: that of its conditions,
+    combined. The query is their AND, so a dataset is as strong as its weakest
+    condition; whether it is kept, and what its result card says, is decided
+    here and not by a single condition.
+
+    Written as SQL over one row per dataset that holds, for condition i, its
+    Strength (state_column) and which weaker evidence held (flag_columns);
+    tier.apply builds that row.
+    """
+    conditions: Tuple[SoftCondition, ...]
+    row: str = "evidence"   # SQL alias of that row
+
+    def state_column(self, i: int) -> str:
+        return f"u{i}"
+
+    def flag_columns(self, i: int) -> List[str]:
+        """Columns that tell the weaker evidence of condition *i* apart, one
+        for each but the last: "paper_0" for evidence found in a paper."""
+        names: List[str] = []
+        for j, piece in enumerate(self.conditions[i].weaker[:-1]):
+            name = f"{piece.source.value}_{i}"
+            names.append(f"{name}_{j}" if name in names else name)
+        return names
+
+    def _states(self) -> List[str]:
+        return [f"{self.row}.{self.state_column(i)}" for i in range(len(self.conditions))]
+
+    @staticmethod
+    def _weakest(states: Sequence[str]) -> str:
+        """The weakest of several states: the largest Strength."""
+        return f"GREATEST({', '.join(states)})" if len(states) > 1 else states[0]
+
+    def strength_sql(self) -> str:
+        """The Strength of the query for the dataset: its weakest condition."""
+        return self._weakest(self._states())
+
+    def strength_by_kind_sql(self) -> Dict[str, str]:
+        """kind of condition → the weakest state among the conditions of
+        that kind, for a ranker that tells them apart (results/rankers.py)."""
+        of_kind: Dict[str, List[str]] = {}
+        for state, condition in zip(self._states(), self.conditions):
+            of_kind.setdefault(condition.kind, []).append(state)
+        return {kind: self._weakest(states) for kind, states in of_kind.items()}
+
+    def kept_sql(self, max_unsure: int) -> str:
+        """SQL: the dataset stays in the result. No condition is
+        contradicted, at most *max_unsure* are not confirmed, and at least
+        one is confirmed or probable: a dataset that only matches the
+        modality while everything else is unknown is not evidence of anything."""
+        states = self._states()
+        unsure = " + ".join(f"(CASE WHEN {state} > {int(Strength.CONFIRMED)} THEN 1 ELSE 0 END)"
+                            for state in states)
+        some_evidence = " OR ".join(f"{state} <= {int(Strength.PROBABLE)}" for state in states)
+        return (f"{self.strength_sql()} < {int(Strength.CONTRADICTED)} "
+                f"AND ({unsure}) <= {max_unsure} AND ({some_evidence})")
+
+    def reason_sql(self) -> str:
+        """SQL for what the result card says: for each condition that is not
+        confirmed, the text of the first evidence that holds, joined with "; "."""
+        cases = []
+        for i, (state, condition) in enumerate(zip(self._states(), self.conditions)):
+            flags = self.flag_columns(i)
+            branches = []
+            for j, piece in enumerate(condition.weaker):
+                if reason := piece.reason():
+                    # The last one needs no flag: nothing listed before it held.
+                    flag = f" AND {self.row}.{flags[j]}" if j < len(flags) else ""
+                    branches.append(f"WHEN {state} = {int(Strength.PROBABLE)}{flag} "
+                                    f"THEN {sql_literal(reason)}")
+            if condition.not_recorded is not None and (reason := condition.not_recorded.reason()):
+                branches.append(f"WHEN {state} = {int(Strength.POSSIBLE)} THEN {sql_literal(reason)}")
+            if branches:
+                cases.append(f"CASE {' '.join(branches)} END")
+        return f"NULLIF(CONCAT_WS('; ', {', '.join(cases)}), '')" if cases else "NULL"

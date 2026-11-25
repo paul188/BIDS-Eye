@@ -1,11 +1,12 @@
 """
 services/evidence/confirmed.py
 ------------------------------
-Evidence that a condition holds for a dataset: the condition of the generated
-query as it is (AsAsked, used by the uncertain tier), and one OR branch of it
-(ConfirmedMatch, used by results/match_reasons.py to say on the card which
-way of matching it was: the participants a branch holds for, the value of a
-dataset column, a default that was assumed, or only where it was found).
+Evidence that a condition of the generated query holds for a dataset: one way
+it holds. A condition is an OR of such ways (the participant list records the
+value, a dataset column holds it, the title names it), or a single one. Each
+kind writes what a result card says about it.
+
+Built by results/match_reasons.py, one per OR branch of a condition.
 """
 
 from __future__ import annotations
@@ -39,17 +40,6 @@ def _age(value: object) -> Optional[float]:
         return float(value)  # type: ignore[arg-type]
     except (TypeError, ValueError):
         return None
-
-
-@dataclass(frozen=True)
-class AsAsked(Evidence):
-    """The condition of the generated query holds as it is."""
-    condition: str   # its SQL, as generated
-    source: Source = field(default=Source.CONDITION, kw_only=True)
-    strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
-
-    def sql(self, alias: str) -> Optional[str]:
-        return self.condition
 
 
 @dataclass(frozen=True)

@@ -115,7 +115,7 @@ def test_field_strength_condition_gets_a_text_venue():
     assert "bids_objects" not in soft.probable   # no file part to keep
     # Recorded or not is asked only where the text names the value.
     assert soft.known.startswith(f"(({soft.probable}) AND EXISTS(SELECT 1 FROM bids_objects AS uk")
-    assert soft.reason_probable == "field strength not in the file metadata; the description names 7 T"
+    assert soft.weaker[-1].reason() == "field strength not in the file metadata; the description names 7 T"
 
 
 def test_field_strength_with_a_file_part_keeps_it():
@@ -148,7 +148,7 @@ def test_manufacturer_and_model_conditions():
     assert soft.kind == "sidecar"
     assert soft.sql.count("d.id IN (SELECT dataset_id FROM _qf_sidecar_") == 2 and len(soft.ctes) == 2
     assert "general <-> electric" in soft.probable and "(philips)" in soft.probable
-    assert soft.reason_probable.endswith("names GE or Philips")
+    assert soft.weaker[-1].reason().endswith("names GE or Philips")
     model = _classify(PRISMA)
     assert "'(prisma <-> fit)'" in model.probable
     # A short fragment of an unknown make is no evidence.
@@ -184,7 +184,7 @@ def _python_pattern(probable: str) -> str:
 def test_one_sex_is_read_where_the_text_speaks_of_participants():
     soft = _classify(FEMALE)
     assert soft.kind == "sex" and "~*" in soft.probable
-    assert soft.reason_probable == "participant sex not recorded; the description names female participants"
+    assert soft.weaker[-1].reason() == "participant sex not recorded; the description names female participants"
     pattern = _python_pattern(soft.probable)
     # The words around a mention decide, the same for every word.
     for text, hit in [("22 women took part.", True), ("12 healthy young girls", True),
@@ -208,7 +208,7 @@ def test_one_sex_is_read_where_the_text_speaks_of_participants():
 def test_only_one_sex_needs_the_text_to_say_only():
     soft = _classify(ONLY_FEMALE)
     assert "~*" in soft.probable and "all[- ]?(female|females|woman|women|girl|girls)" in soft.probable
-    assert soft.reason_probable.endswith("all participants are female")
+    assert soft.weaker[-1].reason().endswith("all participants are female")
     pattern = _python_pattern(soft.probable)
     for text, hit in [("An all-female sample", True), ("Only women took part.", True),
                       ("female-only cohort", True), ("All participants were female.", True),

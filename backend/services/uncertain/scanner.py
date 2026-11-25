@@ -19,7 +19,6 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.evidence.confirmed import AsAsked
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import NamedInText
@@ -332,8 +331,8 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
         if not (values and _value_tsquery(key, values)):
             return None
     named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select)
-    return SoftCondition(kind="sidecar", alias=alias, ctes=tuple(ctes), evidence=(
-        AsAsked(" OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]),
+    as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
+    return SoftCondition(kind="sidecar", alias=alias, sql=as_generated, ctes=tuple(ctes), evidence=(
         OtherValuesRecorded(named.key_recorded),
         named,
         NotInFileMetadata(_SIDECAR_LABELS[key]),

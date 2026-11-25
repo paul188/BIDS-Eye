@@ -14,6 +14,10 @@ compute for every row, and the same on every page.
 What a row carries (ResultColumns):
   weakest_evidence   the weakest evidence any condition has for the dataset
                      (evidence.base.Strength; services/uncertain/tier.py)
+  weakest_evidence_for(kind)
+                     the same among the conditions of one kind ("age",
+                     "diagnosis", "text", …), to tell apart which condition
+                     a dataset is unsure about
   judged_order       where the language model's judgment of the first
                      candidates put it (services/results/rerank.py)
   other_words_only   it matches only the words a search was widened with,
@@ -29,7 +33,7 @@ where the page query is built and names it in ResultColumns.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Protocol, Sequence, Tuple
+from typing import List, Optional, Protocol, Sequence, Tuple
 
 
 @dataclass(frozen=True)
@@ -57,11 +61,20 @@ class ResultColumns:
     has_other_words: bool = False  # the search was widened with other words
     has_scores: bool = False
     has_subjects: bool = False
+    # (kind, column) for each kind of condition the search has
+    # (SoftCondition.kind; services/uncertain/tier.kind_level_columns).
+    evidence_columns: Tuple[Tuple[str, str], ...] = ()
 
     @property
     def weakest_evidence(self) -> SortTerm:
         """Confirmed results first, then probable, then possible."""
         return SortTerm(f"{self.row}.uncertain_level")
+
+    def weakest_evidence_for(self, kind: str) -> Optional[SortTerm]:
+        """Datasets whose conditions of *kind* are confirmed first; None when
+        the search has no condition of that kind."""
+        column = dict(self.evidence_columns).get(kind)
+        return SortTerm(f"{self.row}.{column}") if column else None
 
     @property
     def judged_order(self) -> Tuple[SortTerm, ...]:

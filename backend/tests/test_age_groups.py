@@ -124,7 +124,7 @@ def test_uncertain_tier_keeps_readme_mentions_as_probable() -> None:
         kinds.append(condition.kind if condition else None)
         if condition and condition.kind == "age":
             assert "children" in condition.probable and "adolescents" in condition.probable
-            assert condition.reason_probable.startswith("ages not recorded")
+            assert condition.weaker[-1].reason().startswith("ages not recorded")
             # Own text only: a paper's child words were mostly about other studies.
             assert "search_tsv_papers" not in condition.probable
     # The modality and the species guard stay hard; the age part is soft.

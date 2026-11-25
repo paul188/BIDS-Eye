@@ -21,7 +21,6 @@ except ImportError:  # pragma: no cover
 from services.uncertain.conditions import LABEL_RE, SoftCondition, TSQUERY_RE
 from services.uncertain.text import negated_spans, relax_text_condition
 from services.evidence.base import Evidence, Source, Strength
-from services.evidence.confirmed import AsAsked
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import PaperOnly, TextSearch
@@ -183,11 +182,11 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
             weaker = paper + weaker
         record = OtherValuesRecorded(field.recorded)
         not_recorded = NotRecorded(field.label)
-        evidence = ((AsAsked(sql), *weaker, record, not_recorded) if field.text_beats_recorded
-                    else (AsAsked(sql), record, *weaker, not_recorded))
-        return SoftCondition(kind=kind, alias=alias, evidence=evidence)
+        evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
+                    else (record, *weaker, not_recorded))
+        return SoftCondition(kind=kind, alias=alias, sql=sql, evidence=evidence)
     if relaxed or paper:
-        return SoftCondition(kind="text", alias=alias, evidence=(AsAsked(sql), *paper, *weaker_search))
+        return SoftCondition(kind="text", alias=alias, sql=sql, evidence=(*paper, *weaker_search))
     return None
 
 
@@ -233,7 +232,6 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
         stored = bool(database_stats.summaries.subject_counts)
     except ImportError:
         pass
-    return SoftCondition(kind="patient_count", alias=alias, evidence=(
-        AsAsked(sql),
+    return SoftCondition(kind="patient_count", alias=alias, sql=sql, evidence=(
         PatientsNotCounted(tuple(codes), minimum, stored),
     ))

@@ -50,9 +50,9 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
 
     soft = _classify(handedness)
     assert soft.kind == "handedness"
-    assert soft.probable == "d.readme_text ~* 'left-handed'" and soft.reason_probable == "names it"
+    assert soft.probable == "d.readme_text ~* 'left-handed'" and soft.weaker[-1].reason() == "names it"
     assert "uk.handedness IS NOT NULL" in soft.known
-    assert soft.reason_possible == "handedness not recorded"
+    assert soft.not_recorded.reason() == "handedness not recorded"
     # Recorded values that do not fit contradict, as for ages and sex.
     assert soft.state_sql().endswith("ELSE 9 END") and "WHEN NOT (EXISTS" in soft.state_sql()
 

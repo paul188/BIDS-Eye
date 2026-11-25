@@ -44,7 +44,8 @@ A dataset is kept when
     evidence of anything.
 
 The result gets two columns: uncertain_level (0, 1 or 2: the weakest state)
-and uncertain_reasons (why, for the result card). The page query orders by
+and uncertain_reasons (why, for the result card), and uncertain_level_<kind>
+for each kind of condition the search has (the weakest state among those). The page query orders by
 uncertain_level first (services/translate/sql_rewriter.py). Datasets that confirm every
 condition are exactly the rows the original query returned.
 
@@ -56,7 +57,9 @@ This module does the rewrite (apply). The parts it uses:
   text.py        weaker forms of a text search
   fields/        the fields a dataset may not record
   scanner.py     field strength, vendor and model in the text
-  conditions.py  SoftCondition and what the others share
+  conditions.py  SoftCondition, QueryEvidence (the conditions combined: kept
+                 or not, the weakest state, the card text) and what the
+                 others share
 """
 
 from __future__ import annotations
@@ -73,8 +76,7 @@ except ImportError:  # pragma: no cover
     sqlglot = None  # type: ignore[assignment]
     exp = None  # type: ignore[assignment]
 
-from services.evidence.base import Strength
-from services.uncertain.conditions import SoftCondition, sql_literal
+from services.uncertain.conditions import QueryEvidence, SoftCondition
 from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
 from services.schema.tables import datasets as _datasets
@@ -98,6 +100,23 @@ def hoist_terms_enabled() -> bool:
 
 LEVEL_COLUMN = "uncertain_level"
 REASONS_COLUMN = "uncertain_reasons"
+
+
+# uncertain_level of the conditions of one kind: uncertain_level_age, …
+_KIND_LEVEL_RE = re.compile(rf" AS ({LEVEL_COLUMN}_([a-z_]+))\b")
+
+
+def kind_level_column(kind: str) -> str:
+    """The column with the weakest state among the conditions of *kind*
+    (SoftCondition.kind: "age", "diagnosis", "text", …)."""
+    if not re.fullmatch(r"[a-z_]+", kind):
+        raise ValueError(f"not a column name: {kind!r}")
+    return f"{LEVEL_COLUMN}_{kind}"
+
+
+def kind_level_columns(tiered_sql: str) -> dict[str, str]:
+    """kind → its column, for the kinds of condition a tiered query has."""
+    return {kind: column for column, kind in _KIND_LEVEL_RE.findall(tiered_sql)}
 
 
 def enabled() -> bool:
@@ -129,16 +148,6 @@ def _dataset_alias(select) -> Optional[str]:
     if isinstance(table, exp.Table) and table.name == _datasets.name:
         return table.alias_or_name
     return None
-
-
-def _flag_names(i: int, condition: SoftCondition) -> List[str]:
-    """Column names that tell the weaker evidence of condition *i* apart, one
-    for each but the last: "paper_0" for evidence found in a paper."""
-    names: List[str] = []
-    for j, piece in enumerate(condition.weaker[:-1]):
-        name = f"{piece.source.value}_{i}"
-        names.append(f"{name}_{j}" if name in names else name)
-    return names
 
 
 def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] = None) -> str:
@@ -212,7 +221,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     evidence_columns = [f"{alias}.id"]
     state_cases = []
     flag_columns = []
-    flags = [_flag_names(i, condition) for i, condition in enumerate(soft)]
+    query = QueryEvidence(tuple(soft))
     for i, condition in enumerate(soft):
         confirmed = f"confirmed_{i}"
         probable = f"probable_{i}"
@@ -224,11 +233,11 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
             f"({condition.known}) AS {known}" if condition.known
             else f"TRUE AS {known}",
         ))
-        for piece, flag in zip(condition.weaker, flags[i]):
+        for piece, flag in zip(condition.weaker, query.flag_columns(i)):
             evidence_columns.append(f"({piece.sql(alias)}) AS {flag}")
             flag_columns.append(f"ev.{flag}")
         state = condition.state_sql(f"ev.{confirmed}", f"ev.{probable}", f"ev.{known}")
-        state_cases.append(f"{state} AS u{i}")
+        state_cases.append(f"{state} AS {query.state_column(i)}")
 
     raw_sql = (
         f"SELECT {', '.join(evidence_columns)}\n"
@@ -285,26 +294,10 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         + f"\nFROM (\n{raw_sql}\n) AS ev"
     )
 
-    probably, possibly = int(Strength.PROBABLE), int(Strength.POSSIBLE)
-    names = [f"evidence.u{i}" for i in range(len(soft))]
-    unsure = " + ".join(f"(CASE WHEN {name} > {int(Strength.CONFIRMED)} THEN 1 ELSE 0 END)" for name in names)
-    evidence = " OR ".join(f"{name} <= {probably}" for name in names)
-    level = f"GREATEST({', '.join(names)})" if len(names) > 1 else names[0]
-    # The card text: that of the first evidence that holds.
-    cases = []
-    for i, c in enumerate(soft):
-        branches = []
-        for j, piece in enumerate(c.weaker):
-            if reason := piece.reason():
-                # The last one needs no flag: nothing listed before it held.
-                flag = f" AND evidence.{flags[i][j]}" if j < len(flags[i]) else ""
-                branches.append(f"WHEN evidence.u{i} = {probably}{flag} THEN {sql_literal(reason)}")
-        if c.reason_possible:
-            branches.append(f"WHEN evidence.u{i} = {possibly} THEN {sql_literal(c.reason_possible)}")
-        if branches:
-            cases.append(f"CASE {' '.join(branches)} END")
-    contradicted = int(Strength.CONTRADICTED)
-    reasons_sql = (f"NULLIF(CONCAT_WS('; ', {', '.join(cases)}), '')" if cases else "NULL")
+    level = query.strength_sql()
+    # The same per kind of condition, for a ranker that tells them apart.
+    kind_levels = "".join(f", {strength} AS {kind_level_column(kind)}"
+                          for kind, strength in query.strength_by_kind_sql().items())
 
     ctes = [f"{name} AS MATERIALIZED ({select})"
             for name, select in dict.fromkeys(cte for c in soft for cte in c.ctes)]
@@ -314,8 +307,8 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     return (
         f"{with_sql}"
         f"SELECT tier_base.*, {level} AS {LEVEL_COLUMN}, "
-        f"{reasons_sql} AS {REASONS_COLUMN}\n"
+        f"{query.reason_sql()} AS {REASONS_COLUMN}{kind_levels}\n"
         f"FROM (\n{inner_sql}\n) AS tier_base\n"
-        f"CROSS JOIN LATERAL (\n{state_sql}\n) AS evidence\n"
-        f"WHERE {level} < {contradicted} AND ({unsure}) <= {MAX_UNSURE} AND ({evidence})"
+        f"CROSS JOIN LATERAL (\n{state_sql}\n) AS {query.row}\n"
+        f"WHERE {query.kept_sql(MAX_UNSURE)}"
     )

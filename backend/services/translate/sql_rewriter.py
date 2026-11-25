@@ -412,6 +412,7 @@ class SqlRewriteService:
             order_clause = _rankers.order_by(ranker, _rankers.ResultColumns(
                 row="page_result",
                 has_evidence=tiered,
+                evidence_columns=tuple(_uncertain_tier.kind_level_columns(base_sql).items()),
                 has_judgment=judged,
                 has_other_words=ranked and _other_words_only("ft", rank_query) is not None,
                 has_scores=ranked,
