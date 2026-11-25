@@ -24,6 +24,7 @@ from institution_index import text_alternatives as _institution_text_alternative
 import place_index as _place_index
 from cohort_count import placeholder as _patients_placeholder
 import text_formula as _text_formula
+from sql_text import contains_pattern as _contains_pattern, sql_string as _sql_string
 from criteria import species_condition as _species_condition
 from criteria import without_diagnosis as _without_diagnosis
 from criteria import normalise_age_groups as _normalise_age_groups, age_condition as _age_condition, \
@@ -151,7 +152,7 @@ def _institution_lines(
     use_column = "institutions" in available_columns
 
     def _array(names: List[str]) -> str:
-        return "ARRAY[" + ", ".join("'" + n.replace("'", "''") + "'" for n in names) + "]::text[]"
+        return "ARRAY[" + ", ".join(_sql_string(n) for n in names) + "]::text[]"
 
     lines: List[str] = []
     for term in excluded:
@@ -225,7 +226,7 @@ def _location_lines(plan: QueryPlan) -> List[str]:
         readings = index.readings(term)
         if readings:
             tables = _catalogue.tables()
-            places = " OR ".join(f"sp.{column} = '{value.replace(chr(39), chr(39) * 2)}'"
+            places = " OR ".join(f"sp.{column} = {_sql_string(value)}"
                                  for column, value in readings)
             sites = (f"EXISTS (SELECT 1 FROM {tables.dataset_sites.name} AS s "
                      f"JOIN {tables.site_places.name} AS sp "
@@ -671,6 +672,7 @@ def _build_augmented_question(
 
     Author and funding are listed as exact DB strings.
     """
+    name_pattern = _contains_pattern(plan.name_search)
     size_conds = _size_conditions(plan) if "size_bytes" in available_columns else []
     participant_lines = _participant_conditions(plan)
     design_cond = _study_structure_condition(plan, available_columns)
@@ -686,7 +688,7 @@ def _build_augmented_question(
                              if not line.lstrip().startswith("participant age:")]
     # Unresolved terms count too: their text filter is the only thing that
     # keeps a question like "eye tracking datasets" from returning everything.
-    if (not resolved and not plan.description_search and not plan.name_search
+    if (not resolved and not plan.description_search and not name_pattern
             and not size_conds and not participant_lines
             and not design_cond and not species_cond and not age_cond
             and not plan.institution_terms
@@ -1011,7 +1013,7 @@ def _build_augmented_question(
     # Other conditions of the question; "[...]" lines are notes, not filters.
     filters_besides_text = bool(
         any(line.startswith("  ") for line in context_lines)
-        or plan.name_search or size_conds or design_cond or species_cond or age_cond
+        or name_pattern or size_conds or design_cond or species_cond or age_cond
         or unresolved_terms
         or any(g.min_subjects is not None for g in plan.groups)
     )
@@ -1041,10 +1043,8 @@ def _build_augmented_question(
         context_lines.append(
             "  not searchable (add NO condition for these): " + "; ".join(dict.fromkeys(not_searched))
         )
-    if plan.name_search:
-        context_lines.append(
-            f"  dataset name: d.name ILIKE '%{plan.name_search}%'"
-        )
+    if name_pattern:
+        context_lines.append(f"  dataset name: d.name ILIKE {name_pattern}")
 
     # Dataset size limit — a plain condition on bids_datasets, no EXISTS needed.
     if size_conds:

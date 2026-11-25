@@ -60,6 +60,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, List, Optional, Sequence, Tuple
 
+from sql_text import pattern_words
 from text_terms import (
     MODE_ALL,
     MODE_ALSO,
@@ -95,7 +96,7 @@ _LONG_TEXT_ILIKE_RE = re.compile(
     re.IGNORECASE,
 )
 _NAME_ILIKE_RE = re.compile(
-    r"(?P<negated>\bNOT\s+)?\b[A-Za-z_]\w*\.name\s+(?P<inner_negated>NOT\s+)?ILIKE\s+'%(?P<literal>[^'%]+)%'",
+    r"(?P<negated>\bNOT\s+)?\b[A-Za-z_]\w*\.name\s+(?P<inner_negated>NOT\s+)?ILIKE\s+'%(?P<literal>(?:[^'%\\]|''|\\.)+)%'",
     re.IGNORECASE,
 )
 _URL_FRAGMENT_RE = re.compile(r"[./:@]")
@@ -338,7 +339,7 @@ def expand_text_search(
     for match in _NAME_ILIKE_RE.finditer(expanded):
         if match.group("negated") or match.group("inner_negated"):
             continue
-        words = split_words(match.group("literal"))
+        words = split_words(pattern_words(match.group("literal").replace("''", "'")))
         if words:
             rank_parts.append(tsquery.all_words_query(words, tsquery.NAME_LABEL))
 

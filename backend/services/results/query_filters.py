@@ -37,6 +37,7 @@ import dataclasses
 from dataclasses import asdict, dataclass
 from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
+from sql_text import pattern_words
 from sqlglot import exp
 
 from services import sql_tree
@@ -158,7 +159,8 @@ def _literals_for(node, column_names: Iterable[str]) -> List[str]:
             continue
         for literal in comparison.find_all(exp.Literal):
             if literal.is_string:
-                values.append(literal.this.strip("%"))
+                is_pattern = isinstance(comparison, (exp.ILike, exp.Like))
+                values.append(pattern_words(literal.this) if is_pattern else literal.this.strip("%"))
     return list(dict.fromkeys(values))
 
 
