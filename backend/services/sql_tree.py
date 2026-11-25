@@ -61,8 +61,8 @@ def _negations_as_not(tree: Any) -> Any:
 
 
 def is_negation(node: Any) -> bool:
-    """The node denies what stands in it: NOT, NOT LIKE ANY, "= FALSE",
-    "<> TRUE", and "IS NULL" of a comparison (of a column it denies nothing)."""
+    """The node negates what stands in it: NOT, NOT LIKE ANY, "= FALSE",
+    "<> TRUE", and "IS NULL" of a comparison (of a column it negates nothing)."""
     if isinstance(node, exp.Not) or node.args.get("negate"):
         return True
     if isinstance(node, exp.Is) and isinstance(node.expression, exp.Null):
@@ -174,8 +174,8 @@ class SqlBranch:
         """Whether outer columns reference a table other than *alias*."""
         return any(c.table and c.table != alias for c in self.outer_columns)
 
-    def denied(self, node: Any) -> bool:
-        """Whether *node* is denied by a negation in this branch."""
+    def negated(self, node: Any) -> bool:
+        """Whether *node* is negated in this branch."""
         return under_negation(node, self.node)
 
     def function_calls(self, name: str) -> list:
@@ -185,7 +185,7 @@ class SqlBranch:
                 if (call.name if isinstance(call, exp.Anonymous) else call.sql_name()).lower() == name
                 and not in_subquery(call, self.node)]
 
-    def is_a_denial(self) -> bool:
+    def has_negation(self) -> bool:
         """Whether this branch contains any negation."""
         return any(is_negation(n) for n in self.node.walk())
 

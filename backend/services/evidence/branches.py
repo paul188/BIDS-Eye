@@ -91,8 +91,8 @@ class EvidenceBranch:
         """It reads a join of the outer query (o.task = …)."""
         return self.sql_branch.reads_a_join(self.alias)
 
-    def denied(self, node) -> bool:
-        return self.sql_branch.denied(node)
+    def negated(self, node) -> bool:
+        return self.sql_branch.negated(node)
 
     @property
     def selects(self) -> list:
@@ -104,7 +104,7 @@ class EvidenceBranch:
         """The query strings of its text searches, without the word-form guards."""
         found = []
         for call in self.sql_branch.function_calls("to_tsquery"):
-            if self.denied(call):
+            if self.negated(call):
                 continue
             literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
             if literals and literals[0].this.lower() != "simple":   # not a word-form guard
@@ -121,7 +121,7 @@ class EvidenceBranch:
         sources = []
         for column in self.outer_columns:
             source = _TEXT_COLUMNS.get(column.name.lower())
-            if source is None or self.denied(column):
+            if source is None or self.negated(column):
                 continue
             # d.name = 'x' is a field, d.readme_text IS NULL names nothing.
             if any(isinstance(a, sql_tree.TEXT_MATCHES) for a in sql_tree.ancestors(column, self.node)):
@@ -136,7 +136,7 @@ class EvidenceBranch:
     def subquery_evidence(self) -> Optional[ConfirmedMatch]:
         """Rows of another table hold the value."""
         for select in self.selects:
-            if self.denied(select):
+            if self.negated(select):
                 continue
             tables = [t.name.lower() for t in select.find_all(exp.Table)]
             sources = [_TABLE_SOURCES[t] for t in tables if t in _TABLE_SOURCES]
@@ -165,7 +165,7 @@ class EvidenceBranch:
         names = tuple(dict.fromkeys(c.name.lower() for c in self.outer_columns
                                     if c.name.lower() != "id" and c.name.lower() not in _TEXT_COLUMNS))
         if len(names) == 1 and names[0] in Assumed.TEXTS and any(
-                isinstance(node.expression, exp.Null) and not self.denied(node)
+                isinstance(node.expression, exp.Null) and not self.negated(node)
                 for node in self.node.find_all(exp.Is)):
             return Assumed(self.sql, columns=names)
         if {"age_min", "age_max"} & set(names):
@@ -178,13 +178,13 @@ class EvidenceBranch:
         None when it searches no papers."""
         own = EvidenceBranch(sql_tree.SqlBranch(self.node.copy()), self.alias)
         columns = [c for c in own.outer_columns
-                   if c.name.lower() in _WITHOUT_PAPERS and not own.denied(c)]
+                   if c.name.lower() in _WITHOUT_PAPERS and not own.negated(c)]
         for column in columns:
             column.set("this", exp.to_identifier(_WITHOUT_PAPERS[column.name.lower()]))
         return own if columns else None
 
-    def is_a_denial(self) -> bool:
-        return self.sql_branch.is_a_denial()
+    def has_negation(self) -> bool:
+        return self.sql_branch.has_negation()
 
 
 def classify_branch(branch: EvidenceBranch) -> Optional[ConfirmedMatch]:
@@ -198,7 +198,7 @@ def classify_branch(branch: EvidenceBranch) -> Optional[ConfirmedMatch]:
     if branch.reads_a_join:
         return None
     found = branch.text_evidence() or branch.subquery_evidence() or branch.field_evidence()
-    if found is None and not branch.is_a_denial():
+    if found is None and not branch.has_negation():
         log.warning("No kind of evidence for the branch: %s", sql_tree.without_literals(branch.node))
     return found
 
