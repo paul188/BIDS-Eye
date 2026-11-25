@@ -38,6 +38,7 @@ from dataclasses import asdict, dataclass
 from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
 from services.schema import tables as _tables
+from services.schema.tables import About
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
     import sqlglot
@@ -652,13 +653,12 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 # A chip showed "Condition · EXISTS(SELECT 1 FROM bids_participants AS p2 WHE…"
 # (2026-11-20). The exact condition stays under "Show generated SQL".
 
-_TABLE_WORDS = {
-    _tables.datasets.name: "Dataset", _tables.participants.name: "Participants",
-    _tables.objects.name: "Files", _tables.dataset_facets.name: "Files",
-    _tables.derivatives.name: "Processed data", _tables.dataset_papers.name: "Papers",
-    _tables.papers.name: "Papers", _tables.dataset_sites.name: "Sites",
-    _tables.site_places.name: "Sites",
+_ABOUT_WORDS = {
+    About.DATASET: "Dataset", About.PARTICIPANTS: "Participants", About.FILES: "Files",
+    About.DERIVATIVES: "Processed data", About.PAPERS: "Papers", About.SITES: "Sites",
+    About.WORD_FORMS: "Word forms",
 }
+_TABLE_WORDS = {table: _ABOUT_WORDS[about] for table, about in _tables.TABLE_ABOUT.items()}
 # Join keys and row ids say nothing about what a condition asks.
 _KEY_COLUMNS = frozenset({"id", "dataset_id", "participant_id", "subject", "paper_id", "name_raw"})
 _PLAIN_VALUE_RE = re.compile(r"^[\w][\w .,'()/+-]{0,40}$")

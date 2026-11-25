@@ -26,10 +26,15 @@ A flag is a switch (services/switches.py) that turns an optional search
 feature on. Two matter here, PAPERS_FLAG and EXACT_FLAG. A column or table that
 names a flag is needed only while that flag is on; the others are always
 needed.
+
+Each table also records what its rows describe (About), and each text column
+which text it holds (TextKind). Code that needs a word or an evidence source
+per table reads those instead of listing the tables again.
 """
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any, cast
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, Double, Integer, MetaData,
@@ -51,11 +56,35 @@ PAPERS_FLAG = Switch.TEXT_SEARCH_PAPERS
 EXACT_FLAG = Switch.TEXT_SEARCH_EXACT
 
 
-# ── What each declaration records for check_schema ───────────────────────────
+# ── What each declaration records ────────────────────────────────────────────
 
 # Keys of Column.info and Table.info, dicts SQLAlchemy keeps but never reads.
+# For check_schema:
 MIGRATION = "migration"
 FLAG = "flag"
+# For the evidence and the chips:
+ABOUT = "about"   # of a table: its About
+TEXT = "text"     # of a column: its TextKind
+
+
+class About(str, Enum):
+    """What the rows of a table describe."""
+    DATASET = "dataset"
+    PARTICIPANTS = "participants"
+    FILES = "files"
+    DERIVATIVES = "derivatives"
+    SITES = "sites"
+    PAPERS = "papers"
+    WORD_FORMS = "word_forms"
+
+
+class TextKind(str, Enum):
+    """Which text a text column of bids_datasets holds."""
+    OWN = "own"        # name, description, study fields and README together
+    PAPERS = "papers"  # OWN plus the dataset's papers
+    README = "readme"
+    SHORT = "short"    # the name or the description
+
 
 # The SQL files in crawlers/ that create the declarations below.
 _SEARCH_TSV = "crawlers/migrate_add_search_tsv.sql"
@@ -82,15 +111,20 @@ def _created_by(migration: str, flag: str | None = None) -> dict[str, str]:
 
 
 def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]], migration: str,
-                      flag: str | None = None) -> Column[Any]:
+                      flag: str | None = None, text: TextKind | None = None) -> Column[Any]:
     """A column to add to bids_datasets; *migration* and *flag* as in _created_by."""
-    return Column(name, type_, info=_created_by(migration, flag))
+    info = _created_by(migration, flag)
+    if text:
+        info[TEXT] = text
+    return Column(name, type_, info=info)
 
 
-# ── Tables from db/models.py, unchanged ──────────────────────────────────────
+# ── Tables from db/models.py, columns unchanged ──────────────────────────────
 
 objects = cast(Table, BIDSObject.__table__)
+objects.info[ABOUT] = About.FILES
 participants = cast(Table, BIDSParticipant.__table__)
+participants.info[ABOUT] = About.PARTICIPANTS
 
 
 # ── Columns the migrations add to bids_datasets ──────────────────────────────
@@ -100,20 +134,20 @@ datasets = extend(
     BIDSDataset,
     # Full-text search vectors, GENERATED: PostgreSQL recomputes them on every write.
     # Stemmed dataset text: A name, B study fields, C llm_profile, D readme_text.
-    _migration_column("search_tsv", TSVECTOR, _SEARCH_TSV),
+    _migration_column("search_tsv", TSVECTOR, _SEARCH_TSV, text=TextKind.OWN),
     # search_tsv plus the primary papers' title, abstract and keywords; only to match.
-    _migration_column("search_tsv_papers", TSVECTOR, _PAPER_SEARCH, PAPERS_FLAG),
+    _migration_column("search_tsv_papers", TSVECTOR, _PAPER_SEARCH, PAPERS_FLAG, TextKind.PAPERS),
     # search_tsv unstemmed, so "ageing" does not also match "age".
-    _migration_column("search_tsv_exact", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG),
+    _migration_column("search_tsv_exact", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.OWN),
     # search_tsv_papers unstemmed.
-    _migration_column("search_tsv_exact_papers", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG),
+    _migration_column("search_tsv_exact_papers", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.PAPERS),
 
     # Distinct subjects in bids_objects, refreshed after each crawl (dataset_facets.py).
     _migration_column("n_subjects", Integer, _FACETS),
 
     # From the OpenNeuro API; "uploader" fields are free text, often empty.
     # Sanitised README of the latest snapshot.
-    _migration_column("readme_text", Text, _OPENNEURO),
+    _migration_column("readme_text", Text, _OPENNEURO, text=TextKind.README),
     # Uploader's diagnosis status, e.g. 'Healthy / Control'.
     _migration_column("dx_status", Text, _OPENNEURO),
     # Uploader's research topic.
@@ -154,6 +188,10 @@ datasets = extend(
     # Two or three sentences, only where README and description are under 500 chars.
     _migration_column("dataset_summary", Text, _DESCRIPTIONS),
 )
+datasets.info[ABOUT] = About.DATASET
+# BIDS-SQL's own text columns.
+for _column in (datasets.c.name, datasets.c.description_text):
+    _column.info[TEXT] = TextKind.SHORT
 
 
 # ── Tables the migrations add ────────────────────────────────────────────────
@@ -173,7 +211,7 @@ dataset_facets = Table(
     Column("suffix", Text),
     # BIDS task label, e.g. 'rest'; NULL for files without a task.
     Column("task", Text),
-    info=_created_by(_FACETS),
+    info=_created_by(_FACETS) | {ABOUT: About.FILES},
 )
 
 # Every word form in the catalogue's text with its stem: shows which forms a
@@ -186,7 +224,7 @@ word_forms = Table(
     Column("stem", Text),
     # How many datasets contain the form.
     Column("ndoc", Integer),
-    info=_created_by(_EXACT_SEARCH, EXACT_FLAG),
+    info=_created_by(_EXACT_SEARCH, EXACT_FLAG) | {ABOUT: About.WORD_FORMS},
 )
 
 # One row per paper a dataset names, from Europe PMC, bioRxiv, arXiv or
@@ -218,7 +256,7 @@ papers = Table(
     # Where the record came from: europepmc, biorxiv, medrxiv, arxiv, openalex.
     Column("source", Text),
     Column("fetched_at", DateTime(timezone=True)),
-    info=_created_by(_PAPER_SEARCH),
+    info=_created_by(_PAPER_SEARCH) | {ABOUT: About.PAPERS},
 )
 
 # Which dataset names which paper, and in which role.
@@ -238,7 +276,7 @@ dataset_papers = Table(
     Column("raw_ref", Text),
     # Order within the dataset, most trusted first.
     Column("position", Integer),
-    info=_created_by(_PAPER_SEARCH),
+    info=_created_by(_PAPER_SEARCH) | {ABOUT: About.PAPERS},
 )
 
 # One row per processed version of a dataset. Filled by
@@ -260,7 +298,7 @@ derivatives = Table(
     # sub-* folders in the derivative.
     Column("n_subjects", Integer),
     Column("fetched_at", DateTime(timezone=True)),
-    info=_created_by(_DATASET_LINKS),
+    info=_created_by(_DATASET_LINKS) | {ABOUT: About.DERIVATIVES},
 )
 
 # One row per collection site name a dataset gives, and its evidence.
@@ -277,7 +315,7 @@ dataset_sites = Table(
     Column("ror_id", Text),
     # The quote, where the source is prose.
     Column("evidence", Text),
-    info=_created_by(_DATASET_LINKS),
+    info=_created_by(_DATASET_LINKS) | {ABOUT: About.SITES},
 )
 
 # Where the names of bids_dataset_sites are: each raw name matched to the
@@ -300,9 +338,23 @@ site_places = Table(
     Column("lat", Double),
     Column("lng", Double),
     Column("matched_at", DateTime(timezone=True)),
-    info=_created_by(_SITE_PLACES),
+    info=_created_by(_SITE_PLACES) | {ABOUT: About.SITES},
 )
 
 # What check_schema checks: in each table, the columns a migration creates.
 MIGRATED_TABLES = (datasets, dataset_facets, word_forms, papers, dataset_papers, derivatives,
                    dataset_sites, site_places)
+
+# Every table declared here or taken from BIDS-SQL.
+CATALOGUE_TABLES = (objects, participants, *MIGRATED_TABLES)
+
+# Table name -> what its rows describe. A table without an About fails here.
+TABLE_ABOUT: dict[str, About] = {table.name: table.info[ABOUT] for table in CATALOGUE_TABLES}
+
+# Text column of bids_datasets -> which text it holds.
+COLUMN_TEXT: dict[str, TextKind] = {column.name: column.info[TEXT] for column in datasets.c
+                                    if TEXT in column.info}
+
+# The full-text search vectors of bids_datasets.
+SEARCH_VECTORS = frozenset(column.name for column in datasets.c
+                           if isinstance(column.type, TSVECTOR))

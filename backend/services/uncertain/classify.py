@@ -27,6 +27,7 @@ from services.evidence.confirmed import ConfirmedMatch
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import CoreOfTerm, PaperOnly, TextSearch
+from services.schema.tables import SEARCH_VECTORS
 from services.uncertain import fields
 from services.uncertain.scanner import sidecar
 
@@ -164,7 +165,7 @@ def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidenc
     """
     if not isinstance(node, exp.Or):
         return None
-    if any(not column.name.lower().startswith("search_tsv") for column in node.find_all(exp.Column)):
+    if any(column.name.lower() not in SEARCH_VECTORS for column in node.find_all(exp.Column)):
         return None
     every_word = node.left.sql(dialect="postgres")
     core = node.right.sql(dialect="postgres")

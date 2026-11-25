@@ -15,7 +15,7 @@ from typing import List, Optional, Tuple
 
 from services.evidence.base import Source
 from services.evidence.confirmed import Assumed, ConfirmedMatch, FieldValue, Found, ParticipantRows
-from services.schema import tables as _tables
+from services.schema.tables import COLUMN_TEXT, TABLE_ABOUT, About, TextKind
 
 try:
     from sqlglot import exp
@@ -24,23 +24,23 @@ except ImportError:  # pragma: no cover - sqlglot is a backend dependency
 
 # One OR branch of a condition is one piece of evidence (services/evidence/):
 # where the value was found, and the text the card shows for it.
-_TABLE_SOURCES = {
-    _tables.participants.name: Source.PARTICIPANTS,
-    _tables.objects.name: Source.FILES,
-    "bids_files": Source.FILES,  # not a catalogue table, kept as it was
-    _tables.dataset_facets.name: Source.FILES,
-    _tables.derivatives.name: Source.DERIVATIVES,
-    _tables.dataset_sites.name: Source.SITES,
-    _tables.site_places.name: Source.SITES,
-    _tables.dataset_papers.name: Source.PAPER,
-    _tables.papers.name: Source.PAPER,
+# A subquery on bids_datasets or bids_word_forms is no source of its own.
+_ABOUT_SOURCES = {
+    About.PARTICIPANTS: Source.PARTICIPANTS,
+    About.FILES: Source.FILES,
+    About.DERIVATIVES: Source.DERIVATIVES,
+    About.SITES: Source.SITES,
+    About.PAPERS: Source.PAPER,
 }
-_TEXT_COLUMNS = {
-    "search_tsv": Source.TEXT, "search_tsv_exact": Source.TEXT,
-    "search_tsv_papers": Source.PAPER, "search_tsv_exact_papers": Source.PAPER,
-    "readme_text": Source.README,
-    "name": Source.SHORT_TEXT, "description_text": Source.SHORT_TEXT,
+_KIND_SOURCES = {
+    TextKind.OWN: Source.TEXT,
+    TextKind.PAPERS: Source.PAPER,
+    TextKind.README: Source.README,
+    TextKind.SHORT: Source.SHORT_TEXT,
 }
+_TABLE_SOURCES = {table: _ABOUT_SOURCES[about] for table, about in TABLE_ABOUT.items()
+                  if about in _ABOUT_SOURCES}
+_TEXT_COLUMNS = {column: _KIND_SOURCES[kind] for column, kind in COLUMN_TEXT.items()}
 
 
 # ── Reading the SQL ───────────────────────────────────────────────────────────
