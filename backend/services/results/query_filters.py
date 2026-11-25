@@ -37,17 +37,12 @@ import dataclasses
 from dataclasses import asdict, dataclass
 from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
+from sqlglot import exp
+
+from services import sql_tree
 from services.schema import tables as _tables
 from services.schema.tables import About
 
-try:  # sqlglot is a backend dependency; keep the module importable without it
-    import sqlglot
-    from sqlglot import exp
-    from sqlglot.errors import SqlglotError
-except ImportError:  # pragma: no cover
-    sqlglot = None  # type: ignore[assignment]
-    exp = None  # type: ignore[assignment]
-    SqlglotError = ()  # type: ignore[assignment,misc]  # nothing is parsed, so nothing to catch
 
 log = logging.getLogger(__name__)
 
@@ -167,16 +162,6 @@ def _literals_for(node, column_names: Iterable[str]) -> List[str]:
     return list(dict.fromkeys(values))
 
 
-def _under_not(node, root) -> bool:
-    """True if *node* sits inside a NOT below *root*."""
-    current = node.parent
-    while current is not None and current is not root:
-        if isinstance(current, exp.Not):
-            return True
-        current = current.parent
-    return False
-
-
 # Text search configuration of a guard: the word forms a search requires
 # (services/fulltext/text_search.py, exact word forms). Everything else is a search.
 _GUARD_CONFIG = "simple"
@@ -194,7 +179,7 @@ def _tsqueries(node, negated: Optional[bool] = None, guards: bool = False) -> Li
         name = (call.name if isinstance(call, exp.Anonymous) else call.sql_name()).lower()
         if name != "to_tsquery":
             continue
-        if negated is not None and _under_not(call, node) != negated:
+        if negated is not None and sql_tree.under_negation(call, node) != negated:
             continue
         literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
         if not literals:
@@ -360,7 +345,7 @@ def _species_label(node) -> Optional[str]:
         if "unknown" in pattern:
             continue
         seen = True
-        if _under_not(match, node):
+        if sql_tree.under_negation(match, node):
             continue
         first = re.search(r"\(([^|)]+)", pattern)
         if first:
@@ -838,16 +823,6 @@ def _flatten_and(node) -> list:
     return [node]
 
 
-def _parse(sql: str):
-    if sqlglot is None or not sql:
-        return None
-    try:
-        tree = sqlglot.parse_one(sql, read="postgres")
-    except SqlglotError:
-        return None
-    return tree if isinstance(tree, exp.Select) else None
-
-
 def _conditions(tree) -> List[Tuple[str, exp.Expression]]:
     found: List[Tuple[str, exp.Expression]] = []
     for prefix, clause in (("w", "where"), ("h", "having")):
@@ -866,7 +841,7 @@ def where_conditions(
     branches per dataset. HAVING conditions (counts) are left out: the card
     shows the counts themselves. (None, []) when the SQL cannot be read.
     """
-    tree = _parse(sql or "")
+    tree = sql_tree.parse_select(sql or "")
     if tree is None:
         return None, []
     source = tree.args.get("from") or tree.args.get("from_")
@@ -886,7 +861,7 @@ def where_conditions(
 
 def describe(sql: Optional[str]) -> List[QueryFilter]:
     """One chip per top-level condition; [] when the SQL cannot be read."""
-    tree = _parse(sql or "")
+    tree = sql_tree.parse_select(sql or "")
     if tree is None:
         return []
     chips = []
@@ -916,7 +891,7 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
     drop = set(chip_ids)
     if not drop:
         return sql
-    tree = _parse(sql)
+    tree = sql_tree.parse_select(sql)
     if tree is None:
         return None
     if SORT_CHIP_ID in drop:
@@ -1030,7 +1005,7 @@ def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
     A search limited to word forms ("ageing", "aging") must not mark what
     merely shares their stem ("age") in an excerpt.
     """
-    tree = _parse(sql or "")
+    tree = sql_tree.parse_select(sql or "")
     if tree is None:
         return frozenset()
     forms: List[str] = []

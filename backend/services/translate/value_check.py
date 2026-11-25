@@ -35,16 +35,11 @@ import re
 from functools import lru_cache
 from typing import Any, List, Optional, Tuple
 
+from sqlglot import exp
+
+from services import sql_tree
 from services.database_stats.database_stats import database_stats
 from services.schema.coded_fields import FILE_FIELDS
-
-try:
-    import sqlglot
-    import sqlglot.errors
-    from sqlglot import exp
-except ImportError:  # pragma: no cover - sqlglot is a backend dependency
-    sqlglot = None  # type: ignore[assignment]
-    exp = None  # type: ignore[assignment]
 
 log = logging.getLogger(__name__)
 
@@ -249,11 +244,10 @@ def check_sql(sql: str) -> Tuple[str, List[str]]:
     Returns the SQL (unchanged, same string, when every value is known or the
     check is off) and one note per changed value.
     """
-    if not enabled() or sqlglot is None or not re.search(r"\b(datatype|suffix|task)\b", sql, re.I):
+    if not enabled() or not re.search(r"\b(datatype|suffix|task)\b", sql, re.I):
         return sql, []
-    try:
-        tree = sqlglot.parse_one(sql, read="postgres")
-    except sqlglot.errors.SqlglotError:  # query_guard refuses it later
+    tree = sql_tree.parse(sql)
+    if tree is None:  # query_guard refuses it later
         return sql, []
 
     notes: List[str] = []

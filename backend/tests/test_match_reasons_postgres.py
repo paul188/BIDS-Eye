@@ -219,3 +219,56 @@ def test_a_paper_is_named_only_where_the_own_text_does_not_match():
         assert page["pd_readme"].match_reasons == ["Diagnosis: named in the README or description"]
         assert page["adults"].match_reasons == ["Diagnosis: named in a linked paper"]
     asyncio.run(_run(check))
+
+
+_SHAPES = [
+    "d.search_tsv @@ to_tsquery('english', 'parkinson')",
+    "d.search_tsv @@ to_tsquery('english', 'parkinson:AB')",
+    "NOT d.search_tsv @@ to_tsquery('english', 'parkinson')",
+    "(d.search_tsv @@ to_tsquery('english', 'parkinson')) IS FALSE",
+    "d.description_text ILIKE '%parkinson%'",
+    "d.description_text NOT ILIKE '%parkinson%'",
+    "LOWER(d.description_text) LIKE '%parkinson%'",
+    "d.description_text ~* 'parkinson'",
+    "d.description_text !~* 'parkinson'",
+    "d.description_text NOT ILIKE ANY(ARRAY['%parkinson%', '%gait%'])",
+    "d.readme_text NOT LIKE '%Adults%' OR d.species = 'Other'",
+    "EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age < 3)",
+    "NOT EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age < 3)",
+    "d.id IN (SELECT dataset_id FROM bids_participants WHERE diagnosis = 'parkinsons_disease')",
+    "d.id NOT IN (SELECT dataset_id FROM bids_participants WHERE diagnosis = 'parkinsons_disease')",
+    "d.species IS NULL OR d.species = 'Other'",
+    "d.species IS NOT NULL",
+    "d.age_min < 3 OR d.description_text NOT ILIKE '%a%'",
+    "d.species IS NULL AND NOT d.search_tsv @@ to_tsquery('english', 'mouse')",
+    DIAGNOSIS,
+]
+
+
+def test_evidence_holds_only_where_its_condition_does_and_covers_it():
+    """Each piece of evidence of a condition holds for datasets of the
+    condition only, and for an evaluable condition they cover all of it."""
+    from sqlalchemy import text
+    from services import sql_tree
+    from services.evidence.branches import confirming_evidence
+
+    async def check(session, ids):
+        names = {value: key for key, value in ids.items()}
+
+        async def holds(condition):
+            sql = f"SELECT d.id FROM bids_datasets AS d WHERE {condition}"
+            rows = await session.execute(text(sql.replace(":AB", r"\:AB")))
+            return {names[row.id] for row in rows}
+
+        for shape in _SHAPES:
+            tree = sql_tree.parse_select(f"SELECT d.id FROM bids_datasets AS d WHERE {shape}")
+            node = tree.args["where"].this
+            wanted = await holds(shape)
+            # Reading the query and writing it back changes no result.
+            assert await holds(node.sql(dialect="postgres")) == wanted, shape
+            ways = confirming_evidence(node, "d")
+            held = [await holds(way.sql()) for way in ways]
+            assert all(found <= wanted for found in held), shape
+            if len(ways) == len(sql_tree.or_branches(node)):
+                assert set().union(*held) == wanted, shape
+    asyncio.run(_run(check))

@@ -11,7 +11,8 @@ import sqlglot
 from criteria import age_condition, species_condition
 from schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
-from services.evidence.confirmed import Assumed, FieldValue, age_span
+from services import sql_tree
+from services.evidence.confirmed import Assumed, FieldValue, Found, ParticipantRows, age_span
 from services.evidence.base import Source
 from services.evidence import branches
 from services.results import match_reasons as mr
@@ -125,6 +126,69 @@ def test_a_branch_that_is_a_not_confirms_nothing_it_denies(branch, kinds):
     node = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {branch}",
                              read="postgres").args["where"].this
     assert [type(way) for way in branches.confirming_evidence(node, "d")] == kinds
+
+
+_POSITIVE = {
+    "vector": "d.search_tsv @@ to_tsquery('english', 'mouse')",
+    "short vector": "d.search_tsv @@ to_tsquery('english', 'mouse:AB')",
+    "paper vector": "d.search_tsv_papers @@ to_tsquery('english', 'mouse')",
+    "name": "d.name ILIKE '%mouse%'",
+    "lower name": "LOWER(d.name) LIKE '%mouse%'",
+    "name pattern": "d.name ~* 'mouse'",
+    "description": "d.description_text LIKE '%mouse%'",
+    "readme": "d.readme_text ILIKE '%mouse%'",
+    "participants": ("EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+                     "AND p2.diagnosis = 'parkinsons_disease')"),
+    "participants in": "d.id IN (SELECT dataset_id FROM bids_participants WHERE age < 3)",
+    "files": ("EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
+              "AND o2.task = 'rest')"),
+    "species default": "d.species IS NULL",
+}
+_DENIALS = {
+    "NOT": "NOT {}", "NOT ()": "NOT ({})", "NOT (OR)": "NOT ({} OR d.id IS NULL)",
+    "IS FALSE": "({}) IS FALSE", "= FALSE": "({}) = FALSE", "IS NOT TRUE": "({}) IS NOT TRUE",
+    "NOT LIKE": " NOT LIKE ", "NOT ILIKE": " NOT ILIKE ", "NOT IN": " NOT IN ", "!~*": " !~* ",
+}
+
+
+def _denials():
+    for shape, sql in _POSITIVE.items():
+        for how, form in _DENIALS.items():
+            if "{}" in form:
+                yield pytest.param(form.format(sql), id=f"{shape}, {how}")
+            else:
+                operator = " ~* " if how == "!~*" else form.replace("NOT ", "")
+                if operator in sql:
+                    yield pytest.param(sql.replace(operator, form), id=f"{shape}, {how}")
+
+
+def _ways(condition: str) -> tuple:
+    tree = sql_tree.parse_select(f"SELECT 1 FROM bids_datasets AS d WHERE {condition}")
+    return branches.confirming_evidence(tree.args["where"].this, "d")
+
+
+@pytest.mark.parametrize("condition", _POSITIVE.values(), ids=_POSITIVE)
+def test_each_shape_confirms(condition):
+    assert any(isinstance(way, (Found, ParticipantRows, Assumed)) for way in _ways(condition))
+
+
+@pytest.mark.parametrize("condition", _denials())
+def test_a_denied_shape_confirms_nothing(condition):
+    assert not [way for way in _ways(condition) if isinstance(way, (Found, ParticipantRows, Assumed))]
+
+
+def test_an_empty_text_column_names_nothing():
+    assert _ways("d.readme_text IS NULL") == ()
+    assert _ways("d.search_tsv IS NULL") == ()
+
+
+def test_an_unclassified_branch_is_logged_without_its_values(caplog):
+    _ways("d.name = 'secret search'")
+    assert "d.name = ?" in caplog.text and "secret" not in caplog.text
+    caplog.clear()
+    _ways("NOT d.search_tsv @@ to_tsquery('english', 'mouse')")
+    _ways("o.task = 'rest'")
+    assert caplog.text == ""
 
 
 def test_paper_and_readme_venues():
@@ -257,8 +321,6 @@ def test_reason_for_the_dataset_age_range_appears_once():
 
 
 def test_a_kind_without_a_card_text_cannot_be_built():
-    from services.evidence.confirmed import Found
-
     with pytest.raises(ValueError):
         Found("TRUE", source=Source.PARTICIPANTS)
     with pytest.raises(ValueError):

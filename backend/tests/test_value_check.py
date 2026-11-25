@@ -84,6 +84,13 @@ def test_under_not_the_condition_stays() -> None:
     assert notes[0].endswith("kept (under NOT it excludes nothing)")
 
 
+def test_a_not_like_alternative_of_an_or_stays() -> None:
+    # It holds for every task: without it the OR would be the other alternative alone.
+    sql, notes = vc.check_sql(_exists("(o2.task = 'n_back' OR o2.task NOT ILIKE '%juggling%')"))
+    assert "NOT o2.task ILIKE '%juggling%'" in sql and "o2.task = 'n_back'" in sql
+    assert notes[0].endswith("kept (under NOT it excludes nothing)")
+
+
 def test_not_in_loses_only_the_unknown_value() -> None:
     sql, _ = vc.check_sql(_exists("NOT o2.task IN ('n_back', 'social_cognition')"))
     assert "NOT o2.task IN ('n_back')" in sql

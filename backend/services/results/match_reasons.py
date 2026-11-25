@@ -153,7 +153,7 @@ async def attach_match_reasons(session: AsyncSession, datasets: List[DatasetSche
     """Set match_reasons on the page's datasets; a failure leaves them empty."""
     if not datasets or not filter_sql:
         return
-    # SQL that cannot be parsed gives (None, []) (query_filters._parse).
+    # SQL that cannot be parsed gives (None, []) (sql_tree.parse_select).
     alias, plans = plan(filter_sql)
     if alias is None or not plans:
         return

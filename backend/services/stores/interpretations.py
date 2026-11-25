@@ -74,6 +74,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "results" / "rankers.py",
     _BACKEND / "services" / "translate" / "text_to_sql.py",
     _BACKEND / "services" / "translate" / "value_check.py",
+    _BACKEND / "services" / "sql_tree.py",
     _BACKEND / "services" / "switches.py",
     _BACKEND / "services" / "uncertain" / "tier.py",
     _BACKEND / "services" / "uncertain" / "classify.py",

@@ -107,6 +107,19 @@ def test_negated_condition_and_one_sided_age():
     assert chips["w2"].label == "18+"
 
 
+@pytest.mark.parametrize("condition", [
+    "d.license NOT ILIKE '%NC%'", "NOT d.license ILIKE '%NC%'", "(d.license NOT ILIKE '%NC%')",
+])
+def test_a_not_like_condition_is_negated(condition):
+    chip = _by_id(_sql(condition))["w0"]
+    assert (chip.label, chip.negated) == ("NC", True)
+
+
+def test_removing_a_chip_keeps_a_not_like_condition():
+    refined = qf.remove(_sql(MODALITY, "d.license NOT ILIKE '%NC%' ESCAPE '!'"), ["w0"])
+    assert "NOT d.license ILIKE '%NC%' ESCAPE '!'" in refined
+
+
 def test_query_without_conditions_has_no_chips():
     assert qf.describe(_HEAD + "GROUP BY d.id ORDER BY d.name LIMIT 200") == []
     assert qf.describe("not sql at all") == []

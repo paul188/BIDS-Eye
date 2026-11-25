@@ -70,14 +70,10 @@ import os
 import re
 from typing import List, Optional
 
-try:  # sqlglot is a backend dependency; keep the module importable without it
-    import sqlglot
-    import sqlglot.errors
-    from sqlglot import exp
-except ImportError:  # pragma: no cover
-    sqlglot = None  # type: ignore[assignment]
-    exp = None  # type: ignore[assignment]
+import sqlglot
+from sqlglot import exp
 
+from services import sql_tree
 from services.uncertain.conditions import QueryEvidence, ClauseEvidence
 from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
@@ -166,13 +162,10 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         papers = vectors.papers_enabled()
     if hoist_terms is None:
         hoist_terms = hoist_terms_enabled()
-    if sqlglot is None or LEVEL_COLUMN in sql:
+    if LEVEL_COLUMN in sql:
         return sql
-    try:
-        tree = sqlglot.parse_one(sql, read="postgres")
-    except sqlglot.errors.SqlglotError:
-        return sql
-    if not isinstance(tree, exp.Select):
+    tree = sql_tree.parse_select(sql)
+    if tree is None:
         return sql
     # A top-N or ordered question ("the 10 largest …") keeps its own order and
     # limit; softening the filter inside them would let rows the tier later
