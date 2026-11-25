@@ -50,7 +50,7 @@ class ConfirmedMatch(PieceOfEvidence):
     branch: str   # its SQL, as generated: it names the dataset row by the query's own alias
     strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         return self.branch
 
     def read_columns(self) -> Tuple[str, ...]:

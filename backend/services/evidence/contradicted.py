@@ -8,7 +8,7 @@ about, with other values.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from typing import Optional
 
 from services.evidence.base import PieceOfEvidence, Source, Strength
 
@@ -23,9 +23,9 @@ class OtherValuesRecorded(PieceOfEvidence):
     listed before it counts although other values are recorded (so far only
     the text evidence for a diagnosis: coded diagnoses are often incomplete).
     """
-    recorded: Callable[[str], str]   # alias → SQL: the dataset records the field at all
+    recorded: str   # SQL: the dataset records the field at all
     source: Source = field(default=Source.FIELD, kw_only=True)
     strength: Strength = field(default=Strength.CONTRADICTED, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
-        return self.recorded(alias)
+    def sql(self) -> Optional[str]:
+        return self.recorded

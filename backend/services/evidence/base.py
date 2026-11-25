@@ -100,16 +100,18 @@ class PieceOfEvidence(ABC):
 
     A kind of evidence is a subclass. It holds what it is about (the words
     missing from a search, the sex a text names, the participant rows a
-    branch counts) and writes its SQL and its card text from that.
+    branch counts) and writes its SQL and its card text from that. It is
+    built for one query: a kind that writes its SQL holds the alias that
+    query gives the dataset row.
     """
     source: Source = field(kw_only=True)
     strength: Strength = field(kw_only=True)
 
     @abstractmethod
-    def sql(self, alias: str) -> Optional[str]:
-        """SQL that is true for the dataset row *alias* this evidence holds
-        for. None: it holds for whatever the evidence listed before it left
-        over (possible.NotRecorded)."""
+    def sql(self) -> Optional[str]:
+        """SQL that is true for the dataset rows this evidence holds for.
+        None: it holds for whatever the evidence listed before it left over
+        (possible.NotRecorded)."""
 
     def reason(self) -> str:
         """What the result card says when this evidence decides; "" says nothing."""

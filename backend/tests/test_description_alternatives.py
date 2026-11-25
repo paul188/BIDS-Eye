@@ -111,8 +111,8 @@ def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
 
     # Only the user's own words get a weaker form, not the alternatives; and
     # "people" alone is none (without counts the longer word would be kept).
-    weaker = tier_text.relax_text_condition(sql)
-    relaxed = weaker.sql("d") if weaker else None
+    weaker = tier_text.relax_text_condition(sql, "d")
+    relaxed = weaker.sql() if weaker else None
     assert relaxed is None or ("mortem" not in relaxed and "vivo" not in relaxed)
     assert relaxed is None or "'people'" not in relaxed
 

@@ -27,7 +27,7 @@ class NotRecorded(PieceOfEvidence):
     source: Source = field(default=Source.NOT_RECORDED, kw_only=True)
     strength: Strength = field(default=Strength.POSSIBLE, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         return None
 
     def reason(self) -> str:

@@ -117,7 +117,7 @@ def test_a_piece_of_evidence_has_a_score_measured_or_by_its_strength() -> None:
     from services.evidence.probable import PaperOnly, TextSearch
 
     assert DEFAULT_SCORES[Strength.CONFIRMED] == 1 and DEFAULT_SCORES[Strength.CONTRADICTED] == 0
-    assert PaperOnly((TextSearch("x"),)).score() == DEFAULT_SCORES[Strength.PROBABLE]
+    assert PaperOnly((TextSearch("x"),), alias="d").score() == DEFAULT_SCORES[Strength.PROBABLE]
     assert NotRecorded("participant sex").score() == DEFAULT_SCORES[Strength.POSSIBLE]
     assert NotRecorded("ages", 0.33).score() == 0.33
 

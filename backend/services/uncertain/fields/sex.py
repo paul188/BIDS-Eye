@@ -123,7 +123,7 @@ class SexNamed(NamedInOwnText):
     sex: str = ""
     only: bool = False
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         words = "|".join(text_words(self.sex))
         pattern = only = _ONLY_SEX_RE.format(w=words)
         if not self.only:
@@ -131,8 +131,8 @@ class SexNamed(NamedInOwnText):
             people = "|".join(text_evidence.people_words())
             pattern = f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})"
         # The indexed words first: the regex then reads about 150 texts.
-        return (f"({alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(_sex_tsquery(self.sex))}) "
-                f"AND {_in_own_text(alias, pattern)})")
+        return (f"({self.alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(_sex_tsquery(self.sex))}) "
+                f"AND {_in_own_text(self.alias, pattern)})")
 
     def reason(self) -> str:
         not_recorded = NotRecorded(LABEL).reason()
@@ -141,13 +141,13 @@ class SexNamed(NamedInOwnText):
         return f"{not_recorded}; the title, description or README names {self.sex} participants"
 
 
-def sex_named(node) -> Optional[SexNamed]:
+def sex_named(node, alias: str) -> Optional[SexNamed]:
     """The sex a condition asks for, as a text would name it; None if the
     condition does not ask for one sex."""
     sex = asked_sex(node)
     if sex is None or not text_words(sex):
         return None
-    return SexNamed(sex=sex, only=_only_one_sex(node))
+    return SexNamed(sex=sex, only=_only_one_sex(node), alias=alias)
 
 
 def _sex_tsquery(sex: str) -> str:

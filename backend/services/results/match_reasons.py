@@ -121,7 +121,7 @@ def build_sql(alias: str, plans: Sequence[ChipPlan]) -> str:
     field_columns: Dict[str, str] = {}
     for c, chip in enumerate(plans):
         for b, evidence in enumerate(chip.branches):
-            columns.append(f"COALESCE(({evidence.sql(alias)}), FALSE) AS h{c}_{b}")
+            columns.append(f"COALESCE(({evidence.sql()}), FALSE) AS h{c}_{b}")
             columns.extend(evidence.number_columns(f"{c}_{b}"))
             for name in evidence.read_columns():
                 field_columns.setdefault(name, f"CAST({alias}.{name} AS TEXT) AS f_{name}")

@@ -75,8 +75,8 @@ class AgeGroupNamed(NamedInOwnText):
     """The dataset's own text names the age group: one of *words*."""
     words: Tuple[str, ...] = ()
 
-    def sql(self, alias: str) -> Optional[str]:
-        return own_text_matches(alias, tsquery_for_words(self.words))
+    def sql(self) -> Optional[str]:
+        return own_text_matches(self.alias, tsquery_for_words(self.words))
 
     def score(self) -> float:
         # 45.7% of 92 judged rows relevant, against 86.1% of confirmed rows
@@ -87,11 +87,11 @@ class AgeGroupNamed(NamedInOwnText):
         return f"{NotRecorded(LABEL).reason()}; the title, description or README names the age group"
 
 
-def age_group_named(node) -> Optional[AgeGroupNamed]:
+def age_group_named(node, alias: str) -> Optional[AgeGroupNamed]:
     """The age group an age condition asks for, as a text would name it; None
     if the asked range fits no group."""
     group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
-    return AgeGroupNamed(words=tuple(group_words)) if group_words else None
+    return AgeGroupNamed(words=tuple(group_words), alias=alias) if group_words else None
 
 
 def _recorded(alias: str) -> str:

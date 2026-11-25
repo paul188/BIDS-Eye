@@ -209,9 +209,9 @@ def negated_spans(sql: str) -> List[Tuple[int, int]]:
     return text_search.negated_spans(sql)
 
 
-def relax_text_condition(sql: str) -> Optional[WeakerSearch]:
-    """The weaker text evidence for a condition; None when no positive text
-    search of it would change.
+def relax_text_condition(sql: str, alias: str) -> Optional[WeakerSearch]:
+    """The weaker text evidence for a condition on the dataset row *alias*;
+    None when no positive text search of it would change.
 
     Only the relaxed text searches of the condition count, any one of them:
     the rest of the condition (often an expensive check over the files) has
@@ -264,4 +264,4 @@ def relax_text_condition(sql: str) -> Optional[WeakerSearch]:
         searches.append(WeakenedSearch(
             TextSearch(relaxed, kept_guard), match.group("column"),
             match.group("guard_column") if kept_guard else None, weakening, tuple(words)))
-    return WeakerSearch(tuple(searches)) if searches else None
+    return WeakerSearch(tuple(searches), alias=alias) if searches else None

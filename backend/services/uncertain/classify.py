@@ -176,19 +176,19 @@ def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidenc
     words, core_words = _positive_words(every_word), _positive_words(core)
     if not core_words or not core_words < words:
         return None
-    return ClauseEvidence(kind="text", alias=alias, sql=every_word,
+    return ClauseEvidence(kind="text", sql=every_word,
                           confirming=confirming_evidence(node.left, alias), evidence=(
         # The core only in a paper: the rows the core's own paper form had before.
-        *_paper_only(core, papers),
+        *_paper_only(core, alias, papers),
         CoreOfTerm(core, missing=tuple(sorted(words - core_words))),
     ))
 
 
-def _paper_only(sql: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
+def _paper_only(sql: str, alias: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
     """The evidence that the text searches of *sql* match only in a paper;
     none without paper text or without a positive text search."""
     searches = paper_searches(sql) if papers else ()
-    return (PaperOnly(searches),) if searches else ()
+    return (PaperOnly(searches, alias=alias),) if searches else ()
 
 
 def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
@@ -214,28 +214,28 @@ def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]
         if loose is not None:
             return loose
     # Part of a text search the condition holds, anywhere in the text.
-    relaxed = relax_text_condition(sql)
+    relaxed = relax_text_condition(sql, alias)
     weaker_search: Tuple[PieceOfEvidence, ...] = (relaxed,) if relaxed else ()
-    paper = _paper_only(sql, papers)
+    paper = _paper_only(sql, alias, papers)
     if kind != "text":
         # A field a dataset may not record. What is particular to the field
         # is in its file (fields/); the steps are the same for all.
         field = fields.BY_KIND[kind]
         # The dataset's own text names the asked value: counts in place of a
         # part of the search.
-        named = field.named_in_text(node) if field.named_in_text else None
+        named = field.named_in_text(node, alias) if field.named_in_text else None
         weaker: Tuple[PieceOfEvidence, ...] = (named,) if named is not None else weaker_search
         if field.paper_evidence:
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
             weaker = paper + weaker
-        record = OtherValuesRecorded(field.recorded)
+        record = OtherValuesRecorded(field.recorded(alias))
         not_recorded = NotRecorded(field.label, field.unrecorded_score)
         evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
                     else (record, *weaker, not_recorded))
-        return ClauseEvidence(kind=kind, alias=alias, sql=sql, evidence=evidence, confirming=confirming)
+        return ClauseEvidence(kind=kind, sql=sql, evidence=evidence, confirming=confirming)
     if relaxed or paper:
-        return ClauseEvidence(kind="text", alias=alias, sql=sql, evidence=(*paper, *weaker_search),
+        return ClauseEvidence(kind="text", sql=sql, evidence=(*paper, *weaker_search),
                               confirming=confirming)
     return None
 
@@ -247,15 +247,16 @@ class PatientsNotCounted(PieceOfEvidence):
     codes: Tuple[str, ...]
     minimum: int
     stored_subject_counts: bool   # bids_datasets.n_subjects is filled
+    alias: str = dataclasses.field(kw_only=True)   # the dataset row of the query
     source: Source = dataclasses.field(default=Source.NOT_RECORDED, kw_only=True)
     strength: Strength = dataclasses.field(default=Strength.PROBABLE, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         import cohort_count
         from services.schema.tables import datasets
-        stored = (f"COALESCE({alias}.{datasets.c.n_subjects.name}, 0)"
+        stored = (f"COALESCE({self.alias}.{datasets.c.n_subjects.name}, 0)"
                   if self.stored_subject_counts else None)
-        return cohort_count.unknown_sql(list(self.codes), self.minimum, alias, subject_count=stored)
+        return cohort_count.unknown_sql(list(self.codes), self.minimum, self.alias, subject_count=stored)
 
     def reason(self) -> str:
         return "how many participants have the diagnosis is not recorded"
@@ -283,6 +284,6 @@ def _patient_count(sql: str, alias: str,
         stored = bool(database_stats.summaries.subject_counts)
     except ImportError:
         pass
-    return ClauseEvidence(kind="patient_count", alias=alias, sql=sql, confirming=confirming, evidence=(
-        PatientsNotCounted(tuple(codes), minimum, stored),
+    return ClauseEvidence(kind="patient_count", sql=sql, confirming=confirming, evidence=(
+        PatientsNotCounted(tuple(codes), minimum, stored, alias=alias),
     ))

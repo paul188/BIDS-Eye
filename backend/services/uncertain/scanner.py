@@ -332,11 +332,12 @@ def sidecar(node, alias: str) -> Optional[ClauseEvidence]:
         values = tuple(_key_values(node, key))
         if not (values and _value_tsquery(key, values)):
             return None
-    named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select)
+    named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select,
+                              alias=alias)
     as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
-    return ClauseEvidence(kind="sidecar", alias=alias, sql=as_generated, ctes=tuple(ctes),
+    return ClauseEvidence(kind="sidecar", sql=as_generated, ctes=tuple(ctes),
                           confirming=confirming_evidence(node, alias), evidence=(
-        OtherValuesRecorded(named.key_recorded),
+        OtherValuesRecorded(named.key_recorded()),
         named,
         NotInFileMetadata(_SIDECAR_LABELS[key]),
     ))
@@ -354,30 +355,30 @@ class ScannerValueNamed(NamedInOwnText):
     # ("7T fMRI": fMRI files); None when it asks for no particular files.
     file_set: Optional[str] = None
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         if self.key == FIELD_STRENGTH_KEY:
             pattern = field_strength_regex(self.strengths, postgres=True)
             assert pattern is not None
             # The indexed words first: the regex then reads a few hundred texts.
-            text = (f"{alias}.search_tsv @@ TO_TSQUERY('english', "
+            text = (f"{self.alias}.search_tsv @@ TO_TSQUERY('english', "
                     f"{sql_literal(_strength_tsquery(self.strengths))}) "
-                    f"AND {own_text(alias)} ~ {sql_literal(pattern)}")
+                    f"AND {own_text(self.alias)} ~ {sql_literal(pattern)}")
         else:
             query = _value_tsquery(self.key, self.values)
             assert query is not None
-            text = own_text_matches(alias, query)
-        return f"({text}) AND ({alias}.id IN ({self.file_set}))" if self.file_set else text
+            text = own_text_matches(self.alias, query)
+        return f"({text}) AND ({self.alias}.id IN ({self.file_set}))" if self.file_set else text
 
-    def key_recorded(self, alias: str) -> str:
+    def key_recorded(self) -> str:
         """SQL: some file of the dataset records the key."""
-        recorded = (f"EXISTS(SELECT 1 FROM {_objects.name} AS uk WHERE uk.dataset_id = {alias}.id "
+        recorded = (f"EXISTS(SELECT 1 FROM {_objects.name} AS uk WHERE uk.dataset_id = {self.alias}.id "
                     f"AND NULLIF(TRIM(uk.other_entities ->> '{self.key}'), '') IS NOT NULL)")
         # Whether the key is recorded matters only where the text names the
         # value: checked for those few datasets, not for every candidate
         # (6.6 ms per dataset on the live objects table, 11 s for one
         # question). The same states while there is no 'possible' level;
         # with it, every candidate.
-        return recorded if possible_enabled() else f"(({self.sql(alias)}) AND {recorded})"
+        return recorded if possible_enabled() else f"(({self.sql()}) AND {recorded})"
 
     def reason(self) -> str:
         named = (" or ".join(f"{s:g} T" for s in self.strengths) if self.key == FIELD_STRENGTH_KEY

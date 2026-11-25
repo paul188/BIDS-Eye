@@ -33,21 +33,23 @@ class PaperOnly(PieceOfEvidence):
     own text. *searches* are without weight labels: paper text carries the
     lowest weight, so a search scoped to the name could never reach it."""
     searches: Tuple[TextSearch, ...]
+    alias: str = field(kw_only=True)   # the dataset row of the query
     source: Source = field(default=Source.PAPER, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         from services.fulltext.vectors import (EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN,
                                                PAPER_FTS_COLUMN)
         atoms = []
         for search in self.searches:
-            paper = f"{alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
-            own = f"{alias}.{FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
+            paper = f"{self.alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
+            own = f"{self.alias}.{FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
             if search.guard:
                 # Exact word forms count in the paper as in the dataset's text.
-                paper = (f"({paper} AND {alias}.{EXACT_PAPER_FTS_COLUMN} @@ "
+                paper = (f"({paper} AND {self.alias}.{EXACT_PAPER_FTS_COLUMN} @@ "
                          f"TO_TSQUERY('simple', '{search.guard}'))")
-                own = f"({own} AND {alias}.{EXACT_FTS_COLUMN} @@ TO_TSQUERY('simple', '{search.guard}'))"
+                own = (f"({own} AND {self.alias}.{EXACT_FTS_COLUMN} @@ "
+                       f"TO_TSQUERY('simple', '{search.guard}'))")
             # The paper vector also holds the dataset's own text; "only in a
             # paper" means it matches there and not in the dataset's text.
             atoms.append(f"({paper} AND NOT {own})")
@@ -107,11 +109,12 @@ class WeakenedSearch:
 class WeakerSearch(PieceOfEvidence):
     """Some text search of the condition matches in a weaker form."""
     searches: Tuple[WeakenedSearch, ...]
+    alias: str = field(kw_only=True)   # the dataset row of the query
     source: Source = field(default=Source.TEXT, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
-        return " OR ".join(dict.fromkeys(search.sql(alias) for search in self.searches))
+    def sql(self) -> Optional[str]:
+        return " OR ".join(dict.fromkeys(search.sql(self.alias) for search in self.searches))
 
     def score(self) -> float:
         # 31.7% of 555 judged rows relevant, against 86.1% of confirmed rows
@@ -153,7 +156,7 @@ class CoreOfTerm(PieceOfEvidence):
     source: Source = field(default=Source.TEXT, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 
-    def sql(self, alias: str) -> Optional[str]:
+    def sql(self) -> Optional[str]:
         return self.core
 
     def reason(self) -> str:
@@ -165,6 +168,7 @@ class NamedInOwnText(PieceOfEvidence):
     """The dataset's name, description or README names the value the condition
     asks of a field: "22 women", "infants", "7T". Each field has its subclass,
     which holds the asked value and writes sql() and reason()."""
+    alias: str = field(kw_only=True)   # the dataset row of the query
     source: Source = field(default=Source.TEXT, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
 

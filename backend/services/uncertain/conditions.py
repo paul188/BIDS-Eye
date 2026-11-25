@@ -99,7 +99,6 @@ class ClauseEvidence:
       outweighs a record       values recorded, not recorded
     """
     kind: str                         # a field in fields/ (age, diagnosis, sex), text, sidecar or patient_count
-    alias: str                        # the dataset row of the query
     sql: str                          # the condition as generated
     evidence: Tuple[PieceOfEvidence, ...]
     # (name, SELECT) sets the condition reads more than once: computed once
@@ -142,7 +141,7 @@ class ClauseEvidence:
     @property
     def probable(self) -> Optional[str]:
         """SQL: some weaker evidence holds. None without any."""
-        parts = [e.sql(self.alias) for e in self.weaker]
+        parts = [e.sql() for e in self.weaker]
         if not parts:
             return None
         return parts[0] if len(parts) == 1 else " OR ".join(f"({part})" for part in parts)
@@ -151,7 +150,7 @@ class ClauseEvidence:
     def known(self) -> Optional[str]:
         """SQL: the field is recorded. None for a condition that reads no
         field a dataset may leave out (a text search)."""
-        return next((e.sql(self.alias) for e in self.evidence
+        return next((e.sql() for e in self.evidence
                      if e.strength == Strength.CONTRADICTED), None)
 
     @property

@@ -241,7 +241,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         evidence_columns.append(f"({condition.known}) AS {known}" if condition.known
                                 else f"TRUE AS {known}")
         for piece, flag in zip(condition.weaker, flags):
-            evidence_columns.append(f"({piece.sql(alias)}) AS {flag}")
+            evidence_columns.append(f"({piece.sql()}) AS {flag}")
             flag_columns.append(f"ev.{flag}")
         if query.recorded_column(i):
             flag_columns.append(f"ev.{known}")

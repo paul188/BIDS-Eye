@@ -35,8 +35,8 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
     assert _classify(handedness) is None   # a hard filter today
 
     class LeftHandedNamed(NamedInOwnText):
-        def sql(self, alias):
-            return f"{alias}.readme_text ~* 'left-handed'"
+        def sql(self):
+            return f"{self.alias}.readme_text ~* 'left-handed'"
 
         def reason(self):
             return "names it"
@@ -44,7 +44,7 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
     field = SoftField(
         kind="handedness", label="handedness", columns=("handedness",),
         recorded=participant_rows_record("handedness"),
-        named_in_text=lambda node: LeftHandedNamed(),
+        named_in_text=lambda node, alias: LeftHandedNamed(alias=alias),
     )
     monkeypatch.setitem(fields.BY_KIND, "handedness", field)
     monkeypatch.setitem(fields.KIND_OF_COLUMN, "handedness", "handedness")
@@ -60,11 +60,11 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
 
 def test_text_evidence_must_say_why():
     class NoReason(NamedInOwnText):
-        def sql(self, alias):
+        def sql(self):
             return "TRUE"
 
     with pytest.raises(TypeError, match="reason"):
-        NoReason()
+        NoReason(alias="d")
 
 
 def test_text_beats_recorded_only_for_diagnosis():
