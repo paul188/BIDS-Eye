@@ -179,9 +179,11 @@ def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
     word_frequencies.set_frequency_lookup(lookup)
     expanded = ts.expand_text_search(_where("text_match('ageing connectome', 'loose')"),
                                      exact_forms=FORMS)
+    core = ("(d.search_tsv @@ to_tsquery('english', 'ageing') "
+            "AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)'))")
+    # The core decides the rows; both words together are what the tier confirms.
     assert _condition(expanded) == (
-        "(d.search_tsv @@ to_tsquery('english', 'ageing') "
-        "AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)'))")
+        f"((d.search_tsv @@ to_tsquery('english', 'ageing & connectome') AND {core}) OR {core})")
 
 
 # ── Ranking ───────────────────────────────────────────────────────────────────

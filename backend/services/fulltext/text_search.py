@@ -259,12 +259,13 @@ def expand_text_search(
         if not terms:
             # Nothing searchable ("???"): the term cannot match any dataset.
             return f"{negated}FALSE"
+        # What each alternative requires: a loose term its core, counted once here.
+        required = [tsquery.filter_term(term, mode, exact_forms) for term in terms]
         if also and not inside_not and previous_filter:
             own_parts.append(previous_filter[-1])
         elif not inside_not:
             own_filter = tsquery.build_filter_tsquery(
-                [tsquery.filter_term(term, mode, exact_forms) for term in terms],
-                MODE_ALL if mode == MODE_LOOSE else mode)
+                required, MODE_ALL if mode == MODE_LOOSE else mode)
             if own_filter:
                 previous_filter.append(own_filter)
         if not negated:
@@ -281,37 +282,55 @@ def expand_text_search(
                 return "FALSE"  # no term is searchable, as for "???" above
             return f"{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
 
-        if not vectors.exact_enabled():
-            return negated + atom(tsquery.build_filter_tsquery(terms, mode))
-        label = tsquery.SCOPE_LABEL[mode]
-        # What each alternative requires (a loose term: its core, counted
-        # once here), and its guard if it has exact words.
-        required = [tsquery.filter_term(term, mode, exact_forms) for term in terms]
-        guards = [tsquery.exact_guard(term, label, exact_forms) for term in required]
-        if not any(guards):
-            return negated + atom(
-                tsquery.build_filter_tsquery(required, MODE_ALL if mode == MODE_LOOSE else mode))
-        # One pair per alternative with exact words; the others share one
-        # stemmed match, placed where the first of them stood.
-        pieces: List[str] = []
-        plain: List[Term] = []
-        plain_at: Optional[int] = None
-        for term, guard in zip(required, guards):
-            if guard:
-                pieces.append(
-                    f"({atom(tsquery.build_filter_tsquery([term], MODE_ALL if mode == MODE_LOOSE else mode))}"
-                    f" AND {alias}.{_exact_column(column)} @@ "
-                    f"to_tsquery('{EXACT_TS_CONFIG}', '{guard}'))")
-            else:
-                if plain_at is None:
-                    plain_at = len(pieces)
-                plain.append(term)
-        if plain:
-            pieces.insert(plain_at or 0, atom(
-                tsquery.build_filter_tsquery(plain, MODE_ALL if mode == MODE_LOOSE else mode)))
-        if len(pieces) == 1:
-            return negated + pieces[0]
-        return negated + "(" + " OR ".join(pieces) + ")"
+        filter_mode = MODE_ALL if mode == MODE_LOOSE else mode
+        plain_core = atom(tsquery.build_filter_tsquery(required, filter_mode))
+
+        def core_expression() -> str:
+            if not vectors.exact_enabled():
+                return plain_core
+            label = tsquery.SCOPE_LABEL[mode]
+            # Each alternative's guard if it has exact words.
+            guards = [tsquery.exact_guard(term, label, exact_forms) for term in required]
+            if not any(guards):
+                return plain_core
+            # One pair per alternative with exact words; the others share one
+            # stemmed match, placed where the first of them stood.
+            pieces: List[str] = []
+            plain: List[Term] = []
+            plain_at: Optional[int] = None
+            for term, guard in zip(required, guards):
+                if guard:
+                    pieces.append(
+                        f"({atom(tsquery.build_filter_tsquery([term], filter_mode))}"
+                        f" AND {alias}.{_exact_column(column)} @@ "
+                        f"to_tsquery('{EXACT_TS_CONFIG}', '{guard}'))")
+                else:
+                    if plain_at is None:
+                        plain_at = len(pieces)
+                    plain.append(term)
+            if plain:
+                pieces.insert(plain_at or 0, atom(tsquery.build_filter_tsquery(plain, filter_mode)))
+            if len(pieces) == 1:
+                return pieces[0]
+            return "(" + " OR ".join(pieces) + ")"
+
+        core = core_expression()
+        lost_words = any(len(core_term) < len(term) for core_term, term in zip(required, terms))
+        if mode == MODE_LOOSE and not inside_not and lost_words:
+            # A loose term that lost words ("physical exercise" → "exercise"):
+            # (all its words OR its core). The same rows as the core alone,
+            # but the uncertain tier confirms only the datasets with every
+            # word and calls the rest probable (services/uncertain/classify.py, loose_term):
+            # breathing and visualization "exercises" were confirmed matches
+            # for "physical exercise" (live, 2026-11-21).
+            whole = tsquery.build_filter_tsquery(terms, MODE_ALL)
+            if whole is not None:
+                every_word = atom(whole)
+                if core != plain_core:
+                    # The core carries exact word forms: all words AND those.
+                    every_word = f"({every_word} AND {core})"
+                return f"({every_word} OR {core})"
+        return negated + core
 
     expanded = _TEXT_MATCH_RE.sub(replace, sql)
 

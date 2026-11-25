@@ -10,6 +10,7 @@ diagnosis, sex, scanner fields, matches only in a paper the dataset names
 from __future__ import annotations
 
 import dataclasses
+import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
@@ -19,11 +20,11 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services.uncertain.conditions import LABEL_RE, ClauseEvidence, TSQUERY_RE
-from services.uncertain.text import negated_spans, relax_text_condition
+from services.uncertain.text import negated_spans, query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
-from services.evidence.probable import PaperOnly, TextSearch
+from services.evidence.probable import CoreOfTerm, PaperOnly, TextSearch
 from services.uncertain import fields
 from services.uncertain.scanner import sidecar
 
@@ -140,6 +141,45 @@ def paper_searches(sql: str) -> Tuple[TextSearch, ...]:
     return tuple(searches)
 
 
+_DISTANCE_RE = re.compile(r"<\d+>")
+
+
+def _positive_words(sql: str) -> set:
+    spans = negated_spans(sql)
+    return {word for match in TSQUERY_RE.finditer(sql)
+            if not (match.group("negated") or any(s < match.start() < e for s, e in spans))
+            for word in query_words(match.group("query"))}
+
+
+def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
+    """The ClauseEvidence of a loose term that lost words, else None.
+
+    services/fulltext/text_search.py writes such a term as (every word OR
+    core): "physical exercise", found in 1 dataset, searches "exercise". The
+    datasets with every word are confirmed; those with the core alone are
+    probable ("missing: physical"). Recognised as an OR of two text searches
+    whose right side uses only some of the left side's words.
+    """
+    if not isinstance(node, exp.Or):
+        return None
+    if any(not column.name.lower().startswith("search_tsv") for column in node.find_all(exp.Column)):
+        return None
+    every_word = node.left.sql(dialect="postgres")
+    core = node.right.sql(dialect="postgres")
+    # A topic search (phrase OR alternatives AND NOT unwanted meanings, or a
+    # 'near' search) has its own weaker forms (text.relax_text_condition).
+    if node.find(exp.Not) is not None or _DISTANCE_RE.search(every_word):
+        return None
+    words, core_words = _positive_words(every_word), _positive_words(core)
+    if not core_words or not core_words < words:
+        return None
+    return ClauseEvidence(kind="text", alias=alias, sql=every_word, evidence=(
+        # The core only in a paper: the rows the core's own paper form had before.
+        *_paper_only(core, papers),
+        CoreOfTerm(core, missing=tuple(sorted(words - core_words))),
+    ))
+
+
 def _paper_only(sql: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
     """The evidence that the text searches of *sql* match only in a paper;
     none without paper text or without a positive text search."""
@@ -164,6 +204,10 @@ def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]
         return sidecar(node, alias)
     if kind == "patient_count":
         return _patient_count(sql, alias)
+    if kind == "text":
+        loose = loose_term(node, alias, papers)
+        if loose is not None:
+            return loose
     # Part of a text search the condition holds, anywhere in the text.
     relaxed = relax_text_condition(sql)
     weaker_search: Tuple[PieceOfEvidence, ...] = (relaxed,) if relaxed else ()

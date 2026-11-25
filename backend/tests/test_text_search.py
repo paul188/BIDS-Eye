@@ -326,12 +326,14 @@ def test_vocabulary_miss_filter_is_added_once_and_keeps_or_groups_intact() -> No
     assert filter_sql.lower() in rewritten.sql.lower()
     if sql_rewriter.parse_one is not None:
         # The old filter is parenthesised, so its OR cannot bypass the new one.
-        assert re.search(r"@@ TO_TSQUERY\('english', 'tracking'\) AND \(", rewritten.sql, re.I)
+        assert re.search(r"@@ TO_TSQUERY\('english', 'tracking'\)\) AND \(", rewritten.sql, re.I)
     assert rewritten.rank_query == RankQuery("eye | tracking")
 
     copied = BASE + "WHERE TEXT_MATCH('eye tracking', 'loose') GROUP BY d.id"
     again = SERVICE.rewrite_generated_sql(copied, augmented)
-    assert again.sql.lower().count("search_tsv @@") == 1
+    # Once: (both words OR the core), as a loose term that lost a word is written.
+    assert again.sql.lower().count("'eye & tracking'") == 1
+    assert again.sql.lower().count("search_tsv @@") == 2
 
 
 def test_page_sql_orders_by_structured_score_plus_text_rank() -> None:

@@ -240,3 +240,51 @@ def test_guarded_pair_in_extra_parentheses_stays_whole() -> None:
 def test_rare_never_stands_for_rare_diseases() -> None:
     # "rare" alone found the RARE MRI sequence of mouse studies (live, 2026-11-20).
     assert tier_text.relax_tsquery("rare & diseases") is None
+
+
+def _physical_exercise(monkeypatch) -> str:
+    # Live counts (2026-11-21): "physical" 43, "exercise" 8, both together 1.
+    counts = {"physical": 43, "exercise": 8, "exercise & physical": 1, "physical & exercise": 1}
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda qs: [counts.get(q, 0) for q in qs])
+    from services.fulltext import text_search
+    return text_search.expand_text_search(
+        BASE.format(where="text_match('physical exercise', 'loose')"), papers=False).sql
+
+
+def test_loose_term_that_lost_words_keeps_every_word_for_the_tier(monkeypatch) -> None:
+    """"physical exercise" searched "exercise" alone: breathing and visualization
+    exercises came back as confirmed matches (live, 2026-11-21)."""
+    sql = _physical_exercise(monkeypatch)
+    # Same rows as the core alone: (every word OR core).
+    assert ("(d.search_tsv @@ to_tsquery('english', 'physical & exercise') "
+            "OR d.search_tsv @@ to_tsquery('english', 'exercise'))") in sql
+
+
+def test_loose_term_confirms_every_word_and_calls_the_core_probable(monkeypatch) -> None:
+    tree = sqlglot.parse_one(_physical_exercise(monkeypatch), read="postgres")
+    (node,) = ut._flatten_and(tree.args["where"].this)
+    condition = ut.classify(node, "d")
+    assert condition.sql == "d.search_tsv @@ TO_TSQUERY('english', 'physical & exercise')"
+    assert condition.probable == "d.search_tsv @@ TO_TSQUERY('english', 'exercise')"
+    assert condition.weaker[-1].reason() == "matches only part of the search; missing: physical"
+    tiered = ut.apply(_physical_exercise(monkeypatch), papers=False)
+    sqlglot.parse_one(tiered, read="postgres")
+
+
+def test_a_term_with_all_its_words_is_not_wrapped(monkeypatch) -> None:
+    counts = {"eye": 50, "tracking": 30, "tracking & eye": 12}
+    monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda qs: [counts.get(q, 0) for q in qs])
+    from services.fulltext import text_search
+    sql = text_search.expand_text_search(
+        BASE.format(where="text_match('eye tracking', 'loose')"), papers=False).sql
+    assert sql.count("search_tsv @@") == 1
+
+
+def test_topic_search_is_not_taken_for_a_loose_term() -> None:
+    where = ("(d.search_tsv @@ to_tsquery('english', 'social & conflict') OR "
+             "(d.search_tsv @@ to_tsquery('english', 'conflict') AND NOT "
+             "d.search_tsv @@ to_tsquery('english', 'cognitive')))")
+    tree = sqlglot.parse_one(BASE.format(where=where), read="postgres")
+    (node,) = ut._flatten_and(tree.args["where"].this)
+    from services.uncertain import classify as tier_classify
+    assert tier_classify.loose_term(node.this if isinstance(node, sqlglot.exp.Paren) else node, "d") is None
