@@ -192,7 +192,7 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
       <span v-else class="text-ink break-words">{{ dataset.name }}</span>
     </h3>
     <p v-if="authorLine || institutionLine" class="-mt-0.5 text-[13px] text-muted break-words">
-      <span v-if="authorLine">{{ authorLine }}</span>
+      <span v-if="authorLine" class="text-author">{{ authorLine }}</span>
       <span v-if="authorLine && institutionLine"> — </span>
       <span v-if="institutionLine">{{ institutionLine }}</span>
     </p>
@@ -207,8 +207,11 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
     </p>
 
     <!-- Why it matched: the recorded values, files or text that satisfied each filter -->
-    <p v-if="dataset.match_reasons?.length" class="text-[13px] text-muted">
-      <span class="font-semibold text-ink/80">Matched:</span>
+    <p
+      v-if="dataset.match_reasons?.length"
+      class="my-0.5 max-w-3xl rounded-r-md border-l-[3px] border-accent bg-panel-soft px-2.5 py-1.5 text-[13px] text-ink break-words"
+    >
+      <span class="mr-1 font-semibold">Matched:</span>
       {{ dataset.match_reasons.join(' · ') }}
     </p>
 

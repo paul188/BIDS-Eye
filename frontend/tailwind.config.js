@@ -24,6 +24,8 @@ export default {
         'accent-soft':  '#eef0f3',
         link:           '#1a40b0',
         'link-visited': '#5b34a6',
+        // Author names on the dataset card.
+        author:         '#2f6b2f',
         ink:            '#1b1f24',
         muted:          '#555c69',
         'muted-soft':   '#697080',

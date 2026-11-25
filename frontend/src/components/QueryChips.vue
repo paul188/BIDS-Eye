@@ -87,9 +87,5 @@ const openLists = computed(() =>
         </ul>
       </template>
     </div>
-
-    <p v-if="filters.some(isTextChip)" class="text-xs text-muted-soft">
-      Violet chips (Text, Topic) match words in the dataset text.
-    </p>
   </div>
 </template>
