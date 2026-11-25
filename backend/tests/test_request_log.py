@@ -226,6 +226,37 @@ def test_log_format_chooses_the_lines(monkeypatch, value, formatter):
     assert type(LogFormat.from_environment().formatter()) is formatter
 
 
+@pytest.fixture
+def _loggers_put_back():
+    """configure() changes loggers of the whole process; undo that."""
+    names = ("uvicorn", "uvicorn.access", "sqlalchemy.engine.Engine")
+    before = {name: (logging.getLogger(name).handlers[:], logging.getLogger(name).propagate)
+              for name in names}
+    yield
+    for name, (handlers, propagate) in before.items():
+        logging.getLogger(name).handlers = handlers
+        logging.getLogger(name).propagate = propagate
+
+
+@pytest.mark.parametrize("name", ["uvicorn", "sqlalchemy.engine.Engine"])
+def test_a_logger_with_its_own_handler_writes_json_once(monkeypatch, _loggers_put_back, name):
+    # As SQLAlchemy does for an engine that echoes its SQL.
+    logging.getLogger(name).addHandler(logging.StreamHandler())
+    monkeypatch.setenv(request_log.LOG_FORMAT_VARIABLE, "json")
+
+    request_log.configure()
+
+    logger = logging.getLogger(name)
+    assert [type(handler.formatter) for handler in logger.handlers] == [JsonFormatter]
+    assert logger.propagate is False  # or the root handler would write the line again
+
+
+def test_uvicorns_access_line_is_dropped(_loggers_put_back):
+    logging.getLogger("uvicorn.access").addHandler(logging.StreamHandler())
+    request_log.configure()
+    assert not logging.getLogger("uvicorn.access").hasHandlers()
+
+
 @pytest.mark.parametrize("value", ["JSON", "true", ""])
 def test_any_other_log_format_stops_the_start(monkeypatch, value):
     monkeypatch.setenv(request_log.LOG_FORMAT_VARIABLE, value)

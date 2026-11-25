@@ -12,8 +12,8 @@ One ID per HTTP request, on every log line written while it is handled.
   logs it too, including the translation in asyncio.to_thread.
 - configure() sets up logging for the whole process. LOG_FORMAT chooses the
   lines: "text" (the default) or "json", one object per line. uvicorn's own
-  messages get the same format; its access line is dropped for the
-  middleware's.
+  messages and SQLAlchemy's echoed SQL get the same format; uvicorn's access
+  line is dropped for the middleware's.
 
 Lines written outside a request (startup, the crawler) have no ID.
 The logs name no user.
@@ -140,11 +140,13 @@ def configure() -> None:
     handler.setFormatter(LogFormat.from_environment().formatter())
     logging.basicConfig(level=logging.INFO, handlers=[handler])
 
-    # uvicorn's messages go through the handler above instead of its own.
-    for name in ("uvicorn", "uvicorn.error"):
-        uvicorn_logger = logging.getLogger(name)
-        uvicorn_logger.handlers.clear()
-        uvicorn_logger.propagate = True
+    # These write through a handler of their own (SQLAlchemy's when the
+    # engine echoes its SQL); they get ours instead, so each line is written
+    # once and in our format.
+    for name in ("uvicorn", "sqlalchemy.engine.Engine"):
+        own = logging.getLogger(name)
+        own.handlers = [handler]
+        own.propagate = False
     # The middleware writes the line per request.
     access = logging.getLogger("uvicorn.access")
     access.handlers.clear()
