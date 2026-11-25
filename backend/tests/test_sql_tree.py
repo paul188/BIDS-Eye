@@ -33,6 +33,7 @@ def test_only_a_select_is_a_select():
     ("d.name NOT ILIKE 'a' OR d.id = 1", "NOT d.name ILIKE 'a' OR d.id = 1"),
     ("(d.name NOT ILIKE 'a') IS TRUE", "(NOT d.name ILIKE 'a') IS TRUE"),
     ("EXISTS(SELECT 1 FROM t WHERE t.x NOT LIKE 'a')", "EXISTS(SELECT 1 FROM t WHERE NOT t.x LIKE 'a')"),
+    ("(d.name NOT LIKE 'a') NOT LIKE 'b'", "NOT (NOT d.name LIKE 'a') LIKE 'b'"),
     # Not the same as NOT (… ANY …): left as it is.
     ("d.name NOT ILIKE ANY(ARRAY['a'])", "d.name NOT ILIKE ANY(ARRAY['a'])"),
     ("d.name ILIKE 'a'", "d.name ILIKE 'a'"),
@@ -56,12 +57,24 @@ def test_not_like_is_read_as_a_not(written, read):
     ("FALSE = (d.name ILIKE 'a')", True),
     ("(d.name ILIKE 'a') IS NOT TRUE", True),
     ("(d.name ILIKE 'a') IS TRUE", False),
+    ("(d.name ILIKE 'a') <> TRUE", True),
+    ("(d.name ILIKE 'a') <> FALSE", False),
+    ("(d.name ILIKE 'a') IS DISTINCT FROM TRUE", True),
+    ("(d.name ILIKE 'a') IS NOT DISTINCT FROM FALSE", True),
+    ("(d.name ILIKE 'a') IS NULL", True),
+    ("(d.name ILIKE 'a') IS UNKNOWN", True),
+    ("NULLIF(d.name, '') IS NULL", False),   # the column is empty: no match is denied
     ("d.name ILIKE 'a' AND NOT d.species = 'b'", False),
 ])
 def test_under_negation(condition, negated):
     node = _where(condition)
     column = next(c for c in node.find_all(exp.Column) if c.name == "name")
     assert sql_tree.under_negation(column, node) is negated
+
+
+def test_a_node_that_is_a_negation_is_negated():
+    like_any = _where("d.name NOT ILIKE ANY(ARRAY['a'])")
+    assert sql_tree.under_negation(like_any, like_any)
 
 
 def test_ancestors_include_the_root_and_never_the_node():
@@ -87,3 +100,21 @@ def test_without_literals_holds_no_value():
     node = _where("d.name ILIKE '%parkinson%' AND d.age_min < 3")
     assert sql_tree.without_literals(node) == "d.name ILIKE ? AND d.age_min < ?"
     assert "parkinson" in node.sql()   # the node itself is unchanged
+
+
+@pytest.mark.parametrize("value", [
+    "'secret'", "$$secret$$", "$q$secret$q$", "E'secret'", "N'secret'", "'secret'::text",
+    "to_tsquery('english', 'secret')", "(d.j ->> 'secret')", "'a' /* secret */",
+])
+def test_without_literals_leaves_no_word_of_any_kind_of_string(value):
+    assert "secret" not in sql_tree.without_literals(_where(f"d.name = {value}")).lower()
+
+
+@pytest.mark.parametrize("value", ["B'101'", "X'1F'"])
+def test_without_literals_leaves_no_bit_string(value):
+    assert sql_tree.without_literals(_where(f"d.name = {value}")) == "d.name = ?"
+
+
+def test_without_literals_writes_postgres():
+    node = _where("d.search_tsv @@ to_tsquery('english', 'secret')")
+    assert sql_tree.without_literals(node) == "d.search_tsv @@ TO_TSQUERY(?, ?)"

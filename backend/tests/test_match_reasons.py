@@ -147,6 +147,7 @@ _POSITIVE = {
 _DENIALS = {
     "NOT": "NOT {}", "NOT ()": "NOT ({})", "NOT (OR)": "NOT ({} OR d.id IS NULL)",
     "IS FALSE": "({}) IS FALSE", "= FALSE": "({}) = FALSE", "IS NOT TRUE": "({}) IS NOT TRUE",
+    "<> TRUE": "({}) <> TRUE", "IS DISTINCT FROM TRUE": "({}) IS DISTINCT FROM TRUE", "IS NULL": "({}) IS NULL",
     "NOT LIKE": " NOT LIKE ", "NOT ILIKE": " NOT ILIKE ", "NOT IN": " NOT IN ", "!~*": " !~* ",
 }
 
