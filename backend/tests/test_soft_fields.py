@@ -55,7 +55,7 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
     assert "uk.handedness IS NOT NULL" in soft.known
     assert soft.not_recorded.reason() == "handedness not recorded"
     # Recorded values that do not fit contradict, as for ages and sex.
-    assert soft.state_sql().endswith("ELSE 9 END") and "WHEN NOT (EXISTS" in soft.state_sql()
+    assert soft.state_sql().endswith("ELSE 3 END") and "WHEN NOT (EXISTS" in soft.state_sql()
 
 
 def test_text_evidence_must_say_why():

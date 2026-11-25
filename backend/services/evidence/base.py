@@ -72,12 +72,12 @@ class Strength(IntEnum):
     """What the evidence says about one AND condition of a search. A dataset
     is as strong as its weakest condition (the uncertain_level column).
 
-    The numbers leave the backend in that column (the result cards and the
-    benchmarks read them): do not renumber."""
+    The numbers are an order, best first, not scores. Cards and benchmarks
+    read 0 to 2: do not renumber them."""
     CONFIRMED = 0      # the condition holds
     PROBABLE = 1       # a weaker form of it holds
     POSSIBLE = 2       # what it asks about is not recorded, and nothing hints either way
-    CONTRADICTED = 9   # recorded, and it does not fit
+    CONTRADICTED = 3   # recorded, and it does not fit
 
 
 # The score of a piece of evidence whose kind has not been measured

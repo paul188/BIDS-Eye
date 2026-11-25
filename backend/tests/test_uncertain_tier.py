@@ -57,7 +57,7 @@ def test_modality_stays_hard_and_text_becomes_a_tier() -> None:
     # The modality filter is kept as it is; the text filter gets its weaker form.
     assert "o2.datatype = 'functional_mri'" in tiered
     assert "TO_TSQUERY('english', 'children')" in tiered
-    assert "evidence.u0 < 9" in tiered
+    assert "evidence.u0 < 3" in tiered
     sqlglot.parse_one(tiered, read="postgres")
 
 
@@ -68,8 +68,8 @@ def test_age_condition_knows_missing_ages_and_contradictions() -> None:
     assert "d.age_min IS NOT NULL OR d.age_max IS NOT NULL" in tiered   # recorded-ages check
     assert "ages not recorded" in tiered
     assert "children" in tiered                                          # README hint for the age group
-    # Recorded ages that do not fit are a contradiction (9), never "possible".
-    assert "ELSE 9 END" in tiered
+    # Recorded ages that do not fit are a contradiction (3), never "possible".
+    assert "ELSE 3 END" in tiered
 
 
 def test_without_the_possible_tier_missing_fields_need_a_hint(monkeypatch) -> None:
@@ -117,7 +117,7 @@ def test_paper_text_is_second_tier_evidence() -> None:
     assert "found only in a paper the dataset names" in tiered
     # Confirmation still uses the dataset's own text.
     assert "(d.search_tsv @@ TO_TSQUERY('english', 'placebo')) AS confirmed_0" in tiered
-    assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN ev.probable_0 THEN 1 ELSE 9 END AS u0" in tiered
+    assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN ev.probable_0 THEN 1 ELSE 3 END AS u0" in tiered
 
 
 def test_the_dataset_alias_of_the_query_is_used() -> None:
@@ -140,12 +140,12 @@ def test_each_condition_is_evaluated_once_per_evidence_kind() -> None:
     # The paper is the only weaker evidence here: probable_0 already says it.
     assert "paper_0" not in tiered
     assert "WHEN evidence.u0 = 1 THEN 'found only in a paper the dataset names'" in tiered
-    assert "ELSE 9 ELSE 9" not in tiered and "THEN 9 ELSE 9" not in tiered
+    assert "ELSE 3 ELSE 3" not in tiered and "THEN 3 ELSE 3" not in tiered
     # With a second kind of weaker evidence a flag tells the paper apart.
     two = ut.apply(BASE.format(where=f"{MODALITY} AND d.search_tsv @@ "
                                      "to_tsquery('english', 'young & children')"), papers=True)
     assert two.count("AS paper_0") == 1 and two.count("AS text_0") == 1 and "probable_0" not in two
-    assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN (ev.paper_0 OR ev.text_0) THEN 1 ELSE 9 END AS u0" in two
+    assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN (ev.paper_0 OR ev.text_0) THEN 1 ELSE 3 END AS u0" in two
     assert "WHEN evidence.u0 = 1 AND evidence.paper_0 THEN 'found only in a paper" in two
     assert "WHEN evidence.u0 = 1 THEN 'matches only part of the search; missing: young'" in two
 

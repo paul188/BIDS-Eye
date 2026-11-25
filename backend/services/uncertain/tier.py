@@ -22,7 +22,7 @@ that holds for the dataset gives the state:
                      on), or, for a missing field, the README names the asked
                      group ("children" for an age filter up to 12)
     2  possible      the field is not recorded and nothing hints either way
-    9  contradicted  the dataset records the field and it does not fit
+    3  contradicted  the dataset records the field and it does not fit
 
 Only conditions on fields that can be missing (ages, diagnosis, sex, the
 field strength and scanner make or model in the sidecars) or on text can be

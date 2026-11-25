@@ -49,7 +49,7 @@ def test_real_query_sample_covers_the_known_shapes() -> None:
     _GOOD,
     # the uncertain tier's wrapper
     "SELECT tb.*, ut.lvl FROM (" + _GOOD + ") AS tb CROSS JOIN LATERAL (SELECT 1 AS lvl FROM bids_datasets AS d "
-    "WHERE d.id = tb.id) AS ut WHERE ut.lvl < 9",
+    "WHERE d.id = tb.id) AS ut WHERE ut.lvl < 3",
     "SELECT tb.* FROM (" + _GOOD + ") AS tb, LATERAL (SELECT 1 AS x) AS ut",
     # same subject has MEG and rest
     "SELECT d.id FROM bids_datasets AS d WHERE EXISTS (SELECT 1 FROM bids_objects AS a JOIN bids_objects AS b "
