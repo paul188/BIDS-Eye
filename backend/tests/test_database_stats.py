@@ -12,7 +12,7 @@ from sqlalchemy.exc import ProgrammingError
 from constants import OPTIONAL_DATASET_COLUMNS
 from services.database_stats.database_stats import ColumnCoverage, DatabaseStats, Names, Summaries, ValueCounts, database_stats
 from services.schema import tables
-from services.schema.check import MissingSchemaError, check_schema
+from services.schema.check import MissingSchemaError, check_schema, sql_type
 
 # Coded values as load() fills them: value → datasets.
 KNOWN = {
@@ -316,7 +316,7 @@ def test_the_shared_instance_starts_empty() -> None:
 # ── Schema ────────────────────────────────────────────────────────────────────
 
 def _all_columns(*, without=()):
-    return [(table.name, column.name) for table in tables.MIGRATED_TABLES
+    return [(table.name, column.name, sql_type(column)) for table in tables.MIGRATED_TABLES
             for column in table.columns if (table.name, column.name) not in without]
 
 
@@ -329,6 +329,13 @@ def test_a_complete_schema_passes(monkeypatch) -> None:
 def test_a_missing_column_stops_startup_and_names_its_migration() -> None:
     connection = _Connection(columns=_all_columns(without={("bids_datasets", "readme_text")}))
     with pytest.raises(MissingSchemaError, match=r"bids_datasets\.readme_text \(crawlers/migrate_add_openneuro_metadata\.sql\)"):
+        asyncio.run(check_schema(connection))
+
+
+def test_a_column_with_another_type_stops_startup() -> None:
+    columns = _all_columns(without={("bids_datasets", "downloads")})
+    connection = _Connection(columns=columns + [("bids_datasets", "downloads", "text")])
+    with pytest.raises(MissingSchemaError, match=r"bids_datasets\.downloads is text, declared integer"):
         asyncio.run(check_schema(connection))
 
 
