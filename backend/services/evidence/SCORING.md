@@ -102,10 +102,20 @@ some clause can be confirmed by two groups.
 
 `EvidenceFirst` sorts by it after the strength, the judgment and the user's
 own words, and before the score of the text and the codes. Measured on
-2026-11-25 against the order without it, same SQL for both: nDCG@10 up 0.009
-on 136 development questions (95% interval 0.002 to 0.017) and 0.011 on 56
-gold requests (-0.001 to 0.029); recall@20 did not change on development.
-Placed after the score it changes nothing. The held-out questions were not used.
+2026-11-25 against the order without it, same SQL for both, without the
+language model's judgment:
+
+| Questions | nDCG@10 | 95% interval | Order changed |
+|---|---|---|---|
+| 140 development | +0.010 | 0.003 to 0.018 | 15 |
+| 56 gold requests | +0.011 | -0.001 to 0.029 | 7 |
+| 56 held-out, run once | +0.003 | 0.000 to 0.007 | 4 |
+
+Recall@20 hardly moves (at most +0.004). Placed after the score it changed
+nothing on development and gold. First-page queries with the column took 4%
+longer at the median on development (54 ms) and 5% on held-out (44 ms).
+The code scores were rebuilt from the SQL at 1.0 each, except on gold, where
+the recorded ones were used and the text rank was rebuilt instead.
 
 ## A query
 
