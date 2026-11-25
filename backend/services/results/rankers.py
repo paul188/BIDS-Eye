@@ -18,6 +18,9 @@ What a row carries (ResultColumns):
                      the same among the conditions of one kind ("age",
                      "diagnosis", "text", …), to tell apart which condition
                      a dataset is unsure about
+  evidence_score     0 to 1: the scores of the query's conditions multiplied,
+                     each the score of the piece of evidence that decided it
+                     (services/uncertain/conditions.QueryEvidence)
   judged_order       where the language model's judgment of the first
                      candidates put it (services/results/rerank.py)
   other_words_only   it matches only the words a search was widened with,
@@ -62,13 +65,18 @@ class ResultColumns:
     has_scores: bool = False
     has_subjects: bool = False
     # (kind, column) for each kind of condition the search has
-    # (SoftCondition.kind; services/uncertain/tier.kind_level_columns).
+    # (ClauseEvidence.kind; services/uncertain/tier.kind_level_columns).
     evidence_columns: Tuple[Tuple[str, str], ...] = ()
 
     @property
     def weakest_evidence(self) -> SortTerm:
         """Confirmed results first, then probable, then possible."""
         return SortTerm(f"{self.row}.uncertain_level")
+
+    @property
+    def evidence_score(self) -> SortTerm:
+        """The dataset whose evidence counts for more first."""
+        return SortTerm(f"{self.row}.evidence_score", descending=True)
 
     def weakest_evidence_for(self, kind: str) -> Optional[SortTerm]:
         """Datasets whose conditions of *kind* are confirmed first; None when

@@ -25,7 +25,7 @@ class SoftField:
     contradicted when recorded values do not fit, and uncertain when nothing
     is recorded. The fields differ only in what is written here.
     """
-    # Names the field in SoftCondition.kind.
+    # Names the field in ClauseEvidence.kind.
     kind: str
     # How a result card names it: "ages not recorded".
     label: str
@@ -40,6 +40,9 @@ class SoftField:
     paper_evidence: bool = True
     # Text evidence counts although the field is recorded with other values.
     text_beats_recorded: bool = False
+    # PieceOfEvidence.score of a dataset that records nothing and gives no
+    # hint, where it was measured; None: the default of that strength.
+    unrecorded_score: Optional[float] = None
 
 
 def participant_rows_record(column: str) -> Callable[[str], str]:

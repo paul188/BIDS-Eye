@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import NamedInOwnText
-from services.uncertain.conditions import (SoftCondition, own_text, own_text_matches, possible_enabled,
+from services.uncertain.conditions import (ClauseEvidence, own_text, own_text_matches, possible_enabled,
                                            sql_literal)
 from services.schema.tables import objects as _objects
 
@@ -282,7 +282,7 @@ def _strength_tsquery(strengths: Sequence[float]) -> str:
     return " | ".join(dict.fromkeys(words))
 
 
-def sidecar(node, alias: str) -> Optional[SoftCondition]:
+def sidecar(node, alias: str) -> Optional[ClauseEvidence]:
     """A field strength, manufacturer or model condition with its text venue.
 
     Confirmed: the sidecars hold the value (as asked). Probably relevant: no
@@ -333,7 +333,7 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
             return None
     named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select)
     as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
-    return SoftCondition(kind="sidecar", alias=alias, sql=as_generated, ctes=tuple(ctes), evidence=(
+    return ClauseEvidence(kind="sidecar", alias=alias, sql=as_generated, ctes=tuple(ctes), evidence=(
         OtherValuesRecorded(named.key_recorded),
         named,
         NotInFileMetadata(_SIDECAR_LABELS[key]),

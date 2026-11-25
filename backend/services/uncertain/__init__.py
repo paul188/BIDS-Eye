@@ -3,7 +3,7 @@
   tier.py        the entry: gives each condition of the generated SQL a state per dataset
   classify.py    the evidence a condition can have, by kind: text, age, diagnosis,
                  sex, scanner, patient count
-  conditions.py  SoftCondition (one condition, its evidence in the order it
+  conditions.py  ClauseEvidence (one condition, its evidence in the order it
                  counts) and what the parts share
   text.py        weaker forms of a text search
   fields/        the fields a dataset may not record, one file each (age,

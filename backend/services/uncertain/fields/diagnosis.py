@@ -22,4 +22,7 @@ FIELD = SoftField(
     # Coded diagnoses are often incomplete: a dataset that codes some other
     # diagnosis may still study the asked one.
     text_beats_recorded=True,
+    # 3.2% of 95 judged rows relevant, against 86.1% of confirmed rows
+    # (recall benchmark, LLM judge, 2026-11-13).
+    unrecorded_score=0.04,
 )

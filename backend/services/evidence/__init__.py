@@ -3,11 +3,11 @@
 A condition ("ages under 3", "epilepsy", "7 T") can be met in several ways:
 the participant list records it, a column of the dataset holds it, the files
 show it, the title, the README or a linked paper names it, or nothing is
-recorded and a default is assumed. Each way is one Evidence: where it was
+recorded and a default is assumed. Each way is one PieceOfEvidence: where it was
 found (its source), what it proves (its strength), the SQL that is true for a
 dataset it holds for, and the text a result card shows.
 
-  base.py          Evidence, where it is found (Source) and what it proves (Strength)
+  base.py          PieceOfEvidence, where it is found (Source) and what it proves (Strength)
 
 One file per strength; a kind holds what it is about and writes its SQL and
 its card text from that:
@@ -17,12 +17,14 @@ its card text from that:
   possible.py      the field is not recorded
   contradicted.py  the field is recorded with other values
 
-Evidence is about one condition of a query. The query combines its
-conditions: services/uncertain/conditions.QueryEvidence (the weakest
-condition decides; it writes what a result card says).
+Three sizes, each made of the one before:
+  PieceOfEvidence  one way one condition is met (this package)
+  ClauseEvidence   one condition (AND clause) of a query and its pieces, in
+                   the order they count (services/uncertain/conditions.py)
+  QueryEvidence    the whole query: its clauses combined (same file)
 
 Used by results/match_reasons.py (why a confirmed result matched: one
 ConfirmedMatch per OR branch of a condition) and by services/uncertain/
 (which state a condition has for a dataset it does not hold for: an ordered
-list of Evidence, the first that holds decides).
+list of pieces, the first that holds decides).
 """

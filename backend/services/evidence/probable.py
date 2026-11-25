@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Sequence, Tuple
 
-from services.evidence.base import Evidence, Source, Strength
+from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ class TextSearch:
 
 
 @dataclass(frozen=True)
-class PaperOnly(Evidence):
+class PaperOnly(PieceOfEvidence):
     """The condition's text searches match a paper the dataset names, not its
     own text. *searches* are without weight labels: paper text carries the
     lowest weight, so a search scoped to the name could never reach it."""
@@ -104,7 +104,7 @@ class WeakenedSearch:
 
 
 @dataclass(frozen=True)
-class WeakerSearch(Evidence):
+class WeakerSearch(PieceOfEvidence):
     """Some text search of the condition matches in a weaker form."""
     searches: Tuple[WeakenedSearch, ...]
     source: Source = field(default=Source.TEXT, kw_only=True)
@@ -112,6 +112,12 @@ class WeakerSearch(Evidence):
 
     def sql(self, alias: str) -> Optional[str]:
         return " OR ".join(dict.fromkeys(search.sql(alias) for search in self.searches))
+
+    def score(self) -> float:
+        # 31.7% of 555 judged rows relevant, against 86.1% of confirmed rows
+        # (recall benchmark, LLM judge, 2026-11-13;
+        # reports/Probabilistic ranking for Bids Eye search.md).
+        return 0.37
 
     def _words(self, weakening: Weakening) -> List[str]:
         return list(dict.fromkeys(word for search in self.searches
@@ -138,7 +144,7 @@ class WeakerSearch(Evidence):
 
 
 @dataclass(frozen=True)
-class CoreOfTerm(Evidence):
+class CoreOfTerm(PieceOfEvidence):
     """A term the generated query shortened to its core ("physical exercise"
     searched as "exercise", services/fulltext/text_search.py): the dataset
     has the core and not the *missing* words."""
@@ -155,7 +161,7 @@ class CoreOfTerm(Evidence):
 
 
 @dataclass(frozen=True)
-class NamedInOwnText(Evidence):
+class NamedInOwnText(PieceOfEvidence):
     """The dataset's name, description or README names the value the condition
     asks of a field: "22 women", "infants", "7T". Each field has its subclass,
     which holds the asked value and writes sql() and reason()."""

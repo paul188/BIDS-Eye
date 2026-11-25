@@ -10,11 +10,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from services.evidence.base import Evidence, Source, Strength
+from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
-class OtherValuesRecorded(Evidence):
+class OtherValuesRecorded(PieceOfEvidence):
     """The dataset records the field, and the condition does not hold: a
     contradiction.
 

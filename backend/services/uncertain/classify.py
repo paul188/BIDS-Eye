@@ -18,9 +18,9 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.uncertain.conditions import LABEL_RE, SoftCondition, TSQUERY_RE
+from services.uncertain.conditions import LABEL_RE, ClauseEvidence, TSQUERY_RE
 from services.uncertain.text import negated_spans, relax_text_condition
-from services.evidence.base import Evidence, Source, Strength
+from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import PaperOnly, TextSearch
@@ -140,15 +140,15 @@ def paper_searches(sql: str) -> Tuple[TextSearch, ...]:
     return tuple(searches)
 
 
-def _paper_only(sql: str, papers: bool) -> Tuple[Evidence, ...]:
+def _paper_only(sql: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
     """The evidence that the text searches of *sql* match only in a paper;
     none without paper text or without a positive text search."""
     searches = paper_searches(sql) if papers else ()
     return (PaperOnly(searches),) if searches else ()
 
 
-def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
-    """A SoftCondition for a condition that may be uncertain, else None.
+def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
+    """A ClauseEvidence for a condition that may be uncertain, else None.
 
     *papers*: the database has paper text and it may serve as evidence.
     """
@@ -166,7 +166,7 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
         return _patient_count(sql, alias)
     # Part of a text search the condition holds, anywhere in the text.
     relaxed = relax_text_condition(sql)
-    weaker_search: Tuple[Evidence, ...] = (relaxed,) if relaxed else ()
+    weaker_search: Tuple[PieceOfEvidence, ...] = (relaxed,) if relaxed else ()
     paper = _paper_only(sql, papers)
     if kind != "text":
         # A field a dataset may not record. What is particular to the field
@@ -175,23 +175,23 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
         # The dataset's own text names the asked value: counts in place of a
         # part of the search.
         named = field.named_in_text(node) if field.named_in_text else None
-        weaker: Tuple[Evidence, ...] = (named,) if named is not None else weaker_search
+        weaker: Tuple[PieceOfEvidence, ...] = (named,) if named is not None else weaker_search
         if field.paper_evidence:
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
             weaker = paper + weaker
         record = OtherValuesRecorded(field.recorded)
-        not_recorded = NotRecorded(field.label)
+        not_recorded = NotRecorded(field.label, field.unrecorded_score)
         evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
                     else (record, *weaker, not_recorded))
-        return SoftCondition(kind=kind, alias=alias, sql=sql, evidence=evidence)
+        return ClauseEvidence(kind=kind, alias=alias, sql=sql, evidence=evidence)
     if relaxed or paper:
-        return SoftCondition(kind="text", alias=alias, sql=sql, evidence=(*paper, *weaker_search))
+        return ClauseEvidence(kind="text", alias=alias, sql=sql, evidence=(*paper, *weaker_search))
     return None
 
 
 @dataclass(frozen=True)
-class PatientsNotCounted(Evidence):
+class PatientsNotCounted(PieceOfEvidence):
     """"At least *minimum* participants with one of *codes*": the dataset
     does not record who has the diagnosis and is large enough to hold them."""
     codes: Tuple[str, ...]
@@ -211,7 +211,7 @@ class PatientsNotCounted(Evidence):
         return "how many participants have the diagnosis is not recorded"
 
 
-def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
+def _patient_count(sql: str, alias: str) -> Optional[ClauseEvidence]:
     """"At least N participants with the diagnosis" (RAG/cohort_count.py).
 
     Confirmed when that many are coded or labelled with it. Uncertain when the
@@ -232,6 +232,6 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
         stored = bool(database_stats.summaries.subject_counts)
     except ImportError:
         pass
-    return SoftCondition(kind="patient_count", alias=alias, sql=sql, evidence=(
+    return ClauseEvidence(kind="patient_count", alias=alias, sql=sql, evidence=(
         PatientsNotCounted(tuple(codes), minimum, stored),
     ))

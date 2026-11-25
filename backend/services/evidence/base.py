@@ -1,7 +1,7 @@
 """
 services/evidence/base.py
 -------------------------
-Evidence: one way a dataset can meet a condition of a search. What the kinds
+PieceOfEvidence: one way a dataset can meet a condition of a search. What the kinds
 of evidence are and who uses them: services/evidence/__init__.py.
 """
 
@@ -14,6 +14,13 @@ from typing import Optional
 
 
 # ── Where evidence is found ───────────────────────────────────────────────────
+
+class SourceGroup(str, Enum):
+    """Sources that repeat each other: what the title says the README says too."""
+    RECORDS = "records"     # the participant list, the dataset's columns, its files
+    OWN_TEXT = "own_text"   # title, description and README, written by the dataset's authors
+    PAPER = "paper"         # a paper the dataset names
+
 
 class Source(str, Enum):
     """Where a piece of evidence was found."""
@@ -35,6 +42,16 @@ class Source(str, Enum):
         # The value, on every Python version (format() of a str enum changed in 3.11).
         return self.value
 
+    @property
+    def group(self) -> SourceGroup:
+        """Whose statement it is. Evidence of one group says one thing once
+        (services/evidence/SCORING.md)."""
+        if self is Source.PAPER:
+            return SourceGroup.PAPER
+        if self in (Source.SHORT_TEXT, Source.TEXT, Source.README):
+            return SourceGroup.OWN_TEXT
+        return SourceGroup.RECORDS
+
 
 # ── What evidence proves ──────────────────────────────────────────────────────
 
@@ -50,10 +67,22 @@ class Strength(IntEnum):
     CONTRADICTED = 9   # recorded, and it does not fit
 
 
+# The score of a piece of evidence whose kind has not been measured
+# (PieceOfEvidence.score). Hand-set, not measured: probable lies between the
+# two measured probable kinds (0.37 and 0.53), possible between the two
+# measured unrecorded fields (0.04 and 0.33).
+DEFAULT_SCORES = {
+    Strength.CONFIRMED: 1.0,
+    Strength.PROBABLE: 0.4,
+    Strength.POSSIBLE: 0.1,
+    Strength.CONTRADICTED: 0.0,
+}
+
+
 # ── One piece of evidence ─────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
-class Evidence(ABC):
+class PieceOfEvidence(ABC):
     """One way a dataset can meet a condition.
 
     A kind of evidence is a subclass. It holds what it is about (the words
@@ -72,3 +101,10 @@ class Evidence(ABC):
     def reason(self) -> str:
         """What the result card says when this evidence decides; "" says nothing."""
         return ""
+
+    def score(self) -> float:
+        """How much a condition met this way counts, from 0 to 1: the share
+        of such datasets that are relevant, relative to a condition that
+        holds as generated. A kind that was measured says so itself;
+        the others have the default of their strength."""
+        return DEFAULT_SCORES[self.strength]

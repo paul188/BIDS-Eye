@@ -144,7 +144,8 @@ def test_each_condition_is_evaluated_once_per_evidence_kind() -> None:
     # With a second kind of weaker evidence a flag tells the paper apart.
     two = ut.apply(BASE.format(where=f"{MODALITY} AND d.search_tsv @@ "
                                      "to_tsquery('english', 'young & children')"), papers=True)
-    assert two.count("AS paper_0") == 1 and two.count("ev.paper_0") == 1
+    assert two.count("AS paper_0") == 1 and two.count("AS text_0") == 1 and "probable_0" not in two
+    assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN (ev.paper_0 OR ev.text_0) THEN 1 ELSE 9 END AS u0" in two
     assert "WHEN evidence.u0 = 1 AND evidence.paper_0 THEN 'found only in a paper" in two
     assert "WHEN evidence.u0 = 1 THEN 'matches only part of the search; missing: young'" in two
 

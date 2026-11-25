@@ -17,7 +17,7 @@ from typing import ClassVar, Dict, List, Optional, Tuple
 
 from sqlglot import exp
 
-from services.evidence.base import Evidence, Source, Strength
+from services.evidence.base import PieceOfEvidence, Source, Strength
 
 _MAX_VALUE_CHARS = 60
 
@@ -43,7 +43,7 @@ def _age(value: object) -> Optional[float]:
 
 
 @dataclass(frozen=True)
-class ConfirmedMatch(Evidence):
+class ConfirmedMatch(PieceOfEvidence):
     """One OR branch of a condition of the generated query. What the card
     says about it may need numbers or values from the database; a subclass
     names the columns it needs and writes the text from them."""

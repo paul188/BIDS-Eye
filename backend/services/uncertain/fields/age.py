@@ -78,6 +78,11 @@ class AgeGroupNamed(NamedInOwnText):
     def sql(self, alias: str) -> Optional[str]:
         return own_text_matches(alias, tsquery_for_words(self.words))
 
+    def score(self) -> float:
+        # 45.7% of 92 judged rows relevant, against 86.1% of confirmed rows
+        # (recall benchmark, LLM judge, 2026-11-13).
+        return 0.53
+
     def reason(self) -> str:
         return f"{NotRecorded(LABEL).reason()}; the title, description or README names the age group"
 
@@ -105,4 +110,7 @@ FIELD = SoftField(
     # children; the rest were adult studies citing child work (Sherlock, BCIT)
     # and two mouse datasets.
     paper_evidence=False,
+    # 28.6% of 21 judged rows relevant, against 86.1% of confirmed rows
+    # (recall benchmark, LLM judge, 2026-11-13).
+    unrecorded_score=0.33,
 )

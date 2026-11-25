@@ -2,7 +2,7 @@
 services/uncertain/conditions.py
 ------------------------------------
 The pieces every part of the uncertain tier shares: one condition with its
-evidence in the order it counts (SoftCondition), the evidence of the whole
+evidence in the order it counts (ClauseEvidence), the evidence of the whole
 query, which combines its conditions (QueryEvidence), the patterns that read
 a generated text search, and the switch for the 'possible' level. What the
 tier does: tier.py.
@@ -10,12 +10,34 @@ tier does: tier.py.
 
 from __future__ import annotations
 
+import math
 import os
 import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from services.evidence.base import Evidence, Strength
+from services.evidence.base import PieceOfEvidence, SourceGroup, Strength
+
+
+# How the pieces of evidence of a clause, and the clauses of a query, add up
+# to a score: services/evidence/SCORING.md. Both numbers are hand-set starting
+# values, to be measured.
+#
+# What a second group of sources adds to the strongest one, from 0 (nothing:
+# the groups say the same) to 1 (in full: they are independent).
+SHARED_EVIDENCE_DISCOUNT = 0.5
+# The power the clauses other than the weakest get in the query score, from
+# 0 (only the weakest clause counts: the minimum) to 1 (the product).
+CLAUSE_INDEPENDENCE = 1.0
+
+
+def log_weight(score: float) -> float:
+    """A score on the scale where independent evidence adds up: -ln(1 - score)."""
+    return -math.log(1 - score)
+
+
+def _greatest(terms: Sequence[str]) -> str:
+    return terms[0] if len(terms) == 1 else f"GREATEST({', '.join(terms)})"
 
 
 def possible_enabled() -> bool:
@@ -59,7 +81,7 @@ def own_text_matches(alias: str, query: str) -> str:
 
 
 @dataclass
-class SoftCondition:
+class ClauseEvidence:
     """One condition (AND clause) of the generated query that a dataset can
     fail without contradicting it, and the evidence for a dataset it does not
     hold for, in the order it counts. The first that holds gives the
@@ -78,7 +100,7 @@ class SoftCondition:
     kind: str                         # a field in fields/ (age, diagnosis, sex), text, sidecar or patient_count
     alias: str                        # the dataset row of the query
     sql: str                          # the condition as generated
-    evidence: Tuple[Evidence, ...]
+    evidence: Tuple[PieceOfEvidence, ...]
     # (name, SELECT) sets the condition reads more than once: computed once
     # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).
     ctes: Tuple[Tuple[str, str], ...] = ()
@@ -100,12 +122,12 @@ class SoftCondition:
     # ── The parts of the list ─────────────────────────────────────────────────
 
     @property
-    def weaker(self) -> Tuple[Evidence, ...]:
+    def weaker(self) -> Tuple[PieceOfEvidence, ...]:
         """The evidence for the probable state, in the order it counts."""
         return tuple(e for e in self.evidence if e.strength == Strength.PROBABLE)
 
     @property
-    def not_recorded(self) -> Optional[Evidence]:
+    def not_recorded(self) -> Optional[PieceOfEvidence]:
         """The evidence for the possible state."""
         return next((e for e in self.evidence if e.strength == Strength.POSSIBLE), None)
 
@@ -161,6 +183,57 @@ class SoftCondition:
         return (f"CASE WHEN {confirmed} THEN {yes} WHEN NOT {recorded} THEN "
                 f"CASE WHEN {weak} THEN {probably} ELSE {unrecorded} END ELSE {no} END")
 
+    def score_sql(self, state: str, holds: Sequence[str], recorded: Optional[str] = None) -> str:
+        """The score of the clause for a dataset, from 0 to 1
+        (services/evidence/SCORING.md): 1 when it holds as generated, 0 when
+        it is contradicted, else what its pieces of evidence add up to.
+
+        Pieces of one source group count once, by their strongest; a second
+        group adds SHARED_EVIDENCE_DISCOUNT of what it has above the field's
+        "not recorded" score, which every piece already contains.
+
+        *state*: the column with the clause's Strength. *holds*: for each
+        weaker piece, SQL that says whether it holds. *recorded*: SQL that
+        says the field is recorded, needed where weaker evidence counts
+        although it is (weaker_beats_record).
+        """
+        pieces = self.weaker
+        floor = self.not_recorded.score() if self.not_recorded is not None else 0.0
+        branches = [f"WHEN {state} = {int(Strength.CONFIRMED)} THEN 1"]
+        if pieces:
+            branches.append(f"WHEN {state} = {int(Strength.PROBABLE)} "
+                            f"THEN {self._probable_score_sql(holds, floor, recorded)}")
+        if self.not_recorded is not None:
+            branches.append(f"WHEN {state} = {int(Strength.POSSIBLE)} THEN {floor:g}")
+        return f"CASE {' '.join(branches)} ELSE 0 END"
+
+    def _probable_score_sql(self, holds: Sequence[str], floor: float, recorded: Optional[str]) -> str:
+        pieces = self.weaker
+        # The floor applies to a dataset that records nothing; where weaker
+        # evidence counts beside a record, only when there is none.
+        floor_always = floor > 0 and not self.weaker_beats_record
+        if len(pieces) == 1 and (floor_always or floor == 0 or pieces[0].score() >= floor):
+            # One piece, and it holds: nothing to combine.
+            return f"{max(pieces[0].score(), floor if floor_always else 0.0):g}"
+        floor_weight = None
+        if floor > 0:
+            floor_weight = (f"{log_weight(floor):.4f}" if floor_always
+                            else f"CASE WHEN NOT {recorded} THEN {log_weight(floor):.4f} ELSE 0 END")
+        of_group: Dict[SourceGroup, List[str]] = {}
+        for piece, piece_holds in zip(pieces, holds):
+            of_group.setdefault(piece.source.group, []).append(
+                f"CASE WHEN {piece_holds} THEN {log_weight(piece.score()):.4f} ELSE 0 END")
+        groups = [_greatest(terms) for terms in of_group.values()]
+        strongest = _greatest(groups if floor_weight is None else [floor_weight, *groups])
+        if len(groups) == 1:
+            return f"1 - EXP(-({strongest}))"
+        if floor_weight is None:
+            others = f"{' + '.join(groups)} - {strongest}"
+        else:
+            above_floor = [f"GREATEST({group} - {floor_weight}, 0)" for group in groups]
+            others = f"{' + '.join(above_floor)} - ({strongest} - {floor_weight})"
+        return f"1 - EXP(-({strongest} + {SHARED_EVIDENCE_DISCOUNT:g} * ({others})))"
+
     def keep_sql(self) -> str:
         """Pre-filter: the condition is not contradicted."""
         options = [f"({self.sql})"]
@@ -182,20 +255,30 @@ class QueryEvidence:
     Strength (state_column) and which weaker evidence held (flag_columns);
     tier.apply builds that row.
     """
-    conditions: Tuple[SoftCondition, ...]
+    conditions: Tuple[ClauseEvidence, ...]
     row: str = "evidence"   # SQL alias of that row
 
     def state_column(self, i: int) -> str:
         return f"u{i}"
 
     def flag_columns(self, i: int) -> List[str]:
-        """Columns that tell the weaker evidence of condition *i* apart, one
-        for each but the last: "paper_0" for evidence found in a paper."""
+        """Columns that say which weaker pieces of condition *i* hold, one
+        per piece: "paper_0" for evidence found in a paper. None for a
+        condition with a single weaker piece: its state says it."""
+        pieces = self.conditions[i].weaker
         names: List[str] = []
-        for j, piece in enumerate(self.conditions[i].weaker[:-1]):
+        for j, piece in enumerate(pieces if len(pieces) > 1 else ()):
             name = f"{piece.source.value}_{i}"
             names.append(f"{name}_{j}" if name in names else name)
         return names
+
+    def recorded_column(self, i: int) -> Optional[str]:
+        """The column that says the field of condition *i* is recorded, where
+        the score needs it (ClauseEvidence.score_sql)."""
+        clause = self.conditions[i]
+        if clause.weaker_beats_record and clause.not_recorded is not None:
+            return f"known_{i}"
+        return None
 
     def _states(self) -> List[str]:
         return [f"{self.row}.{self.state_column(i)}" for i in range(len(self.conditions))]
@@ -216,6 +299,25 @@ class QueryEvidence:
         for state, condition in zip(self._states(), self.conditions):
             of_kind.setdefault(condition.kind, []).append(state)
         return {kind: self._weakest(states) for kind, states in of_kind.items()}
+
+    def score_sql(self) -> str:
+        """The score of the query for the dataset, from 0 to 1
+        (services/evidence/SCORING.md): its weakest clause, times the other
+        clauses to the power CLAUSE_INDEPENDENCE. With 1 that is the product
+        of all clauses: the query is their AND, and taking the clauses as
+        independent, the product is the share of relevant datasets among
+        those with this evidence, relative to one that every clause confirms."""
+        scores = []
+        for i, (state, clause) in enumerate(zip(self._states(), self.conditions)):
+            flags = [f"{self.row}.{flag}" for flag in self.flag_columns(i)] or ["TRUE"]
+            recorded = self.recorded_column(i)
+            scores.append("(" + clause.score_sql(state, flags, f"{self.row}.{recorded}" if recorded else None) + ")")
+        product = " * ".join(scores)
+        if CLAUSE_INDEPENDENCE == 1 or len(scores) == 1:
+            return product
+        weakest = f"LEAST({', '.join(scores)})"
+        return (f"COALESCE({weakest} * POWER(({product}) / NULLIF({weakest}, 0), "
+                f"{CLAUSE_INDEPENDENCE:g}), 0)")
 
     def kept_sql(self, max_unsure: int) -> str:
         """SQL: the dataset stays in the result. No condition is
@@ -239,7 +341,7 @@ class QueryEvidence:
             for j, piece in enumerate(condition.weaker):
                 if reason := piece.reason():
                     # The last one needs no flag: nothing listed before it held.
-                    flag = f" AND {self.row}.{flags[j]}" if j < len(flags) else ""
+                    flag = f" AND {self.row}.{flags[j]}" if j < len(condition.weaker) - 1 else ""
                     branches.append(f"WHEN {state} = {int(Strength.PROBABLE)}{flag} "
                                     f"THEN {sql_literal(reason)}")
             if condition.not_recorded is not None and (reason := condition.not_recorded.reason()):

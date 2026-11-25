@@ -10,11 +10,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from services.evidence.base import Evidence, Source, Strength
+from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
-class NotRecorded(Evidence):
+class NotRecorded(PieceOfEvidence):
     """The dataset does not record the field, and nothing hints either way.
 
     The last entry of a list: what is left when no other evidence holds. It
@@ -22,6 +22,8 @@ class NotRecorded(Evidence):
     (conditions.possible_enabled).
     """
     what: str   # the field as a card names it: "ages", "participant sex"
+    # The score where it was measured for the field (SoftField.unrecorded_score).
+    measured_score: Optional[float] = None
     source: Source = field(default=Source.NOT_RECORDED, kw_only=True)
     strength: Strength = field(default=Strength.POSSIBLE, kw_only=True)
 
@@ -30,3 +32,6 @@ class NotRecorded(Evidence):
 
     def reason(self) -> str:
         return f"{self.what} not recorded"
+
+    def score(self) -> float:
+        return super().score() if self.measured_score is None else self.measured_score

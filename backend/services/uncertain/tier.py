@@ -13,7 +13,7 @@ misses (benchmarks/recall/work/failure_analysis/).
 
 Each top-level AND condition of the generated SQL gets one of four states for
 a dataset (services/evidence/base.py, Strength). The condition lists its
-evidence in the order it counts (conditions.SoftCondition), and the first
+evidence in the order it counts (conditions.ClauseEvidence), and the first
 that holds for the dataset gives the state:
 
     0  confirmed     the condition holds
@@ -44,8 +44,10 @@ A dataset is kept when
     evidence of anything.
 
 The result gets two columns: uncertain_level (0, 1 or 2: the weakest state)
-and uncertain_reasons (why, for the result card), and uncertain_level_<kind>
-for each kind of condition the search has (the weakest state among those). The page query orders by
+and uncertain_reasons (why, for the result card), uncertain_level_<kind> for
+each kind of condition the search has (the weakest state among those), and
+evidence_score (0 to 1: the product of the scores of the conditions, each the
+score of the piece of evidence that decided it; conditions.QueryEvidence). The page query orders by
 uncertain_level first (services/translate/sql_rewriter.py). Datasets that confirm every
 condition are exactly the rows the original query returned.
 
@@ -57,7 +59,7 @@ This module does the rewrite (apply). The parts it uses:
   text.py        weaker forms of a text search
   fields/        the fields a dataset may not record
   scanner.py     field strength, vendor and model in the text
-  conditions.py  SoftCondition, QueryEvidence (the conditions combined: kept
+  conditions.py  ClauseEvidence, QueryEvidence (the conditions combined: kept
                  or not, the weakest state, the card text) and what the
                  others share
 """
@@ -76,7 +78,7 @@ except ImportError:  # pragma: no cover
     sqlglot = None  # type: ignore[assignment]
     exp = None  # type: ignore[assignment]
 
-from services.uncertain.conditions import QueryEvidence, SoftCondition
+from services.uncertain.conditions import QueryEvidence, ClauseEvidence
 from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
 from services.schema.tables import datasets as _datasets
@@ -99,6 +101,7 @@ def hoist_terms_enabled() -> bool:
 
 
 LEVEL_COLUMN = "uncertain_level"
+SCORE_COLUMN = "evidence_score"
 REASONS_COLUMN = "uncertain_reasons"
 
 
@@ -108,7 +111,7 @@ _KIND_LEVEL_RE = re.compile(rf" AS ({LEVEL_COLUMN}_([a-z_]+))\b")
 
 def kind_level_column(kind: str) -> str:
     """The column with the weakest state among the conditions of *kind*
-    (SoftCondition.kind: "age", "diagnosis", "text", …)."""
+    (ClauseEvidence.kind: "age", "diagnosis", "text", …)."""
     if not re.fullmatch(r"[a-z_]+", kind):
         raise ValueError(f"not a column name: {kind!r}")
     return f"{LEVEL_COLUMN}_{kind}"
@@ -181,7 +184,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         return sql
 
     hard: List[str] = []
-    soft: List[SoftCondition] = []
+    soft: List[ClauseEvidence] = []
     for node in keep_only_sex_pairs(_flatten_and(where.this)):
         # classify has no expected failures (sqlglot and regex work on a tree
         # that parsed); it ran without one on the 1,972 conditions of the
@@ -226,17 +229,23 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         confirmed = f"confirmed_{i}"
         probable = f"probable_{i}"
         known = f"known_{i}"
-        evidence_columns.extend((
-            f"({condition.sql}) AS {confirmed}",
-            f"({condition.probable}) AS {probable}" if condition.probable
-            else f"FALSE AS {probable}",
-            f"({condition.known}) AS {known}" if condition.known
-            else f"TRUE AS {known}",
-        ))
-        for piece, flag in zip(condition.weaker, query.flag_columns(i)):
+        flags = query.flag_columns(i)
+        evidence_columns.append(f"({condition.sql}) AS {confirmed}")
+        if flags:
+            # Several weaker pieces: each is evaluated once, under its own name.
+            weak = "(" + " OR ".join(f"ev.{flag}" for flag in flags) + ")"
+        else:
+            weak = f"ev.{probable}"
+            evidence_columns.append(f"({condition.probable}) AS {probable}" if condition.probable
+                                    else f"FALSE AS {probable}")
+        evidence_columns.append(f"({condition.known}) AS {known}" if condition.known
+                                else f"TRUE AS {known}")
+        for piece, flag in zip(condition.weaker, flags):
             evidence_columns.append(f"({piece.sql(alias)}) AS {flag}")
             flag_columns.append(f"ev.{flag}")
-        state = condition.state_sql(f"ev.{confirmed}", f"ev.{probable}", f"ev.{known}")
+        if query.recorded_column(i):
+            flag_columns.append(f"ev.{known}")
+        state = condition.state_sql(f"ev.{confirmed}", weak, f"ev.{known}")
         state_cases.append(f"{state} AS {query.state_column(i)}")
 
     raw_sql = (
@@ -307,7 +316,8 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     return (
         f"{with_sql}"
         f"SELECT tier_base.*, {level} AS {LEVEL_COLUMN}, "
-        f"{query.reason_sql()} AS {REASONS_COLUMN}{kind_levels}\n"
+        f"{query.reason_sql()} AS {REASONS_COLUMN}{kind_levels}, "
+        f"{query.score_sql()} AS {SCORE_COLUMN}\n"
         f"FROM (\n{inner_sql}\n) AS tier_base\n"
         f"CROSS JOIN LATERAL (\n{state_sql}\n) AS {query.row}\n"
         f"WHERE {query.kept_sql(MAX_UNSURE)}"

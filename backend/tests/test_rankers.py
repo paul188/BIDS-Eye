@@ -88,9 +88,7 @@ def test_a_ranker_can_tell_apart_which_condition_is_unsure() -> None:
             assert columns.weakest_evidence_for("sex") is None   # no such condition here
             return key + [columns.score]
 
-    ages = ("(d.age_max < 3 OR EXISTS(SELECT 1 FROM bids_participants AS p2 "
-            "WHERE p2.dataset_id = d.id AND p2.age < 3))")
-    tiered = tier.apply(BASE.replace("WHERE ", f"WHERE {ages} AND "), papers=True)
+    tiered = tier.apply(BASE.replace("WHERE ", f"WHERE {AGES} AND "), papers=True)
     assert "GREATEST(evidence.u0, evidence.u1) AS uncertain_level" in tiered
     assert ", evidence.u0 AS uncertain_level_age, evidence.u1 AS uncertain_level_text" in tiered
     assert tier.kind_level_columns(tiered) == {"age": "uncertain_level_age",
@@ -107,6 +105,58 @@ def test_conditions_of_one_kind_share_a_column() -> None:
                                         "'resting & state') GROUP BY"), papers=True)
     assert "GREATEST(evidence.u0, evidence.u1) AS uncertain_level_text" in two_texts
     assert tier.kind_level_columns(BASE) == {}
+
+
+AGES = ("(d.age_max < 3 OR EXISTS(SELECT 1 FROM bids_participants AS p2 "
+        "WHERE p2.dataset_id = d.id AND p2.age < 3))")
+
+
+def test_a_piece_of_evidence_has_a_score_measured_or_by_its_strength() -> None:
+    from services.evidence.base import DEFAULT_SCORES, Strength
+    from services.evidence.possible import NotRecorded
+    from services.evidence.probable import PaperOnly, TextSearch
+
+    assert DEFAULT_SCORES[Strength.CONFIRMED] == 1 and DEFAULT_SCORES[Strength.CONTRADICTED] == 0
+    assert PaperOnly((TextSearch("x"),)).score() == DEFAULT_SCORES[Strength.PROBABLE]
+    assert NotRecorded("participant sex").score() == DEFAULT_SCORES[Strength.POSSIBLE]
+    assert NotRecorded("ages", 0.33).score() == 0.33
+
+
+def test_the_query_score_multiplies_the_scores_of_its_clauses() -> None:
+    """A clause has the score of the piece of evidence that decides it; the
+    query, being their AND, the product."""
+    tiered = tier.apply(BASE.replace("WHERE ", f"WHERE {AGES} AND "), papers=True)
+    ages = ("(CASE WHEN evidence.u0 = 0 THEN 1 WHEN evidence.u0 = 1 THEN 0.53 "
+            "WHEN evidence.u0 = 2 THEN 0.33 ELSE 0 END)")
+    # A paper and the dataset's own text are two sources: the stronger in
+    # full, the other at SHARED_EVIDENCE_DISCOUNT, on the scale -ln(1 - score).
+    paper = "CASE WHEN evidence.paper_1 THEN 0.5108 ELSE 0 END"
+    own_text = "CASE WHEN evidence.text_1 THEN 0.4620 ELSE 0 END"
+    text = (f"(CASE WHEN evidence.u1 = 0 THEN 1 WHEN evidence.u1 = 1 THEN 1 - EXP(-("
+            f"GREATEST({paper}, {own_text}) + 0.5 * ({paper} + {own_text} - GREATEST({paper}, {own_text}))"
+            f")) ELSE 0 END)")
+    assert f"{ages} * {text} AS evidence_score" in tiered
+
+
+def test_the_weakest_clause_can_count_for_more_than_the_others(monkeypatch) -> None:
+    from services.uncertain import conditions
+
+    monkeypatch.setattr(conditions, "CLAUSE_INDEPENDENCE", 0.0)
+    tiered = tier.apply(BASE.replace("WHERE ", f"WHERE {AGES} AND "), papers=False)
+    assert "COALESCE(LEAST((CASE WHEN evidence.u0 = 0 THEN 1" in tiered
+    assert ", 0), 0) AS evidence_score" in tiered
+
+
+def test_a_ranker_can_order_by_the_evidence_score() -> None:
+    class ByEvidenceScore:
+        def sort_key(self, columns):
+            return [columns.evidence_score, columns.score]
+
+    page, _ = build_page_sql(tier.apply(BASE, papers=True), [], True, 20, 0,
+                             rank_query=RankQuery("young & children"), ranker=ByEvidenceScore())
+    assert _page_order(page) == (
+        "ORDER BY page_result.evidence_score DESC, "
+        "page_result.relevance_score + page_result.text_rank DESC, page_result.id")
 
 
 def test_a_term_that_is_not_a_plain_column_can_be_ranked_by() -> None:
