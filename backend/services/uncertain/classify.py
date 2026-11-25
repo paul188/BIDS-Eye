@@ -22,6 +22,8 @@ except ImportError:  # pragma: no cover
 from services.uncertain.conditions import LABEL_RE, ClauseEvidence, TSQUERY_RE
 from services.uncertain.text import negated_spans, query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
+from services.evidence.branches import confirming_evidence
+from services.evidence.confirmed import ConfirmedMatch
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import CoreOfTerm, PaperOnly, TextSearch
@@ -173,7 +175,8 @@ def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidenc
     words, core_words = _positive_words(every_word), _positive_words(core)
     if not core_words or not core_words < words:
         return None
-    return ClauseEvidence(kind="text", alias=alias, sql=every_word, evidence=(
+    return ClauseEvidence(kind="text", alias=alias, sql=every_word,
+                          confirming=confirming_evidence(node.left, alias), evidence=(
         # The core only in a paper: the rows the core's own paper form had before.
         *_paper_only(core, papers),
         CoreOfTerm(core, missing=tuple(sorted(words - core_words))),
@@ -202,8 +205,9 @@ def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]
     sql = node.sql(dialect="postgres")
     if kind == "sidecar":
         return sidecar(node, alias)
+    confirming = confirming_evidence(node, alias)
     if kind == "patient_count":
-        return _patient_count(sql, alias)
+        return _patient_count(sql, alias, confirming)
     if kind == "text":
         loose = loose_term(node, alias, papers)
         if loose is not None:
@@ -228,9 +232,10 @@ def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]
         not_recorded = NotRecorded(field.label, field.unrecorded_score)
         evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
                     else (record, *weaker, not_recorded))
-        return ClauseEvidence(kind=kind, alias=alias, sql=sql, evidence=evidence)
+        return ClauseEvidence(kind=kind, alias=alias, sql=sql, evidence=evidence, confirming=confirming)
     if relaxed or paper:
-        return ClauseEvidence(kind="text", alias=alias, sql=sql, evidence=(*paper, *weaker_search))
+        return ClauseEvidence(kind="text", alias=alias, sql=sql, evidence=(*paper, *weaker_search),
+                              confirming=confirming)
     return None
 
 
@@ -255,7 +260,8 @@ class PatientsNotCounted(PieceOfEvidence):
         return "how many participants have the diagnosis is not recorded"
 
 
-def _patient_count(sql: str, alias: str) -> Optional[ClauseEvidence]:
+def _patient_count(sql: str, alias: str,
+                   confirming: Tuple[ConfirmedMatch, ...] = ()) -> Optional[ClauseEvidence]:
     """"At least N participants with the diagnosis" (RAG/cohort_count.py).
 
     Confirmed when that many are coded or labelled with it. Uncertain when the
@@ -276,6 +282,6 @@ def _patient_count(sql: str, alias: str) -> Optional[ClauseEvidence]:
         stored = bool(database_stats.summaries.subject_counts)
     except ImportError:
         pass
-    return ClauseEvidence(kind="patient_count", alias=alias, sql=sql, evidence=(
+    return ClauseEvidence(kind="patient_count", alias=alias, sql=sql, confirming=confirming, evidence=(
         PatientsNotCounted(tuple(codes), minimum, stored),
     ))

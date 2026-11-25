@@ -13,6 +13,7 @@ from schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
 from services.evidence.confirmed import age_span
 from services.evidence.base import Source
+from services.evidence import branches
 from services.results import match_reasons as mr
 
 _HEAD = (
@@ -130,7 +131,7 @@ def test_paper_and_readme_venues():
     ("", False),
 ])
 def test_short_fields_only(tsquery, short):
-    assert mr.short_fields_only(tsquery) is short
+    assert branches.short_fields_only(tsquery) is short
 
 
 def test_a_word_form_guard_does_not_decide_the_text_venue():

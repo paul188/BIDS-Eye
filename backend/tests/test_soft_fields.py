@@ -79,3 +79,20 @@ def test_the_words_come_from_the_vocabulary():
     groups = text_evidence.age_groups()
     assert (0.0, 3.0) == groups[0][:2] and "infants" in groups[0][2]
     assert not any("aging" in words for _, _, words in groups)
+
+
+def test_a_condition_lists_the_ways_that_confirm_it() -> None:
+    """One per OR branch; the SQL of the condition still decides."""
+    import sqlglot
+    from services.evidence.base import Source, Strength
+    from services.uncertain.classify import classify
+
+    sql = ("(EXISTS(SELECT 1 FROM bids_participants AS p WHERE p.dataset_id = d.id "
+           "AND p.diagnosis = 'x') OR d.name ILIKE '%epilepsy%')")
+    node = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {sql}",
+                             read="postgres").args["where"].this
+    condition = classify(node, "d")
+    assert condition is not None
+    assert [e.source for e in condition.confirming] == [Source.PARTICIPANTS, Source.SHORT_TEXT]
+    assert all(e.strength == Strength.CONFIRMED for e in condition.confirming)
+    assert Strength.CONFIRMED not in [e.strength for e in condition.evidence]

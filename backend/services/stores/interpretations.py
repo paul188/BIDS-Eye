@@ -76,6 +76,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "uncertain" / "conditions.py",
     _BACKEND / "services" / "evidence" / "__init__.py",
     _BACKEND / "services" / "evidence" / "base.py",
+    _BACKEND / "services" / "evidence" / "branches.py",
     _BACKEND / "services" / "evidence" / "confirmed.py",
     _BACKEND / "services" / "evidence" / "contradicted.py",
     _BACKEND / "services" / "evidence" / "possible.py",

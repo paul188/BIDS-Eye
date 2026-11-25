@@ -57,7 +57,7 @@ def test_another_ranker_changes_the_page_order_and_nothing_else() -> None:
         def sort_key(self, columns):
             key = [columns.score] if columns.has_scores else []
             if columns.has_evidence:
-                key.append(columns.weakest_evidence)
+                key.append(columns.strength)
             return key
 
     tiered = tier.apply(BASE, papers=True)
@@ -81,11 +81,11 @@ def test_a_ranker_can_tell_apart_which_condition_is_unsure() -> None:
     """Unsure about the ages before unsure about the text, whatever the score."""
     class TextEvidenceFirst:
         def sort_key(self, columns):
-            key = [columns.weakest_evidence]
-            text = columns.weakest_evidence_for("text")
+            key = [columns.strength]
+            text = columns.strength_for("text")
             if text is not None:
                 key.append(text)
-            assert columns.weakest_evidence_for("sex") is None   # no such condition here
+            assert columns.strength_for("sex") is None   # no such condition here
             return key + [columns.score]
 
     tiered = tier.apply(BASE.replace("WHERE ", f"WHERE {AGES} AND "), papers=True)

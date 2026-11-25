@@ -16,6 +16,7 @@ its card text from that:
                    named in the dataset's own text
   possible.py      the field is not recorded
   contradicted.py  the field is recorded with other values
+  branches.py      reads the confirming evidence from a condition's SQL
 
 Three sizes, each made of the one before:
   PieceOfEvidence  one way one condition is met (this package)

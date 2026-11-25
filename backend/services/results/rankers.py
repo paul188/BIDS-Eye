@@ -12,9 +12,10 @@ in the database (LIMIT/OFFSET), so the order has to be one the database can
 compute for every row, and the same on every page.
 
 What a row carries (ResultColumns):
-  weakest_evidence   the weakest evidence any condition has for the dataset
-                     (evidence.base.Strength; services/uncertain/tier.py)
-  weakest_evidence_for(kind)
+  strength           the dataset's Strength (evidence/base.py), that of its
+                     weakest condition (uncertain/conditions.QueryEvidence);
+                     the column uncertain_level
+  strength_for(kind)
                      the same among the conditions of one kind ("age",
                      "diagnosis", "text", …), to tell apart which condition
                      a dataset is unsure about
@@ -56,7 +57,7 @@ class ResultColumns:
 
     The flags say which of them this result has; a ranker asks before it
     uses one (a search without text has no scores, a result without an
-    uncertain tier no weakest evidence).
+    uncertain tier no strength).
     """
     row: str                      # SQL alias of the result row
     has_evidence: bool = False    # the uncertain tier ran
@@ -69,7 +70,7 @@ class ResultColumns:
     evidence_columns: Tuple[Tuple[str, str], ...] = ()
 
     @property
-    def weakest_evidence(self) -> SortTerm:
+    def strength(self) -> SortTerm:
         """Confirmed results first, then probable, then possible."""
         return SortTerm(f"{self.row}.uncertain_level")
 
@@ -78,7 +79,7 @@ class ResultColumns:
         """The dataset whose evidence counts for more first."""
         return SortTerm(f"{self.row}.evidence_score", descending=True)
 
-    def weakest_evidence_for(self, kind: str) -> Optional[SortTerm]:
+    def strength_for(self, kind: str) -> Optional[SortTerm]:
         """Datasets whose conditions of *kind* are confirmed first; None when
         the search has no condition of that kind."""
         column = dict(self.evidence_columns).get(kind)
@@ -136,7 +137,7 @@ class EvidenceFirst:
     def sort_key(self, columns: ResultColumns) -> List[SortTerm]:
         key: List[SortTerm] = []
         if columns.has_evidence:
-            key.append(columns.weakest_evidence)
+            key.append(columns.strength)
         if columns.has_judgment:
             key.extend(columns.judged_order)
         if columns.has_other_words:

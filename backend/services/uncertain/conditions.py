@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from services.evidence.base import PieceOfEvidence, SourceGroup, Strength
+from services.evidence.confirmed import ConfirmedMatch
 
 
 # How the pieces of evidence of a clause, and the clauses of a query, add up
@@ -104,9 +105,16 @@ class ClauseEvidence:
     # (name, SELECT) sets the condition reads more than once: computed once
     # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).
     ctes: Tuple[Tuple[str, str], ...] = ()
+    # The ways the condition holds as generated, one per OR branch
+    # (evidence/branches.py). sql decides whether it holds: a branch that
+    # cannot be evaluated alone is not listed.
+    confirming: Tuple[ConfirmedMatch, ...] = ()
 
     def __post_init__(self) -> None:
         self.evidence = tuple(self.evidence)
+        self.confirming = tuple(self.confirming)
+        if any(e.strength != Strength.CONFIRMED for e in self.confirming):
+            raise ValueError("what confirms a condition has the strength CONFIRMED")
         strengths = [e.strength for e in self.evidence]
         if Strength.CONFIRMED in strengths:
             raise ValueError("the condition itself is what confirms it")

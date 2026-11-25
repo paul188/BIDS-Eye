@@ -19,6 +19,7 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+from services.evidence.branches import confirming_evidence
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import NamedInOwnText
@@ -333,7 +334,8 @@ def sidecar(node, alias: str) -> Optional[ClauseEvidence]:
             return None
     named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select)
     as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
-    return ClauseEvidence(kind="sidecar", alias=alias, sql=as_generated, ctes=tuple(ctes), evidence=(
+    return ClauseEvidence(kind="sidecar", alias=alias, sql=as_generated, ctes=tuple(ctes),
+                          confirming=confirming_evidence(node, alias), evidence=(
         OtherValuesRecorded(named.key_recorded),
         named,
         NotInFileMetadata(_SIDECAR_LABELS[key]),

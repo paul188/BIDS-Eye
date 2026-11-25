@@ -6,7 +6,7 @@ it holds. A condition is an OR of such ways (the participant list records the
 value, a dataset column holds it, the title names it), or a single one. Each
 kind writes what a result card says about it.
 
-Built by results/match_reasons.py, one per OR branch of a condition.
+Built by branches.py, one per OR branch of a condition.
 """
 
 from __future__ import annotations
