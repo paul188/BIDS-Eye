@@ -195,6 +195,17 @@ def test_participant_sex_from_records_then_text():
     asyncio.run(_run(check))
 
 
+def test_evidence_is_evaluated_once_per_dataset():
+    from sqlalchemy import text
+
+    async def check(session, ids):
+        sql = ut.apply(_HEAD + FEMALE, papers=False, hoist_terms=True)
+        plan = "\n".join((await session.execute(text("EXPLAIN " + sql))).scalars())
+        # The record is looked up in one place, however many columns read the state.
+        assert len(re.findall(r" on bids_participants uk(?:_\d+)?\b", plan)) == 1, plan
+    asyncio.run(_run(check))
+
+
 @pytest.mark.parametrize("strengths", [[7.0], [1.5], [3.0, 7.0], [9.4, 10.5, 11.7, 14.0]])
 def test_field_strength_pattern_is_the_same_in_python_and_postgres(strengths):
     from sqlalchemy import text

@@ -297,10 +297,13 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
         raw_sql += f"\nCROSS JOIN {terms_name} AS {terms_alias}"
     raw_sql += raw_where
 
+    # OFFSET 0 keeps the planner from merging these subqueries into the outer
+    # query, which would evaluate the evidence again for every column that
+    # reads a state (a scanner model on the live database: 25 s, 15 s with it).
     state_sql = (
         f"SELECT ev.id, {', '.join(state_cases)}"
         + (f", {', '.join(flag_columns)}" if flag_columns else "")
-        + f"\nFROM (\n{raw_sql}\n) AS ev"
+        + f"\nFROM (\n{raw_sql}\nOFFSET 0\n) AS ev\nOFFSET 0"
     )
 
     level = query.strength_sql()
