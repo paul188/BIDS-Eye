@@ -11,7 +11,7 @@ import sqlglot
 from criteria import age_condition, species_condition
 from schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
-from services.evidence.confirmed import age_span
+from services.evidence.confirmed import Assumed, FieldValue, age_span
 from services.evidence.base import Source
 from services.evidence import branches
 from services.results import match_reasons as mr
@@ -108,6 +108,23 @@ def test_a_branch_on_the_outer_join_is_left_out():
     # and what is left is one venue.
     sql = _sql("(o.task = 'rest' OR d.search_tsv @@ to_tsquery('english', 'rest:AB'))")
     assert mr.plan(sql)[1] == []
+
+
+@pytest.mark.parametrize("branch, kinds", [
+    ("NOT d.search_tsv @@ to_tsquery('english', 'mouse')", []),
+    ("NOT d.search_tsv_papers @@ to_tsquery('english', 'mouse')", []),
+    ("NOT EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
+     "AND p2.diagnosis = 'x')", []),
+    ("NOT d.id IN (SELECT dataset_id FROM bids_derivatives)", []),
+    ("d.species IS NULL", [Assumed]),
+    ("d.species IS NOT NULL", [FieldValue]),   # sqlglot: NOT (species IS NULL)
+    ("NOT d.species = 'Mouse'", [FieldValue]),
+    ("d.on_brainlife", [FieldValue]),          # the branch is the column itself
+])
+def test_a_branch_that_is_a_not_confirms_nothing_it_denies(branch, kinds):
+    node = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {branch}",
+                             read="postgres").args["where"].this
+    assert [type(way) for way in branches.confirming_evidence(node, "d")] == kinds
 
 
 def test_paper_and_readme_venues():
@@ -240,7 +257,7 @@ def test_reason_for_the_dataset_age_range_appears_once():
 
 
 def test_a_kind_without_a_card_text_cannot_be_built():
-    from services.evidence.confirmed import Assumed, Found
+    from services.evidence.confirmed import Found
 
     with pytest.raises(ValueError):
         Found("TRUE", source=Source.PARTICIPANTS)

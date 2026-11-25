@@ -58,10 +58,10 @@ def or_branches(node) -> list:
 
 
 def _ancestors(node, root):
-    current = node.parent
-    while current is not None and current is not root:
-        yield current
-        current = current.parent
+    """What *node* stands in, up to and including *root*; nothing for *root* itself."""
+    while node is not root:
+        node = node.parent
+        yield node
 
 
 def _in_subquery(node, root) -> bool:
