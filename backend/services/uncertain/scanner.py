@@ -21,8 +21,9 @@ except ImportError:  # pragma: no cover
 
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
-from services.evidence.probable import NamedInText
-from services.uncertain.conditions import SoftCondition, own_text, possible_enabled, sql_literal
+from services.evidence.probable import NamedInOwnText
+from services.uncertain.conditions import (SoftCondition, own_text, own_text_matches, possible_enabled,
+                                           sql_literal)
 from services.schema.tables import objects as _objects
 
 
@@ -340,7 +341,7 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
 
 
 @dataclass(frozen=True)
-class ScannerValueNamed(NamedInText):
+class ScannerValueNamed(NamedInOwnText):
     """No file of the dataset records the sidecar *key*, and its own text
     names an asked value: one of *strengths* (tesla) for the field strength,
     else one of *values* (a manufacturer or model)."""
@@ -362,7 +363,7 @@ class ScannerValueNamed(NamedInText):
         else:
             query = _value_tsquery(self.key, self.values)
             assert query is not None
-            text = f"{alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(query)})"
+            text = own_text_matches(alias, query)
         return f"({text}) AND ({alias}.id IN ({self.file_set}))" if self.file_set else text
 
     def key_recorded(self, alias: str) -> str:
@@ -380,7 +381,7 @@ class ScannerValueNamed(NamedInText):
         named = (" or ".join(f"{s:g} T" for s in self.strengths) if self.key == FIELD_STRENGTH_KEY
                  else " or ".join(self.values))
         not_recorded = NotInFileMetadata(_SIDECAR_LABELS[self.key]).reason()
-        return f"{not_recorded}; the description names {named}"
+        return f"{not_recorded}; the title, description or README names {named}"
 
 
 @dataclass(frozen=True)

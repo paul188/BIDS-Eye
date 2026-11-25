@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
 from services.evidence.possible import NotRecorded
-from services.evidence.probable import NamedInText
+from services.evidence.probable import NamedInOwnText
+from services.uncertain.conditions import own_text_matches
 from services.uncertain.fields.base import SoftField, participant_rows_record
 import text_evidence  # RAG/ is on the path wherever the backend runs
 
@@ -70,15 +71,15 @@ def tsquery_for_words(words: Sequence[str]) -> str:
 
 
 @dataclass(frozen=True)
-class AgeGroupNamed(NamedInText):
+class AgeGroupNamed(NamedInOwnText):
     """The dataset's own text names the age group: one of *words*."""
     words: Tuple[str, ...] = ()
 
     def sql(self, alias: str) -> Optional[str]:
-        return f"{alias}.search_tsv @@ TO_TSQUERY('english', '{tsquery_for_words(self.words)}')"
+        return own_text_matches(alias, tsquery_for_words(self.words))
 
     def reason(self) -> str:
-        return f"{NotRecorded(LABEL).reason()}; the description names the age group"
+        return f"{NotRecorded(LABEL).reason()}; the title, description or README names the age group"
 
 
 def age_group_named(node) -> Optional[AgeGroupNamed]:

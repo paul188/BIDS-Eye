@@ -115,7 +115,7 @@ def test_field_strength_condition_gets_a_text_venue():
     assert "bids_objects" not in soft.probable   # no file part to keep
     # Recorded or not is asked only where the text names the value.
     assert soft.known.startswith(f"(({soft.probable}) AND EXISTS(SELECT 1 FROM bids_objects AS uk")
-    assert soft.weaker[-1].reason() == "field strength not in the file metadata; the description names 7 T"
+    assert soft.weaker[-1].reason() == "field strength not in the file metadata; the title, description or README names 7 T"
 
 
 def test_field_strength_with_a_file_part_keeps_it():
@@ -177,14 +177,14 @@ def test_other_sidecar_shapes_stay_hard(condition):
 # ── Participant sex in the tier ───────────────────────────────────────────────
 
 def _python_pattern(probable: str) -> str:
-    return re.search(r"~\* '(.*)'$", probable).group(1).replace("''", "'").replace(
+    return re.search(r"~\* '(.*)'\)$", probable).group(1).replace("''", "'").replace(
         "[^[:alnum:]_'’]", r"[^\w'’]").replace("[^[:alnum:]_]", r"[^\w]")
 
 
 def test_one_sex_is_read_where_the_text_speaks_of_participants():
     soft = _classify(FEMALE)
     assert soft.kind == "sex" and "~*" in soft.probable
-    assert soft.weaker[-1].reason() == "participant sex not recorded; the description names female participants"
+    assert soft.weaker[-1].reason() == "participant sex not recorded; the title, description or README names female participants"
     pattern = _python_pattern(soft.probable)
     # The words around a mention decide, the same for every word.
     for text, hit in [("22 women took part.", True), ("12 healthy young girls", True),
@@ -239,7 +239,7 @@ def test_both_sexes_or_sex_with_age_add_no_text():
 def test_tier_query_carries_the_new_reasons():
     sql = ut.apply(_HEAD + STRENGTH_7T + " AND " + FEMALE, papers=False, hoist_terms=True)
     assert "field strength not in the file metadata" in sql
-    assert "participant sex not recorded; the description names female participants" in sql
+    assert "participant sex not recorded; the title, description or README names female participants" in sql
     assert isinstance(sqlglot.parse_one(sql, read="postgres"), exp.Select)
 
 

@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services.evidence.possible import NotRecorded
-from services.evidence.probable import NamedInText
+from services.evidence.probable import NamedInOwnText
 from services.uncertain.conditions import own_text, sql_literal
 from services.uncertain.fields.base import SoftField, participant_rows_record
 from services.schema.tables import participants as _participants
@@ -117,7 +117,7 @@ def keep_only_sex_pairs(nodes: list) -> list:
 
 
 @dataclass(frozen=True)
-class SexNamed(NamedInText):
+class SexNamed(NamedInOwnText):
     """The dataset's own text names participants of *sex*; with *only*, it
     says all of them are."""
     sex: str = ""
@@ -125,18 +125,20 @@ class SexNamed(NamedInText):
 
     def sql(self, alias: str) -> Optional[str]:
         words = "|".join(text_words(self.sex))
-        only = _ONLY_SEX_RE.format(w=words)
-        if self.only:
-            return _in_own_text(alias, only)
-        # "An all-female sample" names female participants too.
-        people = "|".join(text_evidence.people_words())
-        return _in_own_text(alias, f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})")
+        pattern = only = _ONLY_SEX_RE.format(w=words)
+        if not self.only:
+            # "An all-female sample" names female participants too.
+            people = "|".join(text_evidence.people_words())
+            pattern = f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})"
+        # The indexed words first: the regex then reads about 150 texts.
+        return (f"({alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(_sex_tsquery(self.sex))}) "
+                f"AND {_in_own_text(alias, pattern)})")
 
     def reason(self) -> str:
         not_recorded = NotRecorded(LABEL).reason()
         if self.only:
-            return f"{not_recorded}; the description says all participants are {self.sex}"
-        return f"{not_recorded}; the description names {self.sex} participants"
+            return f"{not_recorded}; the title, description or README says all participants are {self.sex}"
+        return f"{not_recorded}; the title, description or README names {self.sex} participants"
 
 
 def sex_named(node) -> Optional[SexNamed]:
@@ -146,6 +148,16 @@ def sex_named(node) -> Optional[SexNamed]:
     if sex is None or not text_words(sex):
         return None
     return SexNamed(sex=sex, only=_only_one_sex(node))
+
+
+def _sex_tsquery(sex: str) -> str:
+    """Indexed words that the texts matching the regexes have. A prefilter
+    only: the regex decides. It misses a word glued to the next sentence
+    ("22 females.The", one token in the index); none of the 112 female and
+    77 male matches on the live database (2026-11-25) did."""
+    words = text_words(sex)
+    # "allfemale" is one word in the index.
+    return " | ".join((*words, *(f"all{word}" for word in words)))
 
 
 _WORD_END = "($|[^[:alnum:]_'’])"

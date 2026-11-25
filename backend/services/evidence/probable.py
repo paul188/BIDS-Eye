@@ -12,6 +12,7 @@ The kinds of one field are written with the field: the age group
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Sequence, Tuple
@@ -154,9 +155,13 @@ class CoreOfTerm(Evidence):
 
 
 @dataclass(frozen=True)
-class NamedInText(Evidence):
-    """The dataset's own text names the value the condition asks of a field:
-    "22 women", "infants", "7T". Each field has its subclass, which holds the
-    asked value and writes sql() and reason()."""
+class NamedInOwnText(Evidence):
+    """The dataset's name, description or README names the value the condition
+    asks of a field: "22 women", "infants", "7T". Each field has its subclass,
+    which holds the asked value and writes sql() and reason()."""
     source: Source = field(default=Source.TEXT, kw_only=True)
     strength: Strength = field(default=Strength.PROBABLE, kw_only=True)
+
+    @abstractmethod
+    def reason(self) -> str:
+        """What the result card says: the text depends on the field."""

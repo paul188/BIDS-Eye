@@ -3,10 +3,11 @@ one SoftField, and the tier handles all of them through it."""
 
 from __future__ import annotations
 
+import pytest
 import sqlglot
 
 import text_evidence
-from services.evidence.probable import NamedInText
+from services.evidence.probable import NamedInOwnText
 from services.uncertain import classify as tier_classify, fields
 from services.uncertain.fields.base import SoftField, participant_rows_record
 
@@ -33,7 +34,7 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
                  "AND p2.handedness = 'left_handed')"
     assert _classify(handedness) is None   # a hard filter today
 
-    class LeftHandedNamed(NamedInText):
+    class LeftHandedNamed(NamedInOwnText):
         def sql(self, alias):
             return f"{alias}.readme_text ~* 'left-handed'"
 
@@ -55,6 +56,15 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
     assert soft.not_recorded.reason() == "handedness not recorded"
     # Recorded values that do not fit contradict, as for ages and sex.
     assert soft.state_sql().endswith("ELSE 9 END") and "WHEN NOT (EXISTS" in soft.state_sql()
+
+
+def test_text_evidence_must_say_why():
+    class NoReason(NamedInOwnText):
+        def sql(self, alias):
+            return "TRUE"
+
+    with pytest.raises(TypeError, match="reason"):
+        NoReason()
 
 
 def test_text_beats_recorded_only_for_diagnosis():

@@ -47,6 +47,17 @@ def own_text(alias: str) -> str:
             f"|| ' ' || COALESCE({alias}.readme_text, ''))")
 
 
+def own_text_matches(alias: str, query: str) -> str:
+    """SQL: the dataset's own text matches the tsquery *query*.
+
+    search_tsv also holds the recorded labels and the LLM-written profile, so
+    the index only finds the candidates. "/" as a space: as in search_tsv.
+    """
+    tsquery = f"TO_TSQUERY('english', {sql_literal(query)})"
+    return (f"({alias}.search_tsv @@ {tsquery} "
+            f"AND TO_TSVECTOR('english', TRANSLATE({own_text(alias)}, '/', ' ')) @@ {tsquery})")
+
+
 @dataclass
 class SoftCondition:
     """One condition (AND clause) of the generated query that a dataset can
