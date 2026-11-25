@@ -9,6 +9,8 @@ diagnosis, sex, scanner fields, matches only in a paper the dataset names
 
 from __future__ import annotations
 
+import dataclasses
+from dataclasses import dataclass
 from typing import Optional, Tuple
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
@@ -17,15 +19,12 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services.uncertain.conditions import LABEL_RE, SoftCondition, TSQUERY_RE
-from services.uncertain.text import (
-    negated_spans,
-    partial_reason,
-    relax_text_condition,
-)
-from services.evidence import reason_texts
-from services.evidence.base import Evidence, Strength
-from services.evidence.weaker import (AsAsked, NamedInText, NotRecorded, OtherValuesRecorded,
-                                      PaperOnly, WeakerSearch)
+from services.uncertain.text import negated_spans, relax_text_condition
+from services.evidence.base import Evidence, Source, Strength
+from services.evidence.confirmed import AsAsked
+from services.evidence.contradicted import OtherValuesRecorded
+from services.evidence.possible import NotRecorded
+from services.evidence.probable import PaperOnly, TextSearch
 from services.uncertain import fields
 from services.uncertain.scanner import sidecar
 
@@ -125,35 +124,28 @@ def soft_kind(node, alias: str) -> Optional[str]:
     return None
 
 
-def paper_atoms(sql: str, alias: str) -> Optional[str]:
-    """The condition's positive text searches run on the paper vector, ORed.
+def paper_searches(sql: str) -> Tuple[TextSearch, ...]:
+    """The condition's positive text searches, as they are run on paper text.
 
-    Labels are dropped: paper text carries the lowest weight, so a search
-    scoped to the name and short fields could never reach it.
+    Without labels: paper text carries the lowest weight, so a search scoped
+    to the name and short fields could never reach it.
     """
-    from services.fulltext.vectors import (EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN,
-                                           PAPER_FTS_COLUMN)
     spans = negated_spans(sql)
-    atoms = []
+    searches = []
     for match in TSQUERY_RE.finditer(sql):
         if match.group("negated") or any(s < match.start() < e for s, e in spans):
             continue
-        query = LABEL_RE.sub("", match.group("query"))
-        paper = f"{alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')"
-        own = f"{alias}.{FTS_COLUMN} @@ TO_TSQUERY('english', '{query}')"
-        if match.group("guard"):
-            # Exact word forms count in the paper as in the dataset's text.
-            guard = LABEL_RE.sub("", match.group("guard"))
-            paper = f"({paper} AND {alias}.{EXACT_PAPER_FTS_COLUMN} @@ TO_TSQUERY('simple', '{guard}'))"
-            own = f"({own} AND {alias}.{EXACT_FTS_COLUMN} @@ TO_TSQUERY('simple', '{guard}'))"
-        # The paper vector also holds the dataset's own text; "only in a
-        # paper" means it matches there and not in the dataset's text.
-        atoms.append(f"({paper} AND NOT {own})")
-    return " OR ".join(dict.fromkeys(atoms)) or None
+        guard = match.group("guard")
+        searches.append(TextSearch(LABEL_RE.sub("", match.group("query")),
+                                   LABEL_RE.sub("", guard) if guard else None))
+    return tuple(searches)
 
 
-def _paper_only(paper: Optional[str]) -> Tuple[Evidence, ...]:
-    return (PaperOnly(paper),) if paper else ()
+def _paper_only(sql: str, papers: bool) -> Tuple[Evidence, ...]:
+    """The evidence that the text searches of *sql* match only in a paper;
+    none without paper text or without a positive text search."""
+    searches = paper_searches(sql) if papers else ()
+    return (PaperOnly(searches),) if searches else ()
 
 
 def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
@@ -173,31 +165,51 @@ def classify(node, alias: str, papers: bool = False) -> Optional[SoftCondition]:
         return sidecar(node, alias)
     if kind == "patient_count":
         return _patient_count(sql, alias)
-    relaxed, words = relax_text_condition(sql)
     # Part of a text search the condition holds, anywhere in the text.
-    weaker_search = (WeakerSearch(relaxed, partial_reason(words)),) if relaxed else ()
-    paper = paper_atoms(sql, alias) if papers else None
+    relaxed = relax_text_condition(sql)
+    weaker_search: Tuple[Evidence, ...] = (relaxed,) if relaxed else ()
+    paper = _paper_only(sql, papers)
     if kind != "text":
         # A field a dataset may not record. What is particular to the field
         # is in its file (fields/); the steps are the same for all.
         field = fields.BY_KIND[kind]
         # The dataset's own text names the asked value: counts in place of a
         # part of the search.
-        named = field.named_in_text(node, alias) if field.named_in_text else None
-        weaker: Tuple[Evidence, ...] = (NamedInText(*named),) if named is not None else weaker_search
+        named = field.named_in_text(node) if field.named_in_text else None
+        weaker: Tuple[Evidence, ...] = (named,) if named is not None else weaker_search
         if field.paper_evidence:
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
-            weaker = _paper_only(paper) + weaker
-        record = OtherValuesRecorded(field.recorded(alias))
-        not_recorded = NotRecorded(reason=reason_texts.NOT_RECORDED[kind])
-        if field.text_beats_recorded:
-            return SoftCondition(kind=kind, evidence=(AsAsked(sql), *weaker, record, not_recorded))
-        return SoftCondition(kind=kind, evidence=(AsAsked(sql), record, *weaker, not_recorded))
+            weaker = paper + weaker
+        record = OtherValuesRecorded(field.recorded)
+        not_recorded = NotRecorded(field.label)
+        evidence = ((AsAsked(sql), *weaker, record, not_recorded) if field.text_beats_recorded
+                    else (AsAsked(sql), record, *weaker, not_recorded))
+        return SoftCondition(kind=kind, alias=alias, evidence=evidence)
     if relaxed or paper:
-        return SoftCondition(kind="text", evidence=(
-            AsAsked(sql), *_paper_only(paper), *weaker_search))
+        return SoftCondition(kind="text", alias=alias, evidence=(AsAsked(sql), *paper, *weaker_search))
     return None
+
+
+@dataclass(frozen=True)
+class PatientsNotCounted(Evidence):
+    """"At least *minimum* participants with one of *codes*": the dataset
+    does not record who has the diagnosis and is large enough to hold them."""
+    codes: Tuple[str, ...]
+    minimum: int
+    stored_subject_counts: bool   # bids_datasets.n_subjects is filled
+    source: Source = dataclasses.field(default=Source.NOT_RECORDED, kw_only=True)
+    strength: Strength = dataclasses.field(default=Strength.PROBABLE, kw_only=True)
+
+    def sql(self, alias: str) -> Optional[str]:
+        import cohort_count
+        from services.schema.tables import datasets
+        stored = (f"COALESCE({alias}.{datasets.c.n_subjects.name}, 0)"
+                  if self.stored_subject_counts else None)
+        return cohort_count.unknown_sql(list(self.codes), self.minimum, alias, subject_count=stored)
+
+    def reason(self) -> str:
+        return "how many participants have the diagnosis is not recorded"
 
 
 def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
@@ -215,17 +227,13 @@ def _patient_count(sql: str, alias: str) -> Optional[SoftCondition]:
     if parsed is None:
         return None
     codes, minimum = parsed
-    stored = None
+    stored = False
     try:
         from services.database_stats.database_stats import database_stats
-        from services.schema.tables import datasets
-        if database_stats.summaries.subject_counts:
-            stored = f"COALESCE({alias}.{datasets.c.n_subjects.name}, 0)"
+        stored = bool(database_stats.summaries.subject_counts)
     except ImportError:
         pass
-    # Not recorded, in a dataset large enough to hold the patients.
-    unknown = cohort_count.unknown_sql(codes, minimum, alias, subject_count=stored)
-    return SoftCondition(kind="patient_count", evidence=(
+    return SoftCondition(kind="patient_count", alias=alias, evidence=(
         AsAsked(sql),
-        NotRecorded(unknown, reason_texts.PATIENT_COUNT_NOT_RECORDED, strength=Strength.PROBABLE),
+        PatientsNotCounted(tuple(codes), minimum, stored),
     ))

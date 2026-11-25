@@ -16,6 +16,7 @@ from services.uncertain.fields.base import SoftField, participant_rows_record
 
 FIELD = SoftField(
     kind="diagnosis",
+    label="diagnosis",
     columns=("diagnosis", "dx_status"),
     recorded=participant_rows_record("diagnosis"),
     # Coded diagnoses are often incomplete: a dataset that codes some other

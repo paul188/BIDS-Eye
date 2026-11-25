@@ -275,12 +275,14 @@ def test_the_weaker_form_keeps_the_word_forms(exact, monkeypatch) -> None:
 
 
 def test_scope_widening_keeps_the_guard_without_labels(exact) -> None:
-    relaxed, words = tier_text.relax_text_condition(
+    weaker = tier_text.relax_text_condition(
         "d.search_tsv @@ TO_TSQUERY('english', 'weight:AB') "
         "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight:AB | weights:AB)')")
-    assert relaxed == ("(d.search_tsv @@ TO_TSQUERY('english', 'weight') "
-                       "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight | weights)'))")
-    assert words == ["\x00readme weight"]
+    assert weaker.sql("d") == ("(d.search_tsv @@ TO_TSQUERY('english', 'weight') "
+                               "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight | weights)'))")
+    assert [(search.weakening.value, search.words) for search in weaker.searches] == [
+        ("readme_only", ("weight",))]
+    assert weaker.reason() == '"weight" appears only further down in the README'
 
 
 def test_paper_evidence_needs_the_word_forms_in_the_paper(exact) -> None:

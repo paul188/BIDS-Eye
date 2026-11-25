@@ -11,12 +11,16 @@ for ("infants", "older adults").
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
-from services.evidence import reason_texts
+from services.evidence.possible import NotRecorded
+from services.evidence.probable import NamedInText
 from services.uncertain.fields.base import SoftField, participant_rows_record
 import text_evidence  # RAG/ is on the path wherever the backend runs
 
+
+LABEL = "ages"   # how a result card names the field
 
 _NUMBER_COMPARISON_RE = re.compile(
     r"\bage(?:_min|_max)?\s*(?P<op><=|>=|<|>|=)\s*(?P<value>\d+(?:\.\d+)?)", re.IGNORECASE)
@@ -65,14 +69,23 @@ def tsquery_for_words(words: Sequence[str]) -> str:
     return " | ".join(parts)
 
 
-def age_text_condition(node, alias: str) -> Optional[Tuple[str, str]]:
-    """(SQL, reason) for a dataset whose text names the asked age group; None
+@dataclass(frozen=True)
+class AgeGroupNamed(NamedInText):
+    """The dataset's own text names the age group: one of *words*."""
+    words: Tuple[str, ...] = ()
+
+    def sql(self, alias: str) -> Optional[str]:
+        return f"{alias}.search_tsv @@ TO_TSQUERY('english', '{tsquery_for_words(self.words)}')"
+
+    def reason(self) -> str:
+        return f"{NotRecorded(LABEL).reason()}; the description names the age group"
+
+
+def age_group_named(node) -> Optional[AgeGroupNamed]:
+    """The age group an age condition asks for, as a text would name it; None
     if the asked range fits no group."""
     group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
-    if not group_words:
-        return None
-    return (f"{alias}.search_tsv @@ TO_TSQUERY('english', '{tsquery_for_words(group_words)}')",
-            reason_texts.AGE_GROUP_NAMED)
+    return AgeGroupNamed(words=tuple(group_words)) if group_words else None
 
 
 def _recorded(alias: str) -> str:
@@ -82,9 +95,10 @@ def _recorded(alias: str) -> str:
 
 FIELD = SoftField(
     kind="age",
+    label=LABEL,
     columns=("age", "age_min", "age_max"),
     recorded=_recorded,
-    named_in_text=age_text_condition,
+    named_in_text=age_group_named,
     # The dataset's own text only. Of 63 datasets without ages whose only
     # child word was in a paper (live database, 2026-11-17), about 9 studied
     # children; the rest were adult studies citing child work (Sherlock, BCIT)

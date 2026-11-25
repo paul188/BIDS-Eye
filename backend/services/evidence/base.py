@@ -7,14 +7,15 @@ of evidence are and who uses them: services/evidence/__init__.py.
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import List, Optional, Tuple
+from typing import Optional
 
 
 # ── Where evidence is found ───────────────────────────────────────────────────
 
-class EvidenceSource(str, Enum):
+class Source(str, Enum):
     """Where a piece of evidence was found."""
     CONDITION = "condition"        # the condition as the search wrote it, whatever it reads
     PARTICIPANTS = "participants"  # rows of the participant list
@@ -39,7 +40,10 @@ class EvidenceSource(str, Enum):
 
 class Strength(IntEnum):
     """What the evidence says about one AND condition of a search. A dataset
-    is as strong as its weakest condition (the uncertain_level column)."""
+    is as strong as its weakest condition (the uncertain_level column).
+
+    The numbers leave the backend in that column (the result cards and the
+    benchmarks read them): do not renumber."""
     CONFIRMED = 0      # the condition holds
     PROBABLE = 1       # a weaker form of it holds
     POSSIBLE = 2       # what it asks about is not recorded, and nothing hints either way
@@ -49,38 +53,22 @@ class Strength(IntEnum):
 # ── One piece of evidence ─────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
-class Evidence:
+class Evidence(ABC):
     """One way a dataset can meet a condition.
 
-    The subclasses set the source and strength of their kind and add what
-    only they have (confirmed.py: the participants counted, the value of a
-    column). A kind that needs neither is an Evidence itself.
+    A kind of evidence is a subclass. It holds what it is about (the words
+    missing from a search, the sex a text names, the participant rows a
+    branch counts) and writes its SQL and its card text from that.
     """
-    # SQL that is true for a dataset this evidence holds for. None: it holds
-    # for whatever the evidence listed before it left over (weaker.NotRecorded).
-    sql: Optional[str] = None
-    # What the result card says when this evidence decides; "" says nothing.
-    # The wordings: reason_texts.py.
-    reason: str = ""
-    source: EvidenceSource = field(kw_only=True)
+    source: Source = field(kw_only=True)
     strength: Strength = field(kw_only=True)
 
-    # ── Evidence that shows numbers or values on the card (confirmed.py) ──────
+    @abstractmethod
+    def sql(self, alias: str) -> Optional[str]:
+        """SQL that is true for the dataset row *alias* this evidence holds
+        for. None: it holds for whatever the evidence listed before it left
+        over (possible.NotRecorded)."""
 
-    def read_columns(self) -> Tuple[str, ...]:
-        """The dataset columns whose values the card text shows."""
-        return ()
-
-    def number_columns(self, name: str) -> List[str]:
-        """SQL columns for the numbers the card text shows, named after *name*."""
-        return []
-
-    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
-        """The card text for one dataset. *row* holds the columns asked for
-        above, *total* the dataset's number of participants."""
-        return self.reason or None
-
-    @property
-    def key(self) -> Tuple[EvidenceSource, Tuple[str, ...]]:
-        """Two pieces of evidence with one key are the same way of matching."""
-        return self.source, self.read_columns()
+    def reason(self) -> str:
+        """What the result card says when this evidence decides; "" says nothing."""
+        return ""

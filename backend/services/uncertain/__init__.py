@@ -10,9 +10,11 @@
                  diagnosis, sex), all described the same way (fields/base.py)
   scanner.py     field strength, vendor and model in the text
 
-The kinds of evidence and every text a result card gives are in
-services/evidence/ (weaker.py, reason_texts.py), shared with the reasons of
-confirmed results (results/match_reasons.py).
+The kinds of evidence are in services/evidence/, one file per strength,
+shared with the reasons of confirmed results (results/match_reasons.py). A
+kind holds what it is about (the missing words, the sex a text names) and
+writes its SQL and card text from that; the kinds of one field are in that
+field's file here.
 
 Applied by translate/sql_rewriter.py. results/query_filters.py reads the asked
 ages, sex and scanner values with the same functions for its chips.

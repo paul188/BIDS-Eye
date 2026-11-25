@@ -8,9 +8,8 @@
 A condition on one of them is uncertain for a dataset that does not record
 the field (classify.soft_kind decides, classify.classify builds the states).
 
-To add a field: write its file with a FIELD, list it in FIELDS below, add its
-"not recorded" wording to evidence/reason_texts.NOT_RECORDED and its file to
-stores/interpretations._VERSION_FILES. The words its text form looks for
+To add a field: write its file with a FIELD, list it in FIELDS below, and add
+its file to stores/interpretations._VERSION_FILES. The words its text form looks for
 belong in RAG/value_mappings.yaml (RAG/text_evidence.py reads them).
 
 Scanner values are not here: they are recorded with the files, not as a

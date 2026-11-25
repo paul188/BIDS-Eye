@@ -7,19 +7,18 @@ recorded and a default is assumed. Each way is one Evidence: where it was
 found (its source), what it proves (its strength), the SQL that is true for a
 dataset it holds for, and the text a result card shows.
 
-  base.py          Evidence, the sources and the strengths
-  confirmed.py     evidence with numbers or values of its own: participant
-                   rows, a dataset column, an assumed default
-  weaker.py        evidence for a dataset the condition does not hold for:
-                   only a paper, a weaker form of the search, the value named
-                   in the text, the field not recorded, other values recorded
-  reason_texts.py  every text a result card gives, in one list
+  base.py          Evidence, where it is found (Source) and what it proves (Strength)
+
+One file per strength; a kind holds what it is about and writes its SQL and
+its card text from that:
+  confirmed.py     the condition holds as generated; one OR branch of it holds
+  probable.py      only in a paper, a weaker form of the search, the value
+                   named in the dataset's own text
+  possible.py      the field is not recorded
+  contradicted.py  the field is recorded with other values
 
 Used by results/match_reasons.py (why a confirmed result matched: one
-Evidence per OR branch of a condition) and by services/uncertain/ (which
-state a condition has for a dataset: an ordered list of Evidence, the first
-that holds decides).
-
-Nothing is imported here: the translation reads base.py, weaker.py and
-reason_texts.py (stores/interpretations._VERSION_FILES), not confirmed.py.
+ConfirmedMatch per OR branch of a condition) and by services/uncertain/
+(which state a condition has for a dataset: an ordered list of Evidence, the
+first that holds decides).
 """

@@ -11,6 +11,7 @@ conditions: which sex a condition asks for (asked_sex) and the repair of an
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Optional, Tuple
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
@@ -18,13 +19,16 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.evidence import reason_texts
+from services.evidence.possible import NotRecorded
+from services.evidence.probable import NamedInText
 from services.uncertain.conditions import own_text, sql_literal
 from services.uncertain.fields.base import SoftField, participant_rows_record
 from services.schema.tables import participants as _participants
 from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
 import text_evidence
 
+
+LABEL = "participant sex"   # how a result card names the field
 
 # The stored codes that name one sex; a condition on any other value has no
 # text form.
@@ -112,20 +116,36 @@ def keep_only_sex_pairs(nodes: list) -> list:
     return [joined if n is partner else n for n in rest]
 
 
-def sex_text_condition(node, alias: str) -> Optional[Tuple[str, str]]:
-    """(SQL, reason) for a dataset whose text names the asked sex; None if
-    the condition does not ask for one sex."""
+@dataclass(frozen=True)
+class SexNamed(NamedInText):
+    """The dataset's own text names participants of *sex*; with *only*, it
+    says all of them are."""
+    sex: str = ""
+    only: bool = False
+
+    def sql(self, alias: str) -> Optional[str]:
+        words = "|".join(text_words(self.sex))
+        only = _ONLY_SEX_RE.format(w=words)
+        if self.only:
+            return _in_own_text(alias, only)
+        # "An all-female sample" names female participants too.
+        people = "|".join(text_evidence.people_words())
+        return _in_own_text(alias, f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})")
+
+    def reason(self) -> str:
+        not_recorded = NotRecorded(LABEL).reason()
+        if self.only:
+            return f"{not_recorded}; the description says all participants are {self.sex}"
+        return f"{not_recorded}; the description names {self.sex} participants"
+
+
+def sex_named(node) -> Optional[SexNamed]:
+    """The sex a condition asks for, as a text would name it; None if the
+    condition does not ask for one sex."""
     sex = asked_sex(node)
     if sex is None or not text_words(sex):
         return None
-    words = "|".join(text_words(sex))
-    only = _ONLY_SEX_RE.format(w=words)
-    if _only_one_sex(node):
-        return _in_own_text(alias, only), reason_texts.only_sex_named(sex)
-    # "An all-female sample" names female participants too.
-    people = "|".join(text_evidence.people_words())
-    named = f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})"
-    return _in_own_text(alias, named), reason_texts.sex_named(sex)
+    return SexNamed(sex=sex, only=_only_one_sex(node))
 
 
 _WORD_END = "($|[^[:alnum:]_'’])"
@@ -139,7 +159,8 @@ def _in_own_text(alias: str, pattern: str) -> str:
 
 FIELD = SoftField(
     kind="sex",
+    label=LABEL,
     columns=("sex",),
     recorded=participant_rows_record("sex"),
-    named_in_text=sex_text_condition,
+    named_in_text=sex_named,
 )

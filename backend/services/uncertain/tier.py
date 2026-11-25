@@ -225,7 +225,7 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
             else f"TRUE AS {known}",
         ))
         for piece, flag in zip(condition.weaker, flags[i]):
-            evidence_columns.append(f"({piece.sql}) AS {flag}")
+            evidence_columns.append(f"({piece.sql(alias)}) AS {flag}")
             flag_columns.append(f"ev.{flag}")
         state = condition.state_sql(f"ev.{confirmed}", f"ev.{probable}", f"ev.{known}")
         state_cases.append(f"{state} AS u{i}")
@@ -295,10 +295,10 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     for i, c in enumerate(soft):
         branches = []
         for j, piece in enumerate(c.weaker):
-            if piece.reason:
+            if reason := piece.reason():
                 # The last one needs no flag: nothing listed before it held.
                 flag = f" AND evidence.{flags[i][j]}" if j < len(flags[i]) else ""
-                branches.append(f"WHEN evidence.u{i} = {probably}{flag} THEN {sql_literal(piece.reason)}")
+                branches.append(f"WHEN evidence.u{i} = {probably}{flag} THEN {sql_literal(reason)}")
         if c.reason_possible:
             branches.append(f"WHEN evidence.u{i} = {possibly} THEN {sql_literal(c.reason_possible)}")
         if branches:

@@ -2,18 +2,18 @@
 services/uncertain/text.py
 ------------------------------
 Weaker forms of a text search, the 'probable' state of a text condition:
-some of its words (relax_tsquery, relax_near), the words apart, and the
-reasons a result card shows for them.
+some of its words (relax_tsquery, relax_near), the words apart. The result
+is evidence.probable.WeakerSearch, which writes the SQL and the card text.
 """
 
 from __future__ import annotations
 
 import re
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
-from services.evidence import reason_texts
+from services.evidence.probable import TextSearch, WeakenedSearch, WeakerSearch, Weakening
 from services.uncertain.conditions import LABEL_RE, TSQUERY_RE
 
 
@@ -209,58 +209,17 @@ def negated_spans(sql: str) -> List[Tuple[int, int]]:
     return text_search.negated_spans(sql)
 
 
-_README_ONLY = "\x00readme"
-# Markers for the two weaker forms of a topic search (preprocess.py, topics):
-# its words anywhere instead of together, and a match on a meaning the
-# question excluded. Each is followed by the words, e.g. "\x00apart social conflict".
-_APART = "\x00apart"
-_EXCLUDED = "\x00excluded"
+def relax_text_condition(sql: str) -> Optional[WeakerSearch]:
+    """The weaker text evidence for a condition; None when no positive text
+    search of it would change.
 
-
-def _marked_terms(words: List[str], marker: str) -> List[str]:
-    return list(dict.fromkeys(
-        t for w in words if w.startswith(marker) for t in w[len(marker):].split() if t))
-
-
-def partial_reason(words: List[str]) -> str:
-    """Card text for a probable text match (the wording: reason_texts.py)."""
-    apart = _marked_terms(words, _APART)
-    excluded = _marked_terms(words, _EXCLUDED)
-    words = [w for w in words if not w.startswith((_APART, _EXCLUDED))]
-    # One text serves every dataset at this level, so the topic's two weaker
-    # forms are named as alternatives: either may be why a dataset is here.
-    loose = []
-    if apart:
-        loose.append(reason_texts.words_apart(apart))
-    if excluded:
-        loose.append(reason_texts.excluded_meaning(excluded))
-    parts = [", or ".join(loose)] if loose else []
-    if words or not parts:
-        parts.append(_text_reason(words))
-    return "; ".join(parts)
-
-
-def _text_reason(words: List[str]) -> str:
-    missing = [w for w in words if not w.startswith(_README_ONLY)]
-    if not missing:
-        # _README_ONLY + the words whose scope was widened, e.g. "\x00readme harvard".
-        return reason_texts.readme_only(list(dict.fromkeys(
-            t for w in words for t in w[len(_README_ONLY):].split() if t)))
-    return reason_texts.words_missing(missing)
-
-
-def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
-    """The weaker text evidence for a condition, and the words involved.
-
-    The weaker form is only the relaxed text searches of the condition, ORed:
+    Only the relaxed text searches of the condition count, any one of them:
     the rest of the condition (often an expensive check over the files) has
     already been evaluated for the confirmed state, and when it holds the
-    dataset is confirmed anyway. (None, []) when no positive tsquery would
-    change.
+    dataset is confirmed anyway.
     """
     spans = negated_spans(sql)
-    words: List[str] = []
-    relaxed_atoms: List[str] = []
+    searches: List[WeakenedSearch] = []
     matches = list(TSQUERY_RE.finditer(sql))
 
     def negated(match: re.Match) -> bool:
@@ -285,27 +244,24 @@ def relax_text_condition(sql: str) -> Tuple[Optional[str], List[str]]:
         guard = match.group("guard")
         relaxed = relax_tsquery(query, guard) if (first or not topic) else None
         first = False
+        words: Sequence[str]
         if relaxed is None:
             if not excluded_words:
                 continue
-            relaxed = query
-            words.append(f"{_EXCLUDED} {' '.join(excluded_words)}")
+            relaxed, weakening, words = query, Weakening.EXCLUDED_MEANING, excluded_words
         elif relax_near(query) is not None:
-            apart = [w for part in _top_level_or(relaxed) if "&" in part for w in query_words(part)]
-            words.append(f"{_APART} {' '.join(apart)}")
+            weakening = Weakening.WORDS_APART
+            words = [w for part in _top_level_or(relaxed) if "&" in part for w in query_words(part)]
         else:
             dropped = set(query_words(query)) - set(query_words(relaxed))
-            # No word dropped: only the scope was widened, to the whole README.
-            words.extend(sorted(dropped) or [f"{_README_ONLY} {' '.join(query_words(relaxed))}"])
-        atom = (f"{match.group('alias')}.{match.group('column')} @@ "
-                f"TO_TSQUERY('english', '{relaxed}')")
-        # The weaker form still needs the word forms that were asked for:
-        # "ageing" relaxed to its stem would be every README with an age.
+            if dropped:
+                weakening, words = Weakening.WORDS_MISSING, sorted(dropped)
+            else:
+                # No word dropped: only the scope was widened, to the whole README.
+                weakening, words = Weakening.README_ONLY, query_words(relaxed)
+        # The word forms that were asked for stay with the words that are left.
         kept_guard = guard if relaxed == query else guard_for(relaxed, guard)
-        if kept_guard:
-            atom = (f"({atom} AND {match.group('alias')}.{match.group('guard_column')} @@ "
-                    f"TO_TSQUERY('simple', '{kept_guard}'))")
-        relaxed_atoms.append(atom)
-    if not relaxed_atoms:
-        return None, []
-    return " OR ".join(dict.fromkeys(relaxed_atoms)), list(dict.fromkeys(words))
+        searches.append(WeakenedSearch(
+            TextSearch(relaxed, kept_guard), match.group("column"),
+            match.group("guard_column") if kept_guard else None, weakening, tuple(words)))
+    return WeakerSearch(tuple(searches)) if searches else None

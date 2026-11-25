@@ -165,8 +165,8 @@ def test_an_or_has_no_weaker_form_in_the_tier() -> None:
         papers=False).sql
     assert "to_tsquery('english', 'drawings | art')" in sql
     # Its weaker form is the same search: no single word ("art") on its own.
-    relaxed, _ = tier_text.relax_text_condition(sql)
-    assert relaxed is None or "'(drawings | art)'" in relaxed
+    weaker = tier_text.relax_text_condition(sql)
+    assert weaker is None or "'(drawings | art)'" in weaker.sql("d")
 
 
 def test_rewriter_adds_a_left_out_negation() -> None:

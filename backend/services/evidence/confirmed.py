@@ -1,34 +1,114 @@
 """
 services/evidence/confirmed.py
 ------------------------------
-Evidence of a confirmed match that shows numbers or values of its own on the
-result card: the participants a condition holds for, the value of a dataset
-column, a default that was assumed. Every other confirmed match says only
-where it was found (found()).
-
-Built by results/match_reasons.py, one per OR branch of a condition.
+Evidence that a condition holds for a dataset: the condition of the generated
+query as it is (AsAsked, used by the uncertain tier), and one OR branch of it
+(ConfirmedMatch, used by results/match_reasons.py to say on the card which
+way of matching it was: the participants a branch holds for, the value of a
+dataset column, a default that was assumed, or only where it was found).
 """
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import ClassVar, Dict, List, Optional, Tuple
 
 from sqlglot import exp
 
-from services.evidence import reason_texts
-from services.evidence.base import Evidence, EvidenceSource, Strength
+from services.evidence.base import Evidence, Source, Strength
 
 _MAX_VALUE_CHARS = 60
 
 
-def found(source: EvidenceSource, sql: str) -> Evidence:
-    """Confirmed evidence that says only where the value was found."""
-    return Evidence(sql, reason_texts.FOUND_IN[source], source=source, strength=Strength.CONFIRMED)
+def age_span(low: float, high: float) -> str:
+    """'4–23 months' below 2 years, else '6–11 years'; one value once."""
+    if high < 2:
+        months_lo, months_hi = round(low * 12), round(high * 12)
+        return (f"{months_lo} months" if months_lo == months_hi
+                else f"{months_lo}–{months_hi} months")
+    lo, hi = f"{round(low, 1):g}", f"{round(high, 1):g}"
+    return f"{lo} years" if lo == hi else f"{lo}–{hi} years"
+
+
+def _age(value: object) -> Optional[float]:
+    """An age read back as text; None when the column is empty."""
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
 
 
 @dataclass(frozen=True)
-class ParticipantRows(Evidence):
+class AsAsked(Evidence):
+    """The condition of the generated query holds as it is."""
+    condition: str   # its SQL, as generated
+    source: Source = field(default=Source.CONDITION, kw_only=True)
+    strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
+
+    def sql(self, alias: str) -> Optional[str]:
+        return self.condition
+
+
+@dataclass(frozen=True)
+class ConfirmedMatch(Evidence):
+    """One OR branch of a condition of the generated query. What the card
+    says about it may need numbers or values from the database; a subclass
+    names the columns it needs and writes the text from them."""
+    branch: str   # its SQL, as generated: it names the dataset row by the query's own alias
+    strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
+
+    def sql(self, alias: str) -> Optional[str]:
+        return self.branch
+
+    def read_columns(self) -> Tuple[str, ...]:
+        """The dataset columns whose values the card text shows."""
+        return ()
+
+    def number_columns(self, name: str) -> List[str]:
+        """SQL columns for the numbers the card text shows, named after *name*."""
+        return []
+
+    @abstractmethod
+    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
+        """The card text for one dataset; None says nothing. *row* holds the
+        columns asked for above, *total* the dataset's number of participants."""
+
+    @property
+    def key(self) -> Tuple[Source, Tuple[str, ...]]:
+        """Two branches with one key are the same way of matching."""
+        return self.source, self.read_columns()
+
+
+@dataclass(frozen=True)
+class Found(ConfirmedMatch):
+    """A match that says only where the value was found: its source."""
+
+    # What the card says, by the source.
+    TEXTS: ClassVar[Dict[Source, str]] = {
+        Source.FILES: "in the dataset's files",
+        Source.DERIVATIVES: "in its derivatives",
+        Source.SITES: "at a listed site",
+        Source.PAPER: "named in a linked paper",
+        Source.TEXT: "named in the README or description",
+        Source.SHORT_TEXT: "named in the title or description",
+        Source.README: "named in the README",
+        # An excluded diagnosis the dataset passes because it records none.
+        Source.ASSUMED_ABSENT: "no diagnosis recorded, assumed absent",
+    }
+
+    def __post_init__(self) -> None:
+        if self.source not in self.TEXTS:
+            raise ValueError(f"no card text for a match found in {self.source}")
+
+    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
+        return self.TEXTS[self.source]
+
+
+@dataclass(frozen=True)
+class ParticipantRows(ConfirmedMatch):
     """Rows of the participant list hold the asked value: "12 of 40
     participants aged 4–23 months"."""
     # The participant rows the evidence holds for, as a SELECT whose
@@ -37,8 +117,7 @@ class ParticipantRows(Evidence):
     participant_rows: Optional[exp.Select] = None
     age_column: Optional[exp.Column] = None   # the age column that SELECT compares
     reads_diagnosis: bool = False
-    source: EvidenceSource = field(default=EvidenceSource.PARTICIPANTS, kw_only=True)
-    strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
+    source: Source = field(default=Source.PARTICIPANTS, kw_only=True)
 
     def number_columns(self, name: str) -> List[str]:
         if self.participant_rows is None:
@@ -51,6 +130,8 @@ class ParticipantRows(Evidence):
 
     def _aggregate(self, function: str, argument) -> str:
         assert self.participant_rows is not None
+        # One number per dataset: grouped rows would give one per group.
+        assert not (self.participant_rows.args.get("group") or self.participant_rows.args.get("having"))
         select = self.participant_rows.copy()
         select.set("expressions", [exp.Anonymous(this=function, expressions=[argument.copy()])])
         for key in ("order", "limit", "offset", "distinct"):
@@ -60,20 +141,28 @@ class ParticipantRows(Evidence):
     def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
         count = row.get(f"n{name}")
         if count is None:
-            return reason_texts.PARTICIPANTS_LISTED
+            return "recorded in the participant list"
+        whom = (f"{count} of {total} participants" if total and total >= count
+                else f"{count} participants")
         low, high = row.get(f"lo{name}"), row.get(f"hi{name}")
-        ages = (reason_texts.age_span(float(low), float(high))
-                if self.age_column is not None and low is not None and high is not None else None)
-        return reason_texts.participants_counted(count, total, ages, self.reads_diagnosis)
+        if self.age_column is not None and low is not None and high is not None:
+            return f"{whom} aged {age_span(float(low), float(high))}"
+        return f"coded for {whom}" if self.reads_diagnosis else f"recorded for {whom}"
 
 
 @dataclass(frozen=True)
-class FieldValue(Evidence):
+class FieldValue(ConfirmedMatch):
     """Columns of the dataset itself hold the asked value; the card shows it:
     "dataset age range 6–11 years", "species label “mouse”"."""
     columns: Tuple[str, ...] = ()
-    source: EvidenceSource = field(default=EvidenceSource.FIELD, kw_only=True)
-    strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
+    source: Source = field(default=Source.FIELD, kw_only=True)
+    # How a card names a column; others by their own name.
+    LABELS: ClassVar[Dict[str, str]] = {
+        "species": "species label",
+        "dx_status": "diagnosis label",
+        "study_design": "study design",
+        "study_domain": "study domain",
+    }
 
     def read_columns(self) -> Tuple[str, ...]:
         return self.columns
@@ -81,13 +170,14 @@ class FieldValue(Evidence):
     def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
         values = {column: row.get(f"f_{column}") for column in self.columns}
         if {"age_min", "age_max"} & set(values):
-            try:
-                low, high = float(values.get("age_min") or 0), float(values.get("age_max") or 0)
-            except ValueError:
-                low = high = 0
-            if low > 0 or high > 0:
-                low, high = (low or high), (high or low)
-                return reason_texts.dataset_age_range(reason_texts.age_span(low, high))
+            low, high = _age(values.get("age_min")), _age(values.get("age_max"))
+            # 0 to 0 is a placeholder, not an age: the four datasets that
+            # have it are adult studies (live database, 2026-11-23).
+            if (low is not None or high is not None) and (low or high):
+                low = high if low is None else low
+                high = low if high is None else high
+                assert low is not None and high is not None
+                return f"dataset age range {age_span(low, high)}"
         shown = []
         for column, value in values.items():
             if column in ("age_min", "age_max") or value in (None, ""):
@@ -95,20 +185,25 @@ class FieldValue(Evidence):
             value = str(value)
             if len(value) > _MAX_VALUE_CHARS:
                 value = value[:_MAX_VALUE_CHARS].rstrip() + "…"
-            shown.append(reason_texts.field_value(column, value))
+            shown.append(f"{self.LABELS.get(column, column.replace('_', ' '))} “{value}”")
         return ", ".join(shown) or None
 
 
 @dataclass(frozen=True)
-class Assumed(Evidence):
+class Assumed(ConfirmedMatch):
     """The column is empty and its default holds: "no species label, assumed
-    human" (the defaults: RAG/criteria.py; their wording: reason_texts.ASSUMED)."""
+    human" (the defaults themselves: RAG/criteria.py)."""
     columns: Tuple[str, ...] = ()
-    source: EvidenceSource = field(default=EvidenceSource.ASSUMED, kw_only=True)
-    strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
+    source: Source = field(default=Source.ASSUMED, kw_only=True)
+    # What the card says, by the column that has a default.
+    TEXTS: ClassVar[Dict[str, str]] = {"species": "no species label, assumed human"}
+
+    def __post_init__(self) -> None:
+        if len(self.columns) != 1 or self.columns[0] not in self.TEXTS:
+            raise ValueError(f"no default to assume for {self.columns}")
 
     def read_columns(self) -> Tuple[str, ...]:
         return self.columns
 
     def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
-        return reason_texts.ASSUMED[self.columns[0]]
+        return self.TEXTS[self.columns[0]]

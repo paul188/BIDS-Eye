@@ -16,7 +16,7 @@ needs this line: the README need not say "infant" at all.
 Generic over every query: the evidence is read from the SQL, not listed per
 criterion, so a new criterion with several branches is explained without
 code here. What a kind of evidence shows on the card is written with the kind
-(evidence/confirmed.py), the wording in evidence/reason_texts.py. One query per page evaluates each branch for the page's datasets; a
+(evidence/confirmed.py), with its wording. One query per page evaluates each branch for the page's datasets; a
 branch on the participant list also counts the participants it holds for,
 with their ages when it reads ages.
 """
@@ -34,9 +34,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import DatasetSchema
-from services.evidence import reason_texts
-from services.evidence.base import Evidence, EvidenceSource
-from services.evidence.confirmed import Assumed, FieldValue, ParticipantRows, found
+from services.evidence.base import Source
+from services.evidence.confirmed import (Assumed, ConfirmedMatch, FieldValue, Found,
+                                         ParticipantRows)
 from services.results import query_filters
 from services.schema import tables as _tables
 
@@ -50,21 +50,21 @@ log = logging.getLogger(__name__)
 # One OR branch of a condition is one piece of evidence (services/evidence/):
 # where the value was found, and the text the card shows for it.
 _TABLE_SOURCES = {
-    _tables.participants.name: EvidenceSource.PARTICIPANTS,
-    _tables.objects.name: EvidenceSource.FILES,
-    "bids_files": EvidenceSource.FILES,  # not a catalogue table, kept as it was
-    _tables.dataset_facets.name: EvidenceSource.FILES,
-    _tables.derivatives.name: EvidenceSource.DERIVATIVES,
-    _tables.dataset_sites.name: EvidenceSource.SITES,
-    _tables.site_places.name: EvidenceSource.SITES,
-    _tables.dataset_papers.name: EvidenceSource.PAPER,
-    _tables.papers.name: EvidenceSource.PAPER,
+    _tables.participants.name: Source.PARTICIPANTS,
+    _tables.objects.name: Source.FILES,
+    "bids_files": Source.FILES,  # not a catalogue table, kept as it was
+    _tables.dataset_facets.name: Source.FILES,
+    _tables.derivatives.name: Source.DERIVATIVES,
+    _tables.dataset_sites.name: Source.SITES,
+    _tables.site_places.name: Source.SITES,
+    _tables.dataset_papers.name: Source.PAPER,
+    _tables.papers.name: Source.PAPER,
 }
 _TEXT_COLUMNS = {
-    "search_tsv": EvidenceSource.TEXT, "search_tsv_exact": EvidenceSource.TEXT,
-    "search_tsv_papers": EvidenceSource.PAPER, "search_tsv_exact_papers": EvidenceSource.PAPER,
-    "readme_text": EvidenceSource.README,
-    "name": EvidenceSource.SHORT_TEXT, "description_text": EvidenceSource.SHORT_TEXT,
+    "search_tsv": Source.TEXT, "search_tsv_exact": Source.TEXT,
+    "search_tsv_papers": Source.PAPER, "search_tsv_exact_papers": Source.PAPER,
+    "readme_text": Source.README,
+    "name": Source.SHORT_TEXT, "description_text": Source.SHORT_TEXT,
 }
 
 
@@ -74,7 +74,7 @@ class ChipPlan:
     field: str
     kind: str
     # dataclasses.field: the name 'field' is this class's own attribute.
-    branches: List[Evidence] = dataclasses.field(default_factory=list)
+    branches: List[ConfirmedMatch] = dataclasses.field(default_factory=list)
 
 
 # ── Reading the SQL ───────────────────────────────────────────────────────────
@@ -137,7 +137,7 @@ def _branch_tsqueries(branch) -> List[str]:
     return found
 
 
-def classify_branch(branch, alias: str) -> Optional[Evidence]:
+def classify_branch(branch, alias: str) -> Optional[ConfirmedMatch]:
     """The evidence one OR branch is; None when it cannot be evaluated alone.
 
     Text first: "no ages recorded AND the description names infants" is
@@ -154,18 +154,18 @@ def classify_branch(branch, alias: str) -> Optional[Evidence]:
         source = _TEXT_COLUMNS.get(column.name.lower())
         if source is None or _under_not(column, branch):
             continue
-        if (source == EvidenceSource.SHORT_TEXT
+        if (source == Source.SHORT_TEXT
                 and not isinstance(column.parent, (exp.ILike, exp.Like))):
             continue   # d.name = 'x' is a field, not a text search
         text_sources.append(source)
-    if EvidenceSource.TEXT in text_sources:
+    if Source.TEXT in text_sources:
         queries = _branch_tsqueries(branch)
         if queries and all(short_fields_only(q) for q in queries):
-            return found(EvidenceSource.SHORT_TEXT, sql)
-    for source in (EvidenceSource.TEXT, EvidenceSource.SHORT_TEXT, EvidenceSource.README,
-                   EvidenceSource.PAPER):
+            return Found(sql, source=Source.SHORT_TEXT)
+    for source in (Source.TEXT, Source.SHORT_TEXT, Source.README,
+                   Source.PAPER):
         if source in text_sources:
-            return found(source, sql)
+            return Found(sql, source=source)
 
     for select in _outermost_selects(branch):
         if _under_not(select, branch):
@@ -174,9 +174,13 @@ def classify_branch(branch, alias: str) -> Optional[Evidence]:
         sources = [_TABLE_SOURCES[t] for t in tables if t in _TABLE_SOURCES]
         if not sources:
             continue
-        if sources[0] != EvidenceSource.PARTICIPANTS:
-            return found(sources[0], sql)
-        countable = (isinstance(select.parent, exp.Exists)
+        if sources[0] != Source.PARTICIPANTS:
+            return Found(sql, source=sources[0])
+        # One row is one participant only while the SELECT reads the
+        # participant list alone (unique per dataset and participant_id): a
+        # join would count a participant once per joined row.
+        countable = (isinstance(select.parent, exp.Exists) and len(tables) == 1
+                     and not select.args.get("joins")
                      and not select.args.get("group") and not select.args.get("having"))
         where = select.args.get("where")
         columns = list(where.find_all(exp.Column)) if where is not None else []
@@ -189,7 +193,7 @@ def classify_branch(branch, alias: str) -> Optional[Evidence]:
     # (the species default: no label AND no animal named); its vector is no value.
     names = tuple(dict.fromkeys(c.name.lower() for c in outer_columns
                                 if c.name.lower() != "id" and c.name.lower() not in _TEXT_COLUMNS))
-    if len(names) == 1 and names[0] in reason_texts.ASSUMED and any(
+    if len(names) == 1 and names[0] in Assumed.TEXTS and any(
             isinstance(node.expression, exp.Null) and not _under_not(node, branch)
             for node in branch.find_all(exp.Is)):
         return Assumed(sql, columns=names)
@@ -229,7 +233,7 @@ def _assumed_absent(chip, alias: str) -> Optional[ChipPlan]:
     except ImportError:  # the RAG package is not on the path
         return None
     return ChipPlan(field=f"No {chip.label}", kind=chip.kind,
-                    branches=[found(EvidenceSource.ASSUMED_ABSENT, diagnosis_unknown(alias))])
+                    branches=[Found(diagnosis_unknown(alias), source=Source.ASSUMED_ABSENT)])
 
 
 def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
@@ -265,7 +269,7 @@ def build_sql(alias: str, plans: Sequence[ChipPlan]) -> str:
     field_columns: Dict[str, str] = {}
     for c, chip in enumerate(plans):
         for b, evidence in enumerate(chip.branches):
-            columns.append(f"COALESCE(({evidence.sql}), FALSE) AS h{c}_{b}")
+            columns.append(f"COALESCE(({evidence.sql(alias)}), FALSE) AS h{c}_{b}")
             columns.extend(evidence.number_columns(f"{c}_{b}"))
             for name in evidence.read_columns():
                 field_columns.setdefault(name, f"CAST({alias}.{name} AS TEXT) AS f_{name}")

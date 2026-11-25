@@ -142,8 +142,7 @@ def test_with_the_tier_an_unrecorded_count_is_uncertain_and_a_smaller_one_is_out
     sql = _final_sql(monkeypatch, tier=True)
     assert uncertain_tier.LEVEL_COLUMN in sql
     assert "cohort_k.diagnosis IS NULL" in sql
-    from services.evidence import reason_texts
-    assert reason_texts.PATIENT_COUNT_NOT_RECORDED in sql
+    assert "how many participants have the diagnosis is not recorded" in sql
     # Not confirmed and not unknown is excluded: the count has no "possible" branch.
     state = re.search(r"CASE WHEN ev\.confirmed_(\d) THEN 0 WHEN ev\.probable_\1 THEN 1 ELSE 9 END", sql)
     assert state, "no confirmed / uncertain / excluded state for the count"

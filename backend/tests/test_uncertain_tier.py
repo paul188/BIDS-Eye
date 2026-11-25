@@ -114,8 +114,7 @@ def test_paper_text_is_second_tier_evidence() -> None:
     tiered = ut.apply(sql, papers=True)
     assert ("d.search_tsv_papers @@ TO_TSQUERY('english', 'placebo') "
             "AND NOT d.search_tsv @@ TO_TSQUERY('english', 'placebo')") in tiered
-    from services.evidence import reason_texts
-    assert reason_texts.PAPER in tiered
+    assert "found only in a paper the dataset names" in tiered
     # Confirmation still uses the dataset's own text.
     assert "(d.search_tsv @@ TO_TSQUERY('english', 'placebo')) AS confirmed_0" in tiered
     assert "CASE WHEN ev.confirmed_0 THEN 0 WHEN ev.probable_0 THEN 1 ELSE 9 END AS u0" in tiered

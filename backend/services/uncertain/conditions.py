@@ -52,7 +52,7 @@ class SoftCondition:
     counts: the first that holds for a dataset gives the condition's state
     (Strength) and the text on its result card.
 
-    The list always starts with the condition as asked (weaker.AsAsked). What
+    The list always starts with the condition as asked (confirmed.AsAsked). What
     follows depends on the kind:
 
       a text search            [only in a paper,] a weaker form of the search
@@ -65,6 +65,7 @@ class SoftCondition:
     A dataset none of them holds for is contradicted.
     """
     kind: str                         # a field in fields/ (age, diagnosis, sex), text, sidecar or patient_count
+    alias: str                        # the dataset row of the search the SQL is written for
     evidence: Tuple[Evidence, ...]
     # (name, SELECT) sets the condition reads more than once: computed once
     # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).
@@ -89,7 +90,7 @@ class SoftCondition:
     @property
     def sql(self) -> str:
         """The condition as generated."""
-        return self.evidence[0].sql or ""
+        return self.evidence[0].sql(self.alias) or ""
 
     @property
     def weaker(self) -> Tuple[Evidence, ...]:
@@ -99,7 +100,7 @@ class SoftCondition:
     @property
     def probable(self) -> Optional[str]:
         """SQL: some weaker evidence holds. None without any."""
-        parts = [e.sql for e in self.weaker]
+        parts = [e.sql(self.alias) for e in self.weaker]
         if not parts:
             return None
         return parts[0] if len(parts) == 1 else " OR ".join(f"({part})" for part in parts)
@@ -108,7 +109,8 @@ class SoftCondition:
     def known(self) -> Optional[str]:
         """SQL: the field is recorded. None for a condition that reads no
         field a dataset may leave out (a text search)."""
-        return next((e.sql for e in self.evidence if e.strength == Strength.CONTRADICTED), None)
+        return next((e.sql(self.alias) for e in self.evidence
+                     if e.strength == Strength.CONTRADICTED), None)
 
     @property
     def weaker_beats_record(self) -> bool:
@@ -120,11 +122,11 @@ class SoftCondition:
     @property
     def reason_probable(self) -> str:
         """The card text of the weaker evidence that counts last."""
-        return self.weaker[-1].reason if self.weaker else ""
+        return self.weaker[-1].reason() if self.weaker else ""
 
     @property
     def reason_possible(self) -> str:
-        return next((e.reason for e in self.evidence if e.strength == Strength.POSSIBLE), "")
+        return next((e.reason() for e in self.evidence if e.strength == Strength.POSSIBLE), "")
 
     # ── SQL ───────────────────────────────────────────────────────────────────
 

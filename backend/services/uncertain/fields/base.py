@@ -9,12 +9,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Optional, Tuple
 
+from services.evidence.probable import NamedInText
 from services.schema.tables import participants as _participants
 
-# (condition, alias) → (SQL, reason): the SQL is true for a dataset whose own
-# text names the value the condition asks for; the reason is what its result
-# card says. None when the condition asks for nothing a text could name.
-TextForm = Callable[[object, str], Optional[Tuple[str, str]]]
+# condition → the evidence that a dataset's own text names the value the
+# condition asks for. None when it asks for nothing a text could name.
+TextForm = Callable[[object], Optional[NamedInText]]
 
 
 @dataclass(frozen=True)
@@ -25,8 +25,10 @@ class SoftField:
     contradicted when recorded values do not fit, and uncertain when nothing
     is recorded. The fields differ only in what is written here.
     """
-    # Names the field in SoftCondition.kind and in evidence/reason_texts.NOT_RECORDED.
+    # Names the field in SoftCondition.kind.
     kind: str
+    # How a result card names it: "ages not recorded".
+    label: str
     # A condition that reads one of these columns is a condition on the field.
     columns: Tuple[str, ...]
     # alias → SQL: true when the dataset records the field at all.

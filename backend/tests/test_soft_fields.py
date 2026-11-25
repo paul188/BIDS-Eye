@@ -6,7 +6,7 @@ from __future__ import annotations
 import sqlglot
 
 import text_evidence
-from services.evidence import reason_texts
+from services.evidence.probable import NamedInText
 from services.uncertain import classify as tier_classify, fields
 from services.uncertain.fields.base import SoftField, participant_rows_record
 
@@ -21,7 +21,7 @@ def _classify(condition: str):
 def test_every_field_is_described_completely():
     assert [field.kind for field in fields.FIELDS] == ["age", "diagnosis", "sex"]
     for field in fields.FIELDS:
-        assert field.kind in reason_texts.NOT_RECORDED
+        assert field.label
         assert field.columns and "d." in field.recorded("d")
     # No column belongs to two fields.
     columns = [column for field in fields.FIELDS for column in field.columns]
@@ -33,14 +33,20 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
                  "AND p2.handedness = 'left_handed')"
     assert _classify(handedness) is None   # a hard filter today
 
+    class LeftHandedNamed(NamedInText):
+        def sql(self, alias):
+            return f"{alias}.readme_text ~* 'left-handed'"
+
+        def reason(self):
+            return "names it"
+
     field = SoftField(
-        kind="handedness", columns=("handedness",),
+        kind="handedness", label="handedness", columns=("handedness",),
         recorded=participant_rows_record("handedness"),
-        named_in_text=lambda node, alias: (f"{alias}.readme_text ~* 'left-handed'", "names it"),
+        named_in_text=lambda node: LeftHandedNamed(),
     )
     monkeypatch.setitem(fields.BY_KIND, "handedness", field)
     monkeypatch.setitem(fields.KIND_OF_COLUMN, "handedness", "handedness")
-    monkeypatch.setitem(reason_texts.NOT_RECORDED, "handedness", "handedness not recorded")
 
     soft = _classify(handedness)
     assert soft.kind == "handedness"

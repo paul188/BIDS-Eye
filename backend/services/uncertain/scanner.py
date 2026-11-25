@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from dataclasses import dataclass
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 try:  # sqlglot is a backend dependency; keep the module importable without it
@@ -18,8 +19,10 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.evidence import reason_texts
-from services.evidence.weaker import AsAsked, NamedInText, NotRecorded, OtherValuesRecorded
+from services.evidence.confirmed import AsAsked
+from services.evidence.contradicted import OtherValuesRecorded
+from services.evidence.possible import NotRecorded
+from services.evidence.probable import NamedInText
 from services.uncertain.conditions import SoftCondition, own_text, possible_enabled, sql_literal
 from services.schema.tables import objects as _objects
 
@@ -312,41 +315,79 @@ def sidecar(node, alias: str) -> Optional[SoftCondition]:
         ctes.append((name, select))
         confirmed.append(f"{alias}.id IN (SELECT dataset_id FROM {name})")
     inner, _, files, columns = rows[0]
-    file_part = None
+    file_select = None
     if files:
         file_select, file_cte = _file_set(inner, files, columns)
-        file_part = f"{alias}.id IN ({file_select})"
         if file_cte:
             ctes.append(file_cte)
 
+    strengths: Tuple[float, ...] = ()
+    values: Tuple[str, ...] = ()
     if key == FIELD_STRENGTH_KEY:
-        strengths = asked_field_strengths(node)
-        pattern = field_strength_regex(strengths, postgres=True)
-        if not pattern:
+        strengths = tuple(asked_field_strengths(node))
+        if not field_strength_regex(strengths, postgres=True):
             return None
-        # The indexed words first: the regex then reads a few hundred texts.
-        text = (f"{alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(_strength_tsquery(strengths))}) "
-                f"AND {own_text(alias)} ~ {sql_literal(pattern)}")
-        named = " or ".join(f"{s:g} T" for s in strengths)
     else:
-        values = _key_values(node, key)
-        query = _value_tsquery(key, values) if values else None
-        if not query:
+        values = tuple(_key_values(node, key))
+        if not (values and _value_tsquery(key, values)):
             return None
-        text = f"{alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(query)})"
-        named = " or ".join(values)
-    label = _SIDECAR_LABELS[key]
-    probable = f"({text}) AND ({file_part})" if file_part else text
-    recorded = (f"EXISTS(SELECT 1 FROM {_objects.name} AS uk WHERE uk.dataset_id = {alias}.id "
-                f"AND NULLIF(TRIM(uk.other_entities ->> '{key}'), '') IS NOT NULL)")
-    # Whether the key is recorded matters only where the text names the value:
-    # checked for those few datasets, not for every candidate (6.6 ms per
-    # dataset on the live objects table, 11 s for one question). The same
-    # states while there is no 'possible' level; with it, every candidate.
-    known = recorded if possible_enabled() else f"(({probable}) AND {recorded})"
-    return SoftCondition(kind="sidecar", ctes=tuple(ctes), evidence=(
+    named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select)
+    return SoftCondition(kind="sidecar", alias=alias, ctes=tuple(ctes), evidence=(
         AsAsked(" OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]),
-        OtherValuesRecorded(known),
-        NamedInText(probable, reason_texts.scanner_named(label, named)),
-        NotRecorded(reason=reason_texts.scanner_not_recorded(label)),
+        OtherValuesRecorded(named.key_recorded),
+        named,
+        NotInFileMetadata(_SIDECAR_LABELS[key]),
     ))
+
+
+@dataclass(frozen=True)
+class ScannerValueNamed(NamedInText):
+    """No file of the dataset records the sidecar *key*, and its own text
+    names an asked value: one of *strengths* (tesla) for the field strength,
+    else one of *values* (a manufacturer or model)."""
+    key: str = ""
+    strengths: Tuple[float, ...] = ()
+    values: Tuple[str, ...] = ()
+    # SELECT of the datasets that have the files the condition asks for
+    # ("7T fMRI": fMRI files); None when it asks for no particular files.
+    file_set: Optional[str] = None
+
+    def sql(self, alias: str) -> Optional[str]:
+        if self.key == FIELD_STRENGTH_KEY:
+            pattern = field_strength_regex(self.strengths, postgres=True)
+            assert pattern is not None
+            # The indexed words first: the regex then reads a few hundred texts.
+            text = (f"{alias}.search_tsv @@ TO_TSQUERY('english', "
+                    f"{sql_literal(_strength_tsquery(self.strengths))}) "
+                    f"AND {own_text(alias)} ~ {sql_literal(pattern)}")
+        else:
+            query = _value_tsquery(self.key, self.values)
+            assert query is not None
+            text = f"{alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(query)})"
+        return f"({text}) AND ({alias}.id IN ({self.file_set}))" if self.file_set else text
+
+    def key_recorded(self, alias: str) -> str:
+        """SQL: some file of the dataset records the key."""
+        recorded = (f"EXISTS(SELECT 1 FROM {_objects.name} AS uk WHERE uk.dataset_id = {alias}.id "
+                    f"AND NULLIF(TRIM(uk.other_entities ->> '{self.key}'), '') IS NOT NULL)")
+        # Whether the key is recorded matters only where the text names the
+        # value: checked for those few datasets, not for every candidate
+        # (6.6 ms per dataset on the live objects table, 11 s for one
+        # question). The same states while there is no 'possible' level;
+        # with it, every candidate.
+        return recorded if possible_enabled() else f"(({self.sql(alias)}) AND {recorded})"
+
+    def reason(self) -> str:
+        named = (" or ".join(f"{s:g} T" for s in self.strengths) if self.key == FIELD_STRENGTH_KEY
+                 else " or ".join(self.values))
+        not_recorded = NotInFileMetadata(_SIDECAR_LABELS[self.key]).reason()
+        return f"{not_recorded}; the description names {named}"
+
+
+@dataclass(frozen=True)
+class NotInFileMetadata(NotRecorded):
+    """No file records the key, and the text does not name the value.
+    *what*: how a card names the key ("field strength")."""
+
+    def reason(self) -> str:
+        return f"{self.what} not in the file metadata"
