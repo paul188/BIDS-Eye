@@ -41,6 +41,7 @@ from sql_text import pattern_words
 from sqlglot import exp
 
 from services import sql_tree
+from services.fulltext.text_search import Clause, read_clauses
 from services.schema import tables as _tables
 from services.schema.tables import About
 
@@ -164,38 +165,15 @@ def _literals_for(node, column_names: Iterable[str]) -> List[str]:
     return list(dict.fromkeys(values))
 
 
-# Text search configuration of a guard: the word forms a search requires
-# (services/fulltext/text_search.py, exact word forms). Everything else is a search.
-_GUARD_CONFIG = "simple"
+def _tsqueries(clause: Clause, negated: Optional[bool] = None, guards: bool = False) -> List[str]:
+    """The query strings of the condition's searches (Clause.find)."""
+    return [search.query for search in clause.find(negated=negated, guards=guards)]
 
 
-def _tsqueries(node, negated: Optional[bool] = None, guards: bool = False) -> List[str]:
-    """The query strings of every to_tsquery(...) in the condition.
-
-    *negated*: None for all, False for those outside a NOT inside the
-    condition, True for those inside one. *guards*: the guards instead of
-    the searches.
-    """
-    queries = []
-    for call in node.find_all(exp.Anonymous, exp.Func):
-        name = (call.name if isinstance(call, exp.Anonymous) else call.sql_name()).lower()
-        if name != "to_tsquery":
-            continue
-        if negated is not None and sql_tree.under_negation(call, node) != negated:
-            continue
-        literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
-        if not literals:
-            continue
-        is_guard = len(literals) > 1 and literals[0].this.lower() == _GUARD_CONFIG
-        if is_guard == guards:
-            queries.append(literals[-1].this)
-    return queries
-
-
-def guard_forms(node, negated: Optional[bool] = False) -> List[str]:
+def guard_forms(clause: Clause, negated: Optional[bool] = False) -> List[str]:
     """The word forms the condition's searches require, e.g. ['ageing', 'aging']."""
     forms = []
-    for query in _tsqueries(node, negated=negated, guards=True):
+    for query in _tsqueries(clause, negated=negated, guards=True):
         forms.extend(_TS_WORD_RE.findall(_TS_LABEL_RE.sub("", query)))
     return list(dict.fromkeys(forms))
 
@@ -459,36 +437,40 @@ def _venue_words(node) -> List[str]:
 _PLACE_COLUMNS = ["city", "region", "country"]
 
 
-def _other_places(node) -> List[str]:
+def _other_places(clause: Clause) -> List[str]:
     """The place names a location's second condition leaves out, [] for any
     other condition. The shape is (a site in the place OR NOT text naming
     another place), written by LLM_preprocessor/preprocess/augment.py
     _location_lines for a name that is a word of another place's name:
     "Mexico" must not be found in "University of New Mexico"."""
+    node = clause.node
     while isinstance(node, exp.Paren):
         node = node.this
-    if not isinstance(node, exp.Or) or _tsqueries(node, negated=False):
+    clause = clause.part(node)
+    if not isinstance(node, exp.Or) or _tsqueries(clause, negated=False):
         return []
     if not _literals_for(node, _PLACE_COLUMNS):
         return []
     names: List[str] = []
-    for query in _tsqueries(node, negated=True):
+    for query in _tsqueries(clause, negated=True):
         names.extend(tsquery_phrases(query))
     # The search words are lower case; these are names ("New Mexico").
     return [name.title() for name in dict.fromkeys(names)]
 
 
-def describe_condition(node, chip_id: str) -> QueryFilter:
+def describe_condition(clause: Clause) -> QueryFilter:
+    chip_id, node = clause.id, clause.node
     negated = False
     while isinstance(node, (exp.Paren, exp.Not)):
         if isinstance(node, exp.Not):
             negated = not negated
         node = node.this
+    clause = clause.part(node)
 
     phrases: List[str] = []
     # Words inside a NOT of the condition are what it excludes, not what it
     # searches for (a topic's unwanted meanings; see describe_exclusion).
-    for query in _tsqueries(node, negated=False):
+    for query in _tsqueries(clause, negated=False):
         phrases.extend(tsquery_phrases(query))
     # Older plans search the description with ILIKE instead of full text.
     phrases.extend(_literals_for(node, ["description_text", "readme_text", "readme"]))
@@ -496,7 +478,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
 
     # Word forms a search is limited to ("ageing", "aging": not every "age").
     # They are words of the text too, so the page can mark them.
-    forms = guard_forms(node)
+    forms = guard_forms(clause)
     searched = phrases + [form for form in forms if form not in phrases]
     # Words of the text venues the uncertain tier adds for fields that can be
     # missing (services/uncertain/tier.py): the page marks them.
@@ -526,7 +508,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         shown = ", ".join(names[:8]) + ("…" if len(names) > 8 else "")
         return f"Any of {len(names)} coded {noun}s: {shown}."
 
-    elsewhere = _other_places(node)
+    elsewhere = _other_places(clause)
     if elsewhere:
         # Its own wording: the generic chip would read "Location: Mexico" a
         # second time, with nothing about what the condition leaves out.
@@ -552,7 +534,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
         names = [_humanize_code(d) for d in diagnoses]
         return chip("diagnosis", "Diagnosis", names, codes_detail("diagnosis", names), shown=1)
 
-    if _is_topic(node):
+    if _is_topic(clause):
         names = [_humanize_code(t) for t in _literals_for(node, ["task"])]
         # Not `searched`: that is the word list the page marks (text_words).
         searched_as = ", ".join(phrases[:10]) + ("…" if len(phrases) > 10 else "")
@@ -621,7 +603,7 @@ def describe_condition(node, chip_id: str) -> QueryFilter:
     if phrases:
         # The phrases of one text search are its alternatives ('drawings | art');
         # only phrases from searches that must all match are joined by "+".
-        one_search = len(_tsqueries(node, negated=False)) == 1
+        one_search = len(_tsqueries(clause, negated=False)) == 1
         joiner = " or " if (isinstance(node, exp.Or) or one_search) else " + "
         label = joiner.join(f"“{p}”" for p in phrases[:2])
         if len(phrases) > 2:
@@ -764,21 +746,23 @@ def describe_order(tree) -> Optional[QueryFilter]:
                        detail="Remove to see every matching dataset, not only the top of this order.")
 
 
-def _is_topic(node) -> bool:
+def _is_topic(clause: Clause) -> bool:
     """A topic condition: a 'near' search, or a search that excludes other meanings."""
-    if any(_TS_DISTANCE_RE.search(q) for q in _tsqueries(node, negated=False)):
+    if any(_TS_DISTANCE_RE.search(q) for q in _tsqueries(clause, negated=False)):
         return True
-    return bool(_tsqueries(node, negated=True)) and bool(_tsqueries(node, negated=False))
+    return bool(_tsqueries(clause, negated=True)) and bool(_tsqueries(clause, negated=False))
 
 
-def describe_exclusion(node, chip_id: str) -> Optional[QueryFilter]:
+def describe_exclusion(clause: Clause) -> Optional[QueryFilter]:
     """The meanings a topic condition excludes, as a chip of their own; None if none."""
+    chip_id, node = clause.id, clause.node
     while isinstance(node, exp.Paren):
         node = node.this
-    if isinstance(node, exp.Not) or not _is_topic(node):
+    clause = clause.part(node)
+    if isinstance(node, exp.Not) or not _is_topic(clause):
         return None
     excluded: List[str] = []
-    for query in _tsqueries(node, negated=True):
+    for query in _tsqueries(clause, negated=True):
         excluded.extend(tsquery_phrases(query))
     excluded = list(dict.fromkeys(excluded))
     if not excluded:
@@ -814,29 +798,9 @@ def _drop_exclusions(node):
 
 # ── Whole query ───────────────────────────────────────────────────────────────
 
-def _flatten_and(node) -> list:
-    from services.fulltext.text_search import is_guarded_pair
-    if isinstance(node, exp.And):
-        return _flatten_and(node.left) + _flatten_and(node.right)
-    if isinstance(node, exp.Paren) and isinstance(node.this, exp.And):
-        if is_guarded_pair(node):
-            return [node]   # a text search and its word forms: one chip
-        return _flatten_and(node.this)
-    return [node]
-
-
-def _conditions(tree) -> List[Tuple[str, exp.Expression]]:
-    found: List[Tuple[str, exp.Expression]] = []
-    for prefix, clause in (("w", "where"), ("h", "having")):
-        node = tree.args.get(clause)
-        if node is not None:
-            found.extend((f"{prefix}{i}", c) for i, c in enumerate(_flatten_and(node.this)))
-    return found
-
-
 def where_conditions(
     sql: Optional[str],
-) -> Tuple[Optional[str], List[Tuple[QueryFilter, exp.Expression]]]:
+) -> Tuple[Optional[str], List[Tuple[QueryFilter, Clause]]]:
     """The dataset alias and each top-level WHERE condition with its chip.
 
     For services/results/match_reasons.py, which evaluates a condition's
@@ -851,13 +815,13 @@ def where_conditions(
     alias = (table.alias_or_name if isinstance(table, exp.Table) and table.name == _tables.datasets.name
              else None)
     found = []
-    for chip_id, node in _conditions(tree):
-        if not chip_id.startswith("w"):
+    for clause in read_clauses(tree):
+        if not clause.in_where:
             continue
         try:
-            found.append((describe_condition(node, chip_id), node))
+            found.append((describe_condition(clause), clause))
         except ValueError as exc:  # a number that is not one; the other conditions still count
-            log.warning("query_filters: could not describe %s (%s)", node, exc)
+            log.warning("query_filters: could not describe %s (%s)", clause.node, exc)
     return alias, found
 
 
@@ -867,16 +831,16 @@ def describe(sql: Optional[str]) -> List[QueryFilter]:
     if tree is None:
         return []
     chips = []
-    for chip_id, node in _conditions(tree):
+    for clause in read_clauses(tree):
         try:
-            chips.append(describe_condition(node, chip_id))
-            exclusion = describe_exclusion(node, chip_id)
+            chips.append(describe_condition(clause))
+            exclusion = describe_exclusion(clause)
             if exclusion is not None:
                 chips.append(exclusion)
         except ValueError as exc:  # a number that is not one; the other chips still show
-            log.warning("query_filters: could not describe %s (%s)", node, exc)
-            field_name, label, detail = plain_condition(node)
-            chips.append(QueryFilter(id=chip_id, kind="other", field=field_name,
+            log.warning("query_filters: could not describe %s (%s)", clause.node, exc)
+            field_name, label, detail = plain_condition(clause.node)
+            chips.append(QueryFilter(id=clause.id, kind="other", field=field_name,
                                      label=label, detail=detail))
     sort = describe_order(tree)
     if sort is not None:
@@ -900,11 +864,12 @@ def remove(sql: str, chip_ids: Iterable[str]) -> Optional[str]:
         for key in ("order", "limit", "offset"):
             tree.set(key, None)
     exclusions = {i[:-len(EXCLUSION_SUFFIX)] for i in drop if i.endswith(EXCLUSION_SUFFIX)}
+    # The same conditions, with the same ids, as describe() read.
+    clauses = read_clauses(tree)
     for prefix, clause in (("w", "where"), ("h", "having")):
-        node = tree.args.get(clause)
-        if node is None:
+        if tree.args.get(clause) is None:
             continue
-        parts = _flatten_and(node.this)
+        parts = [c.node for c in clauses if c.id.startswith(prefix)]
         relaxed = [_drop_exclusions(p) if f"{prefix}{i}" in exclusions else p
                    for i, p in enumerate(parts)]
         kept = [p for i, p in enumerate(relaxed) if f"{prefix}{i}" not in drop]
@@ -1011,14 +976,14 @@ def highlight_exact_words(sql: Optional[str]) -> FrozenSet[str]:
     if tree is None:
         return frozenset()
     forms: List[str] = []
-    for _, node in _conditions(tree):
-        inner = node
+    for clause in read_clauses(tree):
+        inner = clause.node
         negated = False
         while isinstance(inner, (exp.Paren, exp.Not)):
             negated ^= isinstance(inner, exp.Not)
             inner = inner.this
         if not negated:
-            forms.extend(guard_forms(inner))
+            forms.extend(guard_forms(clause.part(inner)))
     return frozenset(forms)
 
 

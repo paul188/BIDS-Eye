@@ -24,7 +24,7 @@ def test_the_evidence_is_read_as_recorded(recorded):
     _, found = query_filters.where_conditions(
         f"SELECT d.id FROM bids_datasets AS d WHERE {recorded['condition']}")
     assert len(found) == 1
-    chip, node = found[0]
+    chip, clause = found[0]
     ways = [f"{type(w).__name__} {w.source.value} {','.join(w.read_columns())}".strip()
-            for w in confirming_evidence(node, "d")]
+            for w in confirming_evidence(clause, "d")]
     assert (chip.negated, ways) == (recorded["negated"], recorded["evidence"])

@@ -8,6 +8,7 @@ import sqlglot
 
 import text_evidence
 from services.evidence.probable import NamedInOwnText
+from services.fulltext.text_search import Clause
 from services.uncertain import classify as tier_classify, fields
 from services.uncertain.fields.base import SoftField, participant_rows_record
 
@@ -16,7 +17,7 @@ _HEAD = "SELECT d.id FROM bids_datasets AS d WHERE "
 
 def _classify(condition: str):
     where = sqlglot.parse_one(_HEAD + condition, read="postgres").args["where"].this
-    return tier_classify.classify(where, "d")
+    return tier_classify.classify(Clause.read(where), "d")
 
 
 def test_every_field_is_described_completely():
@@ -91,7 +92,7 @@ def test_a_condition_lists_the_ways_that_confirm_it() -> None:
            "AND p.diagnosis = 'x') OR d.name ILIKE '%epilepsy%')")
     node = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {sql}",
                              read="postgres").args["where"].this
-    condition = classify(node, "d")
+    condition = classify(Clause.read(node), "d")
     assert condition is not None
     assert [e.source for e in condition.confirming] == [Source.PARTICIPANTS, Source.SHORT_TEXT]
     assert all(e.strength == Strength.CONFIRMED for e in condition.confirming)

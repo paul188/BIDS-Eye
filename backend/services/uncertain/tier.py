@@ -77,6 +77,7 @@ from services import sql_tree
 from services.uncertain.conditions import QueryEvidence, ClauseEvidence
 from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
+from services.fulltext.text_search import Clause, read_clauses
 from services.schema.tables import datasets as _datasets
 from services.switches import Switch
 
@@ -124,24 +125,6 @@ def enabled() -> bool:
     return Switch.UNCERTAIN_TIER.is_on()
 
 
-def _flatten_and(node) -> list:
-    from services.fulltext.text_search import is_guarded_pair
-    if isinstance(node, exp.And):
-        return _flatten_and(node.left) + _flatten_and(node.right)
-    # Any depth: "((codes OR epilepsy words) AND spatiotemporal)" in two pairs
-    # of parentheses stayed one condition, whose weaker form was any one of
-    # its text searches: a paper that says "spatiotemporal" was a probable
-    # match for "spatiotemporal epilepsy" (live, 2026-11-20).
-    inner = node
-    while isinstance(inner, exp.Paren) and isinstance(inner.this, exp.Paren):
-        inner = inner.this
-    if isinstance(inner, exp.Paren) and isinstance(inner.this, exp.And):
-        if is_guarded_pair(inner):
-            return [inner]   # a text search and its word forms: one condition
-        return _flatten_and(inner.this)
-    return [node]
-
-
 def _dataset_alias(select) -> Optional[str]:
     source = select.args.get("from") or select.args.get("from_")
     table = getattr(source, "this", None)
@@ -173,18 +156,21 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     if tree.args.get("limit") or tree.args.get("order") or tree.args.get("offset"):
         return sql
     alias = _dataset_alias(tree)
-    where = tree.args.get("where")
-    if alias is None or where is None:
+    if alias is None or tree.args.get("where") is None:
         return sql
+    clauses = [clause for clause in read_clauses(tree) if clause.in_where]
+    of_node = {id(clause.node): clause for clause in clauses}
 
     hard: List[str] = []
     soft: List[ClauseEvidence] = []
-    for node in keep_only_sex_pairs(_flatten_and(where.this)):
+    for node in keep_only_sex_pairs([clause.node for clause in clauses]):
         # classify has no expected failures (sqlglot and regex work on a tree
         # that parsed); it ran without one on the 1,972 conditions of the
         # benchmark runs' SQL (2026-11-19). A failure here is a bug: raised,
         # not turned silently into a hard filter as it used to be.
-        condition = classify(node, alias, papers=papers)
+        # A sex pair is joined from copies: its searches are read again.
+        clause = of_node.get(id(node)) or Clause.read(node)
+        condition = classify(clause, alias, papers=papers)
         if condition is None:
             hard.append(node.sql(dialect="postgres"))
         else:

@@ -838,8 +838,9 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
     full-text rank, so the best matches come first. Without usable words,
     the bounded sample as before.
     """
-    from services.fulltext import tsquery, vectors
+    from services.fulltext import tsquery
     from services.fulltext.ranking import RankQuery
+    from services.fulltext.text_search import stemmed_match
     from services.translate.sql_rewriter import DEFAULT_DATASET_PROJECTION
 
     query = tsquery.keyword_query(question)
@@ -849,7 +850,7 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
         f"SELECT {DEFAULT_DATASET_PROJECTION}\n"
         f"FROM {_datasets.name} d\n"
         f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
-        f"WHERE d.{vectors.FTS_COLUMN} @@ to_tsquery('{vectors.TS_CONFIG}', '{query}')\n"
+        f"WHERE {stemmed_match('d', query)}\n"
         "GROUP BY d.id"
     )
     return TextToSQLResult(

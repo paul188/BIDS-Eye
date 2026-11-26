@@ -20,6 +20,7 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services.evidence.branches import confirming_evidence
+from services.fulltext.text_search import Clause
 from services.evidence.contradicted import OtherValuesRecorded
 from services.evidence.possible import NotRecorded
 from services.evidence.probable import NamedInOwnText
@@ -283,7 +284,7 @@ def _strength_tsquery(strengths: Sequence[float]) -> str:
     return " | ".join(dict.fromkeys(words))
 
 
-def sidecar(node, alias: str) -> Optional[ClauseEvidence]:
+def sidecar(clause: Clause, alias: str) -> Optional[ClauseEvidence]:
     """A field strength, manufacturer or model condition with its text venue.
 
     Confirmed: the sidecars hold the value (as asked). Probably relevant: no
@@ -292,6 +293,7 @@ def sidecar(node, alias: str) -> Optional[ClauseEvidence]:
     recorded value that does not fit excludes the dataset, whatever the README
     says.
     """
+    node = clause.node
     keys = {k.lower() for k in _json_keys(node)}
     if len(keys) != 1 or not keys <= set(_TEXT_SIDECAR_KEYS):
         return None
@@ -336,7 +338,7 @@ def sidecar(node, alias: str) -> Optional[ClauseEvidence]:
                               alias=alias)
     as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
     return ClauseEvidence(kind="sidecar", sql=as_generated, ctes=tuple(ctes),
-                          confirming=confirming_evidence(node, alias), evidence=(
+                          confirming=confirming_evidence(clause, alias), evidence=(
         OtherValuesRecorded(named.key_recorded()),
         named,
         NotInFileMetadata(_SIDECAR_LABELS[key]),

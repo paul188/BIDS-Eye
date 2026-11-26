@@ -9,12 +9,13 @@ is evidence.probable.WeakerSearch, which writes the SQL and the card text.
 from __future__ import annotations
 
 import re
-from typing import Any, List, Optional, Sequence
+from typing import List, Optional, Sequence
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
 from services.evidence.probable import TextSearch, WeakenedSearch, WeakerSearch, Weakening
-from services.uncertain.conditions import LABEL_RE, is_negated, stemmed_searches
+from services.fulltext.text_search import Clause
+from services.uncertain.conditions import LABEL_RE
 
 
 _WORD_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -204,9 +205,9 @@ def query_words(query: str) -> List[str]:
     return list(dict.fromkeys(words))
 
 
-def relax_text_condition(node: Any, alias: str) -> Optional[WeakerSearch]:
-    """The weaker text evidence for the condition *node* (sqlglot) on the
-    dataset row *alias*; None when no positive text search of it would change.
+def relax_text_condition(clause: Clause, alias: str) -> Optional[WeakerSearch]:
+    """The weaker text evidence for the condition *clause* on the dataset row
+    *alias*; None when no positive text search of it would change.
 
     Only the relaxed text searches of the condition count, any one of them:
     the rest of the condition (often an expensive check over the files) has
@@ -214,13 +215,13 @@ def relax_text_condition(node: Any, alias: str) -> Optional[WeakerSearch]:
     dataset is confirmed anyway.
     """
     weakened: List[WeakenedSearch] = []
-    searches = stemmed_searches(node)
+    searches = clause.find(stemmed=True)
 
     # A topic search excludes the meanings it does not want:
     #   phrase OR (alternatives AND NOT unwanted meanings).
     # Dropping that NOT is a weaker form too, so a dataset that matches an
     # alternative and also an unwanted meaning moves down instead of out.
-    excluded_words = [w for s in searches if is_negated(s, node) for w in query_words(s.query)]
+    excluded_words = [w for s in searches if clause.negated(s) for w in query_words(s.query)]
     # In a topic condition (a 'near' search or such an exclusion) only the
     # first text search, the user's own phrase, has a weaker form of its
     # words. The alternatives that follow are what the phrase was widened
@@ -229,7 +230,7 @@ def relax_text_condition(node: Any, alias: str) -> Optional[WeakerSearch]:
     topic = bool(excluded_words) or any(_DISTANCE_RE.search(s.query) for s in searches)
     first = True
     for search in searches:
-        if is_negated(search, node) or search.column is None:   # None: never, for mypy
+        if clause.negated(search) or search.column is None:   # None: never, for mypy
             continue
         query = search.query
         guard = search.guard.query if search.guard else None

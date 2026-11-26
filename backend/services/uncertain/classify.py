@@ -20,7 +20,8 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services import sql_tree
-from services.uncertain.conditions import LABEL_RE, ClauseEvidence, is_negated, stemmed_searches
+from services.fulltext.text_search import Clause
+from services.uncertain.conditions import LABEL_RE, ClauseEvidence
 from services.uncertain.text import query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.branches import confirming_evidence
@@ -99,8 +100,8 @@ def _denies_a_sidecar_value(node) -> bool:
                for a in sql_tree.ancestors(column, node))
 
 
-def soft_kind(node, alias: str) -> Optional[str]:
-    """The kind of uncertain condition *node* may become; None: a hard filter.
+def soft_kind(clause: Clause, alias: str) -> Optional[str]:
+    """The kind of uncertain condition *clause* may become; None: a hard filter.
 
     The rules, in this order:
       1. Negated: hard.
@@ -118,6 +119,7 @@ def soft_kind(node, alias: str) -> Optional[str]:
     the condition has no weaker form (a one-word text search, a sidecar key
     other than field strength, make or model).
     """
+    node = clause.node
     if isinstance(node, exp.Not):
         return None
     columns = {column.name.lower() for column in node.find_all(exp.Column)}
@@ -135,31 +137,31 @@ def soft_kind(node, alias: str) -> Optional[str]:
         return None
     if kinds:
         return kinds.pop()
-    if stemmed_searches(node):
+    if clause.find(stemmed=True):
         return "text"
     return None
 
 
-def paper_searches(node) -> Tuple[TextSearch, ...]:
-    """The positive text searches of the condition *node*, as they are run on paper text.
+def paper_searches(clause: Clause) -> Tuple[TextSearch, ...]:
+    """The positive text searches of the condition *clause*, as they are run on paper text.
 
     Without labels: paper text carries the lowest weight, so a search scoped
     to the name and short fields could never reach it.
     """
     return tuple(TextSearch(LABEL_RE.sub("", search.query),
                             LABEL_RE.sub("", search.guard.query) if search.guard else None)
-                 for search in stemmed_searches(node) if not is_negated(search, node))
+                 for search in clause.find(stemmed=True, negated=False))
 
 
 _DISTANCE_RE = re.compile(r"<\d+>")
 
 
-def _positive_words(node) -> set:
-    return {word for search in stemmed_searches(node) if not is_negated(search, node)
+def _positive_words(clause: Clause) -> set:
+    return {word for search in clause.find(stemmed=True, negated=False)
             for word in query_words(search.query)}
 
 
-def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
+def loose_term(clause: Clause, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
     """The ClauseEvidence of a loose term that lost words, else None.
 
     services/fulltext/text_search.py writes such a term as (every word OR
@@ -168,6 +170,7 @@ def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidenc
     probable ("missing: physical"). Recognised as an OR of two text searches
     whose right side uses only some of the left side's words.
     """
+    node = clause.node
     if not isinstance(node, exp.Or):
         return None
     if any(column.name.lower() not in SEARCH_VECTORS for column in node.find_all(exp.Column)):
@@ -178,50 +181,52 @@ def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidenc
     # 'near' search) has its own weaker forms (text.relax_text_condition).
     if node.find(exp.Not) is not None or _DISTANCE_RE.search(every_word):
         return None
-    words, core_words = _positive_words(node.left), _positive_words(node.right)
+    left, right = clause.part(node.left), clause.part(node.right)
+    words, core_words = _positive_words(left), _positive_words(right)
     if not core_words or not core_words < words:
         return None
     return ClauseEvidence(kind="text", sql=every_word,
-                          confirming=confirming_evidence(node.left, alias), evidence=(
+                          confirming=confirming_evidence(left, alias), evidence=(
         # The core only in a paper: the rows the core's own paper form had before.
-        *_paper_only(node.right, alias, papers),
+        *_paper_only(right, alias, papers),
         CoreOfTerm(core, missing=tuple(sorted(words - core_words))),
     ))
 
 
-def _paper_only(node, alias: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
-    """The evidence that the text searches of the condition *node* match only
+def _paper_only(clause: Clause, alias: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
+    """The evidence that the text searches of the condition *clause* match only
     in a paper; none without paper text or without a positive text search."""
-    searches = paper_searches(node) if papers else ()
+    searches = paper_searches(clause) if papers else ()
     return (PaperOnly(searches, alias=alias),) if searches else ()
 
 
-def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
+def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
     """A ClauseEvidence for a condition that may be uncertain, else None.
 
     *papers*: the database has paper text and it may serve as evidence.
     """
-    if isinstance(node, exp.Paren):
-        node = node.this
+    if isinstance(clause.node, exp.Paren):
+        clause = clause.part(clause.node.this)
+    node = clause.node
     # Whether the condition may be uncertain is decided in soft_kind() alone;
     # from here on only its weaker forms are built.
-    kind = soft_kind(node, alias)
+    kind = soft_kind(clause, alias)
     if kind is None:
         return None
     sql = node.sql(dialect="postgres")
     if kind == "sidecar":
-        return sidecar(node, alias)
-    confirming = confirming_evidence(node, alias)
+        return sidecar(clause, alias)
+    confirming = confirming_evidence(clause, alias)
     if kind == "patient_count":
         return _patient_count(sql, alias, confirming)
     if kind == "text":
-        loose = loose_term(node, alias, papers)
+        loose = loose_term(clause, alias, papers)
         if loose is not None:
             return loose
     # Part of a text search the condition holds, anywhere in the text.
-    relaxed = relax_text_condition(node, alias)
+    relaxed = relax_text_condition(clause, alias)
     weaker_search: Tuple[PieceOfEvidence, ...] = (relaxed,) if relaxed else ()
-    paper = _paper_only(node, alias, papers)
+    paper = _paper_only(clause, alias, papers)
     if kind != "text":
         # A field a dataset may not record. What is particular to the field
         # is in its file (fields/); the steps are the same for all.

@@ -140,9 +140,9 @@ def test_the_pair_survives_sqlglot_and_is_one_condition(exact) -> None:
         _where(f"{MODALITY} AND text_match('ageing') AND d.size_bytes > 5"), exact_forms=FORMS)
     tree = sqlglot.parse_one(expanded.sql, read="postgres")
     assert sqlglot.parse_one(tree.sql(dialect="postgres"), read="postgres") == tree
-    conditions = qf._flatten_and(tree.args["where"].this)
-    assert len(conditions) == 3 and ts.is_guarded_pair(conditions[1])
-    assert len(ut._flatten_and(tree.args["where"].this)) == 3
+    conditions = ts.read_clauses(tree)
+    assert len(conditions) == 3 and ts.is_guarded_pair(conditions[1].node)
+    assert [search.query for search in conditions[1].find()] == ["ageing"]
     assert not ts.is_guarded_pair(sqlglot.parse_one("(a = 1 AND b = 2)", read="postgres"))
 
 
@@ -167,6 +167,33 @@ def test_a_guard_goes_with_the_search_of_its_own_row() -> None:
         "(d.search_tsv @@ to_tsquery('english', 'ageing') "
         " AND e.search_tsv_exact @@ to_tsquery('simple', 'aging'))", read="postgres")
     assert [search.guard for search in ts.text_searches(tree)] == [None, None]
+
+
+# ── Writing and reading back ──────────────────────────────────────────────────
+
+@pytest.mark.parametrize("mode", ["all", "near", "short", "loose"])
+@pytest.mark.parametrize("exact_on", [False, True], ids=["stemmed", "exact"])
+@pytest.mark.parametrize("papers", [False, True], ids=["own text", "papers"])
+@pytest.mark.parametrize("negated", [False, True], ids=["asked", "NOT"])
+def test_read_clauses_reads_back_what_the_expansion_wrote(
+        monkeypatch, mode, exact_on, papers, negated) -> None:
+    """Every shape expand_text_search writes is one condition to read_clauses,
+    with its words, its guard and its negation, as the chips and the tier read it."""
+    monkeypatch.setenv(vectors.EXACT_ENV, "true" if exact_on else "false")
+    search = f"{'NOT ' if negated else ''}text_match('ageing brain', '{mode}')"
+    sql = ts.expand_text_search(_where(f"{MODALITY} AND {search}"), papers=papers,
+                                exact_forms=FORMS).sql
+    modality, text = ts.read_clauses(sqlglot.parse_one(sql, read="postgres"))
+    assert not modality.searches
+    searches = text.find()
+    assert searches and all(text.negated(s) == negated for s in searches)
+    assert any("ageing" in s.query for s in searches)
+    assert text.find(negated=not negated) == []
+    guards = [s.guard.query for s in searches if s.guard]
+    if exact_on:
+        assert any("aging" in g for g in guards) and text.find(guards=True)
+    else:
+        assert guards == [] and text.find(guards=True) == []
 
 
 # ── Counting ──────────────────────────────────────────────────────────────────
@@ -300,10 +327,10 @@ def test_the_weaker_form_keeps_the_word_forms(exact, monkeypatch) -> None:
 
 
 def test_scope_widening_keeps_the_guard_without_labels(exact) -> None:
-    weaker = tier_text.relax_text_condition(sqlglot.parse_one(
+    weaker = tier_text.relax_text_condition(ts.Clause.read(sqlglot.parse_one(
         "d.search_tsv @@ TO_TSQUERY('english', 'weight:AB') "
         "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight:AB | weights:AB)')",
-        read="postgres"), "d")
+        read="postgres")), "d")
     assert weaker.sql() == ("(d.search_tsv @@ TO_TSQUERY('english', 'weight') "
                              "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight | weights)'))")
     assert [(search.weakening.value, search.words) for search in weaker.searches] == [

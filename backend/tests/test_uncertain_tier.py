@@ -7,6 +7,7 @@ import pytest
 sqlglot = pytest.importorskip("sqlglot")
 
 from services.fulltext import tsquery, word_frequencies  # noqa: E402
+from services.fulltext.text_search import read_clauses  # noqa: E402
 from services.uncertain import text as tier_text, tier as ut  # noqa: E402
 from services.uncertain.fields import age as tier_age  # noqa: E402
 from services.fulltext.ranking import RankQuery  # noqa: E402
@@ -223,8 +224,7 @@ def test_and_in_nested_parentheses_is_split_into_conditions() -> None:
              "AND p2.diagnosis IN ('epilepsy')) OR d.search_tsv @@ to_tsquery('english', 'epilepsy:AB')) "
              "AND d.search_tsv @@ to_tsquery('english', 'spatiotemporal')))")
     tree = sqlglot.parse_one(BASE.format(where=where), read="postgres")
-    parts = ut._flatten_and(tree.args["where"].this)
-    assert len(parts) == 2
+    assert len(read_clauses(tree)) == 2
     tiered = ut.apply(BASE.format(where=where), papers=True)
     # Each condition is judged alone: one may be unsure, not both.
     assert "evidence.u0" in tiered and "evidence.u1" in tiered
@@ -234,7 +234,7 @@ def test_guarded_pair_in_extra_parentheses_stays_whole() -> None:
     pair = ("((d.search_tsv @@ to_tsquery('english', 'age') "
             "AND d.search_tsv_exact @@ to_tsquery('simple', 'ageing | aging')))")
     tree = sqlglot.parse_one(BASE.format(where=pair), read="postgres")
-    assert len(ut._flatten_and(tree.args["where"].this)) == 1
+    assert len(read_clauses(tree)) == 1
 
 
 def test_rare_never_stands_for_rare_diseases() -> None:
@@ -262,8 +262,8 @@ def test_loose_term_that_lost_words_keeps_every_word_for_the_tier(monkeypatch) -
 
 def test_loose_term_confirms_every_word_and_calls_the_core_probable(monkeypatch) -> None:
     tree = sqlglot.parse_one(_physical_exercise(monkeypatch), read="postgres")
-    (node,) = ut._flatten_and(tree.args["where"].this)
-    condition = ut.classify(node, "d")
+    (clause,) = read_clauses(tree)
+    condition = ut.classify(clause, "d")
     assert condition.sql == "d.search_tsv @@ TO_TSQUERY('english', 'physical & exercise')"
     assert condition.probable == "d.search_tsv @@ TO_TSQUERY('english', 'exercise')"
     assert condition.weaker[-1].reason() == "matches only part of the search; missing: physical"
@@ -285,6 +285,8 @@ def test_topic_search_is_not_taken_for_a_loose_term() -> None:
              "(d.search_tsv @@ to_tsquery('english', 'conflict') AND NOT "
              "d.search_tsv @@ to_tsquery('english', 'cognitive')))")
     tree = sqlglot.parse_one(BASE.format(where=where), read="postgres")
-    (node,) = ut._flatten_and(tree.args["where"].this)
+    (clause,) = read_clauses(tree)
     from services.uncertain import classify as tier_classify
-    assert tier_classify.loose_term(node.this if isinstance(node, sqlglot.exp.Paren) else node, "d") is None
+    if isinstance(clause.node, sqlglot.exp.Paren):
+        clause = clause.part(clause.node.this)
+    assert tier_classify.loose_term(clause, "d") is None

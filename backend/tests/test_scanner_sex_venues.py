@@ -12,6 +12,7 @@ from sqlglot import exp
 
 from services.uncertain import classify as tier_classify, scanner as tier_scanner, tier as ut
 from services.results import query_filters as qf
+from services.fulltext.text_search import Clause
 
 _HEAD = "SELECT d.id, d.name FROM bids_datasets AS d WHERE "
 # The guarded cast the rewriter writes around sidecar numbers.
@@ -40,7 +41,7 @@ def _node(condition: str):
 
 
 def _classify(condition: str):
-    return tier_classify.classify(_node(condition), "d")
+    return tier_classify.classify(Clause.read(_node(condition)), "d")
 
 
 # ── Field strength: what is asked, and the pattern ────────────────────────────
@@ -290,4 +291,4 @@ def test_a_denied_scanner_stays_a_hard_filter(value, soft):
     tree = sql_tree.parse_select(
         "SELECT d.id FROM bids_datasets AS d WHERE EXISTS(SELECT 1 FROM bids_objects AS o2 "
         f"WHERE o2.dataset_id = d.id AND {value})")
-    assert (classify(tree.args["where"].this, "d") is not None) is soft
+    assert (classify(Clause.read(tree.args["where"].this), "d") is not None) is soft

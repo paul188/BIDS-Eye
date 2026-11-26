@@ -99,17 +99,17 @@ def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
     alias, conditions = query_filters.where_conditions(sql)
     if alias is None:
         return None, []
-    age_nodes = [node for chip, node in conditions if chip.field == "Age"]
+    age_nodes = [clause.node for chip, clause in conditions if chip.field == "Age"]
     plans = []
-    for chip, node in conditions:
+    for chip, clause in conditions:
         if chip.negated:
             assumed = _assumed_absent(chip, alias)
             if assumed is not None:
                 plans.append(assumed)
             continue
-        if chip.field == "Species" and _is_age_species_guard(node, age_nodes):
+        if chip.field == "Species" and _is_age_species_guard(clause.node, age_nodes):
             continue
-        branches = list(confirming_evidence(node, alias))
+        branches = list(confirming_evidence(clause, alias))
         if len({evidence.key for evidence in branches}) >= 2:
             plans.append(ChipPlan(field=chip.field, kind=chip.kind, branches=branches))
     return alias, plans

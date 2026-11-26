@@ -45,9 +45,9 @@ those forms on search_tsv_exact, the same vector without stemming
 Always this shape: the stemmed match, then its guard, in one pair of
 parentheses. The stemmed match keeps the other words and the word distances;
 the guard has one group per exact word, the asked word first, with the same
-weight labels. Whatever reads the SQL afterwards finds searches and guards
-with text_searches and treats the pair as one condition (is_guarded_pair):
-the filter chips, the evidence, the uncertain tier. A
+weight labels. Whatever reads the SQL afterwards gets the conditions with
+their searches and guards from read_clauses, which keeps the pair one
+condition: the filter chips, the evidence, the uncertain tier. A
 placeholder with several alternatives becomes one pair per alternative that
 has an exact word, ORed with the rest. The word counts count such words in
 their forms, and they are ranked on search_tsv_exact: the RankQuery then has
@@ -57,6 +57,7 @@ the guard reads search_tsv_exact_papers.
 
 from __future__ import annotations
 
+import dataclasses
 import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -76,6 +77,7 @@ from text_terms import (
     split_words,
 )
 
+from services import sql_tree
 from services.fulltext import ranking, tsquery, vectors
 from services.fulltext.vectors import (
     EXACT_FTS_COLUMN,
@@ -204,6 +206,11 @@ def with_paper_text(sql: str) -> str:
     return _VECTOR_MATCH_RE.sub(replace, sql)
 
 
+def stemmed_match(alias: str, query: str, column: str = FTS_COLUMN) -> str:
+    """One text search as the readers expect it: "d.search_tsv @@ to_tsquery(...)"."""
+    return f"{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
+
+
 def _exact_column(column: str) -> str:
     """The unstemmed twin of a full-text column."""
     return EXACT_PAPER_FTS_COLUMN if column == PAPER_FTS_COLUMN else EXACT_FTS_COLUMN
@@ -302,6 +309,94 @@ def is_guarded_pair(node: Any) -> bool:
             and _is_guard(right.this))
 
 
+def _within(node: Any, root: Any) -> bool:
+    """*node* is *root* or stands in it."""
+    while node is not None:
+        if node is root:
+            return True
+        node = node.parent
+    return False
+
+
+@dataclass(frozen=True)
+class Clause:
+    """A condition of a generated query with its text searches, read once.
+
+    A top-level AND condition of WHERE or HAVING (read_clauses), or a part of
+    one (part). Whether a search is negated or in a subquery counts from
+    *node*: in "a OR NOT b", b is negated in the clause, not in the part "b".
+    """
+    node: Any
+    searches: Tuple[FoundSearch, ...]   # every one in *node*, subqueries included
+    id: str = ""                        # its place in the query: "w0", "h1"
+
+    @classmethod
+    def read(cls, node: Any) -> Clause:
+        """The clause of a node no read_clauses() covers: a copy, or one built anew."""
+        return cls(node, tuple(text_searches(node)))
+
+    @property
+    def in_where(self) -> bool:
+        return self.id.startswith("w")
+
+    def part(self, node: Any) -> Clause:
+        """The clause of *node*, which stands in this one."""
+        if not _within(node, self.node):
+            raise LookupError("the node is not part of this clause")
+        return Clause(node, tuple(s for s in self.searches if _within(s.call, node)), self.id)
+
+    def negated(self, search: FoundSearch) -> bool:
+        return sql_tree.under_negation(search.call, self.node)
+
+    def find(self, *, negated: Optional[bool] = None, guards: bool = False,
+             stemmed: bool = False, outer: bool = False) -> List[FoundSearch]:
+        """Its searches in the order they are written.
+
+        *negated*: None for all, else only those that are (not) negated.
+        *guards*: the guards instead of the searches. *stemmed*: only those on
+        a stemmed vector, not on an expression. *outer*: none in a subquery.
+        """
+        return [search for search in self.searches
+                if search.is_guard == guards
+                and (not stemmed or search.column in STEMMED_COLUMNS)
+                and (not outer or not sql_tree.in_subquery(search.call, self.node))
+                and (negated is None or self.negated(search) == negated)]
+
+
+def _split_and(node: Any) -> List[Any]:
+    """The AND conditions of *node*; a guarded pair stays one."""
+    if isinstance(node, exp.And):
+        return _split_and(node.left) + _split_and(node.right)
+    # Any depth: "((codes OR epilepsy words) AND spatiotemporal)" in two pairs
+    # of parentheses stayed one condition, whose weaker form was any one of
+    # its text searches: a paper that says "spatiotemporal" was a probable
+    # match for "spatiotemporal epilepsy" (live, 2026-11-20).
+    inner = node
+    while isinstance(inner, exp.Paren) and isinstance(inner.this, exp.Paren):
+        inner = inner.this
+    if isinstance(inner, exp.Paren) and isinstance(inner.this, exp.And):
+        if is_guarded_pair(inner):
+            return [inner]   # a text search and its word forms: one condition
+        return _split_and(inner.this)
+    return [node]
+
+
+def read_clauses(tree: Any) -> List[Clause]:
+    """Each top-level AND condition of WHERE, then of HAVING, with its searches.
+
+    The one place that splits a query into conditions: the uncertain tier,
+    the evidence and the filter chips read the same ones.
+    """
+    whole = Clause(tree, tuple(text_searches(tree)))
+    found: List[Clause] = []
+    for prefix, name in (("w", "where"), ("h", "having")):
+        holder = tree.args.get(name)
+        if holder is not None:
+            found.extend(dataclasses.replace(whole.part(node), id=f"{prefix}{i}")
+                         for i, node in enumerate(_split_and(holder.this)))
+    return found
+
+
 def expand_text_search(
     sql: str, papers: Optional[bool] = None,
     exact_forms: Optional[tsquery.ExactForms] = None,
@@ -358,7 +453,7 @@ def expand_text_search(
         def atom(query: Optional[str]) -> str:
             if query is None:
                 return "FALSE"  # no term is searchable, as for "???" above
-            return f"{alias}.{column} @@ to_tsquery('{TS_CONFIG}', '{query}')"
+            return stemmed_match(alias, query, column)
 
         filter_mode = MODE_ALL if mode == MODE_LOOSE else mode
         plain_core = atom(tsquery.build_filter_tsquery(required, filter_mode))

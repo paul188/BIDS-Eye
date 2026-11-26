@@ -194,7 +194,7 @@ def test_excluded_meaning_demotes_instead_of_removing() -> None:
     sql = ("(d.search_tsv @@ TO_TSQUERY('english', '" + NEAR + "') OR "
            "(d.search_tsv @@ TO_TSQUERY('english', 'aggression') AND NOT "
            "d.search_tsv @@ TO_TSQUERY('english', 'stroop')))")
-    weaker = tier_text.relax_text_condition(sql_tree.parse(sql), "d")
+    weaker = tier_text.relax_text_condition(text_search.Clause.read(sql_tree.parse(sql)), "d")
     relaxed = weaker.sql()
     assert "'(social & conflict)'" in relaxed
     assert "'aggression'" in relaxed            # kept, without the NOT
@@ -206,7 +206,7 @@ def test_only_the_phrase_of_a_topic_is_loosened() -> None:
     sql = ("(d.search_tsv @@ TO_TSQUERY('english', '" + NEAR + "') OR "
            "d.search_tsv @@ TO_TSQUERY('english', '(interpersonal <1> conflict | "
            "conflict <1> interpersonal)'))")
-    relaxed = tier_text.relax_text_condition(sql_tree.parse(sql), "d").sql()
+    relaxed = tier_text.relax_text_condition(text_search.Clause.read(sql_tree.parse(sql)), "d").sql()
     assert relaxed == "d.search_tsv @@ TO_TSQUERY('english', '(social & conflict)')"
 
 

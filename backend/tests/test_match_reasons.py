@@ -125,7 +125,7 @@ def test_a_branch_on_the_outer_join_is_left_out():
 def test_a_branch_that_is_a_not_confirms_nothing_it_denies(branch, kinds):
     node = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {branch}",
                              read="postgres").args["where"].this
-    assert [type(way) for way in branches.confirming_evidence(node, "d")] == kinds
+    assert [type(way) for way in branches.confirming_evidence(text_search.Clause.read(node), "d")] == kinds
 
 
 _POSITIVE = {
@@ -165,7 +165,7 @@ def _denials():
 
 def _ways(condition: str) -> tuple:
     tree = sql_tree.parse_select(f"SELECT 1 FROM bids_datasets AS d WHERE {condition}")
-    return branches.confirming_evidence(tree.args["where"].this, "d")
+    return branches.confirming_evidence(text_search.Clause.read(tree.args["where"].this), "d")
 
 
 @pytest.mark.parametrize("condition", _POSITIVE.values(), ids=_POSITIVE)

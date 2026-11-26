@@ -3,8 +3,8 @@ services/uncertain/conditions.py
 ------------------------------------
 The pieces every part of the uncertain tier shares: one condition with its
 evidence in the order it counts (ClauseEvidence), the evidence of the whole
-query, which combines its conditions (QueryEvidence), the patterns that read
-a generated text search (stemmed_searches), and the switch for the 'possible' level. What the
+query, which combines its conditions (QueryEvidence), the labels of a
+generated text search (LABEL_RE), and the switch for the 'possible' level. What the
 tier does: tier.py.
 """
 
@@ -13,12 +13,10 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
-from services import sql_tree
 from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength
 from services.evidence.confirmed import ConfirmedMatch
-from services.fulltext.text_search import STEMMED_COLUMNS, FoundSearch, text_searches
 from services.switches import Switch
 
 
@@ -48,18 +46,6 @@ def possible_enabled() -> bool:
     # Off by default: on the benchmark this level added 2,211 rows for 0.4
     # points of recall, 11% of the judged ones relevant (2026-11-13).
     return Switch.UNCERTAIN_POSSIBLE.is_on()
-
-
-def stemmed_searches(node: Any) -> List[FoundSearch]:
-    """The text searches of the condition *node* on a stemmed vector, in the
-    order they are written, each with its guard: the word forms the unstemmed
-    vector must contain (services/fulltext/text_search.py, exact word forms)."""
-    return [search for search in text_searches(node) if search.column in STEMMED_COLUMNS]
-
-
-def is_negated(search: FoundSearch, node: Any) -> bool:
-    """*search* stands in a negation within the condition *node*."""
-    return sql_tree.under_negation(search.call, node)
 
 
 LABEL_RE = re.compile(r":[AB]+\b")

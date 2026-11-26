@@ -247,7 +247,7 @@ def test_evidence_holds_only_where_its_condition_does_and_covers_it():
             wanted = await holds(shape)
             # Reading the query and writing it back changes no result.
             assert await holds(node.sql(dialect="postgres")) == wanted, shape
-            ways = confirming_evidence(node, "d")
+            ways = confirming_evidence(text_search.Clause.read(node), "d")
             held = [await holds(way.sql()) for way in ways]
             assert all(found <= wanted for found in held), shape
             if len(ways) == len(sql_tree.or_branches(node)):

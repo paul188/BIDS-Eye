@@ -20,6 +20,7 @@ from preprocess import (  # noqa: E402
     ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement,
     _build_augmented_question,
 )
+from services.fulltext.text_search import Clause  # noqa: E402
 from services.uncertain import classify as tier_classify, tier as uncertain_tier  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql  # noqa: E402
 
@@ -152,7 +153,7 @@ def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
     import sqlglot
     expanded = cohort_count.confirmed_sql(["parkinsons_disease"], 40)
     select = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {expanded}", read="postgres")
-    soft = tier_classify.classify(select.args["where"].this, "d")
+    soft = tier_classify.classify(Clause.read(select.args["where"].this), "d")
     assert soft is not None and soft.kind == "patient_count"
     assert soft.known is None and "cohort_k" in soft.probable
 
