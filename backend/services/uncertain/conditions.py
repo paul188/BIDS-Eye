@@ -88,11 +88,11 @@ class ClauseEvidence:
     What the list holds depends on the kind:
 
       a text search            [only in a paper,] a weaker form of the search
-      a field that may be      other values recorded, [only in a paper,] [the
+      a field that may be      records with other values, [only in a paper,] [the
       missing (fields/,        text names the asked value or matches in part,]
       scanner.py)              not recorded
       the same, where text     [only in a paper,] [a weaker form,] other
-      outweighs a record       values recorded, not recorded
+      outweighs a record       records with other values, not recorded
     """
     kind: str                         # a field in fields/ (age, diagnosis, sex), text, sidecar or patient_count
     sql: str                          # the condition as generated
@@ -113,11 +113,13 @@ class ClauseEvidence:
         strengths = [e.strength for e in self.evidence]
         if Strength.CONFIRMED in strengths:
             raise ValueError("the condition itself is what confirms it")
-        if strengths.count(Strength.CONTRADICTED) > 1 or strengths.count(Strength.POSSIBLE) > 1:
-            raise ValueError("a condition has one record that contradicts it")
-        if Strength.CONTRADICTED in strengths:
-            at = strengths.index(Strength.CONTRADICTED)
-            if Strength.PROBABLE in strengths[:at] and Strength.PROBABLE in strengths[at:]:
+        if strengths.count(Strength.POSSIBLE) > 1:
+            raise ValueError("a condition has one piece for 'not recorded'")
+        at = [i for i, strength in enumerate(strengths) if strength == Strength.CONTRADICTED]
+        if at:
+            if at != list(range(at[0], at[-1] + 1)):
+                raise ValueError("the records that contradict a condition are listed together")
+            if Strength.PROBABLE in strengths[:at[0]] and Strength.PROBABLE in strengths[at[-1]:]:
                 # The tier keeps one column for all weaker evidence of a
                 # condition (tier.apply); two groups would need two.
                 raise ValueError("weaker evidence is listed all before or all after the record")
@@ -144,10 +146,12 @@ class ClauseEvidence:
 
     @property
     def known(self) -> Optional[str]:
-        """SQL: the field is recorded. None for a condition that reads no
-        field a dataset may leave out (a text search)."""
-        return next((e.sql() for e in self.evidence
-                     if e.strength == Strength.CONTRADICTED), None)
+        """SQL: the field is recorded, in any of its places. None for a
+        condition that reads no field a dataset may leave out (a text search)."""
+        parts = [e.sql() for e in self.evidence if e.strength == Strength.CONTRADICTED]
+        if not parts:
+            return None
+        return parts[0] if len(parts) == 1 else " OR ".join(f"({part})" for part in parts)
 
     @property
     def weaker_beats_record(self) -> bool:

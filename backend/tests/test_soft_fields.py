@@ -7,6 +7,7 @@ import pytest
 import sqlglot
 
 import text_evidence
+from services.evidence.base import Source, Strength
 from services.evidence.probable import ProbableNamedInTextEvidence
 from services.fulltext.text_search import Clause
 from services.uncertain import classify as tier_classify, fields
@@ -24,7 +25,7 @@ def test_every_field_is_described_completely():
     assert [field.kind for field in fields.FIELDS] == ["age", "diagnosis", "sex"]
     for field in fields.FIELDS:
         assert field.label
-        assert field.columns and "d." in field.recorded("d")
+        assert field.columns and all("d." in record.sql() for record in field.recorded("d"))
     # No column belongs to two fields.
     columns = [column for field in fields.FIELDS for column in field.columns]
     assert len(columns) == len(set(columns))
@@ -97,3 +98,29 @@ def test_a_condition_lists_the_ways_that_confirm_it() -> None:
     assert [e.source for e in condition.confirming] == [Source.PARTICIPANTS, Source.SHORT_TEXT]
     assert all(e.strength == Strength.CONFIRMED for e in condition.confirming)
     assert Strength.CONFIRMED not in [e.strength for e in condition.evidence]
+
+
+def test_a_contradiction_says_where_the_record_is_kept():
+    from services.evidence.contradicted import (ContradictedInDatasetColumnEvidence,
+                                                ContradictedInParticipantListEvidence)
+    age = _classify("d.age_max < 3")
+    records = [e for e in age.evidence if e.strength == Strength.CONTRADICTED]
+    assert [type(e) for e in records] == [ContradictedInDatasetColumnEvidence,
+                                          ContradictedInParticipantListEvidence]
+    assert [e.source for e in records] == [Source.FIELD, Source.PARTICIPANTS]
+    # Either place recording an age is a record.
+    assert age.known == f"({records[0].sql()}) OR ({records[1].sql()})"
+    sex = _classify("EXISTS(SELECT 1 FROM bids_participants AS p WHERE p.dataset_id = d.id AND p.sex = 'F')")
+    assert [e.source for e in sex.evidence if e.strength == Strength.CONTRADICTED] == [Source.PARTICIPANTS]
+
+
+def test_the_records_that_contradict_are_listed_together():
+    from services.evidence.contradicted import ContradictedInParticipantListEvidence
+    from services.evidence.possible import PossibleNotRecordedEvidence
+    from services.evidence.probable import ProbableCoreOfTermEvidence
+    from services.uncertain.conditions import ClauseEvidence
+    record = ContradictedInParticipantListEvidence("TRUE")
+    between = ProbableCoreOfTermEvidence("TRUE")
+    with pytest.raises(ValueError):
+        ClauseEvidence(kind="age", sql="TRUE", evidence=(record, between, record,
+                                                         PossibleNotRecordedEvidence("ages")))

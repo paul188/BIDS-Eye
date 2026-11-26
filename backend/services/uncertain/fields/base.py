@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Optional, Tuple
 
+from services.evidence.contradicted import ContradictedEvidence, ContradictedInParticipantListEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
 from services.schema.tables import participants as _participants
 
@@ -31,8 +32,9 @@ class SoftField:
     label: str
     # A condition that reads one of these columns is a condition on the field.
     columns: Tuple[str, ...]
-    # alias → SQL: true when the dataset records the field at all.
-    recorded: Callable[[str], str]
+    # alias → where the dataset records the field, one piece per place; one
+    # holds when the field is recorded at all.
+    recorded: Callable[[str], Tuple[ContradictedEvidence, ...]]
     # How the dataset's own text names the asked value ("22 women", "infants").
     # None: only the words of a text search in the same condition count.
     named_in_text: Optional[TextForm] = None
@@ -45,9 +47,10 @@ class SoftField:
     unrecorded_score: Optional[float] = None
 
 
-def participant_rows_record(column: str) -> Callable[[str], str]:
+def participant_rows_record(column: str) -> Callable[[str], Tuple[ContradictedEvidence, ...]]:
     """recorded= for a participant column: some row of the dataset has a value."""
-    def recorded(alias: str) -> str:
-        return (f"EXISTS(SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
-                f"AND uk.{column} IS NOT NULL)")
+    def recorded(alias: str) -> Tuple[ContradictedEvidence, ...]:
+        return (ContradictedInParticipantListEvidence(
+            f"EXISTS(SELECT 1 FROM {_participants.name} AS uk WHERE uk.dataset_id = {alias}.id "
+            f"AND uk.{column} IS NOT NULL)"),)
     return recorded

@@ -21,7 +21,7 @@ except ImportError:  # pragma: no cover
 
 from services.evidence.branches import confirming_evidence
 from services.fulltext.text_search import Clause
-from services.evidence.contradicted import ContradictedByRecordedValuesEvidence
+from services.evidence.contradicted import ContradictedInFileTablesEvidence
 from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
 from services.uncertain.conditions import (ClauseEvidence, own_text, own_text_matches, possible_enabled,
@@ -339,7 +339,7 @@ def sidecar(clause: Clause, alias: str) -> Optional[ClauseEvidence]:
     as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
     return ClauseEvidence(kind="sidecar", sql=as_generated, ctes=tuple(ctes),
                           confirming=confirming_evidence(clause, alias), evidence=(
-        ContradictedByRecordedValuesEvidence(named.key_recorded()),
+        ContradictedInFileTablesEvidence(named.key_recorded()),
         named,
         PossibleNotInFileMetadataEvidence(_SIDECAR_LABELS[key]),
     ))

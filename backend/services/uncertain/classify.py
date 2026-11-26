@@ -26,7 +26,6 @@ from services.uncertain.text import query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import ConfirmedEvidence
-from services.evidence.contradicted import ContradictedByRecordedValuesEvidence
 from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableCoreOfTermEvidence, ProbablePaperOnlyEvidence, TextSearch
 from services.schema.tables import SEARCH_VECTORS
@@ -239,10 +238,10 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
             weaker = paper + weaker
-        record = ContradictedByRecordedValuesEvidence(field.recorded(alias))
+        records = field.recorded(alias)
         not_recorded = PossibleNotRecordedEvidence(field.label, field.unrecorded_score)
-        evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
-                    else (record, *weaker, not_recorded))
+        evidence = ((*weaker, *records, not_recorded) if field.text_beats_recorded
+                    else (*records, *weaker, not_recorded))
         return ClauseEvidence(kind=kind, sql=sql, evidence=evidence, confirming=confirming)
     if relaxed or paper:
         return ClauseEvidence(kind="text", sql=sql, evidence=(*paper, *weaker_search),

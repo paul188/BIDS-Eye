@@ -14,6 +14,7 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
+from services.evidence.contradicted import ContradictedEvidence, ContradictedInDatasetColumnEvidence
 from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
 from services.uncertain.conditions import own_text_matches
@@ -95,9 +96,11 @@ def age_group_named(node, alias: str) -> Optional[ProbableAgeGroupNamedEvidence]
     return ProbableAgeGroupNamedEvidence(words=tuple(group_words), alias=alias) if group_words else None
 
 
-def _recorded(alias: str) -> str:
-    return (f"({alias}.age_min IS NOT NULL OR {alias}.age_max IS NOT NULL OR "
-            f"{participant_rows_record('age')(alias)})")
+def _recorded(alias: str) -> Tuple[ContradictedEvidence, ...]:
+    """Ages are kept as the dataset's range and in the participant list."""
+    in_columns = ContradictedInDatasetColumnEvidence(
+        f"{alias}.age_min IS NOT NULL OR {alias}.age_max IS NOT NULL")
+    return (in_columns, *participant_rows_record("age")(alias))
 
 
 FIELD = SoftField(
