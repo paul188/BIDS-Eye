@@ -26,6 +26,8 @@ dependencies = [
     "httpx>=0.27",
     "itsdangerous>=2.0",
     "starlette-csrf>=3.0",
+    # Schema migrations (migrations/README.md)
+    "alembic>=1.13",
 ]
 
 [project.optional-dependencies]
