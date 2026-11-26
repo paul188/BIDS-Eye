@@ -10,7 +10,7 @@ words whose stem also matches unrelated words ("ageing" and "age").
 The crawler rebuilds the table after each cycle (post_crawl.py). Run this
 where no crawler runs, after datasets were loaded or their text changed.
 
-Run crawlers/migrate_add_exact_search.sql first. Then:
+Needs the database at the newest migration (backend/migrations/README.md). Then:
 
     python scripts/refresh_word_forms.py --dry-run
     python scripts/refresh_word_forms.py

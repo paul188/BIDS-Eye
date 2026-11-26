@@ -137,7 +137,7 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     }
     print(f"label={label!r} database={meta['database']}", file=sys.stderr, flush=True)
     # Warm up the same read-only capabilities as app startup without calling
-    # main.lifespan(), which runs create_all_tables() and may issue DDL.
+    # main.lifespan().
     await start_catalogue(engine)
     # Since database_stats.py the start above reads the institution names too.
     if institution_index is not None and hasattr(institution_index, "refresh_from_db"):

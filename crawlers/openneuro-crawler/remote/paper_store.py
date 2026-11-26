@@ -11,7 +11,7 @@ Store the papers datasets name, and the text search reads from them.
                            primary papers. A generated column cannot read
                            another table, so the text is copied here; the
                            search vector that includes it is built from this
-                           column (crawlers/migrate_add_paper_search.sql)
+                           column (PAPER_SEARCH_VECTOR_EXPRESSION)
 
 `enrich()` is the whole step for a set of datasets: read their link fields,
 ask OpenNeuro for the three fields the crawler does not store, look the papers
@@ -52,62 +52,10 @@ TEXT_PARTS: Tuple[str, ...] = ("title", "abstract", "mesh", "keywords")
 # for search.
 _MESH_NOISE = frozenset({"Humans", "Male", "Female"})
 
-DDL: Tuple[str, ...] = (
-    """
-    CREATE TABLE IF NOT EXISTS bids_papers (
-        id             BIGSERIAL PRIMARY KEY,
-        paper_key      TEXT NOT NULL UNIQUE,   -- doi:… / pmid:… / pmcid:… / arxiv:…
-        doi            TEXT,                   -- published version
-        preprint_doi   TEXT,
-        pmid           TEXT,
-        pmcid          TEXT,
-        arxiv_id       TEXT,
-        title          TEXT NOT NULL,
-        abstract       TEXT,
-        year           INTEGER,
-        journal        TEXT,
-        is_preprint    BOOLEAN NOT NULL DEFAULT FALSE,  -- no published version known
-        authors        TEXT[],
-        mesh_terms     TEXT[],
-        mesh_major     TEXT[],
-        keywords       TEXT[],
-        is_open_access BOOLEAN,
-        license        TEXT,
-        source         TEXT NOT NULL,          -- europepmc, biorxiv, medrxiv, arxiv, openalex
-        fetched_at     TIMESTAMPTZ NOT NULL DEFAULT now()
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS bids_dataset_papers (
-        dataset_id  UUID NOT NULL REFERENCES bids_datasets(id) ON DELETE CASCADE,
-        paper_id    BIGINT NOT NULL REFERENCES bids_papers(id) ON DELETE CASCADE,
-        role        TEXT NOT NULL CHECK (role IN ('primary', 'related', 'tool', 'reuse')),
-        role_reason TEXT,
-        sources     TEXT[] NOT NULL,           -- associated, references, acknowledge, readme, reuse_field
-        raw_ref     TEXT,                      -- the reference string the link was read from
-        position    INTEGER NOT NULL DEFAULT 0, -- order within the dataset, most trusted first
-        PRIMARY KEY (dataset_id, paper_id)
-    )
-    """,
-    "CREATE INDEX IF NOT EXISTS idx_bids_dataset_papers_paper ON bids_dataset_papers (paper_id)",
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS paper_text TEXT",
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS papers_checked_at TIMESTAMPTZ",
-)
-
-# How the primary paper relates to the dataset, and a generated summary for
-# thin READMEs (backend/services/indexing/dataset_description.py). Kept in sync with
-# crawlers/migrate_add_dataset_descriptions.sql (backend/tests/test_dataset_description.py).
-DESCRIPTION_DDL: Tuple[str, ...] = (
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS paper_relation JSONB",
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS dataset_summary TEXT",
-    "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS dataset_summary_meta JSONB",
-)
-
-
-# search_tsv plus the paper text at the lowest weight. Kept in sync with
-# crawlers/migrate_add_paper_search.sql (backend/tests/test_paper_links.py
-# checks this). Built from the README vector's expression, so a change there
-# needs the migration rerun.
+# What bids_datasets.search_tsv_papers is generated from: search_tsv plus the
+# paper text at the lowest weight. The column itself comes from the migrations
+# (backend/migrations/); backend/tests/test_migrations_postgres.py checks that
+# the two agree.
 from remote.openneuro_metadata import SEARCH_VECTOR_EXPRESSION  # noqa: E402
 
 PAPER_SEARCH_COLUMN = "search_tsv_papers"
@@ -117,18 +65,10 @@ PAPER_SEARCH_VECTOR_EXPRESSION = (
     "translate(coalesce(paper_text, ''), '/', ' ')), 'D')"
 )
 
-# The same vector without stemming (crawlers/migrate_add_exact_search.sql;
-# backend/tests/test_word_forms.py checks the two agree).
+# The same vector without stemming.
 PAPER_EXACT_SEARCH_COLUMN = "search_tsv_exact_papers"
 PAPER_EXACT_SEARCH_VECTOR_EXPRESSION = PAPER_SEARCH_VECTOR_EXPRESSION.replace(
     "'english'::regconfig", "'simple'::regconfig")
-
-
-async def ensure_tables(session: Any) -> None:
-    """Create the paper tables and columns, and the description columns, if
-    they are missing. Caller commits."""
-    for statement in DDL + DESCRIPTION_DDL:
-        await session.execute(text(statement))
 
 
 # ── OpenNeuro fields the crawler does not store ───────────────────────────────
@@ -412,7 +352,6 @@ async def enrich(
     if dry_run:
         return stats
 
-    await ensure_tables(session)
     used = {entry["key"] for dataset_entries_ in entries.values() for entry in dataset_entries_}
     paper_ids = {key: await upsert_paper(session, papers[key]) for key in sorted(used)}
     for dataset in datasets:

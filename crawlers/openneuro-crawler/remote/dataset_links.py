@@ -46,35 +46,9 @@ from sqlalchemy import text
 
 log = logging.getLogger(__name__)
 
-# ── Schema ────────────────────────────────────────────────────────────────────
-
-TABLES_SQL: Tuple[str, ...] = (
-    """CREATE TABLE IF NOT EXISTS bids_derivatives (
-        id               BIGSERIAL PRIMARY KEY,
-        dataset_id       UUID NOT NULL REFERENCES bids_datasets(id) ON DELETE CASCADE,
-        pipeline         TEXT NOT NULL,
-        pipeline_name    TEXT,
-        pipeline_version TEXT,
-        source           TEXT NOT NULL,
-        location         TEXT NOT NULL,
-        n_subjects       INTEGER,
-        fetched_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-        UNIQUE (dataset_id, source, location)
-    )""",
-    "CREATE INDEX IF NOT EXISTS idx_bids_derivatives_dataset ON bids_derivatives (dataset_id)",
-    "CREATE INDEX IF NOT EXISTS idx_bids_derivatives_pipeline ON bids_derivatives (pipeline)",
-    """CREATE TABLE IF NOT EXISTS bids_dataset_sites (
-        id          BIGSERIAL PRIMARY KEY,
-        dataset_id  UUID NOT NULL REFERENCES bids_datasets(id) ON DELETE CASCADE,
-        name_raw    TEXT NOT NULL,
-        source      TEXT NOT NULL,
-        ror_id      TEXT,
-        evidence    TEXT,
-        UNIQUE (dataset_id, source, name_raw)
-    )""",
-    "CREATE INDEX IF NOT EXISTS idx_bids_dataset_sites_dataset ON bids_dataset_sites (dataset_id)",
-    "CREATE INDEX IF NOT EXISTS idx_bids_dataset_sites_source ON bids_dataset_sites (source)",
-)
+# ── Tables ────────────────────────────────────────────────────────────────────
+# bids_derivatives and bids_dataset_sites come from the migrations
+# (backend/migrations/).
 
 SOURCE_OPENNEURO_DERIVATIVES = "openneuro_derivatives"
 SOURCE_IN_DATASET = "in_dataset"
@@ -83,12 +57,6 @@ SITE_ETHICS = "ethics_board"
 
 # A free-text ethics statement longer than this is cut; it is evidence, not prose.
 _MAX_SITE_CHARS = 500
-
-
-async def ensure_tables(conn: Any) -> None:
-    """Create both tables if they are missing. Caller commits."""
-    for statement in TABLES_SQL:
-        await conn.execute(text(statement))
 
 
 # ── Pipeline names ────────────────────────────────────────────────────────────
@@ -481,7 +449,6 @@ async def refresh_links(conn: Any, accession_ids: Sequence[str]) -> Dict[str, in
 
     accession_ids = [a for a in accession_ids if a]
     counts = {"openneuro_derivatives": 0, "in_dataset": 0}
-    await ensure_tables(conn)
     for source, fetch in ((SOURCE_OPENNEURO_DERIVATIVES, openneuro_derivatives),
                           (SOURCE_IN_DATASET, in_dataset_derivatives)):
         try:

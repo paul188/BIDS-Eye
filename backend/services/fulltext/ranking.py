@@ -17,8 +17,8 @@ from services.fulltext import vectors
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
 
 # How much a match counts, by where it is. The search vectors give each part
-# of a dataset a Postgres weight label (setweight in crawlers/migrate_add_search_tsv.sql
-# and the other migrate_add_*.sql); ts_rank_cd scores a label by its weight here.
+# of a dataset a Postgres weight label (setweight, see fulltext/vectors.py);
+# ts_rank_cd scores a label by its weight here.
 TS_WEIGHT_NAME = 1.0           # label A: the dataset's name
 TS_WEIGHT_SHORT_FIELDS = 0.6   # label B: short fields, incl. conditions the README says were studied
 TS_WEIGHT_LLM_PROFILE = 0.4    # label C: the language model's profile of the README

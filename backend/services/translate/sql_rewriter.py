@@ -771,7 +771,7 @@ class SqlRewriteService:
     # datasets' sidecars, ManufacturerModelName (production 2026-11-18: 1,093
     # datasets the first, 52 the second, 48 of them on files without the
     # first). Either key the model writes is read as both, in the expression
-    # crawlers/migrate_add_sidecar_indexes.sql indexes.
+    # the index ix_bids_objects_scanner_model_any_trgm is built on.
     _SCANNER_MODEL_KEYS = ("ManufacturersModelName", "ManufacturerModelName")
 
     def _unify_scanner_model_key(self, sql: str) -> str:

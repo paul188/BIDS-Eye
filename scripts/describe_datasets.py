@@ -27,7 +27,7 @@ Papers whose relation is not shown (related_study, tool, unclear):
     SELECT accession_id, paper_relation->>'relation', paper_relation->>'paper_key'
     FROM bids_datasets WHERE paper_relation->>'shown' = 'false';
 
-Run crawlers/migrate_add_dataset_descriptions.sql first. Needs GEMINI_API_KEY;
+Needs the database at the newest migration (backend/migrations/README.md). Needs GEMINI_API_KEY;
 README, catalogue and paper text go to Gemini only, never to the Claude fallback.
 Database connection: DATABASE_URL, or the METADATA_DB_* variables.
 """

@@ -436,30 +436,15 @@ def test_resolved_task_filter_keeps_a_readme_text_fallback(monkeypatch) -> None:
     assert "bids_objects o2" in question
 
 
-# ── Capability detection and DDL ──────────────────────────────────────────────
+# ── Capability detection and the search vector ──────────────────────────────────────────────
 
-def test_migration_and_crawler_define_the_same_search_vector() -> None:
+def test_the_search_vector_has_the_weights_the_ranking_assumes() -> None:
     from remote import openneuro_metadata as meta
 
-    def squash(sql: str) -> str:
-        return re.sub(r"\s+", "", sql)
-
-    migration = (ROOT / "crawlers" / "migrate_add_search_tsv.sql").read_text()
-    assert squash(meta.SEARCH_VECTOR_EXPRESSION) in squash(migration)
-    statements = meta.search_vector_sql()
-    # The profile columns the expression reads come first.
-    profile_statements = statements[: len(meta.PROFILE_COLUMNS)]
-    assert all("ADD COLUMN IF NOT EXISTS llm_" in st for st in profile_statements)
-    assert "ADD COLUMN IF NOT EXISTS search_tsv" in statements[-2]
-    assert "CREATE INDEX IF NOT EXISTS" in statements[-1]
-    # The weights the ranking assumes: name A, short fields B, LLM profile C, README D.
+    # Name A, short fields B, LLM profile C, README D.
     assert re.findall(r"'([ABCD])'\)", meta.SEARCH_VECTOR_EXPRESSION) == ["A", "B", "C", "D"]
     assert meta.SEARCH_VECTOR_EXPRESSION.count("translate(") == 4
     assert "llm_conditions" in meta.SEARCH_VECTOR_EXPRESSION.split("'B')")[0]
-
-    profiles = (ROOT / "crawlers" / "migrate_add_readme_profiles.sql").read_text()
-    added = dict(re.findall(r"ADD COLUMN IF NOT EXISTS (\w+)\s+([A-Z]+)", profiles))
-    assert added == meta.PROFILE_COLUMNS
 
 
 def test_a_bug_in_a_frequency_lookup_is_raised() -> None:

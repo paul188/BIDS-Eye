@@ -2,6 +2,7 @@
 -- Written by pg_dump --schema-only. Two leftover tables are left out:
 -- query_translations and bids_datasets_refs_backup_20261113.
 -- Run by 0001_baseline.py, one statement at a time.
+-- What the tables, vectors and indexes are for: ../README.md.
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
 

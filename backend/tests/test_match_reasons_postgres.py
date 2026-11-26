@@ -30,7 +30,7 @@ CREATE TABLE bids_datasets (
     species TEXT,
     age_min DOUBLE PRECISION,
     age_max DOUBLE PRECISION,
-    -- The weights of production (crawlers/migrate_add_search_tsv.sql): a
+    -- The weights of production (SEARCH_VECTOR_EXPRESSION): a
     -- word labelled A or B matches the name and description, not the README.
     search_tsv TSVECTOR GENERATED ALWAYS AS (
         setweight(to_tsvector('english', coalesce(name, '')), 'A') ||

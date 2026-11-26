@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import sys
 from pathlib import Path
 
@@ -39,23 +38,6 @@ def test_site_names_are_cleaned() -> None:
     assert links.clean_site_names("  IRB of  Wayne State University ") == ["IRB of Wayne State University"]
     assert links.clean_site_names(["A", "A", "n/a", "", 3, "B"]) == ["A", "B"]
     assert len(links.clean_site_names(["x" * 900])[0]) == 500
-
-
-def test_migration_file_matches_link_tables() -> None:
-    sql = (ROOT / "crawlers" / "migrate_add_dataset_links.sql").read_text()
-    code_tables = set(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", " ".join(links.TABLES_SQL)))
-    file_tables = set(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", sql))
-    assert code_tables == file_tables == {"bids_derivatives", "bids_dataset_sites"}
-    for table in code_tables:
-        code_cols = set(re.findall(r"^\s+(\w+)\s+[A-Z]", _body(" ".join(links.TABLES_SQL), table), re.M))
-        file_cols = set(re.findall(r"^\s+(\w+)\s+[A-Z]", _body(sql, table), re.M))
-        assert code_cols == file_cols, table
-
-
-def _body(sql: str, table: str) -> str:
-    start = sql.index(f"CREATE TABLE IF NOT EXISTS {table}")
-    body = sql[start:sql.index(")", sql.index("UNIQUE", start))]
-    return body.replace(",", ",\n")
 
 
 def test_metadata_record_gives_new_columns_and_ethics_sites() -> None:
