@@ -60,20 +60,25 @@ def test_loose_core_without_counts_skips_the_general_word():
         word_frequencies.reset_frequency_lookup()
 
 
-# ── diagnosis fallback: "disorder" stays after an everyday word ─────────────
+# ── diagnosis fallback: strings are searched whole ───────────────────────────
 
-def test_everyday_word_keeps_its_disorder():
-    assert text_terms._core_words("eating disorders") == [["eating"], ["disorders"]]
-    assert text_terms._core_words("sleep disorder") == [["sleep"], ["disorder"]]
-    assert text_terms._core_words("Down syndrome") == [["down"], ["syndrome"]]
-    assert text_terms._core_words("eating disorder patients") == [["eating"], ["disorder"]]
+def test_diagnosis_strings_keep_all_their_words():
+    assert text_terms._label_words("eating disorders") == [["eating"], ["disorders"]]
+    assert text_terms._label_words("Parkinson's disease (MCI)") == [["parkinson"], ["disease"]]
+    assert text_terms._label_words("epileptic patients") == [["epileptic"], ["patients"]]
 
 
-def test_disease_name_still_drops_its_generic_word():
-    assert text_terms._core_words("Parkinson's disease") == [["parkinson"]]
-    assert text_terms._core_words("bipolar disorder") == [["bipolar"]]
-    assert text_terms._core_words("post-traumatic stress disorder") == [["post", "traumatic"], ["stress"]]
-    assert text_terms._core_words("epileptic patients") == [["epileptic"]]
+def test_population_labels_are_not_shortened_to_their_adjective():
+    # "healthy" alone matched 508 datasets, "young" also "Young Children".
+    strings = {"healthy_volunteer": [("healthy volunteer", 1.0)],
+               "young_adult": [("Young Adult", 1.0)],
+               "trained_participant": [("Trained Participant", 1.0)]}
+    for term, code, words in (("healthy volunteer", "healthy_volunteer", "healthy volunteer"),
+                              ("young adults", "young_adult", "young adult"),
+                              ("trained participants", "trained_participant", "trained participant")):
+        found = text_terms.diagnosis_alternatives({term: [code]}, lookup=strings.get)
+        assert words in found
+        assert not any(len(alternative.split()) == 1 for alternative in found), found
 
 
 def test_eating_disorder_alternatives_do_not_search_eating_alone():

@@ -113,14 +113,14 @@ def test_diagnosis_alternatives_add_synonyms_the_stemmer_misses() -> None:
         found == ["epilepsy", "seizures", "epileptic", "focal cortical dysplasia"]
 
 
-def test_diagnosis_alternatives_drop_generic_words_and_risky_abbreviations() -> None:
+def test_diagnosis_alternatives_shorten_only_to_listed_forms() -> None:
     found = text_terms.diagnosis_alternatives(
         {"Parkinson's disease": ["parkinsons_disease"], "AD": ["alzheimers_disease"]},
         lookup=_lookup,
     )
-    # "disease" would hide 'Basal Ganglia in Parkinson'; "PD" is also proton
-    # density; "load" would match 'cognitive load'.
-    assert found == ["parkinson", "paralysis agitans", "alzheimer", "alzheimers dementia"]
+    # "parkinson" is a listed synonym; Alzheimer's has none, so its label stays
+    # whole. "PD" is also proton density; "load" would match 'cognitive load'.
+    assert found == ["parkinson", "paralysis agitans", "alzheimer disease", "alzheimers dementia"]
 
     assert text_terms.diagnosis_alternatives(
         {"healthy controls": ["healthy_control"]}, lookup=_lookup
@@ -136,8 +136,9 @@ def test_synonyms_keep_their_generic_words() -> None:
     # "reading" alone would match every reading study.
     assert found == ["dyslexia", "reading disorder", "dyslexic disorder"]
     found = text_terms.diagnosis_alternatives({"OCD": ["ocd"]}, lookup=vocabulary.get)
-    # "disorder" does not make "oc" long enough to search for.
-    assert found == ["ocd", "obsessive-compulsive", "compulsive disorder"]
+    # "disorder" does not make "oc" long enough to search for; "compulsive
+    # disorder" covers the label.
+    assert found == ["ocd", "compulsive disorder"]
 
 
 def test_diagnosis_alternatives_work_without_a_vocabulary() -> None:

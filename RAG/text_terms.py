@@ -96,19 +96,6 @@ def searched_words(term: str) -> List[str]:
     """The words of *term* PostgreSQL searches: its parts without the stop words."""
     return [part for word in split_words(term) for part in word if part not in POSTGRES_STOPWORDS]
 
-# Everyday words that name a condition only together with "disorder",
-# "disease" or "syndrome": "eating disorders" searched as "eating" matched
-# abstracts about meals (qp08: 1 of 12 results correct). A diagnosis string
-# whose remaining words are all of these keeps its generic word;
-# "Parkinson's disease" → "parkinson" still drops it.
-_NEEDS_GENERIC_WORD = frozenset({
-    "eating", "sleep", "sleeping", "movement", "movements", "motor", "personality",
-    "language", "speech", "reading", "learning", "conduct", "mood", "panic",
-    "use", "down", "williams", "heart", "kidney", "liver", "lung", "metabolic",
-    "mental", "psychiatric", "neurological", "developmental", "neurodevelopmental",
-    "neurodegenerative", "neuromuscular", "genetic", "rare", "functional",
-    "attention", "communication", "adjustment", "stress", "pain",
-})
 
 # Words that qualify the thing searched for rather than name it. Never kept
 # alone when a longer term is shortened.
@@ -136,7 +123,7 @@ NEVER_ALONE_WORDS = frozenset({
     "scans", "scan", "sessions", "session", "version", "versions",
 })
 
-# "Parkinson's disease" should find "Basal Ganglia in Parkinson".
+# Words that do not identify a condition ("oc disorder" is too short to search).
 _GENERIC_DIAGNOSIS_WORDS = frozenset({
     "disease", "diseases", "disorder", "disorders", "syndrome", "syndromes",
     "spectrum",
@@ -275,25 +262,13 @@ def _flat(term: Term) -> List[str]:
     return [part for word in term for part in word]
 
 
-def _core_words(text: str) -> Term:
-    """Words of a diagnosis string without generic and population words.
+def _label_words(text: str) -> Term:
+    """All words of a diagnosis string, without what stands in brackets.
 
-    The generic word stays when the rest is only everyday words
-    (_NEEDS_GENERIC_WORD): "eating disorders" stays whole.
+    Nothing else is dropped: "healthy volunteer" shortened to "healthy"
+    matched 508 datasets. Short forms come from the vocabulary's synonyms.
     """
-    words = split_words(_PARENTHESES_RE.sub(" ", text or ""))
-    without_population = [
-        word for word in words
-        if not (len(word) == 1 and word[0] in _POPULATION_WORDS)
-    ] or words
-    core = [
-        word for word in without_population
-        if not (len(word) == 1 and word[0] in _GENERIC_DIAGNOSIS_WORDS)
-    ]
-    if core and len(core) < len(without_population) and all(
-            len(word) == 1 and word[0] in _NEEDS_GENERIC_WORD for word in core):
-        return without_population
-    return core or words
+    return split_words(_PARENTHESES_RE.sub(" ", text or ""))
 
 
 def _mentions_population(text: str) -> bool:
@@ -422,14 +397,14 @@ def diagnosis_alternatives(
       2. label and synonyms of each term's best code,
       3. labels of the other codes,
     without an alternative that a shorter one already covers, and capped at
-    *limit*. Generic words ("disease", "disorder") are dropped from the user's
-    terms and the best code's label, never from a synonym or another label.
+    *limit*. Every string is searched whole: a shorter form ("parkinson")
+    is searched only when the vocabulary lists it as a synonym.
     """
     lookup = lookup or _lookup_strings
     candidates: List[Tuple[Term, int]] = []   # (words, minimum longest part)
 
     for term in term_to_codes:
-        candidates.append((_core_words(term), _MIN_TRUSTED_PART))
+        candidates.append((_label_words(term), _MIN_TRUSTED_PART))
 
     other_labels: List[Tuple[Term, int]] = []
     for codes in term_to_codes.values():
@@ -439,19 +414,12 @@ def diagnosis_alternatives(
                 continue
             label, synonyms = strings[0][0], strings[1:]
             if position > 0:
-                # Kept whole: "Watanabe syndrome" without "syndrome" is a
-                # common author name.
-                other_labels.append(
-                    (split_words(_PARENTHESES_RE.sub(" ", label)), _MIN_TRUSTED_PART)
-                )
+                other_labels.append((_label_words(label), _MIN_TRUSTED_PART))
                 continue
-            candidates.append((_core_words(label), _MIN_TRUSTED_PART))
+            candidates.append((_label_words(label), _MIN_TRUSTED_PART))
             for synonym, _weight in sorted(synonyms, key=lambda item: -item[1]):
                 if not _mentions_population(synonym):
-                    # Kept whole: without its "disorder", "reading disorder"
-                    # would match every reading study.
-                    words = split_words(_PARENTHESES_RE.sub(" ", synonym))
-                    candidates.append((words, _MIN_SYNONYM_PART))
+                    candidates.append((_label_words(synonym), _MIN_SYNONYM_PART))
     candidates.extend(other_labels)
 
     kept: List[Term] = []
