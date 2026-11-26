@@ -235,7 +235,7 @@ def test_sex_words_in_the_index_never_lose_a_match(only):
         "all-female", "all female", "allfemale", "female-only", "only women", "exclusively female",
         "all participants were female",
     ]
-    condition = tier_sex.SexNamed(sex="female", only=only, alias="d").sql()
+    condition = tier_sex.SexNamedEvidence(sex="female", only=only, alias="d").sql()
     regex = condition.split(" AND ", 1)[1][:-1]
     assert condition == f"(d.search_tsv @@ TO_TSQUERY('english', '{tier_sex._sex_tsquery('female')}') AND {regex})"
     row = ("(SELECT CAST(:t AS TEXT) AS name, NULL AS description_text, NULL AS readme_text, "

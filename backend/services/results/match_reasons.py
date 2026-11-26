@@ -35,7 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from schemas import DatasetSchema
 from services.evidence.base import Source
 from services.evidence.branches import confirming_evidence
-from services.evidence.confirmed import ConfirmedMatch, Found
+from services.evidence.confirmed import ConfirmedEvidence, FoundEvidence
 from services.results import query_filters
 from services.schema import tables as _tables
 
@@ -53,7 +53,7 @@ class ChipPlan:
     field: str
     kind: str
     # dataclasses.field: the name 'field' is this class's own attribute.
-    branches: List[ConfirmedMatch] = dataclasses.field(default_factory=list)
+    branches: List[ConfirmedEvidence] = dataclasses.field(default_factory=list)
 
 
 # ── The chips worth explaining ───────────────────────────────────────────────
@@ -86,7 +86,7 @@ def _assumed_absent(chip, alias: str) -> Optional[ChipPlan]:
     except ImportError:  # the RAG package is not on the path
         return None
     return ChipPlan(field=f"No {chip.label}", kind=chip.kind,
-                    branches=[Found(diagnosis_unknown(alias), source=Source.ASSUMED_ABSENT)])
+                    branches=[FoundEvidence(diagnosis_unknown(alias), source=Source.ASSUMED_ABSENT)])
 
 
 def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:

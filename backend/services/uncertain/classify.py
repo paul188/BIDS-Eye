@@ -25,10 +25,10 @@ from services.uncertain.conditions import LABEL_RE, ClauseEvidence
 from services.uncertain.text import query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.branches import confirming_evidence
-from services.evidence.confirmed import ConfirmedMatch
-from services.evidence.contradicted import OtherValuesRecorded
-from services.evidence.possible import NotRecorded
-from services.evidence.probable import CoreOfTerm, PaperOnly, TextSearch
+from services.evidence.confirmed import ConfirmedEvidence
+from services.evidence.contradicted import OtherValuesRecordedEvidence
+from services.evidence.possible import NotRecordedEvidence
+from services.evidence.probable import CoreOfTermEvidence, PaperOnlyEvidence, TextSearch
 from services.schema.tables import SEARCH_VECTORS
 from services.uncertain import fields
 from services.uncertain.scanner import sidecar
@@ -189,7 +189,7 @@ def loose_term(clause: Clause, alias: str, papers: bool = False) -> Optional[Cla
                           confirming=confirming_evidence(left, alias), evidence=(
         # The core only in a paper: the rows the core's own paper form had before.
         *_paper_only(right, alias, papers),
-        CoreOfTerm(core, missing=tuple(sorted(words - core_words))),
+        CoreOfTermEvidence(core, missing=tuple(sorted(words - core_words))),
     ))
 
 
@@ -197,7 +197,7 @@ def _paper_only(clause: Clause, alias: str, papers: bool) -> Tuple[PieceOfEviden
     """The evidence that the text searches of the condition *clause* match only
     in a paper; none without paper text or without a positive text search."""
     searches = paper_searches(clause) if papers else ()
-    return (PaperOnly(searches, alias=alias),) if searches else ()
+    return (PaperOnlyEvidence(searches, alias=alias),) if searches else ()
 
 
 def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
@@ -239,8 +239,8 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
             weaker = paper + weaker
-        record = OtherValuesRecorded(field.recorded(alias))
-        not_recorded = NotRecorded(field.label, field.unrecorded_score)
+        record = OtherValuesRecordedEvidence(field.recorded(alias))
+        not_recorded = NotRecordedEvidence(field.label, field.unrecorded_score)
         evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
                     else (record, *weaker, not_recorded))
         return ClauseEvidence(kind=kind, sql=sql, evidence=evidence, confirming=confirming)
@@ -251,9 +251,10 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
 
 
 @dataclass(frozen=True)
-class PatientsNotCounted(PieceOfEvidence):
-    """"At least *minimum* participants with one of *codes*": the dataset
-    does not record who has the diagnosis and is large enough to hold them."""
+class PatientsNotCountedEvidence(PieceOfEvidence):
+    """Probable, for "at least *minimum* participants with one of *codes*":
+    the dataset does not record who has the diagnosis, and it has enough
+    participants to hold them."""
     codes: Tuple[str, ...]
     minimum: int
     stored_subject_counts: bool   # bids_datasets.n_subjects is filled
@@ -273,7 +274,7 @@ class PatientsNotCounted(PieceOfEvidence):
 
 
 def _patient_count(sql: str, alias: str,
-                   confirming: Tuple[ConfirmedMatch, ...] = ()) -> Optional[ClauseEvidence]:
+                   confirming: Tuple[ConfirmedEvidence, ...] = ()) -> Optional[ClauseEvidence]:
     """"At least N participants with the diagnosis" (RAG/cohort_count.py).
 
     Confirmed when that many are coded or labelled with it. Uncertain when the
@@ -295,5 +296,5 @@ def _patient_count(sql: str, alias: str,
     except ImportError:
         pass
     return ClauseEvidence(kind="patient_count", sql=sql, confirming=confirming, evidence=(
-        PatientsNotCounted(tuple(codes), minimum, stored, alias=alias),
+        PatientsNotCountedEvidence(tuple(codes), minimum, stored, alias=alias),
     ))

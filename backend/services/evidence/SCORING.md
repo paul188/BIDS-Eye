@@ -25,8 +25,8 @@ good as confirmed" and 0 means "never relevant".
 
 | Piece | p | From |
 |---|---|---|
-| a weaker form of a text search (`WeakerSearch`) | 0.37 | 555 judged rows |
-| the text names the age group (`AgeGroupNamed`) | 0.53 | 92 judged rows |
+| a weaker form of a text search (`WeakerSearchEvidence`) | 0.37 | 555 judged rows |
+| the text names the age group (`AgeGroupNamedEvidence`) | 0.53 | 92 judged rows |
 | ages not recorded | 0.33 | 21 judged rows |
 | diagnosis not recorded | 0.04 | 95 judged rows |
 | any other probable piece | 0.4 | hand-set (`base.DEFAULT_SCORES`) |

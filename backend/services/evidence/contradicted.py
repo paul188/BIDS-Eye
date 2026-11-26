@@ -14,9 +14,9 @@ from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
-class OtherValuesRecorded(PieceOfEvidence):
-    """The dataset records the field, and the condition does not hold: a
-    contradiction.
+class OtherValuesRecordedEvidence(PieceOfEvidence):
+    """Contradicted: the dataset records the field with values that do not
+    fit the condition.
 
     Its place in a condition's list says what a record outweighs. Evidence
     listed after it counts only for a dataset that records nothing; evidence

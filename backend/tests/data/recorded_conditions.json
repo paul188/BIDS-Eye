@@ -3,928 +3,928 @@
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.suffix = 'chi_map' OR o2.task = 'occluded_image_interpretation')) OR d.search_tsv @@ TO_TSQUERY('english', 'images:AB')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'video_game_and_video') OR d.search_tsv @@ TO_TSQUERY('english', 'videos:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'changepoint_detection_task') OR d.search_tsv @@ TO_TSQUERY('english', '(predictive:AB <-> inference:AB)')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('semantic_conditioning', 'pavlovian_conditioning', 'paired_associates_memory_encoding_cnp', 'go_no_go_a', 'peaky_snr_speech_masking', 'probabilistic_classification_learning', 'deterministic_classification_learning', 'single_task_weather_prediction', 'dual_task_weather_prediction', 'auditory_visual_shift', 'balloon_analog_risk_task', 'probabilistic_selection_task', 'mixed_gambles_task', 'random_dot_motion_perception')) OR d.search_tsv @@ TO_TSQUERY('english', '(changepoint:AB <-> style:AB) & learning:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'passive_listening_natural_speech') OR d.search_tsv @@ TO_TSQUERY('english', 'auditory:AB & brainstem:AB & responses:AB')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'sloth_natural_language_listening') OR d.search_tsv @@ TO_TSQUERY('english', 'continuous:AB & speech:AB')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'music_listening') OR d.search_tsv @@ TO_TSQUERY('english', 'music:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'sloth_natural_language_listening') OR d.search_tsv @@ TO_TSQUERY('english', 'continuous:AB & speech:AB')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'music_listening') OR d.search_tsv @@ TO_TSQUERY('english', 'music:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('numerical_processing', 'arithmetic_task')) OR d.search_tsv @@ TO_TSQUERY('english', 'mental:AB & arithmetic:AB')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'dual_task_weather_prediction') OR d.search_tsv @@ TO_TSQUERY('english', 'numerical:AB & cognition:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('retinotopy', 'visual_functional_localizer', 'population_receptive_field_mapping', 'retinotopy_wedge_and_ring')) OR d.search_tsv @@ TO_TSQUERY('english', 'retinotopic:AB & mapping:AB')) OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'population_receptive_field_mapping') OR d.search_tsv @@ TO_TSQUERY('english', 'population:AB & receptive:AB & field:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "((EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('visual_food_stimuli_reactivity', 'food_cue_viewing_low_resolution')) OR d.search_tsv @@ TO_TSQUERY('english', 'food:AB & cues:AB')) OR d.search_tsv @@ TO_TSQUERY('english', 'appetite'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "((d.search_tsv @@ TO_TSQUERY('english', 'tourette & syndrome') AND d.search_tsv @@ TO_TSQUERY('english', 'tic')) OR (EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('dystonia')) OR d.search_tsv @@ TO_TSQUERY('english', 'dystonia:AB | (dystonic:AB & movements:AB) | blepharospasm:AB | (writer:AB & cramp:AB) | (dystonic:AB & disorder:AB) | (dystonic:AB & syndrome:AB) | hemidystonia:AB | (dystonic:AB & posturing:AB) | (spasmodic:AB & torticollis:AB)')))",
   "negated": false,
   "evidence": [
-   "Found text",
-   "ParticipantRows participants",
-   "Found short_text"
+   "FoundEvidence text",
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'electroencephalography' OR o2.suffix = 'eeg')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'fnirs' OR o2.suffix = 'fnirs')) OR EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'motion_capture' OR o2.suffix = 'motion_capture_data')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found files"
+   "FoundEvidence files",
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'fnirs' OR o2.suffix = 'fnirs')) OR EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'motion_capture'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found files"
+   "FoundEvidence files",
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype IN ('functional_mri', 'electroencephalography') OR o2.suffix IN ('eeg', 'fmri_bold', 'bold_map', 'single_band_reference', 'bold_reference') OR o2.task IN ('resting_state', 'interictal_state_recording', 'interictal_state_recording_sleep', 'interictal_state_recording_awake', 'awake_state_monitoring', 'resting_state_eyes_open', 'resting_state_eyes_closed', 'resting_state_technical', 'resting_state_temporal', 'deepmreye_resting_eyes_closed', 'wedge_rest_condition', 'restorative_rest', 'resting_state_post_intervention', 'resting_state_pre_intervention', 'resting_state_tms_eeg', 'between_viewing_rest', 'post_intervention_phase', 'post_event_phase', 'post_face_task_phase', 'post_heat_stimulation_phase', 'post_memory_task_phase', 'post_scene_task_phase', 'pre_heat_stimulation_phase', 'pre_memory_task_phase'))) OR d.search_tsv @@ TO_TSQUERY('english', '(resting:AB <-> state:AB)'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.suffix IN ('mr_venography', 'mr_angiography')) OR EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'swi'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found files"
+   "FoundEvidence files",
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'anti_saccade_task') OR d.search_tsv @@ TO_TSQUERY('english', '(anti:AB <-> saccade:AB)')) OR d.search_tsv @@ TO_TSQUERY('english', 'saccadic')",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'numerical_processing') OR d.search_tsv @@ TO_TSQUERY('english', 'number:AB') OR d.search_tsv @@ TO_TSQUERY('english', 'arithmetic & problems'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'odor_perception') OR d.search_tsv @@ TO_TSQUERY('english', 'smell:AB'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'walking_task_general') OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('perturbed_beam_walking_pull_stand', 'standing_task_15', 'standing_task_30', 'perturbed_beam_walking_rotate_stand', 'perturbed_beam_walking_rotate_walk', 'stop_condition_exoskeleton_walking')) OR d.search_tsv @@ TO_TSQUERY('english', 'balance:AB')))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('finger_tapping_task', 'music_listening')) OR d.search_tsv @@ TO_TSQUERY('english', 'sensorimotor:AB & rhythm:AB'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('imagined_speech', 'covert_speech_decoding', 'inner_speech')) OR d.search_tsv @@ TO_TSQUERY('english', 'silent:AB & speech:AB') OR d.search_tsv @@ TO_TSQUERY('english', 'imagined'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('interictal_state_recording_sleep', 'emotional_arousal_tmr', 'sleepiness_state', 'slow_wave_sleep', 'sleep_state', 'comfort_assessment_sleep_monitoring')) OR d.search_tsv @@ TO_TSQUERY('english', 'sleep:AB'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('movie_viewing', 'audiovisual_scenes_long_duration', 'video_clips_viewing', 'rest_film_viewing')) OR d.search_tsv @@ TO_TSQUERY('english', 'video:AB & watching:AB'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('resting_state', 'interictal_state_recording', 'interictal_state_recording_sleep', 'interictal_state_recording_awake', 'awake_state_monitoring', 'resting_state_eyes_open', 'resting_state_eyes_closed', 'resting_state_technical', 'resting_state_temporal', 'deepmreye_resting_eyes_closed', 'wedge_rest_condition', 'restorative_rest', 'resting_state_post_intervention', 'resting_state_pre_intervention', 'resting_state_tms_eeg', 'between_viewing_rest', 'post_intervention_phase', 'post_event_phase', 'post_face_task_phase', 'post_heat_stimulation_phase', 'post_memory_task_phase', 'post_scene_task_phase', 'pre_heat_stimulation_phase', 'pre_memory_task_phase')) OR d.search_tsv @@ TO_TSQUERY('english', '(resting:AB <-> state:AB) & rhythms:AB'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('semantic_conditioning', 'pavlovian_conditioning', 'paired_associates_memory_encoding_cnp', 'go_no_go_a', 'peaky_snr_speech_masking', 'probabilistic_classification_learning', 'deterministic_classification_learning', 'single_task_weather_prediction', 'dual_task_weather_prediction', 'auditory_visual_shift', 'balloon_analog_risk_task', 'probabilistic_selection_task', 'mixed_gambles_task', 'random_dot_motion_perception')) OR d.search_tsv @@ TO_TSQUERY('english', '(changepoint:AB <-> style:AB) & learning:AB'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text"
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('visual_food_stimuli_reactivity', 'food_cue_viewing_low_resolution')) OR d.search_tsv @@ TO_TSQUERY('english', 'food:AB & cues:AB') OR d.search_tsv @@ TO_TSQUERY('english', 'appetite'))",
   "negated": false,
   "evidence": [
-   "Found files",
-   "Found short_text",
-   "Found text"
+   "FoundEvidence files",
+   "FoundEvidence short_text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p WHERE p.dataset_id = d.id AND p.age < 18) OR d.age_min < 18)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age < 18 AND p2.diagnosis IN ('overweight')) OR (d.age_min < 18 AND d.search_tsv @@ TO_TSQUERY('english', 'overweight:AB | obesity:AB | (elevated:AB & bmi:AB) | preobesity:AB | preobese:AB | (elevated:AB & body:AB & mass:AB & index:AB) | (excess:AB & weight:AB) | (increased:AB & body:AB & weight:AB) | (increased:AB & bmi:AB) | (over:AB <-> weight:AB) | (excess:AB & adiposity:AB)')))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age < 2) OR d.age_min < 2)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age < 35) OR d.age_max < 35 OR d.search_tsv @@ TO_TSQUERY('english', 'young:AB'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age > 65) OR d.age_max > 65)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age >= 13 AND p2.age <= 25) OR (d.age_min <= 25 AND d.age_max >= 13))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age >= 18 AND p2.age <= 45) OR (NOT d.age_min IS NULL AND NOT d.age_max IS NULL AND d.age_min <= 45 AND d.age_max >= 18))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age >= 18) OR d.age_max >= 18)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age >= 18) OR d.age_min >= 18)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control') OR d.search_tsv @@ TO_TSQUERY('english', 'healthy:AB'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('adhd')) OR d.name ILIKE '%adhd%' OR d.description_text ILIKE '%adhd%' OR d.dx_status ILIKE '%adhd%' OR d.study_domain ILIKE '%adhd%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('alzheimers_disease', 'mild_cognitive_impairment')) OR d.search_tsv @@ TO_TSQUERY('english', 'alzheimer:AB | (mild:AB & cognitive:AB & impairment:AB) | alzheimers:AB | (alzhiemer:AB & disease:AB) | (alzeimer:AB & disease:AB) | (prodromal:AB & ad:AB) | (mild:AB & neurocognitive:AB & disorder:AB) | (pre:AB <-> dementia:AB) | predementia:AB | (amnestic:AB & mci:AB) | (cognitive:AB & impairment:AB & no:AB & dementia:AB) | (mild:AB & cognitive:AB & decline:AB) | (prodromal:AB & dementia:AB) | (incipient:AB & dementia:AB) | (mild:AB & cognitive:AB & dysfunction:AB) | (mild:AB & cognitive:AB & deficit:AB)'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('anxiety_disorder', 'post_traumatic_stress_disorder', 'obsessive_compulsive_disorder', 'panic_disorder')) OR d.name ILIKE '%anxiety%' OR d.description_text ILIKE '%anxiety%' OR d.dx_status ILIKE '%anxiety%' OR d.study_domain ILIKE '%anxiety%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('anxiety_disorder', 'post_traumatic_stress_disorder', 'obsessive_compulsive_disorder', 'panic_disorder')) OR d.search_tsv @@ TO_TSQUERY('english', 'anxiety:AB | anxious:AB | (anxeity:AB & disorder:AB) | (anxietey:AB & disorder:AB) | ((post:AB <-> traumatic:AB) & stress:AB & disorder:AB) | ((obsessive:AB <-> compulsive:AB) & disorder:AB) | (panic:AB & disorder:AB)'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('autism_spectrum_disorder')) OR d.search_tsv @@ TO_TSQUERY('english', 'autism:AB | autistic:AB | (asperger:AB & syndrome:AB) | aspergers:AB | (pervasive:AB & developmental:AB & disorders:AB)'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('autism_spectrum_disorder', 'asd_sibling_cohort')) OR d.name ILIKE '%autism%' OR d.description_text ILIKE '%autism%' OR d.dx_status ILIKE '%autism%' OR d.study_domain ILIKE '%autism%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('dystonia')) OR d.search_tsv @@ TO_TSQUERY('english', 'dystonia:AB | (dystonic:AB & movements:AB) | blepharospasm:AB | (writer:AB & cramp:AB) | (dystonic:AB & disorder:AB) | (dystonic:AB & syndrome:AB) | hemidystonia:AB | (dystonic:AB & posturing:AB) | (spasmodic:AB & torticollis:AB)')) OR (d.search_tsv @@ TO_TSQUERY('english', 'tourette & syndrome') AND d.search_tsv @@ TO_TSQUERY('english', 'tic'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('epilepsy', 'watanabe_syndrome', 'west_syndrome_history', 'hhe_syndrome', 'mild_malformation_cortical_development', 'gray_matter_heterotopia', 'complex_mcd_combination', 'focal_cortical_dysplasia', 'focal_cortical_dysplasia_type_2', 'focal_cortical_dysplasia_type_1a', 'hippocampal_sclerosis', 'genetic_epilepsy', 'non_lesional_epilepsy')) OR d.name ILIKE '%epilepsy%' OR d.description_text ILIKE '%epilepsy%' OR d.dx_status ILIKE '%epilepsy%' OR d.study_domain ILIKE '%epilepsy%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('fibromyalgia')) OR d.name ILIKE '%fibromyalgia%' OR d.description_text ILIKE '%fibromyalgia%' OR d.dx_status ILIKE '%fibromyalgia%' OR d.study_domain ILIKE '%fibromyalgia%' OR d.name ILIKE '%pain%' OR d.description_text ILIKE '%pain%' OR d.dx_status ILIKE '%pain%' OR d.study_domain ILIKE '%pain%') OR (d.name ILIKE '%migraine%' OR d.description_text ILIKE '%migraine%' OR d.dx_status ILIKE '%migraine%' OR d.study_domain ILIKE '%migraine%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('healthy_control', 'healthy_volunteer', 'typically_developing', 'healthy_control_task_variant', 'healthy_control_expert', 'healthy_control_processing_variant', 'healthy_control_2mo', 'healthy_control_9mo', 'neurotypical', 'older_adult', 'young_adult') AND p2.age >= 2 AND p2.age <= 12) OR (d.search_tsv @@ TO_TSQUERY('english', '(healthy:AB & controls:AB) | (healthy:AB & control:AB) | (unaffected:AB & control:AB) | (unaffected:AB & controls:AB) | (cognitively:AB & normal:AB) | (cognitively:AB & unimpaired:AB) | (healthy:AB & volunteer:AB) | (typically:AB & developing:AB) | (older:AB & adult:AB) | (young:AB & adult:AB)') AND (d.age_min <= 12 AND d.age_max >= 2)))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('schizophrenia', 'schizophrenia_with_avh', 'schizophrenia_without_avh')) OR d.name ILIKE '%schizophrenia%' OR d.description_text ILIKE '%schizophrenia%' OR d.dx_status ILIKE '%schizophrenia%' OR d.study_domain ILIKE '%schizophrenia%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('stroke', 'cortical_cerebral_infarction', 'perinatal_stroke', 'postnatal_stroke')) OR d.name ILIKE '%stroke%' OR d.description_text ILIKE '%stroke%' OR d.dx_status ILIKE '%stroke%' OR d.study_domain ILIKE '%stroke%' OR d.name ILIKE '%aphasia%' OR d.description_text ILIKE '%aphasia%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found short_text",
-   "Found short_text"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('traumatic_brain_injury', 'brain_contusion')) OR d.name ILIKE '%traumatic brain%' OR d.description_text ILIKE '%traumatic brain%' OR d.dx_status ILIKE '%traumatic brain%' OR d.study_domain ILIKE '%traumatic brain%' OR d.name ILIKE '%brain contusion%' OR d.description_text ILIKE '%brain contusion%' OR d.dx_status ILIKE '%brain contusion%' OR d.study_domain ILIKE '%brain contusion%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis IN ('west_syndrome_history')) OR d.name ILIKE '%west syndrome%' OR d.description_text ILIKE '%west syndrome%' OR d.dx_status ILIKE '%west syndrome%' OR d.study_domain ILIKE '%west syndrome%') OR (d.name ILIKE '%deep brain stimulation%' OR d.description_text ILIKE '%deep brain stimulation%' OR d.dx_status ILIKE '%deep brain stimulation%' OR d.study_domain ILIKE '%deep brain stimulation%' OR d.readme_text ILIKE '%deep brain stimulation%' OR d.name ILIKE '%DBS%' OR d.description_text ILIKE '%DBS%' OR d.dx_status ILIKE '%DBS%' OR d.study_domain ILIKE '%DBS%' OR d.readme_text ILIKE '%DBS%')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found readme",
-   "Found short_text",
-   "Found short_text",
-   "FieldValue field dx_status",
-   "FieldValue field study_domain",
-   "Found readme"
+   "ParticipantRowsEvidence participants",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence readme",
+   "FoundEvidence short_text",
+   "FoundEvidence short_text",
+   "FieldValueEvidence field dx_status",
+   "FieldValueEvidence field study_domain",
+   "FoundEvidence readme"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p3 WHERE p3.dataset_id = d.id AND p3.age >= 18 AND p3.age <= 35) OR (d.age_min <= 35 AND d.age_max >= 18))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p3 WHERE p3.dataset_id = d.id AND p3.age >= 18) OR d.age_max >= 18)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(EXISTS(SELECT 1 FROM bids_participants AS p3 WHERE p3.dataset_id = d.id AND p3.age BETWEEN 18 AND 40) OR (NOT d.age_min IS NULL AND d.age_min < 40 AND NOT d.age_max IS NULL AND d.age_max >= 18))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants",
-   "FieldValue field age_min,age_max"
+   "ParticipantRowsEvidence participants",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(d.age_min IS NULL OR d.age_min >= 18)",
   "negated": false,
   "evidence": [
-   "FieldValue field age_min,age_max",
-   "FieldValue field age_min,age_max"
+   "FieldValueEvidence field age_min,age_max",
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
   "condition": "(d.search_tsv @@ TO_TSQUERY('english', 'cognitive & processing') OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('word_memory_encoding', 'social_observation', 'rhyme_judgment_task', 'spatial_span_immediate_working_memory', 'phonological_processing', 'overt_word_repetition', 'categorized_free_recall_variant_1', 'probabilistic_classification_learning', 'deterministic_classification_learning', 'single_task_weather_prediction', 'dual_task_weather_prediction', 'word_reading_semantic')) OR d.search_tsv @@ TO_TSQUERY('english', 'language:AB')))",
   "negated": false,
   "evidence": [
-   "Found text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "(d.search_tsv @@ TO_TSQUERY('english', 'indoor') OR d.search_tsv @@ TO_TSQUERY('english', 'outdoor'))",
   "negated": false,
   "evidence": [
-   "Found text",
-   "Found text"
+   "FoundEvidence text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "(d.search_tsv @@ TO_TSQUERY('english', 'sequences & visual') OR (EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'passive_listening_natural_speech') OR d.search_tsv @@ TO_TSQUERY('english', 'auditory:AB & sequences:AB')))",
   "negated": false,
   "evidence": [
-   "Found text",
-   "Found files",
-   "Found short_text"
+   "FoundEvidence text",
+   "FoundEvidence files",
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS bo WHERE bo.dataset_id = d.id AND (bo.other_entities ->> 'MagneticFieldStrength') ~ '^\\d+(\\.\\d+)?$' AND CAST((bo.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) = 7.0)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS bo WHERE bo.dataset_id = d.id AND CASE WHEN (bo.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((bo.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END BETWEEN 6.5 AND 7.5)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o1 WHERE o1.dataset_id = d.id AND (o1.datatype = 'anatomical_mri' OR o1.suffix IN ('t1_weighted_mri', 't2_weighted_mri')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'anatomical_mri' OR o2.suffix IN ('t1_weighted_mri', 't2_weighted_mri')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'diffusion_mri' OR o2.suffix = 'diffusion_mri_dwi') AND CASE WHEN (o2.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o2.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END BETWEEN 1.4 AND 1.6)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'field_maps' OR o2.suffix IN ('field_map_general', 'phase_difference_field_map', 'field_map_magnitude_echo_1', 'field_map_magnitude_echo_2', 'field_map_magnitude', 'epi_field_map', 'b1_map')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'fnirs' OR o2.suffix = 'fnirs'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'functional_mri' OR o2.suffix IN ('fmri_bold', 'bold_map', 'single_band_reference', 'bold_reference') OR o2.task = 'bold_acquisition_general') AND CASE WHEN (o2.other_entities ->> 'RepetitionTime') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o2.other_entities ->> 'RepetitionTime') AS DOUBLE PRECISION) END < 1.0)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'functional_mri' OR o2.suffix IN ('fmri_bold', 'bold_map', 'single_band_reference', 'bold_reference') OR o2.task = 'bold_acquisition_general'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype = 'functional_mri' OR o2.suffix IN ('fmri_bold', 'bold_map', 'single_band_reference', 'bold_reference')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype IN ('functional_mri') OR o2.suffix IN ('fmri_bold')) AND (o2.task IN ('resting_state', 'interictal_state_recording', 'interictal_state_recording_sleep', 'interictal_state_recording_awake', 'awake_state_monitoring', 'resting_state_eyes_open', 'resting_state_eyes_closed', 'resting_state_technical', 'resting_state_temporal', 'deepmreye_resting_eyes_closed', 'wedge_rest_condition', 'restorative_rest', 'resting_state_post_intervention', 'resting_state_pre_intervention', 'resting_state_tms_eeg', 'between_viewing_rest', 'post_intervention_phase', 'post_event_phase', 'post_face_task_phase', 'post_heat_stimulation_phase', 'post_memory_task_phase', 'post_scene_task_phase', 'pre_heat_stimulation_phase', 'pre_memory_task_phase')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype IN ('functional_mri') OR o2.suffix IN ('fmri_bold')) AND CASE WHEN (o2.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o2.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END BETWEEN 6.5 AND 7.5)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype IN ('functional_mri', 'anatomical_mri', 'diffusion_mri', 'field_maps', 'perfusion_asl') OR o2.suffix IN ('t1_weighted_mri', 't2_weighted_mri', 'fmri_bold', 'bold_map', 'single_band_reference', 'bold_reference', 't2_star_weighted_mri', 'flair_mri')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype IN ('functional_mri', 'perfusion_asl') OR o2.suffix = 'fmri_bold'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.datatype IN ('magnetic_resonance_spectroscopy', 'fnirs') OR o2.suffix IN ('single_voxel_spectroscopy', 'mrs_reference')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.other_entities ->> 'Manufacturer' ILIKE '%GE%' OR o2.other_entities ->> 'Manufacturer' ILIKE '%Philips%'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.suffix = 'entities_and_processing_keys' OR o2.task IN ('balloon_analog_risk_task', 'incentive_anti_saccade_task', 'shared_reward_task', 'voluntary_task_switching_reward', 'delay_discounting_bidding', 'risky_decision_making', 'monetary_incentive_delay_localizer', 'reward_processing', 'effort_based_gambling_task', 'hcp_gambling_task', 'monetary_gambling_task', 'monetary_incentive_delay_task', 'delay_discounting_task', 'social_intertemporal_choice_task', 'social_risky_choice_task', 'casino_gambling_task', 'food_lottery_task', 'mixed_gambles_task', 'numerical_risk_task', 'probability_decision_making', 'skewed_gambling_task')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND (o2.suffix = 'intracranial_eeg' OR o2.task = 'seizure_monitoring'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND CASE WHEN (o2.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o2.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END BETWEEN 0.063 AND 0.065)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND CASE WHEN (o2.other_entities ->> 'RepetitionTime') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o2.other_entities ->> 'RepetitionTime') AS DOUBLE PRECISION) END < 1.0)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND CASE WHEN (o2.other_entities ->> 'RepetitionTime') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o2.other_entities ->> 'RepetitionTime') AS DOUBLE PRECISION) END BETWEEN 0.9 AND 1.1)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.datatype = 'anatomical_mri')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.datatype IN ('functional_mri', 'anatomical_mri', 'diffusion_mri', 'field_maps', 'perfusion_asl', 'electroencephalography', 'magnetoencephalography', 'intracranial_eeg', 'behavioural_data', 'positron_emission_tomography', 'fnirs', 'motion_capture', 'magnetic_resonance_spectroscopy'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.suffix = 'fnirs')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.suffix IN ('t1_map', 't2_map', 't2_star_map', 'oxygen_extraction_fraction', 'multi_parameter_mapping', 'magnetization_transfer_saturation', 'multi_echo_gre', 'no_rf_q_mri', 'chi_map', 'ultra_short_echo_time', 'minimum_intensity_projection', 'discrete_segmentation'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task = 'movie_viewing')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('associative', 'go_no_go_a', 'transitive_inference_task', 'delayed_non_match_to_sample', 'spatial_location_immediate_working_memory', 'associative_learning_what_off', 'word_memory_task', 'autobiographical_memory', 'picture_naming_task', 'analogical_reasoning', 'item_recognition_memory', 'california_verbal_learning_test', 'doors_task', 'lexical_decision_task', 'face_memory_task', 'word_reading_semantic', 'probabilistic_classification_learning', 'rhyme_judgment_task', 'deterministic_classification_learning', 'single_task_weather_prediction', 'dual_task_weather_prediction', 'food_choice_task', 'classification_probe_no_feedback', 'stop_signal_task', 'flanker_task_ern', 'social_cognition', 'tone_counting_task', 'mixed_gambles_task', 'delay_discounting_task', 'balloon_analog_risk_task', 'oddball_task', 'peaky_snr_speech_masking', 'sequence_learning_six_target', 'overt_word_repetition', 'recognition', 'spatial_span_immediate_working_memory', 'audiovisual_attention', 'visuomotor_delayed_match_to_sample_interference', 'environmental_sounds_n_back_laughing_female', 'delayed_match_to_sample', 'letter_set', 'n_back_working_memory', 'directed_forgetting_task', 'change_detection', 'music_listening', 'phonological_processing', 'categorized_free_recall_variant_1', 'paired_associates_memory_encoding_cnp', 'spatial_span_delay_working_memory', 'implicit_learning', 'dual_task', 'sternberg_task'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('emotion_neurofeedback', 'emotion_processing_regulation'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('face_memory_encoding_study', 'face_memory_retrieval_test', 'face_memory_task', 'face_recognition', 'face_body_perception', 'face_perception', 'faces_houses_perception_te27', 'flashed_face_distortion', 'face_localizer', 'face_identity_oddball', 'imagined_face', 'face_object_perception', 'emotion_evaluation_task', 'emotional_learning_task', 'emotion_matching_task', 'emotional_conflict_task', 'emotional_face_perception', 'archi_emotional_task', 'hcp_emotion_task', 'emotional_recognition_ibc', 'hariri_emotional_face_task', 'emotion_general', 'emotion_processing_regulation', 'empathy_task', 'empathy_theory_of_mind_task', 'fake_face_emotion', 'preference_judgment_faces_ibc', 'face_expression_localizer', 'emotion_neurofeedback'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('information_parsing_task', 'columbia_card_task', 'probabilistic_classification_learning', 'deterministic_classification_learning', 'single_task_weather_prediction', 'dual_task_weather_prediction', 'classification_probe_no_feedback', 'balloon_analog_risk_task', 'stop_signal_task', 'social_cognition', 'oddball_task', 'mixed_gambles_task', 'inductive_reasoning', 'reversal_learning_task', 'illusion_game_task', 'decision_time_selection_task', 'simon_task', 'tone_counting_task', 'flanker_task_ern', 'delay_discounting_task', 'random_dot_motion_perception', 'environmental_sounds_n_back_laughing_female', 'delayed_match_to_sample', 'letter_set', 'spatial_span_immediate_working_memory', 'delayed_non_match_to_sample', 'spatial_location_immediate_working_memory', 'n_back_working_memory', 'directed_forgetting_task', 'change_detection', 'music_listening', 'rhyme_judgment_task', 'phonological_processing', 'overt_word_repetition', 'categorized_free_recall_variant_1', 'paired_associates_memory_encoding_cnp', 'spatial_span_delay_working_memory', 'implicit_learning', 'audiovisual_attention', 'visuomotor_delayed_match_to_sample_interference', 'dual_task', 'sternberg_task', 'item_recognition_memory', 'auditory_visual_shift', 'probabilistic_selection_task'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('interictal_state_recording_sleep', 'emotional_arousal_tmr', 'sleepiness_state', 'slow_wave_sleep', 'sleep_state', 'comfort_assessment_sleep_monitoring'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('memory_retrieval_general', 'paired_associates_memory_retrieval_cnp', 'categorized_free_recall_variant_1', 'categorized_free_recall_open_loop_stimulation', 'categorized_free_recall_closed_loop_stimulation', 'aphasia_naming_task_40', 'word_memory_task', 'reinstatement_fidelity_task', 'delayed_repeated_free_recall_read_only', 'peers_free_recall_variant_1', 'peers_free_recall_variant_2', 'value_guided_memory_test_part1', 'value_guided_memory_test_part2', 'remind_memory_task', 'face_memory_retrieval_test', 'cued_recall_memory', 'pyfr_delayed_free_recall_word_lists', 'word_memory_retrieval', 'free_recall_variant_1', 'free_recall_open_loop_stimulation', 'free_recall_closed_loop_stimulation', 'merlin_free_recall', 'free_recall_repeated_items', 'verbal_free_recall', 'film_recall', 'retrieval_practice', 'schematic_narrative_recall', 'sherlock_free_recall', 'logical_memory_task', 'learning_recap_week1', 'learning_recap_week2', 'learning_recap_week3', 'semantic_memory', 'memory_sampling_abstract_category', 'test_phase_general', 'categorized_stimuli_test_phase', 'mental_imagery_test_phase', 'non_categorized_stimuli_test_phase'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('resting_state_tms_eeg', 'categorized_free_recall_open_loop_stimulation', 'categorized_free_recall_closed_loop_stimulation', 'free_recall_open_loop_stimulation', 'free_recall_closed_loop_stimulation', 'paired_associates_learning_open_loop_stimulation', 'auditory_neurofeedback', 'neurofeedback_general', 'motor_imagery_neurofeedback_1d', 'motor_imagery_neurofeedback_2d', 'motor_imagery_neurofeedback_post', 'motor_imagery_neurofeedback_pre', 'emotion_neurofeedback', 'neurofeedback_block_1', 'neurofeedback_block_2', 'neurofeedback_block_3', 'real_time_eeg_alpha_neurofeedback', 'sham_eeg_alpha_neurofeedback', 'fmri_neurofeedback', 'direct_cortical_stimulation', 'tms_training_block_1', 'tms_training_block_2', 'tms_training_block_3', 'tms_training_block_4', 'tms_training_block_5', 'tms_training_block_6', 'tms_eeg_stimulation_variant1', 'tms_eeg_stimulation_variant2', 'visual_neurofeedback', 'eeg_motor_imagery_neurofeedback', 'electrical_stimulation', 'deep_brain_stimulation_high_frequency', 'deep_brain_stimulation_low_frequency', 'deep_brain_stimulation_variable_frequency', 'transcranial_magnetic_stimulation', 'heat_focused_ultrasound_stimulation', 'cortico_cortical_paired_associative_stimulation', 'cortico_cortical_evoked_potentials', 'heart_rate_variability_biofeedback', 'neuromodulation_task', 'neuromodulation_condition_2', 'neurofeedback_no_feedback_condition'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND o2.task IN ('semantic_categorization', 'temporal_community_structure_analysis', 'overt_word_repetition', 'music_listening', 'picture_naming_task', 'analogical_reasoning', 'darkend_auditory_narrative_listening_1', 'semantic_mnemonic_similarity_task', 'delay_discounting_task', 'mixed_gambles_task', 'food_choice_task', 'word_memory_encoding', 'social_observation', 'rhyme_judgment_task', 'spatial_span_immediate_working_memory', 'phonological_processing', 'categorized_free_recall_variant_1', 'probabilistic_classification_learning', 'deterministic_classification_learning', 'single_task_weather_prediction', 'dual_task_weather_prediction', 'word_reading_semantic'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id GROUP BY o2.dataset_id HAVING COUNT(DISTINCT o2.session) > 1)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o3 WHERE o3.dataset_id = d.id AND (o3.datatype = 'anatomical_mri' OR o3.suffix IN ('t1_weighted_mri', 't2_weighted_mri')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o3 WHERE o3.dataset_id = d.id AND (o3.datatype = 'electroencephalography' OR o3.suffix = 'eeg'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o3 WHERE o3.dataset_id = d.id AND (o3.task = 'video_game_and_video' OR d.search_tsv @@ TO_TSQUERY('english', 'videos:AB')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o3 WHERE o3.dataset_id = d.id AND CASE WHEN (o3.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o3.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END BETWEEN 1.4 AND 1.6)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o3 WHERE o3.dataset_id = d.id AND CASE WHEN (o3.other_entities ->> 'SamplingFrequency') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o3.other_entities ->> 'SamplingFrequency') AS DOUBLE PRECISION) END >= 200)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o3 WHERE o3.dataset_id = d.id AND o3.datatype = 'functional_mri')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o4 WHERE o4.dataset_id = d.id AND (o4.suffix = 'chi_map' OR o4.task = 'occluded_image_interpretation' OR d.search_tsv @@ TO_TSQUERY('english', 'images:AB')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o4 WHERE o4.dataset_id = d.id AND o4.task IN ('visual_oddball', 'cnos_visual_stimulation', 'deviant_detection_task', 'visual_oddball_button_response'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o5 WHERE o5.dataset_id = d.id AND o5.datatype = 'electroencephalography' AND NOT o5.subject IS NULL)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o5 WHERE o5.dataset_id = d.id AND o5.task = 'scene_region_localizer')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o6 WHERE o6.dataset_id = d.id AND o6.datatype = 'functional_mri' AND NOT o6.subject IS NULL)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_epi WHERE o_epi.dataset_id = d.id AND o_epi.suffix = 'bold' AND o_epi.datatype = 'functional_mri' AND NOT o_epi.other_entities ->> 'RepetitionTime' IS NULL AND CASE WHEN (o_epi.other_entities ->> 'RepetitionTime') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o_epi.other_entities ->> 'RepetitionTime') AS DOUBLE PRECISION) END > 1.5)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_low WHERE o_low.dataset_id = d.id AND NOT o_low.subject IS NULL AND CASE WHEN (o_low.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o_low.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END < 1.0 AND EXISTS(SELECT 1 FROM bids_objects AS o_high WHERE o_high.dataset_id = d.id AND o_high.subject = o_low.subject AND CASE WHEN (o_high.other_entities ->> 'MagneticFieldStrength') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o_high.other_entities ->> 'MagneticFieldStrength') AS DOUBLE PRECISION) END >= 3.0))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_mri WHERE o_mri.dataset_id = d.id AND (o_mri.datatype IN ('functional_mri', 'anatomical_mri', 'diffusion_mri', 'field_maps', 'perfusion_asl') OR o_mri.suffix IN ('t1_weighted_mri', 't2_weighted_mri', 'fmri_bold', 'bold_map', 'single_band_reference', 'bold_reference', 't2_star_weighted_mri', 'flair_mri')) AND EXISTS(SELECT 1 FROM bids_objects AS o_ct WHERE o_ct.dataset_id = d.id AND o_ct.subject = o_mri.subject AND (o_ct.datatype = 'positron_emission_tomography' OR o_ct.suffix = 'ct_scan')))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_rest WHERE o_rest.dataset_id = d.id AND o_rest.task = 'resting_state')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_sessions WHERE o_sessions.dataset_id = d.id AND NOT o_sessions.session IS NULL GROUP BY o_sessions.dataset_id HAVING COUNT(DISTINCT o_sessions.session) > 1)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_t1w WHERE o_t1w.dataset_id = d.id AND o_t1w.suffix = 't1w' AND o_t1w.datatype = 'anatomical_mri')",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_objects AS o_voxels WHERE o_voxels.dataset_id = d.id AND o_voxels.suffix = 'bold' AND o_voxels.datatype = 'functional_mri' AND NOT o_voxels.other_entities ->> 'VoxelSize' IS NULL AND CASE WHEN (o_voxels.other_entities ->> 'VoxelSize') ~ '^[[:space:]]*[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?[[:space:]]*$' THEN CAST((o_voxels.other_entities ->> 'VoxelSize') AS DOUBLE PRECISION) END < 4.1)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.diagnosis = 'healthy_control')",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants"
+   "ParticipantRowsEvidence participants"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.sex = 'male' AND p2.age = 40)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants"
+   "ParticipantRowsEvidence participants"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.sex IN ('F', 'female') AND p2.age > 65)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants"
+   "ParticipantRowsEvidence participants"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.sex IN ('F', 'female'))",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants"
+   "ParticipantRowsEvidence participants"
   ]
  },
  {
   "condition": "EXISTS(SELECT 1 FROM bids_participants AS p_check WHERE p_check.dataset_id = d.id)",
   "negated": false,
   "evidence": [
-   "ParticipantRows participants"
+   "ParticipantRowsEvidence participants"
   ]
  },
  {
   "condition": "NOT (EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id AND p2.age < 18) OR d.age_min < 18)",
   "negated": true,
   "evidence": [
-   "FieldValue field age_min,age_max"
+   "FieldValueEvidence field age_min,age_max"
   ]
  },
  {
@@ -966,7 +966,7 @@
   "condition": "NOT d.doi IS NULL",
   "negated": true,
   "evidence": [
-   "FieldValue field doi"
+   "FieldValueEvidence field doi"
   ]
  },
  {
@@ -978,78 +978,78 @@
   "condition": "NOT d.license IS NULL",
   "negated": true,
   "evidence": [
-   "FieldValue field license"
+   "FieldValueEvidence field license"
   ]
  },
  {
   "condition": "d.authors && ARRAY['Elenor Morgenroth']",
   "negated": false,
   "evidence": [
-   "FieldValue field authors"
+   "FieldValueEvidence field authors"
   ]
  },
  {
   "condition": "d.authors @> ARRAY['Elenor Morgenroth']",
   "negated": false,
   "evidence": [
-   "FieldValue field authors"
+   "FieldValueEvidence field authors"
   ]
  },
  {
   "condition": "d.description_text ILIKE '%Fetal%'",
   "negated": false,
   "evidence": [
-   "Found short_text"
+   "FoundEvidence short_text"
   ]
  },
  {
   "condition": "d.id IN (SELECT DISTINCT o_eeg.dataset_id FROM bids_objects AS o_eeg JOIN bids_objects AS o_fnirs ON o_eeg.dataset_id = o_fnirs.dataset_id AND o_eeg.subject = o_fnirs.subject WHERE (o_eeg.datatype = 'electroencephalography' OR o_eeg.suffix = 'eeg') AND (o_fnirs.datatype = 'fnirs' OR o_fnirs.suffix = 'fnirs'))",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "d.id IN (SELECT eeg_sub.dataset_id FROM (SELECT DISTINCT dataset_id, subject FROM bids_objects WHERE (datatype = 'electroencephalography' OR suffix = 'eeg')) AS eeg_sub JOIN (SELECT DISTINCT dataset_id, subject FROM bids_objects WHERE (datatype = 'functional_mri' OR suffix = 'fmri_bold')) AS fmri_sub ON eeg_sub.dataset_id = fmri_sub.dataset_id AND eeg_sub.subject = fmri_sub.subject)",
   "negated": false,
   "evidence": [
-   "Found files"
+   "FoundEvidence files"
   ]
  },
  {
   "condition": "d.license IN ('CC0', 'PDDL')",
   "negated": false,
   "evidence": [
-   "FieldValue field license"
+   "FieldValueEvidence field license"
   ]
  },
  {
   "condition": "d.license IN ('CC0', 'PDDL', 'CC-BY-4.0', 'CC-BY')",
   "negated": false,
   "evidence": [
-   "FieldValue field license"
+   "FieldValueEvidence field license"
   ]
  },
  {
   "condition": "d.search_tsv @@ TO_TSQUERY('english', 'cannabis') OR d.search_tsv @@ TO_TSQUERY('english', 'cocaine')",
   "negated": false,
   "evidence": [
-   "Found text",
-   "Found text"
+   "FoundEvidence text",
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "d.search_tsv @@ TO_TSQUERY('english', 'said')",
   "negated": false,
   "evidence": [
-   "Found text"
+   "FoundEvidence text"
   ]
  },
  {
   "condition": "d.size_bytes <= 5368709120",
   "negated": false,
   "evidence": [
-   "FieldValue field size_bytes"
+   "FieldValueEvidence field size_bytes"
   ]
  }
 ]

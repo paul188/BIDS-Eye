@@ -14,8 +14,9 @@ from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
-class NotRecorded(PieceOfEvidence):
-    """The dataset does not record the field, and nothing hints either way.
+class NotRecordedEvidence(PieceOfEvidence):
+    """Possible: the field is not recorded and nothing hints either way:
+    "ages not recorded".
 
     The last entry of a list: what is left when no other evidence holds. It
     keeps a dataset only while the 'possible' level is on

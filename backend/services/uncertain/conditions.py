@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength
-from services.evidence.confirmed import ConfirmedMatch
+from services.evidence.confirmed import ConfirmedEvidence
 from services.switches import Switch
 
 
@@ -103,7 +103,7 @@ class ClauseEvidence:
     # The ways the condition holds as generated, one per OR branch
     # (evidence/branches.py). sql decides whether it holds: a branch that
     # cannot be evaluated alone is not listed.
-    confirming: Tuple[ConfirmedMatch, ...] = ()
+    confirming: Tuple[ConfirmedEvidence, ...] = ()
 
     def __post_init__(self) -> None:
         self.evidence = tuple(self.evidence)
@@ -238,11 +238,11 @@ class ClauseEvidence:
         return f"1 - EXP(-({strongest} + {SHARED_EVIDENCE_DISCOUNT:g} * ({others})))"
 
     @property
-    def witnesses(self) -> Dict[SourceGroup, List[ConfirmedMatch]]:
+    def witnesses(self) -> Dict[SourceGroup, List[ConfirmedEvidence]]:
         """The confirming pieces by whose statement they are. An assumed
         default states nothing, so it is none; a label that search_tsv holds
         counts with the text, or one statement would be two witnesses."""
-        groups: Dict[SourceGroup, List[ConfirmedMatch]] = {}
+        groups: Dict[SourceGroup, List[ConfirmedEvidence]] = {}
         for piece in self.confirming:
             if piece.source in (Source.ASSUMED, Source.ASSUMED_ABSENT):
                 continue
@@ -336,7 +336,7 @@ class QueryEvidence:
         return (f"COALESCE({weakest} * POWER(({product}) / NULLIF({weakest}, 0), "
                 f"{CLAUSE_INDEPENDENCE:g}), 0)")
 
-    def witness_columns(self, i: int) -> Dict[str, List[ConfirmedMatch]]:
+    def witness_columns(self, i: int) -> Dict[str, List[ConfirmedEvidence]]:
         """Columns that say which source groups confirm condition *i*, with
         the pieces of each. None with a single group: it cannot tell datasets apart."""
         groups = self.conditions[i].witnesses

@@ -21,9 +21,9 @@ except ImportError:  # pragma: no cover
 
 from services.evidence.branches import confirming_evidence
 from services.fulltext.text_search import Clause
-from services.evidence.contradicted import OtherValuesRecorded
-from services.evidence.possible import NotRecorded
-from services.evidence.probable import NamedInOwnText
+from services.evidence.contradicted import OtherValuesRecordedEvidence
+from services.evidence.possible import NotRecordedEvidence
+from services.evidence.probable import NamedInOwnTextEvidence
 from services.uncertain.conditions import (ClauseEvidence, own_text, own_text_matches, possible_enabled,
                                            sql_literal)
 from services.schema.tables import objects as _objects
@@ -334,21 +334,21 @@ def sidecar(clause: Clause, alias: str) -> Optional[ClauseEvidence]:
         values = tuple(_key_values(node, key))
         if not (values and _value_tsquery(key, values)):
             return None
-    named = ScannerValueNamed(key=key, strengths=strengths, values=values, file_set=file_select,
+    named = ScannerValueNamedEvidence(key=key, strengths=strengths, values=values, file_set=file_select,
                               alias=alias)
     as_generated = " OR ".join(f"({c})" for c in confirmed) if len(confirmed) > 1 else confirmed[0]
     return ClauseEvidence(kind="sidecar", sql=as_generated, ctes=tuple(ctes),
                           confirming=confirming_evidence(clause, alias), evidence=(
-        OtherValuesRecorded(named.key_recorded()),
+        OtherValuesRecordedEvidence(named.key_recorded()),
         named,
-        NotInFileMetadata(_SIDECAR_LABELS[key]),
+        NotInFileMetadataEvidence(_SIDECAR_LABELS[key]),
     ))
 
 
 @dataclass(frozen=True)
-class ScannerValueNamed(NamedInOwnText):
-    """No file of the dataset records the sidecar *key*, and its own text
-    names an asked value: one of *strengths* (tesla) for the field strength,
+class ScannerValueNamedEvidence(NamedInOwnTextEvidence):
+    """Probable, for scanner fields: no file records the sidecar *key*, and
+    the dataset's own text names an asked value: one of *strengths* (tesla) for the field strength,
     else one of *values* (a manufacturer or model)."""
     key: str = ""
     strengths: Tuple[float, ...] = ()
@@ -385,13 +385,14 @@ class ScannerValueNamed(NamedInOwnText):
     def reason(self) -> str:
         named = (" or ".join(f"{s:g} T" for s in self.strengths) if self.key == FIELD_STRENGTH_KEY
                  else " or ".join(self.values))
-        not_recorded = NotInFileMetadata(_SIDECAR_LABELS[self.key]).reason()
+        not_recorded = NotInFileMetadataEvidence(_SIDECAR_LABELS[self.key]).reason()
         return f"{not_recorded}; the title, description or README names {named}"
 
 
 @dataclass(frozen=True)
-class NotInFileMetadata(NotRecorded):
-    """No file records the key, and the text does not name the value.
+class NotInFileMetadataEvidence(NotRecordedEvidence):
+    """Possible, for scanner fields: no file records the key, and the text
+    does not name the value: "field strength not in the file metadata".
     *what*: how a card names the key ("field strength")."""
 
     def reason(self) -> str:

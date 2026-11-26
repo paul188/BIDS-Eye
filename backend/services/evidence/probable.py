@@ -28,9 +28,9 @@ class TextSearch:
 
 
 @dataclass(frozen=True)
-class PaperOnly(PieceOfEvidence):
-    """The condition's text searches match a paper the dataset names, not its
-    own text. *searches* are without weight labels: paper text carries the
+class PaperOnlyEvidence(PieceOfEvidence):
+    """Probable: the text searches match only a paper the dataset names,
+    not its own text: "found only in a paper the dataset names". *searches* are without weight labels: paper text carries the
     lowest weight, so a search scoped to the name could never reach it."""
     searches: Tuple[TextSearch, ...]
     alias: str = field(kw_only=True)   # the dataset row of the query
@@ -106,8 +106,9 @@ class WeakenedSearch:
 
 
 @dataclass(frozen=True)
-class WeakerSearch(PieceOfEvidence):
-    """Some text search of the condition matches in a weaker form."""
+class WeakerSearchEvidence(PieceOfEvidence):
+    """Probable: a text search matches only in a weaker form (Weakening):
+    "matches only part of the search; missing: …"."""
     searches: Tuple[WeakenedSearch, ...]
     alias: str = field(kw_only=True)   # the dataset row of the query
     source: Source = field(default=Source.TEXT, kw_only=True)
@@ -147,10 +148,10 @@ class WeakerSearch(PieceOfEvidence):
 
 
 @dataclass(frozen=True)
-class CoreOfTerm(PieceOfEvidence):
-    """A term the generated query shortened to its core ("physical exercise"
-    searched as "exercise", services/fulltext/text_search.py): the dataset
-    has the core and not the *missing* words."""
+class CoreOfTermEvidence(PieceOfEvidence):
+    """Probable: the generated query shortened a term to its core ("physical
+    exercise" searched as "exercise", services/fulltext/text_search.py), and
+    the dataset has the core but not the *missing* words."""
     core: str   # the SQL of the core search, as generated
     missing: Tuple[str, ...] = ()
     source: Source = field(default=Source.TEXT, kw_only=True)
@@ -164,9 +165,9 @@ class CoreOfTerm(PieceOfEvidence):
 
 
 @dataclass(frozen=True)
-class NamedInOwnText(PieceOfEvidence):
-    """The dataset's name, description or README names the value the condition
-    asks of a field: "22 women", "infants", "7T". Each field has its subclass,
+class NamedInOwnTextEvidence(PieceOfEvidence):
+    """Probable: the field is not recorded, but the dataset's name,
+    description or README names the asked value: "22 women", "infants", "7T". Each field has its subclass,
     which holds the asked value and writes sql() and reason()."""
     alias: str = field(kw_only=True)   # the dataset row of the query
     source: Source = field(default=Source.TEXT, kw_only=True)

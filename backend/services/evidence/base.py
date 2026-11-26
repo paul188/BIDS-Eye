@@ -111,7 +111,7 @@ class PieceOfEvidence(ABC):
     def sql(self) -> Optional[str]:
         """SQL that is true for the dataset rows this evidence holds for.
         None: it holds for whatever the evidence listed before it left over
-        (possible.NotRecorded)."""
+        (possible.NotRecordedEvidence)."""
 
     def reason(self) -> str:
         """What the result card says when this evidence decides; "" says nothing."""

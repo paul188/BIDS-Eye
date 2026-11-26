@@ -43,10 +43,10 @@ def _age(value: object) -> Optional[float]:
 
 
 @dataclass(frozen=True)
-class ConfirmedMatch(PieceOfEvidence):
-    """One OR branch of a condition of the generated query. What the card
-    says about it may need numbers or values from the database; a subclass
-    names the columns it needs and writes the text from them."""
+class ConfirmedEvidence(PieceOfEvidence):
+    """Confirmed: one OR branch of the generated condition holds. Base of
+    the confirmed kinds; each subclass names the database columns its card
+    text needs and writes the text from them."""
     branch: str   # its SQL, as generated: it names the dataset row by the query's own alias
     strength: Strength = field(default=Strength.CONFIRMED, kw_only=True)
 
@@ -73,8 +73,9 @@ class ConfirmedMatch(PieceOfEvidence):
 
 
 @dataclass(frozen=True)
-class Found(ConfirmedMatch):
-    """A match that says only where the value was found: its source."""
+class FoundEvidence(ConfirmedEvidence):
+    """Confirmed, card names only the source: "named in the README",
+    "in the dataset's files"."""
 
     # What the card says, by the source.
     TEXTS: ClassVar[Dict[Source, str]] = {
@@ -98,9 +99,9 @@ class Found(ConfirmedMatch):
 
 
 @dataclass(frozen=True)
-class ParticipantRows(ConfirmedMatch):
-    """Rows of the participant list hold the asked value: "12 of 40
-    participants aged 4–23 months"."""
+class ParticipantRowsEvidence(ConfirmedEvidence):
+    """Confirmed by rows of the participant list; card counts them: "12 of
+    40 participants aged 4–23 months"."""
     # The participant rows the evidence holds for, as a SELECT whose
     # projection number_columns replaces (COUNT, MIN/MAX of the age). None:
     # the rows cannot be counted (a GROUP BY, not an EXISTS).
@@ -141,8 +142,8 @@ class ParticipantRows(ConfirmedMatch):
 
 
 @dataclass(frozen=True)
-class FieldValue(ConfirmedMatch):
-    """Columns of the dataset itself hold the asked value; the card shows it:
+class FieldValueEvidence(ConfirmedEvidence):
+    """Confirmed by the dataset's own columns; card shows the value:
     "dataset age range 6–11 years", "species label “mouse”"."""
     columns: Tuple[str, ...] = ()
     source: Source = field(default=Source.FIELD, kw_only=True)
@@ -180,9 +181,9 @@ class FieldValue(ConfirmedMatch):
 
 
 @dataclass(frozen=True)
-class Assumed(ConfirmedMatch):
-    """The column is empty and its default holds: "no species label, assumed
-    human" (the defaults themselves: RAG/criteria.py)."""
+class AssumedEvidence(ConfirmedEvidence):
+    """Confirmed by a default: the column is empty and its default fits:
+    "no species label, assumed human" (defaults: RAG/criteria.py)."""
     columns: Tuple[str, ...] = ()
     source: Source = field(default=Source.ASSUMED, kw_only=True)
     # What the card says, by the column that has a default.
