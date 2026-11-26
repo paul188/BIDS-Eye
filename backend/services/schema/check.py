@@ -53,19 +53,19 @@ async def check_schema(connection: AsyncConnection | AsyncSession) -> None:
         for column in table.columns:
             migration = column.info.get(tables.MIGRATION) or table.info.get(tables.MIGRATION)
             if migration is None:
-                continue  # a column BIDS-SQL creates itself
+                continue  # a column of BIDS-SQL's own model
             if not _needed(column.info):
                 continue
             found = present.get((table.name, column.name))
             if found is None:
-                missing.append(f"{table.name}.{column.name} ({migration})")
+                missing.append(f"{table.name}.{column.name} (revision {migration})")
             elif found != sql_type(column):
                 mistyped.append(f"{table.name}.{column.name} is {found}, "
-                                f"declared {sql_type(column)} ({migration})")
+                                f"declared {sql_type(column)} (revision {migration})")
     if missing:
         raise MissingSchemaError(
             "The database lacks " + ", ".join(missing)
-            + ". Run those migrations, or switch off the setting that needs them.")
+            + ". Run `alembic upgrade head` in backend/, or switch off the setting that needs them.")
     if mistyped:
         raise MissingSchemaError("Columns with another type than tables.py declares: "
                                  + ", ".join(mistyped) + ".")

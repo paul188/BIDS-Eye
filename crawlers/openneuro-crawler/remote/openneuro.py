@@ -314,7 +314,7 @@ async def _stamp_dataset(
 
         # institutions, readme_text and the OpenNeuro metadata columns are not
         # part of the BIDS-SQL ORM model, so they are written with plain SQL.
-        # (ensure_columns() in run_crawl_cycle creates them on a fresh database.)
+        # (The migrations create them, backend/migrations/.)
 
         # Distinct institution names from the sidecar JSONs indexed by the pipeline
         await session.execute(

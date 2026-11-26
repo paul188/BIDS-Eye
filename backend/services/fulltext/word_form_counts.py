@@ -5,7 +5,7 @@ The catalogue's word forms: which forms each stem merges, and in how many
 datasets each form occurs.
 
 bids_word_forms has one row per word form found in the datasets' own text
-(search_tsv_exact; crawlers/migrate_add_exact_search.sql):
+(search_tsv_exact):
 
     form   the word as written, lower case      "ageing"
     stem   what the 'english' stemmer makes it  "age"
@@ -46,15 +46,6 @@ TABLE = word_forms.name
 SOURCE_TABLE = datasets.name
 SOURCE_COLUMN = datasets.c.search_tsv_exact.name
 
-TABLES_SQL: Tuple[str, ...] = (
-    f"""CREATE TABLE IF NOT EXISTS {TABLE} (
-        form  TEXT PRIMARY KEY,
-        stem  TEXT NOT NULL,
-        ndoc  INTEGER NOT NULL
-    )""",
-    f"CREATE INDEX IF NOT EXISTS idx_{TABLE}_stem ON {TABLE} (stem)",
-)
-
 # Alphabetic words only: numbers and codes ("t1w", "7t") have no word forms,
 # and a form goes into tsquery literals as it is.
 _FORM_PATTERN = "^[a-z]{2,40}$"
@@ -89,17 +80,11 @@ _WORD_RE = re.compile(r"[a-z]{2,40}")
 
 # ── Building the table ────────────────────────────────────────────────────────
 
-async def ensure_tables(conn: Any) -> None:
-    """Create the table if it is missing. Caller commits."""
-    for statement in TABLES_SQL:
-        await conn.execute(text(statement))
-
-
 async def refresh(conn: Any) -> Dict[str, int]:
     """Rebuild bids_word_forms from the datasets' text. Caller commits.
 
-    Raises when search_tsv_exact is missing: run
-    crawlers/migrate_add_exact_search.sql first.
+    Raises when search_tsv_exact is missing: the database is not at the newest
+    migration (backend/migrations/README.md).
 
     The DELETE and the INSERT must share one transaction, or searches see an
     empty table until the INSERT ends and quietly fall back to stem matching.
@@ -119,8 +104,7 @@ async def refresh(conn: Any) -> Dict[str, int]:
         "AND column_name = :column"), {"table": SOURCE_TABLE, "column": SOURCE_COLUMN})).scalar_one()
     if not present:
         raise RuntimeError(f"{SOURCE_TABLE}.{SOURCE_COLUMN} is missing: "
-                           "run crawlers/migrate_add_exact_search.sql first")
-    await ensure_tables(conn)
+                           "run `alembic upgrade head` in backend/ first")
     await conn.execute(text(f"DELETE FROM {TABLE}"))
     await conn.execute(text(_REFRESH_SQL), {"pattern": _FORM_PATTERN})
     row = (await conn.execute(text(

@@ -4,20 +4,20 @@ services/schema/tables.py
 The catalogue tables the search reads, declared once, so code names them
 through these objects instead of writing table and column names as strings.
 
-The tables come from two places:
+The database gets all of them from the Alembic migrations
+(backend/migrations/). They are declared in two places:
 
-  BIDS-SQL's models (db/models.py), created by create_all_tables():
-  bids_datasets with its core columns, bids_objects, bids_participants.
-  They are taken from there (datasets, objects, participants).
+  BIDS-SQL's models (db/models.py): bids_datasets with its core columns,
+  bids_objects, bids_participants. They are taken from there (datasets,
+  objects, participants).
 
-  The migrations in crawlers/, run by hand: more columns on bids_datasets
-  (search vectors, OpenNeuro fields, summaries) and the tables
-  bids_dataset_facets, bids_word_forms, bids_papers, bids_dataset_papers,
-  bids_derivatives, bids_dataset_sites and bids_site_places. The columns
-  are added to BIDS-SQL's bids_datasets table with db.extensions.extend, so
-  datasets has both kinds; the tables are declared here (dataset_facets,
-  word_forms, papers, dataset_papers, derivatives, dataset_sites,
-  site_places).
+  Here: more columns on bids_datasets (search vectors, OpenNeuro fields,
+  summaries) and the tables bids_dataset_facets, bids_word_forms,
+  bids_papers, bids_dataset_papers, bids_derivatives, bids_dataset_sites
+  and bids_site_places. The columns are added to BIDS-SQL's bids_datasets
+  table with db.extensions.extend, so datasets has both kinds; the tables
+  are declared here (dataset_facets, word_forms, papers, dataset_papers,
+  derivatives, dataset_sites, site_places).
   Each names the migration that creates it, and check_schema
   (services/schema/check.py) compares them with the database at
   startup.
@@ -86,21 +86,13 @@ class TextKind(str, Enum):
     SHORT_TEXT = "short_text"            # the name or the description
 
 
-# The SQL files in crawlers/ that create the declarations below.
-_SEARCH_TSV = "crawlers/migrate_add_search_tsv.sql"
-_PAPER_SEARCH = "crawlers/migrate_add_paper_search.sql"
-_EXACT_SEARCH = "crawlers/migrate_add_exact_search.sql"
-_FACETS = "crawlers/migrate_add_dataset_facets.sql"
-_OPENNEURO = "crawlers/migrate_add_openneuro_metadata.sql"
-_INSTITUTIONS = "crawlers/migrate_add_institutions.sql"
-_PROFILES = "crawlers/migrate_add_readme_profiles.sql"
-_DESCRIPTIONS = "crawlers/migrate_add_dataset_descriptions.sql"
-_DATASET_LINKS = "crawlers/migrate_add_dataset_links.sql"
-_SITE_PLACES = "crawlers/migrate_add_site_places.sql"
+# The Alembic revision (backend/migrations/versions/) that creates the
+# declarations below. A later column or table names its own revision.
+_BASELINE = "0001"
 
 
 def _created_by(migration: str, flag: str | None = None) -> dict[str, str]:
-    """The info of a column or table that the SQL file *migration* creates.
+    """The info of a column or table that the Alembic revision *migration* creates.
 
     With a *flag*, check_schema requires it only while that flag is on.
     """
@@ -134,59 +126,59 @@ datasets = extend(
     BIDSDataset,
     # Full-text search vectors, GENERATED: PostgreSQL recomputes them on every write.
     # Stemmed dataset text: A name, B study fields, C llm_profile, D readme_text.
-    _migration_column("search_tsv", TSVECTOR, _SEARCH_TSV, text=TextKind.TEXT),
+    _migration_column("search_tsv", TSVECTOR, _BASELINE, text=TextKind.TEXT),
     # search_tsv plus the primary papers' title, abstract and keywords; only to match.
-    _migration_column("search_tsv_papers", TSVECTOR, _PAPER_SEARCH, PAPERS_FLAG, TextKind.TEXT_AND_PAPERS),
+    _migration_column("search_tsv_papers", TSVECTOR, _BASELINE, PAPERS_FLAG, TextKind.TEXT_AND_PAPERS),
     # search_tsv unstemmed, so "ageing" does not also match "age".
-    _migration_column("search_tsv_exact", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.TEXT),
+    _migration_column("search_tsv_exact", TSVECTOR, _BASELINE, EXACT_FLAG, TextKind.TEXT),
     # search_tsv_papers unstemmed.
-    _migration_column("search_tsv_exact_papers", TSVECTOR, _EXACT_SEARCH, EXACT_FLAG, TextKind.TEXT_AND_PAPERS),
+    _migration_column("search_tsv_exact_papers", TSVECTOR, _BASELINE, EXACT_FLAG, TextKind.TEXT_AND_PAPERS),
 
     # Distinct subjects in bids_objects, refreshed after each crawl (dataset_facets.py).
-    _migration_column("n_subjects", Integer, _FACETS),
+    _migration_column("n_subjects", Integer, _BASELINE),
 
     # From the OpenNeuro API; "uploader" fields are free text, often empty.
     # Sanitised README of the latest snapshot.
-    _migration_column("readme_text", Text, _OPENNEURO, text=TextKind.README),
+    _migration_column("readme_text", Text, _BASELINE, text=TextKind.README),
     # Uploader's diagnosis status, e.g. 'Healthy / Control'.
-    _migration_column("dx_status", Text, _OPENNEURO),
+    _migration_column("dx_status", Text, _BASELINE),
     # Uploader's research topic.
-    _migration_column("study_domain", Text, _OPENNEURO),
+    _migration_column("study_domain", Text, _BASELINE),
     # Uploader's study design, e.g. 'Longitudinal'.
-    _migration_column("study_design", Text, _OPENNEURO),
+    _migration_column("study_design", Text, _BASELINE),
     # Uploader's species, e.g. 'Human', 'Mouse'.
-    _migration_column("species", Text, _OPENNEURO),
+    _migration_column("species", Text, _BASELINE),
     # Uploader's 'Cross-Sectional', 'Longitudinal', …
-    _migration_column("study_longitudinal", Text, _OPENNEURO),
+    _migration_column("study_longitudinal", Text, _BASELINE),
     # Uploader's senior author.
-    _migration_column("senior_author", Text, _OPENNEURO),
+    _migration_column("senior_author", Text, _BASELINE),
     # When the dataset went public.
-    _migration_column("publish_date", DateTime(timezone=True), _OPENNEURO),
+    _migration_column("publish_date", DateTime(timezone=True), _BASELINE),
     # Whether it has been processed on brainlife.io.
-    _migration_column("on_brainlife", Boolean, _OPENNEURO),
+    _migration_column("on_brainlife", Boolean, _BASELINE),
     # Download count of the latest snapshot.
-    _migration_column("downloads", Integer, _OPENNEURO),
+    _migration_column("downloads", Integer, _BASELINE),
     # View count of the latest snapshot.
-    _migration_column("views", Integer, _OPENNEURO),
+    _migration_column("views", Integer, _BASELINE),
     # Youngest reported participant age in years; ages outside 0-120 dropped.
-    _migration_column("age_min", Double, _OPENNEURO),
+    _migration_column("age_min", Double, _BASELINE),
     # Oldest reported participant age in years; ages outside 0-120 dropped.
-    _migration_column("age_max", Double, _OPENNEURO),
+    _migration_column("age_max", Double, _BASELINE),
     # Size of the latest snapshot in bytes.
-    _migration_column("size_bytes", BigInteger, _OPENNEURO),
+    _migration_column("size_bytes", BigInteger, _BASELINE),
     # Why OpenNeuro deprecated the dataset; NULL while it is fine.
-    _migration_column("deprecated_reason", Text, _OPENNEURO),
+    _migration_column("deprecated_reason", Text, _BASELINE),
 
     # Every InstitutionName in the dataset's sidecar JSON files.
-    _migration_column("institutions", ARRAY(Text), _INSTITUTIONS),
+    _migration_column("institutions", ARRAY(Text), _BASELINE),
 
     # Written by an LLM; read by the API itself, never by generated SQL.
     # Short README profile in standard terms; in search_tsv and read by the re-ranker.
-    _migration_column("llm_profile", Text, _PROFILES),
+    _migration_column("llm_profile", Text, _BASELINE),
     # How the primary paper relates to the dataset, with evidence quote and shown flag.
-    _migration_column("paper_relation", JSONB, _DESCRIPTIONS),
+    _migration_column("paper_relation", JSONB, _BASELINE),
     # Two or three sentences, only where README and description are under 500 chars.
-    _migration_column("dataset_summary", Text, _DESCRIPTIONS),
+    _migration_column("dataset_summary", Text, _BASELINE),
 )
 datasets.info[ABOUT] = About.DATASET
 # BIDS-SQL's own text columns.
@@ -211,7 +203,7 @@ dataset_facets = Table(
     Column("suffix", Text),
     # BIDS task label, e.g. 'rest'; NULL for files without a task.
     Column("task", Text),
-    info=_created_by(_FACETS) | {ABOUT: About.FILES},
+    info=_created_by(_BASELINE) | {ABOUT: About.FILES},
 )
 
 # Every word form in the catalogue's text with its stem: shows which forms a
@@ -224,7 +216,7 @@ word_forms = Table(
     Column("stem", Text),
     # How many datasets contain the form.
     Column("ndoc", Integer),
-    info=_created_by(_EXACT_SEARCH, EXACT_FLAG) | {ABOUT: About.WORD_FORMS},
+    info=_created_by(_BASELINE, EXACT_FLAG) | {ABOUT: About.WORD_FORMS},
 )
 
 # One row per paper a dataset names, from Europe PMC, bioRxiv, arXiv or
@@ -256,7 +248,7 @@ papers = Table(
     # Where the record came from: europepmc, biorxiv, medrxiv, arxiv, openalex.
     Column("source", Text),
     Column("fetched_at", DateTime(timezone=True)),
-    info=_created_by(_PAPER_SEARCH) | {ABOUT: About.PAPERS},
+    info=_created_by(_BASELINE) | {ABOUT: About.PAPERS},
 )
 
 # Which dataset names which paper, and in which role.
@@ -276,7 +268,7 @@ dataset_papers = Table(
     Column("raw_ref", Text),
     # Order within the dataset, most trusted first.
     Column("position", Integer),
-    info=_created_by(_PAPER_SEARCH) | {ABOUT: About.PAPERS},
+    info=_created_by(_BASELINE) | {ABOUT: About.PAPERS},
 )
 
 # One row per processed version of a dataset. Filled by
@@ -298,7 +290,7 @@ derivatives = Table(
     # sub-* folders in the derivative.
     Column("n_subjects", Integer),
     Column("fetched_at", DateTime(timezone=True)),
-    info=_created_by(_DATASET_LINKS) | {ABOUT: About.DERIVATIVES},
+    info=_created_by(_BASELINE) | {ABOUT: About.DERIVATIVES},
 )
 
 # One row per collection site name a dataset gives, and its evidence.
@@ -315,7 +307,7 @@ dataset_sites = Table(
     Column("ror_id", Text),
     # The quote, where the source is prose.
     Column("evidence", Text),
-    info=_created_by(_DATASET_LINKS) | {ABOUT: About.SITES},
+    info=_created_by(_BASELINE) | {ABOUT: About.SITES},
 )
 
 # Where the names of bids_dataset_sites are: each raw name matched to the
@@ -338,7 +330,7 @@ site_places = Table(
     Column("lat", Double),
     Column("lng", Double),
     Column("matched_at", DateTime(timezone=True)),
-    info=_created_by(_SITE_PLACES) | {ABOUT: About.SITES},
+    info=_created_by(_BASELINE) | {ABOUT: About.SITES},
 )
 
 # What check_schema checks: in each table, the columns a migration creates.

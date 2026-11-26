@@ -18,7 +18,7 @@ Usage (inside the backend container, which has the keys and the database):
     python scripts/extract_readme_profiles.py                     # all datasets that need it
     python scripts/extract_readme_profiles.py --accessions ds000171,ds004627 --force
 
-Run crawlers/migrate_add_readme_profiles.sql first. Needs GEMINI_API_KEY.
+Needs the database at the newest migration (backend/migrations/README.md). Needs GEMINI_API_KEY.
 Database connection: DATABASE_URL, or the METADATA_DB_* variables.
 """
 
@@ -213,7 +213,7 @@ async def main() -> int:
         async with engine.connect() as conn:
             missing = await _check_schema(conn)
             if missing:
-                log.error("Missing %s — run crawlers/migrate_add_readme_profiles.sql first",
+                log.error("Missing %s — run `alembic upgrade head` in backend/ first",
                           ", ".join(missing))
                 return 2
             where, params = "", {}

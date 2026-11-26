@@ -2,7 +2,7 @@
 remote/dataset_facets.py
 ------------------------
 Keeps the per-dataset summaries of bids_objects current
-(crawlers/migrate_add_dataset_facets.sql):
+(created by the migrations, backend/migrations/):
 
   bids_dataset_facets       distinct (dataset, datatype, suffix, task)
   bids_datasets.n_subjects  number of distinct subjects

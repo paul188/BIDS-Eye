@@ -14,6 +14,26 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         raise pytest.UsageError(f"{postgres.DSN_VARIABLE} is not set, so the database tests would be skipped")
 
 
+@pytest.fixture
+def empty_database():
+    """The URL of a new database without tables (tests/postgres.py)."""
+    with postgres.new_database("empty") as url:
+        yield url
+
+
+@pytest.fixture(scope="session")
+def migrated_database():
+    """The URL of a database the Alembic revisions built (backend/migrations/).
+    One for the whole run: a test changes nothing in it, or rolls back."""
+    from alembic import command
+
+    from services.schema.revision import alembic_config
+
+    with postgres.new_database("migrated") as url:
+        command.upgrade(alembic_config(url), "head")
+        yield url
+
+
 @pytest.fixture(autouse=True)
 def _fresh_rate_limits():
     """Every test starts with empty rate-limit counts (rate_limits.py keeps them

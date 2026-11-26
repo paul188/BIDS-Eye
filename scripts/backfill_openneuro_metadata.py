@@ -13,9 +13,7 @@ No S3 access and no file indexing happens here. The script asks the OpenNeuro
 GraphQL API for 12 datasets per request (about 150 requests and a few minutes
 for the whole catalogue) and updates one row per dataset.
 
-Run the migration first:
-
-    psql ... -f crawlers/migrate_add_openneuro_metadata.sql
+Needs the database at the newest migration (backend/migrations/README.md).
 
 Then:
 
@@ -158,8 +156,7 @@ async def main() -> int:
             missing = await _missing_columns(conn)
             if missing:
                 log.error(
-                    "bids_datasets lacks column(s) %s — run "
-                    "crawlers/migrate_add_openneuro_metadata.sql first.",
+                    "bids_datasets lacks column(s) %s — run `alembic upgrade head` in backend/ first.",
                     ", ".join(missing),
                 )
                 return 2

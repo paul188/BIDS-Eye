@@ -18,7 +18,7 @@ Used by:
 Only the standard library and SQLAlchemy are needed, so the module also runs
 inside the backend image.
 
-Columns written (all on bids_datasets, see crawlers/migrate_add_openneuro_metadata.sql):
+Columns written (all on bids_datasets, created by the migrations in backend/migrations/):
     readme_text   TEXT      sanitised README of the latest snapshot
     dx_status     TEXT      metadata.dxStatus     e.g. "Healthy / Control", "Epilepsy"
     study_domain  TEXT      metadata.studyDomain  e.g. "Basal Ganglia in Parkinson"
@@ -60,7 +60,6 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import String
 
 from .dataset_links import SITE_ETHICS, clean_site_names, replace_sites
-from .dataset_links import TABLES_SQL as LINK_TABLES_SQL
 
 log = logging.getLogger(__name__)
 
@@ -104,13 +103,9 @@ METADATA_COLUMNS: Dict[str, str] = {
 STATUS_COLUMNS: Dict[str, str] = {"deprecated_reason": "TEXT"}
 REMOVED_REASON = "No longer available on OpenNeuro"
 
-CRAWLER_MANAGED_COLUMNS: Dict[str, str] = {
-    "institutions": "TEXT[]", **METADATA_COLUMNS, **STATUS_COLUMNS,
-}
-
-# Full-text search column (see crawlers/migrate_add_search_tsv.sql). It is
-# GENERATED from the text columns, so nothing in the crawler writes it; it is
-# only created here so that a fresh crawl database can be searched.
+# What bids_datasets.search_tsv is generated from. The column itself comes
+# from the migrations (backend/migrations/) and PostgreSQL keeps it current;
+# backend/tests/test_migrations_postgres.py checks that the two agree.
 # "/" becomes a space because PostgreSQL reads "ADD/ADHD" as one file path.
 SEARCH_VECTOR_EXPRESSION = (
     "setweight(to_tsvector('english'::regconfig, "
@@ -127,7 +122,7 @@ SEARCH_VECTOR_EXPRESSION = (
 
 # The same vector without stemming, for searched words that must match in
 # the form they were asked for: with the stemmer, "ageing" also finds "age"
-# (crawlers/migrate_add_exact_search.sql, backend/services/fulltext/text_search.py).
+# (backend/services/fulltext/text_search.py).
 EXACT_SEARCH_COLUMN = "search_tsv_exact"
 EXACT_SEARCH_VECTOR_EXPRESSION = SEARCH_VECTOR_EXPRESSION.replace(
     "'english'::regconfig", "'simple'::regconfig")
@@ -422,62 +417,6 @@ def deprecation_reason(record: Optional[dict], unavailable: Optional[str] = None
 
 
 # ── Database ──────────────────────────────────────────────────────────────────
-
-def ensure_columns_sql() -> List[str]:
-    """Idempotent DDL for every column the crawler writes outside the ORM model."""
-    return [
-        f"ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS {name} {sql_type}"
-        for name, sql_type in CRAWLER_MANAGED_COLUMNS.items()
-    ]
-
-
-# Written by scripts/extract_readme_profiles.py, read by the search vector.
-PROFILE_COLUMNS: Dict[str, str] = {
-    "llm_profile": "TEXT",
-    "llm_conditions": "TEXT",
-    "llm_profile_meta": "JSONB",
-}
-
-
-def search_vector_sql() -> List[str]:
-    """Idempotent DDL for the full-text column and its index.
-
-    Must run after ensure_columns_sql(): the expression reads those columns.
-    Adds nothing to an existing search_tsv; a changed definition is applied by
-    crawlers/migrate_add_search_tsv.sql, which recreates the column.
-    """
-    return [
-        f"ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS {name} {sql_type}"
-        for name, sql_type in PROFILE_COLUMNS.items()
-    ] + [
-        "ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS search_tsv tsvector "
-        f"GENERATED ALWAYS AS ({SEARCH_VECTOR_EXPRESSION}) STORED",
-        "CREATE INDEX IF NOT EXISTS idx_bids_datasets_search_tsv "
-        "ON bids_datasets USING GIN (search_tsv)",
-    ]
-
-
-def exact_search_vector_sql() -> List[str]:
-    """Idempotent DDL for the unstemmed full-text column and its index.
-
-    Must run after search_vector_sql(), which adds the columns the expression
-    reads. A changed definition is applied by
-    crawlers/migrate_add_exact_search.sql, which recreates the column.
-    """
-    return [
-        f"ALTER TABLE bids_datasets ADD COLUMN IF NOT EXISTS {EXACT_SEARCH_COLUMN} tsvector "
-        f"GENERATED ALWAYS AS ({EXACT_SEARCH_VECTOR_EXPRESSION}) STORED",
-        f"CREATE INDEX IF NOT EXISTS idx_bids_datasets_{EXACT_SEARCH_COLUMN} "
-        f"ON bids_datasets USING GIN ({EXACT_SEARCH_COLUMN})",
-    ]
-
-
-async def ensure_columns(session: Any) -> None:
-    """Create the crawler-managed columns if they are missing. Caller commits."""
-    for statement in (ensure_columns_sql() + search_vector_sql() + exact_search_vector_sql()
-                      + list(LINK_TABLES_SQL)):
-        await session.execute(text(statement))
-
 
 # A value the API did not provide never overwrites one that is already stored,
 # so the update is safe to repeat and safe to run after a partial outage.

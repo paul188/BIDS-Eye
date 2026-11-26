@@ -1,7 +1,7 @@
 """
 remote/site_places.py
 ---------------------
-Where the sites of bids_dataset_sites are (crawlers/migrate_add_site_places.sql):
+Where the sites of bids_dataset_sites are (table bids_site_places):
 each raw institution or ethics-board name matched to the Research Organization
 Registry, with the city, region and country ROR records for it. The search
 reads bids_site_places for questions that name a place ("datasets from Bonn").
@@ -44,26 +44,6 @@ _USER_AGENT = "bids-eye-crawler/1.0 (site places)"
 _PAUSE_SECONDS = 0.2
 _MAX_NAME_CHARS = 500
 
-_DDL = (
-    """CREATE TABLE IF NOT EXISTS bids_site_places (
-        name_raw      TEXT NOT NULL,
-        ror_id        TEXT NOT NULL DEFAULT '',
-        institution   TEXT,
-        city          TEXT,
-        region        TEXT,
-        country       TEXT,
-        country_code  TEXT,
-        lat           DOUBLE PRECISION,
-        lng           DOUBLE PRECISION,
-        matched_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-        PRIMARY KEY (name_raw, ror_id)
-    )""",
-    "CREATE INDEX IF NOT EXISTS idx_bids_site_places_city ON bids_site_places (city)",
-    "CREATE INDEX IF NOT EXISTS idx_bids_site_places_region ON bids_site_places (region)",
-    "CREATE INDEX IF NOT EXISTS idx_bids_site_places_country ON bids_site_places (country)",
-    "CREATE INDEX IF NOT EXISTS idx_bids_dataset_sites_name_raw ON bids_dataset_sites (name_raw)",
-)
-
 _NEW_NAMES = text(
     "SELECT s.name_raw, max(s.ror_id) FROM bids_dataset_sites s "
     "WHERE NOT EXISTS (SELECT 1 FROM bids_site_places p WHERE p.name_raw = s.name_raw) "
@@ -75,11 +55,6 @@ _INSERT = text(
     "VALUES (:name_raw, :ror_id, :institution, :city, :region, :country, :country_code, :lat, :lng) "
     "ON CONFLICT (name_raw, ror_id) DO NOTHING"
 )
-
-
-async def ensure_table(conn: Any) -> None:
-    for statement in _DDL:
-        await conn.execute(text(statement))
 
 
 def ror_matches(name: str, timeout: float = 30.0, retries: int = 3) -> Optional[List[Dict[str, Any]]]:
@@ -153,7 +128,6 @@ async def store(conn: Any, name: str, matches: Iterable[Dict[str, Any]]) -> int:
 async def match_new(conn: Any, limit: Optional[int] = None, lookup=ror_matches,
                     lookup_id=ror_by_id, pause: float = _PAUSE_SECONDS) -> Dict[str, int]:
     """Match the site names that have no row yet. Names ROR could not be asked about stay unmatched."""
-    await ensure_table(conn)
     names = await new_names(conn)
     if limit is not None:
         names = names[:limit]
@@ -172,7 +146,6 @@ async def match_new(conn: Any, limit: Optional[int] = None, lookup=ror_matches,
 
 async def import_json(conn: Any, cache: Dict[str, Sequence[Dict[str, Any]]]) -> Dict[str, int]:
     """Store matches saved as {name: [chosen ROR item, ...]} by an earlier run."""
-    await ensure_table(conn)
     stats = {"names": 0, "rows": 0}
     for name, matches in cache.items():
         stats["names"] += 1
