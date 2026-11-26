@@ -3366,7 +3366,7 @@ diagnosis:
     - pd
     - pd-nc
   parkinsons_disease_mci:
-    label: Parkinson's disease (MCI)
+    label: Parkinson's disease with mild cognitive impairment
     standard_code: parkinsons_disease_mci
     broader:
     - parkinsons_disease

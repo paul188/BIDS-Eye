@@ -146,6 +146,29 @@ def test_the_pair_survives_sqlglot_and_is_one_condition(exact) -> None:
     assert not ts.is_guarded_pair(sqlglot.parse_one("(a = 1 AND b = 2)", read="postgres"))
 
 
+def test_a_guard_is_known_by_its_vector_not_its_configuration() -> None:
+    tree = sqlglot.parse_one(
+        "SELECT d.id FROM bids_datasets d WHERE "
+        "(d.search_tsv @@ to_tsquery('english', 'ageing') "
+        " AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)')) "
+        "AND d.search_tsv_papers @@ to_tsquery('simple') "
+        "AND d.search_tsv_exact_papers @@ to_tsquery('simple', 'mri')", read="postgres")
+    found = [(search.query, search.is_guard, search.guard.query if search.guard else None)
+             for search in ts.text_searches(tree)]
+    # In the order written; a one-word search for "simple" is a search; both
+    # exact vectors hold guards; a guard goes with the search it is written after.
+    assert found == [("ageing", False, "(ageing | aging)"), ("(ageing | aging)", True, None),
+                     ("simple", False, "mri"), ("mri", True, None)]
+
+
+def test_a_guard_goes_with_the_search_of_its_own_row() -> None:
+    tree = sqlglot.parse_one(
+        "SELECT 1 FROM bids_datasets d, bids_datasets e WHERE "
+        "(d.search_tsv @@ to_tsquery('english', 'ageing') "
+        " AND e.search_tsv_exact @@ to_tsquery('simple', 'aging'))", read="postgres")
+    assert [search.guard for search in ts.text_searches(tree)] == [None, None]
+
+
 # ── Counting ──────────────────────────────────────────────────────────────────
 
 def test_counts_ask_with_the_guard_only_when_there_is_one(exact) -> None:
@@ -277,9 +300,10 @@ def test_the_weaker_form_keeps_the_word_forms(exact, monkeypatch) -> None:
 
 
 def test_scope_widening_keeps_the_guard_without_labels(exact) -> None:
-    weaker = tier_text.relax_text_condition(
+    weaker = tier_text.relax_text_condition(sqlglot.parse_one(
         "d.search_tsv @@ TO_TSQUERY('english', 'weight:AB') "
-        "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight:AB | weights:AB)')", "d")
+        "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight:AB | weights:AB)')",
+        read="postgres"), "d")
     assert weaker.sql() == ("(d.search_tsv @@ TO_TSQUERY('english', 'weight') "
                              "AND d.search_tsv_exact @@ TO_TSQUERY('simple', '(weight | weights)'))")
     assert [(search.weakening.value, search.words) for search in weaker.searches] == [

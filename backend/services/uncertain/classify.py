@@ -20,8 +20,8 @@ except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
 from services import sql_tree
-from services.uncertain.conditions import LABEL_RE, ClauseEvidence, TSQUERY_RE
-from services.uncertain.text import negated_spans, query_words, relax_text_condition
+from services.uncertain.conditions import LABEL_RE, ClauseEvidence, is_negated, stemmed_searches
+from services.uncertain.text import query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import ConfirmedMatch
@@ -135,36 +135,28 @@ def soft_kind(node, alias: str) -> Optional[str]:
         return None
     if kinds:
         return kinds.pop()
-    if TSQUERY_RE.search(sql):
+    if stemmed_searches(node):
         return "text"
     return None
 
 
-def paper_searches(sql: str) -> Tuple[TextSearch, ...]:
-    """The condition's positive text searches, as they are run on paper text.
+def paper_searches(node) -> Tuple[TextSearch, ...]:
+    """The positive text searches of the condition *node*, as they are run on paper text.
 
     Without labels: paper text carries the lowest weight, so a search scoped
     to the name and short fields could never reach it.
     """
-    spans = negated_spans(sql)
-    searches = []
-    for match in TSQUERY_RE.finditer(sql):
-        if match.group("negated") or any(s < match.start() < e for s, e in spans):
-            continue
-        guard = match.group("guard")
-        searches.append(TextSearch(LABEL_RE.sub("", match.group("query")),
-                                   LABEL_RE.sub("", guard) if guard else None))
-    return tuple(searches)
+    return tuple(TextSearch(LABEL_RE.sub("", search.query),
+                            LABEL_RE.sub("", search.guard.query) if search.guard else None)
+                 for search in stemmed_searches(node) if not is_negated(search, node))
 
 
 _DISTANCE_RE = re.compile(r"<\d+>")
 
 
-def _positive_words(sql: str) -> set:
-    spans = negated_spans(sql)
-    return {word for match in TSQUERY_RE.finditer(sql)
-            if not (match.group("negated") or any(s < match.start() < e for s, e in spans))
-            for word in query_words(match.group("query"))}
+def _positive_words(node) -> set:
+    return {word for search in stemmed_searches(node) if not is_negated(search, node)
+            for word in query_words(search.query)}
 
 
 def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
@@ -186,21 +178,21 @@ def loose_term(node, alias: str, papers: bool = False) -> Optional[ClauseEvidenc
     # 'near' search) has its own weaker forms (text.relax_text_condition).
     if node.find(exp.Not) is not None or _DISTANCE_RE.search(every_word):
         return None
-    words, core_words = _positive_words(every_word), _positive_words(core)
+    words, core_words = _positive_words(node.left), _positive_words(node.right)
     if not core_words or not core_words < words:
         return None
     return ClauseEvidence(kind="text", sql=every_word,
                           confirming=confirming_evidence(node.left, alias), evidence=(
         # The core only in a paper: the rows the core's own paper form had before.
-        *_paper_only(core, alias, papers),
+        *_paper_only(node.right, alias, papers),
         CoreOfTerm(core, missing=tuple(sorted(words - core_words))),
     ))
 
 
-def _paper_only(sql: str, alias: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
-    """The evidence that the text searches of *sql* match only in a paper;
-    none without paper text or without a positive text search."""
-    searches = paper_searches(sql) if papers else ()
+def _paper_only(node, alias: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
+    """The evidence that the text searches of the condition *node* match only
+    in a paper; none without paper text or without a positive text search."""
+    searches = paper_searches(node) if papers else ()
     return (PaperOnly(searches, alias=alias),) if searches else ()
 
 
@@ -227,9 +219,9 @@ def classify(node, alias: str, papers: bool = False) -> Optional[ClauseEvidence]
         if loose is not None:
             return loose
     # Part of a text search the condition holds, anywhere in the text.
-    relaxed = relax_text_condition(sql, alias)
+    relaxed = relax_text_condition(node, alias)
     weaker_search: Tuple[PieceOfEvidence, ...] = (relaxed,) if relaxed else ()
-    paper = _paper_only(sql, alias, papers)
+    paper = _paper_only(node, alias, papers)
     if kind != "text":
         # A field a dataset may not record. What is particular to the field
         # is in its file (fields/); the steps are the same for all.

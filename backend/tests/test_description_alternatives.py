@@ -15,6 +15,7 @@ import preprocess as pp  # noqa: E402
 from services.results import query_filters  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.fulltext import ranking, text_search, word_frequencies  # noqa: E402
+from services import sql_tree  # noqa: E402
 from services.uncertain import text as tier_text  # noqa: E402
 
 
@@ -111,7 +112,7 @@ def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
 
     # Only the user's own words get a weaker form, not the alternatives; and
     # "people" alone is none (without counts the longer word would be kept).
-    weaker = tier_text.relax_text_condition(sql, "d")
+    weaker = tier_text.relax_text_condition(sql_tree.parse(sql), "d")
     relaxed = weaker.sql() if weaker else None
     assert relaxed is None or ("mortem" not in relaxed and "vivo" not in relaxed)
     assert relaxed is None or "'people'" not in relaxed
