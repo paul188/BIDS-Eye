@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api, RateLimitError, type Dataset, type QueryFilter, type QueryResponse } from '../api'
+import { api, RateLimitError, SearchExpiredError, type Dataset, type QueryFilter, type QueryResponse } from '../api'
+import { useLatestRequest } from '../composables/useLatestRequest'
 
 export interface Message {
   id: number
@@ -41,6 +42,15 @@ let _nextId = 1
 // Keyed by messageId → page number → Dataset[].
 const _pageCache = new Map<number, Map<number, Dataset[]>>()
 
+// One page request per result block: asking for another page drops the one
+// still on its way.
+const _pageRequests = new Map<number, ReturnType<typeof useLatestRequest>>()
+
+function _pageRequest(messageId: number) {
+  if (!_pageRequests.has(messageId)) _pageRequests.set(messageId, useLatestRequest())
+  return _pageRequests.get(messageId)!
+}
+
 const STORAGE_KEY = 'bids-eye-history'
 
 // Searches the server sent stay out of the browser's storage: the server is
@@ -48,22 +58,31 @@ const STORAGE_KEY = 'bids-eye-history'
 function persist(conversations: Conversation[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations.filter(c => !c.fromServer)))
-  } catch { /* quota exceeded — non-fatal */ }
+  } catch {
+    /* quota exceeded — non-fatal */
+  }
 }
 
 function loadFromStorage(): Conversation[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return (JSON.parse(raw) as Conversation[]).map(withoutInterrupted)
-  } catch { /* corrupted — ignore */ }
+  } catch {
+    /* corrupted — ignore */
+  }
   return []
 }
 
-// A search still loading when the page was closed never gets its answer.
+// A search still loading when the page was closed never gets its answer;
+// a result page still loading then is not loading any more.
 function withoutInterrupted(conv: Conversation): Conversation {
-  const messages = conv.messages.map(m => m.loading
-    ? { ...m, loading: false, error: true, content: 'This search was interrupted. Run it again to see its results.' }
-    : m)
+  const messages = conv.messages.map(m =>
+    m.loading
+      ? { ...m, loading: false, error: true, content: 'This search was interrupted. Run it again to see its results.' }
+      : m.pageLoading
+        ? { ...m, pageLoading: false }
+        : m,
+  )
   return { ...conv, messages }
 }
 
@@ -111,10 +130,16 @@ async function _preloadPage(messageId: number, queryId: string, page: number, pa
   try {
     const response = await api.queryPage(queryId, page, pageSize)
     _cacheSet(messageId, page, response.datasets)
-  } catch { /* silent — preload is best-effort */ }
+  } catch {
+    /* silent — preload is best-effort */
+  }
 }
 
-function _preloadNeighbors(messageId: number, msg: { queryId?: string | null; pageSize?: number; total?: number }, currentPage: number) {
+function _preloadNeighbors(
+  messageId: number,
+  msg: { queryId?: string | null; pageSize?: number; total?: number },
+  currentPage: number,
+) {
   if (!msg.queryId || !msg.total || !msg.pageSize) return
   _preloadPage(messageId, msg.queryId, currentPage - 1, msg.pageSize, msg.total)
   _preloadPage(messageId, msg.queryId, currentPage + 1, msg.pageSize, msg.total)
@@ -135,8 +160,8 @@ export const useChatStore = defineStore('chat', () => {
   const conversations = ref<Conversation[]>([...stored, makeConversation()])
   const currentId = ref<number>(conversations.value[conversations.value.length - 1].id)
 
-  const currentConversation = computed(() =>
-    conversations.value.find(c => c.id === currentId.value) ?? conversations.value[0]
+  const currentConversation = computed(
+    () => conversations.value.find(c => c.id === currentId.value) ?? conversations.value[0],
   )
 
   const currentMessages = computed(() => currentConversation.value?.messages ?? [])
@@ -202,7 +227,7 @@ export const useChatStore = defineStore('chat', () => {
     try {
       listing = await api.history()
     } catch {
-      return  // the browser's own history still works
+      return // the browser's own history still works
     }
     rememberOnServer.value = listing.enabled
     retentionDays.value = listing.retention_days
@@ -210,7 +235,8 @@ export const useChatStore = defineStore('chat', () => {
     const here = new Set(conversations.value.map(c => c.historyId).filter(Boolean))
     // Deleted elsewhere, or expired: no longer a saved search.
     conversations.value = conversations.value.filter(
-      c => !(c.fromServer && c.historyId && !onServer.has(c.historyId)) || c.id === currentId.value)
+      c => !(c.fromServer && c.historyId && !onServer.has(c.historyId)) || c.id === currentId.value,
+    )
     for (const entry of listing.entries) {
       if (here.has(entry.id)) continue
       const q = entry.question
@@ -239,7 +265,7 @@ export const useChatStore = defineStore('chat', () => {
     }
     rememberOnServer.value = enabled
     if (enabled) {
-      await loadServerHistory()  // turned on before, in another browser
+      await loadServerHistory() // turned on before, in another browser
     } else {
       _removeServerPages()
       for (const c of conversations.value) delete c.historyId
@@ -315,11 +341,9 @@ export const useChatStore = defineStore('chat', () => {
     } catch (err) {
       if (err instanceof RateLimitError) {
         // Remove the optimistic user + loading messages — the query never happened.
-        conv.messages = conv.messages.filter(
-          m => m.id !== userMsgId && m.id !== loadingId
-        )
+        conv.messages = conv.messages.filter(m => m.id !== userMsgId && m.id !== loadingId)
         _save()
-        throw err  // let App.vue show the rate-limit banner
+        throw err // let App.vue show the rate-limit banner
       }
       const idx = conv.messages.findIndex(m => m.id === loadingId)
       if (idx !== -1) conv.messages[idx] = errorMessage(loadingId, err)
@@ -335,12 +359,20 @@ export const useChatStore = defineStore('chat', () => {
       msg = c.messages.find(m => m.id === messageId)
       if (msg) break
     }
-    if (!msg || !msg.queryId || msg.pageLoading) return
-    if (page === msg.page) return
+    if (!msg || !msg.queryId) return
+    const request = _pageRequest(messageId)
+    // Back to the page already shown: only a load on its way is dropped.
+    if (page === msg.page) {
+      request.cancel()
+      msg.pageLoading = false
+      return
+    }
 
     // Cache hit — instant render, then preload the next set of neighbors.
     const cached = _pageCache.get(messageId)?.get(page)
     if (cached) {
+      request.cancel()
+      msg.pageLoading = false
       msg.datasets = cached
       msg.page = page
       _save()
@@ -349,8 +381,12 @@ export const useChatStore = defineStore('chat', () => {
     }
 
     msg.pageLoading = true
+    const { queryId, pageSize = 20 } = msg
     try {
-      const response = await api.queryPage(msg.queryId, page, msg.pageSize ?? 20)
+      const result = await request.run(signal => api.queryPage(queryId, page, pageSize, signal))
+      // A newer call for this result block took over; pageLoading is its to clear.
+      if (result.superseded) return
+      const response = result.value
       _cacheSet(messageId, page, response.datasets)
       msg.datasets = response.datasets
       msg.page = response.page
@@ -360,11 +396,13 @@ export const useChatStore = defineStore('chat', () => {
     } catch (err) {
       // Expired query (410) or transient failure — keep the current page and
       // tell the user to re-run. Non-fatal: don't clobber existing results.
-      msg.content = `Could not load page ${page}: ${err instanceof Error ? err.message : String(err)}. Try running the search again.`
-    } finally {
-      msg.pageLoading = false
-      _save()
+      msg.content =
+        err instanceof SearchExpiredError
+          ? err.message
+          : `Could not load page ${page}: ${err instanceof Error ? err.message : String(err)}. Try running the search again.`
     }
+    msg.pageLoading = false
+    _save()
   }
 
   function clearMessages() {

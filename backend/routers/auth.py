@@ -101,7 +101,7 @@ def _settings(request: Request) -> AuthSettings:
     return request.app.state.auth_settings
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 # ── Errors (answered by exceptions/handlers.py) ───────────────────────────────
@@ -232,7 +232,7 @@ def _github_redirect_uri(request: Request) -> str:
     return _settings(request).GITHUB_REDIRECT_URI or str(request.url_for("github_callback"))
 
 
-@router.get("/github", dependencies=[rate_limit(Category.LOGIN)])
+@auth_router.get("/github", dependencies=[rate_limit(Category.LOGIN)])
 async def github_login(request: Request):
     redirect_uri = _github_redirect_uri(request)
 
@@ -369,7 +369,7 @@ async def _revoke_token(
         logger.warning("GitHub access token not revoked: answered %s", revoked.status_code)
 
 
-@router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
+@auth_router.get("/github/callback", name="github_callback", dependencies=[rate_limit(Category.LOGIN)])
 async def github_callback(request: Request):
     settings = _settings(request)
     params = request.query_params
@@ -426,12 +426,12 @@ async def github_callback(request: Request):
 
 # ── Signed-in user ────────────────────────────────────────────────────────────
 
-@router.get("/me", dependencies=[rate_limit(Category.LIGHT)])
+@auth_router.get("/me", dependencies=[rate_limit(Category.LIGHT)])
 async def me(user: CurrentUserDep):
     return {"login": user["sub"]}
 
 
-@router.post("/logout", dependencies=[rate_limit(Category.LIGHT)])
+@auth_router.post("/logout", dependencies=[rate_limit(Category.LIGHT)])
 async def logout(request: Request):
     request.session.clear()
     return {"ok": True}

@@ -37,6 +37,12 @@ embeddings = [
     "sentence-transformers>=3.0.0",
     "numpy>=1.24",
 ]
+# What the tests need on top (CI, README.md): pip install -e "backend[test]"
+test = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "time-machine>=2.14",
+]
 
 # The top-level modules other code imports by name (import schemas). main.py
 # is left out: uvicorn and the tests load it from this folder.
@@ -47,6 +53,7 @@ py-modules = [
     "deps",
     "models",
     "rate_limits",
+    "request_log",
     "schemas",
     "single_flight",
     "worker_db",
@@ -54,3 +61,9 @@ py-modules = [
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+# pytest --cov, run from this folder: the backend and the two packages it is
+# built on, without the tests themselves.
+[tool.coverage.run]
+source = [".", "../RAG", "../LLM_preprocessor"]
+omit = ["tests/*", ".venv/*", "*/tests/*"]

@@ -11,13 +11,13 @@ asker's GitHub login; it was removed for that notice.
 From June to November 2026 that insert ran inside a savepoint that nothing
 committed; the checks on `released` below catch the same mistake for query_log.
 
-Needs the BIDS-SQL submodule (routers.query imports the db package)."""
+Needs the BIDS-SQL submodule (routers.search imports the db package)."""
 
 from __future__ import annotations
 
 import asyncio
 
-import routers.query as query_router
+import routers.search as query_router
 from schemas import QueryRequest, TextToSQLResult
 from services import search, search_runner
 

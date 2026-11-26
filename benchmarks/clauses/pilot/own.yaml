@@ -145,3 +145,82 @@ items:
 - {id: own-44, block: mixed, source: written, text: "for a meta-analysis: stroke or aphasia patients, diffusion MRI, nothing below 10 subjects",
    clauses: {c1: [diagnosis, [stroke], any, "stroke"], c2: [diagnosis, [aphasia], any, "aphasia patients"], c3: [scan, [diffusion], any, "diffusion MRI"], c4: [count, [at least 10 subjects], any, "nothing below 10 subjects"]},
    readings: [{tree: "(c1 | c2) & c3 & c4", representable: yes}], revised: true}
+# ── harder requests, added 2026-11-25 before the planner saw any of them ──
+# background story: what it mentions is no condition
+- {id: own-45, block: hard_story, source: written, text: "Hi all, during my PhD I worked with EEG in epilepsy, but the new project is different: I need diffusion MRI of stroke patients, at least 15 of them.",
+   clauses: {c1: [scan, [diffusion MRI, diffusion], any, "diffusion MRI"], c2: [diagnosis, [stroke], any, "stroke patients", "group:1"], c3: [count, [at least 15 patients], any, "at least 15 of them", "group:1"]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}]}
+- {id: own-46, block: hard_story, source: written, text: "We already have resting-state data and a T1w for everybody, so what is missing is task fMRI with faces or scenes; scanner doesn't matter, 3T would be nice.",
+   clauses: {c1: [scan, [fMRI, task fMRI], any, "task fMRI"], c2: [scan, [faces, face], any, "faces"], c3: [scan, [scenes, scene], any, "scenes"], c4: [sidecar, [MagneticFieldStrength 3], any, "3T", dataset, wish]},
+   readings: [{tree: "c1 & (c2 | c3)", representable: yes}]}
+- {id: own-47, block: hard_story, source: written, text: "A reviewer wants our fMRI finding replicated with another method. So: MEG or EEG, Parkinson's, resting state, eyes closed if possible.",
+   clauses: {c1: [scan, [MEG], any, "MEG"], c2: [scan, [EEG], any, "EEG"], c3: [diagnosis, [Parkinson's disease, Parkinson's], any, "Parkinson's"], c4: [scan, [resting state], any, "resting state"], c5: [text, [eyes closed], any, "eyes closed", dataset, wish]},
+   readings: [{tree: "(c1 | c2) & c3 & c4", representable: yes}]}
+- {id: own-48, block: hard_story, source: written, text: "My supervisor suggested ABIDE and ADNI but both need an application. Is there anything open with EEG? Autism or ADHD, children, no need for structural images.",
+   clauses: {c1: [scan, [EEG], any, "EEG"], c2: [diagnosis, [autism], any, "Autism"], c3: [diagnosis, [ADHD], any, "ADHD"], c4: [age, [children], any, "children"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4", representable: yes}]}
+- {id: own-49, block: hard_story, source: written, text: "I tried 'memory' and got hundreds of hits, many of them animal studies. What I want: working memory, fMRI, older adults, and each person scanned at least twice.",
+   clauses: {c1: [scan, [working memory], any, "working memory"], c2: [scan, [fMRI], any, "fMRI"], c3: [age, [older adults], any, "older adults"], c4: [sessions, [at least 2 per subject], any, "at least twice"], c5: [species, [human], any, "many of them animal studies", dataset, optional]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes, also: ["c1 & c2 & c3 & c4 & c5"]}]}
+# AND and OR mixed without brackets
+- {id: own-50, block: hard_logic, source: written, text: "EEG or MEG, motor imagery or motor execution, no patients with stroke",
+   clauses: {c1: [scan, [EEG], any, "EEG"], c2: [scan, [MEG], any, "MEG"], c3: [scan, [motor imagery], any, "motor imagery"], c4: [scan, [motor execution], any, "motor execution"], c5: [diagnosis, [stroke], any, "stroke"]},
+   readings: [{tree: "(c1 | c2) & (c3 | c4) & !c5", representable: yes}]}
+- {id: own-51, block: hard_logic, source: written, text: "T1w, plus FLAIR or T2w, plus diffusion, in multiple sclerosis",
+   clauses: {c1: [scan, [T1w], any, "T1w"], c2: [scan, [FLAIR], any, "FLAIR"], c3: [scan, [T2w], any, "T2w"], c4: [scan, [diffusion], any, "diffusion"], c5: [diagnosis, [multiple sclerosis], any, "multiple sclerosis"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4 & c5", representable: yes}]}
+- {id: own-52, block: hard_logic, source: written, text: "schizophrenia or bipolar, fMRI and T1w, resting state or a working memory task, at least 30 people",
+   clauses: {c1: [diagnosis, [schizophrenia], any, "schizophrenia"], c2: [diagnosis, [bipolar disorder, bipolar], any, "bipolar"], c3: [scan, [fMRI], any, "fMRI"], c4: [scan, [T1w], any, "T1w"], c5: [scan, [resting state], any, "resting state"], c6: [scan, [working memory], any, "working memory task"], c7: [count, [at least 30 subjects], any, "at least 30 people"]},
+   readings: [{tree: "(c1 | c2) & c3 & c4 & (c5 | c6) & c7", representable: yes}]}
+- {id: own-53, block: hard_logic, source: written, text: "either iEEG with a language task or iEEG with a memory task, epilepsy patients, not scalp EEG",
+   clauses: {c1: [scan, [iEEG], any, "iEEG"], c2: [scan, [language], any, "language task"], c3: [scan, [memory], any, "memory task"], c4: [diagnosis, [epilepsy], any, "epilepsy patients"], c5: [scan, [scalp EEG, EEG], any, "scalp EEG"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4 & !c5", representable: yes}]}
+- {id: own-54, block: hard_logic, source: written, text: "children or adolescents, ADHD datasets containing neither autism nor epilepsy patients, EEG or fNIRS",
+   clauses: {c1: [age, [children], any, "children"], c2: [age, [adolescents], any, "adolescents"], c3: [diagnosis, [ADHD], any, "ADHD"], c4: [diagnosis, [autism], any, "autism"], c5: [diagnosis, [epilepsy], any, "epilepsy patients"], c6: [scan, [EEG], any, "EEG"], c7: [scan, [fNIRS], any, "fNIRS"]},
+   readings: [{tree: "(c1 | c2) & c3 & !c4 & !c5 & (c6 | c7)", representable: yes, also: ["c1 & c3 & !c4 & !c5 & (c6 | c7)"]}]}
+# how far a negation reaches
+- {id: own-55, block: hard_scope, source: written, text: "no fMRI, EEG, or MEG please, just diffusion or T1w of the spinal cord",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [EEG], any, "EEG"], c3: [scan, [MEG], any, "MEG"], c4: [scan, [diffusion], any, "diffusion"], c5: [scan, [T1w], any, "T1w"], c6: [text, [spinal cord], any, "spinal cord"]},
+   readings: [{tree: "!c1 & !c2 & !c3 & (c4 | c5) & c6", representable: yes}]}
+- {id: own-56, block: hard_scope, source: written, text: "fMRI without eye tracking but with physiological recordings",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [eye tracking], any, "eye tracking"], c3: [scan, [physiological recordings, physiological, physio], any, "physiological recordings"]},
+   readings: [{tree: "c1 & !c2 & c3", representable: yes}]}
+- {id: own-57, block: hard_scope, source: written, text: "neither patients with depression nor with anxiety, nor any PET, otherwise any emotion regulation fMRI",
+   clauses: {c1: [diagnosis, [depression], any, "depression"], c2: [diagnosis, [anxiety], any, "anxiety"], c3: [scan, [PET], any, "PET"], c4: [scan, [emotion regulation], any, "emotion regulation"], c5: [scan, [fMRI], any, "fMRI"]},
+   readings: [{tree: "!c1 & !c2 & !c3 & c4 & c5", representable: yes}]}
+- {id: own-58, block: hard_scope, source: written, text: "everything with a Stroop task apart from the EEG and fNIRS ones",
+   clauses: {c1: [scan, [Stroop], any, "Stroop task"], c2: [scan, [EEG], any, "EEG"], c3: [scan, [fNIRS], any, "fNIRS"]},
+   readings: [{tree: "c1 & !c2 & !c3", representable: yes}]}
+- {id: own-59, block: hard_scope, source: written, text: "visual cortex fMRI that does not come from Stanford or MIT, with population receptive field mapping",
+   clauses: {c1: [text, [visual cortex, visual], any, "visual cortex"], c2: [scan, [fMRI], any, "fMRI"], c3: [institution, [Stanford], any, "Stanford"], c4: [institution, [MIT], any, "MIT"], c5: [scan, [population receptive field mapping, population receptive field, retinotopy], any, "population receptive field mapping"]},
+   readings: [{tree: "c1 & c2 & !c3 & !c4 & c5", representable: yes}]}
+# the writer corrects themselves
+- {id: own-60, block: hard_correction, source: written, text: "EEG datasets with an oddball task, sorry, I meant MEG",
+   clauses: {c1: [scan, [MEG], any, "MEG"], c2: [scan, [oddball], any, "oddball task"]},
+   readings: [{tree: "c1 & c2", representable: yes}]}
+- {id: own-61, block: hard_correction, source: written, text: "looking for patients with Alzheimer's... or no wait, mild cognitive impairment, with T1w and PET",
+   clauses: {c1: [diagnosis, [mild cognitive impairment], any, "mild cognitive impairment"], c2: [scan, [T1w], any, "T1w"], c3: [scan, [PET], any, "PET"]},
+   readings: [{tree: "c1 & c2 & c3", representable: yes}]}
+- {id: own-62, block: hard_correction, source: written, text: "at least 50 subjects, hm, 20 is enough actually, resting-state fMRI, depression",
+   clauses: {c1: [count, [at least 20 subjects], any, "20 is enough"], c2: [scan, [resting state], any, "resting-state"], c3: [scan, [fMRI], any, "fMRI"], c4: [diagnosis, [depression], any, "depression"]},
+   readings: [{tree: "c1 & c2 & c3 & c4", representable: yes}]}
+# unusual separators
+- {id: own-63, block: hard_separator, source: written, text: "- fMRI\n- movie watching or audiobook\n- with physio recordings\n- not: anesthesia",
+   clauses: {c1: [scan, [fMRI], any, "fMRI"], c2: [scan, [movie watching], any, "movie watching"], c3: [scan, [audiobook], any, "audiobook"], c4: [scan, [physio recordings, physio, physiological recordings], any, "physio recordings"], c5: [scan, [anesthesia], any, "anesthesia"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4 & !c5", representable: yes}]}
+- {id: own-64, block: hard_separator, source: written, text: "modality: EEG / MEG; task: n-back / Sternberg; age: > 60; exclude: dementia, stroke",
+   clauses: {c1: [scan, [EEG], any, "EEG"], c2: [scan, [MEG], any, "MEG"], c3: [scan, [n-back], any, "n-back"], c4: [scan, [Sternberg], any, "Sternberg"], c5: [age, [over 60], any, "> 60"], c6: [diagnosis, [dementia], any, "dementia"], c7: [diagnosis, [stroke], any, "stroke"]},
+   readings: [{tree: "(c1 | c2) & (c3 | c4) & c5 & !c6 & !c7", representable: yes}]}
+- {id: own-65, block: hard_separator, source: written, text: "epilepsy + iEEG + sleep - TMS",
+   clauses: {c1: [diagnosis, [epilepsy], any, "epilepsy"], c2: [scan, [iEEG], any, "iEEG"], c3: [scan, [sleep], any, "sleep"], c4: [scan, [TMS], any, "TMS"]},
+   readings: [{tree: "c1 & c2 & c3 & !c4", representable: yes}]}
+# spoken or misspelled
+- {id: own-66, block: hard_spoken, source: written, text: "so basically what i need is um eeg from people with tinnitus or hearing loss and they should be at rest with the eyes closed",
+   clauses: {c1: [scan, [EEG], any, "eeg"], c2: [diagnosis, [tinnitus], any, "tinnitus"], c3: [diagnosis, [hearing loss], any, "hearing loss"], c4: [scan, [resting state, at rest], any, "at rest"], c5: [text, [eyes closed], any, "eyes closed"]},
+   readings: [{tree: "c1 & (c2 | c3) & c4 & c5", representable: yes}]}
+- {id: own-67, block: hard_spoken, source: written, text: "lookng 4 fnirs datsets w babys or todlers, languge task, not eeg",
+   clauses: {c1: [scan, [fNIRS], any, "fnirs"], c2: [age, [infants], any, "babys or todlers"], c3: [scan, [language], any, "languge task"], c4: [scan, [EEG], any, "eeg"]},
+   readings: [{tree: "c1 & c2 & c3 & !c4", representable: yes}]}
+- {id: own-68, block: hard_spoken, source: written, text: "is there any macaque or marmoset electrophysiology that was not recorded under anesthesia, ideally visual cortex",
+   clauses: {c1: [species, [primate], any, "macaque or marmoset"], c2: [scan, [electrophysiology], any, "electrophysiology"], c3: [scan, [anesthesia], any, "anesthesia"], c4: [text, [visual cortex], any, "visual cortex", dataset, wish]},
+   readings: [{tree: "c1 & c2 & !c3", representable: yes}]}

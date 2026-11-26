@@ -143,4 +143,4 @@ def test_one_participant_may_be_a_minimum_count() -> None:
 
 def test_every_item_is_in_exactly_one_group() -> None:
     kinds = [sp.kind(i) for i in ITEMS.values()]
-    assert {k: kinds.count(k) for k in set(kinds)} == {"headline": 23, "ambiguous": 10, "not representable": 11}
+    assert {k: kinds.count(k) for k in set(kinds)} == {"headline": 47, "ambiguous": 10, "not representable": 11}

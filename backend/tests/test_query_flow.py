@@ -5,7 +5,7 @@ from uuid import UUID
 
 from sqlalchemy.exc import ProgrammingError
 
-import routers.query as query_router
+import routers.search as query_router
 from schemas import DatasetSchema, TextToSQLResult
 from services.results import dataset_cards
 from services import search, search_runner

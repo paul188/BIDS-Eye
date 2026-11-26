@@ -167,13 +167,18 @@ git submodule update --init      # BIDS-SQL, needed by the backend and its tests
 git config core.hooksPath .githooks
 ```
 
-Run the backend tests locally (no database needed):
+Run the backend tests locally:
 
 ```bash
+pip install -e "backend[test]"
 cd backend
 METADATA_DB_NAME=x METADATA_DB_USER=x METADATA_DB_PASSWORD=x METADATA_DB_HOST=localhost \
   python -m pytest -q tests
 ```
+
+The tests that need real SQL are skipped unless `BIDSEYE_TEST_PG_DSN` names an
+empty scratch PostgreSQL; `backend/tests/postgres.py` says how to start one. CI
+runs them, and prints a coverage table (`--cov`).
 
 ## API Surface
 

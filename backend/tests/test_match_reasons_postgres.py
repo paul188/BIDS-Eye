@@ -3,30 +3,23 @@
 The SQL of services/results/match_reasons.py is built from the generated
 query's own conditions; only a database shows that it runs and that each
 branch holds where it should. Skipped unless BIDSEYE_TEST_PG_DSN names a
-scratch database (postgresql+asyncpg://user:password@host:port/db). The test
-works in a schema of its own and drops it afterwards.
-
-    docker run -d --rm --name bidseye-test-pg -e POSTGRES_PASSWORD=test \
-        -p 127.0.0.1:55439:5432 postgres:16
-    BIDSEYE_TEST_PG_DSN=postgresql+asyncpg://postgres:test@127.0.0.1:55439/postgres \
-        python -m pytest tests/test_match_reasons_postgres.py
+scratch database (tests/postgres.py says how to start one); works in a schema
+of its own.
 """
 
 from __future__ import annotations
 
 import asyncio
-import os
 import uuid
-
-import pytest
 
 from criteria import age_condition, species_condition
 from schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
 from services.results import match_reasons, query_filters, readme_snippets
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
-pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+from tests.postgres import fresh_schema, needs_postgres, run_statements
+
+pytestmark = needs_postgres
 
 _SCHEMA_SQL = """
 CREATE TABLE bids_datasets (
@@ -94,19 +87,12 @@ def _query(condition: str) -> str:
 
 async def _run(check):
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.ext.asyncio import AsyncSession
 
-    schema = f"match_reasons_{uuid.uuid4().hex[:8]}"
-    admin = create_async_engine(DSN)
-    async with admin.begin() as conn:
-        await conn.execute(text(f"CREATE SCHEMA {schema}"))
-    engine = create_async_engine(DSN, connect_args={"server_settings": {"search_path": schema}})
     ids = {key: uuid.uuid4() for key in _DATASETS}
-    try:
+    async with fresh_schema("match_reasons") as engine:
         async with engine.begin() as conn:
-            for statement in _SCHEMA_SQL.split(";"):
-                if statement.strip():
-                    await conn.execute(text(statement))
+            await run_statements(conn, _SCHEMA_SQL)
             for key, (description, readme, species, low, high, people) in _DATASETS.items():
                 await conn.execute(text(
                     "INSERT INTO bids_datasets (id, name, description_text, readme_text, species, "
@@ -119,11 +105,6 @@ async def _run(check):
                         {"id": ids[key], "p": f"sub-{i}", "age": age, "dx": diagnosis})
         async with AsyncSession(engine) as session:
             await check(session, ids)
-    finally:
-        await engine.dispose()
-        async with admin.begin() as conn:
-            await conn.execute(text(f"DROP SCHEMA {schema} CASCADE"))
-        await admin.dispose()
 
 
 async def _page(session, ids, condition):

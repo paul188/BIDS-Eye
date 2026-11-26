@@ -38,23 +38,22 @@ from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
+import request_log
 import worker_db
 from api_security import install_security_middleware
 from db.db import engine
 from exceptions.handlers import add_error_handlers
-from routers.auth import require_auth, router as auth_router
-from routers.history import router as history_router
-from routers.query import router as query_router
+from routers.auth import auth_router, require_auth
+from routers.history import history_router
+from routers.search import search_router
 from services import in_process_crawler, switches
 from services.database_stats.database_stats import database_stats
 from services.schema.revision import check_revision
 from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
-)
+# Text or JSON lines (LOG_FORMAT), each with its request's ID (request_log.py).
+request_log.configure()
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
 
@@ -102,6 +101,10 @@ app = FastAPI(
 # is missing or unusable (routers/auth.py, AuthSettings).
 install_security_middleware(app)
 
+# Outermost: an ID per request, on its log lines and in the X-Request-ID
+# response header, and one log line per request (request_log.py).
+app.add_middleware(request_log.RequestIdMiddleware)
+
 # Every expected failure (exceptions/domain.py) answers with its own status
 # and text, so the routers catch none of them; anything else gets a plain 500.
 add_error_handlers(app)
@@ -109,7 +112,7 @@ add_error_handlers(app)
 # ── Routers ───────────────────────────────────────────────────────────────────
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(query_router, prefix="/api", dependencies=[Depends(require_auth)])
+app.include_router(search_router, prefix="/api", dependencies=[Depends(require_auth)])
 app.include_router(history_router, prefix="/api", dependencies=[Depends(require_auth)])
 
 

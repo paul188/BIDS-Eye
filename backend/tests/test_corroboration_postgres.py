@@ -1,22 +1,20 @@
 """Corroboration of a confirmed clause on a real Postgres
 (services/evidence/SCORING.md): which source groups confirm it.
 
-Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database (see
-tests/test_match_reasons_postgres.py); works in a schema of its own.
+Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database
+(tests/postgres.py); works in a schema of its own.
 """
 
 from __future__ import annotations
 
 import asyncio
-import os
 import uuid
-
-import pytest
 
 from services.uncertain import tier as ut
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
-pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+from tests.postgres import fresh_schema, needs_postgres, run_statements
+
+pytestmark = needs_postgres
 
 _SCHEMA_SQL = """
 CREATE TABLE bids_datasets (id UUID PRIMARY KEY, name TEXT, description_text TEXT, readme_text TEXT,
@@ -37,18 +35,12 @@ CLAUSE = ("(EXISTS(SELECT 1 FROM bids_participants AS p WHERE p.dataset_id = d.i
 async def _corroboration() -> dict:
     """{dataset key: (level, corroboration)} of the tier query."""
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.ext.asyncio import AsyncSession
 
-    schema = f"corroboration_{uuid.uuid4().hex[:8]}"
-    admin = create_async_engine(DSN)
-    async with admin.begin() as conn:
-        await conn.execute(text(f"CREATE SCHEMA {schema}"))
-    engine = create_async_engine(DSN, connect_args={"server_settings": {"search_path": schema}})
     ids = {key: uuid.uuid4() for key in _DATASETS}
-    try:
+    async with fresh_schema("corroboration") as engine:
         async with engine.begin() as conn:
-            for statement in _SCHEMA_SQL.split(";"):
-                await conn.execute(text(statement))
+            await run_statements(conn, _SCHEMA_SQL)
             for key, (readme, code) in _DATASETS.items():
                 await conn.execute(text(
                     "INSERT INTO bids_datasets VALUES (:id, :name, '', :readme, NULL, "
@@ -60,11 +52,6 @@ async def _corroboration() -> dict:
             rows = (await session.execute(text(sql))).mappings().all()
         by_id = {value: key for key, value in ids.items()}
         return {by_id[r["id"]]: (r[ut.LEVEL_COLUMN], r[ut.CORROBORATION_COLUMN]) for r in rows}
-    finally:
-        await engine.dispose()
-        async with admin.begin() as conn:
-            await conn.execute(text(f"DROP SCHEMA {schema} CASCADE"))
-        await admin.dispose()
 
 
 def test_a_second_source_group_is_one_more() -> None:

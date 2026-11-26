@@ -1,6 +1,17 @@
 from __future__ import annotations
 
+import os
+
 import pytest
+
+from tests import postgres
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """In CI the database tests must run: there a missing BIDSEYE_TEST_PG_DSN
+    is an error, not a reason to skip them unnoticed."""
+    if os.getenv("CI") and not postgres.DSN:
+        raise pytest.UsageError(f"{postgres.DSN_VARIABLE} is not set, so the database tests would be skipped")
 
 
 @pytest.fixture(autouse=True)

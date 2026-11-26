@@ -87,7 +87,7 @@ def _build_app(
     app = FastAPI()
     api_security.install_security_middleware(app)
     add_error_handlers(app)
-    app.include_router(auth.router, prefix="/api")
+    app.include_router(auth.auth_router, prefix="/api")
 
     @app.get("/api/protected")
     def protected(user: dict = Depends(auth.require_auth)) -> dict:

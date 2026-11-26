@@ -383,6 +383,13 @@ def report(items: dict, plans: dict, show: bool) -> None:
             block = blocks.setdefault(items[i]["block"], [0, 0])
             block[0] += sum(r["equal"] for r in rs)
             block[1] += len(rs)
+    for name, hard in (("first requests", False), ("hard requests", True)):
+        rates = [sum(r["equal"] for r in rs) / len(rs) for i, rs in results.items()
+                 if kind(items[i]) == "headline" and items[i]["block"].startswith("hard_") == hard]
+        if rates:
+            low, high = by_item_interval(rates)
+            print(f"headline, {name}: {sum(rates) / len(rates):.0%} of plans ({low:.0%} to {high:.0%}), "
+                  f"every time {sum(r == 1 for r in rates)} of {len(rates)}")
     print("\nheadline by block: " + ", ".join(f"{b} {k}/{n}" for b, (k, n) in sorted(blocks.items())))
     if show:
         for i, rs in results.items():

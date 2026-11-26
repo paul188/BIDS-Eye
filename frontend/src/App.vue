@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useChatStore } from './stores/chat'
 import { api, RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
@@ -7,6 +7,7 @@ import LoginView from './components/LoginView.vue'
 import LogoMark from './components/LogoMark.vue'
 import InputBar from './components/InputBar.vue'
 import CookieBanner from './components/CookieBanner.vue'
+import { useRateLimit } from './composables/useRateLimit'
 
 // null until /api/auth/me answers: the session cookie is HttpOnly, so the page
 // can only learn whether it is signed in by asking the backend.
@@ -23,37 +24,7 @@ async function logout() {
 }
 
 // ── Rate limiting ──────────────────────────────────────────────────────────────
-const rateLimitedUntil = ref<string | null>(null)
-// Which limit was hit: 20 searches a day, or too many searches in one minute.
-const rateLimitWindow = ref('')
-const rateLimitCount = ref(0)
-const countdownDisplay = ref('00:00:00')
-let countdownInterval: ReturnType<typeof setInterval> | undefined
-
-function formatCountdown(until: string): string {
-  const ms = new Date(until).getTime() - Date.now()
-  if (ms <= 0) return '00:00:00'
-  const h = Math.floor(ms / 3_600_000)
-  const m = Math.floor((ms % 3_600_000) / 60_000)
-  const s = Math.floor((ms % 60_000) / 1_000)
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-function startCountdown() {
-  clearInterval(countdownInterval)
-  if (!rateLimitedUntil.value) return
-  countdownDisplay.value = formatCountdown(rateLimitedUntil.value)
-  countdownInterval = setInterval(() => {
-    if (!rateLimitedUntil.value) { clearInterval(countdownInterval); return }
-    const remaining = new Date(rateLimitedUntil.value).getTime() - Date.now()
-    if (remaining <= 0) {
-      rateLimitedUntil.value = null
-      clearInterval(countdownInterval)
-    } else {
-      countdownDisplay.value = formatCountdown(rateLimitedUntil.value)
-    }
-  }, 1_000)
-}
+const { rateLimitedUntil, rateLimitWindow, rateLimitCount, countdownDisplay, startRateLimit } = useRateLimit()
 
 const store = useChatStore()
 const input = ref('')
@@ -68,9 +39,11 @@ const rememberBusy = ref(false)
 async function toggleRemember() {
   if (rememberBusy.value) return
   const turnOn = !store.rememberOnServer
-  if (!turnOn && !window.confirm(
-    'Delete your saved searches from the server? Searches made in this browser stay in its history.'
-  )) return
+  if (
+    !turnOn &&
+    !window.confirm('Delete your saved searches from the server? Searches made in this browser stay in its history.')
+  )
+    return
   rememberBusy.value = true
   try {
     await store.setRememberOnServer(turnOn)
@@ -84,8 +57,7 @@ const retentionText = computed(() => {
 })
 
 // History: one entry per search page, newest first; the empty start page is not listed.
-const historyEntries = computed(() =>
-  [...store.conversations].reverse().filter(c => c.messages.length))
+const historyEntries = computed(() => [...store.conversations].reverse().filter(c => c.messages.length))
 
 // The latest question's box above its results is the search field, unless an
 // earlier question was clicked: then that box becomes the field, in place.
@@ -105,16 +77,20 @@ function latestQuestion(): string {
   return store.currentMessages.find(m => m.id === id)?.content ?? ''
 }
 // A new or different page starts at the top.
-watch(() => store.currentId, () => {
-  editingId.value = null
-  input.value = latestQuestion()
-  nextTick(() => messagesContainer.value?.scrollTo({ top: 0 }))
-}, { immediate: true })
+watch(
+  () => store.currentId,
+  () => {
+    editingId.value = null
+    input.value = latestQuestion()
+    nextTick(() => messagesContainer.value?.scrollTo({ top: 0 }))
+  },
+  { immediate: true },
+)
 
 const SUGGESTIONS = [
-  { tag: 'Clinical',   text: 'Datasets with at least 40 Parkinson\'s patients' },
-  { tag: 'Clinical',   text: 'Show datasets with Alzheimer\'s disease participants' },
-  { tag: 'Modality',   text: 'List all resting-state fMRI datasets' },
+  { tag: 'Clinical', text: "Datasets with at least 40 Parkinson's patients" },
+  { tag: 'Clinical', text: "Show datasets with Alzheimer's disease participants" },
+  { tag: 'Modality', text: 'List all resting-state fMRI datasets' },
   { tag: 'Multimodal', text: 'Find datasets with both structural and functional MRI' },
 ]
 
@@ -133,11 +109,8 @@ async function submit() {
     await pending
   } catch (err) {
     if (err instanceof RateLimitError) {
-      input.value = q  // restore so the user doesn't lose their question
-      rateLimitedUntil.value = err.retryAfter
-      rateLimitWindow.value = err.window
-      rateLimitCount.value = err.limit
-      startCountdown()
+      input.value = q // restore so the user doesn't lose their question
+      startRateLimit(err)
     }
   }
 }
@@ -186,7 +159,8 @@ onMounted(() => {
     history.replaceState({}, '', '/')
   }
 
-  api.me()
+  api
+    .me()
     .then(() => {
       isLoggedIn.value = true
       void store.loadServerHistory()
@@ -200,25 +174,35 @@ onMounted(() => {
     isLoggedIn.value = false
   })
 })
-onUnmounted(() => {
-  clearInterval(countdownInterval)
-})
 </script>
 
 <template>
   <LoginView v-if="isLoggedIn === false" />
 
   <div v-else-if="isLoggedIn" class="flex flex-col h-full overflow-hidden bg-surface">
-
     <!-- ── Header bar ─────────────────────────────────────────────────── -->
-    <header class="flex items-center gap-2 sm:gap-3 h-14 px-3 sm:px-5 border-b border-border bg-surface/90 backdrop-blur flex-shrink-0">
+    <header
+      class="flex items-center gap-2 sm:gap-3 h-14 px-3 sm:px-5 border-b border-border bg-surface/90 backdrop-blur flex-shrink-0"
+    >
       <button
         class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm text-muted hover:bg-panel-soft hover:text-ink transition-colors"
         title="Search history"
         @click="drawerOpen = true"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v4h4" /><path d="M12 8v4l3 2" />
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 12a9 9 0 1 0 3-6.7" />
+          <path d="M3 4v4h4" />
+          <path d="M12 8v4l3 2" />
         </svg>
         <span class="hidden md:inline">History</span>
       </button>
@@ -235,7 +219,16 @@ onUnmounted(() => {
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-accent hover:bg-accent-soft transition-colors"
         @click="startNewConversation"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
           <path d="M12 5v14M5 12h14" />
         </svg>
         <span class="hidden sm:inline">New search</span>
@@ -245,8 +238,20 @@ onUnmounted(() => {
         title="Sign out"
         @click="logout"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 17l5-5-5-5" /><path d="M15 12H4" />
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+          <path d="M10 17l5-5-5-5" />
+          <path d="M15 12H4" />
         </svg>
       </button>
     </header>
@@ -262,8 +267,18 @@ onUnmounted(() => {
       <div class="flex items-center justify-between px-4 h-14 border-b border-border">
         <span class="text-sm font-semibold text-ink">Search history</span>
         <button class="p-2 -mr-2 rounded-lg text-muted hover:bg-panel-soft" title="Close" @click="drawerOpen = false">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <line x1="6" y1="6" x2="18" y2="18" /><line x1="6" y1="18" x2="18" y2="6" />
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="6" y1="18" x2="18" y2="6" />
           </svg>
         </button>
       </div>
@@ -273,7 +288,16 @@ onUnmounted(() => {
           class="w-full inline-flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border border-border hover:bg-accent-soft hover:border-accent/30 transition-colors text-accent"
           @click="startNewConversation"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
             <path d="M12 5v14M5 12h14" />
           </svg>
           New search
@@ -302,12 +326,12 @@ onUnmounted(() => {
           </button>
           <p class="mt-1.5 text-xs text-muted leading-relaxed">
             <template v-if="store.rememberOnServer">
-              Saved on our server under your GitHub account for {{ retentionText }}, so you
-              find them in every browser you sign in from. Turning this off deletes them there.
+              Saved on our server under your GitHub account for {{ retentionText }}, so you find them in every browser
+              you sign in from. Turning this off deletes them there.
             </template>
             <template v-else>
-              Off: your history stays in this browser only. On: new searches are also saved
-              on our server under your GitHub account for {{ retentionText }}.
+              Off: your history stays in this browser only. On: new searches are also saved on our server under your
+              GitHub account for {{ retentionText }}.
             </template>
           </p>
           <p v-if="store.rememberError" class="mt-1.5 text-xs text-danger-ink" role="alert">
@@ -318,16 +342,10 @@ onUnmounted(() => {
 
       <div class="flex-1 overflow-y-auto pb-2">
         <p v-if="!historyEntries.length" class="px-4 py-3 text-xs text-muted">No history yet</p>
-        <div
-          v-for="conv in historyEntries"
-          :key="conv.id"
-          class="group relative mx-2 mb-0.5"
-        >
+        <div v-for="conv in historyEntries" :key="conv.id" class="group relative mx-2 mb-0.5">
           <button
             class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex flex-col gap-0.5 pr-7"
-            :class="conv.id === store.currentId
-              ? 'bg-accent-soft text-accent'
-              : 'text-ink hover:bg-panel-soft'"
+            :class="conv.id === store.currentId ? 'bg-accent-soft text-accent' : 'text-ink hover:bg-panel-soft'"
             @click="selectConversation(conv.id)"
           >
             <span class="truncate font-medium leading-snug">{{ conv.title }}</span>
@@ -346,20 +364,16 @@ onUnmounted(() => {
 
     <!-- ── Main ───────────────────────────────────────────────────────── -->
     <main ref="messagesContainer" class="flex-1 overflow-y-auto">
-
       <!-- Start page: the search box in the same column and style as above the
            results, so it stays in place when the first results come in. -->
-      <div
-        v-if="!store.currentMessages.length"
-        class="max-w-6xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16"
-      >
+      <div v-if="!store.currentMessages.length" class="max-w-6xl mx-auto px-4 sm:px-8 pt-12 sm:pt-24 pb-16">
         <div class="max-w-4xl">
           <h1 class="text-[1.875rem] sm:text-[2.375rem] font-semibold tracking-tight leading-[1.15] text-ink">
             Find BIDS datasets on OpenNeuro, using semantic search.
           </h1>
           <p class="mt-4 text-base text-muted max-w-3xl leading-relaxed">
-            Describe the data you need in plain language. The search matches by meaning,
-            not by exact keywords or filter fields, so you can put several criteria in one sentence.
+            Describe the data you need in plain language. The search matches by meaning, not by exact keywords or filter
+            fields, so you can put several criteria in one sentence.
           </p>
 
           <div class="mt-8">
@@ -384,8 +398,19 @@ onUnmounted(() => {
                 class="group text-left flex items-start gap-3 px-4 py-3.5 rounded-xl border border-border bg-panel hover:border-border-input hover:shadow-sm transition"
                 @click="useSuggestion(s.text)"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="mt-0.5 flex-shrink-0 text-muted-soft group-hover:text-ink" aria-hidden="true">
-                  <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  class="mt-0.5 flex-shrink-0 text-muted-soft group-hover:text-ink"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="6.5" />
+                  <path d="m20 20-4.2-4.2" />
                 </svg>
                 <span class="flex flex-col gap-1">
                   <span class="text-[15px] font-medium text-ink leading-snug">{{ s.text }}</span>
@@ -399,12 +424,7 @@ onUnmounted(() => {
 
       <!-- Results thread -->
       <div v-else class="thread max-w-6xl mx-auto px-4 sm:px-8 pt-8 pb-10 flex flex-col">
-        <MessageBubble
-          v-for="msg in store.currentMessages"
-          :key="msg.id"
-          :message="msg"
-          @edit="editQuestion(msg.id)"
-        >
+        <MessageBubble v-for="msg in store.currentMessages" :key="msg.id" :message="msg" @edit="editQuestion(msg.id)">
           <template v-if="msg.id === queryBarId" #query>
             <InputBar
               :ref="setQueryBar"
@@ -420,13 +440,18 @@ onUnmounted(() => {
         </MessageBubble>
       </div>
     </main>
-
   </div>
 
   <CookieBanner />
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

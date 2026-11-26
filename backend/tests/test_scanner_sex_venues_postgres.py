@@ -1,7 +1,7 @@
 """Sex and scanner text venues of the uncertain tier, on a real Postgres.
 
-Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database (see
-tests/test_match_reasons_postgres.py); works in a schema of its own.
+Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database
+(tests/postgres.py); works in a schema of its own.
 """
 
 from __future__ import annotations
@@ -18,9 +18,9 @@ from services.uncertain import scanner as tier_scanner, tier as ut
 
 from tests.test_scanner_sex_venues import (
     FEMALE, GE_OR_PHILIPS, ONLY_FEMALE, PRISMA, STRENGTH_7T, STRENGTH_7T_FMRI, _HEAD)
+from tests.postgres import fresh_schema, needs_postgres, run_statements, scratch_engine
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
-pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+pytestmark = needs_postgres
 
 _SCHEMA_SQL = """
 CREATE TABLE bids_datasets (
@@ -71,19 +71,12 @@ _PROFILES = {"age_profile": "Sleep of infants.", "ge_profile": "GE Healthcare sc
 
 async def _run(check):
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.ext.asyncio import AsyncSession
 
-    schema = f"venues_{uuid.uuid4().hex[:8]}"
-    admin = create_async_engine(DSN)
-    async with admin.begin() as conn:
-        await conn.execute(text(f"CREATE SCHEMA {schema}"))
-    engine = create_async_engine(DSN, connect_args={"server_settings": {"search_path": schema}})
     ids = {key: uuid.uuid4() for key in _DATASETS}
-    try:
+    async with fresh_schema("venues") as engine:
         async with engine.begin() as conn:
-            for statement in _SCHEMA_SQL.split(";"):
-                if statement.strip():
-                    await conn.execute(text(statement))
+            await run_statements(conn, _SCHEMA_SQL)
             for i, (key, (readme, files, sexes)) in enumerate(_DATASETS.items()):
                 await conn.execute(text(
                     "INSERT INTO bids_datasets (id, name, description_text, readme_text, llm_profile) "
@@ -104,11 +97,6 @@ async def _run(check):
                         {"id": ids[key], "p": f"sub-{n}", "sex": sex})
         async with AsyncSession(engine) as session:
             await check(session, ids)
-    finally:
-        await engine.dispose()
-        async with admin.begin() as conn:
-            await conn.execute(text(f"DROP SCHEMA {schema} CASCADE"))
-        await admin.dispose()
 
 
 async def _tiers(session, ids, condition, hoist=True) -> dict:
@@ -209,7 +197,6 @@ def test_evidence_is_evaluated_once_per_dataset():
 @pytest.mark.parametrize("strengths", [[7.0], [1.5], [3.0, 7.0], [9.4, 10.5, 11.7, 14.0]])
 def test_field_strength_pattern_is_the_same_in_python_and_postgres(strengths):
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import create_async_engine
 
     texts = [
         "7T", "7 T", "7-Tesla", "7.0T", "7 tesla", "at 7 T.", "(7T)", "7T/3T", "17T", "0.7T",
@@ -221,8 +208,7 @@ def test_field_strength_pattern_is_the_same_in_python_and_postgres(strengths):
     prefilter = tier_scanner._strength_tsquery(strengths)
 
     async def compare():
-        engine = create_async_engine(DSN)
-        try:
+        async with scratch_engine() as engine:
             async with engine.connect() as conn:
                 for sample in texts:
                     hit = (await conn.execute(text("SELECT CAST(:t AS TEXT) ~ CAST(:p AS TEXT)"),
@@ -233,15 +219,12 @@ def test_field_strength_pattern_is_the_same_in_python_and_postgres(strengths):
                             "SELECT to_tsvector('english', CAST(:t AS TEXT)) @@ "
                             "to_tsquery('english', CAST(:q AS TEXT))"),
                             {"t": f"Data at {sample} here", "q": prefilter})).scalar(), (sample, prefilter)
-        finally:
-            await engine.dispose()
     asyncio.run(compare())
 
 
 @pytest.mark.parametrize("only", [False, True])
 def test_sex_words_in_the_index_never_lose_a_match(only):
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import create_async_engine
 
     from services.uncertain.fields import sex as tier_sex
 
@@ -259,8 +242,7 @@ def test_sex_words_in_the_index_never_lose_a_match(only):
            "to_tsvector('english', translate(CAST(:t AS TEXT), '/', ' ')) AS search_tsv) AS d")
 
     async def compare():
-        engine = create_async_engine(DSN)
-        try:
+        async with scratch_engine() as engine:
             async with engine.connect() as conn:
                 hits = 0
                 for sample in samples:
@@ -270,6 +252,4 @@ def test_sex_words_in_the_index_never_lose_a_match(only):
                     assert with_index == alone, sample
                     hits += alone
                 assert hits == (7 if only else len(samples))
-        finally:
-            await engine.dispose()
     asyncio.run(compare())

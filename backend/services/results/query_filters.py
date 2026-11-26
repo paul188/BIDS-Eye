@@ -17,7 +17,7 @@ text_words: ["parkinson", "parkinsons"]}.
 
 Removing a chip deletes its condition from the query before the uncertain
 tier is applied (services/uncertain/tier.py), so a refined search runs
-without another language-model call (routers/query.py, /query/refine).
+without another language-model call (routers/search.py, /query/refine).
 
 Chip ids are positions ("w0", "w1", "h0") in the query they were read from;
 they are only meaningful together with that query.

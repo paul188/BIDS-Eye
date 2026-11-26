@@ -4,23 +4,21 @@ and services/schema/tables.py.
 
 The statements exist twice because the crawler creates what a fresh database
 lacks, and its image has neither the migrations nor all of backend/. Skipped
-unless BIDSEYE_TEST_PG_DSN names a scratch database
-(test_match_reasons_postgres.py says how to start one).
+unless BIDSEYE_TEST_PG_DSN names a scratch database (tests/postgres.py says
+how to start one).
 """
 
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
-import uuid
 from pathlib import Path
-
-import pytest
 
 from services.fulltext import word_form_counts
 from services.schema import tables
 from services.schema.check import check_schema
+
+from tests.postgres import fresh_schema, needs_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 _CRAWLER = ROOT / "crawlers" / "openneuro-crawler"
@@ -29,8 +27,7 @@ if str(_CRAWLER) not in sys.path:
 
 from remote import dataset_links, openneuro_metadata, paper_store, site_places  # noqa: E402
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
-pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+pytestmark = needs_postgres
 
 # In the order they were written; a later one reads columns of an earlier one.
 MIGRATIONS = ("openneuro_metadata", "institutions", "readme_profiles", "search_tsv",
@@ -55,29 +52,18 @@ _CONSTRAINTS = """
 async def _in_fresh_schema(statements, check):
     """Run *check* on an engine whose schema has BIDS-SQL's tables and *statements*."""
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import create_async_engine
-
     from db.base import Base
     import db.models  # noqa: F401  (fills Base.metadata)
 
-    schema = f"schema_ddl_{uuid.uuid4().hex[:8]}"
-    admin = create_async_engine(DSN)
-    async with admin.begin() as conn:
-        await conn.execute(text(f"CREATE SCHEMA {schema}"))
-    engine = create_async_engine(DSN, connect_args={"server_settings": {"search_path": schema}})
-    try:
+    async with fresh_schema("schema_ddl") as engine:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            schema = (await conn.execute(text("SELECT current_schema()"))).scalar_one()
         async with engine.connect() as conn:
             raw = (await conn.get_raw_connection()).driver_connection
             for statement in statements:
                 await raw.execute(statement)   # a whole file, with its BEGIN and COMMIT
         return await check(engine, schema)
-    finally:
-        await engine.dispose()
-        async with admin.begin() as conn:
-            await conn.execute(text(f"DROP SCHEMA {schema} CASCADE"))
-        await admin.dispose()
 
 
 async def _definitions(engine, schema):

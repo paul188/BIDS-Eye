@@ -1,6 +1,6 @@
 """The search endpoints run generated SQL only behind services/query_guard.py.
 
-Needs the backend image (routers.query imports the db package)."""
+Needs the backend image (routers.search imports the db package)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import asyncio
 
 import pytest
 
-import routers.query as query_router
+import routers.search as query_router
 from services.results import dataset_cards, readme_snippets
 from services import query_guard, search_runner
 from services.stores.translated_queries import CachedQuery, query_cache

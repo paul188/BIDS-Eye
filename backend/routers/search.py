@@ -1,6 +1,6 @@
 """
-routers/query.py
-----------------
+routers/search.py
+-----------------
 The search endpoints. POST /query answers a natural-language question with
 the first page of matching datasets and a ``query_id``; POST /query/page
 fetches further pages of that query. The search itself is services/search.py;
@@ -22,9 +22,9 @@ from schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
 
-router = APIRouter(prefix="/query", tags=["query"])
+search_router = APIRouter(prefix="/query", tags=["query"])
 
-@router.post("", dependencies=[rate_limit(Category.SEARCH)])
+@search_router.post("", dependencies=[rate_limit(Category.SEARCH)])
 async def query_datasets(
     body: QueryRequest,
     session: AsyncSessionDep,
@@ -49,7 +49,7 @@ async def query_datasets(
     return response.model_copy(update={"history_id": history_id}) if history_id else response
 
 
-@router.post("/page", dependencies=[rate_limit(Category.PAGE)])
+@search_router.post("/page", dependencies=[rate_limit(Category.PAGE)])
 async def query_page(
     body: QueryPageRequest,
     session: AsyncSessionDep,

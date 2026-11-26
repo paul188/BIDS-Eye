@@ -40,13 +40,39 @@ function onPageChange(page: number) {
         title="Edit this search"
         @click="emit('edit', message.content)"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="mt-[5px] flex-shrink-0 text-muted" aria-hidden="true">
-          <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          class="mt-[5px] flex-shrink-0 text-muted"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m20 20-4.2-4.2" />
         </svg>
-        <span class="flex-1 text-[1.125rem] sm:text-[1.3125rem] font-medium leading-snug text-ink break-words">{{ message.content }}</span>
-        <span class="mt-[3px] flex-shrink-0 inline-flex items-center gap-1 text-[13px] text-muted opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        <span class="flex-1 text-[1.125rem] sm:text-[1.3125rem] font-medium leading-snug text-ink break-words">{{
+          message.content
+        }}</span>
+        <span
+          class="mt-[3px] flex-shrink-0 inline-flex items-center gap-1 text-[13px] text-muted opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity"
+          aria-hidden="true"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
           </svg>
           Edit
         </span>
@@ -92,7 +118,7 @@ function onPageChange(page: number) {
       <pre
         v-if="showSql && message.sql"
         class="mt-2 text-xs bg-panel-soft border border-border rounded-lg p-3 overflow-x-auto text-ink font-mono whitespace-pre-wrap"
-      >{{ message.sql }}</pre>
+        >{{ message.sql }}</pre>
       <DatasetList
         v-if="message.datasets.length || message.sql || message.removedFilters?.length"
         class="mt-4"
