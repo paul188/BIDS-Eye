@@ -36,18 +36,19 @@ from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
 
-import db.models  # noqa: F401 — registers models with Base.metadata before create_all
+import db.models  # noqa: F401 — registers models with Base.metadata
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
 import request_log
 import worker_db
 from api_security import install_security_middleware
-from db.db import create_all_tables, engine
+from db.db import engine
 from exceptions.handlers import add_error_handlers
 from routers.auth import auth_router, require_auth
 from routers.history import history_router
 from routers.search import search_router
 from services import in_process_crawler, switches
 from services.database_stats.database_stats import database_stats
+from services.schema.revision import check_revision
 from services.translate import optional_columns
 
 log = logging.getLogger(__name__)
@@ -61,9 +62,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Stop when a feature switch is neither true nor false.
     switches.check()
 
-    # Ensure DB schema is up to date
-    await create_all_tables()
-    log.info("Database tables verified.")
+    # Stop when the database is not at the newest migration (migrations/README.md).
+    await check_revision(engine)
 
     # Stop when a migration is missing, then read what the catalogue database
     # holds: counts per column and coded value, and the institution and place
