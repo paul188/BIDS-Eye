@@ -1,6 +1,6 @@
--- The schema as it stood on 2026-11-25, before Alembic: the models of BIDS-SQL
--- and backend/models.py, plus the fourteen crawlers/migrate_add_*.sql files.
--- Written by pg_dump --schema-only from a database built that way.
+-- The schema of the production database on 2026-11-26, before Alembic.
+-- Written by pg_dump --schema-only. Two leftover tables are left out:
+-- query_translations and bids_datasets_refs_backup_20261113.
 -- Run by 0001_baseline.py, one statement at a time.
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
@@ -67,40 +67,33 @@ CREATE TABLE public.bids_datasets (
     id uuid NOT NULL,
     root_path character varying NOT NULL,
     description json NOT NULL,
-    name character varying(100) NOT NULL,
-    bids_version character varying(20) NOT NULL,
-    dataset_type character varying(20) NOT NULL,
+    name character varying(300) NOT NULL,
+    bids_version text NOT NULL,
+    dataset_type character varying(50) NOT NULL,
     parent_id uuid,
-    source_type character varying(20) NOT NULL,
+    source_type character varying(50) NOT NULL,
     accession_id character varying(50),
     remote_url character varying,
-    authors character varying[],
-    license text,
-    doi character varying,
-    paper_references character varying[],
-    funding character varying[],
-    description_text text,
-    validation_status character varying(20),
+    validation_status character varying(50),
     validation_errors json,
     validation_warnings json,
     validator_version character varying(50),
     validated_at timestamp with time zone,
+    authors text[],
+    license text,
+    doi text,
+    paper_references text[],
+    funding text[],
+    description_text text,
+    institutions text[],
     readme_text text,
     dx_status text,
     study_domain text,
     study_design text,
-    species text,
-    study_longitudinal text,
-    senior_author text,
-    publish_date timestamp with time zone,
-    on_brainlife boolean,
-    downloads integer,
-    views integer,
     age_min double precision,
     age_max double precision,
     size_bytes bigint,
     deprecated_reason text,
-    institutions text[],
     llm_profile text,
     llm_conditions text,
     llm_profile_meta jsonb,
@@ -108,12 +101,19 @@ CREATE TABLE public.bids_datasets (
     paper_text text,
     papers_checked_at timestamp with time zone,
     search_tsv_papers tsvector GENERATED ALWAYS AS (((((setweight(to_tsvector('english'::regconfig, translate((COALESCE(name, ''::character varying))::text, '/'::text, ' '::text)), 'A'::"char") || setweight(to_tsvector('english'::regconfig, translate(((((((((COALESCE(dx_status, ''::text) || ' '::text) || COALESCE(study_domain, ''::text)) || ' '::text) || COALESCE(study_design, ''::text)) || ' '::text) || COALESCE(description_text, ''::text)) || ' '::text) || COALESCE(llm_conditions, ''::text)), '/'::text, ' '::text)), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, translate(COALESCE(llm_profile, ''::text), '/'::text, ' '::text)), 'C'::"char")) || setweight(to_tsvector('english'::regconfig, translate(COALESCE(readme_text, ''::text), '/'::text, ' '::text)), 'D'::"char")) || setweight(to_tsvector('english'::regconfig, translate(COALESCE(paper_text, ''::text), '/'::text, ' '::text)), 'D'::"char"))) STORED,
-    search_tsv_exact tsvector GENERATED ALWAYS AS ((((setweight(to_tsvector('simple'::regconfig, translate((COALESCE(name, ''::character varying))::text, '/'::text, ' '::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, translate(((((((((COALESCE(dx_status, ''::text) || ' '::text) || COALESCE(study_domain, ''::text)) || ' '::text) || COALESCE(study_design, ''::text)) || ' '::text) || COALESCE(description_text, ''::text)) || ' '::text) || COALESCE(llm_conditions, ''::text)), '/'::text, ' '::text)), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(llm_profile, ''::text), '/'::text, ' '::text)), 'C'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(readme_text, ''::text), '/'::text, ' '::text)), 'D'::"char"))) STORED,
-    search_tsv_exact_papers tsvector GENERATED ALWAYS AS (((((setweight(to_tsvector('simple'::regconfig, translate((COALESCE(name, ''::character varying))::text, '/'::text, ' '::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, translate(((((((((COALESCE(dx_status, ''::text) || ' '::text) || COALESCE(study_domain, ''::text)) || ' '::text) || COALESCE(study_design, ''::text)) || ' '::text) || COALESCE(description_text, ''::text)) || ' '::text) || COALESCE(llm_conditions, ''::text)), '/'::text, ' '::text)), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(llm_profile, ''::text), '/'::text, ' '::text)), 'C'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(readme_text, ''::text), '/'::text, ' '::text)), 'D'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(paper_text, ''::text), '/'::text, ' '::text)), 'D'::"char"))) STORED,
-    n_subjects integer,
     paper_relation jsonb,
     dataset_summary text,
-    dataset_summary_meta jsonb
+    dataset_summary_meta jsonb,
+    species text,
+    study_longitudinal text,
+    senior_author text,
+    publish_date timestamp with time zone,
+    on_brainlife boolean,
+    downloads integer,
+    views integer,
+    n_subjects integer,
+    search_tsv_exact tsvector GENERATED ALWAYS AS ((((setweight(to_tsvector('simple'::regconfig, translate((COALESCE(name, ''::character varying))::text, '/'::text, ' '::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, translate(((((((((COALESCE(dx_status, ''::text) || ' '::text) || COALESCE(study_domain, ''::text)) || ' '::text) || COALESCE(study_design, ''::text)) || ' '::text) || COALESCE(description_text, ''::text)) || ' '::text) || COALESCE(llm_conditions, ''::text)), '/'::text, ' '::text)), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(llm_profile, ''::text), '/'::text, ' '::text)), 'C'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(readme_text, ''::text), '/'::text, ' '::text)), 'D'::"char"))) STORED,
+    search_tsv_exact_papers tsvector GENERATED ALWAYS AS (((((setweight(to_tsvector('simple'::regconfig, translate((COALESCE(name, ''::character varying))::text, '/'::text, ' '::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, translate(((((((((COALESCE(dx_status, ''::text) || ' '::text) || COALESCE(study_domain, ''::text)) || ' '::text) || COALESCE(study_design, ''::text)) || ' '::text) || COALESCE(description_text, ''::text)) || ' '::text) || COALESCE(llm_conditions, ''::text)), '/'::text, ' '::text)), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(llm_profile, ''::text), '/'::text, ' '::text)), 'C'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(readme_text, ''::text), '/'::text, ' '::text)), 'D'::"char")) || setweight(to_tsvector('simple'::regconfig, translate(COALESCE(paper_text, ''::text), '/'::text, ' '::text)), 'D'::"char"))) STORED
 );
 
 CREATE TABLE public.bids_derivatives (
@@ -147,8 +147,8 @@ CREATE TABLE public.bids_objects (
     task character varying,
     run integer,
     suffix character varying NOT NULL,
-    datatype character varying(64),
-    extension character varying(32),
+    datatype text,
+    extension text,
     other_entities json NOT NULL,
     is_remote boolean NOT NULL,
     dataset_id uuid NOT NULL,
@@ -193,8 +193,8 @@ CREATE TABLE public.bids_participants (
     dataset_id uuid NOT NULL,
     participant_id character varying(50) NOT NULL,
     age double precision,
-    sex character varying(10),
-    handedness character varying(10),
+    sex character varying(50),
+    handedness character varying(50),
     diagnosis character varying(200),
     extra json
 );

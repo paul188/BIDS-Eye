@@ -35,8 +35,15 @@ once:
 
     alembic stamp 0001
 
-Before that, compare its schema with the baseline (`pg_dump --schema-only`
-of both, see `tests/test_migrations_postgres.py` for building a fresh one).
+`0001` is the schema of the production database on 2026-11-26, without two
+leftover tables no code uses (`query_translations`,
+`bids_datasets_refs_backup_20261113`). Alembic leaves those alone. Compare
+any other old database with the baseline first (`pg_dump --schema-only` of
+both).
+
+Thirteen columns are wider in the database than BIDS-SQL's models declare
+(`WIDER_THAN_MODEL` in `services/schema/revision.py`). The database is
+right; the list goes when the models are corrected.
 
 ## A new, empty database
 

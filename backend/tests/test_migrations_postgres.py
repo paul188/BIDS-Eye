@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from services.schema import tables
 from services.schema.check import check_schema
 from services.schema.revision import (SchemaRevisionError, alembic_config, check_revision,
-                                      newest_revisions)
+                                      declared_only, newest_revisions, same_type_when_widened)
 
 DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
 pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
@@ -93,7 +93,8 @@ def test_the_revisions_create_what_the_models_declare(migrated_database: str) ->
 
     def differences(connection):
         context = MigrationContext.configure(
-            connection, opts={"compare_type": True, "include_object": _declared_only})
+            connection, opts={"compare_type": same_type_when_widened,
+                              "include_object": declared_only})
         return compare_metadata(context, Base.metadata)
 
     async def compare(engine):
@@ -117,8 +118,3 @@ def test_the_statements_the_code_still_runs_change_nothing(migrated_database: st
 
     before, after = _on(migrated_database, before_and_after)
     assert after == before
-
-
-def _declared_only(obj, name, type_, reflected, compare_to) -> bool:
-    """As in migrations/env.py: what only the database has is left alone."""
-    return not (reflected and compare_to is None)

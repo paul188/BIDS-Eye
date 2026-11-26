@@ -3,8 +3,9 @@
 Revision: 0001
 After:    nothing
 
-A database that already has these tables is not upgraded to this revision
-but marked as being at it: alembic stamp 0001 (migrations/README.md).
+The production database already has these tables. It is not upgraded to
+this revision but marked as being at it: alembic stamp 0001
+(migrations/README.md).
 """
 
 from __future__ import annotations

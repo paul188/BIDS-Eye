@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import asyncio
 from logging.config import fileConfig
-from typing import Any
 
 from alembic import context
 from sqlalchemy.engine import Connection
@@ -23,6 +22,7 @@ import db.models  # noqa: F401  (BIDS-SQL's tables, into Base.metadata)
 import models     # noqa: F401  (the backend's own tables, into Base.metadata)
 from db.base import Base
 from services.schema import tables  # also adds the extension columns of bids_datasets
+from services.schema.revision import declared_only, same_type_when_widened
 
 config = context.config
 # Not when called from code (config_file_name is set only by the alembic command):
@@ -37,20 +37,9 @@ assert tables.datasets.metadata is Base.metadata
 target_metadata = Base.metadata
 
 
-def _declared_only(obj: Any, name: str | None, type_: str, reflected: bool,
-                   compare_to: Any) -> bool:
-    """Leave out what only the database has.
-
-    The database holds more than the code declares (most indexes, the table
-    bids_dataset_facts). --autogenerate must not propose to drop it; a drop
-    is written by hand.
-    """
-    return not (reflected and compare_to is None)
-
-
 def _run(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata,
-                      include_object=_declared_only, compare_type=True)
+                      include_object=declared_only, compare_type=same_type_when_widened)
     with context.begin_transaction():
         context.run_migrations()
 
