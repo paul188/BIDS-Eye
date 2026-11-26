@@ -40,10 +40,10 @@ def test_startup_stops_on_a_bad_switch_before_anything_else(monkeypatch):
 
     import main
 
-    async def unexpected():
+    async def unexpected(engine):
         raise AssertionError("the database was reached before the switches were checked")
 
-    monkeypatch.setattr(main, "create_all_tables", unexpected)
+    monkeypatch.setattr(main, "check_revision", unexpected)
     monkeypatch.setenv("UNCERTAIN_TIER", "on")
 
     async def start():

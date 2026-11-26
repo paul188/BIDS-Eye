@@ -195,8 +195,6 @@ async def main() -> None:
         level=logging.INFO,
         format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
     )
-    from db.db import create_all_tables
-    await create_all_tables()
     scheduler = create_scheduler()
     scheduler.start()
     log.info("[crawler] Service started. Press Ctrl-C to stop.")
