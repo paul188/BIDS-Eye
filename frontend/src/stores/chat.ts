@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api, RateLimitError, type Dataset, type QueryFilter, type QueryResponse } from '../api'
+import { api, RateLimitError, SearchExpiredError, type Dataset, type QueryFilter, type QueryResponse } from '../api'
+import { useLatestRequest } from '../composables/useLatestRequest'
 
 export interface Message {
   id: number
@@ -41,6 +42,15 @@ let _nextId = 1
 // Keyed by messageId → page number → Dataset[].
 const _pageCache = new Map<number, Map<number, Dataset[]>>()
 
+// One page request per result block: asking for another page drops the one
+// still on its way.
+const _pageRequests = new Map<number, ReturnType<typeof useLatestRequest>>()
+
+function _pageRequest(messageId: number) {
+  if (!_pageRequests.has(messageId)) _pageRequests.set(messageId, useLatestRequest())
+  return _pageRequests.get(messageId)!
+}
+
 const STORAGE_KEY = 'bids-eye-history'
 
 // Searches the server sent stay out of the browser's storage: the server is
@@ -59,11 +69,12 @@ function loadFromStorage(): Conversation[] {
   return []
 }
 
-// A search still loading when the page was closed never gets its answer.
+// A search still loading when the page was closed never gets its answer;
+// a result page still loading then is not loading any more.
 function withoutInterrupted(conv: Conversation): Conversation {
   const messages = conv.messages.map(m => m.loading
     ? { ...m, loading: false, error: true, content: 'This search was interrupted. Run it again to see its results.' }
-    : m)
+    : m.pageLoading ? { ...m, pageLoading: false } : m)
   return { ...conv, messages }
 }
 
@@ -335,12 +346,20 @@ export const useChatStore = defineStore('chat', () => {
       msg = c.messages.find(m => m.id === messageId)
       if (msg) break
     }
-    if (!msg || !msg.queryId || msg.pageLoading) return
-    if (page === msg.page) return
+    if (!msg || !msg.queryId) return
+    const request = _pageRequest(messageId)
+    // Back to the page already shown: only a load on its way is dropped.
+    if (page === msg.page) {
+      request.cancel()
+      msg.pageLoading = false
+      return
+    }
 
     // Cache hit — instant render, then preload the next set of neighbors.
     const cached = _pageCache.get(messageId)?.get(page)
     if (cached) {
+      request.cancel()
+      msg.pageLoading = false
       msg.datasets = cached
       msg.page = page
       _save()
@@ -349,8 +368,12 @@ export const useChatStore = defineStore('chat', () => {
     }
 
     msg.pageLoading = true
+    const { queryId, pageSize = 20 } = msg
     try {
-      const response = await api.queryPage(msg.queryId, page, msg.pageSize ?? 20)
+      const result = await request.run(signal => api.queryPage(queryId, page, pageSize, signal))
+      // A newer call for this result block took over; pageLoading is its to clear.
+      if (result.superseded) return
+      const response = result.value
       _cacheSet(messageId, page, response.datasets)
       msg.datasets = response.datasets
       msg.page = response.page
@@ -360,11 +383,12 @@ export const useChatStore = defineStore('chat', () => {
     } catch (err) {
       // Expired query (410) or transient failure — keep the current page and
       // tell the user to re-run. Non-fatal: don't clobber existing results.
-      msg.content = `Could not load page ${page}: ${err instanceof Error ? err.message : String(err)}. Try running the search again.`
-    } finally {
-      msg.pageLoading = false
-      _save()
+      msg.content = err instanceof SearchExpiredError
+        ? err.message
+        : `Could not load page ${page}: ${err instanceof Error ? err.message : String(err)}. Try running the search again.`
     }
+    msg.pageLoading = false
+    _save()
   }
 
   function clearMessages() {

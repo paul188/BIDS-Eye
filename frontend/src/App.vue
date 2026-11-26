@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useChatStore } from './stores/chat'
 import { api, RateLimitError } from './api'
 import MessageBubble from './components/MessageBubble.vue'
@@ -7,6 +7,7 @@ import LoginView from './components/LoginView.vue'
 import LogoMark from './components/LogoMark.vue'
 import InputBar from './components/InputBar.vue'
 import CookieBanner from './components/CookieBanner.vue'
+import { useRateLimit } from './composables/useRateLimit'
 
 // null until /api/auth/me answers: the session cookie is HttpOnly, so the page
 // can only learn whether it is signed in by asking the backend.
@@ -23,37 +24,7 @@ async function logout() {
 }
 
 // ── Rate limiting ──────────────────────────────────────────────────────────────
-const rateLimitedUntil = ref<string | null>(null)
-// Which limit was hit: 20 searches a day, or too many searches in one minute.
-const rateLimitWindow = ref('')
-const rateLimitCount = ref(0)
-const countdownDisplay = ref('00:00:00')
-let countdownInterval: ReturnType<typeof setInterval> | undefined
-
-function formatCountdown(until: string): string {
-  const ms = new Date(until).getTime() - Date.now()
-  if (ms <= 0) return '00:00:00'
-  const h = Math.floor(ms / 3_600_000)
-  const m = Math.floor((ms % 3_600_000) / 60_000)
-  const s = Math.floor((ms % 60_000) / 1_000)
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-function startCountdown() {
-  clearInterval(countdownInterval)
-  if (!rateLimitedUntil.value) return
-  countdownDisplay.value = formatCountdown(rateLimitedUntil.value)
-  countdownInterval = setInterval(() => {
-    if (!rateLimitedUntil.value) { clearInterval(countdownInterval); return }
-    const remaining = new Date(rateLimitedUntil.value).getTime() - Date.now()
-    if (remaining <= 0) {
-      rateLimitedUntil.value = null
-      clearInterval(countdownInterval)
-    } else {
-      countdownDisplay.value = formatCountdown(rateLimitedUntil.value)
-    }
-  }, 1_000)
-}
+const { rateLimitedUntil, rateLimitWindow, rateLimitCount, countdownDisplay, startRateLimit } = useRateLimit()
 
 const store = useChatStore()
 const input = ref('')
@@ -134,10 +105,7 @@ async function submit() {
   } catch (err) {
     if (err instanceof RateLimitError) {
       input.value = q  // restore so the user doesn't lose their question
-      rateLimitedUntil.value = err.retryAfter
-      rateLimitWindow.value = err.window
-      rateLimitCount.value = err.limit
-      startCountdown()
+      startRateLimit(err)
     }
   }
 }
@@ -199,9 +167,6 @@ onMounted(() => {
     store.forgetServerHistory()
     isLoggedIn.value = false
   })
-})
-onUnmounted(() => {
-  clearInterval(countdownInterval)
 })
 </script>
 

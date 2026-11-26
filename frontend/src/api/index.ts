@@ -126,11 +126,8 @@ export class RateLimitError extends Error {
   }
 }
 
-async function throwIfRateLimited(res: Response): Promise<void> {
-  if (res.status !== 429) return
-  const data = await res.json()
-  throw new RateLimitError(data.detail)
-}
+// The backend no longer knows this search (410): it has to be run again.
+export class SearchExpiredError extends Error {}
 
 const BASE = '/api'
 
@@ -151,70 +148,56 @@ function handleUnauthorized() {
   window.dispatchEvent(new CustomEvent('bids-unauthorized'))
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...csrfHeader() },
-    body: JSON.stringify(body),
-  })
-  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
-  await throwIfRateLimited(res)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json() as Promise<T>
-}
-
-// PUT and DELETE, for the saved searches. The error carries the backend's own
-// sentence (``detail``), which is written for the user. A 204 has no body.
-async function change<T>(method: 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
+// Every call to the backend goes through here. An error carries the backend's
+// own sentence (``detail``), which is written for the user. A 204 has no body.
+async function request<T>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  path: string,
+  options: { body?: unknown; signal?: AbortSignal } = {},
+): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method,
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...csrfHeader() },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: method === 'GET' ? undefined : { 'Content-Type': 'application/json', ...csrfHeader() },
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    signal: options.signal,
   })
   if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
-  await throwIfRateLimited(res)
   if (!res.ok) {
     const detail = await res.json().then(data => data?.detail, () => null)
-    throw new Error(typeof detail === 'string' ? detail : `${res.status} ${res.statusText}`)
+    if (res.status === 429 && detail?.retry_after) throw new RateLimitError(detail)
+    const message = typeof detail === 'string' ? detail : `${res.status} ${res.statusText}`
+    throw res.status === 410 ? new SearchExpiredError(message) : new Error(message)
   }
   return (res.status === 204 ? undefined : await res.json()) as T
 }
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { credentials: 'same-origin' })
-  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized') }
-  await throwIfRateLimited(res)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json() as Promise<T>
-}
-
 export const api = {
   query: (question: string) =>
-    post<QueryResponse>('/query', { question }),
+    request<QueryResponse>('POST', '/query', { body: { question } }),
 
-  queryPage: (queryId: string, page: number, pageSize: number) =>
-    post<QueryResponse>('/query/page', { query_id: queryId, page, page_size: pageSize }),
+  // `signal` lets the caller abort a page it no longer wants.
+  queryPage: (queryId: string, page: number, pageSize: number, signal?: AbortSignal) =>
+    request<QueryResponse>('POST', '/query/page', { body: { query_id: queryId, page, page_size: pageSize }, signal }),
 
   // 401 when not signed in: the frontend cannot read the cookie itself.
   me: () =>
-    get<{ login: string }>('/auth/me'),
+    request<{ login: string }>('GET', '/auth/me'),
 
   logout: () =>
-    post<{ ok: boolean }>('/auth/logout', {}),
+    request<{ ok: boolean }>('POST', '/auth/logout', { body: {} }),
 
   // Saved searches on the server, for a user who turned them on.
   history: () =>
-    get<HistoryList>('/history'),
+    request<HistoryList>('GET', '/history'),
 
   // Off deletes everything saved for the user.
   setHistoryEnabled: (enabled: boolean) =>
-    change<{ enabled: boolean }>('PUT', '/history/enabled', { enabled }),
+    request<{ enabled: boolean }>('PUT', '/history/enabled', { body: { enabled } }),
 
   historyEntry: (id: string) =>
-    get<HistoryEntry>(`/history/${encodeURIComponent(id)}`),
+    request<HistoryEntry>('GET', `/history/${encodeURIComponent(id)}`),
 
   deleteHistoryEntry: (id: string) =>
-    change<void>('DELETE', `/history/${encodeURIComponent(id)}`),
+    request<void>('DELETE', `/history/${encodeURIComponent(id)}`),
 }
