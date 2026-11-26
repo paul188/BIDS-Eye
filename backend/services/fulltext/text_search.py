@@ -45,8 +45,9 @@ those forms on search_tsv_exact, the same vector without stemming
 Always this shape: the stemmed match, then its guard, in one pair of
 parentheses. The stemmed match keeps the other words and the word distances;
 the guard has one group per exact word, the asked word first, with the same
-weight labels. Whatever reads the SQL afterwards treats the pair as one
-condition (is_guarded_pair): the filter chips, the uncertain tier. A
+weight labels. Whatever reads the SQL afterwards finds searches and guards
+with text_searches and treats the pair as one condition (is_guarded_pair):
+the filter chips, the evidence, the uncertain tier. A
 placeholder with several alternatives becomes one pair per alternative that
 has an exact word, ORed with the rest. The word counts count such words in
 their forms, and they are ranked on search_tsv_exact: the RankQuery then has
@@ -58,9 +59,10 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from sql_text import pattern_words
+from sqlglot import exp
 from text_terms import (
     MODE_ALL,
     MODE_ALSO,
@@ -207,9 +209,84 @@ def _exact_column(column: str) -> str:
     return EXACT_PAPER_FTS_COLUMN if column == PAPER_FTS_COLUMN else EXACT_FTS_COLUMN
 
 
-_GUARD_RE = re.compile(
-    rf"^\s*[A-Za-z_]\w*\.{EXACT_FTS_COLUMN}(?:_papers)?\s+@@\s+to_tsquery\(\s*'{EXACT_TS_CONFIG}'",
-    re.IGNORECASE)
+# ── Reading the SQL back ──────────────────────────────────────────────────────
+
+STEMMED_COLUMNS = frozenset({FTS_COLUMN, PAPER_FTS_COLUMN})
+_EXACT_COLUMNS = frozenset({EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN})
+
+
+@dataclass(frozen=True)
+class FoundSearch:
+    """One to_tsquery() in parsed SQL."""
+    query: str                # its query string, the last string argument
+    call: Any                 # the sqlglot node, for where it stands (negation, branch)
+    column: Optional[str]     # the vector it is matched against; None for an expression
+    guard: Optional[FoundSearch] = None   # of a search: the guard written after it
+
+    @property
+    def is_guard(self) -> bool:
+        """It reads the unstemmed vector: word forms of a search, not a search."""
+        return self.column in _EXACT_COLUMNS
+
+
+def _is_tsquery(node: Any) -> bool:
+    if isinstance(node, exp.Anonymous):
+        return node.name.lower() == "to_tsquery"
+    return isinstance(node, exp.Func) and node.sql_name().lower() == "to_tsquery"
+
+
+def _vector(call: Any) -> Optional[exp.Column]:
+    """The column *call* is matched against (d.search_tsv @@ ...), if it is one."""
+    match = call.parent
+    if not isinstance(match, exp.MatchAgainst) or not match.expressions:
+        return None
+    vector = match.expressions[0]
+    return vector if isinstance(vector, exp.Column) else None
+
+
+def _is_guard(call: Any) -> bool:
+    vector = _vector(call)
+    return vector is not None and vector.name.lower() in _EXACT_COLUMNS
+
+
+def _guarded_call(guard: Any) -> Optional[Any]:
+    """The search a guard is written after: "d.search_tsv @@ s AND d.search_tsv_exact @@ guard"."""
+    match = guard.parent
+    pair = match.parent
+    if not isinstance(pair, exp.And) or pair.right is not match:
+        return None
+    left = pair.left
+    while isinstance(left, exp.And):
+        left = left.right
+    if not isinstance(left, exp.MatchAgainst) or not _is_tsquery(left.this) or _is_guard(left.this):
+        return None
+    vector, guard_vector = _vector(left.this), _vector(guard)
+    same_row = vector is not None and guard_vector is not None and vector.table == guard_vector.table
+    return left.this if same_row else None
+
+
+def text_searches(node: Any) -> List[FoundSearch]:
+    """Every to_tsquery() with a query string in the sqlglot *node*, subqueries
+    included, in the order they are written; a search carries its guard."""
+    calls = []
+    for call in node.find_all(exp.Anonymous, exp.Func, bfs=False):
+        if not _is_tsquery(call):
+            continue
+        literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
+        if literals:
+            vector = _vector(call)
+            calls.append((call, literals[-1].this, vector.name.lower() if vector else None))
+    # The guards first, so that each search can carry its own.
+    guards: Dict[int, FoundSearch] = {}
+    guard_of: Dict[int, FoundSearch] = {}
+    for call, query, column in calls:
+        if column in _EXACT_COLUMNS:
+            guards[id(call)] = FoundSearch(query, call, column)
+            searched = _guarded_call(call)
+            if searched is not None:
+                guard_of[id(searched)] = guards[id(call)]
+    return [guards.get(id(call)) or FoundSearch(query, call, column, guard_of.get(id(call)))
+            for call, query, column in calls]
 
 
 def is_guarded_pair(node: Any) -> bool:
@@ -218,11 +295,11 @@ def is_guarded_pair(node: Any) -> bool:
     Code that splits a WHERE clause into its AND conditions keeps such a pair
     whole: it is one text search, not two (module docstring).
     """
-    if type(node).__name__ != "Paren" or type(node.this).__name__ != "And":
+    if not isinstance(node, exp.Paren) or not isinstance(node.this, exp.And):
         return False
-    # An And always has a right side, and .sql() only warns about what the
-    # dialect cannot express (sqlglot's default unsupported_level).
-    return _GUARD_RE.match(node.this.right.sql(dialect="postgres")) is not None
+    right = node.this.right
+    return (isinstance(right, exp.MatchAgainst) and _is_tsquery(right.this)
+            and _is_guard(right.this))
 
 
 def expand_text_search(

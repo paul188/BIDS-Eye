@@ -17,6 +17,7 @@ sqlglot = pytest.importorskip("sqlglot")
 import preprocess as pp  # noqa: E402
 import text_formula as tf  # noqa: E402
 from services.fulltext import text_search, tsquery, vectors, word_frequencies  # noqa: E402
+from services import sql_tree  # noqa: E402
 from services.uncertain import text as tier_text  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 
@@ -165,7 +166,7 @@ def test_an_or_has_no_weaker_form_in_the_tier() -> None:
         papers=False).sql
     assert "to_tsquery('english', 'drawings | art')" in sql
     # Its weaker form is the same search: no single word ("art") on its own.
-    weaker = tier_text.relax_text_condition(sql, "d")
+    weaker = tier_text.relax_text_condition(sql_tree.parse(sql), "d")
     assert weaker is None or "'(drawings | art)'" in weaker.sql()
 
 

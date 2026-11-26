@@ -20,6 +20,7 @@ from sqlglot import exp
 from services import sql_tree
 from services.evidence.base import Source
 from services.evidence.confirmed import Assumed, ConfirmedMatch, FieldValue, Found, ParticipantRows
+from services.fulltext.text_search import text_searches
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN, PAPER_FTS_COLUMN
 from services.schema.tables import COLUMN_TEXT, TABLE_ABOUT, About, TextKind
 
@@ -102,14 +103,9 @@ class EvidenceBranch:
     @property
     def tsqueries(self) -> List[str]:
         """The query strings of its text searches, without the word-form guards."""
-        found = []
-        for call in self.sql_branch.function_calls("to_tsquery"):
-            if self.negated(call):
-                continue
-            literals = [e for e in call.expressions if isinstance(e, exp.Literal) and e.is_string]
-            if literals and literals[0].this.lower() != "simple":   # not a word-form guard
-                found.append(literals[-1].this)
-        return found
+        return [search.query for search in text_searches(self.node)
+                if not search.is_guard and not sql_tree.in_subquery(search.call, self.node)
+                and not self.negated(search.call)]
 
     @property
     def searches_short_fields_only(self) -> bool:

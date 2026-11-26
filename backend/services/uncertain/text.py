@@ -9,12 +9,12 @@ is evidence.probable.WeakerSearch, which writes the SQL and the card text.
 from __future__ import annotations
 
 import re
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, List, Optional, Sequence
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
 from services.evidence.probable import TextSearch, WeakenedSearch, WeakerSearch, Weakening
-from services.uncertain.conditions import LABEL_RE, TSQUERY_RE
+from services.uncertain.conditions import LABEL_RE, is_negated, stemmed_searches
 
 
 _WORD_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -204,44 +204,35 @@ def query_words(query: str) -> List[str]:
     return list(dict.fromkeys(words))
 
 
-def negated_spans(sql: str) -> List[Tuple[int, int]]:
-    from services.fulltext import text_search  # local import: text_search imports heavy modules
-    return text_search.negated_spans(sql)
-
-
-def relax_text_condition(sql: str, alias: str) -> Optional[WeakerSearch]:
-    """The weaker text evidence for a condition on the dataset row *alias*;
-    None when no positive text search of it would change.
+def relax_text_condition(node: Any, alias: str) -> Optional[WeakerSearch]:
+    """The weaker text evidence for the condition *node* (sqlglot) on the
+    dataset row *alias*; None when no positive text search of it would change.
 
     Only the relaxed text searches of the condition count, any one of them:
     the rest of the condition (often an expensive check over the files) has
     already been evaluated for the confirmed state, and when it holds the
     dataset is confirmed anyway.
     """
-    spans = negated_spans(sql)
-    searches: List[WeakenedSearch] = []
-    matches = list(TSQUERY_RE.finditer(sql))
-
-    def negated(match: re.Match) -> bool:
-        return bool(match.group("negated")) or any(s < match.start() < e for s, e in spans)
+    weakened: List[WeakenedSearch] = []
+    searches = stemmed_searches(node)
 
     # A topic search excludes the meanings it does not want:
     #   phrase OR (alternatives AND NOT unwanted meanings).
     # Dropping that NOT is a weaker form too, so a dataset that matches an
     # alternative and also an unwanted meaning moves down instead of out.
-    excluded_words = [w for m in matches if negated(m) for w in query_words(m.group("query"))]
+    excluded_words = [w for s in searches if is_negated(s, node) for w in query_words(s.query)]
     # In a topic condition (a 'near' search or such an exclusion) only the
     # first text search, the user's own phrase, has a weaker form of its
     # words. The alternatives that follow are what the phrase was widened
     # with; loosening them too ("interpersonal & conflict" anywhere) brought
     # back what the phrase was meant to exclude.
-    topic = bool(excluded_words) or any(_DISTANCE_RE.search(m.group("query")) for m in matches)
+    topic = bool(excluded_words) or any(_DISTANCE_RE.search(s.query) for s in searches)
     first = True
-    for match in matches:
-        if negated(match):
+    for search in searches:
+        if is_negated(search, node) or search.column is None:   # None: never, for mypy
             continue
-        query = match.group("query")
-        guard = match.group("guard")
+        query = search.query
+        guard = search.guard.query if search.guard else None
         relaxed = relax_tsquery(query, guard) if (first or not topic) else None
         first = False
         words: Sequence[str]
@@ -261,7 +252,7 @@ def relax_text_condition(sql: str, alias: str) -> Optional[WeakerSearch]:
                 weakening, words = Weakening.README_ONLY, query_words(relaxed)
         # The word forms that were asked for stay with the words that are left.
         kept_guard = guard if relaxed == query else guard_for(relaxed, guard)
-        searches.append(WeakenedSearch(
-            TextSearch(relaxed, kept_guard), match.group("column"),
-            match.group("guard_column") if kept_guard else None, weakening, tuple(words)))
-    return WeakerSearch(tuple(searches), alias=alias) if searches else None
+        weakened.append(WeakenedSearch(
+            TextSearch(relaxed, kept_guard), search.column,
+            search.guard.column if kept_guard and search.guard else None, weakening, tuple(words)))
+    return WeakerSearch(tuple(weakened), alias=alias) if weakened else None

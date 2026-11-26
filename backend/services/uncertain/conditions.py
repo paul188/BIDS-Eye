@@ -4,7 +4,7 @@ services/uncertain/conditions.py
 The pieces every part of the uncertain tier shares: one condition with its
 evidence in the order it counts (ClauseEvidence), the evidence of the whole
 query, which combines its conditions (QueryEvidence), the patterns that read
-a generated text search, and the switch for the 'possible' level. What the
+a generated text search (stemmed_searches), and the switch for the 'possible' level. What the
 tier does: tier.py.
 """
 
@@ -13,10 +13,12 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from services import sql_tree
 from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength
 from services.evidence.confirmed import ConfirmedMatch
+from services.fulltext.text_search import STEMMED_COLUMNS, FoundSearch, text_searches
 from services.switches import Switch
 
 
@@ -48,15 +50,18 @@ def possible_enabled() -> bool:
     return Switch.UNCERTAIN_POSSIBLE.is_on()
 
 
-# A stemmed text search, with the guard that may follow it: the word forms
-# the unstemmed vector must contain (services/fulltext/text_search.py, exact word forms).
-TSQUERY_RE = re.compile(
-    r"(?P<negated>\bNOT\s+)?(?P<alias>\b[A-Za-z_]\w*)\.(?P<column>search_tsv(?:_papers)?)\s+@@\s+"
-    r"TO_TSQUERY\(\s*'english'\s*,\s*'(?P<query>[^']*)'\s*\)"
-    r"(?:\s+AND\s+(?P=alias)\.(?P<guard_column>search_tsv_exact(?:_papers)?)\s+@@\s+"
-    r"TO_TSQUERY\(\s*'simple'\s*,\s*'(?P<guard>[^']*)'\s*\))?",
-    re.IGNORECASE,
-)
+def stemmed_searches(node: Any) -> List[FoundSearch]:
+    """The text searches of the condition *node* on a stemmed vector, in the
+    order they are written, each with its guard: the word forms the unstemmed
+    vector must contain (services/fulltext/text_search.py, exact word forms)."""
+    return [search for search in text_searches(node) if search.column in STEMMED_COLUMNS]
+
+
+def is_negated(search: FoundSearch, node: Any) -> bool:
+    """*search* stands in a negation within the condition *node*."""
+    return sql_tree.under_negation(search.call, node)
+
+
 LABEL_RE = re.compile(r":[AB]+\b")
 
 
