@@ -53,7 +53,7 @@ _WITHOUT_PAPERS = {PAPER_FTS_COLUMN: FTS_COLUMN, EXACT_PAPER_FTS_COLUMN: EXACT_F
 
 _TS_OPERATOR_RE = re.compile(r"<[^>]*>")
 _TS_TOKEN_RE = re.compile(r"[^\s&|!()]+")
-_TS_SHORT_WEIGHTS = {"A", "B"}   # name; description and study fields (migrate_add_search_tsv.sql)
+_TS_SHORT_WEIGHTS = {"A", "B"}   # name; description and study fields (fulltext/vectors.py)
 
 
 def short_fields_only(tsquery: str) -> bool:

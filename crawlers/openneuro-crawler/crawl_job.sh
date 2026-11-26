@@ -71,29 +71,11 @@ psql -h localhost -p $PG_PORT -d postgres -tc "SELECT 1 FROM pg_roles WHERE roln
 psql -h localhost -p $PG_PORT -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='bids_sql'" \
     | grep -q 1 || psql -h localhost -p $PG_PORT -d postgres -c "CREATE DATABASE bids_sql OWNER \"user\";"
 
-# ── Create tables (idempotent) ────────────────────────────────────────────────
-echo "[job] Creating DB tables if needed ..."
-set +e  # allow python failures here (tables may already exist)
-python -c "
-import asyncio
-from db.db import create_all_tables
-asyncio.run(create_all_tables())
-"
-set -e
-
-# ── Schema migrations ─────────────────────────────────────────────────────────
-echo "[job] Applying schema migrations ..."
-psql -h localhost -p $PG_PORT -d bids_sql -U user -c "
-ALTER TABLE bids_datasets ALTER COLUMN name TYPE VARCHAR(300);
-ALTER TABLE bids_datasets ALTER COLUMN bids_version TYPE TEXT;
-ALTER TABLE bids_datasets ALTER COLUMN dataset_type TYPE VARCHAR(50);
-ALTER TABLE bids_datasets ALTER COLUMN source_type TYPE VARCHAR(50);
-ALTER TABLE bids_datasets ALTER COLUMN validation_status TYPE VARCHAR(50);
-ALTER TABLE bids_participants ALTER COLUMN sex TYPE VARCHAR(50);
-ALTER TABLE bids_participants ALTER COLUMN handedness TYPE VARCHAR(50);
-ALTER TABLE bids_objects ALTER COLUMN datatype TYPE TEXT;
-ALTER TABLE bids_objects ALTER COLUMN extension TYPE TEXT;
-" 2>/dev/null || true
+# ── Tables ────────────────────────────────────────────────────────────────────
+# Alembic creates and changes them (backend/migrations/README.md). A database
+# from before Alembic has to be marked once, or this stops: alembic stamp <revision>.
+echo "[job] Bringing the database to the newest migration ..."
+(cd $REPO/backend && alembic upgrade head)
 
 # ── Use curated accessions.yaml (failed retries + not-yet-crawled tail) ──────
 # Current queue is maintained manually from the latest crawl log.

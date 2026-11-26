@@ -1,80 +1,54 @@
 """The Alembic revisions (backend/migrations/) build the database the code
 expects.
 
-Skipped unless BIDSEYE_TEST_PG_DSN names a scratch server
-(test_match_reasons_postgres.py says how to start one); each test builds a
-database of its own there and drops it.
+Skipped unless BIDSEYE_TEST_PG_DSN names a scratch server (tests/postgres.py).
 """
 
 from __future__ import annotations
 
-import asyncio
-import os
-import uuid
-from collections.abc import Iterator
+import sys
+from pathlib import Path
 
 import pytest
-from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from sqlalchemy import text
-from sqlalchemy.engine import make_url
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from services.schema import tables
 from services.schema.check import check_schema
 from services.schema.revision import (SchemaRevisionError, alembic_config, check_revision,
                                       declared_only, newest_revisions)
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
-pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+from tests.postgres import needs_postgres, rolled_back, run_on
 
+_CRAWLER = Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler"
+if str(_CRAWLER) not in sys.path:
+    sys.path.insert(0, str(_CRAWLER))
 
-async def _admin(statement: str) -> None:
-    engine = create_async_engine(DSN, isolation_level="AUTOCOMMIT")
-    try:
-        async with engine.connect() as conn:
-            await conn.execute(text(statement))
-    finally:
-        await engine.dispose()
-
-
-@pytest.fixture
-def empty_database() -> Iterator[str]:
-    """The URL of a new database without tables."""
-    name = f"migrations_{uuid.uuid4().hex[:8]}"
-    asyncio.run(_admin(f"CREATE DATABASE {name}"))
-    try:
-        yield make_url(DSN).set(database=name).render_as_string(hide_password=False)
-    finally:
-        asyncio.run(_admin(f"DROP DATABASE {name} WITH (FORCE)"))
-
-
-@pytest.fixture
-def migrated_database(empty_database: str) -> str:
-    command.upgrade(alembic_config(empty_database), "head")
-    return empty_database
-
-
-def _on(url: str, work):
-    async def run():
-        engine = create_async_engine(url)
-        try:
-            return await work(engine)
-        finally:
-            await engine.dispose()
-    return asyncio.run(run())
+from remote import openneuro_metadata, paper_store  # noqa: E402
 
 
 def test_there_is_one_newest_revision() -> None:
     assert len(newest_revisions()) == 1
 
 
+def test_every_revision_tables_py_names_exists() -> None:
+    named = {info[tables.MIGRATION] for table in tables.MIGRATED_TABLES
+             for info in (table.info, *(column.info for column in table.columns))
+             if tables.MIGRATION in info}
+    revisions = {script.revision for script in
+                 ScriptDirectory.from_config(alembic_config()).walk_revisions()}
+    assert named and named <= revisions
+
+
+@needs_postgres
 def test_an_empty_database_is_refused_at_startup(empty_database: str) -> None:
     with pytest.raises(SchemaRevisionError, match="is at migration none"):
-        _on(empty_database, check_revision)
+        run_on(empty_database, check_revision)
 
 
+@needs_postgres
 def test_a_migrated_database_passes_the_startup_checks(migrated_database: str, monkeypatch) -> None:
     monkeypatch.setenv(tables.EXACT_FLAG, "true")
     monkeypatch.setenv(tables.PAPERS_FLAG, "true")
@@ -84,9 +58,10 @@ def test_a_migrated_database_passes_the_startup_checks(migrated_database: str, m
         async with engine.connect() as conn:
             await check_schema(conn)
 
-    _on(migrated_database, checks)
+    run_on(migrated_database, checks)
 
 
+@needs_postgres
 def test_the_revisions_create_what_the_models_declare(migrated_database: str) -> None:
     """A model changed without a revision shows here."""
     from db.base import Base
@@ -100,20 +75,52 @@ def test_the_revisions_create_what_the_models_declare(migrated_database: str) ->
         async with engine.connect() as conn:
             return await conn.run_sync(differences)
 
-    assert _on(migrated_database, compare) == []
+    assert run_on(migrated_database, compare) == []
 
 
-def test_the_statements_the_code_still_runs_change_nothing(migrated_database: str) -> None:
-    """The crawler and the backend still run CREATE ... IF NOT EXISTS statements
-    of their own. On a migrated database they must find everything in place."""
-    from tests.test_schema_ddl_postgres import CODE, _definitions
+# The expression each search vector of bids_datasets is generated from, as the
+# code writes it. The benchmarks and the tests of the ranking read these.
+VECTORS = {
+    "search_tsv": openneuro_metadata.SEARCH_VECTOR_EXPRESSION,
+    openneuro_metadata.EXACT_SEARCH_COLUMN: openneuro_metadata.EXACT_SEARCH_VECTOR_EXPRESSION,
+    paper_store.PAPER_SEARCH_COLUMN: paper_store.PAPER_SEARCH_VECTOR_EXPRESSION,
+    paper_store.PAPER_EXACT_SEARCH_COLUMN: paper_store.PAPER_EXACT_SEARCH_VECTOR_EXPRESSION,
+}
 
-    async def before_and_after(engine):
-        before = await _definitions(engine, "public")
-        async with engine.begin() as conn:
-            for statement in CODE:
-                await conn.exec_driver_sql(statement)
-        return before, await _definitions(engine, "public")
+_GENERATED_FROM = text(
+    "SELECT generation_expression FROM information_schema.columns "
+    "WHERE table_schema = current_schema() AND table_name = 'bids_datasets' "
+    "AND column_name = :column")
 
-    before, after = _on(migrated_database, before_and_after)
-    assert after == before
+
+def test_the_vectors_here_are_the_ones_tables_py_declares() -> None:
+    assert set(VECTORS) == tables.SEARCH_VECTORS
+
+
+@needs_postgres
+@pytest.mark.parametrize("column", sorted(VECTORS))
+def test_a_search_vector_is_generated_from_the_expression_in_the_code(
+        migrated_database: str, column: str) -> None:
+    """PostgreSQL stores an expression in its own spelling, so the code's one
+    is given to a second column and the two stored spellings are compared."""
+    async def both(conn):
+        await conn.execute(text(
+            f"ALTER TABLE bids_datasets ADD COLUMN probe tsvector "
+            f"GENERATED ALWAYS AS ({VECTORS[column]}) STORED"))
+        return [(await conn.execute(_GENERATED_FROM, {"column": name})).scalar_one()
+                for name in (column, "probe")]
+
+    in_database, from_code = rolled_back(migrated_database, both)
+    assert in_database == from_code
+
+
+@needs_postgres
+def test_the_columns_the_crawler_writes_exist(migrated_database: str) -> None:
+    async def columns(conn):
+        return set((await conn.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = current_schema() AND table_name = 'bids_datasets'"))).scalars())
+
+    written = {"institutions", *openneuro_metadata.METADATA_COLUMNS,
+               *openneuro_metadata.STATUS_COLUMNS}
+    assert written <= rolled_back(migrated_database, columns)

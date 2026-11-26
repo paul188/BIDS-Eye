@@ -1,5 +1,5 @@
 """Word forms: the catalogue's forms per stem and which of them a search keeps
-(RAG/word_forms.py, services/fulltext/word_form_counts.py, crawlers/migrate_add_exact_search.sql)."""
+(RAG/word_forms.py, services/fulltext/word_form_counts.py)."""
 
 from __future__ import annotations
 
@@ -187,40 +187,19 @@ def _squash(sql: str) -> str:
     return re.sub(r"\s+", "", sql)
 
 
-def test_migration_and_crawler_define_the_same_exact_vectors() -> None:
+def test_the_exact_vectors_are_the_stemmed_ones_without_stemming() -> None:
     from remote import openneuro_metadata as meta
     from remote import paper_store
 
-    migration = _squash((ROOT / "crawlers" / "migrate_add_exact_search.sql").read_text())
-    # The exact vectors are the stemmed ones with another configuration, nothing else.
     assert meta.EXACT_SEARCH_VECTOR_EXPRESSION == meta.SEARCH_VECTOR_EXPRESSION.replace(
         "'english'", "'simple'")
     assert "'english'" not in meta.EXACT_SEARCH_VECTOR_EXPRESSION
     assert meta.EXACT_SEARCH_VECTOR_EXPRESSION.count("'simple'::regconfig") == 4
     assert paper_store.PAPER_EXACT_SEARCH_VECTOR_EXPRESSION == (
         paper_store.PAPER_SEARCH_VECTOR_EXPRESSION.replace("'english'", "'simple'"))
-    assert _squash(meta.EXACT_SEARCH_VECTOR_EXPRESSION) in migration
-    assert _squash(paper_store.PAPER_EXACT_SEARCH_VECTOR_EXPRESSION) in migration
-
-    column, index = meta.exact_search_vector_sql()
-    assert "ADD COLUMN IF NOT EXISTS search_tsv_exact tsvector" in column
-    assert "CREATE INDEX IF NOT EXISTS idx_bids_datasets_search_tsv_exact " in index
-    assert "idx_bids_datasets_search_tsv_exact" in migration
-    assert "idx_bids_datasets_search_tsv_exact_papers" in migration
 
 
-def test_migration_file_matches_the_word_forms_table() -> None:
-    sql = (ROOT / "crawlers" / "migrate_add_exact_search.sql").read_text()
-    code = " ".join(store.TABLES_SQL)
-
-    def columns(text_: str) -> set:
-        body = text_[text_.index("CREATE TABLE IF NOT EXISTS bids_word_forms"):]
-        body = body[:body.index(")")]
-        return set(re.findall(r"^\s+(\w+)\s+[A-Z]", body, re.M))
-
-    assert columns(code) == columns(sql) == {"form", "stem", "ndoc"}
-    for statement in store.TABLES_SQL:
-        assert _squash(statement) in _squash(sql)
+def test_the_word_forms_are_read_from_the_exact_vector() -> None:
     assert store.SOURCE_COLUMN in store._REFRESH_SQL and "ts_stat" in store._REFRESH_SQL
 
 

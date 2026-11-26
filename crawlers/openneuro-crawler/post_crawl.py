@@ -33,7 +33,7 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 the whole catalogue, not only the indexed datasets.
   4. vacuum     VACUUM (ANALYZE) of the file table, bids_objects. A search
                 counts subjects from an index alone
-                (crawlers/migrate_add_object_indexes.sql); for the rows a
+                (backend/migrations/README.md); for the rows a
                 crawl wrote that only works again after a vacuum, and
                 autovacuum starts only once a fifth of the table changed.
 
@@ -97,7 +97,6 @@ async def lookup_papers(engine, accessions: Sequence[str]) -> Dict[str, int]:
     from remote import paper_store
 
     async with engine.begin() as conn:
-        await paper_store.ensure_tables(conn)
         due = await _needs_paper_check(conn, accessions)
     if not due:
         return {}
@@ -125,11 +124,8 @@ def _descriptions_available() -> bool:
 
 async def describe(engine, accessions: Sequence[str]) -> Dict[str, int]:
     """Step 2. Returns the counts of dataset_description.run."""
-    from remote import paper_store
     from services.indexing import dataset_description
 
-    async with engine.begin() as conn:
-        await paper_store.ensure_tables(conn)
     return dict(await dataset_description.run(engine, list(accessions)))
 
 
