@@ -1,6 +1,6 @@
-# Clause pilot: 84 drafted items
+# Clause pilot: 108 drafted items
 
-Does the search separate a request into the right logical clauses? These 84
+Does the search separate a request into the right logical clauses? These 108
 items are the first gold for that question. Why and how: `reports/Logical
 clause separation datasets.md` (not in git).
 
@@ -12,7 +12,7 @@ not report scores on them before that.
 
 | File | What |
 |---|---|
-| `own.yaml` | 44 requests in our domain. 14 are rewritten from forum requests, selection rules or a live search (`source`), 30 are invented |
+| `own.yaml` | 68 requests in our domain. 14 are rewritten from forum requests, selection rules or a live search (`source`), 54 are invented. own-45 to own-68 (blocks `hard_*`) are harder: background stories, mixed AND/OR, long negations, self-corrections, separators, spoken or misspelled |
 | `chia_items.yaml` | 40 lines of the Chia corpus (Kury et al. 2020, CC BY 4.0) with the logic corrected by hand. A stress set: the lines are no search requests |
 | `build.py` | Checks spans, trees and readings; writes the files below |
 | `pilot.jsonl` | All items, with the full Chia line and its original relations |
@@ -62,10 +62,12 @@ Confirmed by the owner on 2026-11-25:
 
 ## Limits
 
-Own items: 23 count for the headline (one reading, and the plan can hold it),
-10 are ambiguous, 11 have no reading the plan can hold. Four items (own-41 to
-own-44) were added to replace those that left the headline. 23 items give wide
-intervals: 18 of 23 right is 58 to 90% (Wilson, 95%).
+Own items: 47 count for the headline (one reading, and the plan can hold it):
+23 of the first 44 and all 24 harder ones. 10 are ambiguous, 11 have no reading
+the plan can hold. own-41 to own-44 replaced items that left the headline. The
+harder requests were written before the planner saw them and none was changed
+afterwards, but by a writer who had seen its earlier plans; nobody has reviewed
+them. Intervals stay wide: 18 of 24 right is 55 to 88% (Wilson, 95%).
 
 ## Scoring
 
