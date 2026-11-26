@@ -19,7 +19,10 @@ from sqlglot import exp
 
 from services import sql_tree
 from services.evidence.base import Source
-from services.evidence.confirmed import AssumedEvidence, ConfirmedEvidence, FieldValueEvidence, FoundEvidence, ParticipantRowsEvidence
+from services.evidence.confirmed import (ConfirmedByDefaultEvidence, ConfirmedEvidence,
+                                         ConfirmedInDatasetColumnEvidence, ConfirmedInDatasetTextEvidence,
+                                         ConfirmedInFileTablesEvidence, ConfirmedInPaperEvidence,
+                                         ConfirmedInParticipantListEvidence)
 from services.fulltext.text_search import Clause
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN, PAPER_FTS_COLUMN
 from services.schema.tables import COLUMN_TEXT, TABLE_ABOUT, About, TextKind
@@ -110,13 +113,14 @@ def classify_branch(branch: EvidenceBranch) -> Optional[ConfirmedEvidence]:
     """
     if branch.reads_a_join:
         return None
-    found = _from_text(branch) or _from_subquery(branch) or _from_fields(branch.sql_branch)
+    found = (_from_dataset_text(branch) or _from_subquery(branch)
+             or _from_dataset_columns(branch.sql_branch))
     if found is None and not branch.sql_branch.has_negation():
         log.warning("No kind of evidence for the branch: %s", sql_tree.without_literals(branch.sql_branch.node))
     return found
 
 
-def _from_text(branch: EvidenceBranch) -> Optional[ConfirmedEvidence]:
+def _from_dataset_text(branch: EvidenceBranch) -> Optional[ConfirmedEvidence]:
     """The dataset's own text names the value."""
     sql_branch = branch.sql_branch
     sources = []
@@ -128,10 +132,10 @@ def _from_text(branch: EvidenceBranch) -> Optional[ConfirmedEvidence]:
         if any(isinstance(a, sql_tree.TEXT_MATCHES) for a in sql_tree.ancestors(column, sql_branch.node)):
             sources.append(source)
     if Source.TEXT in sources and branch.searches_short_fields_only:
-        return FoundEvidence(sql_branch.sql, source=Source.SHORT_TEXT)
+        return ConfirmedInDatasetTextEvidence(sql_branch.sql, source=Source.SHORT_TEXT)
     for source in (Source.TEXT, Source.SHORT_TEXT, Source.README):
         if source in sources:
-            return FoundEvidence(sql_branch.sql, source=source)
+            return ConfirmedInDatasetTextEvidence(sql_branch.sql, source=source)
     return None
 
 
@@ -145,8 +149,10 @@ def _from_subquery(branch: EvidenceBranch) -> Optional[ConfirmedEvidence]:
         sources = [_TABLE_SOURCES[t] for t in tables if t in _TABLE_SOURCES]
         if not sources:
             continue
+        if sources[0] == Source.PAPERS:
+            return ConfirmedInPaperEvidence(sql_branch.sql)
         if sources[0] != Source.PARTICIPANTS:
-            return FoundEvidence(sql_branch.sql, source=sources[0])
+            return ConfirmedInFileTablesEvidence(sql_branch.sql, source=sources[0])
         # One row is one participant only while the SELECT reads the
         # participant list alone (unique per dataset and participant_id): a
         # join would count a participant once per joined row.
@@ -156,26 +162,26 @@ def _from_subquery(branch: EvidenceBranch) -> Optional[ConfirmedEvidence]:
         where = select.args.get("where")
         columns = list(where.find_all(exp.Column)) if where is not None else []
         age = next((c for c in columns if c.name.lower() == "age"), None)
-        return ParticipantRowsEvidence(sql_branch.sql, participant_rows=select if countable else None,
+        return ConfirmedInParticipantListEvidence(sql_branch.sql, participant_rows=select if countable else None,
                                age_column=age,
                                reads_diagnosis=any(c.name.lower() == "diagnosis" for c in columns))
     return None
 
 
-def _from_fields(sql_branch: sql_tree.SqlBranch) -> Optional[ConfirmedEvidence]:
+def _from_dataset_columns(sql_branch: sql_tree.SqlBranch) -> Optional[ConfirmedEvidence]:
     """The dataset's own columns hold the value, or a default does."""
     # A negated text search left here only says when the branch applies
     # (the species default: no label AND no animal named); its vector is no value.
     names = tuple(dict.fromkeys(c.name.lower() for c in sql_branch.outer_columns
                                 if c.name.lower() != "id" and c.name.lower() not in _TEXT_COLUMNS))
-    if len(names) == 1 and names[0] in AssumedEvidence.TEXTS and any(
+    if len(names) == 1 and names[0] in ConfirmedByDefaultEvidence.TEXTS and any(
             isinstance(node.expression, exp.Null) and not sql_branch.negated(node)
             for node in sql_branch.node.find_all(exp.Is)):
-        return AssumedEvidence(sql_branch.sql, columns=names)
+        return ConfirmedByDefaultEvidence(sql_branch.sql, columns=names)
     if {"age_min", "age_max"} & set(names):
         # Either bound alone ("d.age_min < 3") is shown as the whole range.
         names = tuple(dict.fromkeys(("age_min", "age_max") + names))
-    return FieldValueEvidence(sql_branch.sql, columns=names) if names else None
+    return ConfirmedInDatasetColumnEvidence(sql_branch.sql, columns=names) if names else None
 
 
 def branch_evidence(branch: EvidenceBranch) -> Tuple[ConfirmedEvidence, ...]:
@@ -191,7 +197,7 @@ def branch_evidence(branch: EvidenceBranch) -> Tuple[ConfirmedEvidence, ...]:
     if from_dataset is None or branch.searches_short_fields_only:
         return (found,)   # paper text has the lowest weight: such a search never reaches it
     only_paper = f"({branch.sql_branch.sql}) AND NOT ({from_dataset.sql_branch.sql})"
-    return (found, FoundEvidence(only_paper, source=Source.PAPERS))
+    return (found, ConfirmedInPaperEvidence(only_paper))
 
 
 def confirming_evidence(clause: Clause, alias: str) -> Tuple[ConfirmedEvidence, ...]:

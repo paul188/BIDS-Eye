@@ -12,7 +12,8 @@ from criteria import age_condition, species_condition
 from schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
 from services import sql_tree
-from services.evidence.confirmed import AssumedEvidence, FieldValueEvidence, FoundEvidence, ParticipantRowsEvidence, age_span
+from services.evidence.confirmed import (ConfirmedByDefaultEvidence, ConfirmedEvidence, ConfirmedInDatasetColumnEvidence,
+                                         ConfirmedInFileTablesEvidence, age_span)
 from services.evidence.base import Source
 from services.evidence import branches
 from services.results import match_reasons as mr
@@ -117,10 +118,10 @@ def test_a_branch_on_the_outer_join_is_left_out():
     ("NOT EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
      "AND p2.diagnosis = 'x')", []),
     ("NOT d.id IN (SELECT dataset_id FROM bids_derivatives)", []),
-    ("d.species IS NULL", [AssumedEvidence]),
-    ("d.species IS NOT NULL", [FieldValueEvidence]),   # sqlglot: NOT (species IS NULL)
-    ("NOT d.species = 'Mouse'", [FieldValueEvidence]),
-    ("d.on_brainlife", [FieldValueEvidence]),          # the branch is the column itself
+    ("d.species IS NULL", [ConfirmedByDefaultEvidence]),
+    ("d.species IS NOT NULL", [ConfirmedInDatasetColumnEvidence]),   # sqlglot: NOT (species IS NULL)
+    ("NOT d.species = 'Mouse'", [ConfirmedInDatasetColumnEvidence]),
+    ("d.on_brainlife", [ConfirmedInDatasetColumnEvidence]),          # the branch is the column itself
 ])
 def test_a_branch_that_is_a_not_confirms_nothing_it_denies(branch, kinds):
     node = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {branch}",
@@ -163,6 +164,11 @@ def _denials():
                     yield pytest.param(sql.replace(operator, form), id=f"{shape}, {how}")
 
 
+def _confirms(way) -> bool:
+    """Not a bare column value: the denied shapes still read one."""
+    return isinstance(way, ConfirmedEvidence) and not isinstance(way, ConfirmedInDatasetColumnEvidence)
+
+
 def _ways(condition: str) -> tuple:
     tree = sql_tree.parse_select(f"SELECT 1 FROM bids_datasets AS d WHERE {condition}")
     return branches.confirming_evidence(text_search.Clause.read(tree.args["where"].this), "d")
@@ -170,12 +176,12 @@ def _ways(condition: str) -> tuple:
 
 @pytest.mark.parametrize("condition", _POSITIVE.values(), ids=_POSITIVE)
 def test_each_shape_confirms(condition):
-    assert any(isinstance(way, (FoundEvidence, ParticipantRowsEvidence, AssumedEvidence)) for way in _ways(condition))
+    assert any(_confirms(way) for way in _ways(condition))
 
 
 @pytest.mark.parametrize("condition", _denials())
 def test_a_denied_shape_confirms_nothing(condition):
-    assert not [way for way in _ways(condition) if isinstance(way, (FoundEvidence, ParticipantRowsEvidence, AssumedEvidence))]
+    assert not [way for way in _ways(condition) if _confirms(way)]
 
 
 def test_an_empty_text_column_names_nothing():
@@ -323,11 +329,11 @@ def test_reason_for_the_dataset_age_range_appears_once():
 
 def test_a_kind_without_a_card_text_cannot_be_built():
     with pytest.raises(ValueError):
-        FoundEvidence("TRUE", source=Source.PARTICIPANTS)
+        ConfirmedInFileTablesEvidence("TRUE", source=Source.PARTICIPANTS)
     with pytest.raises(ValueError):
-        AssumedEvidence("TRUE", columns=("age_min",))
+        ConfirmedByDefaultEvidence("TRUE", columns=("age_min",))
     with pytest.raises(ValueError):
-        AssumedEvidence("TRUE")
+        ConfirmedByDefaultEvidence("TRUE")
 
 
 def test_participants_joined_to_another_table_are_not_counted():

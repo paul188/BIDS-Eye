@@ -7,7 +7,7 @@ import pytest
 import sqlglot
 
 import text_evidence
-from services.evidence.probable import NamedInOwnTextEvidence
+from services.evidence.probable import ProbableNamedInTextEvidence
 from services.fulltext.text_search import Clause
 from services.uncertain import classify as tier_classify, fields
 from services.uncertain.fields.base import SoftField, participant_rows_record
@@ -35,7 +35,7 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
                  "AND p2.handedness = 'left_handed')"
     assert _classify(handedness) is None   # a hard filter today
 
-    class LeftHandedNamed(NamedInOwnTextEvidence):
+    class LeftHandedNamed(ProbableNamedInTextEvidence):
         def sql(self):
             return f"{self.alias}.readme_text ~* 'left-handed'"
 
@@ -60,7 +60,7 @@ def test_a_new_field_needs_only_its_description(monkeypatch):
 
 
 def test_text_evidence_must_say_why():
-    class NoReason(NamedInOwnTextEvidence):
+    class NoReason(ProbableNamedInTextEvidence):
         def sql(self):
             return "TRUE"
 

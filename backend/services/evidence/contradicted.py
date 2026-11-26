@@ -14,7 +14,7 @@ from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
-class OtherValuesRecordedEvidence(PieceOfEvidence):
+class ContradictedByRecordedValuesEvidence(PieceOfEvidence):
     """Contradicted: the dataset records the field with values that do not
     fit the condition.
 

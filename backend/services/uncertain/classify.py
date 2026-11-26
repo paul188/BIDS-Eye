@@ -26,9 +26,9 @@ from services.uncertain.text import query_words, relax_text_condition
 from services.evidence.base import PieceOfEvidence, Source, Strength
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import ConfirmedEvidence
-from services.evidence.contradicted import OtherValuesRecordedEvidence
-from services.evidence.possible import NotRecordedEvidence
-from services.evidence.probable import CoreOfTermEvidence, PaperOnlyEvidence, TextSearch
+from services.evidence.contradicted import ContradictedByRecordedValuesEvidence
+from services.evidence.possible import PossibleNotRecordedEvidence
+from services.evidence.probable import ProbableCoreOfTermEvidence, ProbablePaperOnlyEvidence, TextSearch
 from services.schema.tables import SEARCH_VECTORS
 from services.uncertain import fields
 from services.uncertain.scanner import sidecar
@@ -189,7 +189,7 @@ def loose_term(clause: Clause, alias: str, papers: bool = False) -> Optional[Cla
                           confirming=confirming_evidence(left, alias), evidence=(
         # The core only in a paper: the rows the core's own paper form had before.
         *_paper_only(right, alias, papers),
-        CoreOfTermEvidence(core, missing=tuple(sorted(words - core_words))),
+        ProbableCoreOfTermEvidence(core, missing=tuple(sorted(words - core_words))),
     ))
 
 
@@ -197,7 +197,7 @@ def _paper_only(clause: Clause, alias: str, papers: bool) -> Tuple[PieceOfEviden
     """The evidence that the text searches of the condition *clause* match only
     in a paper; none without paper text or without a positive text search."""
     searches = paper_searches(clause) if papers else ()
-    return (PaperOnlyEvidence(searches, alias=alias),) if searches else ()
+    return (ProbablePaperOnlyEvidence(searches, alias=alias),) if searches else ()
 
 
 def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[ClauseEvidence]:
@@ -239,8 +239,8 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
             weaker = paper + weaker
-        record = OtherValuesRecordedEvidence(field.recorded(alias))
-        not_recorded = NotRecordedEvidence(field.label, field.unrecorded_score)
+        record = ContradictedByRecordedValuesEvidence(field.recorded(alias))
+        not_recorded = PossibleNotRecordedEvidence(field.label, field.unrecorded_score)
         evidence = ((*weaker, record, not_recorded) if field.text_beats_recorded
                     else (record, *weaker, not_recorded))
         return ClauseEvidence(kind=kind, sql=sql, evidence=evidence, confirming=confirming)
@@ -251,7 +251,7 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
 
 
 @dataclass(frozen=True)
-class PatientsNotCountedEvidence(PieceOfEvidence):
+class ProbablePatientsNotCountedEvidence(PieceOfEvidence):
     """Probable, for "at least *minimum* participants with one of *codes*":
     the dataset does not record who has the diagnosis, and it has enough
     participants to hold them."""
@@ -296,5 +296,5 @@ def _patient_count(sql: str, alias: str,
     except ImportError:
         pass
     return ClauseEvidence(kind="patient_count", sql=sql, confirming=confirming, evidence=(
-        PatientsNotCountedEvidence(tuple(codes), minimum, stored, alias=alias),
+        ProbablePatientsNotCountedEvidence(tuple(codes), minimum, stored, alias=alias),
     ))

@@ -14,8 +14,8 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
-from services.evidence.possible import NotRecordedEvidence
-from services.evidence.probable import NamedInOwnTextEvidence
+from services.evidence.possible import PossibleNotRecordedEvidence
+from services.evidence.probable import ProbableNamedInTextEvidence
 from services.uncertain.conditions import own_text_matches
 from services.uncertain.fields.base import SoftField, participant_rows_record
 import text_evidence  # RAG/ is on the path wherever the backend runs
@@ -71,7 +71,7 @@ def tsquery_for_words(words: Sequence[str]) -> str:
 
 
 @dataclass(frozen=True)
-class AgeGroupNamedEvidence(NamedInOwnTextEvidence):
+class ProbableAgeGroupNamedEvidence(ProbableNamedInTextEvidence):
     """Probable, for age: ages not recorded, and the dataset's own text names
     the age group (one of *words*)."""
     words: Tuple[str, ...] = ()
@@ -85,14 +85,14 @@ class AgeGroupNamedEvidence(NamedInOwnTextEvidence):
         return 0.53
 
     def reason(self) -> str:
-        return f"{NotRecordedEvidence(LABEL).reason()}; the title, description or README names the age group"
+        return f"{PossibleNotRecordedEvidence(LABEL).reason()}; the title, description or README names the age group"
 
 
-def age_group_named(node, alias: str) -> Optional[AgeGroupNamedEvidence]:
+def age_group_named(node, alias: str) -> Optional[ProbableAgeGroupNamedEvidence]:
     """The age group an age condition asks for, as a text would name it; None
     if the asked range fits no group."""
     group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
-    return AgeGroupNamedEvidence(words=tuple(group_words), alias=alias) if group_words else None
+    return ProbableAgeGroupNamedEvidence(words=tuple(group_words), alias=alias) if group_words else None
 
 
 def _recorded(alias: str) -> str:

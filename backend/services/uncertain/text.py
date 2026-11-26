@@ -3,7 +3,7 @@ services/uncertain/text.py
 ------------------------------
 Weaker forms of a text search, the 'probable' state of a text condition:
 some of its words (relax_tsquery, relax_near), the words apart. The result
-is evidence.probable.WeakerSearchEvidence, which writes the SQL and the card text.
+is evidence.probable.ProbableWeakerSearchEvidence, which writes the SQL and the card text.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from typing import List, Optional, Sequence
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
-from services.evidence.probable import TextSearch, WeakenedSearch, WeakerSearchEvidence, Weakening
+from services.evidence.probable import TextSearch, WeakenedSearch, ProbableWeakerSearchEvidence, Weakening
 from services.fulltext.text_search import Clause
 from services.uncertain.conditions import LABEL_RE
 
@@ -205,7 +205,7 @@ def query_words(query: str) -> List[str]:
     return list(dict.fromkeys(words))
 
 
-def relax_text_condition(clause: Clause, alias: str) -> Optional[WeakerSearchEvidence]:
+def relax_text_condition(clause: Clause, alias: str) -> Optional[ProbableWeakerSearchEvidence]:
     """The weaker text evidence for the condition *clause* on the dataset row
     *alias*; None when no positive text search of it would change.
 
@@ -256,4 +256,4 @@ def relax_text_condition(clause: Clause, alias: str) -> Optional[WeakerSearchEvi
         weakened.append(WeakenedSearch(
             TextSearch(relaxed, kept_guard), search.column,
             search.guard.column if kept_guard and search.guard else None, weakening, tuple(words)))
-    return WeakerSearchEvidence(tuple(weakened), alias=alias) if weakened else None
+    return ProbableWeakerSearchEvidence(tuple(weakened), alias=alias) if weakened else None

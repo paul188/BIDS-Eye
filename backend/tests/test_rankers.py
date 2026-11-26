@@ -113,13 +113,13 @@ AGES = ("(d.age_max < 3 OR EXISTS(SELECT 1 FROM bids_participants AS p2 "
 
 def test_a_piece_of_evidence_has_a_score_measured_or_by_its_strength() -> None:
     from services.evidence.base import DEFAULT_SCORES, Strength
-    from services.evidence.possible import NotRecordedEvidence
-    from services.evidence.probable import PaperOnlyEvidence, TextSearch
+    from services.evidence.possible import PossibleNotRecordedEvidence
+    from services.evidence.probable import ProbablePaperOnlyEvidence, TextSearch
 
     assert DEFAULT_SCORES[Strength.CONFIRMED] == 1 and DEFAULT_SCORES[Strength.CONTRADICTED] == 0
-    assert PaperOnlyEvidence((TextSearch("x"),), alias="d").score() == DEFAULT_SCORES[Strength.PROBABLE]
-    assert NotRecordedEvidence("participant sex").score() == DEFAULT_SCORES[Strength.POSSIBLE]
-    assert NotRecordedEvidence("ages", 0.33).score() == 0.33
+    assert ProbablePaperOnlyEvidence((TextSearch("x"),), alias="d").score() == DEFAULT_SCORES[Strength.PROBABLE]
+    assert PossibleNotRecordedEvidence("participant sex").score() == DEFAULT_SCORES[Strength.POSSIBLE]
+    assert PossibleNotRecordedEvidence("ages", 0.33).score() == 0.33
 
 
 def test_the_query_score_multiplies_the_scores_of_its_clauses() -> None:

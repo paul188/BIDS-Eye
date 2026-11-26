@@ -73,33 +73,47 @@ class ConfirmedEvidence(PieceOfEvidence):
 
 
 @dataclass(frozen=True)
-class FoundEvidence(ConfirmedEvidence):
-    """Confirmed, card names only the source: "named in the README",
-    "in the dataset's files"."""
-
-    # What the card says, by the source.
-    TEXTS: ClassVar[Dict[Source, str]] = {
-        Source.FILES: "in the dataset's files",
-        Source.DERIVATIVES: "in its derivatives",
-        Source.SITES: "at a listed site",
-        Source.PAPERS: "named in a linked paper",
-        Source.TEXT: "named in the README or description",
-        Source.SHORT_TEXT: "named in the title or description",
-        Source.README: "named in the README",
-        # An excluded diagnosis the dataset passes because it records none.
-        Source.ASSUMED_ABSENT: "no diagnosis recorded, assumed absent",
-    }
+class _ConfirmedWhereFound(ConfirmedEvidence):
+    """A confirmed kind whose card says only where the value was found."""
+    TEXTS: ClassVar[Dict[Source, str]] = {}   # card text by source
 
     def __post_init__(self) -> None:
         if self.source not in self.TEXTS:
-            raise ValueError(f"no card text for a match found in {self.source}")
+            raise ValueError(f"{type(self).__name__} has no card text for {self.source}")
 
     def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
         return self.TEXTS[self.source]
 
 
 @dataclass(frozen=True)
-class ParticipantRowsEvidence(ConfirmedEvidence):
+class ConfirmedInDatasetTextEvidence(_ConfirmedWhereFound):
+    """Confirmed by a text search in the dataset's name, description or README."""
+    TEXTS: ClassVar[Dict[Source, str]] = {
+        Source.TEXT: "named in the README or description",
+        Source.SHORT_TEXT: "named in the title or description",
+        Source.README: "named in the README",
+    }
+
+
+@dataclass(frozen=True)
+class ConfirmedInPaperEvidence(_ConfirmedWhereFound):
+    """Confirmed by the text of a paper the dataset names."""
+    source: Source = field(default=Source.PAPERS, kw_only=True)
+    TEXTS: ClassVar[Dict[Source, str]] = {Source.PAPERS: "named in a linked paper"}
+
+
+@dataclass(frozen=True)
+class ConfirmedInFileTablesEvidence(_ConfirmedWhereFound):
+    """Confirmed by rows of the dataset's files, derivatives or sites."""
+    TEXTS: ClassVar[Dict[Source, str]] = {
+        Source.FILES: "in the dataset's files",
+        Source.DERIVATIVES: "in its derivatives",
+        Source.SITES: "at a listed site",
+    }
+
+
+@dataclass(frozen=True)
+class ConfirmedInParticipantListEvidence(ConfirmedEvidence):
     """Confirmed by rows of the participant list; card counts them: "12 of
     40 participants aged 4–23 months"."""
     # The participant rows the evidence holds for, as a SELECT whose
@@ -142,7 +156,7 @@ class ParticipantRowsEvidence(ConfirmedEvidence):
 
 
 @dataclass(frozen=True)
-class FieldValueEvidence(ConfirmedEvidence):
+class ConfirmedInDatasetColumnEvidence(ConfirmedEvidence):
     """Confirmed by the dataset's own columns; card shows the value:
     "dataset age range 6–11 years", "species label “mouse”"."""
     columns: Tuple[str, ...] = ()
@@ -181,20 +195,27 @@ class FieldValueEvidence(ConfirmedEvidence):
 
 
 @dataclass(frozen=True)
-class AssumedEvidence(ConfirmedEvidence):
-    """Confirmed by a default: the column is empty and its default fits:
-    "no species label, assumed human" (defaults: RAG/criteria.py)."""
+class ConfirmedByDefaultEvidence(ConfirmedEvidence):
+    """Confirmed by a default: an empty column whose default fits ("no species
+    label, assumed human"; defaults: RAG/criteria.py), or an excluded
+    diagnosis the dataset records none of (source ASSUMED_ABSENT)."""
     columns: Tuple[str, ...] = ()
     source: Source = field(default=Source.ASSUMED, kw_only=True)
     # What the card says, by the column that has a default.
     TEXTS: ClassVar[Dict[str, str]] = {"species": "no species label, assumed human"}
+    ABSENT_DIAGNOSIS: ClassVar[str] = "no diagnosis recorded, assumed absent"
 
     def __post_init__(self) -> None:
-        if len(self.columns) != 1 or self.columns[0] not in self.TEXTS:
+        if self.source == Source.ASSUMED_ABSENT:
+            if self.columns:
+                raise ValueError(f"an absent diagnosis reads no columns, not {self.columns}")
+        elif len(self.columns) != 1 or self.columns[0] not in self.TEXTS:
             raise ValueError(f"no default to assume for {self.columns}")
 
     def read_columns(self) -> Tuple[str, ...]:
         return self.columns
 
     def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
+        if self.source == Source.ASSUMED_ABSENT:
+            return self.ABSENT_DIAGNOSIS
         return self.TEXTS[self.columns[0]]

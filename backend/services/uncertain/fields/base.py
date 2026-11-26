@@ -9,12 +9,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Optional, Tuple
 
-from services.evidence.probable import NamedInOwnTextEvidence
+from services.evidence.probable import ProbableNamedInTextEvidence
 from services.schema.tables import participants as _participants
 
 # (condition, alias) → the evidence that a dataset's own text names the value the
 # condition asks for. None when it asks for nothing a text could name.
-TextForm = Callable[[object, str], Optional[NamedInOwnTextEvidence]]
+TextForm = Callable[[object, str], Optional[ProbableNamedInTextEvidence]]
 
 
 @dataclass(frozen=True)

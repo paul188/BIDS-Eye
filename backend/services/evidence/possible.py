@@ -14,7 +14,7 @@ from services.evidence.base import PieceOfEvidence, Source, Strength
 
 
 @dataclass(frozen=True)
-class NotRecordedEvidence(PieceOfEvidence):
+class PossibleNotRecordedEvidence(PieceOfEvidence):
     """Possible: the field is not recorded and nothing hints either way:
     "ages not recorded".
 

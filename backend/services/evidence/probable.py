@@ -28,7 +28,7 @@ class TextSearch:
 
 
 @dataclass(frozen=True)
-class PaperOnlyEvidence(PieceOfEvidence):
+class ProbablePaperOnlyEvidence(PieceOfEvidence):
     """Probable: the text searches match only a paper the dataset names,
     not its own text: "found only in a paper the dataset names". *searches* are without weight labels: paper text carries the
     lowest weight, so a search scoped to the name could never reach it."""
@@ -106,7 +106,7 @@ class WeakenedSearch:
 
 
 @dataclass(frozen=True)
-class WeakerSearchEvidence(PieceOfEvidence):
+class ProbableWeakerSearchEvidence(PieceOfEvidence):
     """Probable: a text search matches only in a weaker form (Weakening):
     "matches only part of the search; missing: …"."""
     searches: Tuple[WeakenedSearch, ...]
@@ -148,7 +148,7 @@ class WeakerSearchEvidence(PieceOfEvidence):
 
 
 @dataclass(frozen=True)
-class CoreOfTermEvidence(PieceOfEvidence):
+class ProbableCoreOfTermEvidence(PieceOfEvidence):
     """Probable: the generated query shortened a term to its core ("physical
     exercise" searched as "exercise", services/fulltext/text_search.py), and
     the dataset has the core but not the *missing* words."""
@@ -165,7 +165,7 @@ class CoreOfTermEvidence(PieceOfEvidence):
 
 
 @dataclass(frozen=True)
-class NamedInOwnTextEvidence(PieceOfEvidence):
+class ProbableNamedInTextEvidence(PieceOfEvidence):
     """Probable: the field is not recorded, but the dataset's name,
     description or README names the asked value: "22 women", "infants", "7T". Each field has its subclass,
     which holds the asked value and writes sql() and reason()."""

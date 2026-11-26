@@ -19,8 +19,8 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
-from services.evidence.possible import NotRecordedEvidence
-from services.evidence.probable import NamedInOwnTextEvidence
+from services.evidence.possible import PossibleNotRecordedEvidence
+from services.evidence.probable import ProbableNamedInTextEvidence
 from services.uncertain.conditions import own_text, sql_literal
 from services.uncertain.fields.base import SoftField, participant_rows_record
 from services.schema.tables import participants as _participants
@@ -117,7 +117,7 @@ def keep_only_sex_pairs(nodes: list) -> list:
 
 
 @dataclass(frozen=True)
-class SexNamedEvidence(NamedInOwnTextEvidence):
+class ProbableSexNamedEvidence(ProbableNamedInTextEvidence):
     """Probable, for sex: sex not recorded, and the dataset's own text names
     participants of *sex*; with *only*, it says all of them are."""
     sex: str = ""
@@ -135,19 +135,19 @@ class SexNamedEvidence(NamedInOwnTextEvidence):
                 f"AND {_in_own_text(self.alias, pattern)})")
 
     def reason(self) -> str:
-        not_recorded = NotRecordedEvidence(LABEL).reason()
+        not_recorded = PossibleNotRecordedEvidence(LABEL).reason()
         if self.only:
             return f"{not_recorded}; the title, description or README says all participants are {self.sex}"
         return f"{not_recorded}; the title, description or README names {self.sex} participants"
 
 
-def sex_named(node, alias: str) -> Optional[SexNamedEvidence]:
+def sex_named(node, alias: str) -> Optional[ProbableSexNamedEvidence]:
     """The sex a condition asks for, as a text would name it; None if the
     condition does not ask for one sex."""
     sex = asked_sex(node)
     if sex is None or not text_words(sex):
         return None
-    return SexNamedEvidence(sex=sex, only=_only_one_sex(node), alias=alias)
+    return ProbableSexNamedEvidence(sex=sex, only=_only_one_sex(node), alias=alias)
 
 
 def _sex_tsquery(sex: str) -> str:
