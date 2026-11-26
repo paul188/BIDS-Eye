@@ -22,7 +22,7 @@ import db.models  # noqa: F401  (BIDS-SQL's tables, into Base.metadata)
 import models     # noqa: F401  (the backend's own tables, into Base.metadata)
 from db.base import Base
 from services.schema import tables  # also adds the extension columns of bids_datasets
-from services.schema.revision import declared_only, same_type_when_widened
+from services.schema.revision import declared_only
 
 config = context.config
 # Not when called from code (config_file_name is set only by the alembic command):
@@ -39,7 +39,7 @@ target_metadata = Base.metadata
 
 def _run(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata,
-                      include_object=declared_only, compare_type=same_type_when_widened)
+                      include_object=declared_only, compare_type=True)
     with context.begin_transaction():
         context.run_migrations()
 

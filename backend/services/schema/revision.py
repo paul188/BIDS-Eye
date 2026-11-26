@@ -26,20 +26,6 @@ _BACKEND = Path(__file__).resolve().parents[2]
 _VERSION_TABLE = "alembic_version"
 
 
-# Columns the production database holds wider than BIDS-SQL's models declare
-# (widened by hand before Alembic; 0001 has the wide types). The database is
-# right. Remove a column here once its model says the same.
-WIDER_THAN_MODEL = frozenset({
-    ("bids_datasets", "name"), ("bids_datasets", "bids_version"),
-    ("bids_datasets", "dataset_type"), ("bids_datasets", "source_type"),
-    ("bids_datasets", "authors"), ("bids_datasets", "doi"),
-    ("bids_datasets", "paper_references"), ("bids_datasets", "funding"),
-    ("bids_datasets", "validation_status"),
-    ("bids_objects", "datatype"), ("bids_objects", "extension"),
-    ("bids_participants", "sex"), ("bids_participants", "handedness"),
-})
-
-
 def declared_only(obj: Any, name: str | None, type_: str, reflected: bool,
                   compare_to: Any) -> bool:
     """For Alembic's comparison of models and database: leave out what only
@@ -50,15 +36,6 @@ def declared_only(obj: Any, name: str | None, type_: str, reflected: bool,
     is written by hand.
     """
     return not (reflected and compare_to is None)
-
-
-def same_type_when_widened(context: Any, inspected_column: Any, metadata_column: Any,
-                           inspected_type: Any, metadata_type: Any) -> bool | None:
-    """For Alembic's comparison: the columns of WIDER_THAN_MODEL count as
-    unchanged, every other column is compared as usual (None)."""
-    if (metadata_column.table.name, metadata_column.name) in WIDER_THAN_MODEL:
-        return False
-    return None
 
 
 class SchemaRevisionError(ExpectedError):

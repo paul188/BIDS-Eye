@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from services.schema import tables
 from services.schema.check import check_schema
 from services.schema.revision import (SchemaRevisionError, alembic_config, check_revision,
-                                      declared_only, newest_revisions, same_type_when_widened)
+                                      declared_only, newest_revisions)
 
 DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
 pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
@@ -93,8 +93,7 @@ def test_the_revisions_create_what_the_models_declare(migrated_database: str) ->
 
     def differences(connection):
         context = MigrationContext.configure(
-            connection, opts={"compare_type": same_type_when_widened,
-                              "include_object": declared_only})
+            connection, opts={"compare_type": True, "include_object": declared_only})
         return compare_metadata(context, Base.metadata)
 
     async def compare(engine):
