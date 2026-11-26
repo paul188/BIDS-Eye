@@ -17,7 +17,7 @@ Output: papers_off.json and papers_on.json in the format of eval_recall.py,
 plus, per question in papers_on, `added`: the datasets only paper text found.
 Read-only transactions only; no re-ranker; nothing written to the database.
 
-Needs a database where crawlers/migrate_add_paper_search.sql has run and
+Needs a database at the newest migration (backend/migrations/README.md) where
 scripts/backfill_papers.py has filled paper_text. Run inside a backend
 container, like eval_recall.py:
 
@@ -85,7 +85,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     else:
         worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
     if not has_paper_fts():
-        raise SystemExit("search_tsv_papers is missing: run crawlers/migrate_add_paper_search.sql first")
+        raise SystemExit("search_tsv_papers is missing: run `alembic upgrade head` in backend/ first")
     print(f"label={label!r} database={database} has_fts={has_fts()} has_paper_fts={has_paper_fts()}",
           file=sys.stderr, flush=True)
 

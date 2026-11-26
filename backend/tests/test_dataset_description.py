@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import re
 import sys
 import types
 from pathlib import Path
@@ -249,7 +248,7 @@ def test_run_dry_run_writes_nothing_and_refuses_without_columns(monkeypatch):
     engine = _Engine([ROW])
     asyncio.run(dd.run(engine, dry_run=True))
     assert not engine.relations and not engine.summaries and engine.commits == 0
-    with pytest.raises(RuntimeError, match="migrate_add_dataset_descriptions"):
+    with pytest.raises(RuntimeError, match="alembic upgrade head"):
         asyncio.run(dd.run(_Engine([], columns=False)))
 
 
@@ -349,16 +348,6 @@ def test_post_crawl_skips_descriptions_without_a_key(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     assert post_crawl._descriptions_available() is False
-
-
-def test_crawler_creates_the_same_columns_as_the_migration():
-    _post_crawl()
-    from remote import paper_store
-
-    migration = (ROOT / "crawlers" / "migrate_add_dataset_descriptions.sql").read_text()
-    squash = lambda value: re.sub(r"\s+", "", value)  # noqa: E731
-    for statement in paper_store.DESCRIPTION_DDL:
-        assert squash(statement) in squash(migration)
 
 
 def test_post_crawl_vacuums_the_file_table_outside_a_transaction(monkeypatch):

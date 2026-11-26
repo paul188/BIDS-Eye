@@ -259,15 +259,7 @@ def test_dataset_entries_merge_identifiers_of_one_paper() -> None:
 
 # ── Search column and switch ──────────────────────────────────────────────────
 
-def test_migration_matches_the_paper_search_expression() -> None:
-    def squash(value: str) -> str:
-        return re.sub(r"\s+", "", value)
-
-    migration = (ROOT / "crawlers" / "migrate_add_paper_search.sql").read_text()
-    assert squash(store.PAPER_SEARCH_VECTOR_EXPRESSION) in squash(migration)
-    for statement in store.DDL:
-        assert squash(statement) in squash(migration)
-    # The paper text is the only addition to search_tsv, at the lowest weight.
+def test_the_paper_text_is_the_only_addition_to_search_tsv_at_the_lowest_weight() -> None:
     from remote.openneuro_metadata import SEARCH_VECTOR_EXPRESSION
     assert store.PAPER_SEARCH_VECTOR_EXPRESSION.startswith(SEARCH_VECTOR_EXPRESSION + " || ")
     assert store.PAPER_SEARCH_VECTOR_EXPRESSION.endswith("'D')")

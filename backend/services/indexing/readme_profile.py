@@ -13,7 +13,7 @@ Every condition and paradigm comes with a verbatim quote from the input. A
 fact whose quote cannot be found in the input is kept for review but marked
 unverified and never used for search.
 
-What search uses (crawlers/migrate_add_readme_profiles.sql):
+What search uses:
   bids_datasets.llm_conditions   studied conditions only (role patients or
                                  model), indexed with the uploader's
                                  diagnosis field, so a diagnosis filter finds

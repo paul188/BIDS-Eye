@@ -328,7 +328,7 @@ def test_a_complete_schema_passes(monkeypatch) -> None:
 
 def test_a_missing_column_stops_startup_and_names_its_migration() -> None:
     connection = _Connection(columns=_all_columns(without={("bids_datasets", "readme_text")}))
-    with pytest.raises(MissingSchemaError, match=r"bids_datasets\.readme_text \(crawlers/migrate_add_openneuro_metadata\.sql\)"):
+    with pytest.raises(MissingSchemaError, match=r"bids_datasets\.readme_text \(revision 0001\)"):
         asyncio.run(check_schema(connection))
 
 
