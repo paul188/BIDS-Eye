@@ -8,17 +8,20 @@ const MAX_HEIGHT = 240
 // The search box: on the start page, and above the latest search's results,
 // holding its question. The question in large type, a clear button, Enter
 // searches.
-const props = withDefaults(defineProps<{
-  modelValue: string
-  /** ISO time the search limit resets; shows the countdown under the box. */
-  rateLimitedUntil: string | null
-  /** 'day' for the daily search cap, 'minute' for too many searches at once. */
-  rateLimitWindow?: string
-  /** How many searches that window allows. */
-  rateLimitCount?: number
-  countdown: string
-  placeholder?: string
-}>(), { placeholder: 'Describe the datasets you need' })
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    /** ISO time the search limit resets; shows the countdown under the box. */
+    rateLimitedUntil: string | null
+    /** 'day' for the daily search cap, 'minute' for too many searches at once. */
+    rateLimitWindow?: string
+    /** How many searches that window allows. */
+    rateLimitCount?: number
+    countdown: string
+    placeholder?: string
+  }>(),
+  { placeholder: 'Describe the datasets you need' },
+)
 
 const emit = defineEmits<{
   (e: 'update:modelValue', v: string): void
@@ -37,7 +40,10 @@ function autoResize() {
 }
 
 // Clearing or restoring the text from outside must resize the box too.
-watch(() => props.modelValue, () => nextTick(autoResize))
+watch(
+  () => props.modelValue,
+  () => nextTick(autoResize),
+)
 // The box above the results mounts with the question already in it.
 onMounted(autoResize)
 
@@ -64,8 +70,19 @@ defineExpose({ focus: (options?: FocusOptions) => textarea.value?.focus(options)
   <div
     class="flex items-start gap-3 bg-panel border border-border-input rounded-xl px-4 sm:px-5 py-3 shadow-sm transition-shadow hover:shadow-md focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/10"
   >
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="mt-[5px] flex-shrink-0 text-muted" aria-hidden="true">
-      <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      class="mt-[5px] flex-shrink-0 text-muted"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-4.2-4.2" />
     </svg>
     <textarea
       ref="textarea"
@@ -86,7 +103,16 @@ defineExpose({ focus: (options?: FocusOptions) => textarea.value?.focus(options)
       aria-label="Clear the search box"
       @click="clear"
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
         <path d="M6 6l12 12M18 6 6 18" />
       </svg>
     </button>
@@ -98,8 +124,18 @@ defineExpose({ focus: (options?: FocusOptions) => textarea.value?.focus(options)
       aria-label="Search"
       @click="emit('submit')"
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
-        <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m20 20-4.2-4.2" />
       </svg>
     </button>
   </div>
@@ -107,23 +143,31 @@ defineExpose({ focus: (options?: FocusOptions) => textarea.value?.focus(options)
     v-if="showCharCount"
     class="mt-2 px-1 text-right text-xs tabular-nums"
     :class="charCount >= CHAR_LIMIT ? 'text-danger-ink font-medium' : 'text-muted'"
-  >{{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}</p>
+  >
+    {{ charCount }}&thinsp;/&thinsp;{{ CHAR_LIMIT }}
+  </p>
 
   <!-- Search limit reached: the box stays, the notice goes under it. -->
-  <div
-    v-if="rateLimitedUntil"
-    class="mt-3 flex items-center gap-3 bg-panel border border-border rounded-xl px-5 py-4"
-  >
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-muted flex-shrink-0" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+  <div v-if="rateLimitedUntil" class="mt-3 flex items-center gap-3 bg-panel border border-border rounded-xl px-5 py-4">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      class="text-muted flex-shrink-0"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
     </svg>
     <p class="text-sm text-ink">
       <template v-if="rateLimitWindow === 'day'">
         You've used all {{ rateLimitCount || 20 }} free searches for today.
       </template>
-      <template v-else>
-        That's a lot of searches in a short time.
-      </template>
+      <template v-else> That's a lot of searches in a short time. </template>
       You can search again in
       <span class="font-mono font-medium text-accent tabular-nums">{{ countdown }}</span>.
     </p>

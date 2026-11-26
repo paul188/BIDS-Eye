@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #app {
+html,
+body,
+#app {
   height: 100%;
 }
 
@@ -21,10 +23,19 @@ body {
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: theme('colors.border'); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: theme('colors.border-strong'); }
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: theme('colors.border');
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.border-strong');
+}
 
 /* A new search after the first starts with a rule above its heading. */
 .thread > [data-role='user']:not(:first-child) {

@@ -57,9 +57,8 @@ function go(page: number) {
           class="my-3 px-4 py-2.5 rounded-lg bg-warn-bg text-warn-ink text-[13px] leading-relaxed"
         >
           <span class="font-semibold">Uncertain results.</span>
-          These datasets match only part of your search, or don't record something
-          it filters on (for example participant ages). Each card says what could
-          not be checked.
+          These datasets match only part of your search, or don't record something it filters on (for example
+          participant ages). Each card says what could not be checked.
         </div>
         <DatasetCard :dataset="ds" :terms="highlightTerms" :strengths="strengths" :emphasis="emphasisKinds" />
       </template>
@@ -89,6 +88,5 @@ function go(page: number) {
         Next →
       </button>
     </div>
-
   </div>
 </template>

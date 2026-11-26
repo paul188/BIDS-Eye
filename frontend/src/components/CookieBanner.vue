@@ -23,7 +23,7 @@ function wasDismissed(): boolean {
   try {
     return localStorage.getItem(STORAGE_KEY) === '1'
   } catch {
-    return false  // storage blocked: show the notice each visit
+    return false // storage blocked: show the notice each visit
   }
 }
 
@@ -34,7 +34,9 @@ function dismiss() {
   visible.value = false
   try {
     localStorage.setItem(STORAGE_KEY, '1')
-  } catch { /* storage blocked: hidden for this visit only */ }
+  } catch {
+    /* storage blocked: hidden for this visit only */
+  }
 }
 </script>
 
@@ -47,11 +49,9 @@ function dismiss() {
       class="fixed z-50 bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:max-w-md max-h-[calc(100%-2rem)] overflow-y-auto bg-panel border border-border rounded-xl shadow-lg p-4 text-sm text-ink"
     >
       <p class="leading-relaxed">
-        BIDS-Eye uses only the cookies it needs to work: no tracking or advertising.
-        Your searches are sent to Google's Gemini AI to interpret them, and stored
-        anonymously, without your name, so we can improve search quality. We keep
-        nothing under your account unless you turn on "Remember my searches and
-        search results".
+        BIDS-Eye uses only the cookies it needs to work: no tracking or advertising. Your searches are sent to Google's
+        Gemini AI to interpret them, and stored anonymously, without your name, so we can improve search quality. We
+        keep nothing under your account unless you turn on "Remember my searches and search results".
       </p>
 
       <div v-if="showDetails" class="mt-3 space-y-3 text-xs text-muted leading-relaxed">
@@ -59,17 +59,16 @@ function dismiss() {
           <p class="font-medium text-ink">Cookies and browser storage</p>
           <ul class="mt-1 space-y-1">
             <li>
-              <span class="font-mono text-ink">bids_eye_session</span> — your sign-in
-              (GitHub username and account number), set when you sign in with GitHub,
-              expires after 7 days or when you sign out.
+              <span class="font-mono text-ink">bids_eye_session</span> — your sign-in (GitHub username and account
+              number), set when you sign in with GitHub, expires after 7 days or when you sign out.
             </li>
             <li>
-              <span class="font-mono text-ink">bids_eye_csrf</span> — a random token that
-              lets the server reject requests made from other websites.
+              <span class="font-mono text-ink">bids_eye_csrf</span> — a random token that lets the server reject
+              requests made from other websites.
             </li>
             <li>
-              <span class="font-mono text-ink">bids-eye-history</span> (local storage) — the
-              search history shown in this browser, until you delete it there.
+              <span class="font-mono text-ink">bids-eye-history</span> (local storage) — the search history shown in
+              this browser, until you delete it there.
             </li>
           </ul>
         </div>
@@ -77,30 +76,25 @@ function dismiss() {
           <p class="font-medium text-ink">Your searches</p>
           <ul class="mt-1 space-y-1">
             <li>
-              Each question is sent to Google's Gemini API, which turns it into a
-              database query and helps rank the results. Google does not use it to
-              train its models.
+              Each question is sent to Google's Gemini API, which turns it into a database query and helps rank the
+              results. Google does not use it to train its models.
             </li>
             <li>
-              Each question is stored on our server without your GitHub username or
-              anything else that says who asked, together with how it was understood
-              and how many datasets it found. We use this to find and fix bad results.
-              Please don't type personal information into the search.
+              Each question is stored on our server without your GitHub username or anything else that says who asked,
+              together with how it was understood and how many datasets it found. We use this to find and fix bad
+              results. Please don't type personal information into the search.
             </li>
             <li>
-              Signing in stores nothing on our server. It only puts your GitHub
-              username and account number into the sign-in cookie; we don't ask GitHub
-              for your email address. For the daily limit your searches are counted in
-              the server's memory, never written down.
+              Signing in stores nothing on our server. It only puts your GitHub username and account number into the
+              sign-in cookie; we don't ask GitHub for your email address. For the daily limit your searches are counted
+              in the server's memory, never written down.
             </li>
             <li>
-              Only if you turn on "Remember my searches and search results" in the
-              history panel: from then on each of your questions, how it was understood
-              and its first page of results are also stored on our server under your
-              GitHub account number, so your history is there in every browser you sign
-              in from. This rests on your consent. Each search is deleted after 12
-              months; you can delete single searches in the history panel, and turning
-              the switch off withdraws your consent and deletes all of them at once.
+              Only if you turn on "Remember my searches and search results" in the history panel: from then on each of
+              your questions, how it was understood and its first page of results are also stored on our server under
+              your GitHub account number, so your history is there in every browser you sign in from. This rests on your
+              consent. Each search is deleted after 12 months; you can delete single searches in the history panel, and
+              turning the switch off withdraws your consent and deletes all of them at once.
             </li>
           </ul>
         </div>
@@ -126,6 +120,15 @@ function dismiss() {
 </template>
 
 <style scoped>
-.cookie-enter-active, .cookie-leave-active { transition: opacity 0.2s, transform 0.2s; }
-.cookie-enter-from, .cookie-leave-to { opacity: 0; transform: translateY(8px); }
+.cookie-enter-active,
+.cookie-leave-active {
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.cookie-enter-from,
+.cookie-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
 </style>
