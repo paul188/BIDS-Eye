@@ -2,8 +2,8 @@
 a real Postgres: which pieces of evidence hold for a dataset, and what they
 add up to.
 
-Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database (see
-tests/test_match_reasons_postgres.py); works in a schema of its own.
+Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database
+(tests/postgres.py); works in a schema of its own.
 """
 
 from __future__ import annotations
@@ -16,8 +16,9 @@ import pytest
 
 from services.uncertain import tier as ut
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
-pytestmark = pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+from tests.postgres import fresh_schema, needs_postgres, run_statements
+
+pytestmark = needs_postgres
 
 _SCHEMA_SQL = """
 CREATE TABLE bids_datasets (id UUID PRIMARY KEY, name TEXT, description_text TEXT, readme_text TEXT,
@@ -45,18 +46,12 @@ INFANTS = ("(d.age_max < 3 OR EXISTS(SELECT 1 FROM bids_participants AS p2 "
 async def _scores(condition: str, hoist: bool, possible: bool = False) -> dict:
     """{dataset key: (level, score, reasons)} of the tier query for *condition*."""
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.ext.asyncio import AsyncSession
 
-    schema = f"score_{uuid.uuid4().hex[:8]}"
-    admin = create_async_engine(DSN)
-    async with admin.begin() as conn:
-        await conn.execute(text(f"CREATE SCHEMA {schema}"))
-    engine = create_async_engine(DSN, connect_args={"server_settings": {"search_path": schema}})
     ids = {key: uuid.uuid4() for key in _DATASETS}
-    try:
+    async with fresh_schema("score") as engine:
         async with engine.begin() as conn:
-            for statement in _SCHEMA_SQL.split(";"):
-                await conn.execute(text(statement))
+            await run_statements(conn, _SCHEMA_SQL)
             for key, (readme, paper, ages) in _DATASETS.items():
                 await conn.execute(text(
                     "INSERT INTO bids_datasets VALUES (:id, :name, '', :readme, NULL, NULL, "
@@ -75,11 +70,6 @@ async def _scores(condition: str, hoist: bool, possible: bool = False) -> dict:
         by_id = {value: key for key, value in ids.items()}
         return {by_id[r["id"]]: (r[ut.LEVEL_COLUMN], float(r[ut.SCORE_COLUMN]), r[ut.REASONS_COLUMN])
                 for r in rows}
-    finally:
-        await engine.dispose()
-        async with admin.begin() as conn:
-            await conn.execute(text(f"DROP SCHEMA {schema} CASCADE"))
-        await admin.dispose()
 
 
 @pytest.mark.parametrize("hoist", [False, True])

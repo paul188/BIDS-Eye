@@ -3,17 +3,12 @@ their own GitHub account number, for RETENTION_DAYS, and are gone when they
 turn it off (services/stores/search_history.py, routers/history.py). The
 privacy notice promises each of these (frontend/src/components/CookieBanner.vue).
 
-The checks without a database run everywhere. The others need a PostgreSQL
-they may write two tables into, named by HISTORY_TEST_DATABASE_URL, e.g.
-
-    docker run --rm -d -p 54329:5432 -e POSTGRES_PASSWORD=x postgres:16
-    HISTORY_TEST_DATABASE_URL=postgresql+asyncpg://postgres:x@localhost:54329/postgres
-
-and are skipped without it. Needs the BIDS-SQL submodule (the db package)."""
+The checks without a database run everywhere. The others need the scratch
+database BIDSEYE_TEST_PG_DSN names (tests/postgres.py) and are skipped without
+it. Needs the BIDS-SQL submodule (the db package)."""
 from __future__ import annotations
 
 import asyncio
-import os
 from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
@@ -21,8 +16,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 from sqlalchemy import func, select, update
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import rate_limits
 import routers.history as history_router
@@ -35,8 +29,7 @@ from schemas import QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
 
-DATABASE_URL = os.getenv("HISTORY_TEST_DATABASE_URL", "")
-needs_database = pytest.mark.skipif(not DATABASE_URL, reason="HISTORY_TEST_DATABASE_URL not set")
+from tests.postgres import fresh_schema, needs_postgres
 
 ANA, BEN = 101, 202
 _TABLES = [SearchHistoryConsent.__table__, SearchHistoryEntry.__table__]
@@ -55,17 +48,13 @@ def _fresh_limits():
 
 
 def _with_session(test):
-    """Run ``test(session)`` against empty history tables."""
+    """Run ``test(session)`` against empty history tables, in a schema of their own."""
     async def run():
-        engine = create_async_engine(DATABASE_URL, poolclass=NullPool)
-        try:
+        async with fresh_schema("history") as engine:
             async with engine.begin() as conn:
-                await conn.run_sync(lambda sync: [t.drop(sync, checkfirst=True) for t in reversed(_TABLES)])
                 await conn.run_sync(lambda sync: [t.create(sync) for t in _TABLES])
             async with AsyncSession(engine, expire_on_commit=False) as session:
                 return await test(session)
-        finally:
-            await engine.dispose()
     return asyncio.run(run())
 
 
@@ -123,7 +112,7 @@ def test_an_old_session_is_asked_to_sign_in_again() -> None:
 
 # ── With a database ───────────────────────────────────────────────────────────
 
-@needs_database
+@needs_postgres
 def test_nothing_is_saved_before_the_user_turns_it_on() -> None:
     async def test(session):
         assert await search_history.record(session, ANA, "fMRI", _answer()) is None
@@ -133,7 +122,7 @@ def test_nothing_is_saved_before_the_user_turns_it_on() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_a_saved_search_comes_back_as_it_was_answered() -> None:
     async def test(session):
         await search_history.enable(session, ANA)
@@ -150,7 +139,7 @@ def test_a_saved_search_comes_back_as_it_was_answered() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_turning_it_on_twice_keeps_the_saved_searches() -> None:
     async def test(session):
         await search_history.enable(session, ANA)
@@ -160,7 +149,7 @@ def test_turning_it_on_twice_keeps_the_saved_searches() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_a_user_reaches_only_their_own_searches() -> None:
     async def test(session):
         await search_history.enable(session, ANA)
@@ -180,7 +169,7 @@ def test_a_user_reaches_only_their_own_searches() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_turning_it_off_deletes_the_users_rows_and_no_one_elses() -> None:
     async def test(session):
         await search_history.enable(session, ANA)
@@ -199,7 +188,7 @@ def test_turning_it_off_deletes_the_users_rows_and_no_one_elses() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_a_search_is_deleted_after_the_storage_period() -> None:
     async def test(session):
         await search_history.enable(session, ANA)
@@ -221,7 +210,7 @@ def test_a_search_is_deleted_after_the_storage_period() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_an_unused_consent_ends_after_the_storage_period() -> None:
     async def test(session):
         await search_history.enable(session, ANA)
@@ -244,7 +233,7 @@ def test_an_unused_consent_ends_after_the_storage_period() -> None:
     _with_session(test)
 
 
-@needs_database
+@needs_postgres
 def test_over_http_a_search_is_saved_listed_reopened_and_deleted(monkeypatch) -> None:
     shared = _answer(5)
 
@@ -286,6 +275,53 @@ def test_over_http_a_search_is_saved_listed_reopened_and_deleted(monkeypatch) ->
         assert await _count(session, SearchHistoryEntry) == 0
         assert (await _call(ana, "GET", "/api/history")).json()["enabled"] is False
         assert (await _call(ana, "GET", f"/api/history/{uuid4()}")).status_code == 404
+    _with_session(test)
+
+
+# Who asks → the session they hold. Ben has saving turned on too; the old
+# session predates saved searches and has no account number.
+_ASKERS = {
+    "owner": {"sub": "ana", "uid": ANA},
+    "other user": {"sub": "ben", "uid": BEN},
+    "old session": {"sub": "ana"},
+}
+_SECRET = "fMRI in children"
+
+
+@needs_postgres
+@pytest.mark.parametrize("asker, method, path, body, status, left", [
+    # The owner reaches the search and can remove it.
+    ("owner", "GET", "/api/history", None, 200, 1),
+    ("owner", "GET", "/api/history/{id}", None, 200, 1),
+    ("owner", "DELETE", "/api/history/{id}", None, 204, 0),
+    ("owner", "PUT", "/api/history/enabled", {"enabled": False}, 200, 0),
+    # Anyone else neither reads nor removes it. A DELETE answers 204 either
+    # way, so the answer does not tell whether the search exists.
+    ("other user", "GET", "/api/history", None, 200, 1),
+    ("other user", "GET", "/api/history/{id}", None, 404, 1),
+    ("other user", "DELETE", "/api/history/{id}", None, 204, 1),
+    ("other user", "PUT", "/api/history/enabled", {"enabled": False}, 200, 1),
+    ("old session", "GET", "/api/history", None, 200, 1),
+    ("old session", "GET", "/api/history/{id}", None, 404, 1),
+    ("old session", "DELETE", "/api/history/{id}", None, 204, 1),
+    ("old session", "PUT", "/api/history/enabled", {"enabled": False}, 200, 1),
+    ("old session", "PUT", "/api/history/enabled", {"enabled": True}, 409, 1),
+])
+def test_each_history_address_for_each_asker(asker, method, path, body, status, left) -> None:
+    """One saved search of Ana's: what each asker gets from each address, and
+    whether the search is still there afterwards."""
+    async def test(session):
+        await search_history.enable(session, ANA)
+        await search_history.enable(session, BEN)
+        entry_id = await search_history.record(session, ANA, _SECRET, _answer())
+
+        reply = await _call(_app(_ASKERS[asker], session), method, path.format(id=entry_id), body)
+
+        assert reply.status_code == status
+        assert (_SECRET in reply.text) == (asker == "owner" and method == "GET")
+        session.expire_all()
+        owned = select(func.count()).select_from(SearchHistoryEntry).where(SearchHistoryEntry.github_id == ANA)
+        assert (await session.execute(owned)).scalar_one() == left
     _with_session(test)
 
 

@@ -78,7 +78,7 @@ jobs:
     env:
       # Same pinned versions as the production image (backend/Dockerfile).
       PIP_CONSTRAINT: ${{ github.workspace }}/backend/constraints.txt
-      # BIDS-SQL reads these at import. No test connects to a database.
+      # BIDS-SQL reads these at import. No test connects to this database.
       METADATA_DB_NAME: ci
       METADATA_DB_USER: ci
       METADATA_DB_PASSWORD: ci
@@ -90,8 +90,8 @@ jobs:
       GITHUB_CLIENT_SECRET: ci-only-not-a-secret
       ALLOW_ANY_GITHUB_USER: "true"
       # A scratch database for the tests that need real SQL
-      # (tests/test_match_reasons_postgres.py); on its own port so nothing
-      # finds it under METADATA_DB_*.
+      # (tests/postgres.py); on its own port so nothing finds it under
+      # METADATA_DB_*. Without it the run stops (tests/conftest.py).
       BIDSEYE_TEST_PG_DSN: postgresql+asyncpg://postgres:ci@localhost:55439/postgres
     services:
       postgres:
@@ -116,11 +116,12 @@ jobs:
           pip install -r BIDS-SQL/requirements.txt
           pip install -e BIDS-SQL
           pip install -e RAG -e LLM_preprocessor
-          pip install -e backend
-          pip install pytest time-machine
+          pip install -e "backend[test]"
+      # The coverage table is a report: no percentage fails the run. What is
+      # measured is in backend/pyproject.toml.
       - name: Run tests
         working-directory: backend
-        run: python -m pytest -q tests
+        run: python -m pytest -q tests --cov --cov-report=term:skip-covered
 
   semgrep:
     name: Semgrep (new findings only)

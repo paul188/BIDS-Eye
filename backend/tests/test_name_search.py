@@ -2,14 +2,12 @@
 
 name_search was written into the ILIKE pattern unescaped: "Alzheimer's" broke
 the query and "%" matched every name. The Postgres part needs a scratch
-database (BIDSEYE_TEST_PG_DSN, test_match_reasons_postgres.py).
+database (BIDSEYE_TEST_PG_DSN, tests/postgres.py).
 """
 
 from __future__ import annotations
 
 import asyncio
-import os
-import uuid
 
 import pytest
 
@@ -23,7 +21,7 @@ from services.translate import sql_rewriter  # noqa: E402
 from services.translate.participant_query_compiler import compile_plan  # noqa: E402
 from sql_text import contains_pattern, pattern_words  # noqa: E402
 
-DSN = os.getenv("BIDSEYE_TEST_PG_DSN")
+from tests.postgres import fresh_schema, needs_postgres  # noqa: E402
 
 NAMES = [
     "abide", "Alzheimer's", "100% sleep", "HCP_YA", "back\\slash", "ends\\", "study :rest", "study:rest", "a::b",
@@ -80,28 +78,19 @@ def test_a_name_with_an_apostrophe_ranks():
     assert "alzheimer" in expanded.rank_query.stemmed.lower()
 
 
-@pytest.mark.skipif(not DSN, reason="BIDSEYE_TEST_PG_DSN not set")
+@needs_postgres
 def test_only_the_named_dataset_is_found():
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import create_async_engine
 
     async def run():
-        engine = create_async_engine(DSN)
-        schema = f"name_search_{uuid.uuid4().hex[:8]}"
-        try:
-            async with engine.connect() as connection:
-                await connection.execute(text(f"CREATE SCHEMA {schema}"))
-                await connection.execute(text(f"SET LOCAL search_path TO {schema}"))
-                await connection.execute(text("CREATE TABLE bids_datasets (name TEXT)"))
-                for name in NAMES + ["unrelated"]:
-                    await connection.execute(text("INSERT INTO bids_datasets VALUES (:name)"), {"name": name})
-                for name in NAMES:
-                    found = (await connection.execute(text(
-                        f"SELECT d.name FROM bids_datasets d WHERE d.name ILIKE {contains_pattern(name)}"))).scalars().all()
-                    expected = [n for n in NAMES if name.lower() in n.lower()]
-                    assert sorted(found) == sorted(expected), name
-                await connection.rollback()
-        finally:
-            await engine.dispose()
+        async with fresh_schema("name_search") as engine, engine.begin() as connection:
+            await connection.execute(text("CREATE TABLE bids_datasets (name TEXT)"))
+            for name in NAMES + ["unrelated"]:
+                await connection.execute(text("INSERT INTO bids_datasets VALUES (:name)"), {"name": name})
+            for name in NAMES:
+                found = (await connection.execute(text(
+                    f"SELECT d.name FROM bids_datasets d WHERE d.name ILIKE {contains_pattern(name)}"))).scalars().all()
+                expected = [n for n in NAMES if name.lower() in n.lower()]
+                assert sorted(found) == sorted(expected), name
 
     asyncio.run(run())
