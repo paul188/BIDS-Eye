@@ -1,7 +1,7 @@
 """One rate limiter for the whole API, with a budget per kind of request.
 
 Every /api route declares what it costs by depending on exactly one limiter
-(tests/test_rate_limits.py checks that no route is left out):
+(tests/security/test_rate_limits.py checks that no route is left out):
 
     @search_router.post("/page", dependencies=[rate_limit(Category.PAGE)])
 

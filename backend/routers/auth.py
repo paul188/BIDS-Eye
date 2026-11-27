@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # GitHub's number for the account and the sign-in time, and nothing else is
 # asked from GitHub or stored (no e-mail address, no users table). The site's
 # privacy notice says so (frontend/src/components/CookieBanner.vue);
-# tests/test_auth_session.py checks it. The account number is what a user's
+# tests/security/test_auth_session.py checks it. The account number is what a user's
 # saved searches are kept under, once they turn that on
 # (services/stores/search_history.py).
 #
