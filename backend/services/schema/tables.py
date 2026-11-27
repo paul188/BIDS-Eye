@@ -109,7 +109,7 @@ def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]],
                       flag: str | None = None, text: TextKind | None = None,
                       label_in_text: bool = False) -> Column[Any]:
     """A column to add to bids_datasets; *migration* and *flag* as in _created_by."""
-    info = _created_by(migration, flag)
+    info: dict[str, Any] = _created_by(migration, flag)
     if text:
         info[TEXT] = text
     if label_in_text:

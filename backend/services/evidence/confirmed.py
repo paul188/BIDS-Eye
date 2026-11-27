@@ -143,7 +143,8 @@ class ConfirmedInParticipantListEvidence(ConfirmedEvidence):
     def number_columns(self, suffix: str) -> List[str]:
         if self.participant_rows is None:
             return []
-        aggregates = [("COUNT", exp.Star(), CardColumn.COUNT)]
+        aggregates: List[Tuple[str, exp.Expression, CardColumn]] = [
+            ("COUNT", exp.Star(), CardColumn.COUNT)]
         if self.age_column is not None:
             aggregates += [("MIN", self.age_column, CardColumn.YOUNGEST),
                            ("MAX", self.age_column, CardColumn.OLDEST)]
