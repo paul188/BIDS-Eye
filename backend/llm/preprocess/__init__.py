@@ -21,7 +21,7 @@ Flow:
       │  returns AugmentedQueryPlan with canonical codes filled in
       │
       ▼
-  SQL generation LLM (Gemini, in backend/services/translate/text_to_sql.py)
+  SQL generation LLM (profile sql, in backend/services/translate/text_to_sql.py)
 
 The LLM's job is STRUCTURAL ONLY:
   - Identify which terms are scan-related (put in ScanRequirement.scan_terms)
@@ -33,11 +33,8 @@ The RAG layer handles ALL cardinality decisions using threshold-based fuzzy
 matching.  The LLM never sets expected code counts or classifies scan terms
 into datatype vs suffix vs task.
 
-Authentication:
-  export GEMINI_API_KEY=...   or   export GOOGLE_API_KEY=...
-
-Requires:
-  pip install google-genai pydantic
+Models and keys: profile intent in backend/llm/llm_config.yaml (llm_client.py);
+the env var that holds each provider's key is named there.
 
 Modules, in import order (each uses only those before it):
   plan.py      The plan the model returns (QueryPlan) and the plan after RAG (AugmentedQueryPlan).
@@ -71,7 +68,7 @@ from .prompt import (  # noqa: F401
     _SYSTEM_PROMPT,
 )
 from .intent import (  # noqa: F401
-    _gemini_output_schema,
+    _plan_output_schema,
     preprocess_query,
     word_evidence,
 )

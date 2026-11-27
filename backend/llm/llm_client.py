@@ -7,7 +7,9 @@ One shared LLM call path for the whole backend.
 
 A *profile* (one per use case) names the tiers to try in order, each with its
 retries, timeout and reserved time, plus a deadline for the whole call and the
-task's defaults (temperature, max_tokens, thinking level). Profiles, the models
+task's defaults (temperature, max_tokens, thinking level). A tier may set its
+own temperature, max_tokens or thinking level where its model needs another
+value than the profile's (a thinking model needs a larger output limit). Profiles, the models
 they use and the providers behind them are defined in llm_config.yaml next to
 this file (or the file LLM_CONFIG_PATH names); the file names the env vars that
 hold the keys, never the keys themselves.
@@ -16,9 +18,17 @@ Three layers, three places:
   * models     what a model can do (accepts temperature? takes a seed? enforces
                a JSON Schema natively? which thinking setting?): llm_config.yaml
   * profiles   policy (fallback order, retries, timeouts, deadline): llm_config.yaml
-  * providers  mechanics (SDK calls, error types, usage counts): one adapter
-               class per provider below. The loop in llm_generate only sees the
-               `Provider` interface and never asks which provider it talks to.
+  * providers  where a model runs and how it is called: an entry in
+               llm_config.yaml names its adapter `type`; one adapter class per
+               type below holds the mechanics (requests, error types, usage
+               counts, the API's quirks). The loop in llm_generate only sees
+               the `Provider` interface and never asks which provider it talks to.
+
+Adapter types: `gemini` (google-genai), `anthropic` (anthropic SDK) and
+`openai_compatible`: any server with the OpenAI chat-completions API, which
+covers local models (Ollama, vLLM, llama.cpp server, LM Studio) and hosted
+ones (OpenAI, Mistral, ...). Switching a use case to another model, provider
+or local hardware is a change to llm_config.yaml only.
 
 Resilience rules:
   * Retry the SAME tier (with backoff) only on TRANSIENT errors (5xx, 408,
@@ -108,7 +118,7 @@ class Provider(Protocol):
     name: str
 
     def available(self) -> bool:
-        """Is a key configured?"""
+        """Can it be called: key configured (if it needs one), SDK installed?"""
 
     def errors(self) -> Tuple[type, ...]:
         """What a call raises when the provider, not the code, fails."""
@@ -125,6 +135,15 @@ def _count(obj, name: str) -> int:
     return value if isinstance(value, int) else 0
 
 
+def _installed(module: str) -> bool:
+    """Is the SDK an adapter needs installed? (The crawler image has google-genai only.)"""
+    import importlib.util
+    try:
+        return importlib.util.find_spec(module) is not None
+    except ImportError:  # the parent package is missing
+        return False
+
+
 def _first_env(names: Sequence[str]) -> Optional[str]:
     return next((os.environ[n] for n in names if os.getenv(n)), None)
 
@@ -136,6 +155,16 @@ def _schema_instruction(prompt: str, schema: dict) -> str:
 
 # ── Gemini ──────────────────────────────────────────────────────────────────────
 
+def _without_defaults(node: Any) -> Any:
+    """The schema without `default` keywords: Gemini's responseJsonSchema accepts
+    a subset of JSON Schema that leaves them out (Pydantic emits them)."""
+    if isinstance(node, dict):
+        return {k: _without_defaults(v) for k, v in node.items() if k != "default"}
+    if isinstance(node, list):
+        return [_without_defaults(v) for v in node]
+    return node
+
+
 class GeminiProvider:
     name = "gemini"
 
@@ -144,7 +173,7 @@ class GeminiProvider:
         self.seed = seed
 
     def available(self) -> bool:
-        return _first_env(self.api_key_env) is not None
+        return _first_env(self.api_key_env) is not None and _installed("google.genai")
 
     def errors(self) -> Tuple[type, ...]:
         # google-genai raises httpx's own errors for timeouts and broken connections.
@@ -171,7 +200,7 @@ class GeminiProvider:
         if req.json_schema is not None:
             if model.json_schema == "native":
                 extra["response_mime_type"] = "application/json"
-                extra["response_json_schema"] = req.json_schema
+                extra["response_json_schema"] = _without_defaults(req.json_schema)
             else:
                 prompt = _schema_instruction(prompt, req.json_schema)
             # The output cap is set only for JSON answers: Gemini 2.5 spends
@@ -214,7 +243,7 @@ class AnthropicProvider:
         self.api_key_env = tuple(api_key_env)
 
     def available(self) -> bool:
-        return _first_env(self.api_key_env) is not None
+        return _first_env(self.api_key_env) is not None and _installed("anthropic")
 
     def errors(self) -> Tuple[type, ...]:
         # anthropic wraps timeouts and broken connections in APIConnectionError.
@@ -273,6 +302,88 @@ class AnthropicProvider:
         }
 
 
+# ── OpenAI-compatible servers (local models, OpenAI, Mistral, ...) ────────────
+
+class OpenAICompatibleError(Exception):
+    """The server answered with an error status."""
+
+    def __init__(self, status: int, body: str):
+        super().__init__(f"HTTP {status}: {body[:300]}")
+        self.status = status
+
+
+class OpenAICompatibleProvider:
+    """POST {base_url}/chat/completions. A local server usually needs no key."""
+
+    def __init__(self, name: str, base_url: str, api_key_env: Sequence[str] = (),
+                 seed: Optional[int] = None):
+        self.name = name
+        self.base_url = base_url.rstrip("/")
+        self.api_key_env = tuple(api_key_env)
+        self.seed = seed
+
+    def available(self) -> bool:
+        has_key = not self.api_key_env or _first_env(self.api_key_env) is not None
+        return has_key and _installed("httpx")
+
+    def errors(self) -> Tuple[type, ...]:
+        import httpx
+        return (OpenAICompatibleError, httpx.TransportError)
+
+    def is_transient(self, exc: Exception) -> bool:
+        import httpx
+        if isinstance(exc, OpenAICompatibleError):
+            return exc.status in (408, 429) or exc.status >= 500
+        return isinstance(exc, httpx.TransportError)
+
+    def generate(self, model: ModelSpec, req: LLMRequest, timeout: float) -> LLMResult:
+        import httpx
+        prompt = req.prompt
+        body: dict[str, Any] = {"model": model.name, "max_tokens": req.max_tokens}
+        if req.json_schema is not None:
+            if model.json_schema == "native":
+                body["response_format"] = {"type": "json_schema", "json_schema": {
+                    "name": "answer", "schema": req.json_schema}}
+            else:
+                prompt = _schema_instruction(prompt, req.json_schema)
+        messages = [{"role": "system", "content": req.system}] if req.system else []
+        body["messages"] = messages + [{"role": "user", "content": prompt}]
+        if model.temperature:
+            body["temperature"] = req.temperature
+        if model.seed and self.seed is not None:
+            body["seed"] = self.seed
+        if req.thinking_level and model.thinking == "level":
+            body["reasoning_effort"] = req.thinking_level
+        headers = {}
+        key = _first_env(self.api_key_env) if self.api_key_env else None
+        if key:
+            headers["Authorization"] = f"Bearer {key}"
+        resp = httpx.post(f"{self.base_url}/chat/completions", json=body, headers=headers,
+                          timeout=timeout)
+        if resp.status_code >= 400:
+            raise OpenAICompatibleError(resp.status_code, resp.text)
+        try:
+            data = resp.json()
+            text = data["choices"][0]["message"].get("content") or ""
+        except (ValueError, KeyError, IndexError, TypeError) as exc:
+            raise OpenAICompatibleError(resp.status_code, f"unreadable answer: {exc}") from exc
+        return LLMResult(text.strip(), self._usage(data.get("usage")))
+
+    @staticmethod
+    def _usage(usage) -> Optional[Dict[str, int]]:
+        if not isinstance(usage, dict):
+            return None
+        details = usage.get("prompt_tokens_details") or {}
+        reasoning = (usage.get("completion_tokens_details") or {}).get("reasoning_tokens")
+        as_int = lambda v: v if isinstance(v, int) else 0  # noqa: E731
+        return {
+            "input_tokens": as_int(usage.get("prompt_tokens")),
+            "cached_tokens": as_int(details.get("cached_tokens")),
+            "output_tokens": as_int(usage.get("completion_tokens")),
+            "thinking_tokens": as_int(reasoning),
+        }
+
+
 # ── config ──────────────────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
@@ -283,6 +394,10 @@ class TierConfig:
     timeout: float = 12.0             # seconds per attempt
     optional: bool = False            # no key: skipped without a failure entry
     reserve_seconds: float = 0.0      # kept back for this tier while earlier tiers run
+    # This model's own values; None: the profile's.
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
+    thinking_level: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -303,18 +418,35 @@ class LLMConfig:
     source: str = "<dict>"
 
 
+_PROVIDER_TYPES = ("gemini", "anthropic", "openai_compatible")
+
+
 def _provider_from(name: str, data: dict) -> Provider:
+    """One `providers` entry; `type` names its adapter (default: the entry's name)."""
+    where = f"provider {name}"
+    if not isinstance(data, dict):
+        raise LLMConfigError(f"{where}: expected a mapping, got {data!r}")
+    kind = data.get("type", name)
     key_env = data.get("api_key_env")
     key_env = [key_env] if isinstance(key_env, str) else list(key_env or [])
+    if kind == "openai_compatible":
+        _only(data, {"type", "base_url", "api_key_env", "seed"}, where)
+        if not data.get("base_url"):
+            raise LLMConfigError(f"{where}: base_url is missing")
+        provider: Provider = OpenAICompatibleProvider(name, data["base_url"], key_env, data.get("seed"))
+        return provider
+    if kind not in _PROVIDER_TYPES:
+        raise LLMConfigError(f"{where}: unknown type {kind!r} (known: {', '.join(_PROVIDER_TYPES)})")
     if not key_env:
-        raise LLMConfigError(f"provider {name}: api_key_env is missing")
-    if name == "gemini":
-        _only(data, {"api_key_env", "seed"}, f"provider {name}")
-        return GeminiProvider(key_env, data.get("seed"))
-    if name == "anthropic":
-        _only(data, {"api_key_env"}, f"provider {name}")
-        return AnthropicProvider(key_env)
-    raise LLMConfigError(f"unknown provider {name!r} (known: gemini, anthropic)")
+        raise LLMConfigError(f"{where}: api_key_env is missing")
+    if kind == "gemini":
+        _only(data, {"type", "api_key_env", "seed"}, where)
+        provider = GeminiProvider(key_env, data.get("seed"))
+    else:
+        _only(data, {"type", "api_key_env"}, where)
+        provider = AnthropicProvider(key_env)
+    provider.name = name
+    return provider
 
 
 def _only(data: dict, allowed: set, where: str) -> None:
@@ -349,7 +481,8 @@ def parse_config(data: dict, source: str = "<dict>") -> LLMConfig:
         tiers = []
         for i, t in enumerate(d.get("tiers") or []):
             where = f"profile {name}, tier {i + 1}"
-            _only(t, {"model", "attempts", "waits", "timeout", "optional", "reserve_seconds"}, where)
+            _only(t, {"model", "attempts", "waits", "timeout", "optional", "reserve_seconds",
+                      "temperature", "max_tokens", "thinking_level"}, where)
             tier = TierConfig(**{**t, "waits": tuple(t.get("waits", ()))})
             if tier.model not in models:
                 raise LLMConfigError(f"{where}: model {tier.model!r} is not defined")
@@ -393,6 +526,15 @@ def config() -> LLMConfig:
     return _config
 
 
+def profile_available(profile: str) -> bool:
+    """Can *profile* be asked at all (does any of its tiers' providers have a key)?"""
+    cfg = config()
+    prof = cfg.profiles.get(profile)
+    if prof is None:
+        raise LLMConfigError(f"LLM profile {profile!r} is not defined in {cfg.source}")
+    return any(cfg.providers[cfg.models[t.model].provider].available() for t in prof.tiers)
+
+
 def check_config() -> None:
     """Load the config (raising on a bad one) and warn about tiers that have no key."""
     cfg = config()
@@ -400,8 +542,9 @@ def check_config() -> None:
         for tier in profile.tiers:
             provider = cfg.providers[cfg.models[tier.model].provider]
             if not tier.optional and not provider.available():
-                log.warning("LLM profile %s: %s has no %s key (%s); the tier will be skipped",
-                            profile.name, tier.model, provider.name, " or ".join(provider.api_key_env))
+                log.warning("LLM profile %s: %s cannot be called (no %s key in %s, or its SDK "
+                            "is not installed); the tier will be skipped", profile.name, tier.model,
+                            provider.name, " or ".join(provider.api_key_env) or "-")
 
 
 # ── tiers and deadline ──────────────────────────────────────────────────────────
@@ -427,7 +570,10 @@ def _tiers_for(cfg: LLMConfig, profile: Profile, models: Optional[Sequence[str]]
     policies = list(profile.tiers)
     if models:
         names = [m.strip() for m in models if m and m.strip()]
-        policies = [replace(policies[min(i, len(policies) - 1)], model=name)
+        # Only the policy carries over; the replaced model's own temperature,
+        # max_tokens and thinking level do not.
+        policies = [replace(policies[min(i, len(policies) - 1)], model=name, temperature=None,
+                            max_tokens=None, thinking_level=None)
                     for i, name in enumerate(names)]
     tiers = []
     for policy in policies:
@@ -498,6 +644,23 @@ def _report_usage(purpose: str, tier: _Tier, usage: Optional[Dict[str, int]],
 
 # ── public entry point ───────────────────────────────────────────────────────────
 
+def _first_set(*values):
+    return next((v for v in values if v is not None), None)
+
+
+def _request_for(tier: _Tier, prof: Profile, prompt: str, system: Optional[str],
+                 json_schema: Optional[dict], thinking_level: Optional[str]) -> LLMRequest:
+    """The request one tier sends: its own settings, else the profile's."""
+    policy = tier.policy
+    return LLMRequest(
+        prompt, system,
+        _first_set(policy.temperature, prof.temperature),
+        _first_set(policy.max_tokens, prof.max_tokens),
+        json_schema,
+        _first_set(thinking_level, policy.thinking_level, prof.thinking_level),
+    )
+
+
 def llm_generate(
     prompt: str,
     *,
@@ -505,8 +668,6 @@ def llm_generate(
     system: Optional[str] = None,
     json_schema: Optional[dict] = None,
     purpose: Optional[str] = None,
-    temperature: Optional[float] = None,
-    max_tokens: Optional[int] = None,
     thinking_level: Optional[str] = None,
     models: Optional[Sequence[str]] = None,
 ) -> str:
@@ -515,10 +676,13 @@ def llm_generate(
       profile         a profile of llm_config.yaml ("intent", "sql", "rerank", ...)
       json_schema     JSON Schema the answer must follow
       purpose         label for the usage log; the profile's name when not given
-      temperature, max_tokens, thinking_level
-                      override the profile's defaults for this call
+      thinking_level  for this call, instead of the tier's or profile's (a
+                      job's --thinking option)
       models          other models (defined in llm_config.yaml), in order, under
                       the profile's policy: for a bulk job's --model option
+
+    Temperature and max_tokens come from the config only: the tier's value,
+    else the profile's.
 
     Raises LLMAllFailedError if every tier fails, LLMConfigError for an
     unknown profile or model.
@@ -527,13 +691,6 @@ def llm_generate(
     prof = cfg.profiles.get(profile)
     if prof is None:
         raise LLMConfigError(f"LLM profile {profile!r} is not defined in {cfg.source}")
-    req = LLMRequest(
-        prompt, system,
-        prof.temperature if temperature is None else temperature,
-        prof.max_tokens if max_tokens is None else max_tokens,
-        json_schema,
-        prof.thinking_level if thinking_level is None else thinking_level,
-    )
     failures: List[str] = []
 
     tiers = []
@@ -541,13 +698,15 @@ def llm_generate(
         if tier.provider.available():
             tiers.append(tier)
         elif not tier.policy.optional:
-            failures.append(f"{tier.label}: no {tier.provider.name} API key configured")
+            failures.append(f"{tier.label}: not available (no {tier.provider.name} key, "
+                            "or its SDK is not installed)")
     if not tiers:
         raise LLMAllFailedError(f"No LLM tier of profile {profile!r} is configured:\n"
                                 + "\n".join(f"  • {f}" for f in failures))
 
     deadline = _Deadline(prof.deadline_seconds, tiers)
     for tier in tiers:
+        req = _request_for(tier, prof, prompt, system, json_schema, thinking_level)
         expected = tier.provider.errors() + (_EmptyResponseError,)
         for attempt in range(1, tier.policy.attempts + 1):
             timeout = deadline.timeout_for(tier)

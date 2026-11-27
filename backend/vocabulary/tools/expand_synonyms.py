@@ -9,9 +9,8 @@ Data sources (in priority order):
   2. CrossRef REST API               — free, returns title + abstract as JSON
   3. OpenAlex REST API               — free, neuroscience filter, 250M+ works
 
-LLM backend (first key found wins):
-  ANTHROPIC_API_KEY → Claude Haiku   (preferred: cheaper, faster)
-  GEMINI_API_KEY    → Gemini Flash   (fallback)
+Models: profile synonym_expansion in backend/llm/llm_config.yaml (Claude
+Sonnet when ANTHROPIC_API_KEY is set, then Gemini 2.5 Pro); --models replaces them.
 
 Modes:
   --mode augment (default): append new terms to nodes with few synonyms
@@ -41,7 +40,6 @@ from __future__ import annotations
 import argparse
 import http.client
 import json
-import os
 import re
 import sys
 import time
@@ -58,8 +56,9 @@ import yaml
 _FETCH_ERRORS = (OSError, http.client.HTTPException, ValueError)
 
 
-class SynonymLLMError(Exception):
-    """The model gave no answer for one node (API error, rate limit, network)."""
+_LLM_DIR = Path(__file__).resolve().parents[2] / "llm"
+if str(_LLM_DIR) not in sys.path:
+    sys.path.insert(0, str(_LLM_DIR))
 
 # ── Paths & constants ──────────────────────────────────────────────────────────
 
@@ -526,79 +525,14 @@ def _parse_llm_response(raw: Optional[str]) -> List[str]:
     return []
 
 
-def _call_anthropic(prompt: str, api_key: str, system: str = _SYSTEM_AUGMENT) -> List[str]:
-    import anthropic
-    client = anthropic.Anthropic(api_key=api_key)
-    try:
-        resp = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1024,
-            system=system,
-            messages=[{"role": "user", "content": prompt}],
-        )
-    except anthropic.APIError as exc:
-        raise SynonymLLMError(f"claude-sonnet-4-6: {exc}") from exc
-    return _parse_llm_response(resp.content[0].text)
-
-
-def _call_gemini(
-    prompt: str,
-    api_key: str,
-    model: str = "gemini-2.5-pro",
-    system: str = _SYSTEM_AUGMENT,
-) -> List[str]:
-    import httpx
-    from google import genai
-    from google.genai import errors as genai_errors
-    from google.genai import types
-    client = genai.Client(api_key=api_key)
-
-    # Retry with exponential backoff on 503 / rate-limit errors.
-    delays = [15, 30, 60, 120]
-    for attempt, wait in enumerate([0] + delays):
-        if wait:
-            time.sleep(wait)
-        try:
-            resp = client.models.generate_content(
-                model=model,
-                contents=system + "\n\n" + prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.0,
-                    # Gemini 2.5 Pro always runs in thinking mode; thinking tokens count
-                    # toward this limit. Set generously so output is never truncated.
-                    max_output_tokens=8192,
-                ),
-            )
-        except genai_errors.APIError as exc:
-            if exc.code in (429, 503) and attempt < len(delays):  # RESOURCE_EXHAUSTED, UNAVAILABLE
-                continue   # retry after backoff
-            raise SynonymLLMError(f"{model}: {exc}") from exc
-        except httpx.TransportError as exc:  # timeout, connection
-            raise SynonymLLMError(f"{model}: {type(exc).__name__}: {exc}") from exc
-        # Gemini 2.5 Pro (thinking) may return text via candidates when resp.text is None.
-        # content.parts can also be None when the model returns only a thinking block.
-        text = resp.text
-        if text is None:
-            candidate = (resp.candidates or [None])[0]
-            content   = getattr(candidate, "content", None) if candidate else None
-            parts     = getattr(content, "parts", None) or []
-            text      = "".join(p.text for p in parts if p and getattr(p, "text", None))
-        return _parse_llm_response(text)
-    raise AssertionError("unreachable: the last attempt returns or raises")
-
-
-def _call_llm(
-    prompt: str,
-    anthropic_key: Optional[str],
-    gemini_key: Optional[str],
-    gemini_model: str = "gemini-2.5-pro",
-    system: str = _SYSTEM_AUGMENT,
-) -> List[str]:
-    if anthropic_key:
-        return _call_anthropic(prompt, anthropic_key, system=system)
-    if gemini_key:
-        return _call_gemini(prompt, gemini_key, model=gemini_model, system=system)
-    raise RuntimeError("No API key available.")
+def _ask_model(prompt: str, system: str = _SYSTEM_AUGMENT,
+               models: Optional[List[str]] = None) -> List[str]:
+    """Candidates from profile synonym_expansion (backend/llm/llm_config.yaml),
+    or from *models* under its policy. Raises llm_client.LLMAllFailedError when
+    no model answers."""
+    from llm_client import llm_generate
+    return _parse_llm_response(llm_generate(prompt, profile="synonym_expansion", system=system,
+                                            models=models))
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -626,17 +560,17 @@ def main() -> None:
                         help="Restrict to one YAML category (e.g. task, diagnosis)")
     parser.add_argument("--no-openalex",   action="store_true",
                         help="Disable OpenAlex queries (use DB + CrossRef only)")
-    parser.add_argument("--gemini-model",  default="gemini-2.5-pro",
-                        help="Gemini model ID to use (default: gemini-2.5-pro for quality)")
+    parser.add_argument("--models",        default=None,
+                        help="comma-separated models (defined in backend/llm/llm_config.yaml) "
+                             "instead of profile synonym_expansion's")
     args = parser.parse_args()
 
-    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
-    gemini_key    = os.environ.get("GEMINI_API_KEY")
-    if not anthropic_key and not gemini_key:
-        sys.exit("Error: set ANTHROPIC_API_KEY or GEMINI_API_KEY before running.")
-
-    provider = "Claude Sonnet" if anthropic_key else f"Gemini ({args.gemini_model})"
-    print(f"LLM backend : {provider}")
+    from llm_client import LLMAllFailedError, profile_available
+    models = [m.strip() for m in args.models.split(",") if m.strip()] if args.models else None
+    if not models and not profile_available("synonym_expansion"):
+        sys.exit("Error: no model of LLM profile synonym_expansion can be called "
+                 "(set ANTHROPIC_API_KEY or GEMINI_API_KEY).")
+    print(f"LLM models  : {', '.join(models) if models else 'profile synonym_expansion'}")
     print(f"Mode        : {args.mode}")
 
     # 1. Discover nodes to process
@@ -712,9 +646,8 @@ def main() -> None:
         sys_prompt = _SYSTEM_REPLACE if args.mode == "replace" else _SYSTEM_AUGMENT
         prompt = _build_prompt(node, all_texts, mode=args.mode)
         try:
-            candidates = _call_llm(prompt, anthropic_key, gemini_key, args.gemini_model,
-                                   system=sys_prompt)
-        except SynonymLLMError as exc:
+            candidates = _ask_model(prompt, system=sys_prompt, models=models)
+        except LLMAllFailedError as exc:
             print(f"[llm error: {exc}]")
             continue
 

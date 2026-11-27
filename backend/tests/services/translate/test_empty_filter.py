@@ -44,13 +44,13 @@ def _fake_pipeline(monkeypatch, question: str, generated_sql: str, **plan_overri
                                 scored_filters=[], resolved=[])
     monkeypatch.setattr(preprocess, "run_pipeline", lambda *args, **kwargs: augmented)
     monkeypatch.setattr(retriever, "MetadataRetriever", lambda *args, **kwargs: None)
-    monkeypatch.setattr(text_to_sql, "_gemini_sql_generation", lambda *args, **kwargs: generated_sql)
+    monkeypatch.setattr(text_to_sql, "_generate_sql", lambda *args, **kwargs: generated_sql)
 
 
 def test_no_condition_becomes_a_keyword_search(monkeypatch) -> None:
     _fake_pipeline(monkeypatch, "bonn", BASE + "GROUP BY d.id")
 
-    result = text_to_sql._run_local("bonn", "dummy-key")
+    result = text_to_sql._run_local("bonn")
 
     assert "search_tsv @@" in result.sql
     assert "bonn" in result.rank_query.stemmed
@@ -63,7 +63,7 @@ def test_a_ranking_question_may_keep_every_dataset(monkeypatch) -> None:
     sql = BASE + "GROUP BY d.id ORDER BY subject_count DESC LIMIT 10"
     _fake_pipeline(monkeypatch, "the 10 largest datasets", sql, result_limit=10)
 
-    result = text_to_sql._run_local("the 10 largest datasets", "dummy-key")
+    result = text_to_sql._run_local("the 10 largest datasets")
 
     assert "search_tsv" not in result.sql
     assert "LIMIT 10" in result.sql.upper()
@@ -72,7 +72,7 @@ def test_a_ranking_question_may_keep_every_dataset(monkeypatch) -> None:
 def test_a_filtered_search_is_left_alone(monkeypatch) -> None:
     _fake_pipeline(monkeypatch, "CC0 datasets", BASE + "WHERE d.license ILIKE '%CC0%' GROUP BY d.id")
 
-    result = text_to_sql._run_local("CC0 datasets", "dummy-key")
+    result = text_to_sql._run_local("CC0 datasets")
 
     assert "CC0" in result.sql
     assert "keyword search" not in result.explanation

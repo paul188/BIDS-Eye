@@ -27,8 +27,9 @@ Papers whose relation is not shown (related_study, tool, unclear):
     SELECT accession_id, paper_relation->>'relation', paper_relation->>'paper_key'
     FROM bids_datasets WHERE paper_relation->>'shown' = 'false';
 
-Needs the database at the newest migration (backend/migrations/README.md). Needs GEMINI_API_KEY;
-README, catalogue and paper text go to Gemini only, never to the Claude fallback.
+Needs the database at the newest migration (backend/migrations/README.md). Needs a model of
+LLM profile dataset_description (backend/llm/llm_config.yaml): README, catalogue and paper text
+go to Gemini only, never to the Claude fallback.
 Database connection: DATABASE_URL, or the METADATA_DB_* variables.
 """
 
@@ -86,8 +87,9 @@ async def main() -> int:
     for noisy in ("httpx", "google_genai", "google_genai.models"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
-    if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-        log.error("GEMINI_API_KEY is not set")
+    import llm_client
+    if not llm_client.profile_available("dataset_description"):
+        log.error("No model of LLM profile dataset_description can be called (key or SDK missing)")
         return 2
 
     started = time.monotonic()

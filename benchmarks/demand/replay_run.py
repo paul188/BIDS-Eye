@@ -64,7 +64,9 @@ def main() -> None:
         return sql
 
     preprocess.run_pipeline = replay_pipeline
-    t2s._gemini_sql_generation = replay_generate
+    # The names before llm_client's profiles (2026-11-27) carried "gemini".
+    setattr(t2s, "_generate_sql" if hasattr(t2s, "_generate_sql") else "_gemini_sql_generation",
+            replay_generate)
     # No model repairs SQL here either; the search runner holds its own reference.
     try:
         from services import search_runner as runner
@@ -72,8 +74,12 @@ def main() -> None:
         # Search code before the router split: these lived in routers/query.py.
         import routers.query as runner
     # The recorded repair, when there is one; otherwise the SQL stays as it is.
-    t2s._correct_sql_with_gemini = runner._correct_sql_with_gemini = lambda sql, *a, **k: (
-        recording.get(current.get("question"), {}).get("corrected_sql") or sql)
+    correct_name = "_correct_sql" if hasattr(runner, "_correct_sql") else "_correct_sql_with_gemini"
+
+    def replay_correct(sql, *a, **k):
+        return recording.get(current.get("question"), {}).get("corrected_sql") or sql
+    setattr(t2s, correct_name, replay_correct)
+    setattr(runner, correct_name, replay_correct)
     questions = [q for q in load_questions(args.queries, args.prefix) if q["question"] in recording]
     asyncio.run(eval_recall._run(questions, args.out, args.backend_dir,
                                  args.label or f"replay of {args.recording.name}"))

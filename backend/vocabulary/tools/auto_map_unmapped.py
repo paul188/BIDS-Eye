@@ -19,8 +19,8 @@ apply_canonical_codes.py will then update the DB with dataset-specific WHERE cla
 
 Continuous-update mode (default)
 ---------------------------------
-After each Gemini batch, decisions are immediately applied to value_mappings.yaml
-and the updated tree is passed to subsequent batches.  This means Gemini always
+After each model batch, decisions are immediately applied to value_mappings.yaml
+and the updated tree is passed to subsequent batches.  This means the model always
 sees the current state of the YAML — newly added entries are visible to the next batch.
 
 Integration log
@@ -44,7 +44,7 @@ Optional flags:
   --dataset-context dataset_context.json      # name+description per dataset (from find_unmapped)
   --sections diagnosis task suffix datatype   # limit to specific fields
   --batch-size 15                             # values per LLM call (default 10)
-  --model gemini-3.1-pro                      # deprecated compatibility flag; canonical cascade is used
+  --model gemini-3.1-pro                      # one model instead of profile vocabulary_mapping's
   --resume                                    # skip values already in checkpoint
   --generate-only                             # skip applying after each batch
 """
@@ -53,85 +53,53 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
-import time
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 
 
-# ── Gemini helpers ─────────────────────────────────────────────────────────────
+# ── The model call ─────────────────────────────────────────────────────────────
+# Models, retries and waits: profile vocabulary_mapping in backend/llm/llm_config.yaml.
 
-MODEL_CASCADE = [
-    # Das aktuelle Flaggschiff für Geschwindigkeit & Intelligenz (GA-Status)
-    ("gemini-3.1-pro",         "Primary",    2, [30, 60]),
+_LLM_DIR = Path(__file__).resolve().parents[2] / "llm"
+if str(_LLM_DIR) not in sys.path:
+    sys.path.insert(0, str(_LLM_DIR))
 
-    # Der hocheffiziente Allrounder (stabil und kostengünstig)
-    ("gemini-3.1-flash",       "Fallback 1", 2, [30, 60]),
+_TEXT = {"type": "string"}
+_TEXTS = {"type": "array", "items": _TEXT}
+# The decisions the prompt describes (build_prompt, "Each object must have").
+ANSWER_SCHEMA = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "raw": _TEXT,
+            "action": {"type": "string", "enum": [
+                "filter", "add_to_codes", "add_to_dataset_codes", "new_entry", "new_entry_scoped"]},
+            "reasoning": _TEXT,
+            "target_standard_code": _TEXT,
+            "datasets": _TEXTS,
+            "group": _TEXT,
+            "standard_code": _TEXT,
+            "label": _TEXT,
+            "description": _TEXT,
+            "synonyms": _TEXTS,
+        },
+        "required": ["raw", "action", "reasoning"],
+    },
+}
 
-    # Die Ultra-Leichtgewicht-Variante für einfache Aufgaben/Massendaten
-    ("gemini-3.1-flash-lite",  "Fallback 2", 3, [60, 120, 240]),
 
-    # Optional: Spezialmodell für komplexe Logik (Reasoning-Fokus)
-    ("gemini-3-deep-think",    "Fallback 3", 5, [120, 240, 480]),
-]
-
-_MODEL_IDS = [model_id for model_id, *_ in MODEL_CASCADE]
-
-
-class GeminiCascadeError(Exception):
-    """No model of MODEL_CASCADE gave an answer."""
-
-def _gemini_client():
-    from google import genai
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise SystemExit("Set GEMINI_API_KEY or GOOGLE_API_KEY in environment.")
-    return genai.Client(api_key=api_key)
-
-
-def _call_gemini(client, _model: str, prompt: str) -> str:
-    """The first answer of MODEL_CASCADE. A model is retried on 429 and 503
-    and skipped on any other API error or a broken connection; raises
-    GeminiCascadeError when none answered. Anything else (a bug, a config the
-    SDK rejects) is raised."""
-    import httpx
-    from google.genai import errors as genai_errors
-    from google.genai import types
-    model_cascade = list(_MODEL_IDS)
-
-    last: Exception | None = None
-    for mdl in model_cascade:
-        for attempt in range(5):
-            try:
-                resp = client.models.generate_content(
-                    model=mdl,
-                    config=types.GenerateContentConfig(
-                        temperature=0.2,
-                        response_mime_type="application/json",
-                    ),
-                    contents=prompt,
-                )
-                if resp.text:
-                    return resp.text
-            except genai_errors.APIError as exc:
-                last = exc
-                if exc.code == 404:  # model not available
-                    break
-                if exc.code in (429, 503):  # RESOURCE_EXHAUSTED, UNAVAILABLE
-                    wait = 30.0 * (2 ** attempt)
-                    print(f"    rate-limited, waiting {wait:.0f}s …")
-                    time.sleep(wait)
-                else:
-                    print(f"    {mdl}: API error {exc.code}: {str(exc)[:100]}")
-                    break
-            except httpx.TransportError as exc:  # timeout, connection
-                last = exc
-                print(f"    {mdl}: {type(exc).__name__}: {str(exc)[:100]}")
-                break
-    raise GeminiCascadeError(f"no model of the cascade answered (last error: {last})") from last
+def _ask_model(prompt: str, models: list[str] | None = None) -> str:
+    """The first answer of profile vocabulary_mapping (or *models* under its
+    policy). Raises llm_client.LLMAllFailedError when no model answers; a bug is
+    raised as itself."""
+    from llm_client import llm_generate
+    return llm_generate(prompt, profile="vocabulary_mapping", json_schema=ANSWER_SCHEMA,
+                        models=models)
 
 
 # ── YAML helpers ───────────────────────────────────────────────────────────────
@@ -161,7 +129,7 @@ def _full_tree_summary(section_data: dict) -> str:
       - Group/sub-group names and their descriptions (no synonyms, no codes)
       - Leaf entry names and their labels/descriptions
 
-    This is deliberately minimal: Gemini only needs to know what concepts already
+    This is deliberately minimal: the model only needs to know what concepts already
     exist and where they live, not the full synonym/codes lists.  Keeping the
     summary small leaves token budget for the dataset context.
 
@@ -204,7 +172,7 @@ def _collect_all_codes(section_data: dict) -> set[str]:
     """
     Return a flat set of every raw value already mapped in this section —
     i.e. everything in any 'codes' list or 'dataset_codes[].raw' field.
-    Used to skip already-covered values before sending a batch to Gemini.
+    Used to skip already-covered values before sending a batch to the model.
     """
     covered: set[str] = set()
 
@@ -317,7 +285,7 @@ def build_prompt(
     batch: list[dict],
     dataset_context: dict[str, dict],
 ) -> str:
-    """Build the Gemini classification prompt using the hierarchy tree and dataset context."""
+    """Build the classification prompt using the hierarchy tree and dataset context."""
     desc_limit = 400  # chars of description_text per dataset
 
     enriched_batch = []
@@ -548,19 +516,22 @@ def generate_decisions(
     log_path: Path,
     sections: list[str],
     batch_size: int,
-    model: str,
+    model: str | None,
     resume: bool,
     generate_only: bool,
     dataset_context: dict[str, dict],
 ) -> dict[str, list[dict]]:
     """
-    For each section × batch: call Gemini, immediately apply to mappings (unless
+    For each section × batch: ask the model, immediately apply to mappings (unless
     generate_only=True), and save both checkpoint and mappings after every batch.
 
     Continuous-apply mode (default) means the YAML tree passed to later batches
-    already contains entries added by earlier batches — Gemini always sees current state.
+    already contains entries added by earlier batches — the model always sees current state.
     """
-    client = _gemini_client()
+    from llm_client import LLMAllFailedError, profile_available
+    if not profile_available("vocabulary_mapping") and not model:
+        raise SystemExit("No model of LLM profile vocabulary_mapping can be called "
+                         "(set its key, see backend/llm/llm_config.yaml).")
 
     # Load existing checkpoint
     decisions: dict[str, list[dict]] = {}
@@ -604,14 +575,14 @@ def generate_decisions(
             prompt = build_prompt(section, section_data, batch, dataset_context)
 
             try:
-                raw_resp = _call_gemini(client, model, prompt)
+                raw_resp = _ask_model(prompt, [model] if model else None)
                 raw_resp = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_resp.strip())
                 batch_decisions = json.loads(raw_resp)
                 if not isinstance(batch_decisions, list):
                     raise ValueError("expected JSON array")
             # ValueError: an answer that is not a JSON array (JSONDecodeError
             # is one); a bug in the prompt or the parsing is raised.
-            except (GeminiCascadeError, ValueError) as exc:
+            except (LLMAllFailedError, ValueError) as exc:
                 print(f"FAILED ({exc})")
                 print("      Skipping batch — re-run with --resume to retry.")
                 continue
@@ -662,7 +633,7 @@ def main() -> None:
                         help="Apply all decisions from checkpoint to value_mappings.yaml "
                              "(use this after --generate-only to apply in one go)")
     parser.add_argument("--generate-only", action="store_true",
-                        help="Call Gemini but do NOT apply to value_mappings.yaml after each "
+                        help="Ask the model but do NOT apply to value_mappings.yaml after each "
                              "batch. Use --apply afterwards to apply from checkpoint.")
     parser.add_argument("--resume",     action="store_true",
                         help="Skip values already present in checkpoint")
@@ -677,8 +648,9 @@ def main() -> None:
                         help="Values per LLM call (default 10)")
     parser.add_argument(
         "--model",
-        default="gemini-3.1-pro",
-        help="Deprecated compatibility flag; the canonical MODEL_CASCADE is always used.",
+        default=None,
+        help="One model (defined in backend/llm/llm_config.yaml) instead of the models of "
+             "profile vocabulary_mapping.",
     )
     args = parser.parse_args()
 
@@ -693,7 +665,7 @@ def main() -> None:
               f"from {args.dataset_context}")
     else:
         print(f"Note: no dataset context file at {args.dataset_context} — "
-              f"run find_unmapped_db_values.py first for richer Gemini context.")
+              f"run find_unmapped_db_values.py first for richer model context.")
 
     total_unmapped = sum(len(unmapped.get(s, {})) for s in args.sections)
     print(f"Unmapped values to process: {total_unmapped} across {args.sections}")

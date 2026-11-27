@@ -134,7 +134,7 @@ def test_full_sql_prompt_budget_drops_only_whole_lower_ranked_examples(monkeypat
          "sql": "SELECT {{COLS}} FROM bids_datasets d GROUP BY d.id"}
         for i in range(3)
     ]
-    text_to_sql._gemini_sql_generation("current request", "offline", examples)
+    text_to_sql._generate_sql("current request", examples)
     prompt = captured["prompt"]
     assert len(prompt) + len(captured["system"]) <= instructions.SQL_PROMPT_CHAR_BUDGET
     assert prompt.count("[QUESTION]") == prompt.count("[/QUESTION]")

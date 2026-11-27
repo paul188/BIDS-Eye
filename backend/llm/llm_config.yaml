@@ -1,9 +1,30 @@
 # LLM models, providers and profiles (read by llm_client.py).
 #
-#   models     what each model can do; shared by every profile
-#   providers  which env var holds the key (never the key itself)
+#   providers  where models run: the adapter `type` (gemini, anthropic,
+#              openai_compatible), the env var that holds the key (never the
+#              key itself), the server's base_url
+#   models     what each model can do and which provider serves it; shared by
+#              every profile
 #   profiles   one per use case: tiers in fallback order, retries, timeouts,
-#              deadline and the task's defaults
+#              deadline and the task's defaults (temperature, max_tokens,
+#              thinking_level); a tier may set its own values for its model
+#
+# Switching a use case to another model: define the model under `models`
+# (and its provider under `providers` if it is new), then name it in the
+# profile's tiers. No code changes. A local model behind Ollama, vLLM,
+# llama.cpp server or LM Studio is an openai_compatible provider:
+#
+#   providers:
+#     local:
+#       type: openai_compatible
+#       base_url: http://gpu-box:11434/v1     # Ollama; vLLM: http://host:8000/v1
+#       # api_key_env: LOCAL_LLM_KEY          # only if the server wants one
+#   models:
+#     qwen3:32b: {provider: local, json_schema: native}
+#   profiles:
+#     sql:
+#       tiers:
+#         - {model: "qwen3:32b", timeout: 60, max_tokens: 4096}
 #
 # LLM_CONFIG_PATH points the backend at another file of this shape (to swap
 # models without a deploy). The file in use is part of the interpretation
@@ -15,6 +36,7 @@
 
 providers:
   gemini:
+    type: gemini
     api_key_env: [GEMINI_API_KEY, GOOGLE_API_KEY]
     # Temperature 0 alone did not make answers repeatable: the same question
     # got different SQL in 19 of 69 requests across two runs
@@ -22,6 +44,7 @@ providers:
     # way to repeat a sample. Sent to models with `seed: true`; null sends none.
     seed: 0
   anthropic:
+    type: anthropic
     api_key_env: ANTHROPIC_API_KEY
 
 models:
@@ -37,6 +60,7 @@ models:
   gemini-3.1-pro:         {provider: gemini, seed: true, json_schema: native, thinking: level}
   gemini-3.5-flash-lite:  {provider: gemini, seed: true, json_schema: native, thinking: level}
   gemini-3.8-flash:       {provider: gemini, seed: true, json_schema: native, thinking: level}
+  gemini-3-deep-think:    {provider: gemini, seed: true, json_schema: native}
   # The Anthropic API takes no seed and here gets the schema as an instruction.
   claude-haiku-4-5:       {provider: anthropic}
   claude-sonnet-4-6:      {provider: anthropic}
@@ -110,3 +134,28 @@ profiles:
     max_tokens: 8192
     tiers:
       - {model: gemini-2.5-flash, attempts: 2, waits: [2], timeout: 12}
+
+  # ── vocabulary tools (backend/vocabulary/tools/) ──
+  # auto_map_unmapped.py: one batch of unmapped values per call; long waits
+  # on overload, since the job runs unattended. --model replaces the models.
+  vocabulary_mapping:
+    deadline_seconds: 3600
+    temperature: 0.2
+    max_tokens: 16384
+    tiers:
+      - {model: gemini-3.1-pro, attempts: 3, waits: [30, 60], timeout: 300}
+      - {model: gemini-3.1-flash, attempts: 3, waits: [30, 60], timeout: 300}
+      - {model: gemini-3.1-flash-lite, attempts: 3, waits: [60, 120], timeout: 300}
+      - {model: gemini-3-deep-think, attempts: 3, waits: [120, 240], timeout: 600, reserve_seconds: 600}
+  # expand_synonyms.py: public abstracts and descriptions. Claude Sonnet when
+  # its key is set, else (or when it fails) Gemini 2.5 Pro. --models replaces them.
+  synonym_expansion:
+    deadline_seconds: 900
+    temperature: 0.0
+    max_tokens: 1024
+    tiers:
+      - {model: claude-sonnet-4-6, timeout: 120, optional: true}
+      # Gemini 2.5 Pro always thinks, and thinking counts toward the output
+      # limit: this model gets more room than the profile's 1,024.
+      - {model: gemini-2.5-pro, attempts: 5, waits: [15, 30, 60, 120], timeout: 120,
+         max_tokens: 8192, reserve_seconds: 120}

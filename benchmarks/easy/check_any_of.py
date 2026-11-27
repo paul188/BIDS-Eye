@@ -94,7 +94,7 @@ def main() -> None:
         wrong = []
         for _ in range(args.repeats):
             try:
-                problem = judge(preprocess.preprocess_query(question, api_key=api_key))
+                problem = judge(preprocess.preprocess_query(question))
             except Exception as exc:  # noqa: BLE001
                 problem = f"error: {str(exc)[:80]}"
             if problem:

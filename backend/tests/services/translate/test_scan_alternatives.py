@@ -14,7 +14,7 @@ for _p in ("backend/llm", "backend/vocabulary"):
 
 from preprocess import (  # noqa: E402
     QueryPlan, RAGField, ResolvedTerms, ScanRequirement, _SYSTEM_PROMPT,
-    _build_augmented_question, _gemini_output_schema,
+    _build_augmented_question, _plan_output_schema,
 )
 
 EEG = ResolvedTerms(field=RAGField.DATATYPE, term_to_codes={"EEG": ["electroencephalography"]})
@@ -109,7 +109,7 @@ def test_terms_are_matched_whatever_their_case():
 
 
 def test_the_model_is_told_about_the_flag():
-    schema = _gemini_output_schema()
+    schema = _plan_output_schema()
     assert "any_of" in str(schema)
     assert "any_of: true" in _SYSTEM_PROMPT
 

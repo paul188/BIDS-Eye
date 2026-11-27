@@ -27,7 +27,8 @@ question returned the fallback sample, when there is nothing to reorder, and
 whenever the model fails or is slower than RERANK_TIMEOUT_SECONDS.
 
 Off unless RERANK_ENABLED is "true": the step sends candidate descriptions
-(public catalogue metadata) to Gemini, which needs an explicit decision.
+(public catalogue metadata) to the models of profile rerank (Gemini by
+default), which needs an explicit decision.
 
 Config (env):
   RERANK_ENABLED          "true" turns it on (default off)
@@ -131,7 +132,8 @@ def settings() -> Dict[str, Any]:
 def should_rerank(apply_relevance: bool, total: int, is_fallback: bool) -> bool:
     if not settings()["enabled"] or is_fallback or not apply_relevance or total < 2:
         return False
-    return bool(os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+    from llm_client import profile_available
+    return profile_available("rerank")
 
 
 # ── Candidate descriptions ────────────────────────────────────────────────────

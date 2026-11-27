@@ -28,13 +28,14 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 paradigms, each with a checked quote
                 (backend/services/indexing/readme_profile_runner.py, the same
                 code as ingest/backfill/extract_readme_profiles.py). Only datasets
-                whose README or study fields changed. Needs GEMINI_API_KEY;
-                the text goes to Gemini only.
+                whose README or study fields changed. Needs a model of LLM
+                profile readme_profile (backend/llm/llm_config.yaml; Gemini
+                only, the text goes to no other provider).
   2. descriptions  how each primary paper relates to its dataset, and a
                 generated summary where the README is thin
                 (backend/services/indexing/dataset_description.py, the same code as
                 ingest/backfill/describe_datasets.py). Only what is missing or stale.
-                Needs GEMINI_API_KEY; the text goes to Gemini only.
+                Needs a model of LLM profile dataset_description (Gemini only).
   3. word forms  rebuild bids_word_forms, the catalogue's word forms per stem
                 (backend/services/fulltext/word_form_counts.py). No LLM, no network;
                 the whole catalogue, not only the indexed datasets.
@@ -56,8 +57,8 @@ Environment:
     CRAWL_WORD_FORMS        "false" skips step 3 (default on)
     CRAWL_VACUUM            "false" skips step 4 (default on)
     PAPER_RECHECK_DAYS      how old a paper lookup may get (default 30)
-    DATASET_DESCRIPTION_MODEL  Gemini model for step 2 (default gemini-2.5-flash)
-    README_PROFILE_MODEL    Gemini model for the README profiles
+    DATASET_DESCRIPTION_MODEL  model for step 2 (default gemini-2.5-flash)
+    README_PROFILE_MODEL    model for the README profiles
 
 The same steps over datasets that are already indexed, without crawling
 them (from this folder, with the crawler's environment):
@@ -136,33 +137,33 @@ def _add_to_path(*names: str) -> None:
 
 
 def _descriptions_available() -> bool:
-    if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-        log.info("[post-crawl] No GEMINI_API_KEY: dataset descriptions skipped.")
-        return False
     _add_to_path("backend", "backend/llm")
     try:
-        import llm_client  # noqa: F401
-        from google import genai  # noqa: F401  (llm_client imports it only when called)
+        import llm_client
         from services.indexing import dataset_description  # noqa: F401
     except ImportError as exc:
         log.warning("[post-crawl] Dataset descriptions skipped: %s", exc)
+        return False
+    if not llm_client.profile_available("dataset_description"):
+        log.info("[post-crawl] No model of LLM profile dataset_description can be called "
+                 "(key or SDK missing): dataset descriptions skipped.")
         return False
     return True
 
 
 def _profiles_available() -> bool:
-    if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-        log.info("[post-crawl] No GEMINI_API_KEY: README profiles skipped.")
-        return False
     # backend/vocabulary/ holds the diagnosis resolver that codes the conditions.
     _add_to_path("backend", "backend/llm", "backend/vocabulary")
     try:
-        import llm_client  # noqa: F401
+        import llm_client
         import retriever  # noqa: F401
-        from google import genai  # noqa: F401  (llm_client imports it only when called)
         from services.indexing import readme_profile_runner  # noqa: F401
     except ImportError as exc:
         log.warning("[post-crawl] README profiles skipped: %s", exc)
+        return False
+    if not llm_client.profile_available("readme_profile"):
+        log.info("[post-crawl] No model of LLM profile readme_profile can be called "
+                 "(key or SDK missing): README profiles skipped.")
         return False
     return True
 

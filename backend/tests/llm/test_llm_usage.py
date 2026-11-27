@@ -195,15 +195,46 @@ def test_all_tiers_failing_names_each(monkeypatch):
 
 # ── profiles and tiers ───────────────────────────────────────────────────────
 
-def test_the_profile_sets_the_request_and_a_call_may_override_it(monkeypatch):
+def test_the_profile_sets_the_request_and_a_call_may_set_the_thinking_level(monkeypatch):
     gemini, _ = _install(monkeypatch, {"p": {
         "deadline_seconds": 10, "temperature": 0.3, "max_tokens": 99, "thinking_level": "low",
         "tiers": [{"model": "gemini-a"}]}})
     schema = {"type": "object"}
     llm_client.llm_generate("p", profile="p", system="s", json_schema=schema)
-    llm_client.llm_generate("p", profile="p", temperature=0.0, max_tokens=7, thinking_level="high")
+    llm_client.llm_generate("p", profile="p", thinking_level="high")
     assert gemini.calls[0][1] == llm_client.LLMRequest("p", "s", 0.3, 99, schema, "low")
-    assert gemini.calls[1][1] == llm_client.LLMRequest("p", None, 0.0, 7, None, "high")
+    assert gemini.calls[1][1] == llm_client.LLMRequest("p", None, 0.3, 99, None, "high")
+
+
+def test_a_tier_sets_its_own_values_for_its_model(monkeypatch):
+    gemini, claude = _install(monkeypatch, {"p": {
+        "deadline_seconds": 10, "temperature": 0.0, "max_tokens": 1024, "thinking_level": "low",
+        "tiers": [{"model": "gemini-a", "max_tokens": 8192, "temperature": 0.7},
+                  {"model": "claude-x", "thinking_level": "high"}]}},
+        gemini=FakeProvider("gemini", _raise(_client_error())))
+    llm_client.llm_generate("q", profile="p")
+    g, c = gemini.calls[0][1], claude.calls[0][1]
+    assert (g.temperature, g.max_tokens, g.thinking_level) == (0.7, 8192, "low")
+    assert (c.temperature, c.max_tokens, c.thinking_level) == (0.0, 1024, "high")
+
+
+def test_a_model_override_does_not_inherit_the_replaced_models_values(monkeypatch):
+    gemini, _ = _install(monkeypatch, {"p": {
+        "deadline_seconds": 10, "max_tokens": 1024,
+        "tiers": [{"model": "gemini-a", "max_tokens": 8192, "timeout": 7}]}})
+    llm_client.llm_generate("q", profile="p", models=["gemini-b"])
+    model, req, timeout = gemini.calls[0]
+    assert (model, req.max_tokens, timeout) == ("gemini-b", 1024, 7)
+
+
+def test_profile_available(monkeypatch):
+    _install(monkeypatch, {"p": _profile("gemini-a", "claude-x")},
+             gemini=FakeProvider("gemini", available=False))
+    assert llm_client.profile_available("p")
+    _install(monkeypatch, {"p": _profile("gemini-a")}, gemini=FakeProvider("gemini", available=False))
+    assert not llm_client.profile_available("p")
+    with pytest.raises(llm_client.LLMConfigError):
+        llm_client.profile_available("nope")
 
 
 def test_an_unknown_profile_or_model_is_refused(monkeypatch):
@@ -245,7 +276,7 @@ def test_an_optional_tier_without_a_key_leaves_no_failure(monkeypatch):
 
 def test_no_tier_configured_fails(monkeypatch):
     _install(monkeypatch, {"p": _profile("gemini-a")}, gemini=FakeProvider("gemini", available=False))
-    with pytest.raises(llm_client.LLMAllFailedError, match="no gemini API key"):
+    with pytest.raises(llm_client.LLMAllFailedError, match="no gemini key"):
         llm_client.llm_generate("q", profile="p")
 
 
@@ -276,7 +307,9 @@ def test_the_callers_profiles_and_default_models_are_defined():
     (lambda d: d["profiles"]["p"].pop("deadline_seconds"), "deadline_seconds"),
     (lambda d: d["models"]["gemini-a"].update(provider="openai"), "not defined"),
     (lambda d: d["models"]["gemini-a"].update(json_schema="strict"), "native or prompt"),
-    (lambda d: d["providers"].update(openai={"api_key_env": "K"}), "unknown provider"),
+    (lambda d: d["providers"].update(openai={"api_key_env": "K"}), "unknown type"),
+    (lambda d: d["providers"].update(box={"type": "openai_compatible"}), "base_url"),
+    (lambda d: d["profiles"]["p"]["tiers"][0].update(max_token=5), "unknown setting"),
 ])
 def test_a_bad_config_is_refused(change, message):
     data = {"providers": {"gemini": {"api_key_env": "X"}},
@@ -285,6 +318,21 @@ def test_a_bad_config_is_refused(change, message):
     change(data)
     with pytest.raises(llm_client.LLMConfigError, match=message):
         llm_client.parse_config(data)
+
+
+def test_providers_are_named_entries_of_a_type():
+    cfg = llm_client.parse_config({
+        "providers": {"gemini": {"api_key_env": "X"},
+                      "box": {"type": "openai_compatible", "base_url": "http://gpu:11434/v1/"},
+                      "claude": {"type": "anthropic", "api_key_env": "Y"}},
+        "models": {"qwen3:32b": {"provider": "box", "json_schema": "native"},
+                   "claude-x": {"provider": "claude"}},
+        "profiles": {"p": {"deadline_seconds": 10, "tiers": [{"model": "qwen3:32b"}]}}})
+    box = cfg.providers["box"]
+    assert isinstance(box, llm_client.OpenAICompatibleProvider)
+    assert (box.name, box.base_url) == ("box", "http://gpu:11434/v1")
+    assert isinstance(cfg.providers["claude"], llm_client.AnthropicProvider)
+    assert cfg.providers["claude"].name == "claude"
 
 
 def test_llm_config_path_points_at_another_file(monkeypatch, tmp_path):
@@ -304,7 +352,7 @@ def test_check_config_warns_about_a_required_tier_without_a_key(monkeypatch, cap
         gemini=FakeProvider("gemini", available=False),
         anthropic=FakeProvider("anthropic", available=False))
     llm_client.check_config()
-    assert "gemini-a has no gemini key" in caplog.text
+    assert "gemini-a cannot be called" in caplog.text
     assert "claude-x" not in caplog.text
 
 

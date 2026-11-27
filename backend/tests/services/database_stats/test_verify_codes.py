@@ -55,7 +55,7 @@ def test_the_pipeline_reports_a_cached_miss_as_db_miss(monkeypatch) -> None:
 
     plan = p.QueryPlan(query_family="concept_query", natural_language_summary="a task",
                        scan_requirements=[], rag_requests=[])
-    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question, api_key=None: plan)
+    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question: plan)
     monkeypatch.setattr(p.pipeline, "build_rag_requests",
                         lambda plan, *args, **kwargs: [p.RAGRequest(field=p.RAGField.TASK,
                                                                     terms=["odd task"])])

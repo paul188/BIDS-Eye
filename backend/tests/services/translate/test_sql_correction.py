@@ -96,8 +96,8 @@ def test_the_correction_call_returns_a_runnable_tiered_query(tiered_sql, monkeyp
         return _repair(tiered_sql)
 
     monkeypatch.setattr(text_to_sql, "llm_generate", fake_generate)
-    corrected = text_to_sql._correct_sql_with_gemini(
-        tiered_sql, 'invalid input value for enum: "functional_mri"', QUESTION, "key")
+    corrected = text_to_sql._correct_sql(
+        tiered_sql, 'invalid input value for enum: "functional_mri"', QUESTION)
     assert prompts and tiered_sql in prompts[0]
     assert "'anatomical_mri'" in corrected
     assert _outer_columns(corrected) == _outer_columns(tiered_sql)
