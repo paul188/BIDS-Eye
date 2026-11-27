@@ -47,7 +47,7 @@ borg create --stats --compression zstd,6 \
     "::config-{now:%Y-%m-%dT%H%M}" \
     "$PROJECT_DIR/.env" \
     "$PROJECT_DIR/docker-compose-prod.yml" \
-    "$PROJECT_DIR/nginx"
+    "$PROJECT_DIR/deploy/nginx"
 
 # 3) Retention: 14 daily, 8 weekly, 24 monthly copies of each kind.
 log "pruning old archives"

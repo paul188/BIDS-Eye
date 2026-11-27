@@ -54,7 +54,7 @@ leaves no archive, and a restore test.
 5. **Install the timers** and run the first backup by hand:
 
    ```bash
-   cp /home/BIDS-Eye/scripts/backup/*.service /home/BIDS-Eye/scripts/backup/*.timer /etc/systemd/system/
+   cp /home/BIDS-Eye/deploy/backup/*.service /home/BIDS-Eye/deploy/backup/*.timer /etc/systemd/system/
    systemctl daemon-reload
    systemctl enable --now bidseye-backup.timer bidseye-restore-test.timer
    systemctl start bidseye-backup.service && journalctl -u bidseye-backup -n 30

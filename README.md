@@ -154,7 +154,9 @@ BIDS-SQL/                    Shared indexing and database layer (git submodule)
   input_pipeline.py          BIDS dataset discovery and ingestion
   db/                        ORM models and database helpers
 benchmarks/                  Search quality benchmarks
-scripts/backup/              Database backups (systemd timers on the server)
+deploy/                      What runs the site on the server
+  nginx/                     Reverse proxy and TLS configuration
+  backup/                    Database backups (systemd timers on the server)
 docs/                        Research notes and design plans
 ```
 
