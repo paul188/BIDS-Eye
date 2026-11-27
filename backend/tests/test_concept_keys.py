@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from constants import build_schema_ddl
+from services.translate.prompt.schema_ddl import build_schema_ddl
 from services.translate.concept_keys import expand_concept_keys, group_codes
 from services.translate.sql_rewriter import SqlRewriteService
 

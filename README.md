@@ -104,7 +104,7 @@ The repository is split into two main application layers:
 - [`backend/`](./backend/) contains the FastAPI app and query service.
 - [`frontend/`](./frontend/) contains the Vue search interface.
 - [`BIDS-SQL/`](./BIDS-SQL/) contains the reusable indexing and database layer.
-- [`backend/constants.py`](./backend/constants.py) holds the schema shown to the SQL model, and [`backend/services/translate/sql_rewriter.py`](./backend/services/translate/sql_rewriter.py) post-processes the generated SQL.
+- [`backend/services/translate/prompt/`](./backend/services/translate/prompt/) holds the schema and the examples shown to the SQL model, and [`backend/services/translate/sql_rewriter.py`](./backend/services/translate/sql_rewriter.py) post-processes the generated SQL.
 
 One straightforward local setup is:
 
@@ -141,7 +141,6 @@ The session is a signed cookie; the server keeps no list of sessions. What follo
 ```text
 backend/                     FastAPI app, auth, query routing
   services/                  Search pipeline, grouped by stage (see services/__init__.py)
-  constants.py               Shared schema + prompt constants
   routers/                   Query, auth, and crawler endpoints
 frontend/                    Vue 3 dataset search UI
   src/                       Chat interface, dataset cards, and state management

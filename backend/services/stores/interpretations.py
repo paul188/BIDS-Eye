@@ -55,14 +55,16 @@ _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers,
 # and exceptions/expected.py, the base class of the errors.
 _VERSION_FILES = (
-    _BACKEND / "constants.py",
-    _BACKEND / "few_shot_examples.json",
     _BACKEND / "services" / "database_stats" / "database_stats.py",
     _BACKEND / "services" / "schema" / "check.py",
     _BACKEND / "services" / "schema" / "coded_fields.py",
     _BACKEND / "services" / "schema" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
     _BACKEND / "services" / "translate" / "optional_columns.py",
+    _BACKEND / "services" / "translate" / "prompt" / "examples.py",
+    _BACKEND / "services" / "translate" / "prompt" / "few_shot_examples.json",
+    _BACKEND / "services" / "translate" / "prompt" / "instructions.py",
+    _BACKEND / "services" / "translate" / "prompt" / "schema_ddl.py",
     _BACKEND / "services" / "translate" / "participant_query_compiler.py",
     _BACKEND / "services" / "query_guard.py",
     _BACKEND / "services" / "translate" / "sql_rewriter.py",
