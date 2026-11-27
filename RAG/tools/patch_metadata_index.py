@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-training_data_generation/patch_metadata_index.py
--------------------------------------------------
+RAG/tools/patch_metadata_index.py
+---------------------------------
 Extend an existing metadata_index.json with two new categories:
   authors         — all distinct author strings from bids_datasets.authors
   funding_sources — all distinct funding strings from bids_datasets.funding
@@ -9,17 +9,12 @@ Extend an existing metadata_index.json with two new categories:
 Use this when you already have a built index (tasks/diagnoses/datatypes/suffixes)
 and only want to add the author and funding vectors without rebuilding everything.
 
-Usage (run on HPC with PostgreSQL running):
-  python training_data_generation/patch_metadata_index.py \\
+Usage (needs the PostgreSQL database):
+  python RAG/tools/patch_metadata_index.py \\
       --db-url "postgresql://user:password@localhost:5429/bids_sql" \\
       --index  /path/to/metadata_index.json
 
 The file is updated in-place; a .bak backup is created first.
-
-SLURM usage:
-  This script needs DB access — run it inside a SLURM job that follows the
-  standard pattern (copy DB from Lustre, start pg_ctl, run script, stop pg_ctl).
-  See training_data_generation/build_metadata_index_job.sh for the template.
 """
 
 from __future__ import annotations
@@ -201,9 +196,7 @@ def _load_existing_index(index_path: Path) -> tuple[dict, Path]:
         f"Index is not valid JSON: {index_path}\n"
         "Tried the main file and backup, but neither could be loaded:\n"
         f"{failure_text}\n\n"
-        "Rebuild a fresh base index first with:\n"
-        "  sbatch training_data_generation/build_metadata_index_job.sh\n"
-        "Then rerun this patch script."
+        "Rebuild a fresh base index first, then rerun this patch script."
     )
 
 
@@ -266,17 +259,14 @@ def main() -> None:
         help="PostgreSQL connection string, e.g. postgresql://user:pw@localhost:5429/bids_sql",
     )
     parser.add_argument(
-        "--index", type=Path,
-        default=Path(__file__).resolve().parents[1] / "LLM_preprocessor" / "metadata_index.json",
-        help="Path to the metadata_index.json to patch (default: LLM_preprocessor/metadata_index.json)",
+        "--index", type=Path, required=True,
+        help="Path to the metadata_index.json to patch",
     )
     args = parser.parse_args()
 
     if not args.index.exists():
         raise SystemExit(
-            f"Index not found: {args.index}\n"
-            "Build it first with:\n"
-            "  sbatch training_data_generation/build_metadata_index_job.sh"
+            f"Index not found: {args.index}"
         )
 
     print(f"Index: {args.index}")

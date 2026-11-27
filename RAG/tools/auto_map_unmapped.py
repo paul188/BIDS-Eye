@@ -318,7 +318,7 @@ def build_prompt(
     dataset_context: dict[str, dict],
 ) -> str:
     """Build the Gemini classification prompt using the hierarchy tree and dataset context."""
-    DESC_LIMIT = 400  # chars of description_text per dataset
+    desc_limit = 400  # chars of description_text per dataset
 
     enriched_batch = []
     for item in batch:
@@ -330,7 +330,7 @@ def build_prompt(
             if ctx.get("name"):
                 entry["name"] = ctx["name"]
             if desc:
-                entry["description"] = desc[:DESC_LIMIT] + ("…" if len(desc) > DESC_LIMIT else "")
+                entry["description"] = desc[:desc_limit] + ("…" if len(desc) > desc_limit else "")
             datasets_info.append(entry)
         enriched_batch.append({
             "raw": item["raw"],
@@ -652,7 +652,7 @@ def main() -> None:
     parser.add_argument("--unmapped",   type=Path,
                         default=Path(__file__).with_name("unmapped_db_values.yaml"))
     parser.add_argument("--mappings",   type=Path,
-                        default=Path(__file__).with_name("value_mappings.yaml"))
+                        default=Path(__file__).resolve().parents[1] / "value_mappings.yaml")
     parser.add_argument("--checkpoint", type=Path,
                         default=Path(__file__).with_name("mapping_decisions.json"))
     parser.add_argument("--log",        type=Path,
@@ -709,7 +709,7 @@ def main() -> None:
         updated, stats = apply_decisions(decisions, mappings, args.log)
         save_yaml(args.mappings, updated)
 
-        print(f"\nDone.")
+        print("\nDone.")
         print(f"  filtered:             {stats['filtered']}")
         print(f"  add_to_codes:         {stats['add_to_codes']}")
         print(f"  add_to_dataset_codes: {stats['add_to_dataset_codes']}")
@@ -717,14 +717,14 @@ def main() -> None:
         print(f"  new_entry_scoped:     {stats['new_entry_scoped']}")
         print(f"  skipped:              {stats['skipped']}")
         print(f"\nvalue_mappings.yaml updated. Integration log: {args.log}")
-        print(f"Re-run find_unmapped_db_values.py to verify coverage.")
+        print("Re-run find_unmapped_db_values.py to verify coverage.")
 
     else:
         # ── Generate (+ continuous apply) mode ────────────────────────────────
         mode = "generate-only" if args.generate_only else "generate+apply"
         print(f"Mode: {mode} → checkpoint: {args.checkpoint}")
         if args.resume and args.checkpoint.exists():
-            print(f"  Resuming from existing checkpoint.")
+            print("  Resuming from existing checkpoint.")
         if not args.generate_only:
             print(f"  Changes written to {args.mappings} after each batch.")
             print(f"  Integration log: {args.log}")
@@ -747,12 +747,12 @@ def main() -> None:
         print(f"\nDone. {total} decisions written to {args.checkpoint}")
 
         if args.generate_only:
-            print(f"\nNext steps:")
+            print("\nNext steps:")
             print(f"  1. Review {args.checkpoint} (edit any 'action' fields as needed)")
-            print(f"  2. python auto_map_unmapped.py --apply")
+            print("  2. python auto_map_unmapped.py --apply")
         else:
-            print(f"\nvalue_mappings.yaml is fully up to date.")
-            print(f"Re-run find_unmapped_db_values.py to verify coverage.")
+            print("\nvalue_mappings.yaml is fully up to date.")
+            print("Re-run find_unmapped_db_values.py to verify coverage.")
 
 
 if __name__ == "__main__":

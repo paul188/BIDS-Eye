@@ -1,5 +1,5 @@
 """Offline tools catch only the failures they expect and raise the rest
-(DB Preprocessing/, RAG/tools/, scripts/)."""
+(RAG/tools/, scripts/)."""
 from __future__ import annotations
 
 import importlib.util
@@ -18,7 +18,7 @@ def _load(path: Path, name: str):
     return module
 
 
-auto_map = _load(ROOT / "DB Preprocessing" / "Generate_Value_Mappings" / "auto_map_unmapped.py",
+auto_map = _load(ROOT / "RAG" / "tools" / "auto_map_unmapped.py",
                  "auto_map_unmapped")
 
 
