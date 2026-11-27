@@ -37,7 +37,6 @@ reports
 research_notes
 scripts
 nginx
-postgres
 postgres_data
 certbot
 docker-compose*.yml
