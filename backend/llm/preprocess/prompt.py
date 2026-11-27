@@ -419,18 +419,25 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       participant_filter   — filters by participant properties (sex, age, handedness, count)
       comparison_query     — compares counts between groups (male vs female)
       age_query            — filters by participant age range
+      clinical_design_query — patients together with healthy controls in one dataset
       scan_filter          — filters by scan type + task
       multimodal_query     — requires presence/absence of multiple datatypes
       absence_query        — "does NOT contain X"
       subject_multimodal   — same subject must have multiple scan types
+      scanner_query        — scanner manufacturer or model
+      acquisition_parameter_query — common acquisition settings: TR, echo time, flip angle,
+                             multi-echo, multiband
       author_query         — filter by author name
       description_search   — keyword search on dataset name, description or README
-      doi_query            — has / lacks a DOI
+      doi_query            — has / lacks a DOI of the dataset itself
+      paper_reference_query — has / lacks a linked publication or paper
       license_query        — filter by license
       funding_query        — filter by funding source
-      json_numeric_query   — numeric filter on JSONB sidecar field
+      bids_provenance_query — raw vs preprocessed/derivative data, BIDS version, validation
+      json_numeric_query   — numeric filter on any other JSONB sidecar field
       metadata_query       — existence check on JSONB sidecar field
-      session_query        — filter by session count
+      session_query        — filter by the number of sessions in the dataset
+      per_subject_session_query — every subject (or the average subject) has N sessions
       ranking_query        — order by some metric, top N
       aggregate_query      — compute aggregate (average, count) across datasets
       combined_filter      — combination of two or more of the above

@@ -19,12 +19,15 @@ class QueryFamily(str, Enum):
     PARTICIPANT_FILTER    = "participant_filter"     # "≥15 male ambidextrous with ADHD"
     COMPARISON_QUERY      = "comparison_query"       # "more male than female participants"
     AGE_QUERY             = "age_query"              # "participants over 65 / neonates"
+    CLINICAL_DESIGN_QUERY = "clinical_design_query"  # "schizophrenia patients and healthy controls"
 
     # Scan / modality focused
     SCAN_FILTER           = "scan_filter"            # "fMRI datasets with n-back task"
     MULTIMODAL_QUERY      = "multimodal_query"       # "has both anat and fMRI"
     ABSENCE_QUERY         = "absence_query"          # "no EEG data"
     SUBJECT_MULTIMODAL    = "subject_multimodal"     # "same subject has T1w AND did n-back"
+    SCANNER_QUERY         = "scanner_query"          # "acquired on a GE or Philips scanner"
+    ACQUISITION_PARAMETER_QUERY = "acquisition_parameter_query"  # "TR below 1 s", "multi-echo"
 
     # Dataset metadata focused
     AUTHOR_QUERY          = "author_query"           # "datasets by Jane Doe"
@@ -32,13 +35,16 @@ class QueryFamily(str, Enum):
     DOI_QUERY             = "doi_query"              # "datasets with / without a DOI"
     LICENSE_QUERY         = "license_query"          # "datasets under CC0"
     FUNDING_QUERY         = "funding_query"          # "funded by NIH"
+    PAPER_REFERENCE_QUERY = "paper_reference_query"  # "with a linked publication"
+    BIDS_PROVENANCE_QUERY = "bids_provenance_query"  # "preprocessed / derivative datasets", "BIDS ≥1.7"
 
     # Sidecar / JSONB metadata
     JSON_NUMERIC_QUERY    = "json_numeric_query"     # "RepetitionTime > 2.0"
     METADATA_QUERY        = "metadata_query"         # "has / lacks AcquisitionTime field"
 
     # Structural / aggregate
-    SESSION_QUERY         = "session_query"          # "≥4 sessions per subject"
+    SESSION_QUERY         = "session_query"          # "≥4 sessions in the dataset"
+    PER_SUBJECT_SESSION_QUERY = "per_subject_session_query"  # "every subject has ≥3 sessions"
     RANKING_QUERY         = "ranking_query"          # "top 10 by subject count"
     AGGREGATE_QUERY       = "aggregate_query"        # "average age per dataset"
     COMBINED_FILTER       = "combined_filter"        # mix of the above
