@@ -116,15 +116,11 @@ def _ask_model(source: rp.ProfileSource, model: str, thinking: Optional[str]) ->
 
     return llm_generate(
         rp.build_prompt(source),
+        profile="readme_profile",
         system=rp.SYSTEM_PROMPT,
-        temperature=0.0,
-        max_tokens=4096,
         models=[model],
         json_schema=rp.RESPONSE_SCHEMA,
         thinking_level=thinking,
-        call_timeout=120,
-        budget_seconds=300,
-        use_fallback=False,
     )
 
 

@@ -99,14 +99,15 @@ _VERSION_FILES = (
     _BACKEND / "worker_db.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
-                "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE",
-                "ANTHROPIC_FALLBACK_MODEL", "GEMINI_SEED")
+                "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT")
 _version: Optional[str] = None
 
 
 def version_paths() -> list:
     """The files pipeline_version() reads, in a fixed order."""
-    paths = list(_VERSION_FILES)
+    import llm_client
+    # Models, seed and fallback order: the LLM config in use (LLM_CONFIG_PATH or the default).
+    paths = list(_VERSION_FILES) + [llm_client.config_path()]
     for directory in _VERSION_DIRS:
         if directory.is_dir():
             paths.extend(sorted(p for p in directory.iterdir()

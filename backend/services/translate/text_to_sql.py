@@ -59,8 +59,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     prompt = _instructions.correction_prompt(question, schema_ddl, sql, db_error)
 
     try:
-        raw = llm_generate(prompt, temperature=0.0, api_key=api_key,
-                           purpose="sql_correction")
+        raw = llm_generate(prompt, profile="sql", purpose="sql_correction")
         corrected = _finish_corrected_sql(raw, sql)
         return corrected if corrected != _FALLBACK_SQL else sql
     except LLMAllFailedError as exc:
@@ -92,7 +91,7 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     # Cascade + retries + cross-provider fallback handled by llm_client; raises
     # LLMAllFailedError if every tier fails (caught upstream for graceful degrade).
     return _extract_sql(llm_generate(
-        prompt, system=system_prompt, temperature=0.0, api_key=api_key, purpose="sql"))
+        prompt, profile="sql", system=system_prompt))
 
 
 # ── Pipeline (stages 1–2 + Gemini SQL as stage 3) ─────────────────────────────

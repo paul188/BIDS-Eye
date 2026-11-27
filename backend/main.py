@@ -5,6 +5,7 @@ BIDS-Eye FastAPI application.
 
 Startup (lifespan):
   - Creates missing DB tables.
+  - Stops when the LLM config (backend/llm/llm_config.yaml) is invalid.
   - Stops when a migration is missing; reads what the catalogue database
     holds into memory (services/database_stats/database_stats.py).
   - Gives the translation worker thread its database access (worker_db.py).
@@ -37,6 +38,7 @@ from typing import AsyncGenerator
 from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata
+import llm_client
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
 import request_log
 import worker_db
@@ -62,6 +64,10 @@ request_log.configure()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Stop when a feature switch is neither true nor false.
     switches.check()
+
+    # Stop when the LLM config (backend/llm/llm_config.yaml) names an unknown
+    # model or setting; warn about profile tiers whose provider has no key.
+    llm_client.check_config()
 
     # Stop when the database is not at the newest migration (migrations/README.md).
     await check_revision(engine)

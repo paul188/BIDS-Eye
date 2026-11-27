@@ -35,8 +35,9 @@ from llm_client import llm_generate  # noqa: E402
 
 MODEL = "gemini-2.5-flash"
 LABELS = ["both", "a_to_b", "b_to_a", "neither", "context"]
-# Gemini 2.5's thinking counts against the output limit; 2048 cut answers off.
-MAX_TOKENS = 8192
+# Output limit, timeouts and retries: profile word_forms_benchmark in
+# backend/llm/llm_config.yaml (Gemini 2.5's thinking counts against the
+# output limit; 2048 cut answers off).
 
 SYSTEM = (
     "You help a full-text search over a catalogue of neuroimaging datasets "
@@ -123,9 +124,8 @@ def main() -> None:
             row = done.get(stem)
             if row is None:
                 t0 = time.monotonic()
-                answer = llm_generate(prompt, system=SYSTEM, temperature=0.0, models=[args.model],
-                                      json_schema=SCHEMA, use_fallback=False, max_tokens=MAX_TOKENS,
-                                      purpose="word_forms_benchmark")
+                answer = llm_generate(prompt, profile="word_forms_benchmark", system=SYSTEM,
+                                      models=[args.model], json_schema=SCHEMA)
                 row = {"stem": stem, "model": args.model, "prompt": prompt, "system": SYSTEM,
                        "answer": answer, "seconds": round(time.monotonic() - t0, 2)}
                 log.write(json.dumps(row, ensure_ascii=False) + "\n")

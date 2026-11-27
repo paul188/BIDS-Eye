@@ -23,17 +23,11 @@ def _call_gemini(prompt: str, api_key: str, *, json_schema: Optional[Dict[str, A
     from llm_client import llm_generate
     return llm_generate(
         prompt,
+        # Profile intent in llm_config.yaml: temperature 0 (the same question
+        # should be read the same way every time) and room for the plan.
+        profile="intent",
         system=_SYSTEM_PROMPT,
-        # Temperature 0: the same question should be read the same way every time.
-        temperature=0.0,
-        api_key=api_key,
         json_schema=json_schema,
-        purpose="intent",
-        # With a schema the Gemini call is capped at max_tokens, and the
-        # model's thinking counts toward it. At the default of 2,048 the plan
-        # of 18 of 167 development questions was cut off (2026-11-15); none
-        # of them at 8,192.
-        max_tokens=8192,
     )
 
 

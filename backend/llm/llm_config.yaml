@@ -1,0 +1,112 @@
+# LLM models, providers and profiles (read by llm_client.py).
+#
+#   models     what each model can do; shared by every profile
+#   providers  which env var holds the key (never the key itself)
+#   profiles   one per use case: tiers in fallback order, retries, timeouts,
+#              deadline and the task's defaults
+#
+# LLM_CONFIG_PATH points the backend at another file of this shape (to swap
+# models without a deploy). The file in use is part of the interpretation
+# cache's version (services/stores/interpretations.py), so a change here
+# starts a new cache.
+#
+# Checked when the backend starts: an unknown model, provider or setting
+# stops it.
+
+providers:
+  gemini:
+    api_key_env: [GEMINI_API_KEY, GOOGLE_API_KEY]
+    # Temperature 0 alone did not make answers repeatable: the same question
+    # got different SQL in 19 of 69 requests across two runs
+    # (benchmarks/demand, 2026-11-15). A fixed seed is Gemini's best-effort
+    # way to repeat a sample. Sent to models with `seed: true`; null sends none.
+    seed: 0
+  anthropic:
+    api_key_env: ANTHROPIC_API_KEY
+
+models:
+  # json_schema: native = the API enforces the schema; prompt = it goes in as an instruction.
+  # thinking:    level  = takes "minimal"/"low"/"medium"/"high"; none = nothing is sent
+  #              (Gemini 2.x rejects a thinking level with a 400).
+  gemini-2.0-flash:       {provider: gemini, seed: true, json_schema: native}
+  gemini-2.5-flash:       {provider: gemini, seed: true, json_schema: native}
+  gemini-2.5-flash-lite:  {provider: gemini, seed: true, json_schema: native}
+  gemini-2.5-pro:         {provider: gemini, seed: true, json_schema: native}
+  gemini-3.1-flash:       {provider: gemini, seed: true, json_schema: native, thinking: level}
+  gemini-3.1-flash-lite:  {provider: gemini, seed: true, json_schema: native, thinking: level}
+  gemini-3.1-pro:         {provider: gemini, seed: true, json_schema: native, thinking: level}
+  gemini-3.5-flash-lite:  {provider: gemini, seed: true, json_schema: native, thinking: level}
+  gemini-3.8-flash:       {provider: gemini, seed: true, json_schema: native, thinking: level}
+  # The Anthropic API takes no seed and here gets the schema as an instruction.
+  claude-haiku-4-5:       {provider: anthropic}
+  claude-sonnet-4-6:      {provider: anthropic}
+  # These reject `temperature` (HTTP 400); it is left out.
+  claude-opus-4-7:        {provider: anthropic, temperature: false}
+  claude-opus-4-8:        {provider: anthropic, temperature: false}
+  claude-fable-5:         {provider: anthropic, temperature: false}
+
+profiles:
+  # ── the search pipeline: intent extraction, SQL generation and correction ──
+  # Each stage runs once per search, behind Cloudflare's ~100 s request limit,
+  # so each call is held to 40 s. The Gemini models share Google capacity:
+  # when one 503s the others usually do too, so retries are few and short and
+  # Claude keeps 20 s for itself. gemini-2.0-flash keeps 6 s, so it still gets
+  # a short attempt when there is no Anthropic key.
+  intent:
+    deadline_seconds: 40
+    temperature: 0.0
+    # With a schema the Gemini call is capped at max_tokens, and the model's
+    # thinking counts toward it. At 2,048 the plan of 18 of 167 development
+    # questions was cut off (2026-11-15); none of them at 8,192.
+    max_tokens: 8192
+    tiers: &search_tiers
+      - {model: gemini-2.5-flash, attempts: 2, waits: [2], timeout: 12}
+      - {model: gemini-2.5-pro, attempts: 2, waits: [2], timeout: 12}
+      - {model: gemini-2.5-flash-lite, timeout: 12}
+      - {model: gemini-2.0-flash, timeout: 12, reserve_seconds: 6}
+      # Haiku on purpose: it only fires when Gemini is down, for both stages,
+      # so speed matters more than peak quality. Sonnet took ~30 s on the large
+      # SQL prompt; Haiku answers it in a few seconds.
+      - {model: claude-haiku-4-5, timeout: 20, optional: true, reserve_seconds: 20}
+  sql:
+    deadline_seconds: 40
+    temperature: 0.0
+    max_tokens: 2048
+    tiers: *search_tiers
+
+  # ── re-ranking the results (services/results/rerank.py) ──
+  # Dataset descriptions go to Gemini only. RERANK_MODEL and RERANK_THINKING
+  # still override the models and the thinking level.
+  rerank:
+    deadline_seconds: 20
+    temperature: 0.0
+    max_tokens: 2048
+    thinking_level: low
+    tiers:
+      - {model: gemini-3.5-flash-lite, attempts: 2, waits: [2], timeout: 20}
+      - {model: gemini-2.5-flash-lite, attempts: 2, waits: [2], timeout: 20, reserve_seconds: 10}
+
+  # ── offline jobs (ingest/backfill/); their --model option replaces the models ──
+  # Dataset and paper text go to Gemini only.
+  readme_profile:
+    deadline_seconds: 300
+    temperature: 0.0
+    max_tokens: 4096
+    tiers:
+      - {model: gemini-3.8-flash, attempts: 2, waits: [2], timeout: 120}
+  dataset_description:
+    deadline_seconds: 240
+    temperature: 0.1
+    # Gemini 2.5 spends output tokens on thinking first; small caps cut answers off.
+    max_tokens: 4096
+    tiers:
+      - {model: gemini-2.5-flash, attempts: 2, waits: [2], timeout: 90}
+      - {model: gemini-2.5-flash-lite, attempts: 2, waits: [2], timeout: 90, reserve_seconds: 60}
+
+  # ── benchmarks/word_forms/llm_baseline.py ──
+  word_forms_benchmark:
+    deadline_seconds: 30
+    temperature: 0.0
+    max_tokens: 8192
+    tiers:
+      - {model: gemini-2.5-flash, attempts: 2, waits: [2], timeout: 12}
