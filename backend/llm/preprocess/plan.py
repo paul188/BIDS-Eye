@@ -452,9 +452,9 @@ class AugmentedQueryPlan(BaseModel):
         description="The original question with canonical DB values injected as context"
     )
     # Words of the question whose stem also matches unrelated words, with the
-    # forms that may match ("ageing": ["ageing", "aging"]); backend/vocabulary/word_forms.py.
+    # forms that may match ("ageing": ["ageing", "aging"]); backend/vocabulary/stem_collisions.py.
     # The SQL rewriter passes them to the text search.
-    word_forms: Dict[str, List[str]] = Field(default_factory=dict)
+    allowed_forms: Dict[str, List[str]] = Field(default_factory=dict)
     # Phrases of description_search left out of the search because fewer than
     # three datasets say them ("postictal"). The explanation names them.
     unmatched_text: List[str] = Field(default_factory=list)

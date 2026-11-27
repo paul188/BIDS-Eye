@@ -15,7 +15,7 @@ import sqlglot
 import yaml
 
 import preprocess as pp
-import word_forms
+import stem_collisions
 from services.results import query_filters as qf
 from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
@@ -23,7 +23,7 @@ from services.uncertain import text as tier_text, tier as ut
 from services.fulltext import word_form_counts
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from services.fulltext.ranking import RankQuery
-from word_forms import FormCounts
+from stem_collisions import StemCounts
 
 SERVICE = SqlRewriteService()
 HEAD = ("SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count "
@@ -32,7 +32,7 @@ HEAD = ("SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count "
 MODALITY = ("EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
             "AND o2.datatype = 'functional_mri')")
 FORMS = {"ageing": ("ageing", "aging"), "weight": ("weight", "weights")}
-AGEING = FormCounts("ageing", "age", 291, (
+AGEING = StemCounts("ageing", "age", 291, (
     ("age", 220), ("aged", 44), ("aging", 34), ("ages", 30), ("ageing", 4)))
 
 
@@ -47,10 +47,10 @@ def _condition(expanded: ts.ExpandedSearch) -> str:
 @pytest.fixture(autouse=True)
 def _database_with_full_text(tmp_path, monkeypatch):
     """Exact search off, no counts, and an empty reviewed list."""
-    path = tmp_path / "word_forms.yaml"
+    path = tmp_path / "stem_collisions.yaml"
     path.write_text("{}")
-    monkeypatch.setattr(word_forms, "_PATH", path)
-    word_forms._reviewed.cache_clear()
+    monkeypatch.setattr(stem_collisions, "_PATH", path)
+    stem_collisions._reviewed.cache_clear()
     monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
     database_stats.coverage = ColumnCoverage.full(())
     word_frequencies.set_frequency_lookup(None)
@@ -58,7 +58,7 @@ def _database_with_full_text(tmp_path, monkeypatch):
     yield path
     word_frequencies.set_frequency_lookup(None)
     word_form_counts.reset_lookup()
-    word_forms._reviewed.cache_clear()
+    stem_collisions._reviewed.cache_clear()
 
 
 @pytest.fixture
@@ -71,7 +71,7 @@ def exact(monkeypatch):
 def test_without_the_switch_nothing_changes() -> None:
     sql = _where("text_match('quantitative mri ageing') AND NOT text_match('weight', 'short')")
     plain = ts.expand_text_search(sql)
-    assert ts.expand_text_search(sql, exact_forms=FORMS) == plain
+    assert ts.expand_text_search(sql, allowed_forms=FORMS) == plain
     assert "search_tsv_exact" not in plain.sql and plain.rank_query.exact is None
 
 
@@ -79,34 +79,34 @@ def test_without_the_switch_nothing_changes() -> None:
 
 def test_an_exact_word_gets_a_guard_next_to_its_search(exact) -> None:
     expanded = ts.expand_text_search(_where("text_match('quantitative mri ageing')"),
-                                     exact_forms=FORMS)
+                                     allowed_forms=FORMS)
     assert _condition(expanded) == (
         "(d.search_tsv @@ to_tsquery('english', 'quantitative & mri & ageing') "
         "AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)'))")
     # Other words are searched as before.
-    assert _condition(ts.expand_text_search(_where("text_match('memory')"), exact_forms=FORMS)) \
+    assert _condition(ts.expand_text_search(_where("text_match('memory')"), allowed_forms=FORMS)) \
         == "d.search_tsv @@ to_tsquery('english', 'memory')"
 
 
 def test_the_guard_keeps_scope_distances_and_negation(exact) -> None:
-    short = ts.expand_text_search(_where("text_match('weight', 'short')"), exact_forms=FORMS)
+    short = ts.expand_text_search(_where("text_match('weight', 'short')"), allowed_forms=FORMS)
     assert "to_tsquery('english', 'weight:AB')" in short.sql
     assert "to_tsquery('simple', '(weight:AB | weights:AB)')" in short.sql
     near = _condition(ts.expand_text_search(_where("text_match('healthy ageing', 'near')"),
-                                            exact_forms=FORMS))
+                                            allowed_forms=FORMS))
     assert "healthy <1> ageing" in near and near.endswith("'(ageing | aging)'))")
     negated = _condition(ts.expand_text_search(_where("NOT text_match('weight')"),
-                                               exact_forms=FORMS))
+                                               allowed_forms=FORMS))
     assert negated == ("NOT (d.search_tsv @@ to_tsquery('english', 'weight') "
                        "AND d.search_tsv_exact @@ to_tsquery('simple', '(weight | weights)'))")
     # A compound stays together by adjacency; its parts get no guard.
-    compound = ts.expand_text_search(_where("text_match('t1-weight')"), exact_forms=FORMS)
+    compound = ts.expand_text_search(_where("text_match('t1-weight')"), allowed_forms=FORMS)
     assert "search_tsv_exact" not in compound.sql
 
 
 def test_alternatives_split_into_pairs_and_the_rest(exact) -> None:
     expanded = ts.expand_text_search(
-        _where("text_match('obesity | body weight | adiposity', 'short')"), exact_forms=FORMS)
+        _where("text_match('obesity | body weight | adiposity', 'short')"), allowed_forms=FORMS)
     assert _condition(expanded) == (
         "(d.search_tsv @@ to_tsquery('english', 'obesity:AB | adiposity:AB') OR "
         "(d.search_tsv @@ to_tsquery('english', 'body:AB & weight:AB') "
@@ -115,29 +115,29 @@ def test_alternatives_split_into_pairs_and_the_rest(exact) -> None:
 
 def test_paper_text_uses_the_paper_twin_of_the_guard(exact) -> None:
     sql = _where("text_match('ageing') AND NOT text_match('weight')")
-    with_papers = _condition(ts.expand_text_search(sql, papers=True, exact_forms=FORMS))
+    with_papers = _condition(ts.expand_text_search(sql, papers=True, allowed_forms=FORMS))
     assert with_papers.startswith(
         "(d.search_tsv_papers @@ to_tsquery('english', 'ageing') "
         "AND d.search_tsv_exact_papers @@ to_tsquery('simple', '(ageing | aging)'))")
     # NOT terms stay on the dataset's own text, guard included.
     assert "NOT (d.search_tsv @@ to_tsquery('english', 'weight') AND d.search_tsv_exact @@" \
         in with_papers
-    without = ts.expand_text_search(sql, papers=False, exact_forms=FORMS).sql
+    without = ts.expand_text_search(sql, papers=False, allowed_forms=FORMS).sql
     assert ts.with_paper_text(without) == ts.expand_text_search(
-        sql, papers=True, exact_forms=FORMS).sql
+        sql, papers=True, allowed_forms=FORMS).sql
 
 
 def test_the_reviewed_list_needs_no_decision(exact, _database_with_full_text) -> None:
     _database_with_full_text.write_text(yaml.safe_dump(
         {"exact": [{"forms": ["severe", "severely", "severity"], "excludes": ["several"]}]}))
-    word_forms._reviewed.cache_clear()
+    stem_collisions._reviewed.cache_clear()
     expanded = ts.expand_text_search(_where("text_match('severe tbi', 'short')"))
     assert "to_tsquery('simple', '(severe:AB | severely:AB | severity:AB)')" in expanded.sql
 
 
 def test_the_pair_survives_sqlglot_and_is_one_condition(exact) -> None:
     expanded = ts.expand_text_search(
-        _where(f"{MODALITY} AND text_match('ageing') AND d.size_bytes > 5"), exact_forms=FORMS)
+        _where(f"{MODALITY} AND text_match('ageing') AND d.size_bytes > 5"), allowed_forms=FORMS)
     tree = sqlglot.parse_one(expanded.sql, read="postgres")
     assert sqlglot.parse_one(tree.sql(dialect="postgres"), read="postgres") == tree
     conditions = ts.read_clauses(tree)
@@ -182,7 +182,7 @@ def test_read_clauses_reads_back_what_the_expansion_wrote(
     monkeypatch.setenv(vectors.EXACT_ENV, "true" if exact_on else "false")
     search = f"{'NOT ' if negated else ''}text_match('ageing brain', '{mode}')"
     sql = ts.expand_text_search(_where(f"{MODALITY} AND {search}"), papers=papers,
-                                exact_forms=FORMS).sql
+                                allowed_forms=FORMS).sql
     modality, text = ts.read_clauses(sqlglot.parse_one(sql, read="postgres"))
     assert not modality.searches
     searches = text.find()
@@ -206,9 +206,9 @@ def test_counts_ask_with_the_guard_only_when_there_is_one(exact) -> None:
         return [5] * len(queries)
 
     word_frequencies.set_frequency_lookup(lookup)
-    assert tsquery.count_matches(["memory", "healthy ageing"], exact_forms=FORMS) == [5, 5]
+    assert tsquery.count_matches(["memory", "healthy ageing"], allowed_forms=FORMS) == [5, 5]
     assert asked[-1][1] == [None, "(ageing | aging)"]
-    tsquery.count_matches(["memory"], exact_forms=FORMS)
+    tsquery.count_matches(["memory"], allowed_forms=FORMS)
     assert asked[-1] == (["memory"], None)
     sql, params = word_frequencies._count_statement(["a", "ageing"], [None, "(ageing | aging)"])
     assert "search_tsv_exact @@ to_tsquery('simple', q.guard)" in sql
@@ -228,7 +228,7 @@ def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
 
     word_frequencies.set_frequency_lookup(lookup)
     expanded = ts.expand_text_search(_where("text_match('ageing connectome', 'loose')"),
-                                     exact_forms=FORMS)
+                                     allowed_forms=FORMS)
     core = ("(d.search_tsv @@ to_tsquery('english', 'ageing') "
             "AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)'))")
     # The core decides the rows; both words together are what the tier confirms.
@@ -239,10 +239,10 @@ def test_a_loose_term_ranks_rarity_by_the_forms_that_count(exact) -> None:
 # ── Ranking ───────────────────────────────────────────────────────────────────
 
 def test_exact_words_rank_on_the_unstemmed_vector(exact, monkeypatch) -> None:
-    alone = ts.expand_text_search(_where("text_match('ageing')"), exact_forms=FORMS)
+    alone = ts.expand_text_search(_where("text_match('ageing')"), allowed_forms=FORMS)
     assert alone.rank_query == RankQuery(exact="(ageing | aging)")
     mixed = ts.expand_text_search(_where("text_match('quantitative mri ageing')"),
-                                  exact_forms=FORMS)
+                                  allowed_forms=FORMS)
     # Next to other words the term still ranks where all of them meet.
     assert mixed.rank_query == RankQuery("quantitative & mri & ageing", "(ageing | aging)")
     # Stored with a translation as JSON; a part that is not a safe tsquery is dropped.
@@ -279,7 +279,7 @@ def test_the_page_query_orders_by_both_ranks(exact) -> None:
 # ── Chips ─────────────────────────────────────────────────────────────────────
 
 def _expanded(condition: str, **kwargs) -> str:
-    return ts.expand_text_search(_where(condition), exact_forms=FORMS, **kwargs).sql
+    return ts.expand_text_search(_where(condition), allowed_forms=FORMS, **kwargs).sql
 
 
 def test_a_guarded_search_is_one_chip_and_goes_as_one(exact) -> None:
@@ -433,62 +433,62 @@ def _model(monkeypatch, answer: dict, schemas: list | None = None) -> list:
 def test_the_prompt_only_changes_for_a_colliding_word(monkeypatch) -> None:
     prompts = _model(monkeypatch, PLAN)
     pp.create_query_plan("MRI on ageing")
-    pp.create_query_plan("MRI on ageing", form_counts={})
-    scans = FormCounts("scans", "scan", 502, (("scans", 280), ("scan", 252)))
-    pp.create_query_plan("MRI on ageing", form_counts={"scans": scans})
+    pp.create_query_plan("MRI on ageing", stem_counts={})
+    scans = StemCounts("scans", "scan", 502, (("scans", 280), ("scan", 252)))
+    pp.create_query_plan("MRI on ageing", stem_counts={"scans": scans})
     assert prompts[0] == prompts[1] == prompts[2]
-    assert "word_forms" not in prompts[0]
+    assert "same_meaning" not in prompts[0]
 
-    pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING})
+    pp.create_query_plan("MRI on ageing", stem_counts={"ageing": AGEING})
     assert '"user_query": "MRI on ageing"' in prompts[3]
-    assert '"catalogue_word_form_evidence"' in prompts[3]
+    assert '"catalogue_stem_collisions"' in prompts[3]
     assert "ageing: age (220), aged (44), aging (34), ages (30), ageing (4)" in prompts[3]
-    assert '"word_forms"' in prompts[3]
+    assert '"same_meaning"' in prompts[3]
 
 
 def test_the_models_choice_is_read_outside_the_plan(monkeypatch) -> None:
-    _model(monkeypatch, {**PLAN, "word_forms": [
-        {"word": "ageing", "keep": ["ageing", "aging"]}, "nonsense", {"word": 3}]})
+    _model(monkeypatch, {**PLAN, "same_meaning": [
+        {"word": "ageing", "forms": ["ageing", "aging"]}, "nonsense", {"word": 3}]})
     choices = []
-    plan = pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING},
-                               word_choices=choices)
+    plan = pp.create_query_plan("MRI on ageing", stem_counts={"ageing": AGEING},
+                               same_meaning=choices)
     assert plan.description_search == "ageing"
     assert choices == [("ageing", ["ageing", "aging"])]
     # No answer for the word: nothing decided, the plan is still read.
     _model(monkeypatch, PLAN)
     choices = []
-    pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING},
-                        word_choices=choices)
+    pp.create_query_plan("MRI on ageing", stem_counts={"ageing": AGEING},
+                        same_meaning=choices)
     assert choices == []
 
 
-def test_structured_output_schema_includes_conditional_word_forms(monkeypatch) -> None:
+def test_structured_output_schema_includes_conditional_same_meaning(monkeypatch) -> None:
     schemas = []
     prompts = _model(monkeypatch, PLAN, schemas)
     pp.create_query_plan("Find datasets on memory")
     base_schema = schemas[-1]
-    assert "word_forms" not in base_schema["properties"]
+    assert "same_meaning" not in base_schema["properties"]
     assert "QueryPlan JSON schema" not in prompts[-1]
     # `default` keywords stay: the Gemini adapter drops them (tests/llm/test_llm_adapters.py).
 
-    _model(monkeypatch, {**PLAN, "word_forms": [
-        {"word": "ageing", "keep": ["ageing", "aging"]}]}, schemas)
-    pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING})
+    _model(monkeypatch, {**PLAN, "same_meaning": [
+        {"word": "ageing", "forms": ["ageing", "aging"]}]}, schemas)
+    pp.create_query_plan("MRI on ageing", stem_counts={"ageing": AGEING})
     form_schema = schemas[-1]
-    assert "word_forms" in form_schema["required"]
-    assert form_schema["properties"]["word_forms"]["items"]["required"] == ["word", "keep"]
+    assert "same_meaning" in form_schema["required"]
+    assert form_schema["properties"]["same_meaning"]["items"]["required"] == ["word", "forms"]
 
 
 def test_the_pipeline_hands_the_decided_forms_to_the_search(exact, monkeypatch) -> None:
     word_form_counts.set_lookup(lambda words: [
         ("ageing", "age", 291, ["age:220", "aged:44", "aging:34", "ages:30", "ageing:4"])])
-    _model(monkeypatch, {**PLAN, "word_forms": [{"word": "ageing", "keep": ["aging", "ageing"]}]})
+    _model(monkeypatch, {**PLAN, "same_meaning": [{"word": "ageing", "forms": ["aging", "ageing"]}]})
     augmented = pp.run_pipeline("Quantitative MRI datasets on ageing")
-    assert augmented.word_forms == {"ageing": ["ageing", "aging"]}
+    assert augmented.allowed_forms == {"ageing": ["ageing", "aging"]}
     assert "text_match('ageing')" in augmented.augmented_question
     rewritten = SERVICE.rewrite_generated_sql(
         "SELECT d.id FROM bids_datasets d WHERE text_match('ageing') GROUP BY d.id",
-        augmented.augmented_question, augmented.word_forms)
+        augmented.augmented_question, augmented.allowed_forms)
     assert "search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)')" in rewritten.sql.replace(
         "TO_TSQUERY", "to_tsquery")
 
@@ -497,4 +497,4 @@ def test_the_pipeline_is_untouched_without_the_switch(monkeypatch) -> None:
     word_form_counts.set_lookup(lambda words: pytest.fail("looked up with the switch off"))
     prompts = _model(monkeypatch, PLAN)
     augmented = pp.run_pipeline("Quantitative MRI datasets on ageing")
-    assert augmented.word_forms == {} and "word_forms" not in prompts[0]
+    assert augmented.allowed_forms == {} and "same_meaning" not in prompts[0]

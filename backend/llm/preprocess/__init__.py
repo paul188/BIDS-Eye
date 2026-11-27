@@ -70,7 +70,7 @@ from .prompt import (  # noqa: F401
 from .intent import (  # noqa: F401
     _plan_output_schema,
     create_query_plan,
-    count_word_forms,
+    count_stem_forms,
 )
 from .rag import (  # noqa: F401
     _is_healthy_term,

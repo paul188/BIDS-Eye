@@ -54,18 +54,18 @@ def test_an_unreadable_cohort_vocabulary_is_logged(monkeypatch, tmp_path, caplog
 
 
 def test_a_word_forms_list_that_is_no_mapping_is_ignored(monkeypatch, tmp_path, caplog):
-    import word_forms
+    import stem_collisions
 
-    odd = tmp_path / "word_forms.yaml"
+    odd = tmp_path / "stem_collisions.yaml"
     odd.write_text("- just\n- a list\n")
-    monkeypatch.setattr(word_forms, "_PATH", odd)
-    word_forms._reviewed.cache_clear()
+    monkeypatch.setattr(stem_collisions, "_PATH", odd)
+    stem_collisions._reviewed.cache_clear()
     try:
         with caplog.at_level(logging.WARNING):
-            assert word_forms._reviewed() == {}
+            assert stem_collisions._reviewed() == {}
         assert "not a mapping" in caplog.text
     finally:
-        word_forms._reviewed.cache_clear()
+        stem_collisions._reviewed.cache_clear()
 
 
 def test_a_failed_embedding_model_is_tried_again_later(monkeypatch):

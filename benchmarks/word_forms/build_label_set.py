@@ -10,11 +10,11 @@ The set scores the methods that could decide stem collisions offline
 set, not a list the search reads.
 
 Population: the stems where a form passes the search's own collision test
-(backend/vocabulary/word_forms.py is_collision, 2x and +10 datasets), forms in >= 2 datasets.
+(backend/vocabulary/stem_collisions.py is_collision, 2x and +10 datasets), forms in >= 2 datasets.
 Sample: SAMPLE_PER_STRATUM stems from each quartile of the stem's dataset
-count, without the stems word_forms.yaml already covers, plus every group of
-word_forms.yaml. Forms are grouped into families by plural and singular
-(word_forms.inflections); a pair is two families of one stem.
+count, without the stems stem_collisions.yaml already covers, plus every group of
+stem_collisions.yaml. Forms are grouped into families by plural and singular
+(stem_collisions.inflections); a pair is two families of one stem.
 
 Each pair shows README snippets of both families, so a form's use in this
 catalogue can be judged (functional = fMRI). Snippets come from the dataset
@@ -52,7 +52,7 @@ from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
 from remote.openneuro_metadata import EXACT_SEARCH_VECTOR_EXPRESSION  # noqa: E402
-from word_forms import FormCounts, inflections, is_collision  # noqa: E402
+from stem_collisions import StemCounts, inflections, is_collision  # noqa: E402
 
 SEED = 20261119
 SAMPLE_PER_STRATUM = 25
@@ -114,9 +114,9 @@ def _families(forms: Dict[str, int]) -> List[Family]:
 
 
 def _reviewed_groups() -> List[Tuple[str, List[List[str]], List[List[str]]]]:
-    """word_forms.yaml as (kind, wanted form lists, excluded form lists)."""
+    """stem_collisions.yaml as (kind, wanted form lists, excluded form lists)."""
     import yaml
-    data = yaml.safe_load((_REPO / "backend" / "vocabulary" / "word_forms.yaml").read_text())
+    data = yaml.safe_load((_REPO / "backend" / "vocabulary" / "stem_collisions.yaml").read_text())
     groups = [("yaml_exact", [e["forms"]], [e.get("excludes") or []]) for e in data.get("exact") or []]
     groups += [("yaml_stemmed", [g], []) for g in data.get("stemmed") or []]
     return groups
@@ -152,8 +152,8 @@ def build() -> Dict:
     for stem, forms in by_stem.items():
         if len(forms) < 2:
             continue
-        form_counts = tuple(sorted(forms.items(), key=lambda x: -x[1]))
-        hits = [w for w in forms if is_collision(FormCounts(w, stem, stem_docs.get(stem, 0), form_counts))]
+        stem_counts = tuple(sorted(forms.items(), key=lambda x: -x[1]))
+        hits = [w for w in forms if is_collision(StemCounts(w, stem, stem_docs.get(stem, 0), stem_counts))]
         if hits:
             colliding[stem] = hits
 
@@ -235,7 +235,7 @@ def main() -> None:
     for p in label_set["pairs"]:
         origins[p["origin"]] += 1
     print(f"{label_set['set_id']}: {len(label_set['pairs'])} pairs {dict(origins)}; "
-          f"{label_set['population_stems']} colliding stems, {label_set['pool_stems']} not in word_forms.yaml")
+          f"{label_set['population_stems']} colliding stems, {label_set['pool_stems']} not in stem_collisions.yaml")
 
 
 if __name__ == "__main__":
