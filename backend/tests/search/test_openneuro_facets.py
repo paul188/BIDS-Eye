@@ -14,7 +14,6 @@ def _augmented(structure, available=("study_longitudinal",), description_search=
     from preprocess import QueryPlan, _build_augmented_question
 
     plan = QueryPlan(
-        query_family="description_search",
         natural_language_summary="Find datasets with the given study design.",
         study_structure=structure,
         description_search=description_search,

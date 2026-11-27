@@ -413,7 +413,7 @@ def test_exact_words_come_from_the_filter_sql(exact) -> None:
 
 # ── Intent prompt and pipeline ────────────────────────────────────────────────
 
-PLAN = {"query_family": "description_search", "natural_language_summary": "x",
+PLAN = {"natural_language_summary": "x",
         "description_search": "ageing"}
 
 

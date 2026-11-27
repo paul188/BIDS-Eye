@@ -49,7 +49,7 @@ def _is_healthy_term(term: str) -> bool:
 
 # Plan fields the compiler reads, or that do not change the SQL.
 _KNOWN_PLAN_FIELDS = frozenset({
-    "query_family", "natural_language_summary",
+    "natural_language_summary",
     "groups", "group_operator", "scan_requirements",
     "order_direction",   # only meaningful with order_by, which must be unset
     # Written by preprocess/ as complete filter lines, read from there:
