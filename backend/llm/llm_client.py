@@ -58,7 +58,7 @@ import os
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple, Type
 
 log = logging.getLogger(__name__)
 
@@ -116,11 +116,12 @@ class ModelSpec:
 
 class Provider(Protocol):
     name: str
+    api_key_env: Tuple[str, ...]   # env vars that may hold the key; empty: none needed
 
     def available(self) -> bool:
         """Can it be called: key configured (if it needs one), SDK installed?"""
 
-    def errors(self) -> Tuple[type, ...]:
+    def errors(self) -> Tuple[Type[Exception], ...]:
         """What a call raises when the provider, not the code, fails."""
 
     def is_transient(self, exc: Exception) -> bool:
@@ -175,7 +176,7 @@ class GeminiProvider:
     def available(self) -> bool:
         return _first_env(self.api_key_env) is not None and _installed("google.genai")
 
-    def errors(self) -> Tuple[type, ...]:
+    def errors(self) -> Tuple[Type[Exception], ...]:
         # google-genai raises httpx's own errors for timeouts and broken connections.
         import httpx
         from google.genai import errors as genai_errors
@@ -245,7 +246,7 @@ class AnthropicProvider:
     def available(self) -> bool:
         return _first_env(self.api_key_env) is not None and _installed("anthropic")
 
-    def errors(self) -> Tuple[type, ...]:
+    def errors(self) -> Tuple[Type[Exception], ...]:
         # anthropic wraps timeouts and broken connections in APIConnectionError.
         import anthropic
         return (anthropic.APIError,)
@@ -326,7 +327,7 @@ class OpenAICompatibleProvider:
         has_key = not self.api_key_env or _first_env(self.api_key_env) is not None
         return has_key and _installed("httpx")
 
-    def errors(self) -> Tuple[type, ...]:
+    def errors(self) -> Tuple[Type[Exception], ...]:
         import httpx
         return (OpenAICompatibleError, httpx.TransportError)
 
