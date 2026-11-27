@@ -11,7 +11,7 @@ Requests pass through, outermost first:
   every POST must repeat the readable CSRF cookie in the x-csrftoken header.
   Another site can make the browser send cookies but cannot read them, so it
   cannot produce the header. This is on top of the session's SameSite=Lax.
-- Session: the signed HttpOnly login cookie (see routers/auth.py).
+- Session: the signed HttpOnly login cookie (see security/sessions.py).
 - RequireLogin: deny by default. Every /api path needs a signed-in session
   unless it is listed in PUBLIC_API_PATHS, so a new router is protected
   without anyone having to remember Depends(require_auth).
@@ -27,9 +27,9 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_csrf import CSRFMiddleware
 
-from routers.auth import (
+from routers.auth import AuthSettings
+from security.sessions import (
     SESSION_COOKIE,
-    AuthSettings,
     NotSignedInError,
     session_middleware_options,
     session_user,

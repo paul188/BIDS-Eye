@@ -15,7 +15,7 @@ The rules, all enforced here:
 - Turning it off deletes the user's rows and the consent row (disable()).
 - RETENTION_DAYS: a search is deleted that long after it was asked, and a
   consent that long after the user last saved or read anything.
-- A user is GitHub's account number (routers/auth.py user_id), never the
+- A user is GitHub's account number (deps.py user_id), never the
   login, and a row is only ever read or deleted through its owner's number.
 
 query_log (models.QueryLog) stays anonymous: nothing here points at it.

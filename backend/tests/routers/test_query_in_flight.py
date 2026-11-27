@@ -10,7 +10,7 @@ import pytest
 from pydantic import ValidationError
 
 import routers.search as query_router
-from rate_limits import RateLimitError
+from security.rate_limits import RateLimitError
 from schemas import QueryRequest, QueryResponse
 from services import search
 
@@ -40,10 +40,10 @@ def test_the_same_question_while_it_runs_is_answered_by_the_running_search(monke
 
     async def scenario():
         return await asyncio.gather(
-            query_router.query_datasets(QueryRequest(question="drawings or art"), None, {"sub": "a"}),
+            query_router.query_datasets(QueryRequest(question="drawings or art"), None, None),
             # Case, spacing and end punctuation do not make it another question.
-            query_router.query_datasets(QueryRequest(question="  Drawings  or art?"), None, {"sub": "a"}),
-            query_router.query_datasets(QueryRequest(question="drawings or art"), None, {"sub": "a"}),
+            query_router.query_datasets(QueryRequest(question="  Drawings  or art?"), None, None),
+            query_router.query_datasets(QueryRequest(question="drawings or art"), None, None),
         )
 
     first, second, third = asyncio.run(scenario())
@@ -57,8 +57,8 @@ def test_another_user_asking_the_same_question_shares_the_search(monkeypatch):
 
     async def scenario():
         return await asyncio.gather(
-            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
-            query_router.query_datasets(QueryRequest(question="Art?"), None, {"sub": "b"}),
+            query_router.query_datasets(QueryRequest(question="art"), None, None),
+            query_router.query_datasets(QueryRequest(question="Art?"), None, None),
         )
 
     first, second = asyncio.run(scenario())
@@ -72,8 +72,8 @@ def test_other_questions_run_their_own_search(monkeypatch):
 
     async def scenario():
         await asyncio.gather(
-            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
-            query_router.query_datasets(QueryRequest(question="music"), None, {"sub": "a"}),
+            query_router.query_datasets(QueryRequest(question="art"), None, None),
+            query_router.query_datasets(QueryRequest(question="music"), None, None),
         )
 
     asyncio.run(scenario())
@@ -83,7 +83,7 @@ def test_other_questions_run_their_own_search(monkeypatch):
 def test_asking_again_after_the_search_finished_runs_it_again(monkeypatch):
     runs = _counting_search(monkeypatch)
     for _ in range(2):
-        asyncio.run(query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}))
+        asyncio.run(query_router.query_datasets(QueryRequest(question="art"), None, None))
     assert runs == ["art", "art"]
 
 
@@ -93,8 +93,8 @@ def test_an_error_reaches_the_waiting_request_too(monkeypatch):
 
     async def scenario():
         return await asyncio.gather(
-            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "a"}),
-            query_router.query_datasets(QueryRequest(question="art"), None, {"sub": "b"}),
+            query_router.query_datasets(QueryRequest(question="art"), None, None),
+            query_router.query_datasets(QueryRequest(question="art"), None, None),
             return_exceptions=True,
         )
 

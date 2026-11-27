@@ -5,8 +5,8 @@ it: search_history_consents and search_history, the searches of people who
 turned on "Remember my searches and search results"
 (services/stores/search_history.py). Everything else is anonymous: no logins,
 no e-mail addresses, no per-user counts (the rate limits count in memory,
-rate_limits.py). The tables users, message_usage and user_queries were removed
-in November 2026 for the site's privacy notice
+security/rate_limits.py). The tables users, message_usage and user_queries
+were removed in November 2026 for the site's privacy notice
 (frontend/src/components/CookieBanner.vue), which describes both.
 """
 

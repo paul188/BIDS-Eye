@@ -1,4 +1,4 @@
-"""The central rate limiter (rate_limits.py): one budget per kind of request."""
+"""The central rate limiter (security/rate_limits.py): one budget per kind of request."""
 from __future__ import annotations
 
 import importlib
@@ -13,9 +13,9 @@ from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-import rate_limits
+from security import rate_limits
 from exceptions.handlers import add_error_handlers
-from rate_limits import DAY, MINUTE, Category, rate_limit
+from security.rate_limits import DAY, MINUTE, Category, rate_limit
 
 # Noon UTC on some day: far from both a minute and a day boundary.
 NOON = datetime(2026, 11, 18, 12, 0, 30, tzinfo=timezone.utc).timestamp()

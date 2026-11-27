@@ -1,7 +1,7 @@
 """Login session and API security middleware.
 
 GitHub and the database are faked. Everything else is the real stack from
-api_security.install_security_middleware: CORS, CSRF, the signed HttpOnly
+middleware.install_security_middleware: CORS, CSRF, the signed HttpOnly
 session cookie and RequireLogin, in front of the real auth router.
 """
 from __future__ import annotations
@@ -16,7 +16,9 @@ from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-import api_security
+from security import middleware
+from security import sessions
+from deps import require_auth
 from exceptions.handlers import add_error_handlers
 from routers import auth
 
@@ -74,7 +76,7 @@ def _session_data(client: TestClient) -> dict:
     """What the signed session cookie holds (the payload is base64 JSON before the first dot)."""
     import base64
     import json
-    payload = client.cookies[auth.SESSION_COOKIE].split(".")[0]
+    payload = client.cookies[sessions.SESSION_COOKIE].split(".")[0]
     return json.loads(base64.b64decode(payload + "=" * (-len(payload) % 4)))
 
 
@@ -85,12 +87,12 @@ def _build_app(
     monkeypatch.setenv("FRONTEND_URL", frontend_url)
 
     app = FastAPI()
-    api_security.install_security_middleware(app)
+    middleware.install_security_middleware(app)
     add_error_handlers(app)
     app.include_router(auth.auth_router, prefix="/api")
 
     @app.get("/api/protected")
-    def protected(user: dict = Depends(auth.require_auth)) -> dict:
+    def protected(user: dict = Depends(require_auth)) -> dict:
         return {"sub": user["sub"]}
 
     # No Depends(require_auth): RequireLogin must still guard it.
@@ -149,7 +151,7 @@ def _login(client: TestClient) -> httpx.Response:
 
 
 def _csrf(client: TestClient) -> dict:
-    return {api_security.CSRF_HEADER: client.cookies[api_security.CSRF_COOKIE]}
+    return {middleware.CSRF_HEADER: client.cookies[middleware.CSRF_COOKIE]}
 
 
 # ── Session cookie ───────────────────────────────────────────────────────────
@@ -162,7 +164,7 @@ def test_callback_sets_httponly_cookie_and_keeps_token_out_of_url(client: TestCl
     assert resp.headers["location"] == "/"
 
     session_cookie = next(
-        c for c in resp.headers.get_list("set-cookie") if c.startswith(f"{auth.SESSION_COOKIE}=")
+        c for c in resp.headers.get_list("set-cookie") if c.startswith(f"{sessions.SESSION_COOKIE}=")
     )
     flags = session_cookie.lower()
     assert "httponly" in flags
@@ -200,7 +202,7 @@ def test_cookie_signs_in_and_logout_signs_out(client: TestClient) -> None:
     resp = client.post("/api/auth/logout", headers=_csrf(client))
     assert resp.status_code == 200
     assert any(
-        c.startswith(f"{auth.SESSION_COOKIE}=null") or "expires=thu, 01 jan 1970" in c.lower()
+        c.startswith(f"{sessions.SESSION_COOKIE}=null") or "expires=thu, 01 jan 1970" in c.lower()
         for c in resp.headers.get_list("set-cookie")
     )
     assert client.get("/api/auth/me").status_code == 401
@@ -213,11 +215,11 @@ def test_bearer_header_is_not_accepted(client: TestClient) -> None:
 
 def test_tampered_cookie_is_rejected(client: TestClient) -> None:
     _login(client)
-    value = client.cookies[auth.SESSION_COOKIE]
+    value = client.cookies[sessions.SESSION_COOKIE]
     client.cookies.clear()
 
     def call_with(cookie_value: str) -> int:
-        headers = {"Cookie": f"{auth.SESSION_COOKIE}={cookie_value}"}
+        headers = {"Cookie": f"{sessions.SESSION_COOKIE}={cookie_value}"}
         return client.get("/api/protected", headers=headers).status_code
 
     assert call_with(value) == 200
@@ -225,7 +227,7 @@ def test_tampered_cookie_is_rejected(client: TestClient) -> None:
 
 
 def test_session_ends_after_its_lifetime_even_when_used(client: TestClient) -> None:
-    half = auth._SESSION_MAX_AGE / 2 + 60
+    half = sessions._SESSION_MAX_AGE / 2 + 60
     with time_machine.travel(time.time(), tick=False) as clock:
         _login(client)
         clock.shift(half)
@@ -234,12 +236,12 @@ def test_session_ends_after_its_lifetime_even_when_used(client: TestClient) -> N
         assert client.get("/api/protected").status_code == 401
 
 
-@pytest.mark.parametrize("age", [None, auth._SESSION_MAX_AGE + 60])
+@pytest.mark.parametrize("age", [None, sessions._SESSION_MAX_AGE + 60])
 def test_a_session_past_its_login_time_is_refused(age: float | None) -> None:
     """The second guard, without the middleware's own max_age in front of it."""
     user = {"sub": "octo"} if age is None else {"sub": "octo", "iat": time.time() - age}
     session = {"user": user}
-    assert auth.session_user(session) is None
+    assert sessions.session_user(session) is None
     assert session == {}  # emptied, so the middleware deletes the cookie
 
 
@@ -276,7 +278,7 @@ def test_login_started_on_other_host_moves_to_callback_host_first(client: TestCl
         "/api/auth/github", headers={"host": "www.testserver"}, follow_redirects=False
     )
     assert resp.headers["location"] == f"https://{HOST}/api/auth/github?hop=1"
-    assert auth.SESSION_COOKIE not in resp.headers.get("set-cookie", "")
+    assert sessions.SESSION_COOKIE not in resp.headers.get("set-cookie", "")
 
     # At most one hop, even if the host still looks different (e.g. a proxy).
     resp = client.get(
@@ -443,11 +445,11 @@ def test_public_paths_work_signed_out(app: FastAPI) -> None:
 
 def test_post_needs_csrf_header_once_signed_in(client: TestClient) -> None:
     _login(client)
-    assert api_security.CSRF_COOKIE in client.cookies
+    assert middleware.CSRF_COOKIE in client.cookies
 
     assert client.post("/api/forgot-the-dependency").status_code == 403
     assert client.post(
-        "/api/forgot-the-dependency", headers={api_security.CSRF_HEADER: "made-up"}
+        "/api/forgot-the-dependency", headers={middleware.CSRF_HEADER: "made-up"}
     ).status_code == 403
     assert client.post("/api/auth/logout").status_code == 403  # still signed in
     assert client.get("/api/auth/me").status_code == 200
@@ -491,7 +493,7 @@ def test_missing_or_placeholder_secret_refuses_to_start(
     else:
         monkeypatch.setenv("SESSION_SECRET", value)
     with pytest.raises(ValidationError, match="SESSION_SECRET") as refused:
-        api_security.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI())
     # A rejected value never reaches the logs.
     if value and value.strip():
         assert value not in str(refused.value)
@@ -518,7 +520,7 @@ def test_missing_org_refuses_to_start_unless_open_is_asked_for(
         else:
             monkeypatch.setenv(name, value)
     with pytest.raises(ValidationError, match="ALLOW_ANY_GITHUB_USER"):
-        api_security.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI())
 
 
 def test_org_or_explicit_open_starts(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -549,7 +551,7 @@ def test_missing_oauth_app_credentials_refuse_to_start(
     else:
         monkeypatch.setenv(name, value)
     with pytest.raises(ValidationError, match=name):
-        api_security.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI())
 
 
 def test_client_secret_stays_out_of_error_and_repr(monkeypatch: pytest.MonkeyPatch) -> None:

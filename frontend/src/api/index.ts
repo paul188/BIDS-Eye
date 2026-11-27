@@ -109,7 +109,7 @@ export interface HistoryEntry {
   answer: QueryResponse
 }
 
-// A 429 from the backend's rate limiter (backend/rate_limits.py): which kind
+// A 429 from the backend's rate limiter (backend/security/rate_limits.py): which kind
 // of request ran out ('search', 'page', ...), in which window ('minute' or
 // 'day'), and when it may be tried again.
 export class RateLimitError extends Error {

@@ -10,14 +10,14 @@ the code that raises it, without knowing about FastAPI:
 
     services/query_guard.py   SearchBusyError           503
     services/search.py        SearchExpiredError        410
-    routers/auth.py           NotSignedInError          401
-                              OAuthStateError           400
+    security/sessions.py      NotSignedInError          401
+    routers/auth.py           OAuthStateError           400
                               GitHubTokenError          400
                               GitHubLoginMissingError   502
                               NotInGitHubOrgError       403
                               GitHubOrgCheckError       502
                               GitHubUnreachableError    502
-    rate_limits.py            RateLimitError            429
+    security/rate_limits.py   RateLimitError            429
     services/stores/search_history.py
                               HistoryUnavailableError   503
                               HistoryEntryNotFoundError 404
