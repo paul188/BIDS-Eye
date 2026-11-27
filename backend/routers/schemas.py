@@ -1,5 +1,5 @@
 """
-schemas.py
+routers/schemas.py
 ----------
 Pydantic response models for the BIDS-Eye API.
 """

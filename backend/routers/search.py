@@ -17,7 +17,7 @@ from fastapi import APIRouter
 
 from deps import AsyncSessionDep, GithubIdDep
 from security.rate_limits import Category, rate_limit
-from schemas import QueryPageRequest, QueryRequest, QueryResponse
+from routers.schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
 

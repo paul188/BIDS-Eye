@@ -18,7 +18,7 @@ from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.domain import DomainError
-from schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
+from routers.schemas import QueryFilterSchema, QueryResponse, TextToSQLResult
 from single_flight import SingleFlight
 from services.database_stats.database_stats import database_stats
 from services.stores import interpretations
@@ -73,7 +73,7 @@ async def ask(session: AsyncSession, question: str) -> QueryResponse:
     there is one.
 
     Who asked is not known here: the search's record is its anonymous
-    query_log row (models.QueryLog), as the site's privacy notice says
+    query_log row (database/app_tables.py QueryLog), as the site's privacy notice says
     (frontend/src/components/CookieBanner.vue). The answer is saved under a
     user's account only by the router, and only for a user who turned their
     history on (services/stores/search_history.py).

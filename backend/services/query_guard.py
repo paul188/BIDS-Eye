@@ -94,7 +94,7 @@ _PER_ROW_TABLES = (_objects.name, _participants.name)
 # The only tables generated SQL may read: the dataset catalogue, which is the
 # bids_* tables plus object_associations. The app keeps its own tables in the
 # same database (other users' questions in query_log, stored translations;
-# backend/models.py), and a question can steer the
+# database/app_tables.py), and a question can steer the
 # model into a subquery on them. tests/test_query_guard.py checks that none of
 # the app's tables match this rule.
 _CATALOGUE_PREFIX = "bids_"

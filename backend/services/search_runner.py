@@ -25,7 +25,7 @@ from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.expected import ExpectedError
-from schemas import DatasetSchema
+from routers.schemas import DatasetSchema
 from services.results import dataset_cards, match_reasons, query_filters, readme_snippets
 from services import query_guard
 from services.stores.translated_queries import CachedQuery, query_cache

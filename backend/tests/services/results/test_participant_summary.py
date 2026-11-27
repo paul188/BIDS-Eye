@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from services.results import dataset_cards
 from services import search
-from schemas import ParticipantSchema
+from routers.schemas import ParticipantSchema
 
 
 def _p(i: int, **kw) -> ParticipantSchema:

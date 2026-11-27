@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 import routers.search as query_router
 from security.rate_limits import RateLimitError
-from schemas import QueryRequest, QueryResponse
+from routers.schemas import QueryRequest, QueryResponse
 from services import search
 
 

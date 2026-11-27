@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
 
-from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
+from routers.schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
 from services.indexing import dataset_description
 from services.schema.tables import datasets as _datasets, papers as _papers
 
