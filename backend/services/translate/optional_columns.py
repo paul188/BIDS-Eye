@@ -14,7 +14,7 @@ The decision is applied in four places:
   the SQL model's schema    schema_ddl.build_schema_ddl renders only the usable
                             columns (text_to_sql.py)
   the few-shot examples     an example whose SQL names another optional column
-                            is not shown (text_to_sql._pick_examples)
+                            is not shown (prompt/examples.pick_examples)
   the compiled conditions   preprocessing writes the size, species, study
                             structure and institution conditions only for
                             usable columns (available_columns in

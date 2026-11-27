@@ -77,7 +77,9 @@ class ColumnCoverage:
           It decides from them which columns are usable.
       Handed to it, unread, by those that apply the decision:
       services/translate/text_to_sql.py        the SQL model's schema, the
-          few-shot examples, the compiled conditions of preprocessing.
+          compiled conditions of preprocessing.
+      services/translate/prompt/examples.py    the few-shot examples a
+          question is shown.
       services/results/rerank.py               the columns a dataset is
           described with.
       main.py, services/search.py              the log of the usable columns

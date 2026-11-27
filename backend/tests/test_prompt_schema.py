@@ -1,6 +1,6 @@
 """What the SQL model is shown: the schema with the usable optional columns,
 and few-shot examples that use only those (schema_ddl.build_schema_ddl,
-text_to_sql._pick_examples; usable columns from services/translate/optional_columns.py)."""
+examples.pick_examples; usable columns from services/translate/optional_columns.py)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.translate import text_to_sql
-from services.translate.prompt import schema_ddl
+from services.translate.prompt import examples, instructions, schema_ddl
 
 FEW_SHOT_PATH = Path(schema_ddl.__file__).resolve().parent / "few_shot_examples.json"
 
@@ -66,11 +66,11 @@ def test_examples_using_unavailable_columns_are_never_selected() -> None:
     }
     seed = "datasets mentioning 7 Tesla scanners"
 
-    picked = text_to_sql._pick_examples(pool, "description_search", n=5, seed=seed)
+    picked = examples.pick_examples(pool, "description_search", n=5, seed=seed)
     assert [ex["sql"] for ex in picked] == [pool["description_search"][1]["sql"]]
 
     database_stats.coverage = ColumnCoverage.full({"readme_text"})
-    picked = text_to_sql._pick_examples(pool, "description_search", n=5, seed=seed)
+    picked = examples.pick_examples(pool, "description_search", n=5, seed=seed)
     assert len(picked) == 2
     assert all("institutions" not in ex["sql"] for ex in picked)
 
@@ -78,7 +78,7 @@ def test_examples_using_unavailable_columns_are_never_selected() -> None:
 def test_real_few_shot_pool_never_yields_readme_or_institutions_when_hidden() -> None:
     pool = json.loads(FEW_SHOT_PATH.read_text())
     for family in ("description_search", "paper_reference_query", "institution_query"):
-        picked = text_to_sql._pick_examples(
+        picked = examples.pick_examples(
             pool, family, n=50, seed="datasets scanned at MIT that mention a paper in the readme"
         )
         assert picked, family
@@ -95,21 +95,21 @@ def test_example_tokens_normalize_irregular_clinical_plurals() -> None:
         ("psychosis", "psychoses"),
         ("child", "children"),
     ):
-        assert text_to_sql._example_tokens(singular) == text_to_sql._example_tokens(plural)
+        assert examples._example_tokens(singular) == examples._example_tokens(plural)
 
 
 def test_exact_pool_family_precedes_legacy_alias() -> None:
     pool = {"metadata_query": [], "json_query": [], "subject_multimodal_query": []}
-    assert text_to_sql._family_key("metadata_query", pool) == "metadata_query"
-    assert text_to_sql._family_key("subject_multimodal", pool) == "subject_multimodal_query"
+    assert examples._family_key("metadata_query", pool) == "metadata_query"
+    assert examples._family_key("subject_multimodal", pool) == "subject_multimodal_query"
     # A future family with no explicit few-shot bucket still receives lexical,
     # intent and query-shape ranking instead of failing exact-family matching.
-    assert text_to_sql._family_key("future_family", pool) == "future_family"
+    assert examples._family_key("future_family", pool) == "future_family"
 
 
 def test_empty_query_metadata_does_not_invent_intent_categories() -> None:
     empty_codes = {field: set() for field in ("datatype", "task", "diagnosis", "suffix")}
-    intents = text_to_sql._intent_features(
+    intents = examples._intent_features(
         "datasets mentioning 7 Tesla scanners", "description_search", empty_codes
     )
     assert {"acquisition", "field_strength"} <= intents
@@ -136,7 +136,7 @@ def test_full_sql_prompt_budget_drops_only_whole_lower_ranked_examples(monkeypat
     ]
     text_to_sql._gemini_sql_generation("current request", "offline", examples)
     prompt = captured["prompt"]
-    assert len(prompt) + len(captured["system"]) <= text_to_sql._SQL_PROMPT_CHAR_BUDGET
+    assert len(prompt) + len(captured["system"]) <= instructions.SQL_PROMPT_CHAR_BUDGET
     assert prompt.count("[QUESTION]") == prompt.count("[/QUESTION]")
     assert prompt.count("[SQL]") == prompt.count("[/SQL]")
     assert prompt.index("<current_request>") > prompt.index("<examples")
