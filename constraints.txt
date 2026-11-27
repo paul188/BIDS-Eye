@@ -1,6 +1,8 @@
 # Exact versions of every Python package in the backend image.
 #
-# The Dockerfile passes this file to pip with -c, so a rebuild reproduces the
+# Used by the whole repository: the backend image (backend/Dockerfile sets
+# PIP_CONSTRAINT), the crawler image (ingest/openneuro-crawler/Dockerfile,
+# pip -c) and CI (.github/workflows/ci.yml). So a rebuild reproduces the
 # environment that is known to work instead of pulling whatever is newest.
 # (A rebuild in November 2026 without it picked up SQLAlchemy 2.1, google-genai 3
 # and anthropic 2, and the backend no longer started.)
