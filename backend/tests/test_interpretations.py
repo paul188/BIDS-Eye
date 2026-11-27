@@ -88,13 +88,13 @@ def test_version_covers_every_backend_module_the_translation_imports():
 
 def test_version_reads_the_files_the_old_list_missed():
     names = {f"{p.parent.name}/{p.name}" for p in store.version_paths()}
-    assert {"translate/participant_query_compiler.py", "RAG/criteria.py", "RAG/cohort_count.py",
-            "RAG/senses.yaml", "RAG/word_forms.yaml"} <= names
+    assert {"translate/participant_query_compiler.py", "vocabulary/criteria.py",
+            "vocabulary/cohort_count.py", "vocabulary/senses.yaml", "vocabulary/word_forms.yaml"} <= names
     assert not any("__pycache__" in str(p) for p in store.version_paths())
 
 
 def test_a_new_vocabulary_file_changes_the_version(monkeypatch, tmp_path):
-    rag = tmp_path / "RAG"
+    rag = tmp_path / "vocabulary"
     rag.mkdir()
     (rag / "value_mappings.yaml").write_text("a: 1\n")
     monkeypatch.setattr(store, "_VERSION_DIRS", (rag,))
@@ -140,7 +140,7 @@ def test_only_a_translation_that_ran_as_written_is_stored(total, fallback, self_
 def test_version_reads_every_preprocessing_module():
     """preprocess/ is a package: each of its modules decides the translation,
     and the version reads folders without recursing into them."""
-    modules = {p for p in (_ROOT / "LLM_preprocessor").rglob("*.py") if "__pycache__" not in p.parts}
+    modules = {p for p in (_ROOT / "backend" / "llm").rglob("*.py") if "__pycache__" not in p.parts}
     assert modules and modules <= set(store.version_paths())
 
 

@@ -216,7 +216,7 @@ class ConfirmedInDatasetColumnEvidence(ConfirmedEvidence):
 @dataclass(frozen=True)
 class ConfirmedByDefaultEvidence(ConfirmedEvidence):
     """Confirmed by a default: an empty column whose default fits ("no species
-    label, assumed human"; defaults: RAG/criteria.py), or an excluded
+    label, assumed human"; defaults: backend/vocabulary/criteria.py), or an excluded
     diagnosis the dataset records none of (source ASSUMED_ABSENT)."""
     columns: Tuple[str, ...] = ()
     source: Source = field(default=Source.ASSUMED, kw_only=True)

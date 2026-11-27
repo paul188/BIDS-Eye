@@ -7,9 +7,9 @@ their words close together, not anywhere in the text ("cognitive control" is
 in 73 datasets as two words, in 22 as the term).
 
 Candidates come from two sources:
-  vocabulary  multi-word labels and synonyms of RAG/value_mappings.yaml,
-              RAG/reference_vocabulary.yaml (MeSH diagnoses, Cognitive Atlas
-              tasks) and RAG/cognitive_atlas_constructs.yaml, kept when the
+  vocabulary  multi-word labels and synonyms of backend/vocabulary/value_mappings.yaml,
+              backend/vocabulary/reference_vocabulary.yaml (MeSH diagnoses, Cognitive Atlas
+              tasks) and backend/vocabulary/cognitive_atlas_constructs.yaml, kept when the
               catalogue writes them as a phrase in >= MIN_VOCAB_DOCS datasets
   catalogue   two- and three-word sequences the catalogue writes in
               >= MIN_MINED_DOCS datasets, whose words stand together in at
@@ -184,20 +184,20 @@ def _vocabulary() -> Dict[Key, Set[str]]:
         if 2 <= len(words) <= MAX_WORDS:
             found[words].add(source)
 
-    vm = yaml.safe_load((_REPO / "RAG" / "value_mappings.yaml").read_text())
+    vm = yaml.safe_load((_REPO / "backend" / "vocabulary" / "value_mappings.yaml").read_text())
     for kind in ("diagnosis", "task"):
         for entry in (vm.get(kind) or {}).values():
             add(entry.get("label"), f"curated {kind}")
             for syn in entry.get("synonyms") or []:
                 add(syn.get("term") if isinstance(syn, dict) else syn, f"curated {kind}")
-    ref = yaml.safe_load((_REPO / "RAG" / "reference_vocabulary.yaml").read_text())
+    ref = yaml.safe_load((_REPO / "backend" / "vocabulary" / "reference_vocabulary.yaml").read_text())
     names = {"diagnosis": "MeSH", "task": "Cognitive Atlas task"}
     for kind, name in names.items():
         for entry in (ref.get(kind) or {}).values():
             add(entry.get("label"), name)
             for term in entry.get("terms") or []:
                 add(term, name)
-    ca = yaml.safe_load((_REPO / "RAG" / "cognitive_atlas_constructs.yaml").read_text())
+    ca = yaml.safe_load((_REPO / "backend" / "vocabulary" / "cognitive_atlas_constructs.yaml").read_text())
     for entry in (ca.get("cognitive_construct") or {}).values():
         add(entry.get("label"), "Cognitive Atlas construct")
         for syn in entry.get("synonyms") or []:

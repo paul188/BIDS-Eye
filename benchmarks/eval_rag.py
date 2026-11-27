@@ -3,8 +3,8 @@ RAG resolver benchmark — evaluates MetadataRetriever against ground-truth term
 
 Usage:
     python benchmarks/eval_rag.py \
-        --yaml RAG/value_mappings.yaml \
-        --name-index RAG/name_index.json \
+        --yaml backend/vocabulary/value_mappings.yaml \
+        --name-index backend/vocabulary/name_index.json \
         --ground-truth benchmarks/ground_truth/rag_terms.jsonl \
         --out benchmarks/results/rag_metrics.json
 """
@@ -84,7 +84,7 @@ def _infer_path(
     """Heuristic to classify which tier resolved the term."""
     import sys
     from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).parent.parent / "RAG"))
+    sys.path.insert(0, str(Path(__file__).parent.parent / "backend" / "vocabulary"))
     from yaml_to_llamaindex import leaf_db, group_db, display_db, group_display_db
 
     leaves = leaf_db.get(field, {})
@@ -260,7 +260,7 @@ def _compute_confidence_calibration(
             for syn in synonyms:
                 if isinstance(syn, dict):
                     # The YAML key is "weight"; a synonym without one counts as 1.0,
-                    # as in RAG/yaml_to_llamaindex.py.
+                    # as in backend/vocabulary/yaml_to_llamaindex.py.
                     max_conf = max(max_conf, float(syn.get("weight", 1.0)))
                 elif isinstance(syn, str):
                     max_conf = max(max_conf, 1.0)
@@ -320,8 +320,8 @@ def _print_calibration_table(calibration: dict[str, dict]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate RAG resolver against ground truth")
-    parser.add_argument("--yaml", default="RAG/value_mappings.yaml")
-    parser.add_argument("--name-index", default="RAG/name_index.json")
+    parser.add_argument("--yaml", default="backend/vocabulary/value_mappings.yaml")
+    parser.add_argument("--name-index", default="backend/vocabulary/name_index.json")
     parser.add_argument("--ground-truth", default="benchmarks/ground_truth/rag_terms.jsonl")
     parser.add_argument("--out", default="benchmarks/results/rag_metrics.json")
     parser.add_argument("--verbose", action="store_true", help="Print per-entry results")

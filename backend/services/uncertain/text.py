@@ -39,7 +39,7 @@ def _top_level_and(query: str) -> List[str]:
 
 
 # Words that qualify the thing searched for rather than name it, and nouns
-# too general to stand for the term they were part of (RAG/text_terms.py).
+# too general to stand for the term they were part of (backend/vocabulary/text_terms.py).
 _MODIFIERS = MODIFIER_WORDS
 _NEVER_ALONE = NEVER_ALONE_WORDS
 

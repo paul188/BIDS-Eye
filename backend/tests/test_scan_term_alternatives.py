@@ -41,7 +41,7 @@ def test_alternatives_are_checked_against_the_catalogue() -> None:
     })
     dropped = pp.check_scan_term_alternatives(plan, _counts({"brain": 900, "N2pc": 0}))
     assert [(e.term, e.alternatives) for e in plan.scan_term_alternatives] == [
-        # The listed written-out form (RAG/shorthands.yaml) first, then the model's.
+        # The listed written-out form (backend/vocabulary/shorthands.yaml) first, then the model's.
         ("ERP", ["event-related potential", "oddball", "P300"])]
     assert dropped == {"ERP: brain": "too common (900 datasets)", "ERP: N2pc": "no dataset uses it"}
 

@@ -2,7 +2,7 @@
 
 "datasets related to drawings or art" required both words (2026-11-17): "or"
 was dropped as a stopword and every word of a text_match() term must match.
-RAG/text_formula.py reads description_search as phrases joined by AND, OR and
+backend/vocabulary/text_formula.py reads description_search as phrases joined by AND, OR and
 NOT; preprocess.py writes the 'dataset text:' line from it.
 """
 

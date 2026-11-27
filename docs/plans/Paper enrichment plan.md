@@ -228,7 +228,7 @@ bids_datasets.search_tsv_papers   generated: the search_tsv expression plus
   adults"; the benchmark has 35 age questions to measure this.
 - **Species.** "Animals" without "Humans" marks animal datasets.
 - **Conditions.** MeSH disease headings run through the existing diagnosis
-  resolver (`RAG/`), stored as paper-derived conditions with their source,
+  resolver (`backend/vocabulary/`), stored as paper-derived conditions with their source,
   apart from uploader-provided fields.
 
 ### 7. Ingestion

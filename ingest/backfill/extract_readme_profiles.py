@@ -38,7 +38,7 @@ import time
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[2]
-for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
+for _path in (_REPO / "backend", _REPO / "backend" / "llm", _REPO / "backend" / "vocabulary"):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 

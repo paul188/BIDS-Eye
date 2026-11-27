@@ -1,5 +1,5 @@
 """Offline tools catch only the failures they expect and raise the rest
-(RAG/tools/)."""
+(backend/vocabulary/tools/)."""
 from __future__ import annotations
 
 import importlib.util
@@ -18,7 +18,7 @@ def _load(path: Path, name: str):
     return module
 
 
-auto_map = _load(ROOT / "RAG" / "tools" / "auto_map_unmapped.py",
+auto_map = _load(ROOT / "backend" / "vocabulary" / "tools" / "auto_map_unmapped.py",
                  "auto_map_unmapped")
 
 
@@ -60,7 +60,7 @@ def test_auto_map_raises_a_bug():
         auto_map._call_gemini(_Client([TypeError("unexpected keyword")]), "", "p")
 
 
-expand_synonyms = _load(ROOT / "RAG" / "tools" / "expand_synonyms.py", "expand_synonyms")
+expand_synonyms = _load(ROOT / "backend" / "vocabulary" / "tools" / "expand_synonyms.py", "expand_synonyms")
 
 
 def _gemini_answers(monkeypatch, answers):

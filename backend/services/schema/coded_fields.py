@@ -1,12 +1,12 @@
 """
 services/schema/coded_fields.py
 -------------------------------
-The fields whose values are vocabulary codes (RAG/value_mappings.yaml), named
-once. Plain strings and no imports from the database side, so RAG/ and
-LLM_preprocessor/ can use them too.
+The fields whose values are vocabulary codes (backend/vocabulary/value_mappings.yaml), named
+once. Plain strings and no imports from the database side, so backend/vocabulary/ and
+backend/llm/ can use them too.
 
 Where each field is stored: services/schema/tables.py. tests/test_schema_tables.py
-checks that these columns and the entries of RAG/join_paths.yaml agree.
+checks that these columns and the entries of backend/vocabulary/join_paths.yaml agree.
 """
 
 from __future__ import annotations

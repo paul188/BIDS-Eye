@@ -1,5 +1,5 @@
 """Preprocessing's DB back-check answered from the backend's cache of coded values
-(LLM_preprocessor/preprocess/catalogue.py verify_codes, services/database_stats/database_stats.py)."""
+(backend/llm/preprocess/catalogue.py verify_codes, services/database_stats/database_stats.py)."""
 
 from __future__ import annotations
 

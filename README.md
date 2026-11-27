@@ -110,7 +110,7 @@ One straightforward local setup is:
 
 ```bash
 pip install -e BIDS-SQL
-pip install -e RAG -e LLM_preprocessor
+pip install -e backend/vocabulary -e backend/llm
 pip install -e backend
 
 cd backend
@@ -139,20 +139,21 @@ The session is a signed cookie; the server keeps no list of sessions. What follo
 ## Project Layout
 
 ```text
-backend/                     FastAPI app, auth, query routing
+backend/                     FastAPI app and everything it runs at request time
   services/                  Search pipeline, grouped by stage (see services/__init__.py)
   routers/                   Query, auth, and crawler endpoints
+  llm/                       Intent parsing (preprocess/) and the shared LLM client
+  vocabulary/                Curated vocabulary (value_mappings.yaml) and term-to-code retriever
+    tools/                   Offline tools that build or audit the vocabulary
 frontend/                    Vue 3 dataset search UI
   src/                       Chat interface, dataset cards, and state management
-BIDS-SQL/                    Shared indexing and database layer
-  input_pipeline.py          BIDS dataset discovery and ingestion
-  db/                        ORM models and database helpers
 ingest/                      Offline jobs that fill the database
   openneuro-crawler/         OpenNeuro/DataLad crawler (its own Docker service)
   backfill/                  Re-run crawler steps over already-indexed datasets
-RAG/                         Vocabulary (value_mappings.yaml) and term-to-code retriever
-  tools/                     Offline tools that build or audit the vocabulary
-LLM_preprocessor/            Intent parsing and the shared LLM client
+BIDS-SQL/                    Shared indexing and database layer (git submodule)
+  input_pipeline.py          BIDS dataset discovery and ingestion
+  db/                        ORM models and database helpers
+benchmarks/                  Search quality benchmarks
 scripts/backup/              Database backups (systemd timers on the server)
 docs/                        Research notes and design plans
 ```
@@ -203,7 +204,7 @@ The repository includes benchmark and evaluation material for:
 - OpenNeuro and public-dataset search behavior,
 - remote indexing workflows.
 
-See the `README.md` files and scripts under `RAG/`, `benchmarks/`, and `ingest/` for the current evaluation tooling.
+See the `README.md` files and scripts under `backend/vocabulary/`, `benchmarks/`, and `ingest/` for the current evaluation tooling.
 
 ## Contributing
 

@@ -1,4 +1,4 @@
-"""The age-group criterion (RAG/criteria.py): "children" is an age filter, not a word.
+"""The age-group criterion (backend/vocabulary/criteria.py): "children" is an age filter, not a word.
 
 "impulse control in children" searched the word "children" (2026-11-15) and
 missed datasets that say "youth" or "adolescents" or only record ages.
@@ -76,7 +76,7 @@ def test_adolescents_stop_below_18() -> None:
 def test_animals_are_never_an_age_group() -> None:
     from criteria import HUMAN_SPECIES
 
-    # Human by label or by the species default (RAG/criteria.py).
+    # Human by label or by the species default (backend/vocabulary/criteria.py).
     cond = age_condition(["children"])
     assert cond.endswith(f" AND {HUMAN_SPECIES})")
     assert age_condition(["children"], has_species_column=False).count("species") == 0

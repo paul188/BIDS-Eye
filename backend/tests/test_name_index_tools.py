@@ -1,5 +1,5 @@
 """The offline tools that write the name lists the retriever falls back on
-(RAG/tools/build_name_index.py, RAG/tools/patch_metadata_index.py)
+(backend/vocabulary/tools/build_name_index.py, backend/vocabulary/tools/patch_metadata_index.py)
 never replace good values with an empty list after a failed query."""
 from __future__ import annotations
 
@@ -21,9 +21,9 @@ def _load(path: Path, name: str):
     return module
 
 
-build_name_index = _load(ROOT / "RAG" / "tools" / "build_name_index.py", "build_name_index")
+build_name_index = _load(ROOT / "backend" / "vocabulary" / "tools" / "build_name_index.py", "build_name_index")
 patch_metadata_index = _load(
-    ROOT / "RAG" / "tools" / "patch_metadata_index.py", "patch_metadata_index")
+    ROOT / "backend" / "vocabulary" / "tools" / "patch_metadata_index.py", "patch_metadata_index")
 
 
 def _funding_query_fails(monkeypatch, module):

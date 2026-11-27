@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 _ROOT = Path(__file__).resolve().parents[2]
-for _p in ("LLM_preprocessor", "RAG"):
+for _p in ("backend/llm", "backend/vocabulary"):
     if str(_ROOT / _p) not in sys.path:
         sys.path.insert(0, str(_ROOT / _p))
 

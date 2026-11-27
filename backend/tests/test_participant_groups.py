@@ -1,6 +1,6 @@
 """Participant diagnoses from a group column and participants.json (remote/participant_groups.py).
 
-Uses the real vocabulary (RAG/value_mappings.yaml). The cases are taken from
+Uses the real vocabulary (backend/vocabulary/value_mappings.yaml). The cases are taken from
 the dry run on the live database (2026-11-17).
 """
 

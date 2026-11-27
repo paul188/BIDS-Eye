@@ -173,7 +173,7 @@ _PARTICIPANTS_COUNT_SUBQUERY_RE = re.compile(
 )
 
 
-# The filter line of "at least N patients with X" (LLM_preprocessor/preprocess/).
+# The filter line of "at least N patients with X" (backend/llm/preprocess/).
 _PATIENTS_LINE_RE = re.compile(
     r"^  patients \([^)\n]*\): (patients_with\('[a-z0-9_, ]+'\) >= \d+)\s*$", re.MULTILINE)
 
@@ -276,7 +276,7 @@ class SqlRewriteService:
         makes the rewrite behavior testable in isolation.
 
         *word_forms*: the forms decided for words of this question
-        (RAG/word_forms.py); text search then requires them
+        (backend/vocabulary/word_forms.py); text search then requires them
         (services/fulltext/text_search.py, TEXT_SEARCH_EXACT).
         """
         sql = self.extract_sql(raw_sql)
@@ -304,7 +304,7 @@ class SqlRewriteService:
         sql = self._restore_description_alternatives(sql, augmented_question)
         sql = self._restore_description_formula(sql, augmented_question)
         # "At least N patients with X": patients_with(...) >= N becomes a count of
-        # the participants known to have the diagnosis (RAG/cohort_count.py).
+        # the participants known to have the diagnosis (backend/vocabulary/cohort_count.py).
         sql = self._inject_patient_counts(sql, augmented_question)
         sql = _cohort_count.expand(sql)
         tiered = _uncertain_tier.enabled()
@@ -874,7 +874,7 @@ class SqlRewriteService:
         """Write each sex literal as the code the column holds.
 
         bids_participants.sex holds 'male', 'female' or 'other_diverse' (the
-        crawler's remote/participant_codes.py; RAG/participant_codes.py). The SQL model
+        crawler's remote/participant_codes.py; backend/vocabulary/participant_codes.py). The SQL model
         still writes 'F', 'Female' or IN ('M', 'male'): each literal the
         vocabulary knows becomes its code, so that p.sex = 'F' does not come
         back empty. A literal it does not know is left as written.
@@ -916,7 +916,7 @@ class SqlRewriteService:
     def _handedness_code(cls, literal: str) -> Optional[str]:
         """The stored code a handedness value stands for, or None if unclear."""
         # What a request or the SQL model says for each code: the vocabulary
-        # (RAG/participant_codes.py). A word it does not list is read by its
+        # (backend/vocabulary/participant_codes.py). A word it does not list is read by its
         # beginning ('lefty', 'right-dominant people').
         code = _handedness_code(literal)
         if code is not None:
@@ -1643,7 +1643,7 @@ class SqlRewriteService:
     def _restore_description_formula(self, sql: str, augmented_question: str) -> str:
         """AND back the exclusions of a description formula the model left out.
 
-        A formula line (RAG/text_formula.py) reads, for "memory but not sleep",
+        A formula line (backend/vocabulary/text_formula.py) reads, for "memory but not sleep",
             dataset text: text_match('memory') AND NOT text_match('sleep')
         Its top-level AND parts are separate conditions. A model that copied
         only the first would search for memory and keep the sleep studies.

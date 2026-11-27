@@ -4,7 +4,7 @@ benchmarks/word_forms/llm_baseline.py
 -------------------------------------
 The language-model baseline for the word form labels (build_label_set.py):
 the model gets each stem's forms with their dataset counts, as the search's
-intent prompt does (RAG/word_forms.py prompt_block), and labels every pair of
+intent prompt does (backend/vocabulary/word_forms.py prompt_block), and labels every pair of
 the set the way a person does on label.html.
 
 Only words and counts are sent, never dataset text. One call per stem, at
@@ -29,7 +29,7 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parents[1]
-sys.path.insert(0, str(_REPO / "LLM_preprocessor"))
+sys.path.insert(0, str(_REPO / "backend" / "llm"))
 
 from llm_client import llm_generate  # noqa: E402
 

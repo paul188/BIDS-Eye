@@ -1,4 +1,4 @@
-"""Other spellings and numbers of a searched word (RAG/word_forms.py spelling_variants,
+"""Other spellings and numbers of a searched word (backend/vocabulary/word_forms.py spelling_variants,
 plural_variants, search_variants)."""
 
 from __future__ import annotations

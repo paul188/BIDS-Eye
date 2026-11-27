@@ -1,4 +1,4 @@
-"""RAG/tools/cognitive_atlas_api.py: a missing page is None, an API that cannot
+"""backend/vocabulary/tools/cognitive_atlas_api.py: a missing page is None, an API that cannot
 be read is CognitiveAtlasFetchError, never None."""
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "RAG" / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend" / "vocabulary" / "tools"))
 import cognitive_atlas_api as ca  # noqa: E402
 
 

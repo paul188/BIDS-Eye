@@ -113,7 +113,7 @@ def _ssh_python(target: str, code: str, timeout: float = 1800) -> dict[str, Any]
 
 def _remote_capabilities(target: str) -> dict[str, Any]:
     code = r'''import asyncio, json, sys
-sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/RAG"]
+sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/backend/vocabulary", "/app/RAG"]  # /app/RAG: images before 2026-11-27
 from db.db import engine
 try:
     from services.catalogue import schema_capabilities
@@ -163,7 +163,7 @@ def _run_remote_live(cases: dict[str, dict[str, Any]], params: dict[str, Any],
             })
     encoded_payload = repr(json.dumps(payload, ensure_ascii=False))
     code = r'''import asyncio, json, os, sys, time
-sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/RAG"]
+sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/backend/vocabulary", "/app/RAG"]  # /app/RAG: images before 2026-11-27
 from sqlalchemy import text
 from db.db import async_session_maker, engine
 items = json.loads(__PAYLOAD__)
@@ -277,8 +277,8 @@ async def _execute_live(sql: str, params: dict[str, Any], label: str,
         sys.path.insert(0, str(BACKEND))
     if str(ROOT / "BIDS-SQL") not in sys.path:
         sys.path.insert(0, str(ROOT / "BIDS-SQL"))
-    if str(ROOT / "RAG") not in sys.path:
-        sys.path.insert(0, str(ROOT / "RAG"))
+    if str(ROOT / "backend" / "vocabulary") not in sys.path:
+        sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     import main  # noqa: F401
     from db.db import async_session_maker, engine
     from sqlalchemy import text
@@ -328,8 +328,8 @@ async def _prepare_live_capabilities() -> bool:
         sys.path.insert(0, str(BACKEND))
     if str(ROOT / "BIDS-SQL") not in sys.path:
         sys.path.insert(0, str(ROOT / "BIDS-SQL"))
-    if str(ROOT / "RAG") not in sys.path:
-        sys.path.insert(0, str(ROOT / "RAG"))
+    if str(ROOT / "backend" / "vocabulary") not in sys.path:
+        sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     import main  # noqa: F401
     from db.db import engine
     from services.catalogue import schema_capabilities
@@ -348,8 +348,8 @@ async def _run_live(cases: dict[str, dict[str, Any]], params: dict[str, Any], la
         sys.path.insert(0, str(BACKEND))
     if str(ROOT / "BIDS-SQL") not in sys.path:
         sys.path.insert(0, str(ROOT / "BIDS-SQL"))
-    if str(ROOT / "RAG") not in sys.path:
-        sys.path.insert(0, str(ROOT / "RAG"))
+    if str(ROOT / "backend" / "vocabulary") not in sys.path:
+        sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     import main  # noqa: F401
     from db.db import async_session_maker, engine
     from sqlalchemy import text
@@ -426,7 +426,7 @@ def main_cli() -> int:
     args = parser.parse_args()
 
     sys.path.insert(0, str(BACKEND))
-    sys.path.insert(0, str(ROOT / "RAG"))
+    sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     from services import query_guard
     from services.catalogue import schema_capabilities
     from services.fulltext import word_frequencies
