@@ -115,7 +115,7 @@ def test_a_known_diagnosis_without_participant_rows_keeps_its_line(monkeypatch) 
     plan = p.QueryPlan(query_family="concept_query", natural_language_summary="FTD",
                        groups=[p.ParticipantGroup(group_name="g",
                                                   diagnosis_terms=["frontotemporal dementia"])])
-    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question: plan)
+    monkeypatch.setattr(p.pipeline, "create_query_plan", lambda question: plan)
     augmented = p.run_pipeline("frontotemporal dementia", retriever=Retriever()).augmented_question
     assert "DB MISS" not in augmented
     assert "p2.diagnosis IN ('frontotemporal_dementia')" in augmented
@@ -140,7 +140,7 @@ def test_a_diagnosis_keeps_its_own_code_when_only_a_narrower_one_has_rows(monkey
 
     plan = p.QueryPlan(query_family="concept_query", natural_language_summary="TLE",
                        groups=[p.ParticipantGroup(group_name="g", diagnosis_terms=["TLE"])])
-    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question: plan)
+    monkeypatch.setattr(p.pipeline, "create_query_plan", lambda question: plan)
     augmented = p.run_pipeline("20 patients with TLE", retriever=Retriever()).augmented_question
     line = next(ln for ln in augmented.splitlines() if ln.startswith("  diagnosis:"))
     assert "DB MISS" not in augmented

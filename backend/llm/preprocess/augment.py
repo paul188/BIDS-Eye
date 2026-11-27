@@ -51,7 +51,7 @@ def augment_with_rag(
 
     Parameters
     ----------
-    plan             : output of preprocess_query()
+    plan             : output of create_query_plan()
     rag_results      : {field: {term: [canonical_code, ...]}}
                        e.g. {"diagnosis": {"schizophrenia": ["schizophrenia_spectrum"]},
                               "datatype":  {"fMRI": ["func"]},

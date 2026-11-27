@@ -53,7 +53,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -91,15 +90,6 @@ ANSWER_SCHEMA = {
         "required": ["raw", "action", "reasoning"],
     },
 }
-
-
-def _ask_model(prompt: str, models: list[str] | None = None) -> str:
-    """The first answer of profile vocabulary_mapping (or *models* under its
-    policy). Raises llm_client.LLMAllFailedError when no model answers; a bug is
-    raised as itself."""
-    from llm_client import llm_generate
-    return llm_generate(prompt, profile="vocabulary_mapping", json_schema=ANSWER_SCHEMA,
-                        models=models)
 
 
 # ── YAML helpers ───────────────────────────────────────────────────────────────
@@ -504,7 +494,7 @@ def generate_decisions(
     Continuous-apply mode (default) means the YAML tree passed to later batches
     already contains entries added by earlier batches — the model always sees current state.
     """
-    from llm_client import LLMAllFailedError, profile_available
+    from llm_client import LLMAllFailedError, llm_generate, profile_available
     if not profile_available("vocabulary_mapping") and not model:
         raise SystemExit("No model of LLM profile vocabulary_mapping can be called "
                          "(set its key, see backend/llm/llm_config.yaml).")
@@ -551,8 +541,9 @@ def generate_decisions(
             prompt = build_prompt(section, section_data, batch, dataset_context)
 
             try:
-                raw_resp = _ask_model(prompt, [model] if model else None)
-                raw_resp = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_resp.strip())
+                raw_resp = llm_generate(prompt, profile="vocabulary_mapping",
+                                        json_schema=ANSWER_SCHEMA,
+                                        models=[model] if model else None)
                 batch_decisions = json.loads(raw_resp)
                 if not isinstance(batch_decisions, list):
                     raise ValueError("expected JSON array")

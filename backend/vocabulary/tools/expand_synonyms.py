@@ -525,16 +525,6 @@ def _parse_llm_response(raw: Optional[str]) -> List[str]:
     return []
 
 
-def _ask_model(prompt: str, system: str = _SYSTEM_AUGMENT,
-               models: Optional[List[str]] = None) -> List[str]:
-    """Candidates from profile synonym_expansion (backend/llm/llm_config.yaml),
-    or from *models* under its policy. Raises llm_client.LLMAllFailedError when
-    no model answers."""
-    from llm_client import llm_generate
-    return _parse_llm_response(llm_generate(prompt, profile="synonym_expansion", system=system,
-                                            models=models))
-
-
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -565,7 +555,7 @@ def main() -> None:
                              "instead of profile synonym_expansion's")
     args = parser.parse_args()
 
-    from llm_client import LLMAllFailedError, profile_available
+    from llm_client import LLMAllFailedError, llm_generate, profile_available
     models = [m.strip() for m in args.models.split(",") if m.strip()] if args.models else None
     if not models and not profile_available("synonym_expansion"):
         sys.exit("Error: no model of LLM profile synonym_expansion can be called "
@@ -646,7 +636,8 @@ def main() -> None:
         sys_prompt = _SYSTEM_REPLACE if args.mode == "replace" else _SYSTEM_AUGMENT
         prompt = _build_prompt(node, all_texts, mode=args.mode)
         try:
-            candidates = _ask_model(prompt, system=sys_prompt, models=models)
+            candidates = _parse_llm_response(llm_generate(
+                prompt, profile="synonym_expansion", system=sys_prompt, models=models))
         except LLMAllFailedError as exc:
             print(f"[llm error: {exc}]")
             continue

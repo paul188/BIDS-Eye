@@ -23,7 +23,7 @@ from services.uncertain import text as tier_text, tier as ut
 from services.fulltext import word_form_counts
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from services.fulltext.ranking import RankQuery
-from word_forms import WordEvidence
+from word_forms import FormCounts
 
 SERVICE = SqlRewriteService()
 HEAD = ("SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count "
@@ -32,7 +32,7 @@ HEAD = ("SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count "
 MODALITY = ("EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
             "AND o2.datatype = 'functional_mri')")
 FORMS = {"ageing": ("ageing", "aging"), "weight": ("weight", "weights")}
-AGEING = WordEvidence("ageing", "age", 291, (
+AGEING = FormCounts("ageing", "age", 291, (
     ("age", 220), ("aged", 44), ("aging", 34), ("ages", 30), ("ageing", 4)))
 
 
@@ -420,26 +420,26 @@ PLAN = {"query_family": "description_search", "natural_language_summary": "x",
 def _model(monkeypatch, answer: dict, schemas: list | None = None) -> list:
     prompts = []
 
-    def call(prompt, *, json_schema=None):
+    def call(prompt, **kwargs):
         prompts.append(prompt)
         if schemas is not None:
-            schemas.append(json_schema)
+            schemas.append(kwargs.get("json_schema"))
         return json.dumps(answer)
 
-    monkeypatch.setattr(pp.intent, "_ask_model", call)
+    monkeypatch.setattr(pp.intent, "llm_generate", call)
     return prompts
 
 
 def test_the_prompt_only_changes_for_a_colliding_word(monkeypatch) -> None:
     prompts = _model(monkeypatch, PLAN)
-    pp.preprocess_query("MRI on ageing")
-    pp.preprocess_query("MRI on ageing", evidence={})
-    scans = WordEvidence("scans", "scan", 502, (("scans", 280), ("scan", 252)))
-    pp.preprocess_query("MRI on ageing", evidence={"scans": scans})
+    pp.create_query_plan("MRI on ageing")
+    pp.create_query_plan("MRI on ageing", form_counts={})
+    scans = FormCounts("scans", "scan", 502, (("scans", 280), ("scan", 252)))
+    pp.create_query_plan("MRI on ageing", form_counts={"scans": scans})
     assert prompts[0] == prompts[1] == prompts[2]
     assert "word_forms" not in prompts[0]
 
-    pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING})
+    pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING})
     assert '"user_query": "MRI on ageing"' in prompts[3]
     assert '"catalogue_word_form_evidence"' in prompts[3]
     assert "ageing: age (220), aged (44), aging (34), ages (30), ageing (4)" in prompts[3]
@@ -450,14 +450,14 @@ def test_the_models_choice_is_read_outside_the_plan(monkeypatch) -> None:
     _model(monkeypatch, {**PLAN, "word_forms": [
         {"word": "ageing", "keep": ["ageing", "aging"]}, "nonsense", {"word": 3}]})
     choices = []
-    plan = pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING},
+    plan = pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING},
                                word_choices=choices)
     assert plan.description_search == "ageing"
     assert choices == [("ageing", ["ageing", "aging"])]
     # No answer for the word: nothing decided, the plan is still read.
     _model(monkeypatch, PLAN)
     choices = []
-    pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING},
+    pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING},
                         word_choices=choices)
     assert choices == []
 
@@ -465,7 +465,7 @@ def test_the_models_choice_is_read_outside_the_plan(monkeypatch) -> None:
 def test_structured_output_schema_includes_conditional_word_forms(monkeypatch) -> None:
     schemas = []
     prompts = _model(monkeypatch, PLAN, schemas)
-    pp.preprocess_query("Find datasets on memory")
+    pp.create_query_plan("Find datasets on memory")
     base_schema = schemas[-1]
     assert "word_forms" not in base_schema["properties"]
     assert "QueryPlan JSON schema" not in prompts[-1]
@@ -473,7 +473,7 @@ def test_structured_output_schema_includes_conditional_word_forms(monkeypatch) -
 
     _model(monkeypatch, {**PLAN, "word_forms": [
         {"word": "ageing", "keep": ["ageing", "aging"]}]}, schemas)
-    pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING})
+    pp.create_query_plan("MRI on ageing", form_counts={"ageing": AGEING})
     form_schema = schemas[-1]
     assert "word_forms" in form_schema["required"]
     assert form_schema["properties"]["word_forms"]["items"]["required"] == ["word", "keep"]

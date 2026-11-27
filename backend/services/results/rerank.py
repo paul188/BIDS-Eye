@@ -203,8 +203,7 @@ def build_prompt(question: str, interpretation: Optional[str], descriptions: Seq
 
 def parse_scores(raw: str, count: int) -> Dict[int, int]:
     """{position (1-based): score}; entries out of range or malformed are dropped."""
-    text_value = re.sub(r"^```(?:json)?\s*|\s*```$", "", (raw or "").strip())
-    data = json.loads(text_value)
+    data = json.loads(raw or "")
     items = data.get("judgments") if isinstance(data, dict) else data
     scores: Dict[int, int] = {}
     for item in items or []:

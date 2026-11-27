@@ -126,7 +126,7 @@ def main() -> None:
         wrong, errors = [], []
         for _ in range(args.repeats):
             try:
-                problem = judge(preprocess.preprocess_query(question))
+                problem = judge(preprocess.create_query_plan(question))
             except Exception as exc:  # noqa: BLE001
                 errors.append(f"{type(exc).__name__}: {str(exc)[:80]}")
                 continue

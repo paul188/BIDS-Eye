@@ -52,7 +52,7 @@ from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
 from remote.openneuro_metadata import EXACT_SEARCH_VECTOR_EXPRESSION  # noqa: E402
-from word_forms import WordEvidence, inflections, is_collision  # noqa: E402
+from word_forms import FormCounts, inflections, is_collision  # noqa: E402
 
 SEED = 20261119
 SAMPLE_PER_STRATUM = 25
@@ -152,8 +152,8 @@ def build() -> Dict:
     for stem, forms in by_stem.items():
         if len(forms) < 2:
             continue
-        evidence = tuple(sorted(forms.items(), key=lambda x: -x[1]))
-        hits = [w for w in forms if is_collision(WordEvidence(w, stem, stem_docs.get(stem, 0), evidence))]
+        form_counts = tuple(sorted(forms.items(), key=lambda x: -x[1]))
+        hits = [w for w in forms if is_collision(FormCounts(w, stem, stem_docs.get(stem, 0), form_counts))]
         if hits:
             colliding[stem] = hits
 
