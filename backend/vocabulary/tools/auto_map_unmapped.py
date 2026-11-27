@@ -168,30 +168,6 @@ def _extract_groups(section_data: dict) -> list[str]:
     ]
 
 
-def _collect_all_codes(section_data: dict) -> set[str]:
-    """
-    Return a flat set of every raw value already mapped in this section —
-    i.e. everything in any 'codes' list or 'dataset_codes[].raw' field.
-    Used to skip already-covered values before sending a batch to the model.
-    """
-    covered: set[str] = set()
-
-    def walk(node: dict) -> None:
-        if not isinstance(node, dict):
-            return
-        for c in node.get("codes", []):
-            covered.add(str(c))
-        for dc in node.get("dataset_codes", []):
-            if isinstance(dc, dict) and dc.get("raw"):
-                covered.add(str(dc["raw"]))
-        for k, v in node.items():
-            if k not in _LEAF_KEYS and isinstance(v, dict):
-                walk(v)
-
-    walk(section_data)
-    return covered
-
-
 # ── Prompt builder ─────────────────────────────────────────────────────────────
 
 _PROMPT_TEMPLATE = """\

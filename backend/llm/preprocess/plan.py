@@ -458,9 +458,3 @@ class AugmentedQueryPlan(BaseModel):
     # Phrases of description_search left out of the search because fewer than
     # three datasets say them ("postictal"). The explanation names them.
     unmatched_text: List[str] = Field(default_factory=list)
-
-    def codes_for(self, field: RAGField) -> List[str]:
-        for r in self.resolved:
-            if r.field == field:
-                return r.all_codes
-        return []

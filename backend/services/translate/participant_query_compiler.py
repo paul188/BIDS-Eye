@@ -267,19 +267,12 @@ def _scan_conditions(augmented_question: Optional[str]) -> Tuple[Optional[List[s
         if _DIAGNOSIS_LINE_RE.match(line):
             continue
         if _AGE_LINE_RE.match(line):
-            continue  # _age_conditions
+            continue
         match = _SCAN_LINE_RE.match(line)
         if not match:
             return None, f"filter line not supported: {line.strip()[:40]}"
         conditions.append((match.group("condition") or match.group("any_of")).strip())
     return conditions, ""
-
-
-def _age_conditions(augmented_question: Optional[str]) -> List[str]:
-    """The age-group condition of the augmented question, if it has one."""
-    return [match.group("condition")
-            for match in map(_AGE_LINE_RE.match, (augmented_question or "").splitlines())
-            if match]
 
 
 # Filter lines that are complete conditions: ANDed as they are.

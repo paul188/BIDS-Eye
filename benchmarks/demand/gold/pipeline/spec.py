@@ -354,7 +354,6 @@ add(id="qp02_t1w_five_adult_hc", method="population", population="healthy_adult_
     relevant_if="At least five healthy adults (18 or older) have a T1w image.")
 add(id="qp03_t1w_healthy_children_2_12", method="population", population="healthy_child_t1w_5",
     relevant_if="At least five healthy children aged 2 to 12 have a T1w image.")
-MPRAGE_T = re.compile(r"mp-?rage|tfl3d|\bbravo\b|spgr|3d[- ]?tfe|\bt1[- ]?tfe", re.I)
 MP2_T = re.compile(r"mp2-?rage", re.I)
 VNAV_T = re.compile(r"vnav|\bpromo\b|prospective(ly)? motion|volumetric navigator|\bmoco\b", re.I)
 def _qp04(d, text=""):

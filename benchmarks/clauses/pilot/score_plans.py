@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import random
 import re
 import sys
@@ -409,7 +408,6 @@ def run(args) -> None:
     root = args.backend_dir.resolve().parent
     sys.path[:0] = [str(root / n) for n in ("backend", "backend/llm", "backend/vocabulary")]
     import preprocess
-    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     # A run that was stopped continues: complete requests are kept.
     done = json.loads(args.out.read_text()) if args.out.exists() else {}
     if done and done["label"] != args.label:
