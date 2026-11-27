@@ -10,11 +10,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from services.evidence.base import PieceOfEvidence, Source, Strength
+from services.evidence.base import Source, Strength, UncertainEvidence
 
 
 @dataclass(frozen=True)
-class PossibleNotRecordedEvidence(PieceOfEvidence):
+class PossibleNotRecordedEvidence(UncertainEvidence):
     """Possible: the field is not recorded and nothing hints either way:
     "ages not recorded".
 

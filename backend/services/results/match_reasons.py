@@ -35,7 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from schemas import DatasetSchema
 from services.evidence.base import Source
 from services.evidence.branches import confirming_evidence
-from services.evidence.confirmed import ConfirmedByDefaultEvidence, ConfirmedEvidence
+from services.evidence.confirmed import CardColumn, ConfirmedByDefaultEvidence, ConfirmedEvidence
 from services.results import query_filters
 from services.schema import tables as _tables
 
@@ -115,16 +115,23 @@ def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
     return alias, plans
 
 
+def _suffix(chip: int, branch: int) -> str:
+    """What names the card columns of one branch of one chip (CardColumn)."""
+    return f"{chip}_{branch}"
+
+
 def build_sql(alias: str, plans: Sequence[ChipPlan]) -> str:
     """One row per dataset: whether each piece of evidence holds, plus its numbers."""
     columns = [f"{alias}.id AS dataset_id"]
     field_columns: Dict[str, str] = {}
     for c, chip in enumerate(plans):
         for b, evidence in enumerate(chip.branches):
-            columns.append(f"COALESCE(({evidence.sql()}), FALSE) AS h{c}_{b}")
-            columns.extend(evidence.number_columns(f"{c}_{b}"))
+            holds = CardColumn.HOLDS.of(_suffix(c, b))
+            columns.append(f"COALESCE(({evidence.sql()}), FALSE) AS {holds}")
+            columns.extend(evidence.number_columns(_suffix(c, b)))
             for name in evidence.read_columns():
-                field_columns.setdefault(name, f"CAST({alias}.{name} AS TEXT) AS f_{name}")
+                field_columns.setdefault(
+                    name, f"CAST({alias}.{name} AS TEXT) AS {CardColumn.FIELD.of(name)}")
     columns.extend(field_columns.values())
     return (f"SELECT {', '.join(columns)} FROM {_tables.datasets.name} AS {alias} "
             f"WHERE {alias}.id = ANY(:ids)")
@@ -138,9 +145,9 @@ def reasons_for(plans: Sequence[ChipPlan], row: dict, total: Optional[int]) -> L
     for c, chip in enumerate(plans):
         phrases: List[str] = []
         for b, evidence in enumerate(chip.branches):
-            if not row.get(f"h{c}_{b}"):
+            if not row.get(CardColumn.HOLDS.of(_suffix(c, b))):
                 continue
-            phrase = evidence.phrase(row, f"{c}_{b}", total)
+            phrase = evidence.reason(row, _suffix(c, b), total)
             if phrase and phrase not in phrases:
                 phrases.append(phrase)
         if phrases:

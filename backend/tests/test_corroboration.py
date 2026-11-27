@@ -41,11 +41,11 @@ def test_a_label_the_text_search_also_holds_is_not_a_second_witness() -> None:
 
 
 def test_the_labels_counted_with_the_text_are_those_of_the_search_vector() -> None:
-    """A label column added to search_tsv needs an entry in LABELS_IN_TEXT."""
+    """A label column added to search_tsv needs label_in_text in schema/tables.py."""
     import re
     import sys
     from pathlib import Path
-    from services.uncertain.conditions import LABELS_IN_TEXT
+    from services.schema.tables import LABELS_IN_TEXT
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler"))
     from remote import openneuro_metadata as meta

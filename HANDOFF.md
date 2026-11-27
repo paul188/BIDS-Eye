@@ -53,6 +53,40 @@ The benchmark resolves only differences of about 5 points. Repeated runs differ 
 
 The superseded branch `ftd-diagnosis` (985ddfe, the FTD change on another base) can be deleted; the change is in `live-merge`.
 
+### Evidence package review (2026-11-26/27), branch `evidence-review`
+
+Paul asked for a review of `backend/services/evidence/` for readability, structure and how it fits the codebase. Three findings are fixed. The branch `evidence-review` (worktree `../Bids-Eye-evidence-review`, one commit on main f7cb73d) holds only these changes. Main's working tree holds the same changes, uncommitted, on top of other sessions' work.
+
+**Done:**
+
+1. **`reason()` per family.** `PieceOfEvidence` no longer has a `reason()` that silently returns "". `UncertainEvidence` (base.py) declares `reason() -> str` for the probable, possible and contradicted kinds. `ConfirmedEvidence.phrase(row, name, total)` became `reason(row, suffix, total)`. `test_every_kind_has_a_family` checks that every kind is in one of the two families.
+2. **Card column names in one place.** `CardColumn` in confirmed.py (`HOLDS`, `COUNT`, `YOUNGEST`, `OLDEST`, `FIELD`, `.of(key)`). `match_reasons.build_sql` writes the names with it, and the evidence reads them with it. `_suffix(chip, branch)` names a branch's columns.
+3. **One rule for source groups.** New `Source.LABEL` for the uploader labels that `search_tsv` also holds (`dx_status`, `study_domain`, `study_design`), mapped to the text group in `_GROUPS`. `branches._from_dataset_columns` picks `LABEL` or `FIELD`. `LABELS_IN_TEXT` now comes from the column flag `label_in_text` in `schema/tables.py`. `Source.group` returns None for assumed/not-recorded sources instead of raising. `ClauseEvidence.__post_init__` rejects a weaker piece without a group next to other weaker pieces. `witnesses` no longer has its own special cases. `tests/data/recorded_conditions.json`: 28 entries changed from `field dx_status/study_domain` to `label …`, which is intended.
+
+**When merging:** main's tree renamed `SourceGroup.OWN_TEXT` to `TEXT_FROM_DATASET`, and the branch still uses `OWN_TEXT` (HEAD's name). Main's tree's `match_reasons.py` lives in `results/display/`, the branch's in `results/`. If main's tree is committed with these changes, the branch is redundant. Don't apply it a second time.
+
+**Open from the same review, not done:**
+
+- **The same SQL pattern twice, quoted by hand.** "Stemmed vector @@ query AND exact vector @@ guard" appears in `ProbablePaperOnlyEvidence.sql` and `WeakenedSearch.sql`, both putting `'{search.query}'` in unescaped. Proposed: one helper in `fulltext/`. `sql_literal` exists in `uncertain/conditions.py` and four more times in `translate/`.
+- **`DEFAULT_SCORES`** could be a property of `Strength` (the enum rule).
+- **`ConfirmedByDefaultEvidence`** is two kinds in one class (column default, absent diagnosis). Split it.
+- **`TEXTS` means two things:** keyed by source in `_ConfirmedWhereFound`, by column in `ConfirmedByDefaultEvidence`.
+- **Readability:**
+  - `ConfirmedInDatasetColumnEvidence.reason`: `(low is not None or high is not None) and (low or high)` is just `low or high`.
+  - `ProbableWeakerSearchEvidence.reason` is hard to follow.
+  - Two docstrings in probable.py run to about 140 characters.
+  - The continuation lines in `branches._from_subquery` are misaligned.
+  - `age_span` could be private.
+- **The function-local import in `ProbablePaperOnlyEvidence.sql`** looks unnecessary; not tested.
+- **SCORING.md** mostly describes `uncertain/conditions.py`. The corroboration benchmark table belongs in `reports/`.
+
+**Proposal discussed, not started (`services/asked.py`):** three places decide on their own what kind a condition is: `chips.describe_condition`, `uncertain/classify.soft_kind` and `evidence/branches.classify_branch`. Proposed: `asked.read(clause) -> Asked`, read once, with all facts per clause (not only the first match in the if-chain) and per OR branch where it matches (Source). Chips, the tier and evidence would decide from that. Steps:
+1. Commit the `asked.py`/`display/` state first, since it is untracked in main's tree.
+2. Make `soft_kind` and `describe_condition` use `asked.read()`, with chips unchanged on the benchmark SQLs (`dump_chips.py`).
+3. Then the more informative chips ("Parkinson's · over 60", "coded or named in the title").
+
+Also first, move `asked.species` (regex on the pattern) and `asked.patients`/`classify._patient_count_parts` (SQL text) onto the tree.
+
 ## 5. To-do list
 
 The first 14 items come from the 2026-11-17 search-quality review (`reports/Text to SQL and prompt optimisation.md`, `SEARCH_TODO.md`); the rest come from the other sessions' open items in `WORKLOG.md`. File and line numbers refer to merged-line a0c122d. Build new backend work on `live-merge`.

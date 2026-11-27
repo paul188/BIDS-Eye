@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength
+from services.evidence.base import SourceGroup, Strength, UncertainEvidence
 from services.evidence.confirmed import ConfirmedEvidence
 from services.switches import Switch
 
@@ -50,10 +50,6 @@ def possible_enabled() -> bool:
 
 LABEL_RE = re.compile(r":[AB]+\b")
 
-
-# The uploader's labels that search_tsv holds beside the dataset's own text
-# (crawlers/openneuro-crawler/remote/openneuro_metadata.py).
-LABELS_IN_TEXT = frozenset({"dx_status", "study_domain", "study_design"})
 
 
 def sql_literal(text: str) -> str:
@@ -96,7 +92,7 @@ class ClauseEvidence:
     """
     kind: str                         # a field in fields/ (age, diagnosis, sex), text, sidecar or patient_count
     sql: str                          # the condition as generated
-    evidence: Tuple[PieceOfEvidence, ...]
+    evidence: Tuple[UncertainEvidence, ...]
     # (name, SELECT) sets the condition reads more than once: computed once
     # as a WITH query (a sidecar lookup scans file metadata; scanner.sidecar).
     ctes: Tuple[Tuple[str, str], ...] = ()
@@ -115,6 +111,10 @@ class ClauseEvidence:
             raise ValueError("the condition itself is what confirms it")
         if strengths.count(Strength.POSSIBLE) > 1:
             raise ValueError("a condition has one piece for 'not recorded'")
+        weaker = [e for e in self.evidence if e.strength == Strength.PROBABLE]
+        if len(weaker) > 1 and any(e.source.group is None for e in weaker):
+            # The score combines weaker pieces by source group (score_sql).
+            raise ValueError("weaker evidence without a source group is the only weaker piece")
         at = [i for i, strength in enumerate(strengths) if strength == Strength.CONTRADICTED]
         if at:
             if at != list(range(at[0], at[-1] + 1)):
@@ -127,12 +127,12 @@ class ClauseEvidence:
     # ── The parts of the list ─────────────────────────────────────────────────
 
     @property
-    def weaker(self) -> Tuple[PieceOfEvidence, ...]:
+    def weaker(self) -> Tuple[UncertainEvidence, ...]:
         """The evidence for the probable state, in the order it counts."""
         return tuple(e for e in self.evidence if e.strength == Strength.PROBABLE)
 
     @property
-    def not_recorded(self) -> Optional[PieceOfEvidence]:
+    def not_recorded(self) -> Optional[UncertainEvidence]:
         """The evidence for the possible state."""
         return next((e for e in self.evidence if e.strength == Strength.POSSIBLE), None)
 
@@ -226,7 +226,7 @@ class ClauseEvidence:
         if floor > 0:
             floor_weight = (f"{log_weight(floor):.4f}" if floor_always
                             else f"CASE WHEN NOT {recorded} THEN {log_weight(floor):.4f} ELSE 0 END")
-        of_group: Dict[SourceGroup, List[str]] = {}
+        of_group: Dict[Optional[SourceGroup], List[str]] = {}
         for piece, piece_holds in zip(pieces, holds):
             of_group.setdefault(piece.source.group, []).append(
                 f"CASE WHEN {piece_holds} THEN {log_weight(piece.score()):.4f} ELSE 0 END")
@@ -243,16 +243,12 @@ class ClauseEvidence:
 
     @property
     def witnesses(self) -> Dict[SourceGroup, List[ConfirmedEvidence]]:
-        """The confirming pieces by whose statement they are. An assumed
-        default states nothing, so it is none; a label that search_tsv holds
-        counts with the text, or one statement would be two witnesses."""
+        """The confirming pieces by whose statement they are (Source.group).
+        An assumed default states nothing, so it is none."""
         groups: Dict[SourceGroup, List[ConfirmedEvidence]] = {}
         for piece in self.confirming:
-            if piece.source in (Source.ASSUMED, Source.ASSUMED_ABSENT):
-                continue
-            label = LABELS_IN_TEXT.intersection(piece.read_columns())
-            group = SourceGroup.OWN_TEXT if label else piece.source.group
-            groups.setdefault(group, []).append(piece)
+            if piece.source.group is not None:
+                groups.setdefault(piece.source.group, []).append(piece)
         return groups
 
     def keep_sql(self) -> str:

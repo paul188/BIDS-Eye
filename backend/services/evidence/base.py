@@ -26,6 +26,7 @@ class Source(str, Enum):
     """Where a piece of evidence was found."""
     PARTICIPANTS = "participants"  # rows of the participant list
     FIELD = "field"                # the dataset's own columns
+    LABEL = "label"                # an uploader label that search_tsv also holds (tables.LABELS_IN_TEXT)
     FILES = "files"
     DERIVATIVES = "derivatives"
     SITES = "sites"
@@ -42,13 +43,10 @@ class Source(str, Enum):
         return self.value
 
     @property
-    def group(self) -> SourceGroup:
-        """Whose statement it is. Evidence of one group says one thing once
-        (services/evidence/SCORING.md)."""
-        group = _GROUPS.get(self)
-        if group is None:
-            raise ValueError(f"the source {self} has no source group")
-        return group
+    def group(self) -> Optional[SourceGroup]:
+        """Whose statement it is; None: no one's. Evidence of one group says
+        one thing once (services/evidence/SCORING.md)."""
+        return _GROUPS.get(self)
 
 
 # Not listed: ASSUMED, ASSUMED_ABSENT and NOT_RECORDED stand for an empty
@@ -56,6 +54,7 @@ class Source(str, Enum):
 _GROUPS = {
     Source.PARTICIPANTS: SourceGroup.RECORDS,
     Source.FIELD: SourceGroup.RECORDS,
+    Source.LABEL: SourceGroup.OWN_TEXT,   # said once, with the text
     Source.FILES: SourceGroup.RECORDS,
     Source.DERIVATIVES: SourceGroup.RECORDS,
     Source.SITES: SourceGroup.RECORDS,
@@ -103,6 +102,9 @@ class PieceOfEvidence(ABC):
     branch counts) and writes its SQL and its card text from that. It is
     built for one query: a kind that writes its SQL holds the alias that
     query gives the dataset row.
+
+    Its card text is reason(), declared by its family: per dataset for
+    confirmed.ConfirmedEvidence, per level for UncertainEvidence.
     """
     source: Source = field(kw_only=True)
     strength: Strength = field(kw_only=True)
@@ -113,13 +115,19 @@ class PieceOfEvidence(ABC):
         None: it holds for whatever the evidence listed before it left over
         (possible.PossibleNotRecordedEvidence)."""
 
-    def reason(self) -> str:
-        """What the result card says when this evidence decides; "" says nothing."""
-        return ""
-
     def score(self) -> float:
         """How much a condition met this way counts, from 0 to 1: the share
         of such datasets that are relevant, relative to a condition that
         holds as generated. A kind that was measured says so itself;
         the others have the default of their strength."""
         return DEFAULT_SCORES[self.strength]
+
+
+@dataclass(frozen=True)
+class UncertainEvidence(PieceOfEvidence):
+    """Probable, possible or contradicted evidence: one card text for every
+    dataset at its level (ClauseEvidence.reason_sql)."""
+
+    @abstractmethod
+    def reason(self) -> str:
+        """What the result card says when this evidence decides; "" says nothing."""

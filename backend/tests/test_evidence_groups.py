@@ -9,13 +9,14 @@ import pytest
 
 pytest.importorskip("sqlglot")
 
-from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength  # noqa: E402
+from services.evidence.base import PieceOfEvidence, Source, SourceGroup, Strength, UncertainEvidence  # noqa: E402
+from services.evidence.confirmed import ConfirmedEvidence  # noqa: E402
 from services.uncertain import classify  # noqa: E402  (loads every kind of evidence)
 
 GROUPS = {
     SourceGroup.RECORDS: {Source.PARTICIPANTS, Source.FIELD, Source.FILES, Source.DERIVATIVES,
                           Source.SITES},
-    SourceGroup.OWN_TEXT: {Source.SHORT_TEXT, Source.TEXT, Source.README},
+    SourceGroup.OWN_TEXT: {Source.LABEL, Source.SHORT_TEXT, Source.TEXT, Source.README},
     SourceGroup.PAPER: {Source.PAPERS},
 }
 WITHOUT_GROUP = {Source.ASSUMED, Source.ASSUMED_ABSENT, Source.NOT_RECORDED}
@@ -37,15 +38,21 @@ def test_every_source_is_listed_once() -> None:
     assert set(GROUPS) == set(SourceGroup)
 
 
+def test_every_kind_has_a_family() -> None:
+    """reason() is declared by the two families, not by PieceOfEvidence:
+    a kind outside both would have no card text to implement."""
+    families = (ConfirmedEvidence, UncertainEvidence)
+    assert {kind for kind in _kinds() if not issubclass(kind, families)} == set()
+
+
 @pytest.mark.parametrize("group, source", [(g, s) for g, sources in GROUPS.items() for s in sorted(sources)])
 def test_source_group(group: SourceGroup, source: Source) -> None:
     assert source.group is group
 
 
 @pytest.mark.parametrize("source", sorted(WITHOUT_GROUP))
-def test_source_without_group_raises(source: Source) -> None:
-    with pytest.raises(ValueError, match=f"the source {source} has no source group"):
-        _ = source.group
+def test_source_without_group_has_none(source: Source) -> None:
+    assert source.group is None
 
 
 def test_weaker_kinds_have_a_group() -> None:

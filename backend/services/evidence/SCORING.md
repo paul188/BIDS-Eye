@@ -43,12 +43,14 @@ On the scale where independent evidence adds up, a piece weighs
 Each piece belongs to a source group (`Source.group`):
 
 - **records**: the participant list, the dataset's columns, its files
-- **own text**: title, description, README
+- **own text**: title, description, README, and the uploader's labels
+  (`dx_status`, `study_domain`, `study_design`; `Source.LABEL`), because
+  `search_tsv` holds them
 - **paper**: a paper the dataset names
 
-The other sources (an assumed default, "not recorded") have no group; asking
-for it is an error. A weaker piece without a group must be the only one of
-its clause.
+The other sources (an assumed default, "not recorded") have no group
+(`Source.group` is None). A weaker piece without a group must be the only
+weaker piece of its clause (`ClauseEvidence` checks it).
 
 ## A clause
 
@@ -96,8 +98,7 @@ does: over the confirmed clauses, the number of source groups that confirm a
 clause beyond the first, summed. A diagnosis coded for the participants and
 named in the README has 1, one of the two has 0. Pieces of one group count
 once, and an assumed default counts for nothing. The uploader's labels
-(`dx_status`, `study_domain`, `study_design`) count with the own text,
-because `search_tsv` holds them. The column exists only when
+count with the own text, as above. The column exists only when
 some clause can be confirmed by two groups.
 
 `EvidenceFirst` sorts by it after the strength, the judgment and the user's

@@ -65,6 +65,7 @@ FLAG = "flag"
 # For the evidence and the chips:
 ABOUT = "about"   # of a table: its About
 TEXT = "text"     # of a column: its TextKind
+LABEL_IN_TEXT = "label_in_text"   # of a column: an uploader label that search_tsv also holds
 
 
 class About(str, Enum):
@@ -111,11 +112,14 @@ def _created_by(migration: str, flag: str | None = None) -> dict[str, str]:
 
 
 def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]], migration: str,
-                      flag: str | None = None, text: TextKind | None = None) -> Column[Any]:
+                      flag: str | None = None, text: TextKind | None = None,
+                      label_in_text: bool = False) -> Column[Any]:
     """A column to add to bids_datasets; *migration* and *flag* as in _created_by."""
     info = _created_by(migration, flag)
     if text:
         info[TEXT] = text
+    if label_in_text:
+        info[LABEL_IN_TEXT] = True
     return Column(name, type_, info=info)
 
 
@@ -149,11 +153,11 @@ datasets = extend(
     # Sanitised README of the latest snapshot.
     _migration_column("readme_text", Text, _OPENNEURO, text=TextKind.README),
     # Uploader's diagnosis status, e.g. 'Healthy / Control'.
-    _migration_column("dx_status", Text, _OPENNEURO),
+    _migration_column("dx_status", Text, _OPENNEURO, label_in_text=True),
     # Uploader's research topic.
-    _migration_column("study_domain", Text, _OPENNEURO),
+    _migration_column("study_domain", Text, _OPENNEURO, label_in_text=True),
     # Uploader's study design, e.g. 'Longitudinal'.
-    _migration_column("study_design", Text, _OPENNEURO),
+    _migration_column("study_design", Text, _OPENNEURO, label_in_text=True),
     # Uploader's species, e.g. 'Human', 'Mouse'.
     _migration_column("species", Text, _OPENNEURO),
     # Uploader's 'Cross-Sectional', 'Longitudinal', …
@@ -354,6 +358,11 @@ TABLE_ABOUT: dict[str, About] = {table.name: table.info[ABOUT] for table in CATA
 # Text column of bids_datasets -> which text it holds.
 COLUMN_TEXT: dict[str, TextKind] = {column.name: column.info[TEXT] for column in datasets.c
                                     if TEXT in column.info}
+
+# Uploader labels of bids_datasets that search_tsv also holds
+# (crawlers/openneuro-crawler/remote/openneuro_metadata.py).
+LABELS_IN_TEXT: frozenset[str] = frozenset(column.name for column in datasets.c
+                                           if column.info.get(LABEL_IN_TEXT))
 
 # The full-text search vectors of bids_datasets.
 SEARCH_VECTORS = frozenset(column.name for column in datasets.c
