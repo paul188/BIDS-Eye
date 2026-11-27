@@ -75,10 +75,10 @@ set -a; . /root/.config/bidseye-backup.env; set +a; borg list   # all archives
 ```bash
 set -a; . /root/.config/bidseye-backup.env; set +a
 borg list --glob-archives 'bids_sql-*'                       # pick an archive
-docker compose -f docker-compose-hetzner.yml stop backend    # no writes during restore
+docker compose -f docker-compose-prod.yml stop backend    # no writes during restore
 borg extract --stdout ::bids_sql-YYYY-MM-DDTHHMM bids_sql.dump \
   | docker exec -i bids_postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner'
-docker compose -f docker-compose-hetzner.yml start backend
+docker compose -f docker-compose-prod.yml start backend
 ```
 
 `borg extract ::config-YYYY-MM-DDTHHMM` restores `.env`, the compose file and

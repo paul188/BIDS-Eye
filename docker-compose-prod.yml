@@ -1,6 +1,6 @@
-# BIDS-Eye — Hetzner production deployment
+# BIDS-Eye — production deployment (runs on the Hetzner VPS)
 #
-# Prerequisites on the Hetzner VPS:
+# Prerequisites on the VPS:
 #   1. Get SSL cert (first time only, before starting nginx):
 #        docker run --rm -p 80:80 -v $(pwd)/certbot/conf:/etc/letsencrypt \
 #          -v $(pwd)/certbot/www:/var/www/certbot certbot/certbot certonly \
@@ -8,11 +8,12 @@
 #
 #   2. Edit nginx/bids-eye.conf — replace YOUR_DOMAIN with your actual domain.
 #
-#   3. Fill in .env (copy from .env.example), including AUTH_PASSWORD,
-#      SESSION_SECRET, FRONTEND_URL, and METADATA_DB_HOST=postgres.
+#   3. Fill in .env (copy from .env.example), including GITHUB_CLIENT_ID,
+#      GITHUB_CLIENT_SECRET, GITHUB_ORG (or ALLOW_ANY_GITHUB_USER),
+#      GITHUB_REDIRECT_URI, SESSION_SECRET and METADATA_DB_HOST=postgres.
 #
 #   4. Start everything:
-#        docker compose -f docker-compose-hetzner.yml up -d
+#        docker compose -f docker-compose-prod.yml up -d
 
 # Rotate container logs (the default json-file log grows without limit).
 x-logging: &default-logging
