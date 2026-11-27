@@ -19,7 +19,7 @@ noise to the prompt. A wrong decision in step 3 or 4 loses datasets or adds fals
 | `questions.yaml` | 277 questions with search words, filler words and truth rows (header explains fields) |
 | `run.py` | the scorer |
 | `fetch_evidence.py` | freezes the catalogue's forms for every word into `evidence.json` (read-only) |
-| `evidence.json` | not made yet: needs database access (below) |
+| `evidence.json` | the catalogue's forms of every word, fetched 2026-11-27 (read-only, via `--print-sql`) |
 | `results/` | model answers cached by `run.py --model` |
 
 ## How the set was made (2026-11-27)
@@ -68,8 +68,34 @@ and sends each question (not dataset text) to the model; answers are cached in `
 v1 looked up the fragments *gren* (Sjögren) and *rage* (MP2RAGE), and in a long question the
 stopwords filled the 40-word cap before *ageing* and *localizer*.
 
-Part 2 waits for `evidence.json`. A check on hand-made counts showed what it can find: a large
-word whose stem also holds a small, different word (*publication* and *public*) is never
-asked about, because the collision test only looks for forms that bring in *more* datasets than
-the asked word; the stem then merges them. Whether this happens on the real catalogue is what
-the fixture will tell.
+## First results (part 2, evidence of 2026-11-27, 1,722 datasets, without the model)
+
+| method | right | wrong merge (false hits) | wrong split (lost recall) |
+|---|---|---|---|
+| stem | 166 | 216 | 0 |
+| lists (`word_forms.yaml` + `word_form_pairs.json`) | 284 | 96 | 2 |
+
+**80 of the 98 remaining errors are words the model is never asked about.** The collision test
+(`colliding_forms`) only flags a form that brings in at least twice the datasets of the asked
+word's own forms. When the asked word is the larger one, the smaller different word is merged
+silently, and the lists were mined with the same test, so they lack these directions too:
+
+| search word | merged with | rows | datasets: word / other |
+|---|---|---|---|
+| functional | functioning | 23 | 436 / 22 |
+| weighted | weight(s) | 20 | 275 / 34 |
+| clinical | clinic(s) | 10 | 112 / 12 |
+| emotion | emotionally | 7 | 55 / 7 |
+| age | aging | 6 | 220 / 34 |
+| experiments | experience(s) | 3 | 65 / 63 |
+| publication | public | 2 | 132 / 96 |
+| temporal, format, scales, well, emotions | temporally, formation, scaling, wellness, emotionally | 7 | |
+
+(*weighted* mostly stands inside "T1-weighted", which the search keeps together by adjacency, so
+its 20 rows overstate the harm.) The other 18 errors are words the model is asked about; the
+`lists` method leaves its answers out, so they need `--model`. The 2 wrong splits are
+*dependence* → *dependent*/*depending*: `word_forms.yaml` splits them, the blind label says both.
+
+**Prompt noise:** 133 words would go to the model across the 277 questions; 23 of them are
+search words. The rest are request language: *compare* (27), *listening*, *covering*, *scanned*,
+*public*, *predict*, *validate*, *making*, *recordings*.

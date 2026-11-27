@@ -55,18 +55,42 @@ async def fetch(url: str, words: list) -> tuple:
     return rows, datasets
 
 
+def psql_script(words: list) -> str:
+    """The lookup as one psql statement printing JSON, for a database reached
+    only through psql (docker exec): the words are plain a-z, so they can be
+    written into the SQL as literals."""
+    assert all(word_form_counts._WORD_RE.fullmatch(w) for w in words)
+    array = "ARRAY[" + ",".join(f"'{w}'" for w in words) + "]::text[]"
+    lookup = (word_form_counts._LOOKUP_SQL.replace("CAST(:words AS text[])", array)
+              .replace(":limit", str(word_form_counts.FORMS_PER_WORD)))
+    return ("\\pset tuples_only on\n\\pset format unaligned\n"
+            f"SELECT json_build_object('datasets', (SELECT count(*) FROM {word_form_counts.SOURCE_TABLE}),"
+            f" 'rows', (SELECT json_agg(json_build_array(t.word, t.stem, t.stem_docs, t.forms)) FROM ({lookup}) t));\n")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--questions", type=Path, default=run.QUESTIONS)
     ap.add_argument("--out", type=Path, default=_HERE / "evidence.json")
+    ap.add_argument("--print-sql", action="store_true",
+                    help="print the lookup as a psql script instead of running it")
+    ap.add_argument("--from-psql", type=Path,
+                    help="build the fixture from the output of the --print-sql script")
     args = ap.parse_args()
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise SystemExit("Set DATABASE_URL (postgresql+asyncpg://...)")
     items = yaml.safe_load(args.questions.read_text())["questions"]
     words = sorted({w for item in items for tokenize in run.TOKENIZERS.values()
                     for w in tokenize(item["question"]) if word_form_counts._WORD_RE.fullmatch(w)})
-    rows, datasets = asyncio.run(fetch(url, words))
+    if args.print_sql:
+        sys.stdout.write(psql_script(words))
+        return
+    if args.from_psql:
+        data = json.loads(args.from_psql.read_text().strip())
+        rows, datasets = data["rows"] or [], data["datasets"]
+    else:
+        url = os.environ.get("DATABASE_URL")
+        if not url:
+            raise SystemExit("Set DATABASE_URL (postgresql+asyncpg://...), or use --print-sql / --from-psql")
+        rows, datasets = asyncio.run(fetch(url, words))
     found = {}
     for word, stem, stem_docs, forms in rows:
         found[word] = {"stem": stem, "stem_docs": int(stem_docs or 0),
