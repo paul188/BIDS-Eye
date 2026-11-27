@@ -39,7 +39,6 @@ research_notes
 docs
 ingest/backfill
 ingest/scan_crawl_errors.py
-lottery
 deploy
 postgres_data
 certbot
