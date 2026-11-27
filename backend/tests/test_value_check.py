@@ -150,7 +150,7 @@ def test_rewriter_runs_the_check_and_reports_it() -> None:
 
 
 def test_real_vocabulary_knows_the_raw_suffixes(monkeypatch) -> None:
-    monkeypatch.undo()  # the real vocabulary, RAG/value_mappings.yaml
+    monkeypatch.undo()  # the real vocabulary, backend/vocabulary/value_mappings.yaml
     monkeypatch.setattr(database_stats, "values", ValueCounts(dict(KNOWN)))
     if vc._vocabulary() is None:  # pragma: no cover - vocabulary not on the path
         pytest.skip("vocabulary not importable")

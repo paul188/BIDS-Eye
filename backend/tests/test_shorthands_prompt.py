@@ -2,7 +2,7 @@
 
 "Dataset with epilepsy patients and APT": the summary said "Arterial Perfusion
 Tagging" (live, 2026-11-23). The listings (value_mappings.yaml,
-RAG/shorthands.yaml) go to the model with the question.
+backend/vocabulary/shorthands.yaml) go to the model with the question.
 """
 
 from __future__ import annotations

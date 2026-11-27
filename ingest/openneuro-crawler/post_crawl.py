@@ -88,8 +88,8 @@ from sqlalchemy import text
 
 log = logging.getLogger(__name__)
 
-# backend/ and LLM_preprocessor/ sit in the repository root, or next to the
-# crawler in its Docker image (/app/crawler, /app/backend, /app/LLM_preprocessor).
+# backend/ and backend/llm/ sit in the repository root, or next to the
+# crawler in its Docker image (/app/crawler, /app/backend, /app/backend/llm).
 _HERE = Path(__file__).resolve()
 _ROOTS = (_HERE.parents[2], _HERE.parents[1])
 
@@ -139,7 +139,7 @@ def _descriptions_available() -> bool:
     if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
         log.info("[post-crawl] No GEMINI_API_KEY: dataset descriptions skipped.")
         return False
-    _add_to_path("backend", "LLM_preprocessor")
+    _add_to_path("backend", "backend/llm")
     try:
         import llm_client  # noqa: F401
         from google import genai  # noqa: F401  (llm_client imports it only when called)
@@ -154,8 +154,8 @@ def _profiles_available() -> bool:
     if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
         log.info("[post-crawl] No GEMINI_API_KEY: README profiles skipped.")
         return False
-    # RAG/ holds the diagnosis resolver that codes the conditions.
-    _add_to_path("backend", "LLM_preprocessor", "RAG")
+    # backend/vocabulary/ holds the diagnosis resolver that codes the conditions.
+    _add_to_path("backend", "backend/llm", "backend/vocabulary")
     try:
         import llm_client  # noqa: F401
         import retriever  # noqa: F401

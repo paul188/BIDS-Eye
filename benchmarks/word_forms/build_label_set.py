@@ -10,7 +10,7 @@ The set scores the methods that could decide stem collisions offline
 set, not a list the search reads.
 
 Population: the stems where a form passes the search's own collision test
-(RAG/word_forms.py is_collision, 2x and +10 datasets), forms in >= 2 datasets.
+(backend/vocabulary/word_forms.py is_collision, 2x and +10 datasets), forms in >= 2 datasets.
 Sample: SAMPLE_PER_STRATUM stems from each quartile of the stem's dataset
 count, without the stems word_forms.yaml already covers, plus every group of
 word_forms.yaml. Forms are grouped into families by plural and singular
@@ -46,7 +46,7 @@ from typing import Dict, List, Sequence, Tuple
 
 _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parents[1]
-sys.path[:0] = [str(_REPO / "RAG"), str(_REPO / "ingest" / "openneuro-crawler")]
+sys.path[:0] = [str(_REPO / "backend" / "vocabulary"), str(_REPO / "ingest" / "openneuro-crawler")]
 
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
@@ -116,7 +116,7 @@ def _families(forms: Dict[str, int]) -> List[Family]:
 def _reviewed_groups() -> List[Tuple[str, List[List[str]], List[List[str]]]]:
     """word_forms.yaml as (kind, wanted form lists, excluded form lists)."""
     import yaml
-    data = yaml.safe_load((_REPO / "RAG" / "word_forms.yaml").read_text())
+    data = yaml.safe_load((_REPO / "backend" / "vocabulary" / "word_forms.yaml").read_text())
     groups = [("yaml_exact", [e["forms"]], [e.get("excludes") or []]) for e in data.get("exact") or []]
     groups += [("yaml_stemmed", [g], []) for g in data.get("stemmed") or []]
     return groups

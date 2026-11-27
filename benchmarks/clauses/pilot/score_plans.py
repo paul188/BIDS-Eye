@@ -36,7 +36,7 @@ sys.path.insert(0, str(HERE))
 from build import load_own, names, parse, tables  # noqa: E402
 
 REPO = HERE.parents[2]
-for _p in ("RAG", "LLM_preprocessor", "backend"):
+for _p in ("backend/vocabulary", "backend/llm", "backend"):
     sys.path.append(str(REPO / _p))
 
 
@@ -97,7 +97,7 @@ def negated(part: str) -> str:
 
 
 def formula_tree(formula, atoms: Atoms) -> str:
-    """A description_search formula as a tree (RAG/text_formula.py)."""
+    """A description_search formula as a tree (backend/vocabulary/text_formula.py)."""
     import text_formula as tf
     if formula is None:
         return ""
@@ -407,7 +407,7 @@ def report(items: dict, plans: dict, show: bool) -> None:
 
 def run(args) -> None:
     root = args.backend_dir.resolve().parent
-    sys.path[:0] = [str(root / n) for n in ("backend", "LLM_preprocessor", "RAG")]
+    sys.path[:0] = [str(root / n) for n in ("backend", "backend/llm", "backend/vocabulary")]
     import preprocess
     key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     # A run that was stopped continues: complete requests are kept.

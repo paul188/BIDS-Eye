@@ -2,7 +2,7 @@
 services/fulltext/tsquery.py
 ----------------------------
 tsquery strings from the search terms of a text_match() placeholder
-(RAG/text_terms.py parses them into words).
+(backend/vocabulary/text_terms.py parses them into words).
 
 One vector serves three scopes, because a tsquery word can be restricted to
 weights: `word:A` matches the name only, `word:AB` the short fields, plain
@@ -39,7 +39,7 @@ from word_forms import WordEvidence, forms_for, search_variants
 from services.fulltext import vectors, word_frequencies
 
 # word → the forms it must match in, as decided for one question
-# (RAG/word_forms.py). The reviewed list there applies without being passed;
+# (backend/vocabulary/word_forms.py). The reviewed list there applies without being passed;
 # for a word not in the mapping it takes the catalogue's forms (_catalogue_forms).
 ExactForms = Mapping[str, Sequence[str]]
 
@@ -246,7 +246,7 @@ def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR,
     """How many datasets match each search term on its own; None when unknown.
 
     Used to check search terms a language model proposed before they are
-    searched (LLM_preprocessor/preprocess/topics.py). A term with nothing
+    searched (backend/llm/preprocess/topics.py). A term with nothing
     searchable counts 0. A word with decided forms is counted in those forms,
     as the search will match it.
     """

@@ -16,7 +16,7 @@ while none are loaded the check is off.
 
 An unknown value is
   corrected   to the stored code the vocabulary gives for it
-              (RAG/value_mappings.yaml): a datatype or suffix by its synonym
+              (backend/vocabulary/value_mappings.yaml): a datatype or suffix by its synonym
               ('bold' → 'fmri_bold'), a task by its category
               ('recognition' → the recognition tasks), else by its synonym;
               only codes that occur in some dataset;
@@ -54,7 +54,7 @@ FIELDS = FILE_FIELDS
 
 @lru_cache(maxsize=1)
 def _vocabulary() -> Optional[Tuple[dict, dict]]:
-    """(group_db, leaf_db) of the curated vocabulary (RAG/, on the backend's
+    """(group_db, leaf_db) of the curated vocabulary (backend/vocabulary/, on the backend's
     path), or None when it cannot be loaded. The failure is cached: a failed
     import is not kept in sys.modules, so every correction() would otherwise
     import and parse value_mappings.yaml again, and warn again."""

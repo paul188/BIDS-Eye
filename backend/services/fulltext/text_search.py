@@ -5,7 +5,7 @@ Full-text search over dataset text: the text_match() placeholders in the
 generated SQL become conditions on the stored vectors (vectors.py).
 
 The SQL model writes text_match('...') placeholders (grammar in
-RAG/text_terms.py). This module turns them into
+backend/vocabulary/text_terms.py). This module turns them into
 
     d.search_tsv @@ to_tsquery('english', '<query>')
 
@@ -20,7 +20,7 @@ does not in every sqlglot version.
 
 Paper text (TEXT_SEARCH_PAPERS=true). search_tsv_papers is search_tsv plus,
 at weight D, the title, abstract and keywords of the papers the dataset names
-as its own (crawlers/paper_enrichment_plan.md). With the switch on, a
+as its own (docs/plans/Paper enrichment plan.md). With the switch on, a
 positive text_match() filters on it, so a dataset whose own text lacks a word
 but whose paper has it is found. Everything else stays on search_tsv:
   - the rank, so a dataset found only through its paper sorts after every
@@ -35,7 +35,7 @@ paper text at all, because it carries weight D.
 Exact word forms (TEXT_SEARCH_EXACT=true). The 'english' configuration
 matches a word by its stem, and some stems merge words that mean different
 things: "ageing" also finds "age", "weight" finds "T1-weighted". For a word
-whose forms were decided (RAG/word_forms.py), a term also requires one of
+whose forms were decided (backend/vocabulary/word_forms.py), a term also requires one of
 those forms on search_tsv_exact, the same vector without stemming:
 
     (d.search_tsv @@ to_tsquery('english', 'ageing & mri')

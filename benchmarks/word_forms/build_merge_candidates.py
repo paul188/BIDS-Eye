@@ -209,7 +209,7 @@ def main():
 
     # families: the linked forms, each with its regular plural/singular of the same stem
     import sys
-    sys.path.insert(0, str(HERE.parent.parent / "RAG"))
+    sys.path.insert(0, str(HERE.parent.parent / "backend" / "vocabulary"))
     from word_forms import inflections
 
     parent = {}

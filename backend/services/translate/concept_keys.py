@@ -10,7 +10,7 @@ The schema shown to the SQL model says a filter may name a broad category,
 and that the category is expanded at runtime. No row stores such a key: the
 database holds the specific codes ('adhd', 'autism_spectrum_disorder', ...),
 so without expansion the filter matches nothing. This module does the
-expansion, from the same vocabulary the resolver uses (RAG/value_mappings.yaml).
+expansion, from the same vocabulary the resolver uses (backend/vocabulary/value_mappings.yaml).
 
 Only a value that is NOT itself a stored code is expanded. 'epilepsy' is both a
 code and the parent of other codes; a filter on it is left alone, because the

@@ -297,7 +297,7 @@ def test_each_part_names_the_modules_that_use_it() -> None:
 
     backend = Path(__file__).resolve().parents[1]
     own = backend / "services" / "database_stats" / "database_stats.py"
-    folders = (backend, backend.parent / "LLM_preprocessor", backend.parent / "RAG")
+    folders = (backend,)  # llm/ and vocabulary/ are inside it
     sources = [path for folder in folders for path in folder.rglob("*.py")
                if "tests" not in path.parts and path != own]
     for part, cls in (("coverage", ColumnCoverage), ("summaries", Summaries), ("values", ValueCounts)):

@@ -24,7 +24,7 @@ from services.evidence.probable import ProbableNamedInTextEvidence
 from services.uncertain.conditions import own_text, sql_literal
 from services.uncertain.fields.base import SoftField, participant_rows_record
 from services.schema.tables import participants as _participants
-from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
+from participant_codes import sex_code  # backend/vocabulary/ is on the path wherever the backend runs
 import text_evidence
 
 
@@ -39,7 +39,7 @@ def text_words(sex: str) -> Tuple[str, ...]:
     """The words a dataset's text uses for participants of *sex*.
 
     From the vocabulary (text_words of the sex entries in
-    RAG/value_mappings.yaml): every common English word, none left out by
+    backend/vocabulary/value_mappings.yaml): every common English word, none left out by
     hand. Whether a mention is about the participants is decided by its
     grammar (_PARTICIPANT_RE), the same for every word: "22 women" counts;
     generic "man" without a count ("the brain of man", "Isle of Man") and a
@@ -68,7 +68,7 @@ def asked_sex(node) -> Optional[str]:
         if not any(c.name.lower() == "sex" for c in comparison.find_all(exp.Column)):
             continue
         for literal in comparison.find_all(exp.Literal):
-            # Which literal stands for which sex: the vocabulary (RAG/participant_codes.py).
+            # Which literal stands for which sex: the vocabulary (backend/vocabulary/participant_codes.py).
             if literal.is_string and sex_code(literal.this) in ONE_SEX:
                 values.add(sex_code(literal.this))
     return next(iter(values)) if len(values) == 1 else None

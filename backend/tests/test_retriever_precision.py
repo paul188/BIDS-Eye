@@ -1,4 +1,4 @@
-"""Precision of the vocabulary resolver (RAG/retriever.py).
+"""Precision of the vocabulary resolver (backend/vocabulary/retriever.py).
 
 Each case is a term that used to resolve to its own concept plus an unrelated
 one. The tests run against the real value_mappings.yaml; none of these terms
@@ -88,7 +88,7 @@ def test_possessive_variant_is_tried_for_exact_match() -> None:
 def test_no_curated_code_of_another_disease(term: str, official: str) -> None:
     # A wrong code silently returns datasets about another disease. These
     # diseases are not in the curated vocabulary: they resolve to their own
-    # official concept (RAG/reference_vocabulary.py, MeSH), whose code no
+    # official concept (backend/vocabulary/reference_vocabulary.py, MeSH), whose code no
     # participant row carries; the diagnosis line then searches its terms.
     assert _resolve_yaml_term("diagnosis", term) == [official]
 
@@ -329,7 +329,7 @@ def test_eupd_is_borderline_personality_disorder(term: str) -> None:
     ("task", "APT", []),                   # was tactile_stimulation, through the plural "APTS"
     ("task", "ASL", []),                   # was two statistical-learning tasks
     ("diagnosis", "MRI", []),              # was two epilepsy codes
-    ("suffix", "CEST", []),                # no code; RAG/shorthands.yaml writes it out
+    ("suffix", "CEST", []),                # no code; backend/vocabulary/shorthands.yaml writes it out
     ("suffix", "apt", ["apt"]),            # typed in small letters, still the shorthand
     ("suffix", "CTs", ["ct_scan"]),        # plural of a capitalised shorthand
     ("diagnosis", "TBI", ["traumatic_brain_injury"]),

@@ -171,7 +171,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     rewritten = _rewrite_generated_sql(
         raw_sql,
         augmented_question,
-        # Word forms decided for this question (RAG/word_forms.py); {} mostly.
+        # Word forms decided for this question (backend/vocabulary/word_forms.py); {} mostly.
         getattr(augmented_plan, "word_forms", None) or None,
     )
 

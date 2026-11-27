@@ -1,5 +1,5 @@
 """Vocabulary files that cannot be read are logged and the search goes on
-without them (RAG/reference_vocabulary.py, RAG/cohort_count.py); a missing
+without them (backend/vocabulary/reference_vocabulary.py, backend/vocabulary/cohort_count.py); a missing
 optional file stays silent."""
 from __future__ import annotations
 

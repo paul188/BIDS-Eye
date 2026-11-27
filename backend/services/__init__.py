@@ -26,7 +26,7 @@ language model up to three times and several groups serve more than one step
 
   1. stored translation   stores/interpretations: the same question gets
                           the same translation; a hit skips steps 2-4
-  2. preprocessing        LLM_preprocessor/ (outside backend/): vocabulary,
+  2. preprocessing        llm/preprocess/ (next to services/): vocabulary,
                           word forms and topic counts, then the INTENT MODEL
                           writes a QueryPlan
   3. SQL                  translate/participant_query_compiler compiles the

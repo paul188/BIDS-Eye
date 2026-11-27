@@ -274,7 +274,7 @@ class ProbablePatientsNotCountedEvidence(UncertainEvidence):
 
 def _patient_count(sql: str, alias: str,
                    confirming: Tuple[ConfirmedEvidence, ...] = ()) -> Optional[ClauseEvidence]:
-    """"At least N participants with the diagnosis" (RAG/cohort_count.py).
+    """"At least N participants with the diagnosis" (backend/vocabulary/cohort_count.py).
 
     Confirmed when that many are coded or labelled with it. Uncertain when the
     dataset does not record who has the diagnosis and is large enough to hold

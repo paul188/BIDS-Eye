@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.mark.parametrize(
     "folder, not_imported",
-    [("RAG", set()), ("LLM_preprocessor", set()), ("backend", {"main"})],
+    [("backend/vocabulary", set()), ("backend/llm", set()), ("backend", {"main"})],
 )
 def test_every_top_level_module_is_listed(folder: str, not_imported: set) -> None:
     config = tomllib.loads((ROOT / folder / "pyproject.toml").read_text())

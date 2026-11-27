@@ -42,7 +42,7 @@ def test_design_word_is_not_searched_twice() -> None:
 
 
 def test_other_description_words_stay() -> None:
-    # Not an age group: "pediatric" is the age filter (RAG/criteria.py AGE_GROUP).
+    # Not an age group: "pediatric" is the age filter (backend/vocabulary/criteria.py AGE_GROUP).
     augmented = _augmented("longitudinal", description_search="bilingual")
     assert "dataset text: text_match('bilingual')" in augmented
 
@@ -61,7 +61,7 @@ def test_no_design_asked_no_line() -> None:
 
 # The column holds 'male', 'female' or 'other_diverse' (the crawler's
 # remote/participant_codes.py); the rewriter writes whatever the SQL model
-# typed as that code, from the vocabulary (RAG/participant_codes.py).
+# typed as that code, from the vocabulary (backend/vocabulary/participant_codes.py).
 
 def test_a_sex_literal_becomes_the_stored_code() -> None:
     for typed in ("female", "Female", "FEMALE", "F", "women"):

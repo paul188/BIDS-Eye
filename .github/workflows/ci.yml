@@ -45,7 +45,7 @@ jobs:
       - run: pip install ruff==0.16.4
       # The rules are in ruff.toml. ingest/ and benchmarks/ can be
       # added once they are clean.
-      - run: ruff check backend LLM_preprocessor RAG
+      - run: ruff check backend
 
   typecheck:
     name: Type check (mypy)
@@ -66,7 +66,7 @@ jobs:
         run: |
           pip install -r BIDS-SQL/requirements.txt
           pip install -e BIDS-SQL
-          pip install -e RAG -e LLM_preprocessor
+          pip install -e backend/vocabulary -e backend/llm
           pip install -e backend
           pip install mypy==2.3.1 types-PyYAML==6.0.12.20261113
       # The folders and settings are in mypy.ini.
@@ -115,7 +115,7 @@ jobs:
         run: |
           pip install -r BIDS-SQL/requirements.txt
           pip install -e BIDS-SQL
-          pip install -e RAG -e LLM_preprocessor
+          pip install -e backend/vocabulary -e backend/llm
           pip install -e "backend[test]"
       # The coverage table is a report: no percentage fails the run. What is
       # measured is in backend/pyproject.toml.
@@ -146,7 +146,7 @@ jobs:
           # the rule flags nearly every query.
           args="--metrics=off --config p/python --config p/secrets"
           args="$args --exclude-rule python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text"
-          paths="backend LLM_preprocessor RAG ingest scripts frontend/src"
+          paths="backend ingest scripts frontend/src"
           if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             semgrep scan $args --error --baseline-commit "$BASE" $paths
           else

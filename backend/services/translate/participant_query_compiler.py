@@ -89,7 +89,7 @@ _SCAN_LINE_RE = re.compile(
     r'^  scan(?: task)? "[^"]*": (?P<condition>.+)$'
     r'|^  scan any of "[^"]*"(?:, "[^"]*")+ \(alternatives, one is enough\): (?P<any_of>\(.+\))$'
 )
-# The age-group line (RAG/criteria.py age_condition), copied as it is.
+# The age-group line (backend/vocabulary/criteria.py age_condition), copied as it is.
 _AGE_LINE_RE = re.compile(
     r"^  age group [a-z ]+ \(complete, no other age condition\): (?P<condition>\(.+\))$")
 # Lines the compiler builds from the typed plan itself: the diagnosis of a
@@ -234,7 +234,7 @@ def _group_condition(group: Any, resolved: Dict[str, List[str]]) -> Optional[str
     if not codes:
         return None  # a patient count needs coded diagnoses
     # "At least N patients with X": the dataset is about X, and N of its
-    # participants are known to have it (RAG/cohort_count.py; a dataset that
+    # participants are known to have it (backend/vocabulary/cohort_count.py; a dataset that
     # does not record this goes to the uncertain tier).
     count = patients_placeholder(codes, minimum) if isinstance(minimum, int) else None
     if count is None:

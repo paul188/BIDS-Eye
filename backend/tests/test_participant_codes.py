@@ -1,6 +1,6 @@
 """Participant sex and handedness as the vocabulary's standard codes (remote/participant_codes.py).
 
-Uses the real vocabulary (RAG/value_mappings.yaml).
+Uses the real vocabulary (backend/vocabulary/value_mappings.yaml).
 """
 
 from __future__ import annotations

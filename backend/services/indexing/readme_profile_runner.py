@@ -88,10 +88,10 @@ async def missing_schema(conn: Any) -> List[str]:
 
 
 def code_lookup() -> rp.CodeLookup:
-    """Diagnosis resolver from the search pipeline (RAG/retriever.py).
+    """Diagnosis resolver from the search pipeline (backend/vocabulary/retriever.py).
 
     Raises ResolverUnavailableError when its files or modules are missing:
-    importing the retriever reads RAG/value_mappings.yaml, and it reads
+    importing the retriever reads backend/vocabulary/value_mappings.yaml, and it reads
     name_index.json next to itself.
     """
     import yaml

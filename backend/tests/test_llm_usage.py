@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "LLM_preprocessor"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend" / "llm"))
 
 import llm_client  # noqa: E402
 from google.genai import errors as genai_errors  # noqa: E402

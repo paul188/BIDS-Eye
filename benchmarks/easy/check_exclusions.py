@@ -116,7 +116,7 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.backend_dir).resolve().parent
-    sys.path[:0] = [str(root / name) for name in ("backend", "LLM_preprocessor", "RAG")]
+    sys.path[:0] = [str(root / name) for name in ("backend", "backend/llm", "backend/vocabulary")]
     import preprocess
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 

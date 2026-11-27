@@ -13,7 +13,7 @@ The crawler keeps such a column in bids_participants.extra and leaves
 diagnosis empty (ds004504, ds006036: 23 FTD participants each, found only by
 their titles). This module reads the group column, turns each value into its
 Levels text, and writes the diagnosis code when that text names a diagnosis
-in the vocabulary (RAG/value_mappings.yaml) exactly.
+in the vocabulary (backend/vocabulary/value_mappings.yaml) exactly.
 
 Only datasets whose participants have no diagnosis at all are touched, and
 only rows whose diagnosis is empty are written. A written row gets
@@ -95,7 +95,7 @@ _NOT_DIAGNOSIS = frozenset({"healthy_control", "behavioral_and_lifestyle",
 def _add_rag_to_path() -> None:
     here = Path(__file__).resolve()
     for root in (here.parents[3], here.parents[2], Path("/app")):
-        rag = root / "RAG"
+        rag = root / "backend" / "vocabulary"
         if (rag / "value_mappings.yaml").exists():
             if str(rag) not in sys.path:
                 sys.path.insert(0, str(rag))

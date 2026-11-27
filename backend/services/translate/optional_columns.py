@@ -18,7 +18,7 @@ The decision is applied in four places:
   the compiled conditions   preprocessing writes the size, species, study
                             structure and institution conditions only for
                             usable columns (available_columns in
-                            LLM_preprocessor/preprocess/augment.py)
+                            backend/llm/preprocess/augment.py)
   the reranker              a dataset is described with the usable columns
                             only (services/results/rerank.py)
 """

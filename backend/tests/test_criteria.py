@@ -1,4 +1,4 @@
-"""The species criterion (RAG/criteria.py): one fixed filter line per question."""
+"""The species criterion (backend/vocabulary/criteria.py): one fixed filter line per question."""
 
 from __future__ import annotations
 

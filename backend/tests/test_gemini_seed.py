@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "LLM_preprocessor"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend" / "llm"))
 
 import llm_client  # noqa: E402
 from google import genai  # noqa: E402

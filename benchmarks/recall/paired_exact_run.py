@@ -1,5 +1,5 @@
 """Paired measurement of exact word forms (backend/services/fulltext/text_search.py,
-TEXT_SEARCH_EXACT; RAG/word_forms.py).
+TEXT_SEARCH_EXACT; backend/vocabulary/word_forms.py).
 
 Each question goes through the search pipeline once, with exact word forms
 on: the intent model sees the catalogue's forms of the question's colliding

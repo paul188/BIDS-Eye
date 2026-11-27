@@ -246,7 +246,7 @@ word_forms = Table(
 )
 
 # One row per paper a dataset names, from Europe PMC, bioRxiv, arXiv or
-# OpenAlex. Filled by scripts/backfill_papers.py.
+# OpenAlex. Filled by ingest/backfill/backfill_papers.py.
 papers = Table(
     "bids_papers", metadata,
     Column("id", BigInteger, primary_key=True),
@@ -297,7 +297,7 @@ dataset_papers = Table(
 )
 
 # One row per processed version of a dataset. Filled by
-# scripts/backfill_dataset_links.py and the crawler.
+# ingest/backfill/backfill_dataset_links.py and the crawler.
 derivatives = Table(
     "bids_derivatives", metadata,
     Column("id", BigInteger, primary_key=True),
@@ -371,7 +371,7 @@ COLUMN_TEXT: dict[str, TextKind] = {column.name: column.info[TEXT] for column in
                                     if TEXT in column.info}
 
 # Uploader labels of bids_datasets that search_tsv also holds
-# (crawlers/openneuro-crawler/remote/openneuro_metadata.py).
+# (ingest/openneuro-crawler/remote/openneuro_metadata.py).
 LABELS_IN_TEXT: frozenset[str] = frozenset(column.name for column in datasets.c
                                            if column.info.get(LABEL_IN_TEXT))
 

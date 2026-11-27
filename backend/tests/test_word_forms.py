@@ -1,5 +1,5 @@
 """Word forms: the catalogue's forms per stem and which of them a search keeps
-(RAG/word_forms.py, services/fulltext/word_form_counts.py)."""
+(backend/vocabulary/word_forms.py, services/fulltext/word_form_counts.py)."""
 
 from __future__ import annotations
 
@@ -126,7 +126,7 @@ def test_forms_are_safe_for_a_tsquery_literal(reviewed_list) -> None:
 
 def test_the_shipped_list_is_consistent() -> None:
     word_forms._reviewed.cache_clear()
-    data = yaml.safe_load((ROOT / "RAG" / "word_forms.yaml").read_text()) or {}
+    data = yaml.safe_load((ROOT / "backend" / "vocabulary" / "word_forms.yaml").read_text()) or {}
     seen = set()
     for entry in data.get("exact") or []:
         forms = entry["forms"]
@@ -400,7 +400,7 @@ def test_a_broken_pairs_file_is_ignored(stored_pairs, caplog) -> None:
 
 def test_the_shipped_pairs_are_consistent() -> None:
     word_forms._stored_pairs.cache_clear()
-    data = json.loads((ROOT / "RAG" / "word_form_pairs.json").read_text())
+    data = json.loads((ROOT / "backend" / "vocabulary" / "word_form_pairs.json").read_text())
     for kind in ("different", "stem"):
         for word, forms in data[kind].items():
             assert re.fullmatch(r"[a-z]+", word) and all(re.fullmatch(r"[a-z]+", f) for f in forms), word

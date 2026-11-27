@@ -12,10 +12,10 @@ bids_word_forms has one row per word form found in the datasets' own text
     ndoc   datasets that contain the form
 
 refresh() rebuilds it; it runs after each crawl
-(crawlers/openneuro-crawler/post_crawl.py; where no crawler runs,
+(ingest/openneuro-crawler/post_crawl.py; where no crawler runs,
 `python post_crawl.py --all --only word_forms`). It decides whether a searched word is worth a
 closer look, and, for a word with forms judged different from it
-(RAG/word_forms.py), which forms of its stem the search requires: all the
+(backend/vocabulary/word_forms.py), which forms of its stem the search requires: all the
 table has, minus those. A form new since the last refresh is then missed
 until the next one.
 

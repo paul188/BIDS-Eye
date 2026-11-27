@@ -5,7 +5,7 @@ Participant sex and handedness as the vocabulary's standard codes.
 
 participants.tsv values reach bids_participants as typed: 'F', 'Female',
 'FEMALE', 'woman', '2'; 'Ambidextrous', 'R'. This module rewrites each to the
-standard code of its entry in RAG/value_mappings.yaml (sections `sex` and
+standard code of its entry in backend/vocabulary/value_mappings.yaml (sections `sex` and
 `handedness`), so that a search compares one value and no other code needs
 its own list of spellings.
 
@@ -83,17 +83,17 @@ FIELDS = (SEX, HANDEDNESS)
 
 
 class VocabularyError(Exception):
-    """RAG/value_mappings.yaml was not found or lacks a section."""
+    """backend/vocabulary/value_mappings.yaml was not found or lacks a section."""
 
 
 def _vocabulary_file() -> Path:
     here = Path(__file__).resolve()
     # The repository root, or /app in the crawler and backend images.
     for root in (*here.parents, Path("/app")):
-        path = root / "RAG" / "value_mappings.yaml"
+        path = root / "backend" / "vocabulary" / "value_mappings.yaml"
         if path.exists():
             return path
-    raise VocabularyError("RAG/value_mappings.yaml not found")
+    raise VocabularyError("backend/vocabulary/value_mappings.yaml not found")
 
 
 @lru_cache(maxsize=1)
