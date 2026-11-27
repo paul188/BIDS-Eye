@@ -52,6 +52,7 @@ from __future__ import annotations
 from .plan import (  # noqa: F401
     AugmentedQueryPlan,
     MetadataFilter,
+    Ordering,
     ParticipantGroup,
     QueryPlan,
     RAGField,
@@ -60,6 +61,7 @@ from .plan import (  # noqa: F401
     ResolvedTopic,
     ScanRequirement,
     ScoredFilter,
+    SortKey,
     TermAlternatives,
     Topic,
 )

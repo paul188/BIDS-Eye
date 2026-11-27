@@ -51,7 +51,7 @@ def _is_healthy_term(term: str) -> bool:
 _KNOWN_PLAN_FIELDS = frozenset({
     "natural_language_summary",
     "groups", "group_operator", "scan_requirements",
-    "order_direction",   # only meaningful with order_by, which must be unset
+    "ordering",   # ORDER BY / LIMIT (order_clause)
     # Written by preprocess/ as complete filter lines, read from there:
     "age_groups", "description_search", "description_alternatives", "request_wishes",
     "scan_term_alternatives",
@@ -71,8 +71,6 @@ _UNSUPPORTED_PLAN_FIELDS = (
     "excluded_institution_terms",
     "metadata_filters",
     "count_comparison",
-    "result_limit",
-    "order_by",
     "rag_requests",
 )
 
@@ -432,6 +430,40 @@ def _fixed_conditions(plan: Any) -> List[str]:
     return conditions
 
 
+# The column of each SortKey (llm/preprocess/plan.py). Every one exists for
+# every dataset; NULLS LAST keeps datasets without the value at the end in
+# both directions.
+ORDER_COLUMNS: Dict[str, str] = {
+    "subjects": "subject_count",
+    "size": "d.size_bytes",
+    "published": "d.publish_date",
+    "downloads": "d.downloads",
+    "views": "d.views",
+    "name": "d.name",
+}
+
+
+def order_clause(ordering: Any) -> str:
+    """ORDER BY (and LIMIT) for the plan's ordering; "" when it names no sort key.
+
+    A limit without a sort key is left out: the page orders by relevance,
+    and a LIMIT here would cut the result before that ranking.
+    The search keeps a base query's own ORDER BY and LIMIT
+    (sql_rewriter._has_top_level_order; the uncertain tier leaves it alone).
+    """
+    key = _value(ordering, "sort_key")
+    key = getattr(key, "value", key)
+    column = ORDER_COLUMNS.get(key) if key else None
+    if column is None:
+        return ""
+    direction = "ASC" if _value(ordering, "direction", "DESC") == "ASC" else "DESC"
+    clause = f"\nORDER BY {column} {direction} NULLS LAST, d.id"
+    limit = _value(ordering, "limit")
+    if isinstance(limit, int) and not isinstance(limit, bool) and limit > 0:
+        clause += f"\nLIMIT {limit}"
+    return clause
+
+
 def compile_plan(plan: Any, resolved_terms: Iterable[Any],
                  augmented_question: Optional[str] = None) -> Compiled:
     """Compile the plan into SQL, or decline with the reason.
@@ -489,14 +521,17 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
 
     where.extend(_fixed_conditions(plan))
     where = list(dict.fromkeys(where))
-    if not where and not having:
+    order = order_clause(_value(plan, "ordering"))
+    if not where and not having and not order:
+        # Only an order may list every dataset ("the 10 largest datasets").
         return _decline("nothing to filter")
     sql = ("SELECT {{COLS}}\n"
            f"FROM {_datasets.name} d\n"
            f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
            + (f"WHERE {' AND '.join(where)}\n" if where else "")
            + "GROUP BY d.id"
-           + (f"\nHAVING {' AND '.join(having)}" if having else ""))
+           + (f"\nHAVING {' AND '.join(having)}" if having else "")
+           + order)
     return Compiled(sql=sql)
 
 

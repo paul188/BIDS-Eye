@@ -174,7 +174,7 @@ def _run_local(question: str) -> TextToSQLResult:
     # order clause. We still decide *whether* to rank: skip for explicit top-N
     # / user-ordered queries so we don't override the order the user asked for.
     plan = augmented_plan.plan
-    apply_relevance = plan.result_limit is None and plan.order_by is None
+    apply_relevance = not plan.user_ordered
     # The whole catalogue is no answer to a search: "bonn" and "datasets
     # related to drawings or art" got all 1,721 datasets, in no useful order
     # (live, 2026-11-17/18). Only a ranking or top-N question ("the 10
