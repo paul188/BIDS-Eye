@@ -9,7 +9,7 @@ import reference_vocabulary as _reference_vocabulary
 from services.schema.coded_fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
-from .plan import AugmentedQueryPlan, ParticipantGroup, QueryPlan, RAGField, ScanRequirement
+from .plan import AugmentedQueryPlan, ParticipantAttribute, ParticipantGroup, QueryPlan, RAGField, ScanRequirement
 from .intent import count_stem_forms, create_query_plan
 from .rag import build_rag_requests
 from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, check_scan_term_alternatives, resolve_topics
@@ -98,10 +98,9 @@ def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -
             continue
         field, label = concept
         if field == "diagnosis":
-            if not plan.groups:
+            if not plan.cohorts:
                 plan.groups.append(ParticipantGroup(group_name="patient_group"))
-            if name not in plan.groups[0].diagnosis_terms:
-                plan.groups[0].diagnosis_terms.append(name)
+            plan.cohorts[0].add_terms(ParticipantAttribute.DIAGNOSIS, [name])
         else:
             plan.scan_requirements.append(ScanRequirement(scan_terms=[name]))
         moved.append((name, field, label))

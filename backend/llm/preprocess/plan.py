@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from services.schema.coded_fields import CodedField
 from criteria import SPECIES_CODES as _SPECIES_CODES, normalise_species as _normalise_species
 from criteria import AGE_GROUP_CODES as _AGE_GROUP_CODES, \
@@ -59,46 +59,126 @@ class MetadataFilter(BaseModel):
     )
 
 
+class ParticipantAttribute(str, Enum):
+    """A property one participant has: a column of bids_participants."""
+    DIAGNOSIS  = "diagnosis"
+    SEX        = "sex"
+    AGE        = "age"
+    HANDEDNESS = "handedness"
+
+
+class ParticipantCriterion(BaseModel):
+    """One property a participant of the group has ("ADHD", "female", "aged 8 to 12")."""
+    attribute: ParticipantAttribute
+    terms: List[str] = Field(
+        default_factory=list,
+        description="The words of the request for this property: diagnoses as written "
+                    "(['ADHD'], ['healthy controls']; several are alternatives), sex "
+                    "(['female']), handedness (['left-handed']). Empty for age."
+    )
+    min: Optional[float] = Field(default=None, description="age only: lowest age in years")
+    max: Optional[float] = Field(default=None, description="age only: highest age in years")
+
+
+# The keys a ParticipantGroup had before it held criteria. Recorded plans
+# (benchmarks/*/results) and tests still use them; _from_flat_fields reads them.
+_FLAT_GROUP_KEYS = ("diagnosis_terms", "sex", "handedness", "age_min", "age_max")
+
+
 class ParticipantGroup(BaseModel):
     """
-    One cohort of participants, e.g. 'patients' or 'controls'.
-    For a simple single-population query there will be exactly one group.
-    For a schizophrenia-vs-controls query there will be two.
+    A set of participants the dataset must have, described by what each of
+    them is: "20 female ADHD patients aged 8 to 12" is one group with three
+    criteria, all of which hold for the same 20 people. Properties of the
+    dataset itself (scans, tasks, species, text) are not group criteria.
+
+    quantifier says how many of the dataset's participants are meant:
+    some  — at least one, or at least min_subjects ("with ADHD patients")
+    all   — every participant ("only female participants")
+    none  — no participant ("without epilepsy patients")
     """
     group_name: str = Field(
-        description="Short label, e.g. 'patient_group', 'control_group', 'all_participants'"
+        description="Short label, e.g. 'patients', 'controls', 'all_participants'"
     )
-
-    # --- fields resolved by RAG ---
-    diagnosis_terms: List[str] = Field(
+    quantifier: Literal["some", "all", "none"] = Field(
+        default="some",
+        description="some = the dataset has such participants; all = every participant is "
+                    "like this ('only', 'exclusively', 'all-female'); none = the dataset has no "
+                    "such participant ('without', 'excluding', 'no ... patients')"
+    )
+    criteria: List[ParticipantCriterion] = Field(
         default_factory=list,
-        description="Raw diagnosis strings from the query. RAG resolves these to canonical codes."
+        description="What each participant of the group is. All criteria hold for the same "
+                    "participant. Empty for a plain count ('at least 50 subjects')."
     )
-    task_terms: List[str] = Field(
-        default_factory=list,
-        description="Task strings tied to this participant group (if group-specific)."
-    )
-
-    # --- directly usable fields ---
-    sex: List[str] = Field(
-        default_factory=list,
-        description="e.g. ['male'], ['female'], ['M', 'F']"
-    )
-    handedness: List[str] = Field(
-        default_factory=list,
-        description="stored codes: ['right_handed'], ['left_handed'], ['ambidextrous']"
-    )
-    age_min: Optional[float] = Field(default=None, description="Minimum participant age")
-    age_max: Optional[float] = Field(default=None, description="Maximum participant age")
     min_subjects: Optional[int] = Field(
         default=None,
-        description="Minimum number of participants in this group that the dataset must have"
+        description="Minimum number of participants of this group the dataset must have"
     )
-    extra_participant_fields: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Non-standard participants.tsv columns (bids_participants.extra JSONB), "
-                    "e.g. {'group': 'control', 'bmi': '>25'}"
-    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_flat_fields(cls, data: Any) -> Any:
+        # {"diagnosis_terms": [...], "sex": [...], "age_min": 8} → criteria.
+        if not isinstance(data, dict) or not any(k in data for k in _FLAT_GROUP_KEYS):
+            return data
+        data = dict(data)
+        criteria = list(data.get("criteria") or [])
+        for key, attribute in (("diagnosis_terms", "diagnosis"), ("sex", "sex"),
+                               ("handedness", "handedness")):
+            terms = data.pop(key, None) or []
+            if terms:
+                criteria.append({"attribute": attribute, "terms": list(terms)})
+        low, high = data.pop("age_min", None), data.pop("age_max", None)
+        if low is not None or high is not None:
+            criteria.append({"attribute": "age", "min": low, "max": high})
+        data["criteria"] = criteria
+        return data
+
+    @model_validator(mode="after")
+    def _no_count_of_nobody(self) -> "ParticipantGroup":
+        # "At least 20 of no participant" has no meaning: the minimum is dropped.
+        if self.quantifier == "none":
+            self.min_subjects = None
+        return self
+
+    # Read access by attribute. The model writes criteria; the code reads these.
+    def terms(self, attribute: ParticipantAttribute) -> List[str]:
+        return [t for c in self.criteria if c.attribute == attribute for t in c.terms]
+
+    def attributes(self) -> set:
+        return {c.attribute for c in self.criteria}
+
+    @property
+    def diagnosis_terms(self) -> List[str]:
+        return self.terms(ParticipantAttribute.DIAGNOSIS)
+
+    @property
+    def sex(self) -> List[str]:
+        return self.terms(ParticipantAttribute.SEX)
+
+    @property
+    def handedness(self) -> List[str]:
+        return self.terms(ParticipantAttribute.HANDEDNESS)
+
+    @property
+    def age_min(self) -> Optional[float]:
+        # Several age criteria all hold: the highest lower bound.
+        lows = [c.min for c in self.criteria if c.attribute == ParticipantAttribute.AGE and c.min is not None]
+        return max(lows) if lows else None
+
+    @property
+    def age_max(self) -> Optional[float]:
+        highs = [c.max for c in self.criteria if c.attribute == ParticipantAttribute.AGE and c.max is not None]
+        return min(highs) if highs else None
+
+    def add_terms(self, attribute: ParticipantAttribute, terms: List[str]) -> None:
+        """Add words to the group's criterion for *attribute* (a new one if there is none)."""
+        for criterion in self.criteria:
+            if criterion.attribute == attribute:
+                criterion.terms.extend(t for t in terms if t not in criterion.terms)
+                return
+        self.criteria.append(ParticipantCriterion(attribute=attribute, terms=list(terms)))
 
 
 class ScanRequirement(BaseModel):
@@ -233,17 +313,61 @@ class QueryPlan(BaseModel):
     )
 
     # ── Participant cohorts ───────────────────────────────────────────────────
-    groups: List[ParticipantGroup] = Field(default_factory=list)
+    groups: List[ParticipantGroup] = Field(
+        default_factory=list,
+        description="The participants the dataset must (or must not) have. See section 1.2."
+    )
     group_operator: Literal["AND", "OR"] = Field(
         default="AND",
-        description="AND = dataset must contain ALL groups; OR = any one suffices"
+        description="Between the groups whose quantifier is some or all: AND = the dataset "
+                    "has every group; OR = any one suffices. Groups with quantifier none "
+                    "always hold."
     )
-    excluded_diagnosis_terms: List[str] = Field(
-        default_factory=list,
-        description="Diagnoses or conditions the dataset must NOT include ('without epilepsy "
-                    "patients' → ['epilepsy'], 'excluding stroke' → ['stroke']), as written by "
-                    "the user. Never also list them in a group's diagnosis_terms."
-    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_flat_fields(cls, data: Any) -> Any:
+        # Plans written before groups held criteria (recordings, tests):
+        # excluded_diagnosis_terms becomes a group with quantifier none, and
+        # a group's task_terms a scan requirement (a task is done by the
+        # dataset's subjects, it does not tell one group from another).
+        if not isinstance(data, dict):
+            return data
+        excluded = data.get("excluded_diagnosis_terms")
+        tasks = [t for g in data.get("groups") or [] if isinstance(g, dict)
+                 for t in g.get("task_terms") or []]
+        if not excluded and not tasks and "excluded_diagnosis_terms" not in data:
+            return data
+        data = dict(data)
+        groups = [{k: v for k, v in g.items() if k != "task_terms"} if isinstance(g, dict) else g
+                  for g in data.get("groups") or []]
+        for term in data.pop("excluded_diagnosis_terms", None) or []:
+            groups.append({"group_name": "excluded", "quantifier": "none",
+                           "criteria": [{"attribute": "diagnosis", "terms": [term]}]})
+        data["groups"] = groups
+        if tasks:
+            data["scan_requirements"] = list(data.get("scan_requirements") or []) + [
+                {"scan_terms": tasks}]
+        return data
+
+    @property
+    def cohorts(self) -> List[ParticipantGroup]:
+        """The groups the dataset must have (quantifier some or all)."""
+        return [g for g in self.groups if g.quantifier != "none"]
+
+    @property
+    def excluded_diagnosis_terms(self) -> List[str]:
+        """Diagnoses no participant may have: the groups with quantifier none and
+        only a diagnosis. "No epilepsy patients over 60" (diagnosis and age) is no
+        plain exclusion of epilepsy; excluded_groups() has it."""
+        return [t for g in self.groups
+                if g.quantifier == "none" and g.attributes() == {ParticipantAttribute.DIAGNOSIS}
+                for t in g.diagnosis_terms]
+
+    def excluded_groups(self) -> List[ParticipantGroup]:
+        """Groups with quantifier none that excluded_diagnosis_terms does not cover."""
+        return [g for g in self.groups
+                if g.quantifier == "none" and g.attributes() != {ParticipantAttribute.DIAGNOSIS}]
 
     # ── Scan / modality requirements ─────────────────────────────────────────
     scan_requirements: List[ScanRequirement] = Field(
@@ -383,7 +507,7 @@ class QueryPlan(BaseModel):
                     "adolescents); adolescents, teenagers → adolescents; infants, babies, "
                     "newborns, toddlers → infants; elderly, older adults, seniors → older_adults. "
                     "Empty when not asked, for 'adults', and for numeric ages (those go to "
-                    "ParticipantGroup.age_min / age_max)."
+                    "an age criterion of a participant group)."
     )
 
     @field_validator("age_groups", mode="before")

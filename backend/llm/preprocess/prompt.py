@@ -44,7 +44,7 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     A plain task, paradigm or modality without such a qualifier ("n-back",
     "resting state", "EEG") stays in scan_terms. A property word ("complex",
     "naturalistic", "bilingual") stays in description_search. A diagnosis
-    stays in diagnosis_terms.
+    stays a diagnosis criterion of a group.
 
     Fill every topic:
       phrase        the subject in standard words; abbreviations stay as typed
@@ -82,70 +82,89 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
             scan_requirements: [{scan_terms: ["fMRI"]}]
 
     ### 1.2 Participant constraints
-    Put diagnosis / condition strings in ParticipantGroup.diagnosis_terms.
-    These are resolved by the RAG layer (e.g. "depression" → canonical code).
-    IMPORTANT: Do NOT put generic demographic words such as "patients",
+    A participant group is a set of participants the dataset must (or must
+    not) have, described by what EACH of them is. Its criteria all hold for
+    the same participant: "20 female ADHD patients aged 8 to 12" is ONE group
+      → {quantifier: "some", min_subjects: 20, criteria: [
+           {attribute: "diagnosis", terms: ["ADHD"]},
+           {attribute: "sex", terms: ["female"]},
+           {attribute: "age", min: 8, max: 12}]}
+    attribute is diagnosis, sex, age (min / max in years) or handedness. Only
+    properties of a participant are criteria: scans, tasks, species and topics
+    belong to the dataset and go to their own fields, also when the user ties
+    them to a group ("patients doing an n-back task" → the n-back task is a
+    scan term).
+    quantifier says how many participants are meant:
+      some — the dataset has such participants (the default; min_subjects
+             gives "at least N")
+      all  — every participant is like this: "only female participants",
+             "exclusively adults over 60", "an all-male sample"
+      none — the dataset has no such participant: "without epilepsy patients",
+             "no stroke patients", "excluding schizophrenia", "not Parkinson's"
+      "only female participants"  → [{quantifier: "all", criteria: [{attribute: "sex", terms: ["female"]}]}]
+      "with female participants"  → [{quantifier: "some", criteria: [{attribute: "sex", terms: ["female"]}]}]
+      "at least 50 subjects"      → [{quantifier: "some", min_subjects: 50, criteria: []}]
+    Diagnosis terms are resolved by the RAG layer (e.g. "depression" →
+    canonical code). IMPORTANT: generic words such as "patients",
     "participants", "subjects", "people", "individuals", "volunteers",
-    "adults", "children", "healthy" into diagnosis_terms — these are not
-    diagnoses.  Only extract actual medical or psychiatric condition labels.
+    "adults", "children", "healthy" are no diagnosis. Only actual medical or
+    psychiatric condition labels are.
     A named comparison group is not a generic word: "healthy controls",
     "controls", "typically developing children", "unaffected siblings" name a
-    cohort the dataset must contain. Give it its own ParticipantGroup with
-    that phrase in diagnosis_terms (the RAG layer knows the control codes),
-    and never output a group whose diagnosis_terms is empty next to a group
-    that has some.
+    cohort the dataset must contain. Give it its own group with that phrase as
+    its diagnosis (the RAG layer knows the control codes), and never output a
+    group without a diagnosis next to a group with one.
+    Below, {dx: [...]} is short for a group with quantifier some and one
+    criterion {attribute: "diagnosis", terms: [...]}.
       "Parkinson's patients and healthy controls"
-          → groups: [{diagnosis_terms: ["Parkinson's disease"]},
-                     {diagnosis_terms: ["healthy controls"]}], group_operator: "AND"
+          → groups: [{dx: ["Parkinson's disease"]}, {dx: ["healthy controls"]}],
+            group_operator: "AND"
       "autism compared with typically developing children"
-          → groups: [{diagnosis_terms: ["autism"]},
-                     {diagnosis_terms: ["typically developing"]}], group_operator: "AND"
-      "healthy adults doing a memory task"  → no diagnosis_terms (no named group)
+          → groups: [{dx: ["autism"]}, {dx: ["typically developing"]}], group_operator: "AND"
+      "healthy adults doing a memory task"  → no diagnosis (no named group)
     A plain list of conditions is ONE group with every condition in its
-    diagnosis_terms: a dataset with any of them fits. Use separate groups only
+    diagnosis terms: a dataset with any of them fits. Use separate groups only
     when the user wants the groups together in one dataset ("both X and Y",
     "all of X, Y and Z", "X together with Y", "comorbid X and Y", "X compared
     with Y", "X versus Y", "X and controls").
       "bipolar disorder, schizophrenia and ADHD patients"
-          → groups: [{diagnosis_terms: ["bipolar disorder", "schizophrenia", "ADHD"]}]
+          → groups: [{dx: ["bipolar disorder", "schizophrenia", "ADHD"]}]
       "datasets with both depression and anxiety patients"
-          → groups: [{diagnosis_terms: ["depression"]}, {diagnosis_terms: ["anxiety"]}],
-            group_operator: "AND"
-    A condition the dataset must NOT include goes in excluded_diagnosis_terms
-    and in no group: "without epilepsy patients", "no stroke patients",
-    "excluding schizophrenia", "not Parkinson's".
+          → groups: [{dx: ["depression"]}, {dx: ["anxiety"]}], group_operator: "AND"
+    A condition the dataset must NOT include is a group with quantifier none,
+    one per condition, and in no other group:
       "fMRI datasets without epilepsy patients"
-          → excluded_diagnosis_terms: ["epilepsy"], no group
+          → groups: [{quantifier: "none", criteria: [{attribute: "diagnosis", terms: ["epilepsy"]}]}]
       "depression datasets, excluding bipolar disorder"
-          → groups: [{diagnosis_terms: ["depression"]}],
-            excluded_diagnosis_terms: ["bipolar disorder"]
+          → groups: [{dx: ["depression"]},
+                     {quantifier: "none", criteria: [{attribute: "diagnosis", terms: ["bipolar disorder"]}]}]
     Only a named condition: "no patients", "non-clinical", "healthy only"
     name none and stay out (see "healthy" above).
     Species words ("animals", "rats", "mice", "monkeys", "non-human") are not
     diagnoses either: they go into species (codes: mouse, rat, primate, pig,
     sheep, dog, cat, ferret, bat, bird, zebrafish, any_animal, human) and nowhere
-    else — not diagnosis_terms, scan_terms or description_search. "animal
+    else — not a diagnosis, scan_terms or description_search. "animal
     studies" → species: ["any_animal"]; "rodents" → ["mouse", "rat"]; "monkey
     fMRI" → species: ["primate"], scan_terms: ["fMRI"]. "human" only when the
     user explicitly limits the search to humans ("human fMRI", "data from
     human participants" → species: ["human"]); a question that names no
     species gets no species. Only an animal model
-    of a disease ("3xTg Alzheimer mice") also keeps its disease in
-    diagnosis_terms. Publication dates ("published in the last 12 months",
+    of a disease ("3xTg Alzheimer mice") also keeps its disease as a
+    diagnosis. Publication dates ("published in the last 12 months",
     "recent datasets", "since 2024") are not description_search either: the
     SQL stage filters the publish date.
     Age groups named in words go into age_groups (codes: children, adolescents,
-    infants, older_adults) and nowhere else — not diagnosis_terms or
+    infants, older_adults) and nowhere else — not a diagnosis or
     description_search. "children", "kids", "pediatric", "youth" → children
     (it includes adolescents); "teenagers", "adolescents" → adolescents;
     "babies", "newborns", "toddlers" → infants; "elderly", "seniors", "older
     adults" → older_adults. "kids watching movies, EEG" → age_groups:
     ["children"], scan_terms: ["movie watching", "EEG"]; "sleep recordings
     from seniors" → age_groups: ["older_adults"], scan_terms: ["sleep"]. Ages
-    given as numbers ("under 10", "aged 8 to 12") go to the group's age_min /
-    age_max instead, without an age group. "adults" is no age group. A
-    comparison group such as "typically developing children" stays a group in
-    diagnosis_terms and also sets age_groups: ["children"].
+    given as numbers ("under 10", "aged 8 to 12") are an age criterion of a
+    group instead, without an age group. "adults" is no age group. A
+    comparison group such as "typically developing children" stays a group
+    with that diagnosis and also sets age_groups: ["children"].
 
     ### 1.3 Scan and modality constraints
     Put ALL scan-related terms in ScanRequirement.scan_terms.
@@ -238,7 +257,7 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
 
     These entries never change where a term goes. Route every concept by
     sections 1.2, 1.3 and 2 first, then add entries only for what ended up
-    in scan_terms. A diagnosis or condition stays in diagnosis_terms; a
+    in scan_terms. A diagnosis or condition stays a group's diagnosis; a
     description, property or stimulus the user describes in words stays
     whole in description_search, with its other words in
     description_alternatives (section 2.1). Never move a concept into

@@ -41,14 +41,17 @@ def plan_families(plan: Any) -> List[str]:
         if family not in families:
             families.append(family)
 
-    groups = _get(plan, "groups", [])
+    # Groups with quantifier none are exclusions (absence_query below), not cohorts.
+    every_group = _get(plan, "groups", [])
+    groups = [g for g in every_group if _get(g, "quantifier", "some") != "none"]
+    excluded = len(groups) < len(every_group) or _get(plan, "excluded_diagnosis_terms", [])
     diagnosed = [g for g in groups if _get(g, "diagnosis_terms", [])]
     if diagnosed:
         add("concept_query")
     if len(diagnosed) >= 2 or (diagnosed and len(groups) > len(diagnosed)):
         add("clinical_design_query")   # patients next to another group, such as controls
     if any(_get(g, "sex", []) or _get(g, "handedness", []) or _get(g, "min_subjects") is not None
-           or _get(g, "extra_participant_fields", {}) for g in groups):
+           for g in groups):
         add("participant_filter")
     if _get(plan, "age_groups", []) or any(
             _get(g, "age_min") is not None or _get(g, "age_max") is not None for g in groups):
@@ -65,7 +68,7 @@ def plan_families(plan: Any) -> List[str]:
         add("scan_filter")
     if len(required) >= 2:
         add("multimodal_query")
-    if len(required) < len(scans) or _get(plan, "excluded_diagnosis_terms", []):
+    if len(required) < len(scans) or excluded:
         add("absence_query")
     if any(_get(s, "same_subject", False) for s in scans):
         add("subject_multimodal_query")

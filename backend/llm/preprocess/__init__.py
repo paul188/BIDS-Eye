@@ -53,6 +53,8 @@ from .plan import (  # noqa: F401
     AugmentedQueryPlan,
     MetadataFilter,
     Ordering,
+    ParticipantAttribute,
+    ParticipantCriterion,
     ParticipantGroup,
     QueryPlan,
     RAGField,
