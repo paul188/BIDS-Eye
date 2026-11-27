@@ -180,7 +180,7 @@ _MIN_FUZZY_SCORE = 88
 _MIN_PREFIX_TERM = 5
 
 # A construct linked to fewer task codes than this does not stand for the
-# construct: bids_to_ca_map.json links "emotion" and "anxiety" to the
+# construct: the task measures in value_mappings.yaml link "emotion" and "anxiety" to the
 # meditation task alone, so "emo studies" filtered on meditation_general and
 # found nothing. Such a link still widens a term that also names a task, but
 # on its own it is ignored; the term goes on to fuzzy matching and, if that
@@ -587,7 +587,7 @@ def _resolve_via_constructs(term: str, fuzzy: bool = True) -> List[tuple[str, fl
     Returns (task_standard_code, score) pairs — or [] when:
       - the term doesn't match any cognitive construct, or
       - none of the matched constructs have task links in measures_db yet
-        (i.e. bids_to_ca_map.json hasn't been generated / reviewed yet).
+        (no task entry in value_mappings.yaml lists them under `measures`).
     """
     if not measures_db:
         return []

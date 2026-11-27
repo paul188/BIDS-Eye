@@ -6261,6 +6261,7 @@ task:
   resting_state_eyes_open:
     label: resting-state (eyes open)
     standard_code: resting_state_eyes_open
+    ca_id: trm_4c8a834779883
     broader:
     - resting_state
     synonyms:
@@ -6323,6 +6324,7 @@ task:
   resting_state_eyes_closed:
     label: resting-state (eyes closed)
     standard_code: resting_state_eyes_closed
+    ca_id: trm_54e69c642d89b
     broader:
     - resting_state
     synonyms:
@@ -6883,6 +6885,7 @@ task:
   post_event_phase:
     label: Post-event phase
     standard_code: post_event_phase
+    ca_id: trm_59cd03eeeab30
     broader:
     - resting_state
     description: A period of data acquisition following a specific experimental event
@@ -6937,6 +6940,9 @@ task:
   post_face_task_phase:
     label: Post-face task phase
     standard_code: post_face_task_phase
+    ca_id: trm_50b55d8a6da00
+    measures:
+    - attention_capacity
     broader:
     - resting_state
     description: A period of data acquisition following a task involving face stimuli
@@ -6985,6 +6991,9 @@ task:
   post_heat_stimulation_phase:
     label: Post-heat stimulation phase
     standard_code: post_heat_stimulation_phase
+    ca_id: trm_4e550887d92de
+    measures:
+    - pain
     broader:
     - resting_state
     description: A period of data acquisition following thermal or heat stimulation.
@@ -7604,6 +7613,7 @@ task:
   perception_natural_image_test:
     label: Perception of natural images (test phase)
     standard_code: perception_natural_image_test
+    ca_id: trm_5667436296862
     broader:
     - naturalistic
     description: A task designed to assess the perception of natural, real-world images
@@ -7642,6 +7652,7 @@ task:
   video_game_and_video:
     label: video viewing and gaming
     standard_code: video_game_and_video
+    ca_id: trm_4c8a84d4c4157
     broader:
     - naturalistic
     synonyms:
@@ -8013,6 +8024,7 @@ task:
   drama_narrative_viewing:
     label: Drama narrative viewing
     standard_code: drama_narrative_viewing
+    ca_id: trm_5550e5011ce10
     broader:
     - naturalistic
     - auditory_perception
@@ -8514,6 +8526,7 @@ task:
   movie_memory:
     label: Movie memory
     standard_code: movie_memory
+    ca_id: tsk_jbg1oF4D9OTkO
     broader:
     - naturalistic
     description: A task assessing memory for content presented during movie viewing.
@@ -8559,6 +8572,12 @@ task:
   music_listening:
     label: Music listening
     standard_code: music_listening
+    ca_id: trm_4c8990b07a037
+    measures:
+    - articulatory_planning
+    - auditory_working_memory
+    - intonation
+    - rhythm
     broader:
     - naturalistic
     - auditory_perception
@@ -8656,6 +8675,10 @@ task:
   passive_listening_natural_speech:
     label: Passive Listening to Natural Speech
     standard_code: passive_listening_natural_speech
+    ca_id: trm_4c8991fadfe01
+    measures:
+    - acoustic_processing
+    - audition
     broader:
     - naturalistic
     - auditory_perception
@@ -9268,6 +9291,11 @@ task:
   darkend_auditory_narrative_listening_1:
     label: Darkend auditory narrative listening (part 1)
     standard_code: darkend_auditory_narrative_listening_1
+    ca_id: trm_4c898bbab4fd4
+    measures:
+    - acoustic_phonetic_processing
+    - auditory_attention
+    - cognitive_control
     broader:
     - naturalistic
     - auditory_perception
@@ -9925,6 +9953,7 @@ task:
   narrative_listening:
     label: Narrative Listening
     standard_code: narrative_listening
+    ca_id: tsk_vbkfbu486lzDr
     broader:
     - naturalistic
     - auditory_perception
@@ -10198,6 +10227,7 @@ task:
   naturalistic_object_category_perception:
     label: Naturalistic object category perception
     standard_code: naturalistic_object_category_perception
+    ca_id: trm_4fbd2c18e1dd9
     broader:
     - naturalistic
     description: A task involving the perception and processing of various object
@@ -10285,6 +10315,9 @@ task:
   passive_image_viewing:
     label: Passive image viewing
     standard_code: passive_image_viewing
+    ca_id: trm_4c899211a965c
+    measures:
+    - visual_perception
     broader:
     - naturalistic
     description: Task involving passive observation of static images without requiring
@@ -10335,6 +10368,7 @@ task:
   rest_film_viewing:
     label: Rest film viewing
     standard_code: rest_film_viewing
+    ca_id: trm_4c898da401420
     broader:
     - naturalistic
     description: A naturalistic task involving passive viewing of a film, often used
@@ -10570,6 +10604,11 @@ task:
   neural_tracking_to_go:
     label: Neural Tracking to Go
     standard_code: neural_tracking_to_go
+    ca_id: trm_4c8a85534241d
+    measures:
+    - selective_attention
+    - visual_attention
+    - visual_search
     broader:
     - naturalistic
     - auditory_perception
@@ -10695,6 +10734,7 @@ task:
   memory_updating:
     label: Memory updating
     standard_code: memory_updating
+    ca_id: trm_4f242172aea5d
     broader:
     - working_memory_general
     description: A task designed to investigate the process of modifying or refreshing
@@ -10735,6 +10775,7 @@ task:
   delayed_comparison:
     label: Delayed comparison task
     standard_code: delayed_comparison
+    ca_id: trm_4fbd2af083332
     broader:
     - working_memory_general
     description: A memory task involving a comparison between stimuli after a delay
@@ -10787,6 +10828,15 @@ task:
   delayed_match_to_sample:
     label: Delayed match-to-sample task
     standard_code: delayed_match_to_sample
+    ca_id: tsk_4a57abb9499e3
+    measures:
+    - active_maintenance
+    - goal_maintenance
+    - interference_control
+    - limited_capacity
+    - memory_decay
+    - working_memory
+    - working_memory_retrieval
     broader:
     - working_memory_general
     description: A memory task where participants identify a stimulus that matches
@@ -10879,6 +10929,12 @@ task:
   change_detection:
     label: Change detection
     standard_code: change_detection
+    ca_id: trm_5154906cbead5
+    measures:
+    - active_maintenance
+    - auditory_perception
+    - limited_capacity
+    - working_memory
     broader:
     - working_memory_general
     description: A task requiring participants to detect changes between two sequentially
@@ -10929,6 +10985,7 @@ task:
   visual_short_term_memory:
     label: Visual Short-Term Memory
     standard_code: visual_short_term_memory
+    ca_id: tsk_1eLUszKc87tI1
     broader:
     - working_memory_general
     description: A task assessing the capacity and duration of visual information
@@ -10977,6 +11034,10 @@ task:
   visual_short_term_memory_control:
     label: Visual Short-Term Memory (control)
     standard_code: visual_short_term_memory_control
+    ca_id: tsk_4a57abb949edb
+    measures:
+    - spatial_ability
+    - visual_perception
     broader:
     - working_memory_general
     description: A control condition for a visual short-term memory task.
@@ -11018,6 +11079,10 @@ task:
   contrast_change_detection:
     label: Contrast Change Detection
     standard_code: contrast_change_detection
+    ca_id: trm_502be67697201
+    measures:
+    - lateral_masking
+    - visual_masking
     broader:
     - working_memory_general
     description: A task requiring the detection of changes in visual contrast.
@@ -11059,6 +11124,11 @@ task:
   delayed_non_match_to_sample:
     label: Delayed Non-Match-to-Sample (DNMS)
     standard_code: delayed_non_match_to_sample
+    ca_id: tsk_4a57abb9499f1
+    measures:
+    - declarative_memory
+    - memory_decay
+    - working_memory
     broader:
     - working_memory_general
     description: A working memory task where participants must identify a stimulus
@@ -11193,6 +11263,9 @@ task:
   visuomotor_delayed_match_to_sample_interference:
     label: Visuomotor delayed match-to-sample with interference
     standard_code: visuomotor_delayed_match_to_sample_interference
+    ca_id: trm_4fbd2b4bb165c
+    measures:
+    - visual_imagery
     broader:
     - working_memory_general
     description: A working memory task requiring participants to match a visually
@@ -11235,6 +11308,16 @@ task:
   n_back_working_memory:
     label: n-back working memory
     standard_code: n_back_working_memory
+    ca_id: tsk_4a57abb949bcd
+    measures:
+    - active_maintenance
+    - attention_capacity
+    - capacity_limitation
+    - interference_control
+    - interference_resolution
+    - limited_capacity
+    - updating
+    - working_memory
     broader:
     - working_memory_general
     synonyms:
@@ -11401,6 +11484,12 @@ task:
   environmental_sounds_n_back_laughing_female:
     label: Environmental sounds n-back (laughing adult female)
     standard_code: environmental_sounds_n_back_laughing_female
+    ca_id: trm_56674133b666c
+    measures:
+    - maintenance
+    - proactive_interference
+    - updating
+    - working_memory
     broader:
     - n_back_working_memory
     - auditory_perception
@@ -11589,6 +11678,11 @@ task:
   spatial_location_immediate_working_memory:
     label: Spatial Location Immediate (Working Memory)
     standard_code: spatial_location_immediate_working_memory
+    ca_id: tsk_4a57abb949abc
+    measures:
+    - declarative_memory
+    - working_memory
+    - working_memory_retrieval
     broader:
     - working_memory_general
     description: Participants perform a working memory task involving remembering
@@ -11640,6 +11734,9 @@ task:
   spatial_span_delay_working_memory:
     label: Spatial Span Delay (Working Memory)
     standard_code: spatial_span_delay_working_memory
+    ca_id: trm_4da86b539924c
+    measures:
+    - spatial_working_memory
     broader:
     - working_memory_general
     description: Participants recall a sequence of spatial locations after a delay
@@ -11689,6 +11786,12 @@ task:
   spatial_span_immediate_working_memory:
     label: Spatial Span Immediate (Working Memory)
     standard_code: spatial_span_immediate_working_memory
+    ca_id: tsk_4a57abb94989b
+    measures:
+    - cognitive_control
+    - phonological_working_memory
+    - verbal_memory
+    - working_memory
     broader:
     - working_memory_general
     description: Participants recall a sequence of spatial locations immediately after
@@ -11748,6 +11851,11 @@ task:
   sternberg_task:
     label: Sternberg task
     standard_code: sternberg_task
+    ca_id: tsk_4a57abb949e0c
+    measures:
+    - maintenance
+    - serial_search
+    - working_memory_retrieval
     broader:
     - working_memory_general
     description: A working memory task involving memorizing a set of items and then
@@ -12140,6 +12248,9 @@ task:
   visual_working_memory_general:
     label: Visual Working Memory
     standard_code: visual_working_memory_general
+    ca_id: trm_50f8516279419
+    measures:
+    - sustained_attention
     broader:
     - working_memory_general
     description: A task assessing the temporary storage and manipulation of visual
@@ -12186,6 +12297,12 @@ task:
   directed_forgetting_task:
     label: Directed Forgetting Task
     standard_code: directed_forgetting_task
+    ca_id: trm_4da87f383435b
+    measures:
+    - maintenance
+    - proactive_interference
+    - updating
+    - working_memory
     broader:
     - working_memory_general
     description: A memory task designed to investigate the active suppression or intentional
@@ -12232,6 +12349,9 @@ task:
   implicit_learning:
     label: Implicit Learning
     standard_code: implicit_learning
+    ca_id: trm_50f9daf1c3834
+    measures:
+    - spatial_working_memory
     broader:
     - working_memory_general
     description: A task designed to assess learning that occurs without conscious
@@ -12290,6 +12410,7 @@ task:
   statistical_learning_task:
     label: Statistical learning task
     standard_code: statistical_learning_task
+    ca_id: tsk_NOaQmzjqHM4iO
     broader:
     - encoding
     description: A task designed to investigate the implicit learning of statistical
@@ -12478,6 +12599,7 @@ task:
   semantic_encoding:
     label: Semantic encoding
     standard_code: semantic_encoding
+    ca_id: trm_4f241b50caaf7
     broader:
     - encoding
     description: Task involving the process of encoding information into memory based
@@ -12530,6 +12652,7 @@ task:
   memory_encoding:
     label: Memory encoding
     standard_code: memory_encoding
+    ca_id: tsk_mFS3uwUMAhXxe
     broader:
     - encoding
     description: This task involves the initial learning and formation of new memories.
@@ -12690,6 +12813,10 @@ task:
   word_memory_encoding:
     label: Word memory encoding
     standard_code: word_memory_encoding
+    ca_id: tsk_4a57abb949ea5
+    measures:
+    - language_comprehension
+    - lexical_processing
     broader:
     - encoding
     description: This task involves the encoding phase of a memory experiment where
@@ -12738,6 +12865,10 @@ task:
   paired_associates_memory_encoding_cnp:
     label: Paired-Associates Memory Encoding (CNP)
     standard_code: paired_associates_memory_encoding_cnp
+    ca_id: trm_4c8991e6e8597
+    measures:
+    - association_learning
+    - semantic_working_memory
     broader:
     - encoding
     description: Participants encode pairs of stimuli for later memory retrieval,
@@ -12780,6 +12911,13 @@ task:
   incidental_encoding_posner_object_greeble:
     label: Incidental Encoding (Posner Cueing with Object/Greeble Judgment)
     standard_code: incidental_encoding_posner_object_greeble
+    ca_id: tsk_4a57abb949d17
+    measures:
+    - attention
+    - attention_shifting
+    - attentional_focusing
+    - involuntary_attention
+    - preattentive_processing
     broader:
     - encoding
     description: A task combining incidental memory encoding with a Posner cueing
@@ -13098,6 +13236,7 @@ task:
   object_memory_task:
     label: Object memory task
     standard_code: object_memory_task
+    ca_id: trm_4f2421c391b83
     broader:
     - episodic_memory
     description: Participants are presented with objects and later tested on their
@@ -13361,6 +13500,12 @@ task:
   semantic_mnemonic_similarity_task:
     label: Semantic Mnemonic Similarity Task
     standard_code: semantic_mnemonic_similarity_task
+    ca_id: trm_4b75ea4ddd896
+    measures:
+    - auditory_perception
+    - judgment
+    - set_shifting
+    - visual_search
     broader:
     - episodic_memory
     description: Participants perform a task designed to assess mnemonic discrimination
@@ -13525,6 +13670,9 @@ task:
   categorized_free_recall_variant_1:
     label: Categorized Free Recall (variant 1)
     standard_code: categorized_free_recall_variant_1
+    ca_id: trm_4f2411c91ae5e
+    measures:
+    - articulatory_loop
     broader:
     - memory_retrieval_general
     description: Participants perform a free recall task where word lists are organized
@@ -13699,6 +13847,10 @@ task:
   word_memory_task:
     label: Word Memory Task
     standard_code: word_memory_task
+    ca_id: trm_50f998dcbfcc8
+    measures:
+    - episodic_memory
+    - verbal_memory
     broader:
     - memory_retrieval_general
     description: A memory task designed to assess the recall or recognition of words.
@@ -14873,6 +15025,7 @@ task:
   semantic_memory:
     label: Semantic memory
     standard_code: semantic_memory
+    ca_id: trm_4f241c0737cc0
     broader:
     - memory_retrieval_general
     description: Task or condition related to the retrieval or processing of general
@@ -15052,6 +15205,7 @@ task:
   mental_imagery_test_phase:
     label: Mental imagery test phase
     standard_code: mental_imagery_test_phase
+    ca_id: trm_4f240edf92865
     broader:
     - memory_retrieval_general
     description: A test phase where participants are instructed to mentally imagine
@@ -15258,6 +15412,9 @@ task:
   face_memory_task:
     label: Face Memory Task
     standard_code: face_memory_task
+    ca_id: trm_50f99e56117fe
+    measures:
+    - face_recognition
     broader:
     - recognition
     - social_cognition
@@ -15632,6 +15789,10 @@ task:
   item_recognition_memory:
     label: Item recognition memory
     standard_code: item_recognition_memory
+    ca_id: tsk_4a57abb949d40
+    measures:
+    - explicit_memory
+    - working_memory_retrieval
     broader:
     - recognition
     description: A task requiring participants to identify previously encountered
@@ -15914,6 +16075,9 @@ task:
   offline_processing_associative_learning:
     label: Offline processing in associative learning
     standard_code: offline_processing_associative_learning
+    ca_id: trm_551efd39a74dd
+    measures:
+    - visual_perception
     broader:
     - associative
     description: This task investigates cognitive processing that occurs outside of
@@ -16157,6 +16321,7 @@ task:
   mnemonic_similarity_task:
     label: Mnemonic Similarity Task
     standard_code: mnemonic_similarity_task
+    ca_id: tsk_RXmB56vrYW66T
     broader:
     - associative
     description: A task designed to assess pattern separation and mnemonic discrimination
@@ -16242,6 +16407,9 @@ task:
   associative_learning_what_off:
     label: Associative learning (what, off condition)
     standard_code: associative_learning_what_off
+    ca_id: trm_4da88a2a63d97
+    measures:
+    - declarative_memory
     broader:
     - associative
     description: This condition represents the 'off' state for the 'what' component
@@ -16380,6 +16548,9 @@ task:
   semantic_conditioning:
     label: Semantic Conditioning
     standard_code: semantic_conditioning
+    ca_id: trm_4a3fd79d0b3d7
+    measures:
+    - association_learning
     broader:
     - associative
     description: A task involving the conditioning of responses to semantic stimuli.
@@ -16423,6 +16594,15 @@ task:
   deterministic_classification_learning:
     label: Deterministic classification learning
     standard_code: deterministic_classification_learning
+    ca_id: trm_4e8dd3831f0cc
+    measures:
+    - categorization
+    - error_detection
+    - reinforcement_learning
+    - response_execution
+    - response_selection
+    - visual_form_recognition
+    - visual_word_recognition
     broader:
     - associative
     description: Task where participants learn to classify stimuli based on deterministic
@@ -16610,6 +16790,7 @@ task:
   classification_learning_mixed_event_related_probe:
     label: Classification Learning (Mixed Event-Related Probe)
     standard_code: classification_learning_mixed_event_related_probe
+    ca_id: trm_4e8dd3dfd9fff
     broader:
     - associative
     description: A probe task embedded within a mixed event-related design, used to
@@ -16658,6 +16839,13 @@ task:
   pavlovian_conditioning:
     label: Pavlovian conditioning
     standard_code: pavlovian_conditioning
+    ca_id: trm_4c898acd1f28e
+    measures:
+    - association_learning
+    - automaticity
+    - instinct
+    - pavlovian_conditioning
+    - reinstatement
     broader:
     - associative
     description: A classical conditioning paradigm where a neutral stimulus becomes
@@ -16905,6 +17093,9 @@ task:
   california_verbal_learning_test:
     label: California Verbal Learning Test (CVLT)
     standard_code: california_verbal_learning_test
+    ca_id: trm_4da6331cdeeb5
+    measures:
+    - recall
     broader:
     - Autobiographical
     description: A standardized neuropsychological test assessing verbal learning
@@ -17042,6 +17233,10 @@ task:
   autobiographical_memory:
     label: Autobiographical Memory
     standard_code: autobiographical_memory
+    ca_id: trm_4f244d2a54e27
+    measures:
+    - autobiographical_memory
+    - autonoesis
     broader:
     - Autobiographical
     description: A task involving the recall of personal past experiences and events.
@@ -17180,6 +17375,10 @@ task:
   episodic_memory_task:
     label: Episodic Memory Task
     standard_code: episodic_memory_task
+    ca_id: trm_59ed1f7a0ac9c
+    measures:
+    - episodic_future_thinking
+    - episodic_simulation
     broader:
     - Autobiographical
     description: A task designed to investigate the neural mechanisms of episodic
@@ -17488,6 +17687,9 @@ task:
   alternating_serial_reaction_time:
     label: Alternating Serial Reaction Time (ASRT)
     standard_code: alternating_serial_reaction_time
+    ca_id: trm_4f241c735e7f6
+    measures:
+    - motor_learning
     broader:
     - temporal
     description: A task measuring implicit learning and reaction time by presenting
@@ -17536,6 +17738,10 @@ task:
   sequence_learning_six_target:
     label: Sequence Learning (6-target variant)
     standard_code: sequence_learning_six_target
+    ca_id: trm_4c8a83cac75f5
+    measures:
+    - motor_learning
+    - procedural_memory
     broader:
     - temporal
     description: A task designed to assess learning of a motor or cognitive sequence
@@ -17779,6 +17985,9 @@ task:
   temporal_community_structure_analysis:
     label: Temporal Community Structure Analysis
     standard_code: temporal_community_structure_analysis
+    ca_id: trm_5521752956bb2
+    measures:
+    - language
     broader:
     - temporal
     description: A task involving the analysis of neural representations related to
@@ -17981,6 +18190,7 @@ task:
   route_learning:
     label: Route learning
     standard_code: route_learning
+    ca_id: trm_58ab8a6131c5a
     broader:
     - spatial_memory_group
     description: A task designed to investigate the acquisition and recall of a specific
@@ -18027,6 +18237,7 @@ task:
   maze_navigation_task:
     label: Maze Navigation Task
     standard_code: maze_navigation_task
+    ca_id: trm_4f241173868a3
     broader:
     - spatial_memory_group
     description: Participants navigate through a maze, typically involving spatial
@@ -18419,6 +18630,10 @@ task:
   cognitive_tasks:
     label: cognitive tasks
     standard_code: cognitive_tasks
+    ca_id: trm_4af89b3a925ca
+    measures:
+    - mental_rotation
+    - spatial_ability
     broader: []
     description: An umbrella category for tasks that engage higher-order cognitive
       processes such as attention, working memory, executive function, decision-making,
@@ -18570,6 +18785,7 @@ task:
   letter_comparison:
     label: Letter comparison task
     standard_code: letter_comparison
+    ca_id: trm_4da86c8bb3b04
     broader:
     - attention_and_executive_control
     description: A cognitive task requiring participants to compare sets of letters
@@ -18618,6 +18834,13 @@ task:
   letter_set:
     label: Letter set task
     standard_code: letter_set
+    ca_id: trm_4c3e0a9576c3b
+    measures:
+    - active_maintenance
+    - auditory_working_memory
+    - divided_attention
+    - limited_capacity
+    - working_memory
     broader:
     - attention_and_executive_control
     description: A cognitive task where participants identify a letter that does not
@@ -18652,6 +18875,21 @@ task:
   dual_task_weather_prediction:
     label: Dual task (weather prediction)
     standard_code: dual_task_weather_prediction
+    ca_id: trm_4ebc98cc77e7b
+    measures:
+    - auditory_tone_discrimination
+    - categorization
+    - negative_feedback_processing
+    - numerical_comparison
+    - positive_feedback_processing
+    - reinforcement_learning
+    - response_execution
+    - response_selection
+    - updating
+    - visual_form_recognition
+    - visual_number_recognition
+    - visual_word_recognition
+    - working_memory
     broader:
     - attention_and_executive_control
     description: A dual-task paradigm combining a weather prediction task with another
@@ -18696,6 +18934,11 @@ task:
   dual_task:
     label: Dual task
     standard_code: dual_task
+    ca_id: trm_4da634216ebbc
+    measures:
+    - attention
+    - automaticity
+    - central_executive
     broader:
     - attention_and_executive_control
     description: A task requiring participants to perform two distinct tasks simultaneously
@@ -18742,6 +18985,7 @@ task:
   gradcpt_off_condition:
     label: gradCPT (off condition)
     standard_code: gradcpt_off_condition
+    ca_id: trm_57c0c34e61fdf
     broader:
     - attention_and_executive_control
     description: This refers to a specific 'off' or 'no-go' condition within the sustained
@@ -18852,6 +19096,7 @@ task:
   sustained_attention_gradcpt:
     label: Sustained attention (gradCPT)
     standard_code: sustained_attention_gradcpt
+    ca_id: trm_4da88a8e13f26
     broader:
     - attention_and_executive_control
     description: A continuous performance task (CPT) variant designed to measure sustained
@@ -18954,6 +19199,9 @@ task:
   cued_task_switching:
     label: Cued task switching
     standard_code: cued_task_switching
+    ca_id: trm_4f241614d4a25
+    measures:
+    - attention_shifting
     broader:
     - attention_and_executive_control
     description: A cognitive control task where participants switch between different
@@ -18997,6 +19245,10 @@ task:
   anti_saccade_task:
     label: Anti-Saccade Task
     standard_code: anti_saccade_task
+    ca_id: tsk_4a57abb949869
+    measures:
+    - cognitive_control
+    - overt_attention
     broader:
     - attention_and_executive_control
     description: A task requiring participants to inhibit a prepotent saccade towards
@@ -19038,6 +19290,15 @@ task:
   flanker_task_ern:
     label: Flanker task Error-Related Negativity
     standard_code: flanker_task_ern
+    ca_id: tsk_4a57abb949a4f
+    measures:
+    - error_detection
+    - resistance_to_distractor_inference
+    - response_conflict
+    - response_execution
+    - response_selection
+    - spatial_selective_attention
+    - visual_form_recognition
     broader:
     - attention_and_executive_control
     description: A task designed to elicit error-related negativity responses within
@@ -19082,6 +19343,15 @@ task:
   simon_task:
     label: Simon task
     standard_code: simon_task
+    ca_id: tsk_4a57abb949dbb
+    measures:
+    - cognitive_control
+    - error_detection
+    - response_conflict
+    - response_execution
+    - response_selection
+    - spatial_attention
+    - visual_color_discrimination
     broader:
     - attention_and_executive_control
     description: A cognitive task measuring interference effects, typically involving
@@ -19123,6 +19393,11 @@ task:
   go_no_go_a:
     label: Go/No-Go Task (variant A)
     standard_code: go_no_go_a
+    ca_id: tsk_4a57abb949a93
+    measures:
+    - behavioral_inhibition_cognitive
+    - inhibition
+    - response_inhibition
     broader:
     - attention_and_executive_control
     description: Participants perform a Go/No-Go task, which assesses response inhibition
@@ -19219,6 +19494,16 @@ task:
   stop_signal_task:
     label: Stop Signal Task
     standard_code: stop_signal_task
+    ca_id: tsk_4a57abb949e1a
+    measures:
+    - auditory_tone_detection
+    - error_detection
+    - oddball_detection
+    - proactive_control
+    - response_execution
+    - response_inhibition
+    - response_selection
+    - visual_form_recognition
     broader:
     - attention_and_executive_control
     description: Participants are instructed to respond quickly to a go signal but
@@ -19280,6 +19565,7 @@ task:
   digit_symbol_substitution:
     label: Digit Symbol Substitution Test
     standard_code: digit_symbol_substitution
+    ca_id: tsk_4a57abb949e44
     broader:
     - attention_and_executive_control
     description: A cognitive task measuring processing speed, working memory, and
@@ -19326,6 +19612,7 @@ task:
   dimension_discrimination:
     label: Dimension discrimination task
     standard_code: dimension_discrimination
+    ca_id: trm_553fc63a54ae6
     broader:
     - attention_and_executive_control
     description: A task requiring participants to discriminate between different stimulus
@@ -19416,6 +19703,13 @@ task:
   classification_probe_no_feedback:
     label: Classification probe (no feedback)
     standard_code: classification_probe_no_feedback
+    ca_id: trm_4ebc9d2e397f2
+    measures:
+    - categorization
+    - color_recognition
+    - response_execution
+    - response_selection
+    - visual_form_recognition
     broader:
     - attention_and_executive_control
     description: A task where participants classify stimuli without receiving feedback
@@ -19569,6 +19863,13 @@ task:
   gaze_fixation_attention_center:
     label: Gaze fixation and attention (center)
     standard_code: gaze_fixation_attention_center
+    ca_id: trm_4c898f72228f3
+    measures:
+    - attention_span
+    - attentional_focusing
+    - focused_attention
+    - gaze
+    - visual_attention
     broader:
     - attention_and_executive_control
     description: A task requiring participants to fixate their gaze on the center
@@ -19814,6 +20115,9 @@ task:
   attended_speaker_own_name_ignored:
     label: Attended speaker paradigm (own name in ignored stream)
     standard_code: attended_speaker_own_name_ignored
+    ca_id: trm_551f06a08dcc4
+    measures:
+    - attention
     broader:
     - attention_and_executive_control
     - auditory_perception
@@ -19903,6 +20207,9 @@ task:
   auditory_visual_shift:
     label: Auditory-visual shift
     standard_code: auditory_visual_shift
+    ca_id: trm_5696c3fa0061a
+    measures:
+    - reinforcement_learning
     broader:
     - attention_and_executive_control
     description: A task involving a shift in attention or processing between auditory
@@ -19995,6 +20302,10 @@ task:
   conjunction_selective_attention:
     label: Conjunction selective attention
     standard_code: conjunction_selective_attention
+    ca_id: tsk_4a57abb949d76
+    measures:
+    - divided_attention
+    - inhibition
     broader:
     - attention_and_executive_control
     description: A task involving selective attention to conjunctions of features,
@@ -20088,6 +20399,7 @@ task:
   enumeration_task_ibc:
     label: Enumeration task (IBC)
     standard_code: enumeration_task_ibc
+    ca_id: tsk_wiCMUNujvVRCR
     broader:
     - attention_and_executive_control
     description: This task involves counting or listing items, as part of the IBC
@@ -20536,6 +20848,7 @@ task:
   multiplication_task:
     label: Multiplication task
     standard_code: multiplication_task
+    ca_id: trm_5696c2c063222
     broader:
     - attention_and_executive_control
     description: A cognitive task involving arithmetic multiplication operations.
@@ -20671,6 +20984,14 @@ task:
   oddball_task:
     label: Oddball task
     standard_code: oddball_task
+    ca_id: tsk_4a57abb949bf6
+    measures:
+    - auditory_perception
+    - auditory_tone_discrimination
+    - oddball_detection
+    - right_finger_response_execution
+    - visual_color_discrimination
+    - visual_form_discrimination
     broader:
     - attention_and_executive_control
     description: Participants detect infrequent target stimuli embedded within a sequence
@@ -20814,6 +21135,7 @@ task:
   probe_task:
     label: Probe task
     standard_code: probe_task
+    ca_id: trm_50df0d8dc717b
     broader:
     - attention_and_executive_control
     description: A task phase involving the presentation of probe stimuli to test
@@ -20865,6 +21187,11 @@ task:
   rapid_serial_visual_presentation:
     label: Rapid Serial Visual Presentation (RSVP)
     standard_code: rapid_serial_visual_presentation
+    ca_id: tsk_4a57abb949879
+    measures:
+    - inhibition_of_return
+    - visual_awareness
+    - visual_masking
     broader:
     - attention_and_executive_control
     description: A visual attention paradigm where stimuli are presented rapidly in
@@ -20950,6 +21277,7 @@ task:
   stimulus_response_mapping:
     label: Stimulus-Response Mapping
     standard_code: stimulus_response_mapping
+    ca_id: trm_4da88b3b0cbcc
     broader:
     - attention_and_executive_control
     description: Participants learn or perform actions based on specific stimulus-response
@@ -21000,6 +21328,17 @@ task:
   single_task_weather_prediction:
     label: Single-task weather prediction
     standard_code: single_task_weather_prediction
+    ca_id: trm_4ebc728326a13
+    measures:
+    - auditory_tone_perception
+    - categorization
+    - negative_feedback_processing
+    - positive_feedback_processing
+    - reinforcement_learning
+    - response_execution
+    - response_selection
+    - visual_form_recognition
+    - visual_word_recognition
     broader:
     - attention_and_executive_control
     description: A probabilistic classification learning task where participants predict
@@ -21223,6 +21562,9 @@ task:
   transitive_inference_task:
     label: Transitive Inference Task
     standard_code: transitive_inference_task
+    ca_id: trm_551f1491a2fe8
+    measures:
+    - declarative_memory
     broader:
     - attention_and_executive_control
     description: A task assessing deductive reasoning by requiring participants to
@@ -21298,6 +21640,7 @@ task:
   violation_of_expectation:
     label: Violation of Expectation
     standard_code: violation_of_expectation
+    ca_id: tsk_2lU25qYLrwkfj
     broader:
     - attention_and_executive_control
     description: A task designed to elicit responses to unexpected psychological or
@@ -21583,6 +21926,10 @@ task:
   illusion_of_agency_electrically_actuated:
     label: Illusion of Agency (electrically-actuated movements)
     standard_code: illusion_of_agency_electrically_actuated
+    ca_id: trm_4e5bb14d814a8
+    measures:
+    - sense_of_body_ownership
+    - sense_of_ownership
     broader:
     - attention_and_executive_control
     description: Tasks designed to induce and measure the illusion of agency over
@@ -21679,6 +22026,9 @@ task:
   analogical_reasoning:
     label: Analogical Reasoning
     standard_code: analogical_reasoning
+    ca_id: trm_4f244f0286947
+    measures:
+    - semantic_memory
     broader:
     - attention_and_executive_control
     description: A cognitive task requiring participants to identify relationships
@@ -21723,6 +22073,7 @@ task:
   anticipation_task:
     label: Anticipation Task
     standard_code: anticipation_task
+    ca_id: trm_4da88c5302e06
     broader:
     - attention_and_executive_control
     description: A task designed to study the neural processes involved in anticipating
@@ -21824,6 +22175,7 @@ task:
   advanced_progressive_matrices:
     label: Advanced Progressive Matrices (APM)
     standard_code: advanced_progressive_matrices
+    ca_id: trm_4f24211a03b07
     broader:
     - attention_and_executive_control
     description: A non-verbal test of intelligence and abstract reasoning, often used
@@ -21874,6 +22226,7 @@ task:
   arithmetic_task:
     label: Arithmetic Task
     standard_code: arithmetic_task
+    ca_id: trm_4f24179122380
     broader:
     - attention_and_executive_control
     description: A cognitive task involving mathematical calculations or problem-solving.
@@ -22204,6 +22557,13 @@ task:
   audiovisual_attention:
     label: Audiovisual Attention
     standard_code: audiovisual_attention
+    ca_id: trm_4c8a84f20dde2
+    measures:
+    - attention_shifting
+    - inattentional_blindness
+    - visual_attention
+    - visual_search
+    - visual_working_memory
     broader:
     - attention_and_executive_control
     description: A task involving the allocation of attention to stimuli presented
@@ -22302,6 +22662,20 @@ task:
   balloon_analog_risk_task:
     label: Balloon Analog Risk Task
     standard_code: balloon_analog_risk_task
+    ca_id: trm_4d559bcd67c18
+    measures:
+    - decision_under_uncertainty
+    - feedback_processing
+    - loss_anticipation
+    - punishment_processing
+    - response_execution
+    - response_selection
+    - reward_anticipation
+    - risk
+    - risk_aversion
+    - risk_seeking
+    - task_difficulty
+    - visual_object_detection
     broader:
     - attention_and_executive_control
     - gambling_risk
@@ -22398,6 +22772,9 @@ task:
   categorization_task:
     label: Categorization task
     standard_code: categorization_task
+    ca_id: trm_4f24112057e90
+    measures:
+    - auditory_perception
     broader:
     - attention_and_executive_control
     description: A task involving classifying stimuli or information into predefined
@@ -22529,6 +22906,7 @@ task:
   p300_flashing_combined:
     label: P300 Flashing (Combined Paradigm)
     standard_code: p300_flashing_combined
+    ca_id: trm_4c898f8f297ac
     broader:
     - attention_and_executive_control
     description: A P300 flashing paradigm that combines different elements or conditions
@@ -22743,6 +23121,9 @@ task:
   deviant_detection_task:
     label: Deviant detection task
     standard_code: deviant_detection_task
+    ca_id: trm_5519c2d8d7b1d
+    measures:
+    - auditory_perception
     broader:
     - attention_and_executive_control
     description: Task requiring the identification of infrequent or unexpected stimuli
@@ -22889,6 +23270,10 @@ task:
   decision_time_selection_task:
     label: Decision-Time Selection Task
     standard_code: decision_time_selection_task
+    ca_id: trm_4f2449bdcb0b1
+    measures:
+    - attention
+    - logical_reasoning
     broader:
     - attention_and_executive_control
     description: Participants perform a task involving evidence accumulation to select
@@ -23081,6 +23466,7 @@ task:
   expectation_task:
     label: Expectation task
     standard_code: expectation_task
+    ca_id: tsk_kQEU3vjgDNcJP
     broader:
     - attention_and_executive_control
     description: A task designed to investigate the effects of expectation on perception
@@ -23552,6 +23938,10 @@ task:
   inductive_reasoning:
     label: Inductive Reasoning
     standard_code: inductive_reasoning
+    ca_id: trm_4d8a48e403c78
+    measures:
+    - inductive_reasoning
+    - reasoning
     broader:
     - attention_and_executive_control
     description: A cognitive task that involves forming generalizations or hypotheses
@@ -24386,6 +24776,10 @@ task:
   information_parsing_task:
     label: Information Parsing Task
     standard_code: information_parsing_task
+    ca_id: trm_50f73d557c967
+    measures:
+    - decision_making
+    - impulsivity
     broader:
     - attention_and_executive_control
     description: Participants process and interpret complex information to make reasoning
@@ -24476,6 +24870,7 @@ task:
   picture_matching_task:
     label: Picture Matching Task
     standard_code: picture_matching_task
+    ca_id: trm_4f241e8a01052
     broader:
     - attention_and_executive_control
     description: Participants are presented with pictures and asked to match them
@@ -24566,6 +24961,17 @@ task:
   probabilistic_classification_learning:
     label: Probabilistic classification learning
     standard_code: probabilistic_classification_learning
+    ca_id: trm_4cacf22a22d80
+    measures:
+    - categorization
+    - error_detection
+    - negative_feedback_processing
+    - positive_feedback_processing
+    - reinforcement_learning
+    - response_execution
+    - response_selection
+    - visual_form_recognition
+    - visual_word_recognition
     broader:
     - attention_and_executive_control
     description: A learning task where participants classify stimuli based on probabilistic
@@ -24875,6 +25281,10 @@ task:
   simple_reaction_time:
     label: Simple Reaction Time
     standard_code: simple_reaction_time
+    ca_id: tsk_4a57abb949dc8
+    measures:
+    - motor_control
+    - processing_speed
     broader:
     - attention_and_executive_control
     description: Participants respond as quickly as possible to a single stimulus.
@@ -24976,6 +25386,7 @@ task:
   soccer_decision_making:
     label: Soccer Decision-Making Task
     standard_code: soccer_decision_making
+    ca_id: tsk_Ncknr0soiM4IV
     broader:
     - attention_and_executive_control
     description: Participants engage in a task involving creative decision-making
@@ -25254,6 +25665,14 @@ task:
   tone_counting_task:
     label: Tone counting task
     standard_code: tone_counting_task
+    ca_id: trm_4ebc6a6b75ebf
+    measures:
+    - auditory_tone_discrimination
+    - response_selection
+    - visual_number_recognition
+    - working_memory
+    - working_memory_maintenance
+    - working_memory_updating
     broader:
     - attention_and_executive_control
     - auditory_perception
@@ -25496,6 +25915,7 @@ task:
   standing_sitting_motor_imagery:
     label: Standing and Sitting Motor Imagery
     standard_code: standing_sitting_motor_imagery
+    ca_id: trm_56a2abffcfae3
     broader:
     - motor_somasensory
     description: Participants perform motor imagery related to the actions of standing
@@ -26082,6 +26502,7 @@ task:
   somatosensory_task:
     label: Somatosensory task
     standard_code: somatosensory_task
+    ca_id: trm_551b17b190582
     broader:
     - motor_somasensory
     description: A task involving the processing or perception of somatosensory stimuli.
@@ -26428,6 +26849,11 @@ task:
   finger_tapping_task:
     label: Finger Tapping Task
     standard_code: finger_tapping_task
+    ca_id: trm_4c898f079d05e
+    measures:
+    - motor_control
+    - motor_planning
+    - rhythm
     broader:
     - motor_somasensory
     description: A motor task involving repetitive tapping of fingers, often used
@@ -27628,6 +28054,9 @@ task:
   percentage_force_exertion_task:
     label: Percentage Force Exertion Task
     standard_code: percentage_force_exertion_task
+    ca_id: trm_4c8990480ad0f
+    measures:
+    - motor_control
     broader:
     - motor_somasensory
     description: A motor task requiring participants to exert a specific percentage
@@ -29551,6 +29980,10 @@ task:
   drawing_task:
     label: Drawing Task
     standard_code: drawing_task
+    ca_id: trm_4c898be57fcbc
+    measures:
+    - motor_control
+    - visual_perception
     broader:
     - motor_somasensory
     description: Participants perform drawing actions, often related to visual production
@@ -29878,6 +30311,10 @@ task:
   tool_grasping_task:
     label: Tool Grasping Task
     standard_code: tool_grasping_task
+    ca_id: trm_4c898ff0bea97
+    measures:
+    - motor_control
+    - motor_planning
     broader:
     - motor_somasensory
     description: A motor task where participants perform grasping actions on 3D tools,
@@ -31949,6 +32386,9 @@ task:
   visual_guided_saccade:
     label: Visual Guided Saccade
     standard_code: visual_guided_saccade
+    ca_id: trm_4f24108555294
+    measures:
+    - visual_perception
     broader:
     - motor_somasensory
     description: An oculomotor task where participants make rapid eye movements (saccades)
@@ -32188,6 +32628,10 @@ task:
   word_reading_semantic:
     label: Word reading (semantic)
     standard_code: word_reading_semantic
+    ca_id: trm_4c8a82eeaa58f
+    measures:
+    - reading
+    - visual_perception
     broader:
     - language_speech
     description: A word reading task focusing on semantic processing, used as a localizer
@@ -32240,6 +32684,7 @@ task:
   word_reading_phonological:
     label: Word reading (phonological)
     standard_code: word_reading_phonological
+    ca_id: trm_4f241b751c5a0
     broader:
     - language_speech
     - auditory_perception
@@ -32289,6 +32734,11 @@ task:
   picture_naming_task:
     label: Picture Naming Task
     standard_code: picture_naming_task
+    ca_id: tsk_4a57abb949cfb
+    measures:
+    - object_recognition
+    - semantic_memory
+    - visual_object_recognition
     broader:
     - language_speech
     description: A task where participants are shown images of objects or scenes and
@@ -32336,6 +32786,10 @@ task:
   phonological_processing:
     label: Phonological Processing
     standard_code: phonological_processing
+    ca_id: trm_526027c99b726
+    measures:
+    - phonological_encoding
+    - phonological_working_memory
     broader:
     - language_speech
     - auditory_perception
@@ -32719,6 +33173,7 @@ task:
   language_localizer:
     label: Language localizer
     standard_code: language_localizer
+    ca_id: trm_558c35979a284
     broader:
     - language_speech
     description: A task designed to functionally localize brain regions involved in
@@ -32825,6 +33280,7 @@ task:
   silent_reading:
     label: Silent Reading
     standard_code: silent_reading
+    ca_id: trm_4c8a82ba8a538
     broader:
     - language_speech
     description: A task where participants read text silently for comprehension without
@@ -33192,6 +33648,7 @@ task:
   verb_generation_general:
     label: Verb generation
     standard_code: verb_generation_general
+    ca_id: trm_4f24183fe80c6
     broader:
     - language_speech
     description: A language task where participants generate verbs in response to
@@ -33413,6 +33870,11 @@ task:
   overt_word_repetition:
     label: Overt Word Repetition
     standard_code: overt_word_repetition
+    ca_id: trm_534690b0e9dc5
+    measures:
+    - active_maintenance
+    - articulatory_rehearsal
+    - speech_production
     broader:
     - language_speech
     description: Participants overtly repeat presented words.
@@ -33510,6 +33972,7 @@ task:
   covert_verb_generation:
     label: Covert verb generation
     standard_code: covert_verb_generation
+    ca_id: trm_5346927710e88
     broader:
     - language_speech
     - auditory_perception
@@ -33650,6 +34113,10 @@ task:
   lexical_decision_task:
     label: Lexical Decision Task
     standard_code: lexical_decision_task
+    ca_id: tsk_4a57abb949b38
+    measures:
+    - lexical_access
+    - memory_retrieval
     broader:
     - language_speech
     description: A task where participants decide if a presented string of letters
@@ -34222,6 +34689,9 @@ task:
   auditory_spelling_processing:
     label: Auditory spelling processing
     standard_code: auditory_spelling_processing
+    ca_id: trm_4f24135453d65
+    measures:
+    - phonological_awareness
     broader:
     - language_speech
     - auditory_perception
@@ -34267,6 +34737,10 @@ task:
   imagined_speech:
     label: Imagined Speech
     standard_code: imagined_speech
+    ca_id: trm_4c89903149aeb
+    measures:
+    - cognitive_development
+    - mental_representation
     broader:
     - language_speech
     description: A task involving the mental simulation of speaking words or phrases
@@ -35109,6 +35583,9 @@ task:
   semantic_categorization:
     label: Semantic categorization
     standard_code: semantic_categorization
+    ca_id: trm_4f2412d4c3b88
+    measures:
+    - language
     broader:
     - language_speech
     description: Participants classify items into semantic categories.
@@ -35158,6 +35635,7 @@ task:
   semantic_fluency:
     label: Semantic fluency
     standard_code: semantic_fluency
+    ca_id: trm_4f241bd52b509
     broader:
     - language_speech
     description: Participants generate words belonging to a specific semantic category
@@ -35249,6 +35727,7 @@ task:
   verbal_fluency_task:
     label: Verbal fluency task
     standard_code: verbal_fluency_task
+    ca_id: trm_4f240f1c740da
     broader:
     - language_speech
     - auditory_perception
@@ -35438,6 +35917,7 @@ task:
   abstract_concrete_judgment:
     label: Abstract/concrete judgment
     standard_code: abstract_concrete_judgment
+    ca_id: trm_4f24126c22011
     broader:
     - language_speech
     description: Participants make judgments about whether concepts or words are abstract
@@ -36241,6 +36721,7 @@ task:
   visual_orthographic_processing:
     label: Visual Orthographic Processing
     standard_code: visual_orthographic_processing
+    ca_id: trm_4f24250e0137e
     broader:
     - language_speech
     description: A task involving the processing of graphemes to investigate orthographic
@@ -37155,6 +37636,14 @@ task:
   rhyme_judgment_task:
     label: Rhyme Judgment Task
     standard_code: rhyme_judgment_task
+    ca_id: trm_4d949c5b0e380
+    measures:
+    - lexical_retrieval
+    - phonological_assembly
+    - phonological_comparison
+    - phonological_working_memory
+    - visual_pseudoword_recognition
+    - visual_word_recognition
     broader:
     - language_speech
     description: A task where participants decide if two presented stimuli rhyme.
@@ -37295,6 +37784,7 @@ task:
   sentence_semantic_syntactic_violation_detection:
     label: Sentence semantic and syntactic violation detection
     standard_code: sentence_semantic_syntactic_violation_detection
+    ca_id: trm_4f244a453522b
     broader:
     - language_speech
     description: Task designed to assess sensitivity to violations in semantic meaning
@@ -38034,6 +38524,11 @@ task:
   peaky_snr_speech_masking:
     label: Peaky SNR speech masking
     standard_code: peaky_snr_speech_masking
+    ca_id: trm_4a3fd79d09b6d
+    measures:
+    - unconscious_perception
+    - visual_awareness
+    - visual_perception
     broader:
     - sensory_and_perception
     - auditory_perception
@@ -38134,6 +38629,10 @@ task:
   thermal_stimulation:
     label: Thermal Stimulation
     standard_code: thermal_stimulation
+    ca_id: trm_4c89910b7f8bc
+    measures:
+    - somatosensation
+    - thermosensation
     broader:
     - sensory_and_perception
     description: A task or condition involving the application of heat or cold stimuli
@@ -38515,6 +39014,12 @@ task:
   random_dot_motion_perception:
     label: Random dot motion perception
     standard_code: random_dot_motion_perception
+    ca_id: trm_4f244ad7dcde7
+    measures:
+    - context_representation
+    - figure_ground_segregation
+    - monetary_reward_prediction_error
+    - response_bias
     broader:
     - sensory_and_perception
     description: A visual perception task using random dot motion stimuli to study
@@ -39457,6 +39962,11 @@ task:
   visual_search:
     label: Visual Search
     standard_code: visual_search
+    ca_id: trm_4f2447fe67fb9
+    measures:
+    - attention
+    - attentional_bias
+    - gestalt_grouping
     broader:
     - sensory_and_perception
     description: Task requiring participants to locate a target stimulus among distractors
@@ -39735,6 +40245,9 @@ task:
   biological_motion_task:
     label: Biological motion task
     standard_code: biological_motion_task
+    ca_id: trm_4f245326e2eaf
+    measures:
+    - visual_perception
     broader:
     - sensory_and_perception
     description: Participants observe and process visual stimuli depicting biological
@@ -39883,6 +40396,9 @@ task:
   retinotopy:
     label: Retinotopy
     standard_code: retinotopy
+    ca_id: trm_551b0fd03d7d8
+    measures:
+    - visual_perception
     broader:
     - sensory_and_perception
     description: A task designed to map the visual field onto the visual cortex.
@@ -40484,6 +41000,7 @@ task:
   contextual_trajectory_paradigm:
     label: Contextual trajectory paradigm
     standard_code: contextual_trajectory_paradigm
+    ca_id: tsk_3ICXMd8R3ekcb
     broader:
     - sensory_and_perception
     description: A visual task involving the perception of trajectories influenced
@@ -41097,6 +41614,10 @@ task:
   illusion_game_task:
     label: Illusion game task
     standard_code: illusion_game_task
+    ca_id: tsk_4a57abb949b46
+    measures:
+    - conditional_reasoning
+    - logical_reasoning
     broader:
     - sensory_and_perception
     description: A task involving an illusion game, likely used to study perception
@@ -41675,6 +42196,7 @@ task:
   orientation_imagery:
     label: Orientation imagery
     standard_code: orientation_imagery
+    ca_id: trm_5798d7ba0197d
     broader:
     - sensory_and_perception
     description: Participants mentally imagine objects or body parts in different
@@ -42013,6 +42535,10 @@ task:
   rotation_task:
     label: Rotation task
     standard_code: rotation_task
+    ca_id: trm_4c8990810541d
+    measures:
+    - mental_rotation
+    - spatial_ability
     broader:
     - sensory_and_perception
     description: A task involving the perception or execution of rotational movements,
@@ -43502,6 +44028,12 @@ task:
   detection_task:
     label: Detection task
     standard_code: detection_task
+    ca_id: tsk_4a57abb949889
+    measures:
+    - audiovisual_perception
+    - conjunction_search
+    - selective_attention
+    - serial_search
     broader:
     - sensory_and_perception
     description: Task requiring participants to identify the presence or absence of
@@ -44296,6 +44828,10 @@ task:
   face_object_perception:
     label: Face and object perception
     standard_code: face_object_perception
+    ca_id: trm_551b0ee81fb6b
+    measures:
+    - auditory_perception
+    - visual_perception
     broader:
     - sensory_and_perception
     - social_cognition
@@ -44465,6 +45001,10 @@ task:
   habituation_task:
     label: Habituation Task
     standard_code: habituation_task
+    ca_id: trm_4e5662373bc89
+    measures:
+    - pain_habituation
+    - pain_sensitization
     broader:
     - sensory_and_perception
     description: A task designed to study the process of habituation, often in the
@@ -44503,6 +45043,7 @@ task:
   half_field_checkerboard_stimulation:
     label: Half-Field Checkerboard Visual Stimulation
     standard_code: half_field_checkerboard_stimulation
+    ca_id: trm_586fd45d1bd21
     broader:
     - sensory_and_perception
     description: Visual stimulation using a checkerboard pattern presented in a half-field,
@@ -47478,6 +48019,10 @@ task:
   reversal_learning_task:
     label: Reversal learning task
     standard_code: reversal_learning_task
+    ca_id: tsk_4a57abb949d4e
+    measures:
+    - analogical_reasoning
+    - instrumental_learning
     broader:
     - social_emotional_reward
     description: A task where previously learned stimulus-response contingencies or
@@ -47526,6 +48071,7 @@ task:
   weather_prediction_reversal_learning:
     label: Weather prediction reversal learning
     standard_code: weather_prediction_reversal_learning
+    ca_id: trm_5181fb7bf350b
     broader:
     - social_emotional_reward
     description: A task where participants learn to predict weather outcomes based
@@ -47942,6 +48488,7 @@ task:
   emotion_evaluation_task:
     label: Emotion Evaluation Task
     standard_code: emotion_evaluation_task
+    ca_id: trm_56bbea82c12bb
     broader:
     - social_emotional_reward
     - social_cognition
@@ -48283,6 +48830,10 @@ task:
   voluntary_task_switching_reward:
     label: Voluntary Task Switching (reward)
     standard_code: voluntary_task_switching_reward
+    ca_id: tsk_4a57abb949e8a
+    measures:
+    - attention_shifting
+    - set_shifting
     broader:
     - social_emotional_reward
     - gambling_risk
@@ -48382,6 +48933,9 @@ task:
   food_choice_task:
     label: Food Choice Task
     standard_code: food_choice_task
+    ca_id: trm_55c686e0824e8
+    measures:
+    - high_energy_density_food_recognition
     broader:
     - social_emotional_reward
     description: A decision-making task where participants make choices related to
@@ -48427,6 +48981,7 @@ task:
   risky_decision_making:
     label: Risky Decision Making
     standard_code: risky_decision_making
+    ca_id: tsk_d9vPgovlo7aJU
     broader:
     - social_emotional_reward
     - gambling_risk
@@ -48479,6 +49034,9 @@ task:
   probabilistic_selection_task:
     label: Probabilistic Selection Task
     standard_code: probabilistic_selection_task
+    ca_id: trm_5667483dcc371
+    measures:
+    - reward_learning
     broader:
     - social_emotional_reward
     description: A task assessing learning and decision-making based on probabilistic
@@ -48519,6 +49077,7 @@ task:
   three_armed_bandit_task:
     label: Three-Armed Bandit Task
     standard_code: three_armed_bandit_task
+    ca_id: trm_5696b180169bd
     broader:
     - social_emotional_reward
     description: Participants choose between three options with varying reward probabilities
@@ -48970,6 +49529,10 @@ task:
   interview_task:
     label: Interview Task
     standard_code: interview_task
+    ca_id: tsk_5UPYiqtoX3yUf
+    measures:
+    - future_time
+    - time_orientation
     broader:
     - social_emotional_reward
     - auditory_perception
@@ -49101,6 +49664,7 @@ task:
   hcp_gambling_task:
     label: HCP Gambling task
     standard_code: hcp_gambling_task
+    ca_id: trm_4f24496a80587
     broader:
     - social_emotional_reward
     - gambling_risk
@@ -49191,6 +49755,7 @@ task:
   monetary_incentive_delay_task:
     label: Monetary Incentive Delay Task
     standard_code: monetary_incentive_delay_task
+    ca_id: trm_4f23fc8c42d28
     broader:
     - social_emotional_reward
     - gambling_risk
@@ -49255,6 +49820,14 @@ task:
   delay_discounting_task:
     label: Delay discounting task
     standard_code: delay_discounting_task
+    ca_id: tsk_4a57abb949e98
+    measures:
+    - delay_discounting
+    - intertemporal_choice
+    - response_execution
+    - response_selection
+    - subjective_value_judgment
+    - visual_number_recognition
     broader:
     - social_emotional_reward
     - gambling_risk
@@ -49306,6 +49879,7 @@ task:
   trust_game:
     label: Trust game
     standard_code: trust_game
+    ca_id: tsk_uzol7erTzr9Ix
     broader:
     - social_emotional_reward
     - economic_games
@@ -49400,6 +49974,7 @@ task:
   ultimatum_game:
     label: Ultimatum Game
     standard_code: ultimatum_game
+    ca_id: trm_553e8882e3cb6
     broader:
     - social_emotional_reward
     - economic_games
@@ -50015,6 +50590,7 @@ task:
   empathy_task:
     label: Empathy task
     standard_code: empathy_task
+    ca_id: tsk_tlatUto2tMCYC
     broader:
     - social_emotional_reward
     - social_cognition
@@ -50114,6 +50690,7 @@ task:
   cyberball_task:
     label: Cyberball task
     standard_code: cyberball_task
+    ca_id: trm_4f24189031a4a
     broader:
     - social_emotional_reward
     description: A virtual ball-tossing game used to induce feelings of social inclusion
@@ -50173,6 +50750,9 @@ task:
   theory_of_mind_false_belief:
     label: Theory of Mind (false belief)
     standard_code: theory_of_mind_false_belief
+    ca_id: trm_4f2456027809f
+    measures:
+    - theory_of_mind
     broader:
     - social_emotional_reward
     - social_cognition
@@ -50540,6 +51120,11 @@ task:
   columbia_card_task:
     label: Columbia Card Task
     standard_code: columbia_card_task
+    ca_id: trm_5667492c555b7
+    measures:
+    - decision_making
+    - performance_monitoring
+    - risk_processing
     broader:
     - social_emotional_reward
     description: A risk-taking task where participants make decisions about drawing
@@ -51072,6 +51657,7 @@ task:
   moral_dilemma:
     label: Moral Dilemma Task
     standard_code: moral_dilemma
+    ca_id: trm_57ebe6583f52d
     broader:
     - social_emotional_reward
     - social_cognition
@@ -51679,6 +52265,14 @@ task:
   social_observation:
     label: Social observation
     standard_code: social_observation
+    ca_id: trm_4da891a546d8c
+    measures:
+    - communication
+    - empathy
+    - imagination
+    - language_comprehension
+    - restricted_behavior
+    - social_intelligence
     broader:
     - social_emotional_reward
     - social_cognition
@@ -52190,6 +52784,10 @@ task:
   deception_task:
     label: Deception task
     standard_code: deception_task
+    ca_id: trm_4c898b4b463aa
+    measures:
+    - deception
+    - theory_of_mind
     broader:
     - social_emotional_reward
     description: Task designed to investigate the neural correlates of lying or detecting
@@ -52289,6 +52887,15 @@ task:
   doors_task:
     label: Doors Task
     standard_code: doors_task
+    ca_id: tsk_4a57abb949a33
+    measures:
+    - forgetting
+    - iconic_memory
+    - recall
+    - recognition
+    - short_term_memory
+    - verbal_memory
+    - visual_memory
     broader:
     - social_emotional_reward
     description: Participants make choices, often involving risk or reward, presented
@@ -53244,6 +53851,18 @@ task:
   mixed_gambles_task:
     label: Mixed-Gambles Task
     standard_code: mixed_gambles_task
+    ca_id: trm_4cacee4a1d875
+    measures:
+    - confidence_judgment
+    - decision_certainty
+    - economic_value_processing
+    - numerical_scale_judgment
+    - potential_monetary_loss
+    - potential_monetary_reward
+    - response_execution
+    - response_selection
+    - risk_processing
+    - visual_number_recognition
     broader:
     - social_emotional_reward
     - gambling_risk
@@ -54023,6 +54642,7 @@ task:
   social_judgment_task:
     label: Social Judgment Task
     standard_code: social_judgment_task
+    ca_id: trm_4f2453ce33f16
     broader:
     - social_emotional_reward
     - social_cognition
@@ -54449,6 +55069,11 @@ task:
   meditation_general:
     label: Meditation
     standard_code: meditation_general
+    ca_id: trm_4fb4175126374
+    measures:
+    - anxiety
+    - attentional_focusing
+    - emotion
     broader:
     - physiological_neurostimulation
     description: A general category for tasks involving meditation practices or states.
@@ -55383,6 +56008,7 @@ task:
   optogenetic_stimulation_100hz:
     label: Optogenetic stimulation (100 Hz)
     standard_code: optogenetic_stimulation_100hz
+    ca_id: tsk_pmvG0R2l7APPE
     broader:
     - physiological_neurostimulation
     description: This task involves optogenetic stimulation applied at a frequency
@@ -55834,6 +56460,9 @@ task:
   electrical_stimulation:
     label: Electrical stimulation
     standard_code: electrical_stimulation
+    ca_id: trm_4e68e08950157
+    measures:
+    - pain
     broader:
     - physiological_neurostimulation
     - neuromodulation
