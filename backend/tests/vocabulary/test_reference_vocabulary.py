@@ -100,8 +100,7 @@ def test_rasmussen_finds_no_author() -> None:
 # ── A disease name is not a person ────────────────────────────────────────────
 
 def _plan(authors, summary="Datasets by an author named X."):
-    return pp.QueryPlan(query_family=pp.QueryFamily.AUTHOR_QUERY,
-                        natural_language_summary=summary, author_names=list(authors))
+    return pp.QueryPlan(natural_language_summary=summary, author_names=list(authors))
 
 
 @pytest.fixture(scope="module")
@@ -114,7 +113,6 @@ def test_bare_disease_name_becomes_the_diagnosis(names: MetadataRetriever) -> No
     pp._names_that_are_conditions(plan, "rasmussen", names)
     assert plan.author_names == []
     assert plan.groups[0].diagnosis_terms == ["rasmussen"]
-    assert plan.query_family == pp.QueryFamily.CONCEPT_QUERY
     assert "author named" not in plan.natural_language_summary
     assert "Rasmussen syndrome" in plan.natural_language_summary
 
@@ -158,7 +156,6 @@ def test_bare_task_name_becomes_a_scan_term(names: MetadataRetriever) -> None:
     pp._names_that_are_conditions(plan, "iowa gambling task", names)
     assert plan.author_names == []
     assert plan.scan_requirements[0].scan_terms == ["Iowa gambling task"]
-    assert plan.query_family == pp.QueryFamily.SCAN_FILTER
 
 
 def test_reference_files_are_part_of_the_pipeline_version() -> None:

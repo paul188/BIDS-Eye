@@ -36,6 +36,7 @@ from services.translate.sql_rewriter import finish_corrected_sql as _finish_corr
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
 from services.translate import optional_columns as _optional_columns  # noqa: E402
+from services.translate.prompt import example_families as _example_families  # noqa: E402
 from services.translate.prompt import examples as _examples  # noqa: E402
 from services.translate.prompt import instructions as _instructions  # noqa: E402
 from services.translate.prompt import schema_ddl as _schema_ddl  # noqa: E402
@@ -122,7 +123,6 @@ def _run_local(question: str) -> TextToSQLResult:
         available_columns=_optional_columns.usable_columns(_database_stats.coverage),
     )
     augmented_question = augmented_plan.augmented_question
-    query_family = augmented_plan.plan.query_family.value
     explanation = augmented_plan.plan.natural_language_summary
     # A phrase too few datasets say is left out of the search
     # (preprocess/augment.py): "epilepsy ONLY postictal" listed every epilepsy
@@ -150,11 +150,12 @@ def _run_local(question: str) -> TextToSQLResult:
         # One line per search: which plans the compiler declines, and why,
         # shows what to support next.
         log.info("SQL path: model (compiler declined: %s)", compiled.reason)
-        examples = _examples.pick_examples(_examples.FEW_SHOT_POOL, query_family, n=5, seed=question,
-                                  resolved_codes=resolved_codes)
+        families = _example_families.plan_families(plan)
+        examples = _examples.pick_examples(_examples.FEW_SHOT_POOL, families, n=5, seed=question,
+                                           resolved_codes=resolved_codes)
         if examples:
-            log.info("Injecting %d few-shot examples for family '%s' (resolved codes: %s)",
-                     len(examples), query_family,
+            log.info("Injecting %d few-shot examples for families %s (resolved codes: %s)",
+                     len(examples), families,
                      {k: v for k, v in resolved_codes.items() if v})
         raw_sql = _generate_sql(augmented_question, examples)
 

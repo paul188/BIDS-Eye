@@ -387,7 +387,6 @@ def test_augmented_question_hands_the_model_text_match_placeholders(monkeypatch)
 
     monkeypatch.setattr(text_terms, "_lookup_strings", _lookup)
     plan = preprocess.QueryPlan(
-        query_family="combined_filter",
         natural_language_summary="Bilingual epilepsy datasets with eye tracking",
         description_search="bilingual",
     )
@@ -409,8 +408,7 @@ def test_augmented_question_hands_the_model_text_match_placeholders(monkeypatch)
 def test_unresolved_term_alone_still_gets_its_text_filter() -> None:
     import preprocess
 
-    plan = preprocess.QueryPlan(query_family="scan_filter",
-                                natural_language_summary="Datasets with eye tracking")
+    plan = preprocess.QueryPlan(natural_language_summary="Datasets with eye tracking")
     question = preprocess._build_augmented_question(plan, [], unresolved_terms={"scan": ["eye tracking"]})
     assert "text_match('eye tracking', 'loose')" in question
     rewritten = SERVICE.rewrite_generated_sql(BASE + "GROUP BY d.id", question)
@@ -421,7 +419,6 @@ def test_resolved_task_filter_keeps_a_readme_text_fallback(monkeypatch) -> None:
     import preprocess
 
     plan = preprocess.QueryPlan(
-        query_family="scan_filter",
         natural_language_summary="Assessments related to memory",
     )
     resolved = [preprocess.ResolvedTerms(

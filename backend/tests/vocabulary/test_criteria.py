@@ -12,7 +12,6 @@ def _augmented(species, available=("species",), description_search=None) -> str:
     from preprocess import QueryPlan, _build_augmented_question
 
     plan = QueryPlan(
-        query_family="description_search",
         natural_language_summary="Find animal datasets.",
         species=species,
         description_search=description_search,
@@ -32,10 +31,10 @@ def test_planner_words_become_codes_and_unknown_ones_are_dropped() -> None:
 def test_plan_accepts_a_bad_species_value_without_failing() -> None:
     from preprocess import QueryPlan
 
-    plan = QueryPlan(query_family="description_search", natural_language_summary="x",
+    plan = QueryPlan(natural_language_summary="x",
                      species=["Homo sapiens", "macaques", "unicorn"])
     assert plan.species == [HUMAN, "primate"]
-    assert QueryPlan(query_family="description_search", natural_language_summary="x",
+    assert QueryPlan(natural_language_summary="x",
                      species="mice").species == ["mouse"]
 
 
@@ -155,7 +154,6 @@ def _without(excluded, resolved_terms=None, unresolved=None, groups=()):
                             _build_augmented_question)
 
     plan = QueryPlan(
-        query_family="combined_filter",
         natural_language_summary="Find datasets without these patients.",
         groups=[ParticipantGroup(group_name=f"g{i}", diagnosis_terms=list(terms))
                 for i, terms in enumerate(groups)],

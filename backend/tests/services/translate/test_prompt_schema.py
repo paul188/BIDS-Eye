@@ -66,11 +66,11 @@ def test_examples_using_unavailable_columns_are_never_selected() -> None:
     }
     seed = "datasets mentioning 7 Tesla scanners"
 
-    picked = examples.pick_examples(pool, "description_search", n=5, seed=seed)
+    picked = examples.pick_examples(pool, ["description_search"], n=5, seed=seed)
     assert [ex["sql"] for ex in picked] == [pool["description_search"][1]["sql"]]
 
     database_stats.coverage = ColumnCoverage.full({"readme_text"})
-    picked = examples.pick_examples(pool, "description_search", n=5, seed=seed)
+    picked = examples.pick_examples(pool, ["description_search"], n=5, seed=seed)
     assert len(picked) == 2
     assert all("institutions" not in ex["sql"] for ex in picked)
 
@@ -79,7 +79,7 @@ def test_real_few_shot_pool_never_yields_readme_or_institutions_when_hidden() ->
     pool = json.loads(FEW_SHOT_PATH.read_text())
     for family in ("description_search", "paper_reference_query", "institution_query"):
         picked = examples.pick_examples(
-            pool, family, n=50, seed="datasets scanned at MIT that mention a paper in the readme"
+            pool, [family], n=50, seed="datasets scanned at MIT that mention a paper in the readme"
         )
         assert picked, family
         for example in picked:
@@ -96,15 +96,6 @@ def test_example_tokens_normalize_irregular_clinical_plurals() -> None:
         ("child", "children"),
     ):
         assert examples._example_tokens(singular) == examples._example_tokens(plural)
-
-
-def test_exact_pool_family_precedes_legacy_alias() -> None:
-    pool = {"metadata_query": [], "json_query": [], "subject_multimodal_query": []}
-    assert examples._family_key("metadata_query", pool) == "metadata_query"
-    assert examples._family_key("subject_multimodal", pool) == "subject_multimodal_query"
-    # A future family with no explicit few-shot bucket still receives lexical,
-    # intent and query-shape ranking instead of failing exact-family matching.
-    assert examples._family_key("future_family", pool) == "future_family"
 
 
 def test_empty_query_metadata_does_not_invent_intent_categories() -> None:
@@ -147,7 +138,6 @@ def test_size_limit_becomes_a_filter_only_when_the_column_is_available() -> None
     from preprocess import QueryPlan, _build_augmented_question
 
     plan = QueryPlan(
-        query_family="scan_filter",
         natural_language_summary="Find fMRI datasets.",
         max_size_gb=5,
         min_size_gb=0.5,
@@ -159,5 +149,5 @@ def test_size_limit_becomes_a_filter_only_when_the_column_is_available() -> None
     assert "dataset size: d.size_bytes <= 5368709120 AND d.size_bytes >= 536870912" in augmented
     assert augmented.endswith("Find fMRI datasets.")
 
-    no_limit = QueryPlan(query_family="scan_filter", natural_language_summary="Find fMRI datasets.")
+    no_limit = QueryPlan(natural_language_summary="Find fMRI datasets.")
     assert _build_augmented_question(no_limit, [], available_columns={"size_bytes"}) == "Find fMRI datasets."
