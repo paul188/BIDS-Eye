@@ -1,0 +1,3314 @@
+# Question-level test set for word forms (README.md next to this file).
+#
+# For each question:
+#   search_words      words of the question the user wants matched in a dataset's text
+#   filler_words      words of the question that have a word-form decision (a labelled pair, the
+#                     reviewed list or the stored pairs) but are request language, not search words
+#   truth             per search word: whether a search for it should also find the other forms
+#                     ("other"). "by" names the pair of the blind label set
+#                     (../label_set.json, labels ../labels_p000-p189_chrome_2026-11-19.json);
+#                     "overridden" marks a question whose sense differs from the label (note says why).
+#                     Pairs labelled "context" are not scored.
+#   must_look_up      (tier trap) words question_words() must return
+#   must_not_look_up  (tier trap) tokens it must not return (fragments of a word)
+#
+# Tiers: labelled (a form of a labelled pair occurs), reviewed_list (a word of word_forms.yaml or
+# word_form_pairs.json, no labelled form), control (neither), trap (written for tokenization).
+# Questions come from the development split of benchmarks/recall/queries.yaml,
+# benchmarks/demand/demand_queries.yaml, benchmarks/easy/easy_searches.yaml and
+# benchmarks/recall/ambiguity_queries.yaml; held-out questions are left out.
+# search_words were judged by Claude (2026-11-27) and await Paul's review.
+questions:
+- id: demand:qr_pmc10755567_1_n
+  tier: labelled
+  question: I need resting-state fMRI from patients with schizophrenia and healthy control subjects from public
+    repositories to map local functional synchrony in the cortex. Is there an open dataset with both groups?
+  search_words: [functional]
+  filler_words: [public]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc10944177_1_s
+  tier: labelled
+  question: T1 MRI typically developing children controls
+  search_words: [typically, developing]
+  filler_words: []
+  truth:
+    typically:
+    - other: [typical]
+      match: true
+      by: p150
+- id: demand:qr_pmc5801068_1_s
+  tier: labelled
+  question: cognitive control task fMRI healthy adults
+  search_words: [cognitive, task]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc13741613_1_n
+  tier: labelled
+  question: I want to replicate hypothalamic volume differences in episodic migraine. Is there T1-weighted MRI of
+    migraine patients and healthy controls, ideally with follow-up scans?
+  search_words: [weighted, follow]
+  filler_words: [differences]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc7983579_1_s
+  tier: labelled
+  question: resting-state fMRI many sessions per person reliability
+  search_words: []
+  filler_words: [person]
+- id: demand:qf32_connectomes_consciousness
+  tier: labelled
+  question: functional connectivity networks (adjacency matrices or .graphml) related to consciousness research
+    such as disorders of consciousness, sleep or mindfulness meditation
+  search_words: [functional, mindfulness]
+  filler_words: []
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc13669372_1_n
+  tier: labelled
+  question: I want to validate glymphatic and connectivity findings in people receiving transcranial magnetic stimulation.
+    Is there MRI (resting fMRI and diffusion) from a TMS treatment cohort, with depression scores before and after?
+  search_words: [depression]
+  filler_words: []
+  truth:
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc12578254_1_n
+  tier: labelled
+  question: I need motor imagery EEG from healthy people and from patients with orthopedic impairment, recorded
+    with overlapping electrodes, to train a model conditioned on health status.
+  search_words: []
+  filler_words: [recorded, conditioned]
+- id: recall:p11_music
+  tier: labelled
+  question: Music perception datasets
+  search_words: [music]
+  filler_words: []
+  truth:
+    music:
+    - other: [musical]
+      match: true
+      by: p090
+- id: easy:e_task_flanker
+  tier: labelled
+  question: datasets with a flanker task
+  search_words: [task]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc7287158_1_s
+  tier: labelled
+  question: simultaneous MEG EEG face perception task
+  search_words: [task]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: easy:e_c_eeg_dep
+  tier: labelled
+  question: EEG datasets of depression
+  search_words: [depression]
+  filler_words: []
+  truth:
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc10636102_1_n
+  tier: labelled
+  question: I need a large pool of routine brain MRI scans from healthy children, adolescents and young adults to
+    build normal growth charts. Are there open T1-weighted datasets of healthy participants spanning childhood to
+    adulthood?
+  search_words: [weighted]
+  filler_words: [pool, spanning]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc9021021_1_n
+  tier: labelled
+  question: I want to aggregate as many structural MRI scans as possible from different studies covering all ages,
+    to build reference charts of brain morphology. Which open datasets have T1-weighted MRI with age?
+  search_words: [structural, weighted, age]
+  filler_words: [ages]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    age:
+    - other: [aging]
+      match: false
+      by: p018
+- id: demand:qr_pmc7947240_1_n
+  tier: labelled
+  question: I need an independent MRI dataset of patients with schizophrenia and healthy controls to check that
+    classification models trained on connectivity features in my own sample generalize.
+  search_words: []
+  filler_words: [independent, check, sample, generalize]
+- id: demand:qr_pmc13269828_1_n
+  tier: labelled
+  question: I want resting-state EEG from participants with Beck Depression Inventory scores, so I can train a model
+    that detects depression.
+  search_words: [depression]
+  filler_words: []
+  truth:
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc6088222_1_n
+  tier: labelled
+  question: I want to show a complete reproducible group analysis of MEG and EEG evoked responses. Is there an open
+    multi-subject MEG/EEG dataset with a visual task such as faces, with raw recordings for each participant?
+  search_words: [task]
+  filler_words: [recordings]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc12939542_1_n
+  tier: labelled
+  question: I want to train a classifier that detects Alzheimer's disease against normal aging using eyes-open EEG
+    with photic stimulation. Is there EEG with intermittent photic stimulation from Alzheimer's patients, frontotemporal
+    dementia patients and healthy controls?
+  search_words: [aging]
+  filler_words: [classifier]
+  truth:
+    aging:
+    - other: [age, ages]
+      match: false
+      by: p018
+    - other: [aged]
+      match: false
+      by: p086
+- id: demand:qr_pmc12179274_1_n
+  tier: labelled
+  question: I want to test a tool that translates connectome statistics between brain atlases. Is there MRI from
+    patients with schizophrenia and healthy controls, with both functional and diffusion data to build connectomes?
+  search_words: [functional]
+  filler_words: []
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc13058653_1_n
+  tier: labelled
+  question: I want to study cortical morphometric networks in bipolar disorder compared with healthy people. Is
+    there T1-weighted MRI from bipolar patients and healthy controls?
+  search_words: [weighted]
+  filler_words: [compared]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc13183803_1_n
+  tier: labelled
+  question: I want resting-state fMRI of fibromyalgia patients recorded before and after music listening, to analyse
+    spatial and temporal connectivity during music-induced analgesia. Is there such data with anatomical scans?
+  search_words: [music, temporal]
+  filler_words: [recorded, analyse]
+  truth:
+    music:
+    - other: [musical]
+      match: true
+      by: p090
+    temporal:
+    - other: [temporally]
+      match: false
+      by: p065
+- id: demand:qr_pmc10471501_1_n
+  tier: labelled
+  question: I need structural MRI of people with psychiatric diagnoses such as depression, autism or schizophrenia,
+    plus matched healthy controls. I want to pool them for normative modelling of gray matter volume deviations.
+  search_words: [structural, depression]
+  filler_words: [pool]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: recall:d11_mouse_knockout_mri
+  tier: labelled
+  question: I'm studying whether deleting an immune-related gene alters brain development in mice. Are there in
+    vivo mouse MRI datasets comparing knockout and wild-type animals, ideally scanned repeatedly over time with
+    structural and functional connectivity measures?
+  search_words: [structural, functional]
+  filler_words: [comparing, scanned, measures]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc9814511_1_n
+  tier: labelled
+  question: I want to test whether cortical gradients are altered in psychiatric disorders compared with healthy
+    people. Is there resting-state fMRI from patients with schizophrenia, bipolar disorder or ADHD and healthy controls?
+  search_words: []
+  filler_words: [compared]
+- id: recall:d03_multiecho_aging
+  tier: labelled
+  question: I am planning to study how cognition and cortical structure change across the adult lifespan, and want
+    to denoise the data with multi-echo methods. Is there a cross-sectional adult life-span cohort with multi-echo
+    fMRI, structural MRI and cognitive test scores?
+  search_words: [cognition, structure, cross, sectional, structural, cognitive]
+  filler_words: [change]
+  truth:
+    structure:
+    - other: [structurally]
+      match: true
+      by: p137
+    - other: [structural]
+      match: true
+      by: p185
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc13661320_1_n
+  tier: labelled
+  question: I want to compare machine-learning classifiers for detecting Alzheimer's disease from EEG at the participant
+    level. Is there preprocessed eyes-closed resting EEG from AD patients and healthy controls, with cognitive scores?
+  search_words: [cognitive]
+  filler_words: [classifiers]
+- id: demand:qr_pmc11955038_1_n
+  tier: labelled
+  question: I need intracranial EEG (SEEG and ECoG) from epilepsy patients with seizures marked, covering the pre-ictal,
+    ictal and post-ictal periods. I want to test whether a signal feature can classify seizure states for responsive
+    stimulation.
+  search_words: []
+  filler_words: [periods, responsive]
+- id: demand:qr_pmc13687786_1_n
+  tier: labelled
+  question: I want a large pool of T1-weighted brain MRI from healthy or cognitively normal people across the whole
+    lifespan, with images that also cover the upper cervical spinal cord, to build normative charts.
+  search_words: [weighted]
+  filler_words: [pool]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc9363757_1_s
+  tier: labelled
+  question: resting-state EEG Parkinson's disease ON OFF medication
+  search_words: [medication]
+  filler_words: []
+  truth:
+    medication:
+    - other: [medical]
+      match: false
+      by: p039
+    - other: [medically]
+      match: false
+      by: p079
+- id: demand:qr_pmc9828180_1_n
+  tier: labelled
+  question: I want to compare brain networks engaged while people converse with another person or a robot, separating
+    listening and speaking. Is there fMRI of such conversations with trial timing?
+  search_words: [converse, conversations, timing]
+  filler_words: [person]
+- id: easy:e_age_aging
+  tier: labelled
+  question: aging datasets
+  search_words: [aging]
+  filler_words: []
+  truth:
+    aging:
+    - other: [age, ages]
+      match: false
+      by: p018
+    - other: [aged]
+      match: false
+      by: p086
+- id: demand:qr_pmc12272199_1_s
+  tier: labelled
+  question: voice localizer fMRI healthy adults
+  search_words: [localizer]
+  filler_words: []
+  truth:
+    localizer:
+    - other: [localize]
+      match: false
+      by: p154
+    - other: [localization]
+      match: false
+      by: p158
+- id: recall:g55_free_recall_eeg
+  tier: labelled
+  question: scalp EEG during free recall of word lists
+  search_words: [recall]
+  filler_words: []
+  truth:
+    recall:
+    - other: [recalling]
+      match: true
+      by: p176
+    - other: [recalled]
+      match: true
+      by: p180
+- id: demand:qr_pmc9237452_1_n
+  tier: labelled
+  question: I want to track brain network changes within one woman over many consecutive days. Is there a densely
+    sampled single-subject fMRI series covering a full menstrual cycle and a period of hormonal contraceptive use?
+  search_words: [sampled]
+  filler_words: [changes, period]
+- id: demand:qr_pmc11839765_1_n
+  tier: labelled
+  question: I want to predict response inhibition performance from resting-state connectivity across psychiatric
+    disorders. Is there resting-state fMRI with a stop-signal or response inhibition task score in patients with
+    schizophrenia, bipolar disorder or ADHD, and healthy participants, plus a healthy test dataset?
+  search_words: [task]
+  filler_words: [predict, performance]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc10374932_1_n
+  tier: labelled
+  question: I need MRI data from participants who did a heartbeat detection task, with interoceptive accuracy scores.
+    I want to predict interoceptive awareness from insula structural and functional networks.
+  search_words: [task, structural, functional]
+  filler_words: [predict]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc10919484_1_s
+  tier: labelled
+  question: healthy adults structural MRI emotional intelligence questionnaires
+  search_words: [structural, emotional, intelligence]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    emotional:
+    - other: [emotionally]
+      match: true
+      by: p005
+    intelligence:
+    - other: [intelligent]
+      match: true
+      by: p175
+- id: easy:e_paper
+  tier: labelled
+  question: datasets with a linked publication
+  search_words: [publication]
+  filler_words: []
+  truth:
+    publication:
+    - other: [public]
+      match: false
+      by: p163
+- id: demand:qr_pmc13270053_1_n
+  tier: labelled
+  question: I want EEG recorded while participants view pictures of food, to study brain network responses to sweet,
+    sour and salty food cues.
+  search_words: []
+  filler_words: [recorded]
+- id: demand:qr_pmc11885225_1_n
+  tier: labelled
+  question: I need a public MEG dataset from a visual task, for example faces versus scrambled faces, with several
+    sessions per participant. I want to demonstrate an M/EEG analysis toolbox with sensor and source space analysis.
+  search_words: [task]
+  filler_words: [public]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc13601398_1_n
+  tier: labelled
+  question: I want to study how brain network organisation changes with age in healthy adults. Is there resting-state
+    EEG recorded with eyes closed and eyes open from a large sample spanning ages 20 to 70?
+  search_words: []
+  filler_words: [changes, age, recorded, sample, spanning, ages]
+- id: demand:qr_pmc13654029_2_n
+  tier: labelled
+  question: I want long resting-state fMRI sessions from healthy adults to build human functional network templates
+    for cross-species comparison.
+  search_words: [functional]
+  filler_words: [cross]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc10945772_1_n
+  tier: labelled
+  question: I need fMRI of participants freely speaking, for example recalling the events of a TV episode they just
+    watched, with audio recordings so I can time-stamp words and model syntactic structure building. Is there an
+    open spontaneous speech production fMRI dataset?
+  search_words: [recalling, production]
+  filler_words: [episode, recordings, structure]
+  truth:
+    recalling:
+    - other: [recalled]
+      match: true
+      by: p066
+    - other: [recall]
+      match: true
+      by: p176
+    production:
+    - other: [products, product]
+      match: false
+      by: p022
+- id: demand:qr_pmc13476689_1_n
+  tier: labelled
+  question: I want to see whether a short aerobic running intervention reduces depressive symptoms in healthy young
+    adults and relates to cortical thickness. Is there structural MRI before and after an exercise intervention
+    with depression questionnaires?
+  search_words: [depressive, structural, depression]
+  filler_words: [relates]
+  truth:
+    depressive:
+    - other: [depressed]
+      match: true
+      by: p016
+    - other: [depression]
+      match: true
+      by: p125
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: recall:p14_ieeg_memory
+  tier: labelled
+  question: Intracranial EEG during memory tasks
+  search_words: [tasks]
+  filler_words: []
+  truth:
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc11098808_1_s
+  tier: labelled
+  question: brain MRI children and adults age groups
+  search_words: [age]
+  filler_words: []
+  truth:
+    age:
+    - other: [aging]
+      match: false
+      by: p018
+- id: demand:qr_pmc5842758_1_n
+  tier: labelled
+  question: I want to compare orbitofrontal sulcal patterns across psychiatric diagnoses. Is there structural MRI
+    of adults with schizophrenia, bipolar disorder and ADHD along with healthy controls?
+  search_words: [structural]
+  filler_words: [patterns]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc13441295_1_n
+  tier: labelled
+  question: I want to build age-specific templates for functional alignment between subjects. Is there fMRI from
+    healthy adults spanning young to old ages, with enough participants in each age group?
+  search_words: [functional]
+  filler_words: [age, spanning, ages]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc13364637_1_n
+  tier: labelled
+  question: I want to study how a single dose of oxytocin changes dynamic functional connectivity. Is there resting-state
+    fMRI from healthy young and older adults scanned after oxytocin and placebo?
+  search_words: [functional]
+  filler_words: [changes, scanned]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc12490856_1_n
+  tier: labelled
+  question: I need electrocardiogram recordings from participants performing a working memory task, to test how
+    heart activity spectral slope relates to memory load.
+  search_words: [working, task]
+  filler_words: [recordings, relates]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: recall:g24_visual_search
+  tier: labelled
+  question: 'Visual search tasks: where do people look for targets?'
+  search_words: [tasks]
+  filler_words: []
+  truth:
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc9688422_1_n
+  tier: labelled
+  question: I want to decode choices in risky decision making from brain patterns. Is there task fMRI of healthy
+    adults choosing between certain and risky rewards, with choice behaviour?
+  search_words: [task, rewards, behaviour]
+  filler_words: [patterns]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    rewards:
+    - other: [rewarded]
+      match: true
+      by: p145
+    behaviour:
+    - other: [behavioural]
+      match: true
+      by: p012
+- id: demand:qr_pmc6898452_1_n
+  tier: labelled
+  question: I want task fMRI from healthy adults doing word reading or rhyming judgements and a visuospatial attention
+    task such as flanker, to test activation and task-based connectivity of a visual word region. Are there such
+    datasets?
+  search_words: [task, reading, attention]
+  filler_words: [based]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    attention:
+    - other: [attentional]
+      match: true
+      by: p045
+- id: recall:p03_emotion_regulation
+  tier: labelled
+  question: Emotion regulation studies
+  search_words: [emotion]
+  filler_words: []
+  truth:
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+- id: easy:e_age_range
+  tier: labelled
+  question: participants aged 18 to 35
+  search_words: []
+  filler_words: [aged]
+- id: demand:qr_pmc11487101_1_s
+  tier: labelled
+  question: clinical symptoms working memory schizophrenia bipolar patients
+  search_words: [clinical, working]
+  filler_words: []
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+- id: demand:qr_pmc12891686_1_s
+  tier: labelled
+  question: fMRI movie watching emotion ratings
+  search_words: [emotion]
+  filler_words: []
+  truth:
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+- id: demand:qr_pmc13243401_1_n
+  tier: labelled
+  question: I want structural T1 MRI of female fibromyalgia patients and age-matched healthy controls, with depression,
+    anxiety and pain scores, for surface-based morphometry.
+  search_words: [structural, depression]
+  filler_words: [age, based]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc13503868_1_n
+  tier: labelled
+  question: I want to validate a neural signature that distinguishes sleep-deprived from well-rested brains. Is
+    there fMRI from the same participants after normal sleep and after sleep deprivation?
+  search_words: [rested]
+  filler_words: [well]
+- id: recall:g13_incentive_delay
+  tier: labelled
+  question: 'Monetary incentive delay task: anticipation of gains and losses'
+  search_words: [task, anticipation]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    anticipation:
+    - other: [anticipated]
+      match: true
+      by: p059
+- id: demand:qr_pmc9712307_1_n
+  tier: labelled
+  question: I want to compare eigenvector centrality and interhemispheric connectivity in ADHD. Is there resting-state
+    fMRI of children and adolescents with ADHD and typically developing controls?
+  search_words: [typically, developing]
+  filler_words: [centrality]
+  truth:
+    typically:
+    - other: [typical]
+      match: true
+      by: p150
+- id: demand:qf13_natural_images_visual_cortex
+  tier: labelled
+  question: fMRI dataset recording the visual cortex while viewing natural images, preferably single objects
+  search_words: [objects]
+  filler_words: [recording, preferably]
+- id: demand:qr_pmc13168294_1_s
+  tier: labelled
+  question: fMRI emotion regulation reappraisal task
+  search_words: [emotion, task]
+  filler_words: []
+  truth:
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc13394103_1_n
+  tier: labelled
+  question: I want to study cortical morphological similarity in temporal lobe epilepsy. Is there structural T1
+    MRI from TLE patients and matched healthy controls with cognitive scores?
+  search_words: [temporal, structural, cognitive]
+  filler_words: []
+  truth:
+    temporal:
+    - other: [temporally]
+      match: false
+      by: p065
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc11677592_1_n
+  tier: labelled
+  question: I want an independent replication sample for a study of sex differences in gray matter in major depression.
+    Is there T1-weighted MRI of patients with depression and healthy controls, with sex recorded?
+  search_words: [depression, weighted]
+  filler_words: [independent, sample, differences, recorded]
+  truth:
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc11574005_1_n
+  tier: labelled
+  question: I want to analyse subcortical shape and clinical stage in Parkinson disease. Is there T1-weighted MRI
+    of patients with Parkinson disease and healthy controls with clinical staging scores?
+  search_words: [clinical, weighted]
+  filler_words: [analyse]
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc7065875_1_n
+  tier: labelled
+  question: I want resting-state fMRI with T1 images from healthy people and patients with schizophrenia, bipolar
+    disorder and ADHD, to check whether brain-state dynamics linked to consciousness are also altered in psychiatric
+    disorders.
+  search_words: []
+  filler_words: [check]
+- id: demand:qr_pmc11811888_1_n
+  tier: labelled
+  question: I want to study age-specific functional connectivity changes after partial sleep deprivation. Is there
+    fMRI of young and older healthy adults scanned after normal sleep and after sleep deprivation?
+  search_words: [functional]
+  filler_words: [age, changes, scanned]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc9522791_1_n
+  tier: labelled
+  question: I want to compare language model representations with brain responses to spoken stories and to how well
+    people understood them. Is there fMRI of participants listening to naturalistic narratives, with comprehension
+    measures?
+  search_words: [comprehension]
+  filler_words: [well, measures]
+  truth:
+    comprehension:
+    - other: [comprehensive]
+      match: false
+      by: p013
+- id: demand:qr_pmc10006907_1_n
+  tier: labelled
+  question: I want to find structural MRI of patients with borderline personality disorder and matched healthy controls.
+    I plan to run a gray and white matter covariation analysis and a classifier to separate patients from controls.
+  search_words: [structural, personality]
+  filler_words: [classifier]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    personality:
+    - other: [personal]
+      match: false
+      by: p020
+    - other: [person, persons]
+      match: false
+      by: p135
+    - other: [personalized]
+      match: false
+      by: p165
+- id: demand:qr_pmc6204391_1_n
+  tier: labelled
+  question: I want project datasets for students to replicate published fMRI results. Are there openly shared task
+    fMRI datasets with a published paper, covering decision making, self-control, visual object recognition, movie
+    watching or working memory?
+  search_words: [task, object, working]
+  filler_words: [results]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc11666789_1_n
+  tier: labelled
+  question: I want sample datasets to demonstrate event annotation for language experiments. Is there fMRI data
+    from experiments presenting isolated words, with the identity of each word in the event files?
+  search_words: [experiments]
+  filler_words: [sample, identity]
+  truth:
+    experiments:
+    - other: [experience, experiences]
+      match: false
+      by: p072
+- id: demand:qf34_mri_redistributable
+  tier: labelled
+  question: MRI images that are legally open source so that I can redistribute them without copyright restrictions
+  search_words: [copyright]
+  filler_words: []
+  truth:
+    copyright:
+    - other: [copyrighted]
+      match: true
+      by: p007
+- id: demand:qr_pmc11227102_1_n
+  tier: labelled
+  question: I want to compare measures of integrated information between wakefulness and sleep. Is there fMRI of
+    healthy adults falling asleep, with sleep stages scored?
+  search_words: []
+  filler_words: [measures]
+- id: demand:qr_pmc10203791_1_n
+  tier: labelled
+  question: I need T1-weighted structural MRI of adults, ideally with repeated scans of the same people, to compare
+    brain age algorithms. I want to check reliability and relations to age and sex.
+  search_words: [weighted, structural, age]
+  filler_words: [check, relations]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    age:
+    - other: [aging]
+      match: false
+      by: p018
+- id: demand:qr_pmc10649363_1_n
+  tier: labelled
+  question: I want fMRI of children and adults watching an emotional animated movie, together with theory-of-mind
+    scores, to validate a normative model of age-related brain responses. Is there naturalistic movie fMRI covering
+    childhood through adulthood?
+  search_words: [emotional, animated]
+  filler_words: [age]
+  truth:
+    emotional:
+    - other: [emotionally]
+      match: true
+      by: p005
+- id: demand:qr_pmc11436828_1_n
+  tier: labelled
+  question: I want to build a functional atlas of the cerebellum from large task fMRI data. Is there fMRI of the
+    same participants doing a wide variety of cognitive tasks, with the cerebellum covered?
+  search_words: [functional, task, cognitive, tasks]
+  filler_words: []
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: easy:e_task_reading
+  tier: labelled
+  question: reading task
+  search_words: [reading, task]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc7591251_1_n
+  tier: labelled
+  question: I want resting-state fMRI and T1 images from patients with schizophrenia and matched healthy controls,
+    with clinical ratings of hallucinations and delusions, to test whether intrinsic neural timescales differ by
+    symptom type.
+  search_words: [clinical]
+  filler_words: []
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+- id: demand:qr_pmc13657052_1_n
+  tier: labelled
+  question: I want resting-state EEG from a large sample of healthy adults in BIDS format to relate alpha-band rhythms
+    to macroscale brain gradients.
+  search_words: [format]
+  filler_words: [sample, relate]
+  truth:
+    format:
+    - other: [formation]
+      match: false
+      by: p080
+- id: demand:qr_pmc7947240_1_s
+  tier: labelled
+  question: schizophrenia patients healthy controls MRI independent sample
+  search_words: []
+  filler_words: [independent, sample]
+- id: demand:qr_pmc13421079_1_n
+  tier: labelled
+  question: I want to test whether eye gaze can be predicted from fMRI eyeball signals during naturalistic movie
+    viewing. Is there fMRI of adults and children watching a movie, ideally from several sites?
+  search_words: []
+  filler_words: [predicted]
+- id: demand:qr_pmc11627503_1_n
+  tier: labelled
+  question: I want to test a model of how loss aversion adapts to ranges of prospective gains and losses. Is there
+    fMRI of a mixed gamble decision task with varying gain and loss amounts?
+  search_words: [mixed, task]
+  filler_words: []
+  truth:
+    mixed:
+    - other: [mix]
+      match: true
+      by: p011
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc12907821_1_s
+  tier: labelled
+  question: structural MRI older and younger adults cognition
+  search_words: [structural, cognition]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc8918568_2_n
+  tier: labelled
+  question: To test whether features specific to borderline personality disorder separate it from other clinical
+    groups, I need structural MRI from patients with bipolar disorder and healthy controls.
+  search_words: [personality, structural]
+  filler_words: [clinical]
+  truth:
+    personality:
+    - other: [personal]
+      match: false
+      by: p020
+    - other: [person, persons]
+      match: false
+      by: p135
+    - other: [personalized]
+      match: false
+      by: p165
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qf09_pcasl_physio
+  tier: labelled
+  question: pcasl dataset with physiological recording (respiration and heart rate)
+  search_words: [recording]
+  filler_words: []
+  truth:
+    recording:
+    - other: [record, records]
+      match: false
+      by: p172
+- id: recall:g36_musicians_training
+  tier: labelled
+  question: Musicians and musical training
+  search_words: [musical]
+  filler_words: []
+  truth:
+    musical:
+    - other: [music]
+      match: true
+      by: p090
+- id: demand:qr_pmc11329586_1_n
+  tier: labelled
+  question: I want to test a protocol compliance checker on public data. Which large MRI datasets in BIDS format
+    have JSON sidecar files listing the acquisition parameters?
+  search_words: [format]
+  filler_words: [public]
+  truth:
+    format:
+    - other: [formation]
+      match: false
+      by: p080
+- id: demand:qr_pmc10512460_1_n
+  tier: labelled
+  question: I need resting-state fMRI from patients with schizophrenia and healthy controls, with clinical diagnosis
+    from a structured interview. I want to find the direction of connectivity alterations with a multivariate machine
+    learning approach.
+  search_words: [clinical, structured]
+  filler_words: [direction]
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+    structured:
+    - other: [structural]
+      match: false
+      by: p182
+- id: demand:qr_pmc12065794_1_n
+  tier: labelled
+  question: I need fMRI from the same participants at rest and during a self-control decision task such as food
+    choices, with behavioural self-control performance. I want to test whether salience network resting connectivity
+    predicts self-controlled choices.
+  search_words: [task, behavioural]
+  filler_words: [performance, predicts]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    behavioural:
+    - other: [behaviour]
+      match: true
+      by: p012
+- id: demand:qr_pmc9450332_1_s
+  tier: labelled
+  question: resting fMRI transdiagnostic psychiatric patients clinical scales
+  search_words: [clinical, scales]
+  filler_words: []
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+    scales:
+    - other: [scaling]
+      match: false
+      by: p070
+    - other: [scaled]
+      match: true
+      by: p085
+- id: demand:qr_pmc10400080_1_n
+  tier: labelled
+  question: I want public fMRI of people watching a movie or listening to stories. I plan to test whether low-dimensional
+    neural state dynamics found in my own data generalize to naturalistic narratives and track event structure.
+  search_words: []
+  filler_words: [public, generalize, structure]
+- id: demand:qr_pmc10802886_1_s
+  tier: labelled
+  question: 3T brain MRI healthy participants head position
+  search_words: [position]
+  filler_words: []
+  truth:
+    position:
+    - other: [positively]
+      match: false
+      by: p074
+    - other: [positive]
+      match: false
+      by: p091
+    - other: [positivity]
+      match: false
+      by: p096
+    - other: [positivity]
+      match: false
+      by: p129
+    - other: [positively]
+      match: false
+      by: p153
+- id: demand:qr_pmc9120726_1_n
+  tier: labelled
+  question: I want to look at whole-brain functional connectivity patterns in bipolar disorder. Is there resting-state
+    fMRI from bipolar patients and healthy controls, with diagnoses by structured interview?
+  search_words: [functional, structured]
+  filler_words: [patterns]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+    structured:
+    - other: [structural]
+      match: false
+      by: p182
+- id: demand:qr_pmc13528938_1_n
+  tier: labelled
+  question: I want to find brain regions that differ in patients with trigeminal neuralgia. Is there MRI from trigeminal
+    neuralgia patients and healthy controls that allows measuring thalamic nuclei volumes?
+  search_words: []
+  filler_words: [measuring]
+- id: demand:qr_pmc8048089_1_n
+  tier: labelled
+  question: I need T1-weighted head MRI scans with typical quality problems, such as no fat suppression causing
+    a fat shift, to show worst-case errors of whole-head segmentation for electric field simulations.
+  search_words: [weighted]
+  filler_words: [typical, simulations]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc9433326_1_n
+  tier: labelled
+  question: I want to train and test brain-phenotype prediction models. Is there fMRI from several cognitive tasks
+    plus rest, together with neurocognitive and self-report measures and clinical covariates, in a mixed healthy
+    and clinical sample?
+  search_words: [cognitive, tasks, clinical]
+  filler_words: [prediction, measures, mixed, sample]
+  truth:
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+- id: demand:qr_pmc12586323_1_n
+  tier: labelled
+  question: I need preprocessed fMRI from many participants watching full-length movies or narratives, to study
+    functional connectivity of semantic and default mode networks during narrative comprehension.
+  search_words: [functional, comprehension]
+  filler_words: []
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+    comprehension:
+    - other: [comprehensive]
+      match: false
+      by: p013
+- id: demand:qr_pmc7771969_1_n
+  tier: labelled
+  question: I need preprocessed resting-state fMRI time courses from healthy young adults with many sessions each,
+    as an independent dataset to replicate regional temporal dynamics found in a large cohort.
+  search_words: []
+  filler_words: [independent, temporal]
+- id: demand:qr_pmc7426775_1_n
+  tier: labelled
+  question: I need T1-weighted structural MRI scans with known age from healthy adults across a wide age range,
+    pooled from several sites, to train and test a deep learning model that predicts chronological age.
+  search_words: [weighted, structural, age]
+  filler_words: [pooled, predicts]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    age:
+    - other: [aging]
+      match: false
+      by: p018
+- id: demand:qr_pmc13168294_1_n
+  tier: labelled
+  question: I want task fMRI of reappraisal-based emotion regulation of negative stimuli to test whether my neural
+    signatures generalize to an independent cohort.
+  search_words: [task, emotion]
+  filler_words: [based, generalize, independent]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+- id: ambiguity:amb_social_reward
+  tier: labelled
+  question: social reward processing
+  search_words: [reward]
+  filler_words: []
+  truth:
+    reward:
+    - other: [rewarded]
+      match: true
+      by: p145
+- id: demand:qr_pmc12219618_1_n
+  tier: labelled
+  question: I want to check that a cortical structure measure separates Parkinson's patients from healthy controls.
+    Is there T1-weighted MRI from Parkinson's patients and age-matched healthy controls from several sites?
+  search_words: [structure, weighted]
+  filler_words: [check, measure, age]
+  truth:
+    structure:
+    - other: [structurally]
+      match: true
+      by: p137
+    - other: [structural]
+      match: true
+      by: p185
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc7263312_1_n
+  tier: labelled
+  question: I need a variety of public fMRI datasets, each with an anatomical and a functional volume from the same
+    session and with varying data quality and acquisition parameters, to test a tool that checks left-right orientation
+    consistency.
+  search_words: [functional]
+  filler_words: [public, checks, consistency]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc7721148_1_n
+  tier: labelled
+  question: I want resting-state fMRI from patients with major depressive disorder and healthy controls, scanned
+    in a country outside Japan, with depression questionnaire scores, to test whether a machine-learning depression
+    marker generalizes to independent sites.
+  search_words: [depressive, depression]
+  filler_words: [scanned, independent]
+  truth:
+    depressive:
+    - other: [depressed]
+      match: true
+      by: p016
+    - other: [depression]
+      match: true
+      by: p125
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc11679919_1_n
+  tier: labelled
+  question: I want to test whether regions tied to positive and negative emotion differ in depressed patients. Is
+    there fMRI of patients with depression and healthy controls, with diagnostic subtype annotations?
+  search_words: [positive, emotion, depressed, depression]
+  filler_words: []
+  truth:
+    positive:
+    - other: [position, positions]
+      match: false
+      by: p091
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+    depressed:
+    - other: [depressive]
+      match: true
+      by: p016
+    - other: [depression]
+      match: true
+      by: p023
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc13749148_1_s
+  tier: labelled
+  question: T1 MRI ADHD children typically developing boys
+  search_words: [typically, developing]
+  filler_words: []
+  truth:
+    typically:
+    - other: [typical]
+      match: true
+      by: p150
+- id: demand:qr_pmc11449702_1_n
+  tier: labelled
+  question: I want to test whether connectivity between high-frequency EEG bursts can localize the seizure onset
+    zone. Is there intracranial EEG from epilepsy patients with marked seizure onset zone electrodes and enough
+    sampling rate for high-frequency activity?
+  search_words: []
+  filler_words: [localize]
+- id: demand:qr_pmc13505883_2_s
+  tier: labelled
+  question: fMRI datasets unseen participants transfer test
+  search_words: []
+  filler_words: [transfer]
+- id: demand:qr_pmc13120449_1_n
+  tier: labelled
+  question: I want to assess whether EEG can track cortical responses to music therapy in ICU patients. Is there
+    EEG recorded before, during and after music therapy sessions in burn patients?
+  search_words: [music]
+  filler_words: [recorded]
+  truth:
+    music:
+    - other: [musical]
+      match: true
+      by: p090
+- id: demand:qr_pmc12084289_1_n
+  tier: labelled
+  question: I want to train and test a deep learning model that detects dyslexia from brain MRI. Is there MRI from
+    people with dyslexia and from typical readers?
+  search_words: [typical]
+  filler_words: []
+  truth:
+    typical:
+    - other: [typically]
+      match: true
+      by: p150
+- id: demand:qf43_eeg_emotion_like_deap
+  tier: labelled
+  question: EEG emotion recognition datasets like DEAP
+  search_words: [emotion]
+  filler_words: [like]
+  truth:
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+- id: demand:qr_pmc8114858_1_n
+  tier: labelled
+  question: I need fMRI of people with major depressive disorder and never-depressed controls listening to emotional
+    music, to examine anterior cingulate responses to musical stimuli.
+  search_words: [depressive, depressed, emotional, music, musical]
+  filler_words: []
+  truth:
+    depressive:
+    - other: [depressed]
+      match: true
+      by: p016
+    - other: [depression]
+      match: true
+      by: p125
+    depressed:
+    - other: [depressive]
+      match: true
+      by: p016
+    - other: [depression]
+      match: true
+      by: p023
+    emotional:
+    - other: [emotionally]
+      match: true
+      by: p005
+    music:
+    - other: [musical]
+      match: true
+      by: p090
+    musical:
+    - other: [music]
+      match: true
+      by: p090
+- id: demand:qr_pmc12025957_1_n
+  tier: labelled
+  question: I need resting-state EEG from patients with Parkinson's disease recorded both on and off dopaminergic
+    medication, plus healthy controls of similar age. I want to study how medication changes brain connectivity.
+  search_words: [medication]
+  filler_words: [recorded, age, changes]
+  truth:
+    medication:
+    - other: [medical]
+      match: false
+      by: p039
+    - other: [medically]
+      match: false
+      by: p079
+- id: demand:qr_pmc6319393_1_n
+  tier: labelled
+  question: I want to compare a preprocessing tool against FSL FEAT on real task fMRI. Is there a BIDS task fMRI
+    dataset with many participants and a standard task so that group statistics can be compared?
+  search_words: [task]
+  filler_words: [compared]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc13099961_1_n
+  tier: labelled
+  question: I want EEG from Alzheimer's disease, frontotemporal dementia and cognitively normal adults to train
+    a classifier, plus a second recording condition from the same people to test generalisation. Is there such data?
+  search_words: []
+  filler_words: [classifier, recording]
+- id: demand:qr_pmc12084289_1_s
+  tier: labelled
+  question: MRI dyslexia dyslexic and typical readers
+  search_words: [typical]
+  filler_words: []
+  truth:
+    typical:
+    - other: [typically]
+      match: true
+      by: p150
+- id: demand:qr_pmc11345701_1_n
+  tier: labelled
+  question: I want to analyse the entropy and complexity of resting-state networks. Is there resting-state fMRI
+    from healthy right-handed young adults, with enough data per person to define individual networks?
+  search_words: [handed]
+  filler_words: [analyse, person]
+  truth:
+    handed:
+    - other: [hand, hands]
+      match: false
+      by: p113
+- id: demand:qr_pmc13673158_1_n
+  tier: labelled
+  question: I want task fMRI from children with developmental dyscalculia and typically achieving peers solving
+    arithmetic problems, with behavioural data and math ability scores, to model problem-solving strategies.
+  search_words: [task, typically, behavioural]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    typically:
+    - other: [typical]
+      match: true
+      by: p150
+    behavioural:
+    - other: [behaviour]
+      match: true
+      by: p012
+- id: demand:qr_pmc13241809_1_n
+  tier: labelled
+  question: I want diffusion MRI from typically developing and aging participants covering the whole lifespan, to
+    chart white matter asymmetry. Is there diffusion data from many cohorts with age and sex?
+  search_words: [typically, developing, aging, age]
+  filler_words: []
+  truth:
+    typically:
+    - other: [typical]
+      match: true
+      by: p150
+    aging:
+    - other: [age, ages]
+      match: false
+      by: p018
+    - other: [aged]
+      match: false
+      by: p086
+    age:
+    - other: [aging]
+      match: false
+      by: p018
+- id: demand:qr_pmc11669652_1_n
+  tier: labelled
+  question: I want healthy control fMRI of older adults to compare with Alzheimer patient scans in a deep learning
+    classifier. Is there fMRI of cognitively normal adults aged 60 to 85 in NIfTI format?
+  search_words: []
+  filler_words: [classifier, aged, format]
+- id: demand:qr_pmc13681052_1_n
+  tier: labelled
+  question: I want to know how inter-subject correlations vary across movies. Is there fMRI of the same participants
+    watching many different film clips, with behavioural or emotion questionnaires?
+  search_words: [behavioural, emotion]
+  filler_words: []
+  truth:
+    behavioural:
+    - other: [behaviour]
+      match: true
+      by: p012
+    emotion:
+    - other: [emotionally]
+      match: false
+      by: p168
+- id: demand:qr_pmc12067418_1_n
+  tier: labelled
+  question: I need intracranial EEG from epilepsy patients with seizures, with the seizure onset zone marked and
+    resection or ablation outcome. I want to study directed connectivity before seizures between the onset zone
+    and the rest of the network.
+  search_words: [directed]
+  filler_words: []
+  truth:
+    directed:
+    - other: [directional]
+      match: false
+      by: p029
+    - other: [direction, directions]
+      match: false
+      by: p181
+- id: easy:e_task_reward
+  tier: labelled
+  question: reward task datasets
+  search_words: [reward, task]
+  filler_words: []
+  truth:
+    reward:
+    - other: [rewarded]
+      match: true
+      by: p145
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qp03_t1w_healthy_children_2_12
+  tier: labelled
+  question: datasets with T1w MRI from at least 5 healthy controls aged 2 to 12 years
+  search_words: []
+  filler_words: [aged]
+- id: demand:qr_pmc10454346_1_n
+  tier: labelled
+  question: I need resting-state EEG from young adults who also completed the Beck Depression Inventory. I want
+    to test whether EEG power ratios can distinguish depressed from non-depressed people.
+  search_words: [depression, depressed]
+  filler_words: []
+  truth:
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+    depressed:
+    - other: [depressive]
+      match: true
+      by: p016
+    - other: [depression]
+      match: true
+      by: p023
+- id: demand:qr_pmc12808925_1_n
+  tier: labelled
+  question: I want T1 MRI from Parkinson's patients with normal cognition, Parkinson's patients with mild cognitive
+    impairment, and healthy controls to estimate subcortical brain age.
+  search_words: [cognition, cognitive]
+  filler_words: [age]
+- id: recall:d13_music_improv_eeg
+  tier: labelled
+  question: I'd like to test whether professional musicians who improvise process unexpected harmonies differently
+    from non-musicians. Is there EEG from musicians and controls listening to chord sequences with expected and
+    unexpected chords?
+  search_words: []
+  filler_words: [like]
+- id: demand:qr_pmc8918568_1_n
+  tier: labelled
+  question: I want to classify borderline personality disorder from brain structure. Is there structural MRI from
+    patients with BPD together with healthy controls and symptom scores?
+  search_words: [personality, structure, structural]
+  filler_words: []
+  truth:
+    personality:
+    - other: [personal]
+      match: false
+      by: p020
+    - other: [person, persons]
+      match: false
+      by: p135
+    - other: [personalized]
+      match: false
+      by: p165
+    structure:
+    - other: [structurally]
+      match: true
+      by: p137
+    - other: [structural]
+      match: true
+      by: p185
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc7613101_1_n
+  tier: labelled
+  question: I need multi-direction diffusion MRI with T1-weighted images from patients with schizophrenia and healthy
+    participants, to show that a tractometry method detects microstructural deviations in individual patients.
+  search_words: [direction, weighted]
+  filler_words: []
+  truth:
+    direction:
+    - other: [directed]
+      match: false
+      by: p181
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc11843030_1_n
+  tier: labelled
+  question: I need task fMRI from healthy adults performing a congruence (Simon-type conflict) task. I want to compare
+    dynamic network patterns across tasks that demand different levels of external attention.
+  search_words: [task, attention]
+  filler_words: [patterns, tasks]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    attention:
+    - other: [attentional]
+      match: true
+      by: p045
+- id: easy:e_des_long
+  tier: labelled
+  question: longitudinal studies
+  search_words: [longitudinal]
+  filler_words: []
+  truth:
+    longitudinal:
+    - other: [longitudinally]
+      match: true
+      by: p054
+- id: demand:qr_pmc12753390_1_n
+  tier: labelled
+  question: I need simultaneous EEG and fMRI recorded in the same people to train models that predict the fMRI signal
+    from EEG.
+  search_words: []
+  filler_words: [recorded, predict]
+- id: recall:g71_dense_single_subject
+  tier: labelled
+  question: Dense repeated scanning of one individual over many sessions (precision functional mapping)
+  search_words: [scanning, functional]
+  filler_words: []
+  truth:
+    scanning:
+    - other: [scanned]
+      match: false
+      by: p184
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc13281038_1_n
+  tier: labelled
+  question: I want fMRI where participants watch a movie and others hear a description of the events, plus free
+    recall, to compare functional connectivity during experiencing and mentally reconstructing an event.
+  search_words: [recall, functional]
+  filler_words: []
+  truth:
+    recall:
+    - other: [recalling]
+      match: true
+      by: p176
+    - other: [recalled]
+      match: true
+      by: p180
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc10944177_1_n
+  tier: labelled
+  question: I need anatomical T1-weighted MRI from typically developing children aged roughly 6 to 14 as a control
+    group for comparing grey and white matter with children with cerebral palsy. Is there an open dataset of healthy
+    children?
+  search_words: [weighted, typically, developing]
+  filler_words: [aged, comparing]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    typically:
+    - other: [typical]
+      match: true
+      by: p150
+- id: demand:qr_pmc12589806_1_n
+  tier: labelled
+  question: I need resting-state EEG from healthy adults recorded in more than one session, on the same day and
+    weeks later, to evaluate test-retest reliability of spectral power measures.
+  search_words: []
+  filler_words: [recorded, later, measures]
+- id: demand:qr_pmc13316611_1_n
+  tier: labelled
+  question: I want resting-state fMRI from patients with Parkinson's disease and matched healthy controls, pooled
+    from several sites, to study functional network connectivity.
+  search_words: [functional]
+  filler_words: [pooled]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc12536378_1_n
+  tier: labelled
+  question: I need task fMRI of a social exclusion game in patients with borderline personality disorder and age-
+    and sex-matched healthy controls, with childhood trauma measures, to compare brain activation to exclusion.
+  search_words: [task, exclusion, personality]
+  filler_words: [age, measures]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    personality:
+    - other: [personal]
+      match: false
+      by: p020
+    - other: [person, persons]
+      match: false
+      by: p135
+    - other: [personalized]
+      match: false
+      by: p165
+- id: demand:qr_pmc9618087_1_n
+  tier: labelled
+  question: I want to show that EEG responses scale with the duration of decision processes. Is there event-related
+    EEG from a decision-making task with varying response times?
+  search_words: [task]
+  filler_words: [scale]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc13337974_1_n
+  tier: labelled
+  question: I want to train and validate a deep learning classifier that separates Parkinson's patients from healthy
+    controls. Is there resting-state EEG from both groups with enough subjects for subject-level cross-validation?
+  search_words: []
+  filler_words: [classifier, cross]
+- id: demand:qr_pmc10883417_1_n
+  tier: labelled
+  question: I need resting-state fMRI with many long scanning sessions per individual so I can examine how network
+    segregation and integration measures depend on the amount of data. Is there a dataset with repeated scans of
+    the same healthy adults?
+  search_words: []
+  filler_words: [scanning, measures]
+- id: easy:e_task_attention
+  tier: labelled
+  question: attention task datasets
+  search_words: [attention, task]
+  filler_words: []
+  truth:
+    attention:
+    - other: [attentional]
+      match: true
+      by: p045
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc12895553_1_n
+  tier: labelled
+  question: I need multitask and resting fMRI connectomes from many individuals, including clinical and healthy
+    participants, with behavioural measures, to predict task behaviour from connectomes.
+  search_words: [clinical, behavioural, task, behaviour]
+  filler_words: [measures, predict]
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+    behavioural:
+    - other: [behaviour]
+      match: true
+      by: p012
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    behaviour:
+    - other: [behavioural]
+      match: true
+      by: p012
+- id: demand:qr_pmc13120449_1_s
+  tier: labelled
+  question: EEG music therapy intensive care patients
+  search_words: [music, intensive]
+  filler_words: []
+  truth:
+    music:
+    - other: [musical]
+      match: true
+      by: p090
+    intensive:
+    - other: [intensity, intensities]
+      match: false
+      by: p048
+- id: recall:g18_delay_discounting
+  tier: labelled
+  question: Intertemporal choice and delay discounting experiments
+  search_words: [experiments]
+  filler_words: []
+  truth:
+    experiments:
+    - other: [experience, experiences]
+      match: false
+      by: p072
+- id: recall:p02_reward
+  tier: labelled
+  question: Datasets with reward processing tasks
+  search_words: [reward, tasks]
+  filler_words: []
+  truth:
+    reward:
+    - other: [rewarded]
+      match: true
+      by: p145
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc9120555_1_n
+  tier: labelled
+  question: I need a public task fMRI dataset in BIDS to run automated tests of an fMRI preprocessing pipeline.
+    Is there a small one with a well-known task?
+  search_words: [task]
+  filler_words: [public, automated, well]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc6361838_1_n
+  tier: labelled
+  question: I want to test whether the goal of a task changes functional connectivity under naturalistic viewing.
+    Is there fMRI where participants watched the same video clips of animals while making different judgments, such
+    as behavioral versus taxonomic?
+  search_words: [task, functional, behavioral]
+  filler_words: [changes]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+    behavioral:
+    - other: [behavior, behaviors]
+      match: true
+      by: p133
+- id: demand:qr_pmc7898243_3_n
+  tier: labelled
+  question: I need T1-weighted scans of the same healthy people scanned at many imaging centers on different scanners,
+    to quantify how consistent a segmentation pipeline is across sites and vendors.
+  search_words: [weighted]
+  filler_words: [scanned, quantify, consistent]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc13387868_1_n
+  tier: labelled
+  question: I want to measure thalamic nucleus volumes in cervical and upper limb dystonia. Is there high-resolution
+    T1-weighted MRI from dystonia patients and healthy controls with disease severity scores?
+  search_words: [weighted, severity]
+  filler_words: [measure]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc13569610_1_n
+  tier: labelled
+  question: I want to study dynamic alpha-band connectivity in first-episode psychosis. Is there resting-state EEG
+    from first-episode psychosis patients and healthy controls, ideally with cognitive and symptom scores and medication
+    status?
+  search_words: [episode, cognitive, medication]
+  filler_words: []
+  truth:
+    medication:
+    - other: [medical]
+      match: false
+      by: p039
+    - other: [medically]
+      match: false
+      by: p079
+- id: demand:qf02_eeg_autism_controls_like_abide
+  tier: labelled
+  question: eeg datasets for autism subjects vs control, similar to fmri datasets like abide
+  search_words: []
+  filler_words: [like]
+- id: demand:qr_pmc10945772_2_n
+  tier: labelled
+  question: I need fMRI of participants listening to naturalistic spoken narratives, such as one person recalling
+    a movie, to compare syntactic processing in comprehension with production. Is there an open dataset of naturalistic
+    story listening?
+  search_words: [recalling, comprehension, production]
+  filler_words: [person]
+  truth:
+    recalling:
+    - other: [recalled]
+      match: true
+      by: p066
+    - other: [recall]
+      match: true
+      by: p176
+    comprehension:
+    - other: [comprehensive]
+      match: false
+      by: p013
+    production:
+    - other: [products, product]
+      match: false
+      by: p022
+- id: demand:qr_pmc12811606_1_s
+  tier: labelled
+  question: fetal resting-state fMRI longitudinal child follow-up
+  search_words: [longitudinal, follow]
+  filler_words: []
+  truth:
+    longitudinal:
+    - other: [longitudinally]
+      match: true
+      by: p054
+- id: demand:qr_pmc6618324_1_s
+  tier: labelled
+  question: BIDS task fMRI with published activation results
+  search_words: [task, results]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    results:
+    - other: [resulting]
+      match: true
+      by: p162
+    - other: [resulted]
+      match: true
+      by: p170
+- id: demand:qr_pmc6898452_1_s
+  tier: labelled
+  question: task fMRI word reading and attention
+  search_words: [task, reading, attention]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    attention:
+    - other: [attentional]
+      match: true
+      by: p045
+- id: demand:qf26_fmri_preprocessed_any_design
+  tier: labelled
+  question: fMRI datasets, experimental design doesn't matter, preprocessed in a standard manner would be a big
+    plus
+  search_words: []
+  filler_words: [experimental]
+- id: demand:qr_pmc13709198_1_n
+  tier: labelled
+  question: I want clinical EEG from Alzheimer's disease patients and healthy controls, both eyes-closed resting
+    recordings and photic stimulation recordings, to test an automated EEG processing pipeline and downstream classification.
+  search_words: [clinical]
+  filler_words: [recordings, automated]
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+- id: demand:qr_pmc10919484_1_n
+  tier: labelled
+  question: I need T1-weighted structural MRI from healthy adults with no psychiatric or neurological history, together
+    with trait emotional intelligence and anxiety questionnaires, to study grey and white matter correlates. Is
+    there an open dataset with these scans and questionnaires?
+  search_words: [weighted, structural, emotional, intelligence]
+  filler_words: []
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    emotional:
+    - other: [emotionally]
+      match: true
+      by: p005
+    intelligence:
+    - other: [intelligent]
+      match: true
+      by: p175
+- id: demand:qr_pmc13660637_1_n
+  tier: labelled
+  question: I want to quantify whole-brain functional connectivity changes across propofol anaesthesia. Is there
+    fMRI from healthy adults during wakefulness, propofol-induced unresponsiveness and recovery?
+  search_words: [functional]
+  filler_words: [quantify, changes]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qr_pmc6346668_1_n
+  tier: labelled
+  question: I want to estimate directed connectivity between brain regions and compare age groups. Is there fMRI
+    of children and adults watching the same short animated film?
+  search_words: [directed, animated]
+  filler_words: [age]
+  truth:
+    directed:
+    - other: [directional]
+      match: false
+      by: p029
+    - other: [direction, directions]
+      match: false
+      by: p181
+- id: demand:qr_pmc10945772_2_s
+  tier: labelled
+  question: fMRI listening to spoken story recall naturalistic
+  search_words: [recall]
+  filler_words: []
+  truth:
+    recall:
+    - other: [recalling]
+      match: true
+      by: p176
+    - other: [recalled]
+      match: true
+      by: p180
+- id: demand:qr_pmc10264898_1_n
+  tier: labelled
+  question: I need open resting-state fMRI collections from different scanners and acquisition settings to demonstrate
+    quality control procedures. They should include slice timing information and a mix of fixation and eyes-closed
+    instructions.
+  search_words: [timing]
+  filler_words: [mix]
+- id: demand:qr_pmc7303387_1_n
+  tier: labelled
+  question: I need task fMRI with repeated sessions in the same healthy participants, so I can measure how reproducible
+    single-subject activation maps are under different processing choices.
+  search_words: [task]
+  filler_words: [measure]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc10570500_1_n
+  tier: labelled
+  question: I need brain imaging of patients with mild or moderate depression scanned twice, before and after a
+    non-pharmacological treatment such as CBT or neurofeedback, with an untreated comparison group. I want to test
+    whether rich club connectivity predicts clinical improvement.
+  search_words: [depression]
+  filler_words: [scanned, predicts, clinical]
+  truth:
+    depression:
+    - other: [depressed]
+      match: true
+      by: p023
+    - other: [depressive]
+      match: true
+      by: p125
+- id: demand:qr_pmc7054266_1_n
+  tier: labelled
+  question: I need fMRI of healthy adults doing a Simon spatial conflict task with trial-wise behaviour and response
+    times, to link a drift-diffusion model of behaviour to BOLD activation.
+  search_words: [task, behaviour]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    behaviour:
+    - other: [behavioural]
+      match: true
+      by: p012
+- id: recall:d15_reward_learning_value
+  tier: labelled
+  question: I want to know how value representations in the brain change when associations are learned over several
+    days rather than within one session. Is there fMRI of healthy adults performing a reward learning task, with
+    extended training across multiple sessions?
+  search_words: [reward, task]
+  filler_words: [change]
+  truth:
+    reward:
+    - other: [rewarded]
+      match: true
+      by: p145
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc12892302_1_n
+  tier: labelled
+  question: I need longitudinal amyloid PET scans from ageing cohorts to train a deep learning model that corrects
+    Centiloid quantification across tracers and scanners.
+  search_words: [longitudinal, ageing]
+  filler_words: []
+  truth:
+    longitudinal:
+    - other: [longitudinally]
+      match: true
+      by: p054
+    ageing:
+    - other: [age, ages]
+      match: false
+      by: p171 overridden
+      note: 'ageing as growing old, not any mention of an age (word_forms.yaml); blind label: context'
+- id: demand:qr_pmc10470388_1_n
+  tier: labelled
+  question: I need fMRI of people watching many emotional video clips, with ratings of the emotions evoked. I want
+    to build voxel-wise encoding models of the cortical organization of emotional experience.
+  search_words: [emotional, emotions, experience]
+  filler_words: []
+  truth:
+    emotional:
+    - other: [emotionally]
+      match: true
+      by: p005
+    emotions:
+    - other: [emotionally]
+      match: false
+      by: p168
+    experience:
+    - other: [experiment, experiments]
+      match: false
+      by: p072
+- id: recall:g23_habit_goal_directed
+  tier: labelled
+  question: Habitual versus goal-directed instrumental learning
+  search_words: [directed, instrumental]
+  filler_words: []
+  truth:
+    directed:
+    - other: [directional]
+      match: false
+      by: p029
+    - other: [direction, directions]
+      match: false
+      by: p181
+- id: demand:qr_pmc12172785_1_n
+  tier: labelled
+  question: I want to re-examine effective connectivity in the core face-processing network with dynamic causal
+    modeling. Is there fMRI of healthy participants viewing faces, ideally measured in many sessions per person?
+  search_words: [effective]
+  filler_words: [measured, person]
+- id: demand:qr_pmc12272199_1_n
+  tier: labelled
+  question: I want fMRI of healthy adults passively listening to vocal and non-vocal sounds to measure stimulus-specific
+    information across the brain. Is there a voice localizer dataset with many participants?
+  search_words: [localizer]
+  filler_words: [measure]
+  truth:
+    localizer:
+    - other: [localize]
+      match: false
+      by: p154
+    - other: [localization]
+      match: false
+      by: p158
+- id: demand:qr_pmc11940034_1_n
+  tier: labelled
+  question: I need structural MRI of young healthy adults with morningness-eveningness chronotype and sleep questionnaires.
+    I want to relate chronotype to the volumes of subcortical structures.
+  search_words: [structural]
+  filler_words: [relate, structures]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc5139675_1_n
+  tier: labelled
+  question: I want to demonstrate a format for sharing statistical results of fMRI analyses. Are there openly shared
+    task fMRI datasets with raw data from several different paradigms that I can re-analyse in SPM and FSL?
+  search_words: [task]
+  filler_words: [format, results, analyses, analyse]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc12811606_1_n
+  tier: labelled
+  question: I need fetal resting-state fMRI from a longitudinal cohort with later toddler outcome measures, to relate
+    prenatal connectivity to autistic traits.
+  search_words: [longitudinal]
+  filler_words: [later, measures, relate]
+  truth:
+    longitudinal:
+    - other: [longitudinally]
+      match: true
+      by: p054
+- id: recall:d06_meg_memory_replay
+  tier: labelled
+  question: I'd like to check whether successful episodic retrieval is accompanied by fast reactivation of the encoded
+    content in the human brain. Is there MEG data from healthy volunteers doing associative memory retrieval, together
+    with a visual localizer to train classifiers?
+  search_words: [reactivation, associative, localizer]
+  filler_words: [like, check, classifiers]
+  truth:
+    localizer:
+    - other: [localize]
+      match: false
+      by: p154
+    - other: [localization]
+      match: false
+      by: p158
+- id: demand:qr_pmc11153828_1_n
+  tier: labelled
+  question: I want to demonstrate event-annotation tools on a real experiment. Is there an EEG dataset of a sustained
+    attention response task with well-structured event files for trial sequences?
+  search_words: [attention, task]
+  filler_words: [experiment, well, structured]
+  truth:
+    attention:
+    - other: [attentional]
+      match: true
+      by: p045
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: recall:g66_tms_eeg_combined
+  tier: labelled
+  question: Combined TMS and EEG experiments
+  search_words: [experiments]
+  filler_words: []
+  truth:
+    experiments:
+    - other: [experience, experiences]
+      match: false
+      by: p072
+- id: demand:qr_pmc12319838_1_n
+  tier: labelled
+  question: I want to compare automated quality control tools for T1-weighted brain MRI. Is there a dataset of T1w
+    scans with different levels of motion artifact and expert quality labels?
+  search_words: [weighted]
+  filler_words: [automated]
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+- id: demand:qr_pmc13094013_1_n
+  tier: labelled
+  question: I want to check whether choroid plexus vascular signals can be read from an ordinary resting-state BOLD
+    scan. Is there resting-state BOLD fMRI from healthy adults, ideally multi-echo?
+  search_words: []
+  filler_words: [check, read]
+- id: demand:qr_pmc12137705_1_n
+  tier: labelled
+  question: I need diffusion MRI and functional MRI, at rest and during tasks, from healthy young adults who also
+    have general intelligence scores. I want to replicate a prediction of intelligence from structural-functional
+    brain network coupling.
+  search_words: [functional, tasks, intelligence, structural]
+  filler_words: [prediction]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+    intelligence:
+    - other: [intelligent]
+      match: true
+      by: p175
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc10481640_1_n
+  tier: labelled
+  question: I need scalp EEG datasets recorded during cognitive tasks such as attention and decision-making. I want
+    to compare EEG phase prediction accuracy of occipital alpha between rest and task states.
+  search_words: [cognitive, tasks, attention, task]
+  filler_words: [recorded, prediction]
+  truth:
+    tasks:
+    - other: [tasked]
+      match: true
+      by: p075
+    attention:
+    - other: [attentional]
+      match: true
+      by: p045
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: recall:u09_qmri_ageing
+  tier: labelled
+  question: Quantitative MRI datasets on ageing
+  search_words: [ageing]
+  filler_words: []
+  truth:
+    ageing:
+    - other: [age, ages]
+      match: false
+      by: p171 overridden
+      note: 'ageing as growing old, not any mention of an age (word_forms.yaml); blind label: context'
+- id: demand:qr_pmc10765510_1_n
+  tier: labelled
+  question: I need eyes-open resting-state fMRI from patients with medically refractory epilepsy, scanned before
+    and after intracranial electrode implantation with stimulation, to study dynamic functional connectivity. Is
+    there such a dataset?
+  search_words: [medically, functional]
+  filler_words: [scanned]
+  truth:
+    medically:
+    - other: [medication, medications]
+      match: false
+      by: p079
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: demand:qf29_simple_visual_task_20_subjects
+  tier: labelled
+  question: task-based fMRI dataset with a very simple visual task, like viewing vertical and horizontal stripes,
+    at least 20 participants and 30 trials per task, randomized
+  search_words: [task, randomized]
+  filler_words: [based, like]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    randomized:
+    - other: [random, randoms]
+      match: false
+      by: p071
+    - other: [randomly]
+      match: true
+      by: p155
+- id: recall:d04_prediction_error_episodic
+  tier: labelled
+  question: I want to test whether surprise when a familiar sequence of events changes drives the hippocampus to
+    update stored memories. Is there fMRI from healthy adults who watched or played through narratives or videos
+    with expected versus unexpected outcomes, with later memory tests?
+  search_words: []
+  filler_words: [changes, later]
+- id: recall:g68_apt_cest_imaging
+  tier: labelled
+  question: Chemical exchange saturation transfer or amide proton transfer imaging
+  search_words: [transfer]
+  filler_words: []
+  truth:
+    transfer:
+    - other: [transferred]
+      match: true
+      by: p001
+- id: demand:qr_pmc11493687_1_n
+  tier: labelled
+  question: I want to compare subject-specific and template head models for ERP source localization. Is there a
+    face versus scrambled face visual evoked potential EEG dataset with structural MRI for each participant?
+  search_words: [structural]
+  filler_words: [localization]
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc12319750_1_n
+  tier: labelled
+  question: I want a real task-fMRI dataset that has been analysed with many different pipelines, to test statistical
+    inference methods for multiverse analyses. Is there a decision-making-under-risk dataset with raw data and shared
+    analysis outputs?
+  search_words: [task]
+  filler_words: [analysed, analyses]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qp10_task_fmri_with_paper
+  tier: labelled
+  question: task fMRI datasets with an associated publication that reports group-level activation results
+  search_words: [task, publication, results]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    publication:
+    - other: [public]
+      match: false
+      by: p163
+    results:
+    - other: [resulting]
+      match: true
+      by: p162
+    - other: [resulted]
+      match: true
+      by: p170
+- id: demand:qr_pmc11675092_1_n
+  tier: labelled
+  question: I want to relate task-evoked signal correlations to noise correlations in large-scale brain networks.
+    Is there fMRI with many different task conditions in the same participants?
+  search_words: [task]
+  filler_words: [relate, scale]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc11706466_1_n
+  tier: labelled
+  question: I want to compare time-series features of rs-fMRI in case-control analyses of neuropsychiatric disorders.
+    Is there resting-state fMRI from patients with schizophrenia, bipolar disorder or ADHD and healthy controls?
+  search_words: []
+  filler_words: [analyses]
+- id: demand:qr_pmc6146299_1_n
+  tier: labelled
+  question: I want to demonstrate an MEG functional connectivity pipeline from raw data to group statistics. Is
+    there a multi-subject MEG dataset with at least two experimental conditions such as familiar versus unfamiliar
+    versus scrambled faces?
+  search_words: [functional]
+  filler_words: [experimental]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: ambiguity:amb_induced_pain
+  tier: labelled
+  question: experimentally induced pain in healthy volunteers
+  search_words: [experimentally]
+  filler_words: []
+  truth:
+    experimentally:
+    - other: [experimenter, experimenters]
+      match: false
+      by: p102
+- id: demand:qr_pmc12536378_1_s
+  tier: labelled
+  question: Cyberball social exclusion fMRI borderline personality disorder
+  search_words: [exclusion, personality]
+  filler_words: []
+  truth:
+    personality:
+    - other: [personal]
+      match: false
+      by: p020
+    - other: [person, persons]
+      match: false
+      by: p135
+    - other: [personalized]
+      match: false
+      by: p165
+- id: demand:qr_pmc12047393_1_n
+  tier: labelled
+  question: I need resting-state fMRI from healthy participants recorded after intermittent theta burst stimulation
+    over prefrontal cortex at different intensities. I want to see how stimulation changes brain entropy.
+  search_words: []
+  filler_words: [recorded, intensities, changes]
+- id: demand:qr_pmc6407785_1_n
+  tier: labelled
+  question: I want to relate a brain criticality measure to anxiety and pulse over days and weeks. Is there a dataset
+    where one person had many resting-state fMRI sessions together with daily psychological and physiological measurements?
+  search_words: []
+  filler_words: [relate, measure, person, measurements]
+- id: ambiguity:amb_monetary_reward
+  tier: labelled
+  question: studies with monetary rewards
+  search_words: [rewards]
+  filler_words: []
+  truth:
+    rewards:
+    - other: [rewarded]
+      match: true
+      by: p145
+- id: demand:qr_pmc12892302_1_s
+  tier: labelled
+  question: longitudinal amyloid PET ageing cohort
+  search_words: [longitudinal, ageing]
+  filler_words: []
+  truth:
+    longitudinal:
+    - other: [longitudinally]
+      match: true
+      by: p054
+    ageing:
+    - other: [age, ages]
+      match: false
+      by: p171 overridden
+      note: 'ageing as growing old, not any mention of an age (word_forms.yaml); blind label: context'
+- id: demand:qr_pmc8764489_1_n
+  tier: labelled
+  question: I want several published task-fMRI studies in BIDS with raw data so that I can compare how different
+    analysis software packages change group-level results. Which datasets are suitable?
+  search_words: [task]
+  filler_words: [change, results]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: recall:g70_multishell_diffusion_repeats
+  tier: labelled
+  question: High-quality multi-shell diffusion MRI with many directions and repeats
+  search_words: [directions]
+  filler_words: []
+  truth:
+    directions:
+    - other: [directed]
+      match: false
+      by: p181
+- id: recall:d12_eeg_fmri_confidence
+  tier: labelled
+  question: I want to separate the neural signals of evidence accumulation from the signals of subjective confidence
+    in fast perceptual decisions. Is there simultaneous or matched EEG and fMRI from healthy adults performing a
+    speeded perceptual discrimination task with confidence reports?
+  search_words: [subjective, speeded, task]
+  filler_words: []
+  truth:
+    subjective:
+    - other: [subjected]
+      match: false
+      by: p017
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc9166846_1_n
+  tier: labelled
+  question: I want to examine how LSD alters functional connectivity and relate it to subjective effects. Is there
+    resting-state fMRI after LSD and after placebo in healthy volunteers, with subjective experience ratings?
+  search_words: [functional, subjective, experience]
+  filler_words: [relate]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+    subjective:
+    - other: [subjected]
+      match: false
+      by: p017
+    experience:
+    - other: [experiment, experiments]
+      match: false
+      by: p072
+- id: demand:qr_pmc12497652_1_n
+  tier: labelled
+  question: I need MEG recordings from a group of participants doing a task, to study the temporal ordering of large-scale
+    cortical network states.
+  search_words: [task]
+  filler_words: [recordings, temporal, scale]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qf03_rest_fmri_alcohol_questionnaires
+  tier: labelled
+  question: resting-state fMRI data from healthy controls with information about alcohol consumption or alcohol
+    dependence questionnaires (AUDIT, ADS)
+  search_words: [dependence]
+  filler_words: []
+  truth:
+    dependence:
+    - other: [depending]
+      match: true
+      by: p004
+    - other: [dependent]
+      match: true
+      by: p115
+- id: demand:qr_pmc10945772_1_s
+  tier: labelled
+  question: fMRI spontaneous speech production movie recall
+  search_words: [production, recall]
+  filler_words: []
+  truth:
+    production:
+    - other: [products, product]
+      match: false
+      by: p022
+    recall:
+    - other: [recalling]
+      match: true
+      by: p176
+    - other: [recalled]
+      match: true
+      by: p180
+- id: demand:qr_pmc13657052_1_s
+  tier: reviewed_list
+  question: resting-state EEG healthy adults large sample
+  search_words: []
+  filler_words: [sample]
+- id: demand:qr_pmc12104373_1_s
+  tier: reviewed_list
+  question: structural MRI adults across lifespan neurologically intact
+  search_words: [structural]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc11941155_1_n
+  tier: reviewed_list
+  question: I want to build machine learning and deep learning classifiers that detect Parkinson's disease from
+    EEG. Is there resting-state EEG from Parkinson's patients and healthy controls?
+  search_words: []
+  filler_words: [classifiers]
+- id: demand:qr_pmc9021021_1_s
+  tier: reviewed_list
+  question: structural MRI across the lifespan
+  search_words: [structural]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: recall:g26_sign_language_memory
+  tier: reviewed_list
+  question: Sign language processing
+  search_words: [sign]
+  filler_words: []
+- id: demand:qf19_videos_people_talking
+  tier: reviewed_list
+  question: fMRI datasets where the stimulus is videos of people talking (conversations, speeches, telling stories)
+    with the face of the speaker visible; the longer the better
+  search_words: [conversations]
+  filler_words: []
+- id: demand:qr_pmc9954172_1_s
+  tier: reviewed_list
+  question: structural MRI schizophrenia patients controls
+  search_words: [structural]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qp14_eeg_200hz_redistributable
+  tier: reviewed_list
+  question: EEG datasets sampled at 200 Hz or higher under a licence that allows redistributing converted copies
+  search_words: []
+  filler_words: [sampled]
+- id: demand:qr_pmc13379418_1_n
+  tier: reviewed_list
+  question: I want to decode and reconstruct viewed visual stimuli across subjects and datasets. Is there fMRI recorded
+    while participants viewed natural object images, with the stimulus images available and a permissive licence?
+  search_words: [object]
+  filler_words: [recorded]
+- id: demand:qr_pmc9863274_1_s
+  tier: reviewed_list
+  question: structural MRI trait anxiety questionnaire healthy adults
+  search_words: [structural]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc12947498_1_n
+  tier: reviewed_list
+  question: I want to characterise spectral, nonlinear and network differences in EEG between Alzheimer's disease,
+    frontotemporal dementia and healthy controls and train classifiers. Is there resting-state EEG from all three
+    groups?
+  search_words: []
+  filler_words: [differences, classifiers]
+- id: demand:qr_pmc13732001_1_n
+  tier: reviewed_list
+  question: I want to train a deep learning classifier to separate schizophrenia patients from healthy controls
+    using resting-state fMRI. Is there a dataset with patients and controls, preferably with preprocessed data?
+  search_words: []
+  filler_words: [classifier, preferably]
+- id: demand:qr_pmc12392303_1_n
+  tier: reviewed_list
+  question: I need T1-weighted and T2-weighted structural MRI acquired in the same participants, to train and test
+    a network that synthesizes one contrast from the other.
+  search_words: [weighted, structural]
+  filler_words: []
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc12403410_1_n
+  tier: reviewed_list
+  question: I need resting-state fMRI from patients with ADHD, bipolar disorder and schizophrenia plus healthy controls,
+    with cognitive scores, to compare procedural memory network topology across disorders.
+  search_words: [cognitive, procedural]
+  filler_words: []
+- id: recall:u05_sickle_cell
+  tier: reviewed_list
+  question: Find datasets with structural MRI in sickle cell disease
+  search_words: [structural]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: recall:g80_natural_conversation
+  tier: reviewed_list
+  question: naturalistic dialogue and real conversation in the scanner
+  search_words: [conversation]
+  filler_words: []
+- id: recall:g67_high_density_dot
+  tier: reviewed_list
+  question: High-density diffuse optical tomography
+  search_words: [diffuse]
+  filler_words: []
+- id: demand:qr_pmc11413242_1_n
+  tier: reviewed_list
+  question: I want to characterise functional connectivity in cocaine use disorder and relate it to dopamine receptor
+    maps. Is there resting-state fMRI from people with cocaine use disorder and healthy controls?
+  search_words: [functional]
+  filler_words: [relate]
+  truth:
+    functional:
+    - other: [functioning]
+      match: false
+      by: p189
+- id: recall:u15_newborn
+  tier: reviewed_list
+  question: Newborn structural MRI datasets
+  search_words: [structural]
+  filler_words: []
+  truth:
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc8279516_1_s
+  tier: reviewed_list
+  question: working memory fMRI schizophrenia healthy controls
+  search_words: [working]
+  filler_words: []
+- id: demand:qr_pmc13032414_1_n
+  tier: reviewed_list
+  question: I want to compare white matter fibre properties between patients with primary trigeminal neuralgia and
+    healthy controls and relate them to pain severity. Is there diffusion MRI from both groups with clinical pain
+    scores?
+  search_words: [clinical]
+  filler_words: [relate, severity]
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+- id: demand:qp11_memory_consolidation
+  tier: reviewed_list
+  question: fMRI datasets on memory consolidation with complete task events and a sufficient sample size
+  search_words: [task]
+  filler_words: [sample]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc11487101_1_n
+  tier: reviewed_list
+  question: I want to relate negative symptoms to other clinical variables and working memory in people with schizophrenia
+    spectrum disorders and bipolar disorder. Is there phenotype data with symptom ratings and working memory scores
+    from patients with either diagnosis?
+  search_words: [clinical, working]
+  filler_words: [relate]
+  truth:
+    clinical:
+    - other: [clinic, clinics]
+      match: false
+      by: p044
+- id: demand:qr_pmc13433390_1_n
+  tier: reviewed_list
+  question: I need neurotypical control T1-weighted MRI to compare with patients with a rare lysosomal disease.
+    Is there structural MRI from healthy adults covering a broad adult age range, with age and sex?
+  search_words: [weighted, structural, age]
+  filler_words: []
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+    age:
+    - other: [aging]
+      match: false
+      by: p018
+- id: demand:qr_pmc13569610_1_s
+  tier: reviewed_list
+  question: resting-state EEG first-episode psychosis controls
+  search_words: [episode]
+  filler_words: []
+- id: demand:qr_pmc12665582_1_s
+  tier: reviewed_list
+  question: resting-state EEG sleep deprivation rested
+  search_words: [rested]
+  filler_words: []
+- id: easy:e_mod_asl
+  tier: reviewed_list
+  question: arterial spin labeling datasets
+  search_words: [labeling]
+  filler_words: []
+- id: demand:qr_pmc10945565_1_n
+  tier: reviewed_list
+  question: I need task MEG recordings from multiple participants, with visual stimuli and event timing, to demonstrate
+    a toolbox for modelling fast dynamic brain activity. Is there an open multi-subject task MEG dataset, ideally
+    with structural MRI for source reconstruction?
+  search_words: [task, timing, structural]
+  filler_words: [recordings]
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: demand:qr_pmc11828889_1_n
+  tier: reviewed_list
+  question: I want to relate individual differences in wellbeing to brain networks during naturalistic viewing.
+    Is there fMRI of adults watching a full-length film with questionnaire measures collected, ideally preprocessed?
+  search_words: []
+  filler_words: [relate, differences, measures]
+- id: demand:qr_pmc8285180_1_s
+  tier: reviewed_list
+  question: fMRI associative learning episodic memory reactivation
+  search_words: [associative, reactivation]
+  filler_words: []
+- id: easy:e_task_mid
+  tier: control
+  question: monetary incentive delay
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc12939542_1_s
+  tier: control
+  question: eyes-open photostimulation EEG Alzheimer frontotemporal controls
+  search_words: []
+  filler_words: []
+- id: recall:g42_students_experts
+  tier: control
+  question: novices vs experts, students learning a course
+  search_words: []
+  filler_words: []
+- id: recall:u08_motor_imagery
+  tier: control
+  question: What are the motor imagery datasets available?
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc13478122_1_n
+  tier: control
+  question: I want to compare neural oscillation dynamics before and after sleep deprivation. Is there resting-state
+    EEG from the same participants after normal sleep and after sleep deprivation?
+  search_words: []
+  filler_words: []
+- id: demand:qx06_fmriprep_version
+  tier: control
+  question: datasets with MRIQC derivatives
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc12846118_1_s
+  tier: control
+  question: resting-state fMRI schizophrenia healthy controls
+  search_words: []
+  filler_words: []
+- id: recall:l06_pet_and_mri
+  tier: control
+  question: Datasets with PET and MRI
+  search_words: []
+  filler_words: []
+- id: easy:e_age_teens
+  tier: control
+  question: adolescents
+  search_words: []
+  filler_words: []
+- id: easy:e_dx_fibro
+  tier: control
+  question: fibromyalgia
+  search_words: []
+  filler_words: []
+- id: easy:e_cnt_pd40
+  tier: control
+  question: Datasets with at least 40 Parkinson's patients
+  search_words: []
+  filler_words: []
+- id: demand:qf04_eeg_autism
+  tier: control
+  question: EEG data for subjects with autism
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc12589806_1_s
+  tier: control
+  question: test-retest EEG healthy adults repeated sessions
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc7591251_1_s
+  tier: control
+  question: resting-state fMRI schizophrenia controls symptom scores
+  search_words: []
+  filler_words: []
+- id: easy:e_au_milham
+  tier: control
+  question: datasets from Michael Milham
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc13681052_1_s
+  tier: control
+  question: movie-watching fMRI many different movies
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc11445567_1_s
+  tier: control
+  question: resting-state fMRI healthy young adults long scans
+  search_words: []
+  filler_words: []
+- id: easy:e_c_meg_rest
+  tier: control
+  question: MEG resting state
+  search_words: []
+  filler_words: []
+- id: easy:e_sp_human
+  tier: control
+  question: human datasets
+  search_words: []
+  filler_words: []
+- id: easy:e_dx_ms
+  tier: control
+  question: multiple sclerosis
+  search_words: []
+  filler_words: []
+- id: recall:g08_auditory_hallucinations_psychosis
+  tier: control
+  question: Do any datasets include patients with psychosis who hear voices?
+  search_words: []
+  filler_words: []
+- id: easy:e_task_stop
+  tier: control
+  question: stop signal task
+  search_words: [task]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc13651454_1_s
+  tier: control
+  question: traveling subjects diffusion MRI multiple scanners
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc5842758_1_s
+  tier: control
+  question: T1 MRI schizophrenia bipolar ADHD healthy controls
+  search_words: []
+  filler_words: []
+- id: recall:b08_ieeg_language_epilepsy
+  tier: control
+  question: Find iEEG data on language or speech processing in epilepsy patients
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc10744364_1_s
+  tier: control
+  question: resting-state EEG frontotemporal dementia controls
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc12140569_2_s
+  tier: control
+  question: motor task fMRI test-retest
+  search_words: [task]
+  filler_words: []
+  truth:
+    task:
+    - other: [tasked]
+      match: true
+      by: p075
+- id: demand:qr_pmc9783493_1_n
+  tier: control
+  question: I want to compare complexity of spontaneous brain activity in ADHD, schizophrenia and bipolar disorder
+    against matched healthy controls. Is there resting-state fMRI from these groups?
+  search_words: []
+  filler_words: []
+- id: demand:qr_pmc13094013_1_s
+  tier: control
+  question: resting-state BOLD fMRI healthy adults multi-echo
+  search_words: []
+  filler_words: []
+- id: recall:b04_pet_amyloid_tau
+  tier: control
+  question: Find PET data on amyloid or tau in older adults
+  search_words: []
+  filler_words: []
+- id: trap:01
+  tier: trap
+  question: Sjögren syndrome brain MRI
+  search_words: [syndrome]
+  must_look_up: [syndrome, brain, mri]
+  must_not_look_up: [sj, gren]
+- id: trap:02
+  tier: trap
+  question: MP2RAGE T1 maps of healthy ageing
+  search_words: [ageing]
+  must_look_up: [maps, healthy, ageing]
+  must_not_look_up: [rage]
+  truth:
+    ageing:
+    - other: [age, ages]
+      match: false
+      by: p171 overridden
+      note: 'ageing as growing old, not any mention of an age (word_forms.yaml); blind label: context'
+- id: trap:03
+  tier: trap
+  question: Alzheimer's disease FDG-PET with cognitive scores
+  search_words: [alzheimer]
+  must_look_up: [alzheimer, disease, fdg, pet]
+  must_not_look_up: []
+- id: trap:04
+  tier: trap
+  question: Parkinson’s patients on and off medication
+  search_words: [medication]
+  must_look_up: [parkinson, patients, medication]
+  must_not_look_up: []
+  truth:
+    medication:
+    - other: [medical]
+      match: false
+      by: p039
+    - other: [medically]
+      match: false
+      by: p079
+- id: trap:05
+  tier: trap
+  question: naïve participants learning a new motor skill
+  search_words: []
+  must_look_up: [participants, learning, motor, skill]
+  must_not_look_up: [ve]
+- id: trap:06
+  tier: trap
+  question: Ménière's disease vestibular MRI
+  search_words: [vestibular]
+  must_look_up: [disease, vestibular, mri]
+  must_not_look_up: [ni, re, nière, mènière]
+- id: trap:07
+  tier: trap
+  question: well-being questionnaires and resting fMRI
+  search_words: [well]
+  must_look_up: [well, questionnaires, resting, fmri]
+  must_not_look_up: [being]
+  truth:
+    well:
+    - other: [wellness]
+      match: false
+      by: p069
+- id: trap:08
+  tier: trap
+  question: T1-weighted and T2-weighted structural scans of the same subjects
+  search_words: [weighted, structural]
+  must_look_up: [weighted, structural, scans]
+  must_not_look_up: []
+  truth:
+    weighted:
+    - other: [weight, weights]
+      match: false
+      by: p188
+    structural:
+    - other: [structured]
+      match: false
+      by: p182
+    - other: [structure, structures]
+      match: false
+      by: p185 overridden
+      note: 'structural MRI: ''structure'' is mostly ''Brain Imaging Data Structure'' (word_forms.yaml agrees; the
+        blind label said both)'
+- id: trap:09
+  tier: trap
+  question: 7T fMRI of personality traits
+  search_words: [personality]
+  must_look_up: [fmri, personality, traits]
+  must_not_look_up: []
+  truth:
+    personality:
+    - other: [personal]
+      match: false
+      by: p020
+    - other: [person, persons]
+      match: false
+      by: p135
+    - other: [personalized]
+      match: false
+      by: p165
+- id: trap:10
+  tier: trap
+  question: I am looking for any open datasets which would be suitable for my project, because I have been trying
+    for quite some time now to find data that other research groups have shared before and which they would allow
+    me to use again here. Ideally the recordings should come with clear documentation, participant information and
+    consent for reuse, and the most important thing is that they should be about healthy ageing and include a voice
+    localizer task
+  search_words: [ageing, localizer]
+  must_look_up: [ageing, localizer]
+  must_not_look_up: []
+  truth:
+    ageing:
+    - other: [age, ages]
+      match: false
+      by: p171 overridden
+      note: 'ageing as growing old, not any mention of an age (word_forms.yaml); blind label: context'
+    localizer:
+    - other: [localize]
+      match: false
+      by: p154
+    - other: [localization]
+      match: false
+      by: p158

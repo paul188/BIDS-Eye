@@ -47,6 +47,8 @@ from typing import Callable, Dict, FrozenSet, Iterable, List, Mapping, Optional,
 
 import yaml
 
+from text_terms import POSTGRES_STOPWORDS
+
 log = logging.getLogger(__name__)
 
 _PATH = Path(__file__).with_name("word_forms.yaml")
@@ -54,6 +56,11 @@ _PAIRS_PATH = Path(__file__).with_name("word_form_pairs.json")
 _WORD_RE = re.compile(r"[a-z]+")
 # A form goes into a tsquery literal as it is, so nothing else may pass.
 _FORM_RE = re.compile(r"[a-z0-9]+")
+# A question's tokens: letters and digits of any script together, as
+# PostgreSQL's parser keeps them. Splitting at anything not a-z cut "Sjögren"
+# into "sj" and "gren" and "mp2rage" into "mp" and "rage", and the pieces were
+# looked up as words the question asked for.
+_QUESTION_TOKEN_RE = re.compile(r"[^\W_]+")
 
 # Another form of the stem collides with the asked word when it alone brings
 # in at least (MIN_RATIO - 1) times the datasets of the asked word's own forms,
@@ -83,8 +90,16 @@ class WordEvidence:
 
 
 def question_words(question: str) -> List[str]:
-    """The words of *question* worth looking up, in order, without repeats."""
-    words = [w for w in _WORD_RE.findall(question.lower()) if len(w) >= 3]
+    """The words of *question* worth looking up, in order, without repeats.
+
+    A token with anything but a-z in it ("sjögren", "t1w", "mp2rage") is left
+    out whole: it has no forms in bids_word_forms and is searched by stem.
+    PostgreSQL's stopwords are left out before the cap, so they cannot crowd
+    out the words searched for: they have no stem and the lookup finds nothing
+    for them.
+    """
+    words = [w for w in _QUESTION_TOKEN_RE.findall(question.lower())
+             if len(w) >= 3 and _WORD_RE.fullmatch(w) and w not in POSTGRES_STOPWORDS]
     return list(dict.fromkeys(words))[:MAX_QUESTION_WORDS]
 
 
