@@ -1,0 +1,93 @@
+# Gold requests for the order and number of results (QueryPlan.ordering).
+#
+# Not real requests: the 70 real ones hardly ever ask for an order or a top N,
+# so these are written to cover it. Each one either orders the whole catalogue
+# or orders the answers of a structural gold request (../requests_truth.json),
+# whose answer list comes from recorded facts, so the expected order is exact.
+#
+#   base      'all' (every dataset of the catalogue) or the id of a gold request;
+#             its 'relevant' list is the set being ordered
+#   sort_key  as in llm/preprocess/plan.py SortKey; omitted = no order named
+#   direction DESC (largest, newest, most first) or ASC
+#   limit     the number the user asked for; omitted = none
+#
+# build_truth.py turns this file and facts.jsonl into truth.json;
+# score_ordering.py scores a run of eval_recall.py against it.
+queries:
+# ── An order over the whole catalogue ──────────────────────────────────────
+- id: qo01_most_subjects
+  question: the 10 datasets with the most subjects
+  base: all
+  sort_key: subjects
+  direction: DESC
+  limit: 10
+- id: qo02_newest
+  question: the 5 most recently published datasets
+  base: all
+  sort_key: published
+  direction: DESC
+  limit: 5
+- id: qo03_most_downloaded
+  question: the 10 most downloaded datasets
+  base: all
+  sort_key: downloads
+  direction: DESC
+  limit: 10
+- id: qo04_smallest_gb
+  question: the 10 smallest datasets in GB
+  base: all
+  sort_key: size
+  direction: ASC
+  limit: 10
+
+# ── An order over the answers of a structural gold request ────────────────
+- id: qo05_meeg_most_subjects
+  question: the 10 M/EEG datasets with the most subjects
+  base: qx07_meeg
+  sort_key: subjects
+  direction: DESC
+  limit: 10
+- id: qo06_flair_largest
+  question: the 5 datasets with FLAIR images from at least 50 subjects that have the most subjects
+  base: qf44_flair_min_subjects
+  sort_key: subjects
+  direction: DESC
+  limit: 5
+- id: qo07_mriqc_newest
+  question: the 10 most recently published datasets with MRIQC derivatives
+  base: qx06_fmriprep_version
+  sort_key: published
+  direction: DESC
+  limit: 10
+- id: qo08_sessions_most_subjects_first
+  question: datasets with at least 3 sessions per subject, the ones with the most subjects first
+  base: qx05_sessions
+  sort_key: subjects
+  direction: DESC
+- id: qo09_fast_tr_smallest_gb
+  question: the 5 smallest task fMRI datasets in GB with a TR below 1 s
+  base: qf05_task_fmri_fast_tr
+  sort_key: size
+  direction: ASC
+  limit: 5
+- id: qo10_rest_healthy_most_downloaded
+  question: the 10 most downloaded resting-state fMRI datasets of healthy participants
+  base: qf06_rest_fmri_healthy_patients
+  sort_key: downloads
+  direction: DESC
+  limit: 10
+- id: qo11_eeg_200hz_newest_first
+  question: EEG datasets sampled at 200 Hz or higher under a licence that allows redistribution, newest first
+  base: qp14_eeg_200hz_redistributable
+  sort_key: published
+  direction: DESC
+
+# ── A number of results without an order: any N correct answers ──────────
+- id: qo12_male_40_fieldmaps_five
+  question: 5 datasets with male participants aged 40 that have fieldmaps
+  base: qx03_male_40yo
+  limit: 5
+- id: qo13_eeg_small_paper_three
+  question: give me 3 human EEG datasets under 10 GB with more than 30 subjects and a linked paper
+  base: qx12_metadata_sheet
+  limit: 3

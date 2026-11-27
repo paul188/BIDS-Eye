@@ -19,7 +19,7 @@ from services.fulltext import text_search, word_frequencies  # noqa: E402
 
 
 def _plan(terms, alternatives) -> pp.QueryPlan:
-    return pp.QueryPlan(query_family="scan_filter", natural_language_summary="Summary.",
+    return pp.QueryPlan(natural_language_summary="Summary.",
                         scan_requirements=[ScanRequirement(scan_terms=terms)],
                         scan_term_alternatives=[TermAlternatives(term=t, alternatives=a)
                                                 for t, a in alternatives.items()])

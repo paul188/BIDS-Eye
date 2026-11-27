@@ -53,7 +53,7 @@ def test_the_pipeline_reports_a_cached_miss_as_db_miss(monkeypatch) -> None:
         def retrieve_for_field_multi_scored(self, field, terms):
             return {t: [("never_recorded_task", 1.0)] for t in terms}
 
-    plan = p.QueryPlan(query_family="concept_query", natural_language_summary="a task",
+    plan = p.QueryPlan(natural_language_summary="a task",
                        scan_requirements=[], rag_requests=[])
     monkeypatch.setattr(p.pipeline, "create_query_plan", lambda question: plan)
     monkeypatch.setattr(p.pipeline, "build_rag_requests",

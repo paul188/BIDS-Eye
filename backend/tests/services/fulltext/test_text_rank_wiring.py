@@ -37,10 +37,8 @@ def _full_text_available():
 def _fake_pipeline(monkeypatch, generated_sql: str, **plan_overrides) -> None:
     """Replace the two LLM stages and the resolver; keep the real rewriter."""
     plan = SimpleNamespace(
-        query_family=SimpleNamespace(value="description_search"),
         natural_language_summary="demo",
-        result_limit=None,
-        order_by=None,
+        user_ordered=False,
         groups=[],
     )
     for name, value in plan_overrides.items():
