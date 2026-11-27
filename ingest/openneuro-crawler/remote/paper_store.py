@@ -15,10 +15,10 @@ Store the papers datasets name, and the text search reads from them.
 
 `enrich()` is the whole step for a set of datasets: read their link fields,
 ask OpenNeuro for the three fields the crawler does not store, look the papers
-up, decide roles, write. It is used by scripts/backfill_papers.py and can be
+up, decide roles, write. It is used by ingest/backfill/backfill_papers.py and can be
 called from the crawler cycle for new datasets.
 
-Design and measurements: crawlers/paper_enrichment_plan.md.
+Design and measurements: docs/plans/Paper enrichment plan.md.
 """
 
 from __future__ import annotations
@@ -359,7 +359,7 @@ async def enrich(
     return stats
 
 
-# A role set by hand or by a later check (scripts/demote_paper_links.py)
+# A role set by hand or by a later check (ingest/backfill/demote_paper_links.py)
 # carries this prefix in role_reason and survives every re-run of enrich().
 OVERRIDE_PREFIX = "override: "
 

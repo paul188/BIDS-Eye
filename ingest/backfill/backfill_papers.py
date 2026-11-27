@@ -1,12 +1,12 @@
 """
-scripts/backfill_papers.py
+ingest/backfill/backfill_papers.py
 --------------------------
 Find the papers each indexed dataset names, look them up, and store them:
 
     bids_papers, bids_dataset_papers, bids_datasets.paper_text
 
-(crawlers/paper_enrichment_plan.md explains why; the code is in
-crawlers/openneuro-crawler/remote/paper_links.py, paper_lookup.py and
+(docs/plans/Paper enrichment plan.md explains why; the code is in
+ingest/openneuro-crawler/remote/paper_links.py, paper_lookup.py and
 paper_store.py.)
 
 Per run: one OpenNeuro request per 60 datasets for the associated-paper
@@ -14,8 +14,8 @@ fields, then about one Europe PMC request per 15 papers. The whole catalogue
 (about 1,200 papers) takes a few minutes. No key and no e-mail address is sent
 to any service.
 
-    python scripts/backfill_papers.py --dry-run --limit 50     # look first
-    python scripts/backfill_papers.py                          # write
+    python ingest/backfill/backfill_papers.py --dry-run --limit 50     # look first
+    python ingest/backfill/backfill_papers.py                          # write
 
 Options:
     --dry-run            look everything up and report, write nothing
@@ -46,8 +46,8 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-_REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "crawlers" / "openneuro-crawler"))
+_REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO / "ingest" / "openneuro-crawler"))
 
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 

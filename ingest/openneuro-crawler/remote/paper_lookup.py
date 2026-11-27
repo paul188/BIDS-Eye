@@ -4,7 +4,7 @@ remote/paper_lookup.py
 Title, abstract and keywords of the papers datasets name.
 
 Order of services (all free, none needs a key or an e-mail address; see
-crawlers/paper_enrichment_plan.md for what was measured):
+docs/plans/Paper enrichment plan.md for what was measured):
 
     Europe PMC   abstract, MeSH, author keywords, licence, open-access flag
                  and the published version of a preprint, in one call

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-_CRAWLER = ROOT / "crawlers" / "openneuro-crawler"
+_CRAWLER = ROOT / "ingest" / "openneuro-crawler"
 if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
@@ -69,7 +69,7 @@ def test_metadata_record_gives_new_columns_and_ethics_sites() -> None:
 
 
 def test_backfill_sql_replaces_per_source_and_quotes() -> None:
-    sys.path.insert(0, str(ROOT / "scripts"))
+    sys.path.insert(0, str(ROOT / "ingest" / "backfill"))
     import backfill_dataset_links as backfill
 
     found = {

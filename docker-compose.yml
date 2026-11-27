@@ -69,7 +69,7 @@ services:
     profiles: [crawl]
     build:
       context: .
-      dockerfile: crawlers/openneuro-crawler/Dockerfile
+      dockerfile: ingest/openneuro-crawler/Dockerfile
     container_name: bids_crawler
     env_file: .env
     environment:

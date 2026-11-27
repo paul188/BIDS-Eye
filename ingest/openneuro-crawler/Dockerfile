@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 COPY BIDS-SQL/  /app/BIDS-SQL/
-COPY crawlers/openneuro-crawler/ /app/crawler/
+COPY ingest/openneuro-crawler/ /app/crawler/
 # For the post-crawl dataset descriptions (post_crawl.py): their code and the
 # shared LLM client, with the Gemini SDK pinned like the backend's.
 COPY backend/services/ /app/backend/services/

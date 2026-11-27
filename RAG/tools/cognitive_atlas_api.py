@@ -1,5 +1,5 @@
 """
-scripts/cognitive_atlas_api.py
+RAG/tools/cognitive_atlas_api.py
 ------------------------------
 Reading the Cognitive Atlas API (cognitiveatlas.org), shared by
 import_cognitive_atlas.py, generate_task_bridge.py and fill_bridge_gaps.py.

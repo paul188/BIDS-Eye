@@ -267,7 +267,7 @@ Use:
   (stage 7).
 - The LLM's alternatives are kept next to the inventory's, after validation.
 
-Building the file: a script (`scripts/mine_senses.py`) lists, for each
+Building the file: a script (`RAG/tools/mine_senses.py`) lists, for each
 frequent head word in names, descriptions and READMEs, the words that occur
 next to it (1–2 positions left and right) and how many datasets use each
 pair. "conflict" will show *Simon, response, cognitive, approach-avoidance,
@@ -283,7 +283,7 @@ ds004274 says "aggression" in its title but not "social". Three existing
 pieces close that gap. Each one sends catalogue metadata to an outside model.
 
 1. **README profiles** (`backend/services/readme_profile.py`, runner
-   `scripts/extract_readme_profiles.py`). Already written; 0 of 1,721 datasets
+   `ingest/backfill/extract_readme_profiles.py`). Already written; 0 of 1,721 datasets
    have a profile on production. A profile lists research topics and
    paradigms with verbatim quotes. Adding the linked paper's abstract to the
    profile input would turn "Taylor Aggression Paradigm" into the topic
@@ -371,7 +371,7 @@ recall benchmark before deploy. Stage 4 can follow on its own.
 | 2 | `resolve_topic`: sense pick, alternative checks (head or qualifier alone, excluded meaning, 0 datasets, more than `TOPIC_MAX_ALTERNATIVE_MATCHES`=90), task codes from the phrase minus what the head alone gives | `LLM_preprocessor/preprocess.py` |
 | 3 | `near` text mode (gap ≤ 2, both orders for two words); one topic line per topic; rewriter re-adds a topic line the SQL model dropped | `RAG/text_terms.py`, `backend/services/text_search.py`, `backend/services/sql_rewriter.py` |
 | 3 | second tier: only the phrase is loosened (words anywhere); dropping the NOT guard is the alternatives' weaker form | `backend/services/uncertain_tier.py` |
-| 4 | inventory of 10 heads, loader, mining script | `RAG/senses.yaml`, `RAG/senses.py`, `scripts/mine_senses.py` |
+| 4 | inventory of 10 heads, loader, mining script | `RAG/senses.yaml`, `RAG/senses.py`, `RAG/tools/mine_senses.py` |
 | 6 | "Topic" chip, removable "Not meant" chip (id + `n`) | `backend/services/query_filters.py`, `frontend/src/components/QueryChips.vue`, `frontend/src/api/index.ts` |
 | 0 | 12 ambiguity questions (not judged yet) | `benchmarks/recall/ambiguity_queries.yaml` |
 

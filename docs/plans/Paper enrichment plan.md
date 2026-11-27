@@ -234,7 +234,7 @@ bids_datasets.search_tsv_papers   generated: the search_tsv expression plus
 ### 7. Ingestion
 
 The enrichment runs as a step of the crawler cycle for new or changed
-datasets, and as `scripts/backfill_papers.py` for the existing ones
+datasets, and as `ingest/backfill/backfill_papers.py` for the existing ones
 (`--dry-run`, `--limit`, `--accessions`, `--refresh-older-than`,
 `--save-jsonl` / `--from-jsonl`, like the OpenNeuro metadata backfill). A full
 backfill is about 1,300 papers: under ten minutes.
@@ -294,10 +294,10 @@ backfill is about 1,300 papers: under ten minutes.
 
 | File | What |
 |---|---|
-| `crawlers/openneuro-crawler/remote/paper_links.py` | identifier extraction and clean-up, link collection per dataset, author-name parsing, roles |
-| `crawlers/openneuro-crawler/remote/paper_lookup.py` | Europe PMC, bioRxiv/medRxiv, arXiv, OpenAlex; preprint and published version merged into one paper |
-| `crawlers/openneuro-crawler/remote/paper_store.py` | tables `bids_papers`, `bids_dataset_papers`; `bids_datasets.paper_text`; `enrich()` |
-| `scripts/backfill_papers.py` | `--dry-run`, `--limit`, `--accessions`, `--parts`, `--save-json`, `--from-json`, `--show` |
+| `ingest/openneuro-crawler/remote/paper_links.py` | identifier extraction and clean-up, link collection per dataset, author-name parsing, roles |
+| `ingest/openneuro-crawler/remote/paper_lookup.py` | Europe PMC, bioRxiv/medRxiv, arXiv, OpenAlex; preprint and published version merged into one paper |
+| `ingest/openneuro-crawler/remote/paper_store.py` | tables `bids_papers`, `bids_dataset_papers`; `bids_datasets.paper_text`; `enrich()` |
+| `ingest/backfill/backfill_papers.py` | `--dry-run`, `--limit`, `--accessions`, `--parts`, `--save-json`, `--from-json`, `--show` |
 | `backend/tests/test_paper_links.py` | 16 tests |
 
 Full run against a local test database holding the real link fields of 1,718
