@@ -122,5 +122,5 @@ def test_the_columns_the_crawler_writes_exist(migrated_database: str) -> None:
             "WHERE table_schema = current_schema() AND table_name = 'bids_datasets'"))).scalars())
 
     written = {"institutions", *openneuro_metadata.METADATA_COLUMNS,
-               *openneuro_metadata.STATUS_COLUMNS}
+               *openneuro_metadata.STATUS_COLUMNS, *openneuro_metadata.SNAPSHOT_COLUMNS}
     assert written <= rolled_back(migrated_database, columns)
