@@ -42,10 +42,6 @@ def test_every_text_kind_has_a_source() -> None:
 
 # ── The schema shown to the SQL model (constants.py) ─────────────────────────
 
-# bids_objects.run is an INTEGER; the prompt has always said TEXT.
-_SHOWN_DIFFERENTLY = {("bids_objects", "run")}
-
-
 def test_the_prompt_schema_names_declared_columns_with_their_types() -> None:
     declared = {table.name: table for table in tables.CATALOGUE_TABLES}
     ddl = constants.build_schema_ddl(constants.OPTIONAL_DATASET_COLUMNS)
@@ -56,8 +52,17 @@ def test_the_prompt_schema_names_declared_columns_with_their_types() -> None:
         columns = re.findall(r"^    (\w+) +([A-Z]+(?:\[\])?)", body, re.M)
         assert columns
         for column, type_ in columns:
-            actual = constants.prompt_type(declared[name].c[column])
-            assert (type_ == actual) != ((name, column) in _SHOWN_DIFFERENTLY), (name, column)
+            assert type_ == constants.prompt_type(declared[name].c[column]), (name, column)
+
+
+def test_the_prompt_schema_links_every_other_table_to_its_dataset() -> None:
+    """With a foreign key (BIDS-SQL's models) or without (the tables declared here)."""
+    ddl = constants.build_schema_ddl()
+    assert ddl.count("CREATE TABLE") == 5
+    assert len(re.findall(r"^    dataset_id +UUID REFERENCES bids_datasets\(id\),$", ddl, re.M)) == 4
+    assert len(re.findall(r"^    id +UUID PRIMARY KEY,$", ddl, re.M)) == 3
+    # A composite key is not shown as the key of one column.
+    assert "PRIMARY KEY REFERENCES" not in ddl
 
 
 # ── Coded fields (services/schema/coded_fields.py) ───────────────────────────
