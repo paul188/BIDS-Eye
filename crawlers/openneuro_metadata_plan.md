@@ -323,12 +323,14 @@ should match the old image again.
 - **BIDS-SQL model.** Adding the eight columns to `BIDSDataset` in the BIDS-SQL
   repo would let `create_all` build them on a fresh database. Until then the
   crawler's `ensure_columns()` and the migration file cover it.
-- **`scripts/backfill_readme.py`** is superseded. It needs
-  `BIDSDataset.readme_text`, which the pinned model does not have.
+- **`scripts/backfill_readme.py`** was superseded and has been removed: the
+  crawler stores the README itself (`remote/openneuro.py`, `_stamp_dataset`).
 - **Deprecated datasets are still returned by search**, now with a tag. Decide
   later whether to rank them last or drop them from the index.
-- **`institutions`** stays hidden until `scripts/backfill_institutions.py` has
-  run on production.
+- **`institutions`** stays hidden until it is filled on production. The script
+  that filled it has been removed; the crawler fills it per dataset with one
+  `UPDATE` (`remote/openneuro.py`, `_stamp_dataset`), which also serves for a
+  database where it is still empty.
 - **`.gitmodules`** points BIDS-SQL at `github.com/paul88/…`; the repository
   lives at `paul188`. A fresh clone cannot initialise the submodule.
 - **Not yet using the new text:** the `description_search` and vocabulary-miss

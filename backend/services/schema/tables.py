@@ -233,7 +233,7 @@ dataset_facets = Table(
 )
 
 # Every word form in the catalogue's text with its stem: shows which forms a
-# stem merges. Filled by scripts/refresh_word_forms.py and after each crawl.
+# stem merges. Filled after each crawl (post_crawl.py, step word_forms).
 word_forms = Table(
     "bids_word_forms", metadata,
     # The word as it appears in the text, e.g. 'ageing'.

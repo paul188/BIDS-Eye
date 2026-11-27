@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO, Any, List, Optional, Sequence
 
+from exceptions.expected import ExpectedError
 from services.indexing import readme_profile as rp
 
 log = logging.getLogger(__name__)
@@ -58,15 +59,15 @@ _INSERT_FACT_SQL = """
 """
 
 
-class SchemaMissingError(RuntimeError):
+class SchemaMissingError(ExpectedError):
     """The profile columns or bids_dataset_facts do not exist yet."""
 
 
-class ResolverUnavailableError(RuntimeError):
+class ResolverUnavailableError(ExpectedError):
     """The diagnosis resolver could not load, so no codes could be attached."""
 
 
-class ProfileAnswerError(Exception):
+class ProfileAnswerError(ExpectedError):
     """The model's answer could not be used, twice."""
 
 

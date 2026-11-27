@@ -65,7 +65,7 @@ def _database_url() -> str:
     except KeyError as exc:
         raise SystemExit(
             f"Database settings missing ({exc}). Set DATABASE_URL or the METADATA_DB_* variables."
-        )
+        ) from None
 
 
 async def main() -> int:

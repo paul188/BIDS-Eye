@@ -7,6 +7,7 @@ COPY crawlers/openneuro-crawler/ /app/crawler/
 # For the post-crawl dataset descriptions (post_crawl.py): their code and the
 # shared LLM client, with the Gemini SDK pinned like the backend's.
 COPY backend/services/ /app/backend/services/
+COPY backend/exceptions/ /app/backend/exceptions/
 COPY backend/constraints.txt /app/backend/constraints.txt
 COPY LLM_preprocessor/ /app/LLM_preprocessor/
 # The vocabulary: its standard codes for participant sex and handedness
