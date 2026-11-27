@@ -1,7 +1,7 @@
 """
-Shared SQL prompt/schema constants for BIDS-Eye.
+The database schema as the SQL model is shown it.
 
-This module is used by the backend text-to-SQL pipeline. Names and types come
+Used by the SQL-generation and SQL-correction prompts. Names and types come
 from services/schema/tables.py; here are only the notes shown to the model.
 
 The schema shown to the SQL model is built per request by build_schema_ddl():

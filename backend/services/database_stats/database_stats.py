@@ -10,7 +10,7 @@ the database lacks one of them. What changes with every crawl is how full
 they are, and DatabaseStats keeps that in four parts:
 
   coverage   ColumnCoverage: per optional bids_datasets column
-             (constants.OPTIONAL_DATASET_COLUMNS), how many datasets fill it.
+             (schema_ddl.OPTIONAL_DATASET_COLUMNS), how many datasets fill it.
              Only the counts: which columns the search then uses is decided
              in services/translate/optional_columns.py.
   summaries  Summaries: whether bids_dataset_facets covers every dataset that
@@ -58,7 +58,7 @@ from sqlalchemy.sql.schema import Column
 
 import institution_index
 import place_index
-from constants import OPTIONAL_DATASET_COLUMNS
+from services.translate.prompt.schema_ddl import OPTIONAL_DATASET_COLUMNS
 from services.schema.check import check_schema
 from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS, PARTICIPANT_FIELDS
 from services.schema.tables import dataset_facets, datasets, objects, participants, site_places

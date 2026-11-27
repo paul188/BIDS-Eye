@@ -1,5 +1,5 @@
 """What the SQL model is shown: the schema with the usable optional columns,
-and few-shot examples that use only those (constants.build_schema_ddl,
+and few-shot examples that use only those (schema_ddl.build_schema_ddl,
 text_to_sql._pick_examples; usable columns from services/translate/optional_columns.py)."""
 
 from __future__ import annotations
@@ -8,11 +8,11 @@ import json
 import re
 from pathlib import Path
 
-import constants
 from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.translate import text_to_sql
+from services.translate.prompt import schema_ddl
 
-FEW_SHOT_PATH = Path(__file__).resolve().parents[1] / "few_shot_examples.json"
+FEW_SHOT_PATH = Path(schema_ddl.__file__).resolve().parent / "few_shot_examples.json"
 
 
 def _dataset_table(ddl: str) -> str:
@@ -20,8 +20,8 @@ def _dataset_table(ddl: str) -> str:
 
 
 def test_schema_hides_optional_columns_by_default() -> None:
-    table = _dataset_table(constants.build_schema_ddl(()))
-    for column in constants.OPTIONAL_DATASET_COLUMNS:
+    table = _dataset_table(schema_ddl.build_schema_ddl(()))
+    for column in schema_ddl.OPTIONAL_DATASET_COLUMNS:
         assert column not in table
     assert "description_text  TEXT " in table
     # The last column must not end with a comma.
@@ -29,7 +29,7 @@ def test_schema_hides_optional_columns_by_default() -> None:
 
 
 def test_schema_shows_only_available_optional_columns() -> None:
-    table = _dataset_table(constants.build_schema_ddl({"readme_text", "size_bytes"}))
+    table = _dataset_table(schema_ddl.build_schema_ddl({"readme_text", "size_bytes"}))
     assert "readme_text       TEXT," in table
     assert re.search(r"size_bytes\s+BIGINT\s+--", table)
     assert "institutions" not in table
@@ -38,8 +38,8 @@ def test_schema_shows_only_available_optional_columns() -> None:
 
 def test_few_shot_examples_only_use_known_dataset_columns() -> None:
     """Guards against examples drifting away from the schema the model sees."""
-    known = {name for name, _, _ in constants._CORE_DATASET_COLUMNS}
-    known |= set(constants.OPTIONAL_DATASET_COLUMNS)
+    known = {name for name, _, _ in schema_ddl._CORE_DATASET_COLUMNS}
+    known |= set(schema_ddl.OPTIONAL_DATASET_COLUMNS)
     pool = json.loads(FEW_SHOT_PATH.read_text())
     used = {
         column
@@ -119,7 +119,7 @@ def test_empty_query_metadata_does_not_invent_intent_categories() -> None:
 
 
 def test_full_sql_prompt_budget_drops_only_whole_lower_ranked_examples(monkeypatch) -> None:
-    monkeypatch.setattr(constants, "build_schema_ddl", lambda _columns: "schema")
+    monkeypatch.setattr(schema_ddl, "build_schema_ddl", lambda _columns: "schema")
     captured = {}
 
     def fake_llm(prompt, **kwargs):

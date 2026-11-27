@@ -11,7 +11,7 @@ almost every dataset.
 
 The decision is applied in four places:
 
-  the SQL model's schema    constants.build_schema_ddl renders only the usable
+  the SQL model's schema    schema_ddl.build_schema_ddl renders only the usable
                             columns (text_to_sql.py)
   the few-shot examples     an example whose SQL names another optional column
                             is not shown (text_to_sql._pick_examples)
@@ -29,7 +29,7 @@ import logging
 import math
 import re
 
-from constants import OPTIONAL_DATASET_COLUMNS
+from services.translate.prompt.schema_ddl import OPTIONAL_DATASET_COLUMNS
 from services.database_stats.database_stats import ColumnCoverage
 
 log = logging.getLogger(__name__)

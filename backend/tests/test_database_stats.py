@@ -9,7 +9,7 @@ import time
 import pytest
 from sqlalchemy.exc import ProgrammingError
 
-from constants import OPTIONAL_DATASET_COLUMNS
+from services.translate.prompt.schema_ddl import OPTIONAL_DATASET_COLUMNS
 from services.database_stats.database_stats import ColumnCoverage, DatabaseStats, Names, Summaries, ValueCounts, database_stats
 from services.schema import tables
 from services.schema.check import MissingSchemaError, check_schema, sql_type

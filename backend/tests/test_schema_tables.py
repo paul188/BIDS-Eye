@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import re
 
-import constants
+from services.translate.prompt import schema_ddl
 import join_registry
 from sqlalchemy import Table
 
@@ -40,11 +40,11 @@ def test_every_text_kind_has_a_source() -> None:
     assert set(branches._KIND_SOURCES) == set(TextKind)
 
 
-# ── The schema shown to the SQL model (constants.py) ─────────────────────────
+# ── The schema shown to the SQL model (schema_ddl.py) ─────────────────────────
 
 def test_the_prompt_schema_names_declared_columns_with_their_types() -> None:
     declared = {table.name: table for table in tables.CATALOGUE_TABLES}
-    ddl = constants.build_schema_ddl(constants.OPTIONAL_DATASET_COLUMNS)
+    ddl = schema_ddl.build_schema_ddl(schema_ddl.OPTIONAL_DATASET_COLUMNS)
     shown = re.findall(r"CREATE TABLE (\w+) \(.*?\n(.*?)\n\);", ddl, re.S)
     assert [name for name, _ in shown] == ["bids_datasets", "bids_objects", "bids_participants",
                                            "bids_derivatives", "bids_dataset_papers"]
@@ -52,12 +52,12 @@ def test_the_prompt_schema_names_declared_columns_with_their_types() -> None:
         columns = re.findall(r"^    (\w+) +([A-Z]+(?:\[\])?)", body, re.M)
         assert columns
         for column, type_ in columns:
-            assert type_ == constants.prompt_type(declared[name].c[column]), (name, column)
+            assert type_ == schema_ddl.prompt_type(declared[name].c[column]), (name, column)
 
 
 def test_the_prompt_schema_links_every_other_table_to_its_dataset() -> None:
     """With a foreign key (BIDS-SQL's models) or without (the tables declared here)."""
-    ddl = constants.build_schema_ddl()
+    ddl = schema_ddl.build_schema_ddl()
     assert ddl.count("CREATE TABLE") == 5
     assert len(re.findall(r"^    dataset_id +UUID REFERENCES bids_datasets\(id\),$", ddl, re.M)) == 4
     assert len(re.findall(r"^    id +UUID PRIMARY KEY,$", ddl, re.M)) == 3

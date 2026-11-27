@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 
 # ── Few-shot pool (loaded once at import time) ────────────────────────────────
 _FEW_SHOT_POOL: Dict[str, List[dict]] = {}
-_FEW_SHOT_PATH = Path(__file__).resolve().parents[2] / "few_shot_examples.json"
+_FEW_SHOT_PATH = Path(__file__).resolve().parent / "prompt" / "few_shot_examples.json"
 if _FEW_SHOT_PATH.exists():
     # The file is part of the repository: a broken one stops the backend at
     # startup instead of letting every query be written without examples.
@@ -515,7 +515,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     answer is not rewritten again (sql_rewriter.finish_corrected_sql).
     """
     try:
-        from constants import build_schema_ddl
+        from services.translate.prompt.schema_ddl import build_schema_ddl
     except ImportError as exc:
         log.warning("Gemini correction unavailable: %s", exc)
         return sql
@@ -550,7 +550,7 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     Previously a fallback; now the main pipeline.
     """
     try:
-        from constants import build_schema_ddl
+        from services.translate.prompt.schema_ddl import build_schema_ddl
     except ImportError as exc:
         log.warning("Gemini SQL generation unavailable: %s", exc)
         return _FALLBACK_SQL

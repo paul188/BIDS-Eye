@@ -49,7 +49,6 @@ test = [
 [tool.setuptools]
 py-modules = [
     "api_security",
-    "constants",
     "deps",
     "models",
     "rate_limits",
