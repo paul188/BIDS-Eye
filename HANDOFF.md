@@ -89,19 +89,17 @@ Also first, move `asked.species` (regex on the pattern) and `asked.patients`/`cl
 
 ## 5. To-do list
 
-The first 14 items come from the 2026-11-17 search-quality review (`reports/Text to SQL and prompt optimisation.md`, `SEARCH_TODO.md`); the rest come from the other sessions' open items in `WORKLOG.md`. File and line numbers refer to merged-line a0c122d. Build new backend work on `live-merge`.
+The first 14 items come from the 2026-11-17 search-quality review (`reports/Text to SQL and prompt optimisation.md`; this list replaced the private `SEARCH_TODO.md` on 2026-11-27, with the status of that day); the rest come from the other sessions' open items in `WORKLOG.md`. File and line numbers refer to merged-line a0c122d. Build new backend work on `live-merge`.
 
 ### Search quality, in order of gain per effort
 
-1. ~~Loose-text sweep~~ — done on `loose-text`, still to port (section 4).
+1. ~~Loose-text sweep~~ — done, on main since 2026-11-18 (`loose-text-live`).
 2. **Keep alternatives; no datatype+suffix OR** (~3 h):
    - a rare own phrase drops the validated alternatives too (`preprocess/` near "not searchable"; qf03 returned 354 results);
-   - `(datatype='anatomical_mri' OR suffix='mp2rage')` means "any anatomical scan", and is empty when negated (qf27);
+   - `(datatype='anatomical_mri' OR suffix='mp2rage')` means "any anatomical scan", and is empty when negated (qf27); the OR is still built on purpose in `LLM_preprocessor/preprocess/augment.py` (modality EXISTS, "partially-annotated files"), against the SQL prompt's own rule not to combine the two (checked 2026-11-27);
    - "CT" resolves to PET through the PET-CT synonyms (qf40).
-3. **Cache hygiene** (~1 h, `interpretations.py`):
-   - the version hash misses `participant_query_compiler.py`, `RAG/criteria.py`, `RAG/cohort_count.py`, `senses.yaml` and `word_forms.yaml`;
-   - relaxed, self-corrected and one-result translations are stored forever.
-4. **Self-correction of tiered SQL** (~½ day): it re-rewrites already-tiered SQL with the raw question → invalid SQL → the 200-dataset sample (`routers/query.py`, `text_to_sql.py`, `sql_rewriter.py`; qf12, qf27).
+3. ~~Cache hygiene~~ — done: the version hash covers the whole `LLM_preprocessor/`, `preprocess/` and `RAG/` folders, and only a search that ran as written with a real result is stored (`services/search.py`).
+4. ~~Self-correction of tiered SQL~~ — done in cf27e58: the repair is not rewritten again (`sql_rewriter.finish_corrected_sql`, `tests/test_sql_correction.py`).
 5. **Uncertain-tier evidence** (~½ day + gold run): keep the `:AB` scope when a diagnosis or task is promoted from README or paper text. In earlier checks, second-tier results were wrong for 9 of 16 Alzheimer's and 5 of 5 ADHD results. Log `uncertain_level` per result in `record_run.py`.
 6. **Measurement protocol** (~1 day): 3 uncached runs per variant, per-request means, a paired sign-flip test, a stability metric, and a lockbox of new requests from `query_log`.
 7. **Few-shot pool** (~½ day): of 319 examples, 24 have a diagnosis without a text fallback, 13 filter on healthy, 11 use HAVING counts, and 8 put diagnosis and sex/age in one row. Add a lint test against the SQL prompt rules.
@@ -113,13 +111,16 @@ The first 14 items come from the 2026-11-17 search-quality review (`reports/Text
     - emotion recognition is not emotion induction.
 11. **Vocabulary lookup**: replace the WRatio partial match by retrieve-top-k-then-choose with a "none" option (`RAG/retriever.py`; "task-based" → a release-from-suppression task, qf29).
 12. **Relaxed fallback**: may drop `(EXISTS task OR text)` conjuncts, never a protected condition.
-13. **Compiler coverage**: log its decline rate; add the "patients and healthy controls" case.
+13. **Compiler coverage** (1–2 weeks): extend `participant_query_compiler.py` beyond cohort searches to modality, datatype, recorded facts, task and text conditions; log its decline rate; add the "patients and healthy controls" case.
 14. **Later**:
     - vote over 3–5 plan samples for uncached requests;
     - per-criterion LLM check of soft criteria;
     - fitted ordering score;
     - re-ranker on;
     - prompt optimisation only after ≥150 requests and a headroom test.
+15. **Suspected, to check**:
+    - ~~no `seed` passed to Gemini~~ — confirmed and fixed in PR #15 (`GEMINI_SEED`, default 0). Whether it makes repeated questions give the same SQL is not measured yet: run the demand set twice. The Anthropic fallback tier takes no seed;
+    - `_strip_outer_scan_filters` (`sql_rewriter.py`) may remove a real top-level datatype filter.
 
 ### Decisions waiting for Paul
 
@@ -186,7 +187,6 @@ In git (pushed): `live-merge`, `patient-count`, `codex/deterministic-cohort-sql`
 | Unpushed branches | `merged-line`, `loose-text`, `rare-words`, `rare-words-only`, `text-formula`, `ftd-diagnosis-live`, `query-guards-live`, `search-fixes-gold`, `description-alternatives`, `interpretation-cache`, `ftd-diagnosis` (only `rare-words`, `rare-words-only` and `text-formula` hold work that is not in `live-merge`) |
 | Uncommitted changes | `../Bids-Eye-loose-text`, `../Bids-Eye-desc-alt` |
 | Shared session log | `WORKLOG.md` (server and deploy details) |
-| Search to-do with status | `SEARCH_TODO.md` |
 | Research reports | `reports/`, `research_notes/` |
 | Benchmark outputs | `benchmarks/*/results/`, `benchmarks/demand/blame/*.json`, `benchmarks/openneuro_facets/openneuro_results.json` |
 | Server helper (server commands) | `benchmarks/easy/run_on_server.sh` |
