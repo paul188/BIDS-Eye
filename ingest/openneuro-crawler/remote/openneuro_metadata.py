@@ -52,6 +52,7 @@ import re
 import time
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -101,6 +102,14 @@ METADATA_COLUMNS: Dict[str, str] = {
 # Upstream status. Unlike the metadata columns it is overwritten on every
 # check, because it describes the present, not something to accumulate.
 STATUS_COLUMNS: Dict[str, str] = {"deprecated_reason": "TEXT"}
+# Which snapshot the files were indexed from (record_snapshot); the crawler
+# compares them with the API's latest snapshot (snapshot_plan.py).
+SNAPSHOT_COLUMNS: Dict[str, str] = {
+    "snapshot_tag": "TEXT",
+    "snapshot_hexsha": "TEXT",
+    "files_indexed_at": "TIMESTAMPTZ",
+    "indexer_version": "INTEGER",
+}
 REMOVED_REASON = "No longer available on OpenNeuro"
 
 # What bids_datasets.search_tsv is generated from. The column itself comes
@@ -132,7 +141,7 @@ METADATA_SELECTION = """
     publishDate onBrainlife
     metadata { species studyDesign studyDomain studyLongitudinal seniorAuthor dxStatus ages }
     latestSnapshot {
-      tag readme size summary { size } deprecated { reason }
+      tag hexsha created readme size summary { size } deprecated { reason }
       description { EthicsApprovals } analytics { downloads views }
     }
 """
@@ -475,5 +484,46 @@ async def set_deprecation(session: Any, accession_id: str, reason: Optional[str]
     result = await session.execute(
         text("UPDATE bids_datasets SET deprecated_reason = :reason WHERE accession_id = :accession_id"),
         {"reason": reason, "accession_id": accession_id},
+    )
+    return int(result.rowcount or 0)
+
+
+# ── Snapshot ──────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class Snapshot:
+    """The latest snapshot of a dataset as the API reports it."""
+
+    tag: Optional[str]
+    hexsha: str
+    created: Optional[datetime]
+
+
+def snapshot_of(record: Optional[dict]) -> Optional[Snapshot]:
+    """The latest snapshot of an API record; None without a commit hash."""
+    snapshot = (record or {}).get("latestSnapshot") or {}
+    hexsha = snapshot.get("hexsha")
+    if not isinstance(hexsha, str) or not hexsha.strip():
+        return None
+    tag = snapshot.get("tag")
+    return Snapshot(tag=tag if isinstance(tag, str) and tag else None,
+                    hexsha=hexsha.strip(), created=_timestamp(snapshot.get("created")))
+
+
+async def record_snapshot(session: Any, accession_id: str, snapshot: Optional[Snapshot],
+                          indexer_version: int, indexed_at: datetime) -> int:
+    """Note that the files of *accession_id* were indexed from *snapshot*.
+
+    Call it only after the whole indexing succeeded. *snapshot* None (the API
+    did not say) stores no hash, so the next cycle indexes the dataset again.
+    The caller commits.
+    """
+    result = await session.execute(
+        text("UPDATE bids_datasets SET snapshot_tag = :tag, snapshot_hexsha = :hexsha, "
+             "files_indexed_at = :at, indexer_version = :version "
+             "WHERE accession_id = :accession_id"),
+        {"tag": snapshot.tag if snapshot else None,
+         "hexsha": snapshot.hexsha if snapshot else None,
+         "at": indexed_at, "version": indexer_version, "accession_id": accession_id},
     )
     return int(result.rowcount or 0)

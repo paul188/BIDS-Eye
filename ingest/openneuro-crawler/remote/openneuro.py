@@ -24,7 +24,10 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 from uuid import uuid4
 
 import boto3
@@ -45,14 +48,46 @@ from remote.openneuro_metadata import (
     deprecation_reason,
     extract_fields,
     fetch_batch,
+    record_snapshot,
     set_deprecation,
+    snapshot_of,
 )
+from remote.snapshot_plan import INDEXER_VERSION
 
 log = logging.getLogger(__name__)
 
 
 class DatasetAccessDeniedError(Exception):
     """Raised when the dataset's core metadata is inaccessible on S3."""
+
+
+class DatasetTooLargeError(Exception):
+    """The dataset has more files than CRAWL_MAX_FILES; it is not indexed.
+
+    pybids holds the whole file tree in memory, and the crawler runs next to
+    the database on a small server: a dataset with 100k+ files could take
+    the memory PostgreSQL needs. Such datasets are left for a run with a
+    higher limit.
+    """
+
+
+def max_files() -> int:
+    """CRAWL_MAX_FILES: the most S3 objects a dataset may have to be indexed; 0 = no limit."""
+    try:
+        return max(0, int(os.getenv("CRAWL_MAX_FILES", "50000")))
+    except ValueError:
+        return 50000
+
+
+def keep_mirrors() -> bool:
+    """CRAWL_KEEP_MIRRORS=true keeps the local mirror after indexing.
+
+    Off by default: a mirror has a file (mostly an empty stub) for every file
+    of the dataset, and all mirrors together would need more inodes than the
+    server's disk has. A dataset is indexed again only when its snapshot
+    changed (snapshot_plan.py), so a kept mirror would rarely be reused.
+    """
+    return os.getenv("CRAWL_KEEP_MIRRORS", "").strip().lower() in {"1", "true", "yes"}
 
 
 OPENNEURO_BUCKET = "openneuro.org"
@@ -94,7 +129,7 @@ def _build_mirror(
     accession_id: str,
     all_objects: list[dict],
     mirror_dir: Path,
-) -> None:
+) -> int:
     """
     Populate mirror_dir to look like a local BIDS dataset:
       - Real file content for .json / .tsv (metadata pybids needs).
@@ -105,6 +140,9 @@ def _build_mirror(
     the next crawl downloads it again (an empty local file of a non-empty S3
     object). Before 2026-11-18 such a stub was kept for good: a timeout on
     participants.tsv left the dataset indexed without participants.
+
+    Returns the number of metadata files that failed to download; while it
+    is > 0 the crawler records no snapshot, so the next cycle tries again.
     """
     log.info("  [mirror] Building mirror at %s", mirror_dir)
     downloaded = skipped = stubbed = failed = 0
@@ -246,6 +284,7 @@ def _build_mirror(
     if failed:
         log.warning("  [mirror] %s: %d metadata file(s) failed to download; indexed without "
                     "them this time, downloaded again on the next crawl", accession_id, failed)
+    return failed
 
 
 # ─── Post-pipeline stamps ─────────────────────────────────────────────────────
@@ -339,26 +378,32 @@ async def _stamp_dataset(
         return dataset
 
 
-async def _enrich_from_openneuro_api(accession_id: str) -> None:
+async def _enrich_from_openneuro_api(accession_id: str,
+                                     record: Optional[dict] = None) -> Optional[dict]:
     """Fill dx_status, study_domain, study_design, age range and size.
 
     These exist only in the OpenNeuro API, not in the BIDS files. The API also
     returns the README of the latest snapshot (the same file the mirror holds),
     which covers datasets whose mirror had none. A failure here is logged and
     never fails the crawl of the dataset: the BIDS index is already complete.
+
+    *record* is the API record the crawl cycle already fetched
+    (snapshot_plan.py); without it the record is fetched here. Returns the
+    record used, None when there was none.
     """
     import asyncio
 
     try:
-        records, unavailable = await asyncio.to_thread(fetch_batch, [accession_id])
-        record = records.get(accession_id)
         if record is None:
-            log.info("  [metadata] OpenNeuro API has no record for %s", accession_id)
-            if accession_id in unavailable:
-                async with async_session_maker() as session:
-                    await set_deprecation(session, accession_id, unavailable[accession_id])
-                    await session.commit()
-            return
+            records, unavailable = await asyncio.to_thread(fetch_batch, [accession_id])
+            record = records.get(accession_id)
+            if record is None:
+                log.info("  [metadata] OpenNeuro API has no record for %s", accession_id)
+                if accession_id in unavailable:
+                    async with async_session_maker() as session:
+                        await set_deprecation(session, accession_id, unavailable[accession_id])
+                        await session.commit()
+                return None
         fields = extract_fields(record)
         async with async_session_maker() as session:
             await apply_fields(session, accession_id, fields)
@@ -372,6 +417,7 @@ async def _enrich_from_openneuro_api(accession_id: str) -> None:
         log.warning("  [metadata] OpenNeuro API unavailable for %s: %s", accession_id, exc)
     except SQLAlchemyError as exc:
         log.warning("  [metadata] Could not store OpenNeuro metadata for %s: %s", accession_id, exc)
+    return record
 
 
 async def _mark_objects_remote(dataset_id: uuid4) -> int:
@@ -397,6 +443,7 @@ async def _mark_objects_remote(dataset_id: uuid4) -> int:
 async def index_openneuro(
     accession_id: str,
     force_rebuild: bool = False,
+    record: Optional[dict] = None,
 ) -> None:
     """
     Ghost-index an OpenNeuro dataset via the standard input_pipeline.
@@ -404,7 +451,15 @@ async def index_openneuro(
     Args:
         accession_id:  OpenNeuro accession ID (e.g. "ds000001").
         force_rebuild: Discard and re-download the local mirror even if it
-                       already exists (useful after upstream dataset updates).
+                       already exists (only matters with CRAWL_KEEP_MIRRORS).
+        record:        The dataset's OpenNeuro API record, when the crawl
+                       cycle already fetched it (snapshot_plan.py). Its
+                       latest snapshot is recorded as the one indexed: the
+                       snapshot seen before the files were read, so a snapshot
+                       made during the indexing counts as changed next cycle.
+
+    Raises DatasetTooLargeError above CRAWL_MAX_FILES files, and any error of
+    the indexing itself. The snapshot is recorded only when everything worked.
     """
     log.info("=== OpenNeuro: indexing %s ===", accession_id)
 
@@ -421,16 +476,30 @@ async def index_openneuro(
             "Check the accession ID (format: ds000001)."
         )
     log.info("  Found %d object(s) in S3", len(all_objects))
+    limit = max_files()
+    if limit and len(all_objects) > limit:
+        raise DatasetTooLargeError(
+            f"{accession_id} has {len(all_objects)} files, more than CRAWL_MAX_FILES={limit}")
 
+    try:
+        await _index_files(client, accession_id, all_objects, mirror_dir, force_rebuild, record)
+    finally:
+        if not keep_mirrors() and mirror_dir.exists():
+            shutil.rmtree(mirror_dir, ignore_errors=True)
+            log.info("  [mirror] Removed %s", mirror_dir)
+
+
+async def _index_files(client, accession_id: str, all_objects: list[dict], mirror_dir: Path,
+                       force_rebuild: bool, record: Optional[dict]) -> None:
+    """Steps 2-7 of index_openneuro: mirror, pipeline, stamps, API fields, snapshot."""
     # ── Step 2: build (or reuse) local mirror ─────────────────────────────────
     if mirror_dir.exists() and force_rebuild:
-        import shutil
         log.info("  [mirror] Removing existing mirror at %s", mirror_dir)
         shutil.rmtree(mirror_dir)
 
     mirror_dir.mkdir(exist_ok=True)
     try:
-        _build_mirror(client, accession_id, all_objects, mirror_dir)
+        failed = _build_mirror(client, accession_id, all_objects, mirror_dir)
     except DatasetAccessDeniedError:
         log.warning(
             "  Dataset %s is restricted (S3 access denied). "
@@ -438,6 +507,7 @@ async def index_openneuro(
         )
         from remote.graphql import index_via_graphql
         await index_via_graphql(accession_id)
+        await _record_snapshot(accession_id, record)
         return
 
     # ── Step 3: run standard indexing pipeline ────────────────────────────────
@@ -451,12 +521,27 @@ async def index_openneuro(
     remote_url = f"s3://{OPENNEURO_BUCKET}/{accession_id}"
     dataset = await _stamp_dataset(str(mirror_dir.resolve()), accession_id, remote_url)
     if dataset is None:
-        return
+        raise RuntimeError(f"{accession_id}: the pipeline stored no dataset row")
 
     # ── Step 5: mark all objects as remote ────────────────────────────────────
     n = await _mark_objects_remote(dataset.id)
     log.info("  [db] Marked %d object(s) as remote for %s", n, accession_id)
 
     # ── Step 6: metadata that only the OpenNeuro API has ──────────────────────
-    await _enrich_from_openneuro_api(accession_id)
+    record = await _enrich_from_openneuro_api(accession_id, record)
+
+    # ── Step 7: which snapshot the files came from (snapshot_plan.py) ─────────
+    # Not when metadata files were missing: then the next cycle indexes the
+    # dataset again and downloads them (a recorded snapshot would be skipped).
+    if failed:
+        log.warning("  [snapshot] %s: not recorded, %d metadata file(s) missing", accession_id, failed)
+    else:
+        await _record_snapshot(accession_id, record)
     log.info("=== OpenNeuro: done (%s) ===", accession_id)
+
+
+async def _record_snapshot(accession_id: str, record: Optional[dict]) -> None:
+    async with async_session_maker() as session:
+        await record_snapshot(session, accession_id, snapshot_of(record), INDEXER_VERSION,
+                              datetime.now(timezone.utc))
+        await session.commit()
