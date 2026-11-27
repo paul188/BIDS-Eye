@@ -10,6 +10,7 @@ from pathlib import Path
 
 from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.translate import text_to_sql
+from services.schema import tables
 from services.translate.prompt import examples, instructions, schema_ddl
 
 FEW_SHOT_PATH = Path(schema_ddl.__file__).resolve().parent / "few_shot_examples.json"
@@ -21,7 +22,7 @@ def _dataset_table(ddl: str) -> str:
 
 def test_schema_hides_optional_columns_by_default() -> None:
     table = _dataset_table(schema_ddl.build_schema_ddl(()))
-    for column in schema_ddl.OPTIONAL_DATASET_COLUMNS:
+    for column in tables.OPTIONAL_DATASET_COLUMNS:
         assert column not in table
     assert "description_text  TEXT " in table
     # The last column must not end with a comma.
@@ -39,7 +40,7 @@ def test_schema_shows_only_available_optional_columns() -> None:
 def test_few_shot_examples_only_use_known_dataset_columns() -> None:
     """Guards against examples drifting away from the schema the model sees."""
     known = {name for name, _, _ in schema_ddl._CORE_DATASET_COLUMNS}
-    known |= set(schema_ddl.OPTIONAL_DATASET_COLUMNS)
+    known |= set(tables.OPTIONAL_DATASET_COLUMNS)
     pool = json.loads(FEW_SHOT_PATH.read_text())
     used = {
         column

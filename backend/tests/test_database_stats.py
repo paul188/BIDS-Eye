@@ -9,7 +9,6 @@ import time
 import pytest
 from sqlalchemy.exc import ProgrammingError
 
-from services.translate.prompt.schema_ddl import OPTIONAL_DATASET_COLUMNS
 from services.database_stats.database_stats import ColumnCoverage, DatabaseStats, Names, Summaries, ValueCounts, database_stats
 from services.schema import tables
 from services.schema.check import MissingSchemaError, check_schema, sql_type
@@ -94,7 +93,7 @@ class _Connection:
         if "AS total" in sql:
             self._read("coverage", sql)
             return _Result({"total": self.total,
-                            **{name: self.filled.get(name, 0) for name in OPTIONAL_DATASET_COLUMNS}})
+                            **{name: self.filled.get(name, 0) for name in tables.OPTIONAL_DATASET_COLUMNS}})
         if "count(bids_datasets.n_subjects)" in sql:
             self._read("summaries", sql)
             return _Result(self.subject_counts)
@@ -136,7 +135,7 @@ def test_full_coverage_rejects_unknown_names() -> None:
 
 
 def test_every_optional_column_is_declared() -> None:
-    assert set(OPTIONAL_DATASET_COLUMNS) <= set(tables.datasets.c.keys())
+    assert set(tables.OPTIONAL_DATASET_COLUMNS) <= set(tables.datasets.c.keys())
 
 
 # ── Summaries ─────────────────────────────────────────────────────────────────

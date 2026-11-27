@@ -44,7 +44,7 @@ def test_every_text_kind_has_a_source() -> None:
 
 def test_the_prompt_schema_names_declared_columns_with_their_types() -> None:
     declared = {table.name: table for table in tables.CATALOGUE_TABLES}
-    ddl = schema_ddl.build_schema_ddl(schema_ddl.OPTIONAL_DATASET_COLUMNS)
+    ddl = schema_ddl.build_schema_ddl(tables.OPTIONAL_DATASET_COLUMNS)
     shown = re.findall(r"CREATE TABLE (\w+) \(.*?\n(.*?)\n\);", ddl, re.S)
     assert [name for name, _ in shown] == ["bids_datasets", "bids_objects", "bids_participants",
                                            "bids_derivatives", "bids_dataset_papers"]
@@ -87,3 +87,19 @@ def test_join_paths_agrees_with_the_coded_fields() -> None:
     codes = {name for name, info in join_registry._load()["fields"].items()
              if info["value_type"] == "canonical_code"}
     assert codes == set(coded_fields.CONCEPT_FIELDS)
+
+
+def test_a_card_names_a_column_by_its_label_or_its_name() -> None:
+    assert tables.card_label("dx_status") == "diagnosis label"
+    assert tables.card_label("species") == "species label"
+    assert tables.card_label("age_min") == "age min"
+    assert tables.card_label("not_a_column") == "not a column"
+
+
+def test_the_optional_columns_are_declared_on_bids_datasets_with_notes() -> None:
+    """schema_ddl shows an optional column only with its notes, after the
+    columns that are always shown; it fails to import otherwise."""
+    assert "readme_text" in tables.OPTIONAL_DATASET_COLUMNS
+    assert "name" not in tables.OPTIONAL_DATASET_COLUMNS
+    shown = [name for name, _, _ in schema_ddl._OPTIONAL_DATASET_COLUMNS]
+    assert sorted(shown) == sorted(tables.OPTIONAL_DATASET_COLUMNS)

@@ -30,6 +30,13 @@ needed.
 Each table also records what its rows describe (About), and each text column
 which text it holds (TextKind). Code that needs a word or an evidence source
 per table reads those instead of listing the tables again.
+
+A column of bids_datasets also records whether it is optional (a database
+may have it nearly empty, so the search uses it only where it is filled:
+OPTIONAL_DATASET_COLUMNS) and how a result card names one of its values
+(card_label). What the SQL model is told about a column is in
+services/translate/prompt/schema_ddl.py, which fails on a column not declared
+here.
 """
 
 from __future__ import annotations
@@ -66,6 +73,9 @@ FLAG = "flag"
 ABOUT = "about"   # of a table: its About
 TEXT = "text"     # of a column: its TextKind
 LABEL_IN_TEXT = "label_in_text"   # of a column: an uploader label that search_tsv also holds
+LABEL = "label"   # of a column: how a card names one of its values, e.g. 'diagnosis label'
+# For the search and the schema shown to the SQL model:
+OPTIONAL = "optional"   # of a column: used only where the database fills it
 # For the schema shown to the SQL model:
 REFERS_TO = "refers_to"   # of a column: the column of another table it holds
 
@@ -107,13 +117,19 @@ def _created_by(migration: str, flag: str | None = None) -> dict[str, str]:
 
 def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]], migration: str,
                       flag: str | None = None, text: TextKind | None = None,
-                      label_in_text: bool = False) -> Column[Any]:
-    """A column to add to bids_datasets; *migration* and *flag* as in _created_by."""
+                      label_in_text: bool = False, optional: bool = False,
+                      label: str | None = None) -> Column[Any]:
+    """A column to add to bids_datasets; *migration* and *flag* as in _created_by,
+    *optional* and *label* as OPTIONAL and LABEL."""
     info: dict[str, Any] = _created_by(migration, flag)
     if text:
         info[TEXT] = text
     if label_in_text:
         info[LABEL_IN_TEXT] = True
+    if optional:
+        info[OPTIONAL] = True
+    if label:
+        info[LABEL] = label
     return Column(name, type_, info=info)
 
 
@@ -145,38 +161,41 @@ datasets = extend(
 
     # From the OpenNeuro API; "uploader" fields are free text, often empty.
     # Sanitised README of the latest snapshot.
-    _migration_column("readme_text", Text, _BASELINE, text=TextKind.README),
+    _migration_column("readme_text", Text, _BASELINE, text=TextKind.README, optional=True),
     # Uploader's diagnosis status, e.g. 'Healthy / Control'.
-    _migration_column("dx_status", Text, _BASELINE, label_in_text=True),
+    _migration_column("dx_status", Text, _BASELINE, label_in_text=True, optional=True,
+                      label="diagnosis label"),
     # Uploader's research topic.
-    _migration_column("study_domain", Text, _BASELINE, label_in_text=True),
+    _migration_column("study_domain", Text, _BASELINE, label_in_text=True, optional=True,
+                      label="study domain"),
     # Uploader's study design, e.g. 'Longitudinal'.
-    _migration_column("study_design", Text, _BASELINE, label_in_text=True),
+    _migration_column("study_design", Text, _BASELINE, label_in_text=True, optional=True,
+                      label="study design"),
     # Uploader's species, e.g. 'Human', 'Mouse'.
-    _migration_column("species", Text, _BASELINE),
+    _migration_column("species", Text, _BASELINE, optional=True, label="species label"),
     # Uploader's 'Cross-Sectional', 'Longitudinal', …
-    _migration_column("study_longitudinal", Text, _BASELINE),
+    _migration_column("study_longitudinal", Text, _BASELINE, optional=True),
     # Uploader's senior author.
-    _migration_column("senior_author", Text, _BASELINE),
+    _migration_column("senior_author", Text, _BASELINE, optional=True),
     # When the dataset went public.
-    _migration_column("publish_date", DateTime(timezone=True), _BASELINE),
+    _migration_column("publish_date", DateTime(timezone=True), _BASELINE, optional=True),
     # Whether it has been processed on brainlife.io.
-    _migration_column("on_brainlife", Boolean, _BASELINE),
+    _migration_column("on_brainlife", Boolean, _BASELINE, optional=True),
     # Download count of the latest snapshot.
-    _migration_column("downloads", Integer, _BASELINE),
+    _migration_column("downloads", Integer, _BASELINE, optional=True),
     # View count of the latest snapshot.
-    _migration_column("views", Integer, _BASELINE),
+    _migration_column("views", Integer, _BASELINE, optional=True),
     # Youngest reported participant age in years; ages outside 0-120 dropped.
-    _migration_column("age_min", Double, _BASELINE),
+    _migration_column("age_min", Double, _BASELINE, optional=True),
     # Oldest reported participant age in years; ages outside 0-120 dropped.
-    _migration_column("age_max", Double, _BASELINE),
+    _migration_column("age_max", Double, _BASELINE, optional=True),
     # Size of the latest snapshot in bytes.
-    _migration_column("size_bytes", BigInteger, _BASELINE),
+    _migration_column("size_bytes", BigInteger, _BASELINE, optional=True),
     # Why OpenNeuro deprecated the dataset; NULL while it is fine.
     _migration_column("deprecated_reason", Text, _BASELINE),
 
     # Every InstitutionName in the dataset's sidecar JSON files.
-    _migration_column("institutions", ARRAY(Text), _BASELINE),
+    _migration_column("institutions", ARRAY(Text), _BASELINE, optional=True),
 
     # Written by an LLM; read by the API itself, never by generated SQL.
     # Short README profile in standard terms; in search_tsv and read by the re-ranker.
@@ -378,3 +397,15 @@ LABELS_IN_TEXT: frozenset[str] = frozenset(column.name for column in datasets.c
 # The full-text search vectors of bids_datasets.
 SEARCH_VECTORS = frozenset(column.name for column in datasets.c
                            if isinstance(column.type, TSVECTOR))
+
+# The optional columns of bids_datasets (OPTIONAL), in declaration order.
+OPTIONAL_DATASET_COLUMNS: tuple[str, ...] = tuple(column.name for column in datasets.c
+                                                  if column.info.get(OPTIONAL))
+
+
+def card_label(name: str) -> str:
+    """How a result card names a value of the bids_datasets column *name*:
+    its LABEL, else the name in words."""
+    column = datasets.c.get(name)
+    label = column.info.get(LABEL) if column is not None else None
+    return str(label) if label else name.replace("_", " ")
