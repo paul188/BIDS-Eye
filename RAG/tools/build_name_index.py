@@ -6,9 +6,8 @@ Build a flat index of author names and funding sources from the database
 for use by RAG/retriever.py (RapidFuzz token-similarity matching).
 
 No embeddings — just the raw string lists.  Runs in seconds.
-The output replaces the role of modal_app/build_metadata_index.py for
-the author and funding fields.  Tasks, diagnoses, suffixes, and datatypes
-are handled directly by value_mappings.yaml via yaml_to_llamaindex.py.
+Tasks, diagnoses, suffixes, and datatypes are handled directly by
+value_mappings.yaml via yaml_to_llamaindex.py.
 
 Usage
 -----
