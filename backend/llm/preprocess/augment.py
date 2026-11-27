@@ -26,6 +26,7 @@ import place_index as _place_index
 from cohort_count import placeholder as _patients_placeholder
 import text_formula as _text_formula
 from sql_text import contains_pattern as _contains_pattern, sql_string as _sql_string
+from bids_entities import entity_condition as _entity_condition
 from criteria import species_condition as _species_condition
 from criteria import without_diagnosis as _without_diagnosis
 from criteria import normalise_age_groups as _normalise_age_groups, age_condition as _age_condition, \
@@ -841,6 +842,19 @@ def _build_augmented_question(
         key = _term_key(term)
         # A term with a modality and a task condition matches on either.
         held[key] = f"({held[key]} OR {condition})" if key in held else condition
+
+    # A scan term that is a BIDS filename entity ("dir-AP", "acq-highres") is a
+    # property of the files (backend/vocabulary/bids_entities.py), not a word
+    # of the README: as text, "dir-AP and dir-PA" found 1 of 58 datasets.
+    unknown_scans = unresolved_terms.get(RAGField.SCAN.value, [])
+    objects_table = _field_column(RAGField.SUFFIX.value)[0]
+    entity_terms = {t: c for t in unknown_scans if (c := _entity_condition(t, objects_table))}
+    for term, condition in entity_terms.items():
+        add_scan_line(term, condition)
+    if entity_terms:
+        unresolved_terms[RAGField.SCAN.value] = [t for t in unknown_scans if t not in entity_terms]
+        if not unresolved_terms[RAGField.SCAN.value]:
+            del unresolved_terms[RAGField.SCAN.value]
 
     # Build EXISTS hints per source term.
     # Modality (datatype + suffix) uses OR — a file qualifies if it matches
