@@ -23,8 +23,8 @@ from typing import Any, AsyncGenerator
 
 log = logging.getLogger(__name__)
 
-# <repo>/crawlers/openneuro-crawler; this file is <repo>/backend/services/….
-CRAWLER_DIR = Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler"
+# <repo>/ingest/openneuro-crawler; this file is <repo>/backend/services/….
+CRAWLER_DIR = Path(__file__).resolve().parents[2] / "ingest" / "openneuro-crawler"
 
 
 def wanted() -> bool:

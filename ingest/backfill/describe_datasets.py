@@ -14,13 +14,13 @@ database:
 
 A dataset is skipped when its inputs and the prompt version are unchanged, so
 the script can be stopped and rerun at any time. The crawler runs the same
-step for the datasets it indexed (crawlers/openneuro-crawler/post_crawl.py).
+step for the datasets it indexed (ingest/openneuro-crawler/post_crawl.py).
 
 Usage (inside the backend container, which has the keys and the database):
 
-    python scripts/describe_datasets.py --dry-run --limit 10 --save-jsonl /tmp/sample.jsonl
-    python scripts/describe_datasets.py                     # everything that needs it
-    python scripts/describe_datasets.py --accessions ds000171,ds004627 --force
+    python ingest/backfill/describe_datasets.py --dry-run --limit 10 --save-jsonl /tmp/sample.jsonl
+    python ingest/backfill/describe_datasets.py                     # everything that needs it
+    python ingest/backfill/describe_datasets.py --accessions ds000171,ds004627 --force
 
 Papers whose relation is not shown (related_study, tool, unclear):
 
@@ -42,7 +42,7 @@ import sys
 import time
 from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[1]
+_REPO = Path(__file__).resolve().parents[2]
 for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))

@@ -46,7 +46,7 @@ from typing import Dict, List, Sequence, Tuple
 
 _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parents[1]
-sys.path[:0] = [str(_REPO / "RAG"), str(_REPO / "crawlers" / "openneuro-crawler")]
+sys.path[:0] = [str(_REPO / "RAG"), str(_REPO / "ingest" / "openneuro-crawler")]
 
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402

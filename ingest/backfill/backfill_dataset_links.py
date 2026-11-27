@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-scripts/backfill_dataset_links.py
+ingest/backfill/backfill_dataset_links.py
 ---------------------------------
 Fill bids_derivatives and the 'dicom' rows of bids_dataset_sites for datasets
 that are already indexed (new datasets get them from post_crawl.py):
@@ -11,13 +11,13 @@ that are already indexed (new datasets get them from post_crawl.py):
   sites        bids_datasets.institutions copied as source 'dicom'
 
 The 'ethics_board' site rows come with the OpenNeuro metadata
-(scripts/backfill_openneuro_metadata.py).
+(ingest/backfill/backfill_openneuro_metadata.py).
 
 Needs the database at the newest migration (backend/migrations/README.md). Then:
 
-    python scripts/backfill_dataset_links.py --dry-run --limit 20
-    python scripts/backfill_dataset_links.py
-    python scripts/backfill_dataset_links.py --accessions-file ids.txt --sql-out links.sql
+    python ingest/backfill/backfill_dataset_links.py --dry-run --limit 20
+    python ingest/backfill/backfill_dataset_links.py
+    python ingest/backfill/backfill_dataset_links.py --accessions-file ids.txt --sql-out links.sql
 
 --sql-out writes the statements to a file instead of a database, for a
 database the script cannot reach (apply it with psql -v ON_ERROR_STOP=1 -f).
@@ -25,7 +25,7 @@ Without it the accession list comes from the database, or from
 --accessions / --accessions-file.
 
 Public sources only, no LLM. Database connection as in
-scripts/backfill_openneuro_metadata.py (DATABASE_URL or METADATA_DB_*).
+ingest/backfill/backfill_openneuro_metadata.py (DATABASE_URL or METADATA_DB_*).
 """
 
 from __future__ import annotations
@@ -39,8 +39,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, List
 
-_REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "crawlers" / "openneuro-crawler"))
+_REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO / "ingest" / "openneuro-crawler"))
 
 from remote import dataset_links as links  # noqa: E402
 

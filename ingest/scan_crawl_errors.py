@@ -9,9 +9,9 @@ Reports two categories:
 Excludes anything access-denied / restricted / embargoed.
 
 Usage:
-    python crawlers/scan_crawl_errors.py
-    python crawlers/scan_crawl_errors.py --since 25540000
-    python crawlers/scan_crawl_errors.py --file-failures
+    python ingest/scan_crawl_errors.py
+    python ingest/scan_crawl_errors.py --since 25540000
+    python ingest/scan_crawl_errors.py --file-failures
 """
 
 from __future__ import annotations

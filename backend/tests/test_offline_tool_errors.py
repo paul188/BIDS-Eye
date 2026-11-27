@@ -1,5 +1,5 @@
 """Offline tools catch only the failures they expect and raise the rest
-(RAG/tools/, scripts/)."""
+(RAG/tools/)."""
 from __future__ import annotations
 
 import importlib.util

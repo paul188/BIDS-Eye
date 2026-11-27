@@ -1,5 +1,5 @@
 """
-scripts/backfill_openneuro_metadata.py
+ingest/backfill/backfill_openneuro_metadata.py
 --------------------------------------
 Fill the OpenNeuro metadata columns for datasets that are ALREADY indexed,
 without re-crawling them:
@@ -17,8 +17,8 @@ Needs the database at the newest migration (backend/migrations/README.md).
 
 Then:
 
-    python scripts/backfill_openneuro_metadata.py --dry-run --limit 24   # look first
-    python scripts/backfill_openneuro_metadata.py                        # write
+    python ingest/backfill/backfill_openneuro_metadata.py --dry-run --limit 24   # look first
+    python ingest/backfill/backfill_openneuro_metadata.py                        # write
 
 Options:
     --dry-run            fetch and report, write nothing
@@ -50,8 +50,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple
 
-_REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "crawlers" / "openneuro-crawler"))
+_REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO / "ingest" / "openneuro-crawler"))
 
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402

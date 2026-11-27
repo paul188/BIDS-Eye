@@ -27,13 +27,13 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 their role (patients, controls, excluded, ...) and the
                 paradigms, each with a checked quote
                 (backend/services/indexing/readme_profile_runner.py, the same
-                code as scripts/extract_readme_profiles.py). Only datasets
+                code as ingest/backfill/extract_readme_profiles.py). Only datasets
                 whose README or study fields changed. Needs GEMINI_API_KEY;
                 the text goes to Gemini only.
   2. descriptions  how each primary paper relates to its dataset, and a
                 generated summary where the README is thin
                 (backend/services/indexing/dataset_description.py, the same code as
-                scripts/describe_datasets.py). Only what is missing or stale.
+                ingest/backfill/describe_datasets.py). Only what is missing or stale.
                 Needs GEMINI_API_KEY; the text goes to Gemini only.
   3. word forms  rebuild bids_word_forms, the catalogue's word forms per stem
                 (backend/services/fulltext/word_form_counts.py). No LLM, no network;

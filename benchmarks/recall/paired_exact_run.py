@@ -92,7 +92,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     if not (has_exact_fts() and has_word_forms()):
         raise SystemExit("search_tsv_exact or bids_word_forms is missing: run "
                          "`alembic upgrade head` in backend/ and "
-                         "`python post_crawl.py --all --only word_forms` in crawlers/openneuro-crawler/")
+                         "`python post_crawl.py --all --only word_forms` in ingest/openneuro-crawler/")
     print(f"label={label!r} database={database}", file=sys.stderr, flush=True)
 
     # The translation rewrites the model's SQL once. Keep what it was given,

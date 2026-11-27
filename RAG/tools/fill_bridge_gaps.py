@@ -8,7 +8,7 @@ all its CA children), fetches CA tasks that measure them and fuzzy-matches
 those CA tasks to BIDS task codes.
 
 Run from repo root:
-    python scripts/fill_bridge_gaps.py
+    python RAG/tools/fill_bridge_gaps.py
 
 Merges results directly into RAG/bids_to_ca_map.json.
 Requires: rapidfuzz

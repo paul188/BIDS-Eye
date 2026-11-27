@@ -14,7 +14,7 @@ The stages it calls:
                coverage, known values, institution and place names
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
-  indexing/    offline LLM jobs over datasets (scripts/ and the crawler, not requests)
+  indexing/    offline LLM jobs over datasets (ingest/backfill/ and the crawler, not requests)
 
 A module is named for what it holds, a noun phrase with the main noun last
 (word_form_counts, interpretations, translated_queries). The package already

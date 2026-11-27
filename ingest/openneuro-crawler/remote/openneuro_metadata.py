@@ -13,7 +13,7 @@ S3 access and no re-indexing of files.
 Used by:
   - remote/openneuro.py   after a dataset is indexed from its S3 mirror
   - remote/graphql.py     the fallback for restricted datasets
-  - scripts/backfill_openneuro_metadata.py   for datasets that are already indexed
+  - ingest/backfill/backfill_openneuro_metadata.py   for datasets that are already indexed
 
 Only the standard library and SQLAlchemy are needed, so the module also runs
 inside the backend image.

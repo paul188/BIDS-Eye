@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-scripts/mine_senses.py
+RAG/tools/mine_senses.py
 ----------------------
 List the words that stand next to a head word in the catalogue, as material
 for RAG/senses.yaml.
 
-    python scripts/mine_senses.py SNAPSHOT.jsonl conflict control reward
-    python scripts/mine_senses.py SNAPSHOT.jsonl conflict --window 2 --top 30
+    python RAG/tools/mine_senses.py SNAPSHOT.jsonl conflict control reward
+    python RAG/tools/mine_senses.py SNAPSHOT.jsonl conflict --window 2 --top 30
 
 SNAPSHOT.jsonl has one dataset per line with name, description, readme and
 the uploader's study fields (benchmarks/recall/snapshot.sql writes it; lines

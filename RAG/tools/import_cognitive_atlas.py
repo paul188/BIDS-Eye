@@ -3,7 +3,7 @@
 Fetch all Cognitive Atlas concepts and write RAG/cognitive_atlas_constructs.yaml.
 
 Run from the repo root:
-    python scripts/import_cognitive_atlas.py
+    python RAG/tools/import_cognitive_atlas.py
 
 Output: RAG/cognitive_atlas_constructs.yaml  (~900 concepts, ~1 800 hierarchy edges)
 

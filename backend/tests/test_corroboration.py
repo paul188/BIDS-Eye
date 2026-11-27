@@ -47,7 +47,7 @@ def test_the_labels_counted_with_the_text_are_those_of_the_search_vector() -> No
     from pathlib import Path
     from services.schema.tables import LABELS_IN_TEXT
 
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler"))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest" / "openneuro-crawler"))
     from remote import openneuro_metadata as meta
 
     columns = set(re.findall(r"coalesce\((\w+),", meta.SEARCH_VECTOR_EXPRESSION))

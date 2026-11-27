@@ -5,7 +5,7 @@ Generate a proposed mapping between BIDS-Eye task codes and Cognitive Atlas task
 Run AFTER import_cognitive_atlas.py so that cognitive_atlas_constructs.yaml exists.
 
 Run from the repo root:
-    python scripts/generate_task_bridge.py
+    python RAG/tools/generate_task_bridge.py
 
 Output: RAG/proposed_task_mappings.json
 
@@ -92,7 +92,7 @@ def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
     ca_id_to_key = load_ca_constructs(ca_yaml_path)
     if not ca_id_to_key:
         print("  [WARN] cognitive_atlas_constructs.yaml not found — measures will be empty")
-        print("         Run scripts/import_cognitive_atlas.py first.")
+        print("         Run RAG/tools/import_cognitive_atlas.py first.")
 
     # ── Fetch CA task list ───────────────────────────────────────────────────
     print("Fetching CA task list …")

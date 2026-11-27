@@ -11,8 +11,8 @@ from the same input with the same prompt version, so a run can be stopped and
 repeated at any time, and a changed README redoes only that dataset.
 
 Two callers: the crawler after each cycle, for the datasets it indexed
-(crawlers/openneuro-crawler/post_crawl.py), and
-scripts/extract_readme_profiles.py, for the whole catalogue or a sample to
+(ingest/openneuro-crawler/post_crawl.py), and
+ingest/backfill/extract_readme_profiles.py, for the whole catalogue or a sample to
 review. Needs GEMINI_API_KEY; the text goes to Gemini only.
 """
 

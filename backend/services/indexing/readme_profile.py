@@ -27,7 +27,7 @@ What search uses:
 
 This module has no database or network code of its own; the runner is
 services/indexing/readme_profile_runner.py (called by the crawler and by
-scripts/extract_readme_profiles.py).
+ingest/backfill/extract_readme_profiles.py).
 """
 
 from __future__ import annotations
