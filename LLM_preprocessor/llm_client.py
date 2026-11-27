@@ -30,6 +30,8 @@ Config (env):
   ANTHROPIC_API_KEY                — Claude key; if absent, the Claude tier is skipped
   GEMINI_MODEL_CASCADE             — comma-separated override of the Gemini tier order
   ANTHROPIC_FALLBACK_MODEL         — override the Claude model (default claude-sonnet-4-6)
+  GEMINI_SEED                      — sampling seed of every Gemini call (default 0;
+                                     "none" sends no seed)
 """
 
 from __future__ import annotations
@@ -59,6 +61,27 @@ _DEFAULT_GEMINI_CASCADE = [
 # blew past Cloudflare's ~100s request limit; Haiku answers the same prompt in a
 # few seconds. Override with ANTHROPIC_FALLBACK_MODEL if you want Sonnet/Opus.
 _DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
+
+# Temperature 0 alone did not make answers repeatable: the same question got
+# different SQL in 19 of 69 requests across two runs (benchmarks/demand,
+# 2026-11-15). A fixed seed is Gemini's best-effort way to repeat a sample.
+# The Anthropic API takes no seed, so the Claude tier stays unseeded.
+_DEFAULT_GEMINI_SEED = 0
+
+
+def _gemini_seed() -> Optional[int]:
+    """GEMINI_SEED as an int; None for "none"/"off"/"" (no seed sent)."""
+    raw = os.getenv("GEMINI_SEED")
+    if raw is None:
+        return _DEFAULT_GEMINI_SEED
+    raw = raw.strip().lower()
+    if raw in ("", "none", "off"):
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        log.warning("GEMINI_SEED=%r is not an integer; using %d", raw, _DEFAULT_GEMINI_SEED)
+        return _DEFAULT_GEMINI_SEED
 
 
 class LLMAllFailedError(RuntimeError):
@@ -224,6 +247,9 @@ def _call_gemini(model, prompt, system, temperature, api_key, *, json_schema=Non
         extra["thinking_config"] = types.ThinkingConfig(thinking_level=thinking_level.upper())
     if max_tokens:
         extra["max_output_tokens"] = max_tokens
+    seed = _gemini_seed()
+    if seed is not None:
+        extra["seed"] = seed
     cfg = types.GenerateContentConfig(
         system_instruction=system or None,
         temperature=temperature,
