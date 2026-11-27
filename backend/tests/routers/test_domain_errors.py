@@ -15,6 +15,7 @@ from fastapi import FastAPI
 
 from security import rate_limits
 import routers.auth as auth
+from services import github_oauth
 import routers.search as query_router
 from security import sessions
 from deps import get_db, require_auth
@@ -92,8 +93,8 @@ def test_busy_on_a_later_page_is_503(monkeypatch):
 def test_every_planned_error_is_a_domain_error_with_its_own_answer():
     errors = (
         query_guard.SearchBusyError, search.SearchExpiredError, rate_limits.RateLimitError,
-        sessions.NotSignedInError, auth.OAuthStateError, auth.GitHubTokenError,
-        auth.GitHubLoginMissingError, auth.NotInGitHubOrgError,
+        sessions.NotSignedInError, auth.OAuthStateError, github_oauth.GitHubTokenError,
+        github_oauth.GitHubLoginMissingError, github_oauth.NotInGitHubOrgError,
     )
     for error in errors:
         assert issubclass(error, DomainError)

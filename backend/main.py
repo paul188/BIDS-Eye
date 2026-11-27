@@ -99,7 +99,7 @@ app = FastAPI(
 
 # CORS, CSRF, the signed HttpOnly session cookie and login-by-default for /api
 # (see security/middleware.py). Raises when SESSION_SECRET or a GitHub sign-in setting
-# is missing or unusable (routers/auth.py, AuthSettings).
+# is missing or unusable (security/settings.py, AuthSettings).
 install_security_middleware(app)
 
 # Outermost: an ID per request, on its log lines and in the X-Request-ID

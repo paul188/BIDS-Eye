@@ -27,7 +27,7 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_csrf import CSRFMiddleware
 
-from routers.auth import AuthSettings
+from security.settings import AuthSettings
 from security.sessions import (
     SESSION_COOKIE,
     NotSignedInError,

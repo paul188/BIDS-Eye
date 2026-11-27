@@ -12,7 +12,7 @@ the code that raises it, without knowing about FastAPI:
     services/search.py        SearchExpiredError        410
     security/sessions.py      NotSignedInError          401
     routers/auth.py           OAuthStateError           400
-                              GitHubTokenError          400
+    services/github_oauth.py  GitHubTokenError          400
                               GitHubLoginMissingError   502
                               NotInGitHubOrgError       403
                               GitHubOrgCheckError       502
