@@ -2,8 +2,9 @@
 # (see docker-compose*.yml). This file keeps out what no Dockerfile copies,
 # so the context stays small and secrets never reach the build daemon.
 #
-# The Dockerfiles copy: BIDS-SQL/, backend/ (tests included: they run inside
-# the image), backend/llm/, backend/vocabulary/, frontend/, ingest/openneuro-crawler/.
+# The Dockerfiles copy: constraints.txt, BIDS-SQL/, backend/ (tests included:
+# they run inside the image), backend/llm/, backend/vocabulary/, frontend/,
+# ingest/openneuro-crawler/.
 # Do not exclude any of those.
 
 # Version control and local tooling

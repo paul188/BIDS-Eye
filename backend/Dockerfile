@@ -13,11 +13,11 @@ COPY backend/                          /app/backend/
 # constraints.txt is named only so that the COPY has a source without it.
 ARG BIDSEYE_COMMIT=""
 ENV BIDSEYE_COMMIT=${BIDSEYE_COMMIT}
-COPY backend/constraints.txt DEPLOYED_COMMIT* /app/
+COPY constraints.txt DEPLOYED_COMMIT* /app/
 
 # Every pip call is constrained to the pinned versions in constraints.txt so
 # that a rebuild yields the same environment (see the comment in that file).
-ENV PIP_CONSTRAINT=/app/backend/constraints.txt
+ENV PIP_CONSTRAINT=/app/constraints.txt
 
 # Install BIDS-SQL dependencies and package
 RUN pip install --no-cache-dir -r /app/BIDS-SQL/requirements.txt && \
