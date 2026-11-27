@@ -19,7 +19,7 @@ closer look, and, for a word with forms judged different from it
 table has, minus those. A form new since the last refresh is then missed
 until the next one.
 
-lookup() answers for the words of one question, cached_evidence() for one
+lookup() answers for the words of one question, cached_form_counts() for one
 word at a time (a reviewed word the question's decisions do not cover). Like
 the word counts in services/fulltext/text_search.py they are called from the
 translation worker thread, so they reach the database through database/worker.py.
@@ -38,7 +38,7 @@ from database import worker as worker_db
 from services.schema.tables import datasets, word_forms
 from services.fulltext import vectors
 
-from word_forms import WordEvidence
+from word_forms import FormCounts
 
 log = logging.getLogger(__name__)
 
@@ -117,12 +117,12 @@ async def refresh(conn: Any) -> Dict[str, int]:
 # Given words, returns the rows of _LOOKUP_SQL, or None when unavailable.
 Lookup = Callable[[List[str]], Optional[List[Sequence[Any]]]]
 
-# How long cached_evidence() keeps an answer, a missing one included: one
+# How long cached_form_counts() keeps an answer, a missing one included: one
 # search builds many queries for the same word, and a database that did not
 # answer should not be asked again for each.
-EVIDENCE_CACHE_SECONDS = 600.0
-# word → (time asked, its evidence or None)
-_evidence_cache: Dict[str, Tuple[float, Optional[WordEvidence]]] = {}
+FORM_COUNTS_CACHE_SECONDS = 600.0
+# word → (time asked, its counts or None)
+_form_counts_cache: Dict[str, Tuple[float, Optional[FormCounts]]] = {}
 
 
 def _database_lookup(words: List[str]) -> List[Sequence[Any]]:
@@ -142,7 +142,7 @@ def set_lookup(lookup: Optional[Lookup]) -> None:
     """Install another lookup (tests); None switches lookups off."""
     global _lookup
     _lookup = lookup
-    _evidence_cache.clear()
+    _form_counts_cache.clear()
 
 
 def reset_lookup() -> None:
@@ -159,7 +159,7 @@ def _parse_forms(values: Sequence[str]) -> Tuple[Tuple[str, int], ...]:
     return tuple(forms)
 
 
-def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
+def lookup(words: Sequence[str]) -> Dict[str, FormCounts]:
     """The catalogue's forms for each of *words*; {} when unavailable.
 
     Words that are not plain lower-case words, and stopwords, are left out.
@@ -177,20 +177,20 @@ def lookup(words: Sequence[str]) -> Dict[str, WordEvidence]:
     except worker_db.WorkerDbError as exc:
         log.warning("Word form lookup failed (%s) — searching by stem", exc)
         return {}
-    found: Dict[str, WordEvidence] = {}
+    found: Dict[str, FormCounts] = {}
     for row in rows or ():
         word, stem, stem_docs, forms = row[0], row[1], row[2], row[3]
-        found[word] = WordEvidence(word=word, stem=stem, stem_docs=int(stem_docs or 0),
+        found[word] = FormCounts(word=word, stem=stem, stem_docs=int(stem_docs or 0),
                                    forms=_parse_forms(forms))
     return found
 
 
-def cached_evidence(word: str) -> Optional[WordEvidence]:
-    """lookup() for one word, kept EVIDENCE_CACHE_SECONDS; None when unavailable."""
+def cached_form_counts(word: str) -> Optional[FormCounts]:
+    """lookup() for one word, kept FORM_COUNTS_CACHE_SECONDS; None when unavailable."""
     now = time.monotonic()
-    cached = _evidence_cache.get(word)
-    if cached is not None and now - cached[0] < EVIDENCE_CACHE_SECONDS:
+    cached = _form_counts_cache.get(word)
+    if cached is not None and now - cached[0] < FORM_COUNTS_CACHE_SECONDS:
         return cached[1]
-    evidence = lookup([word]).get(word)
-    _evidence_cache[word] = (now, evidence)
-    return evidence
+    counts = lookup([word]).get(word)
+    _form_counts_cache[word] = (now, counts)
+    return counts

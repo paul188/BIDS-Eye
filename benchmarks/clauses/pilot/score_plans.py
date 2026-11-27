@@ -417,7 +417,7 @@ def run(args) -> None:
     for item in load_own():
         for _ in range(args.repeats - len(plans.get(item["id"], []))):
             try:
-                plan = preprocess.preprocess_query(item["text"])
+                plan = preprocess.create_query_plan(item["text"])
             except Exception as exc:  # noqa: BLE001 - one failed call must not stop the run
                 errors[item["id"]] = errors.get(item["id"], 0) + 1
                 print(f"{item['id']}: {type(exc).__name__}: {str(exc)[:80]}", file=sys.stderr, flush=True)

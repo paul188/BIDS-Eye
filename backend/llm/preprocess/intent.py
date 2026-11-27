@@ -1,4 +1,4 @@
-"""The model call: a question in, a QueryPlan out (preprocess_query)."""
+"""The model call: a question in, a QueryPlan out (create_query_plan)."""
 from __future__ import annotations
 
 import json
@@ -6,20 +6,13 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from llm_client import llm_generate
+
 from . import catalogue as _catalogue
 from .plan import QueryPlan
 from .prompt import _SYSTEM_PROMPT
 
 log = logging.getLogger("preprocess")
-
-
-def _ask_model(prompt: str, *, json_schema: Optional[Dict[str, Any]] = None) -> str:
-    """Run the intent-extraction prompt through profile intent (backend/llm/llm_config.yaml).
-
-    Raises llm_client.LLMAllFailedError if no model answers.
-    """
-    from llm_client import llm_generate
-    return llm_generate(prompt, profile="intent", system=_SYSTEM_PROMPT, json_schema=json_schema)
 
 
 def _plan_output_schema(include_word_forms: bool = False) -> Dict[str, Any]:
@@ -105,7 +98,7 @@ def listed_shorthands(query: str) -> Dict[str, List[str]]:
     return found
 
 
-def word_evidence(query: str) -> Dict[str, Any]:
+def count_word_forms(query: str) -> Dict[str, Any]:
     """The catalogue's forms of the question's words (backend/vocabulary/word_forms.py).
 
     {} when exact word forms are off (TEXT_SEARCH_EXACT), outside the backend,
@@ -123,9 +116,9 @@ def word_evidence(query: str) -> Dict[str, Any]:
     return word_form_counts.lookup(word_forms.question_words(query))
 
 
-def preprocess_query(
+def create_query_plan(
     query: str,
-    evidence: Optional[Dict[str, Any]] = None,
+    form_counts: Optional[Dict[str, Any]] = None,
     word_choices: Optional[List[Tuple[str, List[str]]]] = None,
 ) -> QueryPlan:
     """
@@ -133,18 +126,18 @@ def preprocess_query(
 
     Parameters
     ----------
-    query   : raw natural-language question from the user
-    evidence : word_evidence(query). Words whose stem collides are shown to
-               the model with their forms; without any, the prompt is the same
-               as without this argument
+    query        : raw natural-language question from the user
+    form_counts  : count_word_forms(query). Words whose stem collides are shown
+                   to the model with their forms; without any, the prompt is the
+                   same as without this argument
     word_choices : a list that receives the model's (word, forms to keep)
-               answers, for word_forms.decide
+                   answers, for word_forms.decide
 
     Returns
     -------
     QueryPlan  (Pydantic model, all fields validated)
     """
-    forms_block = _word_forms_block(evidence)
+    forms_block = _word_forms_block(form_counts)
     user_input: Dict[str, Any] = {"user_query": query}
     if forms_block:
         user_input["catalogue_word_form_evidence"] = forms_block
@@ -161,29 +154,25 @@ def preprocess_query(
     if forms_block:
         prompt = f"{prompt}\n\n{_WORD_FORMS_INSTRUCTION}\n"
 
-    raw = _ask_model(prompt, json_schema=output_schema)
-
-    # Strip markdown fences if the model adds them anyway
-    if raw.startswith("```"):
-        raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
-        if raw.endswith("```"):
-            raw = raw[:-3]
-        raw = raw.strip()
+    # Profile "intent" in backend/llm/llm_config.yaml; raises
+    # llm_client.LLMAllFailedError if no model answers.
+    raw = llm_generate(prompt, profile="intent", system=_SYSTEM_PROMPT,
+                       json_schema=output_schema)
 
     if forms_block:
         raw = _take_word_choices(raw, word_choices)
     return QueryPlan.model_validate_json(raw)
 
 
-def _word_forms_block(evidence: Optional[Dict[str, Any]]) -> str:
-    if not evidence:
+def _word_forms_block(form_counts: Optional[Dict[str, Any]]) -> str:
+    if not form_counts:
         return ""
     try:
         import word_forms
     except ImportError as exc:
         log.warning("Word forms left out of the prompt (%s)", exc)
         return ""
-    return word_forms.prompt_block(word_forms.needs_decision(evidence))
+    return word_forms.prompt_block(word_forms.needs_decision(form_counts))
 
 
 def _take_word_choices(raw: str, word_choices: Optional[List[Tuple[str, List[str]]]]) -> str:

@@ -7,7 +7,7 @@ Flow:
   User query
       │
       ▼
-  preprocess_query()          ← intent.py
+  create_query_plan()          ← intent.py
       │  returns QueryPlan (structured Pydantic object)
       │
       ▼
@@ -39,7 +39,7 @@ the env var that holds each provider's key is named there.
 Modules, in import order (each uses only those before it):
   plan.py      The plan the model returns (QueryPlan) and the plan after RAG (AugmentedQueryPlan).
   prompt.py    The system prompt of the intent-extraction call.
-  intent.py    The model call: a question in, a QueryPlan out (preprocess_query).
+  intent.py    The model call: a question in, a QueryPlan out (create_query_plan).
   rag.py       What to look up in the vocabulary for a plan, and the scored filters that come back.
   topics.py    Topics: a qualified subject, searched as one unit; description alternatives.
   augment.py   The plan with RAG results: filter lines and the augmented question (augment_with_rag).
@@ -69,8 +69,8 @@ from .prompt import (  # noqa: F401
 )
 from .intent import (  # noqa: F401
     _plan_output_schema,
-    preprocess_query,
-    word_evidence,
+    create_query_plan,
+    count_word_forms,
 )
 from .rag import (  # noqa: F401
     _is_healthy_term,

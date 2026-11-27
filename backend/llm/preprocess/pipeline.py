@@ -10,7 +10,7 @@ from services.schema.coded_fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
 from .plan import AugmentedQueryPlan, ParticipantGroup, QueryFamily, QueryPlan, RAGField, ScanRequirement
-from .intent import preprocess_query, word_evidence
+from .intent import count_word_forms, create_query_plan
 from .rag import build_rag_requests
 from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, check_scan_term_alternatives, resolve_topics
 from .augment import augment_with_rag
@@ -18,7 +18,7 @@ from .augment import augment_with_rag
 log = logging.getLogger("preprocess")
 
 
-def _decide_word_forms(evidence: Dict[str, Any],
+def _decide_word_forms(form_counts: Dict[str, Any],
                        word_choices: List[Tuple[str, List[str]]]) -> Dict[str, List[str]]:
     """The forms each colliding word of the question must match in ({} for none)."""
     try:
@@ -27,7 +27,7 @@ def _decide_word_forms(evidence: Dict[str, Any],
         log.warning("Word forms not decided (%s) — searching by stem", exc)
         return {}
     decided = {word: list(forms)
-               for word, forms in word_forms.decide(evidence, word_choices).items()}
+               for word, forms in word_forms.decide(form_counts, word_choices).items()}
     if decided:
         log.info("Exact word forms: %s", decided)
     return decided
@@ -143,13 +143,13 @@ def run_pipeline(
     """
     # Words whose stem also matches unrelated words ("ageing" and "age"): the
     # model sees the catalogue's forms and picks the ones meant (backend/vocabulary/word_forms.py).
-    evidence = word_evidence(query)
-    if evidence:
+    form_counts = count_word_forms(query)
+    if form_counts:
         word_choices: List[Tuple[str, List[str]]] = []
-        plan = preprocess_query(query, evidence=evidence, word_choices=word_choices)
-        decided = _decide_word_forms(evidence, word_choices)
+        plan = create_query_plan(query, form_counts=form_counts, word_choices=word_choices)
+        decided = _decide_word_forms(form_counts, word_choices)
     else:
-        plan = preprocess_query(query)
+        plan = create_query_plan(query)
         decided = {}
     _names_that_are_conditions(plan, query, retriever)
     _keep_ambiguity_topics(plan)
@@ -166,7 +166,7 @@ def run_pipeline(
 
     def finished(augmented: AugmentedQueryPlan) -> AugmentedQueryPlan:
         augmented.word_forms = decided
-        if evidence:
+        if form_counts:
             _log_undecided_words(augmented.augmented_question, decided)
         return augmented
 

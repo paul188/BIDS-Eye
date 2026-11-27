@@ -21,13 +21,13 @@ import word_forms  # noqa: E402
 from services.fulltext import word_form_counts as store  # noqa: E402
 from services.fulltext import vectors  # noqa: E402
 from database.worker import WorkerDbError  # noqa: E402
-from word_forms import WordEvidence  # noqa: E402
+from word_forms import FormCounts  # noqa: E402
 
-AGEING = WordEvidence("ageing", "age", 291, (
+AGEING = FormCounts("ageing", "age", 291, (
     ("age", 220), ("aged", 44), ("aging", 34), ("ages", 30), ("ageing", 4), ("ageings", 1)))
-SCANS = WordEvidence("scans", "scan", 502, (
+SCANS = FormCounts("scans", "scan", 502, (
     ("scans", 280), ("scan", 252), ("scanning", 170), ("scanned", 85)))
-DEPRESSED = WordEvidence("depressed", "depress", 36, (
+DEPRESSED = FormCounts("depressed", "depress", 36, (
     ("depression", 33), ("depressive", 11), ("depressed", 4)))
 
 
@@ -68,7 +68,7 @@ def test_a_stem_collides_when_other_forms_bring_most_datasets() -> None:
     assert word_forms.family_docs(SCANS) == 280
     assert not word_forms.is_collision(SCANS)
     # Too few extra datasets to matter.
-    rare = WordEvidence("dystonic", "dyston", 9, (("dystonia", 8), ("dystonic", 1)))
+    rare = FormCounts("dystonic", "dyston", 9, (("dystonia", 8), ("dystonic", 1)))
     assert not word_forms.is_collision(rare)
 
 
@@ -89,16 +89,16 @@ def test_decide_keeps_chosen_forms_and_their_inflections(reviewed_list) -> None:
 
 
 def test_decide_is_lenient_with_the_models_answer(reviewed_list) -> None:
-    evidence = {"ageing": AGEING, "scans": SCANS, "depressed": DEPRESSED}
-    decided = word_forms.decide(evidence, [
+    form_counts = {"ageing": AGEING, "scans": SCANS, "depressed": DEPRESSED}
+    decided = word_forms.decide(form_counts, [
         ("Ageing", ["Aging", "elderly", "senescence"]),   # unknown forms dropped, case folded
         ("scans", ["scans"]),                              # not a collision: not asked
-        ("mri", ["mri"]),                                  # not in the evidence
+        ("mri", ["mri"]),                                  # not in the counts
         ("depressed", ["depressed", "depression", "depressive"]),   # all kept: no restriction
         ("ageing", ["age"]),                               # a second answer is ignored
     ])
     assert decided == {"ageing": ("ageing", "aging", "ageings")}
-    assert word_forms.decide(evidence, []) == {}
+    assert word_forms.decide(form_counts, []) == {}
 
 
 def test_reviewed_list_wins_and_covers_inflections(reviewed_list) -> None:
@@ -161,7 +161,7 @@ def test_lookup_parses_rows_and_skips_what_cannot_be_a_word(word_forms_table) ->
     store.set_lookup(fake)
     found = store.lookup(["ageing", "t1w", "ageing", "MRI", "x"])
     assert asked == [["ageing"]]
-    assert found == {"ageing": WordEvidence("ageing", "age", 291,
+    assert found == {"ageing": FormCounts("ageing", "age", 291,
                                             (("age", 220), ("aging", 34), ("ageing", 4)))}
 
 
@@ -260,12 +260,12 @@ def test_refresh_refuses_a_connection_without_a_transaction() -> None:
 
 # ── Pairs ─────────────────────────────────────────────────────────────────────
 
-WEIGHT = WordEvidence("weight", "weight", 1400, (
+WEIGHT = FormCounts("weight", "weight", 1400, (
     ("weighted", 1300), ("weight", 120), ("weights", 40), ("weighting", 30), ("weightings", 12)))
 
 
 def test_a_form_nobody_judged_keeps_matching(reviewed_list) -> None:
-    rare = WordEvidence("ageing", "age", 300, AGEING.forms + (("ageless", 3),))
+    rare = FormCounts("ageing", "age", 300, AGEING.forms + (("ageless", 3),))
     # "ageless" is too rare to be shown, so nobody judged it: it stays.
     assert "ageless" not in word_forms.open_forms(rare)
     decided = word_forms.decide({"ageing": rare}, [("ageing", ["ageing", "aging"])])
@@ -303,7 +303,7 @@ def test_a_reviewed_word_with_an_open_pair_goes_to_the_model(reviewed_list) -> N
     reviewed_list({"exact": [{"forms": ["weight", "weights"], "excludes": ["weighted"], "why": "x"}]})
     # "weighted" is judged; "weighting" (30 datasets, against 120) is not.
     assert word_forms.open_forms(WEIGHT) == ()
-    many = WordEvidence("weight", "weight", 1600, WEIGHT.forms[:3] + (("weighting", 200),))
+    many = FormCounts("weight", "weight", 1600, WEIGHT.forms[:3] + (("weighting", 200),))
     assert word_forms.open_forms(many) == ("weighting",)
     decided = word_forms.decide({"weight": many}, [("weight", ["weight", "weights"])])
     assert decided == {"weight": ("weight", "weights")}
@@ -317,7 +317,7 @@ def test_excluded_forms_cover_both_spellings(reviewed_list) -> None:
     assert {"organized", "organised"} <= word_forms.excluded_forms("organ")
 
 
-def test_cached_evidence_asks_once(word_forms_table) -> None:
+def test_cached_form_counts_asks_once(word_forms_table) -> None:
     asked = []
 
     def fake(words):
@@ -325,13 +325,13 @@ def test_cached_evidence_asks_once(word_forms_table) -> None:
         return [("weight", "weight", 1400, ["weighted:1300", "weight:120"])]
 
     store.set_lookup(fake)
-    assert store.cached_evidence("weight").forms == (("weighted", 1300), ("weight", 120))
-    assert store.cached_evidence("weight") is not None
+    assert store.cached_form_counts("weight").forms == (("weighted", 1300), ("weight", 120))
+    assert store.cached_form_counts("weight") is not None
     assert asked == [["weight"]]
     # A missing answer is kept too.
     store.set_lookup(lambda words: None)
-    assert store.cached_evidence("weight") is None
-    assert store.cached_evidence("weight") is None
+    assert store.cached_form_counts("weight") is None
+    assert store.cached_form_counts("weight") is None
 
 
 def test_the_guard_of_a_reviewed_word_lists_its_stem_minus_the_excluded(
@@ -366,7 +366,7 @@ def stored_pairs(tmp_path, monkeypatch, reviewed_list):
     word_forms._stored_pairs.cache_clear()
 
 
-TIMING = WordEvidence("timing", "time", 500, (
+TIMING = FormCounts("timing", "time", 500, (
     ("time", 489), ("times", 168), ("timing", 126), ("timed", 40), ("timer", 12)))
 
 

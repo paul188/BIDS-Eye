@@ -55,6 +55,7 @@ import contextvars
 import json
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -152,6 +153,16 @@ def _first_env(names: Sequence[str]) -> Optional[str]:
 def _schema_instruction(prompt: str, schema: dict) -> str:
     return (f"{prompt}\n\nReturn only a JSON value that follows this JSON Schema, "
             f"no prose, no code fences:\n{json.dumps(schema)}")
+
+
+# An answer wrapped in a Markdown code fence (```json ... ```), the closing fence optional.
+_CODE_FENCE_RE = re.compile(r"\s*```[\w-]*[ \t]*\n?(.*?)\s*(?:```\s*)?", re.DOTALL)
+
+
+def _without_code_fence(text: str) -> str:
+    """*text* without a code fence around it: models add one despite the instruction."""
+    fenced = _CODE_FENCE_RE.fullmatch(text)
+    return fenced.group(1) if fenced else text
 
 
 # ── Gemini ──────────────────────────────────────────────────────────────────────
@@ -675,7 +686,8 @@ def llm_generate(
     """Run the prompt through the profile's tiers; return the first text answer.
 
       profile         a profile of llm_config.yaml ("intent", "sql", "rerank", ...)
-      json_schema     JSON Schema the answer must follow
+      json_schema     JSON Schema the answer must follow; a code fence the model
+                      puts around its answer anyway is taken off
       purpose         label for the usage log; the profile's name when not given
       thinking_level  for this call, instead of the tier's or profile's (a
                       job's --thinking option)
@@ -732,6 +744,8 @@ def llm_generate(
                 break  # next tier
             log.info("llm_generate: %s succeeded", tier.label)
             _report_usage(purpose or profile, tier, result.usage, time.monotonic() - started)
+            if json_schema is not None:
+                return _without_code_fence(result.text)
             return result.text
 
     raise LLMAllFailedError(

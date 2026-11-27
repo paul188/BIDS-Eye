@@ -23,7 +23,7 @@ auto_map = _load(ROOT / "backend" / "vocabulary" / "tools" / "auto_map_unmapped.
 
 
 def _fake_llm(monkeypatch, answer):
-    """llm_client.llm_generate replaced; returns the calls' keyword arguments."""
+    """llm_client.llm_generate replaced (every profile callable); returns the calls' keyword arguments."""
     import llm_client
     calls = []
 
@@ -33,41 +33,44 @@ def _fake_llm(monkeypatch, answer):
             raise answer
         return answer
     monkeypatch.setattr(llm_client, "llm_generate", generate)
+    monkeypatch.setattr(llm_client, "profile_available", lambda profile: True)
     return calls
 
 
-def test_auto_map_asks_its_profile_with_the_decision_schema(monkeypatch):
+def _generate(tmp_path, model=None):
+    """auto_map.generate_decisions over one unmapped value, nothing applied."""
+    unmapped = {"diagnosis": {"tle": {"count": 1, "datasets": ["ds000001"]}}}
+    return auto_map.generate_decisions(
+        unmapped, {"diagnosis": {}}, tmp_path / "m.yaml", tmp_path / "ck.json",
+        tmp_path / "log.txt", ["diagnosis"], batch_size=10, model=model, resume=False,
+        generate_only=True, dataset_context={})
+
+
+def test_auto_map_asks_its_profile_with_the_decision_schema(monkeypatch, tmp_path):
     calls = _fake_llm(monkeypatch, "[]")
-    assert auto_map._ask_model("p") == "[]"
+    assert _generate(tmp_path) == {"diagnosis": []}
     assert calls[0]["profile"] == "vocabulary_mapping"
     assert calls[0]["json_schema"]["items"]["properties"]["action"]["enum"][0] == "filter"
-    auto_map._ask_model("p", ["gemini-3.1-flash"])
+    assert calls[0]["models"] is None
+    _generate(tmp_path, model="gemini-3.1-flash")
     assert calls[1]["models"] == ["gemini-3.1-flash"]
 
 
-def test_auto_map_lets_a_failed_call_and_a_bug_through(monkeypatch):
+def test_auto_map_skips_a_failed_call_and_raises_a_bug(monkeypatch, tmp_path):
     import llm_client
     _fake_llm(monkeypatch, llm_client.LLMAllFailedError("no model answered"))
-    with pytest.raises(llm_client.LLMAllFailedError):
-        auto_map._ask_model("p")
+    assert _generate(tmp_path) == {"diagnosis": []}
     _fake_llm(monkeypatch, TypeError("unexpected keyword"))
     with pytest.raises(TypeError):
-        auto_map._ask_model("p")
+        _generate(tmp_path)
 
 
 expand_synonyms = _load(ROOT / "backend" / "vocabulary" / "tools" / "expand_synonyms.py", "expand_synonyms")
 
 
-def test_expand_synonyms_asks_its_profile_and_parses_the_list(monkeypatch):
-    calls = _fake_llm(monkeypatch, 'Here: ["motor imagery", "imagined movement"]')
-    assert expand_synonyms._ask_model("p", system="s") == ["motor imagery", "imagined movement"]
-    assert calls[0]["profile"] == "synonym_expansion" and calls[0]["system"] == "s"
-
-
-def test_expand_synonyms_lets_a_bug_through(monkeypatch):
-    _fake_llm(monkeypatch, TypeError("unexpected keyword"))
-    with pytest.raises(TypeError):
-        expand_synonyms._ask_model("p")
+def test_expand_synonyms_finds_the_list_in_a_chatty_answer():
+    answer = 'Here: ["motor imagery", "imagined movement"]'
+    assert expand_synonyms._parse_llm_response(answer) == ["motor imagery", "imagined movement"]
 
 
 def test_a_failed_crossref_fetch_is_not_cached(monkeypatch):
@@ -90,19 +93,20 @@ def test_an_unusable_answer_or_failed_call_is_returned_a_bug_is_raised(monkeypat
     import llm_client
 
     source = SimpleNamespace(accession_id="ds000001")
-    monkeypatch.setattr(profiles, "_ask_model", lambda *a: "not json")
+    monkeypatch.setattr(profiles.rp, "build_prompt", lambda source: "prompt")
+    monkeypatch.setattr(llm_client, "llm_generate", lambda *a, **k: "not json")
     monkeypatch.setattr(profiles.rp, "parse_response",
                         lambda raw, source: (_ for _ in ()).throw(ValueError("no JSON")))
     _, profile, error = profiles.extract_safe(source, "m", None)
     assert profile is None and isinstance(error, profiles.ProfileAnswerError)
 
-    def all_failed(*a):
+    def all_failed(*a, **k):
         raise llm_client.LLMAllFailedError("All LLM tiers failed")
-    monkeypatch.setattr(profiles, "_ask_model", all_failed)
+    monkeypatch.setattr(llm_client, "llm_generate", all_failed)
     assert isinstance(profiles.extract_safe(source, "m", None)[2], llm_client.LLMAllFailedError)
 
-    def bug(*a):
+    def bug(*a, **k):
         raise KeyError("prompt field")
-    monkeypatch.setattr(profiles, "_ask_model", bug)
+    monkeypatch.setattr(llm_client, "llm_generate", bug)
     with pytest.raises(KeyError):
         profiles.extract_safe(source, "m", None)

@@ -1,5 +1,5 @@
 """Smoke test: python -m preprocess "a question" (from backend/llm/)."""
-from preprocess import preprocess_query
+from preprocess import create_query_plan
 
 import sys
 
@@ -18,5 +18,5 @@ test_queries = [
 query = sys.argv[1] if len(sys.argv) > 1 else test_queries[0]
 print(f"Query: {query}\n")
 
-result = preprocess_query(query)
+result = create_query_plan(query)
 print(result.model_dump_json(indent=2))
