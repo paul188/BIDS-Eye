@@ -172,6 +172,55 @@ class TermAlternatives(BaseModel):
                     "stimulus sets, measures. Never broader terms or merely related topics.")
 
 
+class SortKey(str, Enum):
+    """What the user can order datasets by. Each key is a column the search
+    has for every dataset (services/translate/participant_query_compiler.py
+    ORDER_COLUMNS)."""
+    SUBJECTS  = "subjects"    # number of subjects: "largest", "most participants"
+    SIZE      = "size"        # download size: "biggest in GB"
+    PUBLISHED = "published"   # publication date: "newest", "most recent"
+    DOWNLOADS = "downloads"   # "most downloaded", "most popular"
+    VIEWS     = "views"       # "most viewed"
+    NAME      = "name"        # "alphabetically"
+
+
+class Ordering(BaseModel):
+    """The order and number of results the user asked for.
+
+    "the 10 largest fMRI datasets" → {sort_key: subjects, direction: DESC, limit: 10};
+    "newest datasets first" → {sort_key: published, direction: DESC};
+    "5 datasets on autism" → {limit: 5}: no order named, so the results keep
+    their relevance order and are not cut (cutting before the relevance
+    ranking would keep five arbitrary ones).
+    """
+    sort_key: Optional[SortKey] = Field(
+        default=None,
+        description="What to order by; None when the user names only a number of results"
+    )
+    direction: Literal["ASC", "DESC"] = Field(
+        default="DESC",
+        description="DESC = largest / newest / most first; ASC = smallest / oldest / fewest "
+                    "first, and A to Z for name"
+    )
+    limit: Optional[int] = Field(
+        default=None,
+        description="The number of results the user asked for ('top 10' → 10); None otherwise"
+    )
+
+    @field_validator("limit")
+    @classmethod
+    def _positive_limit(cls, value: Optional[int]) -> Optional[int]:
+        # "top 0" or a negative number is no limit the search can honour.
+        return value if value is None or value > 0 else None
+
+    @field_validator("sort_key", mode="before")
+    @classmethod
+    def _known_key(cls, value: Any) -> Optional[str]:
+        # An unknown key is dropped, not an error: a bad key must not fail the search.
+        values = {key.value for key in SortKey}
+        return value if value is None or value in values else None
+
+
 class QueryPlan(BaseModel):
     """
     Complete structured representation of a user query.
@@ -352,16 +401,24 @@ class QueryPlan(BaseModel):
                     "'female_count > male_count'"
     )
 
-    # ── Result config ─────────────────────────────────────────────────────────
-    result_limit: Optional[int] = Field(
+    # ── Order and number of results ───────────────────────────────────────────
+    ordering: Optional[Ordering] = Field(
         default=None,
-        description="Top-N limit if the user asked for a specific number; None otherwise"
+        description="Only when the user asks for an order ('largest first', 'most recent') "
+                    "or a number of results ('top 10', 'the 5 largest'); None otherwise. "
+                    "Without a sort_key the results stay in relevance order."
     )
-    order_by: Optional[str] = Field(
-        default=None,
-        description="Field to order by, e.g. 'subject_count', 'd.name'"
-    )
-    order_direction: Literal["ASC", "DESC"] = Field(default="DESC")
+
+    @field_validator("ordering")
+    @classmethod
+    def _drop_empty_ordering(cls, value: Optional[Ordering]) -> Optional[Ordering]:
+        return value if value is not None and (value.sort_key or value.limit) else None
+
+    @property
+    def user_ordered(self) -> bool:
+        """True when the user named what to order by, so the search keeps that
+        order (and the limit) instead of ranking by relevance."""
+        return self.ordering is not None and self.ordering.sort_key is not None
 
     # ── RAG requests (leave empty — auto-derived by build_rag_requests) ───────
     rag_requests: List[RAGRequest] = Field(

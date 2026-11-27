@@ -100,7 +100,7 @@ def plan_families(plan: Any) -> List[str]:
 
     if _get(plan, "min_sessions") is not None or _get(plan, "study_structure") == "longitudinal":
         add("session_query")
-    if _get(plan, "order_by") or _get(plan, "result_limit") is not None:
+    if _get(_get(plan, "ordering"), "sort_key"):
         add("ranking_query")
 
     if len(families) >= 2:
