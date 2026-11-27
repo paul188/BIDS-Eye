@@ -270,9 +270,7 @@ def _load_embedding_tier(model_name: str) -> Optional[Any]:
 
 
 def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]:
-    """Scored variant of _embedding_fallback.
-
-    Two-tier biomedical embedding search for *term* in *field*.
+    """Two-tier biomedical embedding search for *term* in *field*.
     Called when RapidFuzz WRatio misses (score < threshold).
     Tier 1: BioLORD-2023-C, cosine ≥ 0.75 — returns on first hit.
     Tier 2: SapBERT,         cosine ≥ 0.65 — reached only if tier 1 misses.
@@ -302,7 +300,7 @@ def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]
         if emb_model is None:
             continue
 
-        terms_list, embs, code_lists = cat_data
+        _, embs, code_lists = cat_data
         query_emb = emb_model.encode(
             [term_lower], normalize_embeddings=True, show_progress_bar=False
         )[0]
@@ -318,11 +316,6 @@ def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]
             return [(code, score) for code in code_lists[best_idx]]
 
     return []
-
-
-def _embedding_fallback(field: str, term: str) -> List[str]:
-    """Two-tier biomedical embedding search (codes only — thin wrapper)."""
-    return [code for code, _ in _embedding_fallback_scored(field, term)]
 
 
 # ── YAML-field resolution helpers ──────────────────────────────────────────────
@@ -584,23 +577,6 @@ def is_listed(field: str, term: str) -> bool:
     codes there are what it names and not only similar to it."""
     return any(form in group_db.get(field, {}) or form in leaf_codes_db.get(field, {})
                for form in _plural_variants(_normalize_term(term)))
-
-
-def _prune_redundant_parents(codes: List[str]) -> List[str]:
-    """Remove a code if a more-specific child of it is already in the list."""
-    if len(codes) < 2:
-        return codes
-    code_paths: Dict[str, set] = {}
-    for code in codes:
-        info = hierarchy_db.get(code)
-        code_paths[code] = set(info["path"]) if (info and "path" in info) else {code}
-    to_remove = {
-        code
-        for code, path in code_paths.items()
-        for other, other_path in code_paths.items()
-        if other != code and code in other_path
-    }
-    return [c for c in codes if c not in to_remove]
 
 
 def _resolve_via_constructs(term: str, fuzzy: bool = True) -> List[tuple[str, float]]:

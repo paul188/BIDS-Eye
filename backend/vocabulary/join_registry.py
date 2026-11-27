@@ -15,7 +15,6 @@ lower-level utility that those modules may safely import.
 Public API
 ----------
   get_field_info(field)       -> dict | None
-  get_fields_for_table(table) -> list[str]
   field_to_db_col(field)      -> tuple[str, str] | None
   check_contradictions(resolved) -> list[ContradictionWarning]
   build_join_context_block()  -> str
@@ -86,20 +85,6 @@ def get_field_info(field: str) -> Optional[Dict]:
     None if the field is not registered.
     """
     return _load().get("fields", {}).get(field)
-
-
-def get_fields_for_table(table: str) -> List[str]:
-    """Return all field names that map to *table*.
-
-    Parameters
-    ----------
-    table : 'bids_datasets', 'bids_objects', or 'bids_participants'
-    """
-    return [
-        name
-        for name, info in _load().get("fields", {}).items()
-        if isinstance(info, dict) and info.get("table") == table
-    ]
 
 
 def field_to_db_col(field: str) -> Optional[Tuple[str, str]]:

@@ -251,8 +251,7 @@ def _ancestor_codes(key: str, concepts: Dict[str, dict]) -> List[str]:
     """Return the list of ancestor concept keys that have standard_codes.
 
     Group nodes (no standard_code) are transparent — traversed but not listed.
-    The node's own key is always first (self-referential path for pruning logic).
-    Used by retriever._prune_redundant_parents.
+    The node's own key is always first.
     """
     path: List[str] = [key]
     visited: set = {key}
@@ -309,7 +308,7 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
     hierarchy_db : {standard_code: {path, label, description}}
         Ancestor chain and metadata for every leaf concept.
         'path' contains the concept's own key plus any ancestor keys that
-        have standard_codes — used by retriever._prune_redundant_parents.
+        have standard_codes.
 
     weight_db : {category: {term_lower: float}}
         The "weight" of every term in display_db: how often the synonym

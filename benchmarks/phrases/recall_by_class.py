@@ -11,7 +11,6 @@ inserted word, head first, unlinked near/far), so the gain on real mentions
 """
 
 import argparse
-import gzip
 import json
 import random
 import sys

@@ -52,7 +52,6 @@ log = logging.getLogger(__name__)
 
 SOURCE_OPENNEURO_DERIVATIVES = "openneuro_derivatives"
 SOURCE_IN_DATASET = "in_dataset"
-SITE_DICOM = "dicom"
 SITE_ETHICS = "ethics_board"
 
 # A free-text ethics statement longer than this is cut; it is evidence, not prose.

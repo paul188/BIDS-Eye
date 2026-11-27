@@ -6,7 +6,7 @@ Order of authority per (question, dataset):
   3. rule from facts     exact questions, and the fact part of mixed ones
 Datasets outside a question's pool are not relevant.
 """
-import json, re, glob, os, collections, sys
+import json, re, glob, os, collections
 import lib, spec
 from population import RULES as POP_RULE
 

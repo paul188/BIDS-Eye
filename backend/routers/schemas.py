@@ -87,13 +87,6 @@ class DatasetSchema(BaseModel):
     match_reasons: List[str] = []
 
 
-class DatasetListResponse(BaseModel):
-    total: int
-    page: int
-    page_size: int
-    items: List[DatasetSchema]
-
-
 class TextToSQLResult(BaseModel):
     """Output contract for the Text-To-SQL translation layer."""
     sql: str

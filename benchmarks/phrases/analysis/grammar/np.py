@@ -2,7 +2,7 @@
 import gzip, json, sys
 from collections import Counter
 def main(path):
-    dist = Counter(); kind = Counter(); nmods = Counter(); ofp = Counter(); n = 0; coordpat = Counter()
+    dist = Counter(); kind = Counter(); nmods = Counter(); ofp = Counter(); n = 0
     for line in gzip.open(path, "rt"):
         paper, part, toks = json.loads(line); n += 1
         wpos, c = [], 0
