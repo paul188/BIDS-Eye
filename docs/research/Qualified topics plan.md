@@ -177,7 +177,7 @@ conflict" is looked up as a whole; if it misses, it does *not* fall back to
 ### Validate the LLM's alternatives against the catalogue
 
 LLM alternatives help lexical search, but hurt when the model does not know
-the term (see `reports/Search advances and Bids Eye gaps.md`, direction 3).
+the term (see the local-only report `Search advances and Bids Eye gaps.md`, direction 3).
 Each alternative is checked before use with the document-frequency lookup
 that `backend/services/text_search.py` already has (`_lookup_counts`):
 

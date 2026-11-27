@@ -3,7 +3,7 @@
 # Every entry is something a person actually asked for or stated as a
 # selection rule: a forum post, a feature request, or the dataset-selection
 # criteria in a paper's methods. Sources and verbatim quotes come from
-# research_notes/Neuroimaging dataset search criteria/ (forum_requests.md,
+# docs/research/Neuroimaging dataset search criteria/ (forum_requests.md,
 # paper_selection_criteria.md), collected 2026-11-14.
 #
 # Fields
@@ -19,7 +19,7 @@
 #             a good answer is then "nothing", not a long list
 #   needs     the evidence a correct answer depends on
 #
-# Criteria names (the ranking is in reports/Neuroimaging dataset search criteria.md):
+# Criteria names (the ranking is in docs/research/Neuroimaging dataset search criteria.md):
 #   modality, task, rest, stimulus (what was shown or played), design (block,
 #   run order, randomisation), population (a diagnosis or group), healthy,
 #   controls (patients AND a control group), age, sex, species, sample_size,

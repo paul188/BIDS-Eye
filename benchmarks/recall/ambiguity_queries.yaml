@@ -1,6 +1,6 @@
 # Ambiguity questions: a word with several meanings in this catalogue, and a
 # qualifier that selects one of them. Written 2026-11-14 for the qualified
-# topics work (reports/Qualified topics plan.md).
+# topics work (docs/research/Qualified topics plan.md).
 #
 # What they measure: whether the search returns the meaning that was asked
 # for (precision, wrong-sense rate) without losing the datasets that use other

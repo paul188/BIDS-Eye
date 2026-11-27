@@ -141,7 +141,7 @@ the first page in 0 of 26 development questions.
 
 Each entry of `requests.yaml` carries its source (`url`), the request in the
 person's own words (`quote`) and the id used in the research notes (`ref`).
-The notes are in `research_notes/Neuroimaging dataset search criteria/`:
+The notes are in `docs/research/Neuroimaging dataset search criteria/`:
 `forum_requests.md` (the corpus tables and the method note),
 `paper_selection_criteria.md` (papers that state how they chose datasets),
 `user_studies_and_query_logs.md` and `repository_facets.md` (background).

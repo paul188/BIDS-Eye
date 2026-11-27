@@ -35,6 +35,7 @@ RAG/embed_*.json
 benchmarks
 reports
 research_notes
+docs
 DB Preprocessing
 scripts
 lottery
