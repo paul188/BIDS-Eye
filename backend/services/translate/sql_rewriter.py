@@ -35,6 +35,7 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
 
 from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
+from services.translate.participant_query_compiler import derivatives_condition as _derivatives_condition  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
 from participant_codes import handedness_code as _handedness_code, sex_code as _sex_code  # noqa: E402
@@ -46,7 +47,8 @@ from services.uncertain import tier as _uncertain_tier  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
 from services.schema.coded_fields import CONCEPT_FIELDS, FILE_FIELDS  # noqa: E402
 from services.schema.tables import (  # noqa: E402
-    dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
+    dataset_facets as _dataset_facets, datasets as _datasets, derivatives as _derivatives, objects as _objects,
+    participants as _participants,
 )
 from services import sql_tree  # noqa: E402
 from services.translate import value_check as _value_check  # noqa: E402
@@ -1556,6 +1558,12 @@ class SqlRewriteService:
         The [VOCABULARY MISS] block of the augmented question carries one
         text_match() placeholder per unresolved term. A placeholder the model
         already copied (same search terms) is not added twice.
+
+        A term that only names a preprocessing pipeline ("MRIQC derivatives")
+        is not added when the SQL already looks it up in bids_derivatives:
+        the plan compiler writes that lookup instead of the text search, and
+        few READMEs name the pipeline (gold request qx06: 53 of 633 MRIQC
+        datasets with the text ANDed in, all 633 without).
         """
         cleaned, _ = self._strip_outer_scan_filters_fallback(sql)
         hinted: list[str] = []
@@ -1568,8 +1576,13 @@ class SqlRewriteService:
             argument = _TEXT_MATCH_CALL_RE.match(call).group(1)  # type: ignore[union-attr]
             return tuple(sorted(str(term) for term in _parse_alternatives(argument)))
 
+        def looked_up(call: str) -> bool:
+            condition = _derivatives_condition(_TEXT_MATCH_CALL_RE.match(call).group(1))  # type: ignore[union-attr]
+            return condition is not None and _derivatives.name in cleaned
+
         present = {key(m.group(0)) for m in _TEXT_MATCH_CALL_RE.finditer(cleaned)}
-        missing = [call for call in dict.fromkeys(hinted) if key(call) not in present]
+        missing = [call for call in dict.fromkeys(hinted)
+                   if key(call) not in present and not looked_up(call)]
         if not missing:
             return cleaned
 
