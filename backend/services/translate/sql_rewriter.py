@@ -267,7 +267,7 @@ class SqlRewriteService:
         return _FALLBACK_SQL
 
     def rewrite_generated_sql(self, raw_sql: str, augmented_question: str,
-                              word_forms: Optional[Mapping[str, Sequence[str]]] = None,
+                              allowed_forms: Optional[Mapping[str, Sequence[str]]] = None,
                               ) -> RewriteResult:
         """Normalize raw LLM output into executable SQL plus bind parameters.
 
@@ -275,8 +275,8 @@ class SqlRewriteService:
         the caller's state. That keeps the translation pipeline easy to cache and
         makes the rewrite behavior testable in isolation.
 
-        *word_forms*: the forms decided for words of this question
-        (backend/vocabulary/word_forms.py); text search then requires them
+        *allowed_forms*: the forms decided for words of this question
+        (backend/vocabulary/stem_collisions.py); text search then requires them
         (services/fulltext/text_search.py, TEXT_SEARCH_EXACT).
         """
         sql = self.extract_sql(raw_sql)
@@ -318,7 +318,7 @@ class SqlRewriteService:
         # With the tier on, paper text is evidence for the second tier only;
         # confirmed results match on the dataset's own text.
         expanded = _text_search.expand_text_search(
-            sql, papers=False if tiered else None, exact_forms=word_forms)
+            sql, papers=False if tiered else None, allowed_forms=allowed_forms)
         sql = expanded.sql
         filter_sql = sql
         if tiered:
@@ -1834,9 +1834,9 @@ def extract_sql(raw: str) -> str:
 
 
 def rewrite_generated_sql(raw_sql: str, augmented_question: str,
-                          word_forms: Optional[Mapping[str, Sequence[str]]] = None,
+                          allowed_forms: Optional[Mapping[str, Sequence[str]]] = None,
                           ) -> RewriteResult:
-    return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, word_forms)
+    return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, allowed_forms)
 
 
 def finish_corrected_sql(raw: str, failed_sql: str) -> str:

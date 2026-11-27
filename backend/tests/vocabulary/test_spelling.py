@@ -1,14 +1,14 @@
-"""Other spellings and numbers of a searched word (backend/vocabulary/word_forms.py spelling_variants,
+"""Other spellings and numbers of a searched word (backend/vocabulary/stem_collisions.py spelling_variants,
 plural_variants, search_variants)."""
 
 from __future__ import annotations
 
 import pytest
 
-import word_forms
+import stem_collisions
 from services.database_stats.database_stats import ColumnCoverage, database_stats
 from services.fulltext import tsquery, vectors, word_frequencies
-from word_forms import plural_variants, search_variants, spelling_variants
+from stem_collisions import plural_variants, search_variants, spelling_variants
 
 # Both directions; the pairs seen in the catalogue on 2026-11-21.
 PAIRS = [
@@ -77,27 +77,27 @@ def test_words_without_another_spelling_keep_their_query(full_text) -> None:
 
 
 def test_the_reviewed_list_applies_to_the_other_spelling(tmp_path, monkeypatch) -> None:
-    path = tmp_path / "word_forms.yaml"
+    path = tmp_path / "stem_collisions.yaml"
     path.write_text("exact:\n  - forms: [localizer, localizers]\n    excludes: [local]\n")
-    monkeypatch.setattr(word_forms, "_PATH", path)
-    word_forms._reviewed.cache_clear()
+    monkeypatch.setattr(stem_collisions, "_PATH", path)
+    stem_collisions._reviewed.cache_clear()
     try:
-        assert word_forms.reviewed("localiser") == (True, ("localiser", "localizer", "localizers"))
+        assert stem_collisions.reviewed("localiser") == (True, ("localiser", "localizer", "localizers"))
     finally:
-        word_forms._reviewed.cache_clear()
+        stem_collisions._reviewed.cache_clear()
 
 
 def test_the_exact_guard_accepts_both_spellings(tmp_path, monkeypatch, full_text) -> None:
-    path = tmp_path / "word_forms.yaml"
+    path = tmp_path / "stem_collisions.yaml"
     path.write_text("exact:\n  - forms: [localizer, localizers]\n    excludes: [local]\n")
-    monkeypatch.setattr(word_forms, "_PATH", path)
+    monkeypatch.setattr(stem_collisions, "_PATH", path)
     monkeypatch.setenv(vectors.EXACT_ENV, "true")
-    word_forms._reviewed.cache_clear()
+    stem_collisions._reviewed.cache_clear()
     try:
         guard = tsquery.exact_guard([("localizer",)])
         assert guard == "(localizer | localiser | localizers | localisers)"
     finally:
-        word_forms._reviewed.cache_clear()
+        stem_collisions._reviewed.cache_clear()
 
 
 # Latin and Greek plurals, both directions.

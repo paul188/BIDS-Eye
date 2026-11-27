@@ -36,6 +36,6 @@ py-modules = [
     "text_formula",
     "sql_text",
     "text_terms",
-    "word_forms",
+    "stem_collisions",
     "yaml_to_llamaindex",
 ]

@@ -44,7 +44,7 @@ _BACKEND = Path(__file__).resolve().parents[2]
 # Every code and vocabulary file of these folders decides what a question is
 # translated into, so all of them count, new ones included (a hand-kept list
 # missed the compiler, criteria.py, cohort_count.py, senses.yaml and
-# word_forms.yaml). Not recursive: __pycache__ stays out.
+# stem_collisions.yaml). Not recursive: __pycache__ stays out.
 _VERSION_DIRS = (_BACKEND / "llm", _BACKEND / "llm" / "preprocess",
                  _BACKEND / "vocabulary")
 _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")

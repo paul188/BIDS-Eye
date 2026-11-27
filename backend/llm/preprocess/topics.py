@@ -54,10 +54,10 @@ def _word_set(text: str) -> frozenset:
 
 
 def _count_topic_matches(alternatives: List[str],
-                         exact_forms: Optional[Dict[str, List[str]]] = None) -> Optional[List[int]]:
+                         allowed_forms: Optional[Dict[str, List[str]]] = None) -> Optional[List[int]]:
     """Datasets matching each alternative, from the backend's full-text search; None if unknown.
 
-    *exact_forms*: word forms decided for this question; such a word is
+    *allowed_forms*: word forms decided for this question; such a word is
     counted in those forms, as it will be searched.
     """
     try:
@@ -65,8 +65,8 @@ def _count_topic_matches(alternatives: List[str],
     except ImportError:
         return None
     # None when the catalogue cannot answer (count_matches catches that).
-    if exact_forms:
-        return tsquery.count_matches(alternatives, _MODE_NEAR, exact_forms)
+    if allowed_forms:
+        return tsquery.count_matches(alternatives, _MODE_NEAR, allowed_forms)
     return tsquery.count_matches(alternatives, _MODE_NEAR)
 
 

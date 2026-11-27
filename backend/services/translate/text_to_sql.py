@@ -164,8 +164,8 @@ def _run_local(question: str) -> TextToSQLResult:
     rewritten = _rewrite_generated_sql(
         raw_sql,
         augmented_question,
-        # Word forms decided for this question (backend/vocabulary/word_forms.py); {} mostly.
-        getattr(augmented_plan, "word_forms", None) or None,
+        # Allowed forms decided for this question (backend/vocabulary/stem_collisions.py); {} mostly.
+        getattr(augmented_plan, "allowed_forms", None) or None,
     )
 
     # Relevance ranking is applied later by services.translate.sql_rewriter.build_page_sql

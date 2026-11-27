@@ -89,7 +89,7 @@ def test_version_covers_every_backend_module_the_translation_imports():
 def test_version_reads_the_files_the_old_list_missed():
     names = {f"{p.parent.name}/{p.name}" for p in store.version_paths()}
     assert {"translate/participant_query_compiler.py", "vocabulary/criteria.py",
-            "vocabulary/cohort_count.py", "vocabulary/senses.yaml", "vocabulary/word_forms.yaml"} <= names
+            "vocabulary/cohort_count.py", "vocabulary/senses.yaml", "vocabulary/stem_collisions.yaml"} <= names
     assert not any("__pycache__" in str(p) for p in store.version_paths())
 
 

@@ -34,29 +34,29 @@ from text_terms import (
     parse_alternatives,
     split_words,
 )
-from word_forms import FormCounts, forms_for, search_variants
+from stem_collisions import StemCounts, forms_for, search_variants
 
 from services.fulltext import vectors, word_frequencies
 
 # word → the forms it must match in, as decided for one question
-# (backend/vocabulary/word_forms.py). The reviewed list there applies without being passed;
+# (backend/vocabulary/stem_collisions.py). The reviewed list there applies without being passed;
 # for a word not in the mapping it takes the catalogue's forms (_catalogue_forms).
-ExactForms = Mapping[str, Sequence[str]]
+AllowedForms = Mapping[str, Sequence[str]]
 
 SCOPE_LABEL = {MODE_ALL: "", MODE_LOOSE: "", MODE_SHORT: ":AB", MODE_NEAR: ""}
 NAME_LABEL = ":A"
 _SAFE_TSQUERY_RE = re.compile(r"^[a-z0-9 &|()<>:AB-]+$")
 
 
-def _catalogue_forms(word: str) -> Optional[FormCounts]:
+def _catalogue_forms(word: str) -> Optional[StemCounts]:
     """The catalogue's forms of *word*, for a reviewed word the question's
-    decisions do not cover (word_forms.forms_for)."""
+    decisions do not cover (stem_collisions.forms_for)."""
     # Imported here: word_form_counts imports text_search, which imports this module.
     from services.fulltext import word_form_counts
-    return word_form_counts.cached_form_counts(word)
+    return word_form_counts.cached_stem_counts(word)
 
 
-def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple[str, ...]]:
+def _allowed_forms_of(word: Word, allowed_forms: Optional[AllowedForms]) -> Optional[Tuple[str, ...]]:
     """The forms *word* must match in, or None to match it by stem.
 
     Only plain words: the parts of a compound ("t1-weighted") stay together
@@ -64,7 +64,7 @@ def _word_forms(word: Word, exact_forms: Optional[ExactForms]) -> Optional[Tuple
     """
     if len(word) != 1 or not vectors.exact_enabled():
         return None
-    forms = forms_for(word[0], exact_forms, _catalogue_forms)
+    forms = forms_for(word[0], allowed_forms, _catalogue_forms)
     if not forms:
         return forms
     return tuple(dict.fromkeys(f for form in forms for f in (form, *search_variants(form))))
@@ -76,13 +76,13 @@ def _form_group(forms: Sequence[str], label: str = "") -> str:
 
 
 def exact_guard(term: Term, label: str = "",
-                exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+                allowed_forms: Optional[AllowedForms] = None) -> Optional[str]:
     """The query the unstemmed vector must match for *term*; None without exact words.
 
     One group per exact word, the asked word first: "(ageing | aging) & weight".
     """
     groups = [_form_group(forms, label)
-              for forms in (_word_forms(word, exact_forms) for word in term) if forms]
+              for forms in (_allowed_forms_of(word, allowed_forms) for word in term) if forms]
     return " & ".join(groups) or None
 
 
@@ -177,7 +177,7 @@ def _says_nothing(word: Word) -> bool:
     return len(word) == 1 and (word[0] in MODIFIER_WORDS or word[0] in NEVER_ALONE_WORDS)
 
 
-def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
+def _loose_core(term: Term, allowed_forms: Optional[AllowedForms] = None) -> Term:
     """The words of an unresolved term that a dataset must contain.
 
     Words are taken rarest first, and as many as still leave
@@ -200,7 +200,7 @@ def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
         return term
     longest = [max(term, key=lambda word: (not _says_nothing(word), sum(len(part) for part in word)))]
     counts = word_frequencies.guarded_counts([_word_query(word) for word in term],
-                            [exact_guard([word], "", exact_forms) for word in term])
+                            [exact_guard([word], "", allowed_forms) for word in term])
     if counts is None:
         return longest
     if any(count == 0 for count in counts):
@@ -211,7 +211,7 @@ def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
         return by_rarity
     prefixes = [by_rarity[:k] for k in range(len(by_rarity), 1, -1)]
     combined = word_frequencies.guarded_counts([all_words_query(prefix) for prefix in prefixes],
-                              [exact_guard(prefix, "", exact_forms) for prefix in prefixes])
+                              [exact_guard(prefix, "", allowed_forms) for prefix in prefixes])
     if combined is not None:
         for prefix, count in zip(prefixes, combined):
             if count >= LOOSE_MIN_MATCHES:
@@ -219,20 +219,20 @@ def _loose_core(term: Term, exact_forms: Optional[ExactForms] = None) -> Term:
     return by_rarity[:1]
 
 
-def filter_term(term: Term, mode: str, exact_forms: Optional[ExactForms] = None) -> Term:
+def filter_term(term: Term, mode: str, allowed_forms: Optional[AllowedForms] = None) -> Term:
     """The words of *term* a dataset must contain: all, or a loose term's core."""
-    return _loose_core(term, exact_forms) if mode == MODE_LOOSE else term
+    return _loose_core(term, allowed_forms) if mode == MODE_LOOSE else term
 
 
 def build_filter_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
-                         exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+                         allowed_forms: Optional[AllowedForms] = None) -> Optional[str]:
     """tsquery a dataset must match; None when no term is searchable.
 
-    *exact_forms* only tells a loose term's word counts which forms count.
+    *allowed_forms* only tells a loose term's word counts which forms count.
     """
     label = SCOPE_LABEL[mode]
     if mode == MODE_LOOSE:
-        queries = [all_words_query(_loose_core(term, exact_forms), label)
+        queries = [all_words_query(_loose_core(term, allowed_forms), label)
                    for term in terms if term]
     elif mode == MODE_NEAR:
         queries = [_near_query(term, label) for term in terms if term]
@@ -242,7 +242,7 @@ def build_filter_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
 
 
 def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR,
-                  exact_forms: Optional[ExactForms] = None) -> Optional[List[int]]:
+                  allowed_forms: Optional[AllowedForms] = None) -> Optional[List[int]]:
     """How many datasets match each search term on its own; None when unknown.
 
     Used to check search terms a language model proposed before they are
@@ -253,10 +253,10 @@ def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR,
     queries, guards = [], []
     for alternative in alternatives:
         terms = parse_alternatives(alternative)
-        queries.append(build_filter_tsquery(terms, mode, exact_forms) if terms else None)
+        queries.append(build_filter_tsquery(terms, mode, allowed_forms) if terms else None)
         # One guard per query: an alternative of several terms is counted by stem.
-        guards.append(exact_guard(filter_term(terms[0], mode, exact_forms),
-                                  SCOPE_LABEL[mode], exact_forms) if len(terms) == 1 else None)
+        guards.append(exact_guard(filter_term(terms[0], mode, allowed_forms),
+                                  SCOPE_LABEL[mode], allowed_forms) if len(terms) == 1 else None)
     asked = [query for query in queries if query]
     if not asked:
         return [0] * len(queries)
@@ -268,7 +268,7 @@ def count_matches(alternatives: Sequence[str], mode: str = MODE_NEAR,
 
 
 def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
-                       exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+                       allowed_forms: Optional[AllowedForms] = None) -> Optional[str]:
     """tsquery used for ranking: every field counts, whatever the filter scope.
 
     A diagnosis is filtered on the short fields only, but a README that
@@ -278,7 +278,7 @@ def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
     term it stays, since the term only ranks where all its words meet.
     """
     def exact(word: Word) -> bool:
-        return bool(_word_forms(word, exact_forms))
+        return bool(_allowed_forms_of(word, allowed_forms))
 
     if mode == MODE_LOOSE:
         queries = [_word_query(word) for term in terms for word in term if not exact(word)]
@@ -289,9 +289,9 @@ def build_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
 
 
 def build_exact_rank_tsquery(terms: Sequence[Term], mode: str = MODE_ALL,
-                             exact_forms: Optional[ExactForms] = None) -> Optional[str]:
+                             allowed_forms: Optional[AllowedForms] = None) -> Optional[str]:
     """Ranking query for the unstemmed vector: the words with decided forms."""
-    groups = [[_form_group(forms) for forms in (_word_forms(word, exact_forms) for word in term)
+    groups = [[_form_group(forms) for forms in (_allowed_forms_of(word, allowed_forms) for word in term)
                if forms] for term in terms]
     if mode == MODE_LOOSE:
         queries = [group for term in groups for group in term]
