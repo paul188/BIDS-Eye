@@ -221,3 +221,29 @@ def test_an_excluded_diagnosis_compiles() -> None:
     compiled = pqc.compile_plan(plan, resolved, augmented)
     assert compiled.sql is not None, compiled.reason
     assert f"WHERE NOT ({EPILEPSY_STATED} OR text_match('" in compiled.sql
+
+
+def _sex_augmented(species, summary="Datasets with only female participants.") -> str:
+    from preprocess import ParticipantGroup, QueryPlan, _build_augmented_question
+
+    plan = QueryPlan(
+        query_family="participant_filter",
+        natural_language_summary=summary,
+        groups=[ParticipantGroup(group_name="all_participants", sex=["female"])],
+        species=species,
+    )
+    return _build_augmented_question(plan, [], available_columns={"species"})
+
+
+def test_a_sex_without_a_species_asks_for_people() -> None:
+    # Gold request qx09 "only female participants": 5 of 41 results were
+    # female mice, rats, sheep and macaques.
+    augmented = _sex_augmented([])
+    assert "  participant sex: " in augmented
+    assert f"  species (complete, no other species condition): ({HUMAN_SPECIES})" in augmented
+
+
+def test_a_sex_with_a_species_keeps_that_species() -> None:
+    augmented = _sex_augmented(["rat"], summary="Datasets with only female rats.")
+    assert "  species (complete, no other species condition): (d.species ~* " in augmented
+    assert HUMAN_SPECIES not in augmented
