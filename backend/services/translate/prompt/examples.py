@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from services.database_stats.database_stats import database_stats as _database_stats
-from services.schema.coded_fields import CONCEPT_FIELDS
+from services.schema.fields import CONCEPT_FIELDS
 from services.schema.tables import objects as _objects, participants as _participants
 from services.translate import optional_columns as _optional_columns
 

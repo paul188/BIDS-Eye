@@ -5,7 +5,7 @@ import logging
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator
-from services.schema.coded_fields import CodedField
+from services.schema.fields import CatalogueField, Stored
 from criteria import SPECIES_CODES as _SPECIES_CODES, normalise_species as _normalise_species
 from criteria import AGE_GROUP_CODES as _AGE_GROUP_CODES, \
     normalise_age_groups as _normalise_age_groups
@@ -45,22 +45,25 @@ class QueryFamily(str, Enum):
     COMBINED_FILTER       = "combined_filter"        # mix of the above
 
 
+# A field the RAG layer resolves user terms for. No docstring: the plan's JSON
+# Schema, which the planner model receives, would carry it as a description.
+# Name and values are in that schema too.
 class RAGField(str, Enum):
-    """A field the RAG layer resolves user terms for.
+    DIAGNOSIS   = CatalogueField.DIAGNOSIS.value
+    TASK        = CatalogueField.TASK.value
+    SUFFIX      = CatalogueField.SUFFIX.value
+    DATATYPE    = CatalogueField.DATATYPE.value
+    AUTHOR      = CatalogueField.AUTHOR.value
+    FUNDING     = CatalogueField.FUNDING.value
+    INSTITUTION = CatalogueField.INSTITUTION.value
+    SCAN        = "scan"  # a lookup across datatype + suffix + task; no column of its own
 
-    The value is the field's key in backend/vocabulary/join_paths.yaml, which
-    says where it is stored (join_registry.field_column); the coded ones are
-    the CodedField of the same column. tests/services/schema/test_schema_tables.py
-    checks both, for every member but SCAN.
-    """
-    DIAGNOSIS = CodedField.DIAGNOSIS.value
-    TASK      = CodedField.TASK.value
-    SUFFIX    = CodedField.SUFFIX.value
-    DATATYPE  = CodedField.DATATYPE.value
-    AUTHOR    = "author"
-    FUNDING   = "funding"
-    INSTITUTION = "institution"
-    SCAN      = "scan"      # internal: multi-field lookup across datatype+suffix+task; no column
+    @property
+    def stored(self) -> Stored:
+        """The column that stores this field (services/schema/fields.py)."""
+        if self is RAGField.SCAN:
+            raise ValueError("scan is datatype, suffix and task together: it has no column")
+        return CatalogueField(self.value).stored
 
 
 class RAGRequest(BaseModel):

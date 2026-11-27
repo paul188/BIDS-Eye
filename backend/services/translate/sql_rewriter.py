@@ -33,7 +33,6 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
     parse_one = None  # type: ignore[assignment]
     SqlglotError = ()  # type: ignore[assignment,misc]  # nothing is parsed, so nothing to catch
 
-from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
@@ -44,7 +43,7 @@ from services.fulltext.ranking import other_words_only_expression as _other_word
 from services.results import rankers as _rankers  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
-from services.schema.coded_fields import CONCEPT_FIELDS, FILE_FIELDS  # noqa: E402
+from services.schema.fields import CONCEPT_FIELDS, FILE_FIELDS, CatalogueField  # noqa: E402
 from services.schema.tables import (  # noqa: E402
     dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
 )
@@ -1754,10 +1753,8 @@ class SqlRewriteService:
             if not _CODE_RE.match(str(code)):
                 continue
 
-            col_info = _field_to_db_col(field)
-            if col_info is None:
-                continue
-            field_cols[field] = col_info
+            stored = CatalogueField(field).stored
+            field_cols[field] = (stored.table, stored.column)
             rows.append(f"('{field}', '{code}', {float(score):.4f})")
 
         text_rank = ranking.rank_expression("ft", rank_query)

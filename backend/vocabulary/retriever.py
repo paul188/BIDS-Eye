@@ -85,11 +85,10 @@ from yaml_to_llamaindex import (
     EmbeddingIndexError,
     build_embedding_index,
 )
-from join_registry import field_to_db_col as _field_to_db_col
 import institution_index as _institution_index
 import reference_vocabulary as _reference
 import shorthands as _shorthands
-from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS  # backend/ is on the path wherever RAG runs
+from services.schema.fields import CODED_FIELDS, FILE_FIELDS, CatalogueField  # backend/ is on the path wherever RAG runs
 
 log = logging.getLogger(__name__)
 
@@ -990,11 +989,12 @@ class MetadataRetriever:
         """
         if not self._db_url or not codes:
             return codes, []
-        db_column = _field_to_db_col(field)
-        if db_column is None:
+        # Only fields with rows of their own (files, participants) have codes to count.
+        catalogue_field = CatalogueField.named(field)
+        if catalogue_field is None or not catalogue_field.stored.needs_exists:
             return codes, []
 
-        table, col = db_column
+        table, col = catalogue_field.stored.table, catalogue_field.stored.column
         try:
             import psycopg2
         except ImportError:
