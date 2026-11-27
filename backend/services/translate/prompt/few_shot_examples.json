@@ -4497,13 +4497,6 @@
       "structure": []
     },
     {
-      "question": "Find derivative datasets containing preprocessed data.",
-      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.dataset_type = 'derivative' GROUP BY d.id",
-      "pattern": "bids_dataset_type",
-      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
-      "structure": []
-    },
-    {
       "question": "List datasets using BIDS version 1.7 or later.",
       "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE d.bids_version >= '1.7.0' GROUP BY d.id",
       "pattern": "bids_version",
@@ -4530,6 +4523,78 @@
       "pattern": "bids_provenance_combined",
       "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
       "structure": ["exists"]
+    }
+  ],
+  "derivative_query": [
+    {
+      "question": "Find datasets that have already been preprocessed with fMRIPrep.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep') GROUP BY d.id",
+      "pattern": "derivative_pipeline",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Show me datasets with MRIQC quality-control outputs.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'mriqc') GROUP BY d.id",
+      "pattern": "derivative_pipeline",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find datasets that include FreeSurfer reconstructions.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'freesurfer') GROUP BY d.id",
+      "pattern": "derivative_pipeline",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "List preprocessed fMRI datasets.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline IN ('fmriprep', 'xcpd', 'cpac', 'halfpipe', 'tedana', 'preprocessed', 'preprocessed-data', 'preprocessing', 'preproc')) GROUP BY d.id",
+      "pattern": "derivative_preprocessed",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find already preprocessed resting-state fMRI data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.task IN ('resting_state', 'resting_state_eyes_open', 'resting_state_eyes_closed')) AND EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline IN ('fmriprep', 'xcpd', 'cpac', 'halfpipe', 'tedana', 'preprocessed', 'preprocessed-data', 'preprocessing', 'preproc')) GROUP BY d.id",
+      "pattern": "derivative_preprocessed",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": ["resting_state", "resting_state_eyes_open", "resting_state_eyes_closed"], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Show datasets with XCP-D denoised outputs.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'xcpd') GROUP BY d.id",
+      "pattern": "derivative_pipeline",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find EEG datasets that come with preprocessed EEG data.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'electroencephalography') AND EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline IN ('eeglab', 'eegprep', 'preprocessed', 'preprocessed-data', 'preprocessing', 'preproc')) GROUP BY d.id",
+      "pattern": "derivative_preprocessed",
+      "meta": {"datatype": ["electroencephalography"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find datasets that ship segmentation, lesion or tumour masks.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND (dv.pipeline ILIKE '%mask%' OR dv.pipeline ILIKE '%segment%' OR dv.pipeline IN ('labels', 'label'))) GROUP BY d.id",
+      "pattern": "derivative_masks",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "ilike"]
+    },
+    {
+      "question": "Show datasets with FitLins statistical models.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fitlins') GROUP BY d.id",
+      "pattern": "derivative_pipeline",
+      "meta": {"datatype": [], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists"]
+    },
+    {
+      "question": "Find fMRI datasets that have no fMRIPrep outputs yet.",
+      "sql": "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL WHERE EXISTS (SELECT 1 FROM bids_objects bo WHERE bo.dataset_id = d.id AND bo.datatype = 'functional_mri') AND NOT EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep') GROUP BY d.id",
+      "pattern": "derivative_absent",
+      "meta": {"datatype": ["functional_mri"], "suffix": [], "task": [], "diagnosis": []},
+      "structure": ["exists", "not_exists"]
     }
   ]
 }

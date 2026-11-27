@@ -433,7 +433,9 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
       paper_reference_query — has / lacks a linked publication or paper
       license_query        — filter by license
       funding_query        — filter by funding source
-      bids_provenance_query — raw vs preprocessed/derivative data, BIDS version, validation
+      bids_provenance_query — BIDS version or validation status
+      derivative_query     — processed outputs the dataset ships: preprocessed data, fMRIPrep,
+                             MRIQC, FreeSurfer, segmentation or lesion masks, statistical maps
       json_numeric_query   — numeric filter on any other JSONB sidecar field
       metadata_query       — existence check on JSONB sidecar field
       session_query        — filter by the number of sessions in the dataset

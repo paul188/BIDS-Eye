@@ -36,7 +36,8 @@ class QueryFamily(str, Enum):
     LICENSE_QUERY         = "license_query"          # "datasets under CC0"
     FUNDING_QUERY         = "funding_query"          # "funded by NIH"
     PAPER_REFERENCE_QUERY = "paper_reference_query"  # "with a linked publication"
-    BIDS_PROVENANCE_QUERY = "bids_provenance_query"  # "preprocessed / derivative datasets", "BIDS ≥1.7"
+    BIDS_PROVENANCE_QUERY = "bids_provenance_query"  # "BIDS ≥1.7", "passed validation"
+    DERIVATIVE_QUERY      = "derivative_query"       # "preprocessed with fMRIPrep", "with lesion masks"
 
     # Sidecar / JSONB metadata
     JSON_NUMERIC_QUERY    = "json_numeric_query"     # "RepetitionTime > 2.0"
