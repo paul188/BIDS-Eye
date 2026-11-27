@@ -101,7 +101,7 @@ def test_a_failed_crossref_fetch_is_not_cached(monkeypatch):
     assert "10.1/x" not in expand_synonyms._crossref_cache
 
 
-profiles = _load(ROOT / "scripts" / "extract_readme_profiles.py", "extract_readme_profiles")
+from services.indexing import readme_profile_runner as profiles  # noqa: E402
 
 
 def test_an_unusable_answer_or_failed_call_is_returned_a_bug_is_raised(monkeypatch):
@@ -111,16 +111,16 @@ def test_an_unusable_answer_or_failed_call_is_returned_a_bug_is_raised(monkeypat
     monkeypatch.setattr(profiles, "_ask_model", lambda *a: "not json")
     monkeypatch.setattr(profiles.rp, "parse_response",
                         lambda raw, source: (_ for _ in ()).throw(ValueError("no JSON")))
-    _, profile, error = profiles._extract_safe(source, "m", None)
+    _, profile, error = profiles.extract_safe(source, "m", None)
     assert profile is None and isinstance(error, profiles.ProfileAnswerError)
 
     def all_failed(*a):
         raise llm_client.LLMAllFailedError("All LLM tiers failed")
     monkeypatch.setattr(profiles, "_ask_model", all_failed)
-    assert isinstance(profiles._extract_safe(source, "m", None)[2], llm_client.LLMAllFailedError)
+    assert isinstance(profiles.extract_safe(source, "m", None)[2], llm_client.LLMAllFailedError)
 
     def bug(*a):
         raise KeyError("prompt field")
     monkeypatch.setattr(profiles, "_ask_model", bug)
     with pytest.raises(KeyError):
-        profiles._extract_safe(source, "m", None)
+        profiles.extract_safe(source, "m", None)

@@ -26,7 +26,8 @@ What search uses:
                                  conditions, the canonical diagnosis codes
 
 This module has no database or network code of its own; the runner is
-scripts/extract_readme_profiles.py.
+services/indexing/readme_profile_runner.py (called by the crawler and by
+scripts/extract_readme_profiles.py).
 """
 
 from __future__ import annotations
@@ -313,9 +314,9 @@ def attach_codes(profile: Profile, lookup: Optional[CodeLookup]) -> None:
     """Map each verified studied condition to canonical diagnosis codes."""
     if lookup is None:
         return
-    # The lookup works in memory (scripts/extract_readme_profiles.py
-    # _code_lookup). A failure used to leave the fact without codes, and the
-    # dataset then counted as done; now it stops the run.
+    # The lookup works in memory (readme_profile_runner.code_lookup). A
+    # failure used to leave the fact without codes, and the dataset then
+    # counted as done; now it stops the run.
     for fact in profile.facts:
         if fact.kind == "condition" and fact.verified and fact.role in STUDIED_ROLES:
             fact.codes = list(lookup(fact.term))[:8]
