@@ -1082,17 +1082,17 @@ class MetadataRetriever:
         n_results: int = 20,
     ) -> List[str]:
         """
-        Resolve *term* for *field* and return up to *n_results* canonical values.
+        Resolve *term* for *field* and return its canonical values.
 
         Semantic fields (diagnosis / task / suffix / datatype / sex / handedness):
-            returns standard_code strings from value_mappings.yaml
+            returns every standard_code from value_mappings.yaml the term
+            resolves to. *n_results* does not apply: see retrieve_for_field_multi.
 
         Name fields (author / funding):
-            returns exact DB strings from name_index.json
+            returns up to *n_results* exact DB strings from name_index.json
         """
         if field in _YAML_FIELDS:
-            codes = _resolve_yaml_term(field, term)
-            return codes[:n_results]
+            return _resolve_yaml_term(field, term)
 
         if field == _INSTITUTION_FIELD:
             return [name for name, _ in self._resolve_institution(term)][:n_results]
@@ -1113,8 +1113,11 @@ class MetadataRetriever:
         Resolve multiple *terms* for *field*.
         Returns {term: [codes]} — terms with no match are omitted.
 
-        n_results_per_term is a safety cap; threshold-based filtering in
-        _resolve_yaml_term already limits results to high-confidence matches.
+        n_results_per_term caps the fuzzy name fields only. A vocabulary term
+        keeps every code it resolves to: "memory" resolves to more than a
+        hundred tasks, and the first 20 of them were no better than the rest
+        (a group or construct match gives every code the same score, in file
+        order), so the cut dropped datasets at random.
         """
         result: Dict[str, List[str]] = {}
         for term in terms:
@@ -1159,14 +1162,15 @@ class MetadataRetriever:
         terms: List[str],
         n_results_per_term: int = 20,
     ) -> Dict[str, List[tuple[str, float]]]:
-        """Scored variant of retrieve_for_field_multi.
+        """Scored variant of retrieve_for_field_multi (n_results_per_term
+        caps the name fields only, as there).
 
         Returns {term: [(code, score), ...]} — terms with no match are omitted.
         """
         result: Dict[str, List[tuple[str, float]]] = {}
         for term in terms:
             if field in _YAML_FIELDS:
-                scored = _resolve_yaml_term_scored(field, term)[:n_results_per_term]
+                scored = _resolve_yaml_term_scored(field, term)
             elif field == _INSTITUTION_FIELD:
                 scored = self._resolve_institution(term)
             elif field in _NAME_FIELDS:
