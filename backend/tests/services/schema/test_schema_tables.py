@@ -8,6 +8,7 @@ import re
 
 from services.translate.prompt import schema_ddl
 import join_registry
+from preprocess import RAGField
 from sqlalchemy import Table
 
 from services.evidence import branches
@@ -87,3 +88,25 @@ def test_join_paths_agrees_with_the_coded_fields() -> None:
     codes = {name for name, info in join_registry._load()["fields"].items()
              if info["value_type"] == "canonical_code"}
     assert codes == set(coded_fields.CONCEPT_FIELDS)
+
+
+# ── RAG fields (backend/llm/preprocess/plan.py) ───────────────────────────────
+
+def test_every_rag_field_says_where_it_is_stored() -> None:
+    """The bridge from a RAGField to its column: its join_paths.yaml entry."""
+    declared = {table.name: table for table in tables.CATALOGUE_TABLES}
+    for field in RAGField:
+        if field is RAGField.SCAN:  # a lookup across datatype, suffix and task
+            continue
+        info = join_registry.get_field_info(field.value)
+        assert info is not None, f"{field.value} has no entry in join_paths.yaml"
+        assert info["rag_backed"], field.value
+        stored = join_registry.field_column(field.value)
+        assert stored.column in declared[stored.table].c, field.value
+
+
+def test_the_coded_rag_fields_are_the_coded_fields() -> None:
+    coded = {field.value for field in RAGField} & set(coded_fields.CODED_FIELDS)
+    assert coded == set(coded_fields.CONCEPT_FIELDS)
+    rag_backed = {name for name, info in join_registry._load()["fields"].items() if info["rag_backed"]}
+    assert rag_backed == {field.value for field in RAGField} - {RAGField.SCAN.value}

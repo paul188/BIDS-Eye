@@ -7,6 +7,7 @@ from typing import Collection, Dict, List, Optional, Sequence, Tuple
 from join_registry import (
     build_join_context_block as _build_join_context_block,
     check_contradictions as _check_contradictions,
+    field_column as _field_column,
 )
 from retriever import is_listed as _is_listed
 from text_terms import (
@@ -35,6 +36,23 @@ from .plan import AugmentedQueryPlan, QueryPlan, RAGField, ResolvedTerms, Resolv
 from .rag import _HEALTHY_WORDS, _build_scored_filters, _is_healthy_term, _participant_conditions
 
 log = logging.getLogger("preprocess")
+
+
+def _column(field: RAGField) -> str:
+    """The field's column as the SQL names it (join_paths.yaml), e.g. 'o2.task'."""
+    return _field_column(field.value).ref
+
+
+def _exists(fields: Collection[RAGField], where: str) -> str:
+    """EXISTS over the rows that store *fields* (join_paths.yaml), for dataset d.
+
+    All the fields must live in the same table: one EXISTS is one row.
+    """
+    columns = {_field_column(f.value)[:2] for f in fields}
+    if len(columns) != 1:
+        raise ValueError(f"{sorted(f.value for f in fields)} are not stored in one table")
+    (table, alias), = columns
+    return f"EXISTS (SELECT 1 FROM {table} {alias} WHERE {alias}.dataset_id = d.id AND {where})"
 
 
 def augment_with_rag(
@@ -149,7 +167,9 @@ def _institution_lines(
         [t for t in plan.institution_terms if t and t.strip()] + list(resolved_names) + list(unresolved)
     ))
     terms = [t for t in terms if t not in excluded]
-    use_column = "institutions" in available_columns
+    stored = _field_column(RAGField.INSTITUTION.value)
+    use_column = stored.column in available_columns
+    column = stored.ref
 
     def _array(names: List[str]) -> str:
         return "ARRAY[" + ", ".join(_sql_string(n) for n in names) + "]::text[]"
@@ -158,7 +178,7 @@ def _institution_lines(
     for term in excluded:
         names = list(dict.fromkeys(resolved_names.get(term, []))) if use_column else []
         if names:
-            condition = f"NOT COALESCE(d.institutions && {_array(names)}, false)"
+            condition = f"NOT COALESCE({column} && {_array(names)}, false)"
         else:
             text_part = _format_text_match(_institution_text_alternatives(term) or [term], _MODE_SHORT)
             if not text_part:
@@ -176,7 +196,7 @@ def _institution_lines(
         if names or ror_names:
             parts = []
             if names:
-                parts.append(f"d.institutions && {_array(names)}")
+                parts.append(f"{column} && {_array(names)}")
             if ror_names:
                 tables = _catalogue.tables()
                 parts.append(f"EXISTS (SELECT 1 FROM {tables.dataset_sites.name} AS s "
@@ -482,10 +502,7 @@ def _diagnosis_condition(term_to_codes: Dict[str, List[str]], qualifier: List[st
     if not codes:
         return None
     vals = ", ".join(f"'{c}'" for c in codes)
-    condition = (
-        f"EXISTS (SELECT 1 FROM {_catalogue.tables().participants.name} p2 "
-        f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
-    )
+    condition = _exists([RAGField.DIAGNOSIS], f"{_column(RAGField.DIAGNOSIS)} IN ({vals})")
     # Structured diagnosis rows are sparse: back them up with the user's words
     # and the vocabulary synonyms in name, description and study fields.
     text_fallback = _format_text_match(_diagnosis_alternatives(term_to_codes), _MODE_SHORT)
@@ -599,7 +616,6 @@ def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, Lis
     in one subject", an exclusion whose codes a required term has too, and a
     term without codes to exclude (_excluded_codes).
     """
-    objects = _catalogue.tables().objects.name
     excluded_codes = {_term_key(t): _excluded_codes(t, codes) for t, codes in excluded.items()}
     unknown = {_term_key(t) for t in unresolved}
     # A required sequence does not ask for the whole datatype either.
@@ -616,7 +632,7 @@ def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, Lis
             return None
         values = ", ".join(f"'{c}'" for c in codes)
         match = f"= {values}" if len(codes) == 1 else f"IN ({values})"
-        condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND o2.{field.value} {match})"
+        condition = _exists([field], f"{_column(field)} {match}")
         text = _format_task_text_match([term]) if field == RAGField.TASK else None
         return f"({condition} OR {text})" if text else condition
 
@@ -831,7 +847,8 @@ def _build_augmented_question(
     # the modality by EITHER its folder (datatype) OR its file suffix.
     # Task gets a separate EXISTS so compound terms like "resting state fMRI"
     # correctly emit both a modality filter and a task filter.
-    objects = _catalogue.tables().objects.name
+    # datatype, suffix and task are columns of one table, so the codes of one
+    # term can share an EXISTS (_exists checks that join_paths.yaml agrees).
     for term, field_codes in scan_by_term.items():
         modality_conds: List[str] = []   # datatype + suffix codes
         task_conds: List[str] = []       # task codes
@@ -840,12 +857,12 @@ def _build_augmented_question(
             if field not in field_codes:
                 continue
             codes = field_codes[field]
-            col   = field.value
+            col   = _column(field)
             if len(codes) == 1:
-                cond = f"o2.{col} = '{codes[0]}'"
+                cond = f"{col} = '{codes[0]}'"
             else:
                 vals = ", ".join(f"'{c}'" for c in codes)
-                cond = f"o2.{col} IN ({vals})"
+                cond = f"{col} IN ({vals})"
             if field == RAGField.TASK:
                 task_conds.append(cond)
             else:
@@ -881,7 +898,7 @@ def _build_augmented_question(
             or_part = " OR ".join(all_conds)
             if len(all_conds) > 1:
                 or_part = f"({or_part})"
-            condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})"
+            condition = _exists(field_order, or_part)
             text_fallback = with_alternatives(term, _format_task_text_match([term]))
             if text_fallback:
                 condition = f"({condition} OR {text_fallback})"
@@ -895,7 +912,7 @@ def _build_augmented_question(
                     or_part = f"({or_part})"
                 add_scan_line(
                     term,
-                    f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})",
+                    _exists(field_order, or_part),
                 )
 
             # Task EXISTS: separate from modality so both constraints apply independently.
@@ -904,7 +921,7 @@ def _build_augmented_question(
                 where_part = " OR ".join(task_conds)
                 if len(task_conds) > 1:
                     where_part = f"({where_part})"
-                condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {where_part})"
+                condition = _exists([RAGField.TASK], where_part)
                 text_fallback = with_alternatives(term, _format_task_text_match([term]))
                 if text_fallback:
                     condition = f"({condition} OR {text_fallback})"
