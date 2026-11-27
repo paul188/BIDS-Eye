@@ -480,7 +480,11 @@ _UPDATE_SQL = text(
         END
     WHERE accession_id = :accession_id
     """
-).bindparams(bindparam("readme_urls", type_=ARRAY(String)))
+).bindparams(
+    bindparam("readme_urls", type_=ARRAY(String)),
+    # Typed, or asyncpg cannot tell what ":name IS NOT NULL" compares.
+    bindparam("name", type_=String),
+)
 
 
 async def apply_fields(session: Any, accession_id: str, fields: Dict[str, Any]) -> int:
