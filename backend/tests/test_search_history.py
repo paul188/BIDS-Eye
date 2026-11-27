@@ -21,10 +21,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import rate_limits
 import routers.history as history_router
 import routers.search as query_router
-from deps import get_db
+from deps import get_db, require_auth, user_id
 from exceptions.handlers import add_error_handlers
 from models import QueryLog, SearchHistoryConsent, SearchHistoryEntry
-from routers.auth import require_auth, user_id
 from schemas import QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history

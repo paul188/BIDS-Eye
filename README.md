@@ -132,7 +132,7 @@ Users sign in with GitHub. The backend refuses to start until `.env` (see [`.env
 The session is a signed cookie; the server keeps no list of sessions. What follows from that:
 
 - Organization membership is checked at sign-in only. Someone removed from the organization keeps access until
-  their cookie expires, at most `SESSION_DAYS` (7, in [`backend/routers/auth.py`](./backend/routers/auth.py)).
+  their cookie expires, at most `SESSION_DAYS` (7, in [`backend/sessions.py`](./backend/sessions.py)).
 - Signing out deletes the cookie in that browser. A copied cookie stays valid until it expires.
 - **To sign everyone out at once**, set a new `SESSION_SECRET` and restart the backend.
 

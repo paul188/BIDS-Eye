@@ -15,9 +15,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from deps import AsyncSessionDep
+from deps import AsyncSessionDep, CurrentUserDep, user_id
 from rate_limits import Category, rate_limit
-from routers.auth import CurrentUserDep, user_id
 from schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history

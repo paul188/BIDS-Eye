@@ -8,7 +8,7 @@ import { ref } from 'vue'
 // backend/models.py; tests/test_query_logging.py checks no row records the
 // asker) and sent to Google's Gemini API on a paid key, whose prompts Google
 // does not train on. Nothing about a user is stored on the server (no users
-// table, no e-mail address; backend/routers/auth.py, backend/models.py),
+// table, no e-mail address; backend/sessions.py, backend/models.py),
 // with one exception the user has to turn on: "Remember my searches and
 // search results" (App.vue) keeps their searches under their GitHub account
 // number for 12 months, until they turn it off

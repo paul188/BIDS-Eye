@@ -3,16 +3,15 @@ from __future__ import annotations
 import logging
 import secrets
 import time
-from collections.abc import MutableMapping
-from typing import Annotated
 from urllib.parse import quote, urlsplit
 
 import httpx
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from deps import CurrentUserDep
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
 
@@ -21,28 +20,7 @@ logger = logging.getLogger(__name__)
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 
-# The login lives in Starlette's SessionMiddleware (see api_security.py): a
-# signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
-# every /api request; the frontend never sees the value.
-#
-# Signing in stores nothing on the server: the cookie holds the GitHub login,
-# GitHub's number for the account and the sign-in time, and nothing else is
-# asked from GitHub or stored (no e-mail address, no users table). The site's
-# privacy notice says so (frontend/src/components/CookieBanner.vue);
-# tests/test_auth_session.py checks it. The account number is what a user's
-# saved searches are kept under, once they turn that on
-# (services/stores/search_history.py).
-#
-# Nothing is kept on the server, so a session cannot be withdrawn one by one:
-# - GITHUB_ORG membership is checked at sign-in only. Someone removed from the
-#   organization keeps access until their cookie expires, at most SESSION_DAYS.
-# - Logging out deletes the cookie in that browser; a copy of it stays valid
-#   until it expires.
-# Shorten SESSION_DAYS if that is too long. To sign everyone out at once,
-# change SESSION_SECRET and restart the backend (README, "Sign-in").
-SESSION_COOKIE = "bids_eye_session"
-SESSION_DAYS = 7
-_SESSION_MAX_AGE = SESSION_DAYS * 24 * 3600
+# What the session cookie holds and how long it lasts: sessions.py.
 _OAUTH_STATE_SECONDS = 10 * 60
 
 
@@ -106,11 +84,6 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 # ── Errors (answered by exceptions/handlers.py) ───────────────────────────────
 
-class NotSignedInError(DomainError, status_code=401, detail="Not signed in"):
-    """No signed-in session. RequireLoginMiddleware (api_security.py) sends the
-    same answer before routing, where exception handlers do not reach."""
-
-
 class OAuthStateError(DomainError, status_code=400, detail="Invalid or expired OAuth state."):
     """GitHub returned a state this browser's session was not given, or it expired."""
 
@@ -151,70 +124,6 @@ class GitHubUnreachableError(
     DomainError, status_code=502, detail="GitHub could not be reached. Please try again."
 ):
     """A call to GitHub timed out or the connection failed."""
-
-
-# ── Session ───────────────────────────────────────────────────────────────────
-
-def session_middleware_options(secret: str) -> dict:
-    """Keyword arguments for SessionMiddleware."""
-    return {
-        "secret_key": secret,
-        "session_cookie": SESSION_COOKIE,
-        "max_age": _SESSION_MAX_AGE,
-        "path": "/api",
-        "same_site": "lax",
-        "https_only": True,
-    }
-
-
-def session_user(session: MutableMapping) -> dict | None:
-    """The signed-in user stored in a session, or None.
-
-    A session ends SESSION_DAYS after the login however much it is used, so a
-    copied cookie stops working then. SessionMiddleware already ends it: it
-    signs the cookie only when the session changes (Starlette 1.x) and refuses
-    a signature older than max_age. The login time stored in the session keeps
-    the cap should the middleware ever re-sign on every response, as older
-    Starlette did. An expired session is emptied, which makes the middleware
-    delete the cookie.
-    """
-    user = session.get("user")
-    if not isinstance(user, dict) or not user.get("sub"):
-        return None
-    logged_in_at = user.get("iat")
-    if not isinstance(logged_in_at, (int, float)) or time.time() - logged_in_at > _SESSION_MAX_AGE:
-        session.clear()
-        return None
-    return user
-
-
-def user_id(user: dict) -> int | None:
-    """GitHub's number for the signed-in account; None in a session from
-    before sign-in kept it (at most SESSION_DAYS old).
-
-    Unlike the login it never changes hands: a login can be renamed, and a
-    released one can be registered by someone else.
-    """
-    uid = user.get("uid")
-    return uid if isinstance(uid, int) and not isinstance(uid, bool) else None
-
-
-def require_auth(request: Request) -> dict:
-    """The signed-in user, or 401.
-
-    RequireLoginMiddleware already turns away every /api request without a
-    session and leaves the user in request.state; this hands it to the route.
-    It checks the session itself as well, so a route stays protected even if it
-    is ever mounted outside the middleware's reach.
-    """
-    user = getattr(request.state, "user", None) or session_user(request.session)
-    if user is None:
-        raise NotSignedInError()
-    return user
-
-
-# What a route writes to get the signed-in user: ``user: CurrentUserDep``.
-CurrentUserDep = Annotated[dict, Depends(require_auth)]
 
 
 # ── GitHub login ──────────────────────────────────────────────────────────────

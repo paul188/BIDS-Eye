@@ -54,6 +54,7 @@ py-modules = [
     "rate_limits",
     "request_log",
     "schemas",
+    "sessions",
     "single_flight",
     "worker_db",
 ]

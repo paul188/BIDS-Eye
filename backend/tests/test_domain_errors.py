@@ -16,10 +16,10 @@ from fastapi import FastAPI
 import rate_limits
 import routers.auth as auth
 import routers.search as query_router
-from deps import get_db
+import sessions
+from deps import get_db, require_auth
 from exceptions.domain import DomainError
 from exceptions.handlers import UNEXPECTED_DETAIL, add_error_handlers
-from routers.auth import require_auth
 from schemas import QueryResponse
 from services import query_guard, search
 
@@ -92,7 +92,7 @@ def test_busy_on_a_later_page_is_503(monkeypatch):
 def test_every_planned_error_is_a_domain_error_with_its_own_answer():
     errors = (
         query_guard.SearchBusyError, search.SearchExpiredError, rate_limits.RateLimitError,
-        auth.NotSignedInError, auth.OAuthStateError, auth.GitHubTokenError,
+        sessions.NotSignedInError, auth.OAuthStateError, auth.GitHubTokenError,
         auth.GitHubLoginMissingError, auth.NotInGitHubOrgError,
     )
     for error in errors:

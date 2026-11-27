@@ -10,8 +10,8 @@ the code that raises it, without knowing about FastAPI:
 
     services/query_guard.py   SearchBusyError           503
     services/search.py        SearchExpiredError        410
-    routers/auth.py           NotSignedInError          401
-                              OAuthStateError           400
+    sessions.py               NotSignedInError          401
+    routers/auth.py           OAuthStateError           400
                               GitHubTokenError          400
                               GitHubLoginMissingError   502
                               NotInGitHubOrgError       403

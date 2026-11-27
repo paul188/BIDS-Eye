@@ -17,10 +17,9 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from deps import AsyncSessionDep
+from deps import AsyncSessionDep, CurrentUserDep, user_id
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
-from routers.auth import CurrentUserDep, user_id
 from schemas import HistoryEnabled, HistoryEntry, HistoryList
 from services.stores import search_history
 
