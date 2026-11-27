@@ -43,7 +43,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ruff==0.16.4
-      # The rules are in ruff.toml. crawlers/, scripts/ and benchmarks/ can be
+      # The rules are in ruff.toml. ingest/ and benchmarks/ can be
       # added once they are clean.
       - run: ruff check backend LLM_preprocessor RAG
 
@@ -146,7 +146,7 @@ jobs:
           # the rule flags nearly every query.
           args="--metrics=off --config p/python --config p/secrets"
           args="$args --exclude-rule python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text"
-          paths="backend LLM_preprocessor RAG crawlers scripts frontend/src"
+          paths="backend LLM_preprocessor RAG ingest scripts frontend/src"
           if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             semgrep scan $args --error --baseline-commit "$BASE" $paths
           else

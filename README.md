@@ -147,9 +147,14 @@ frontend/                    Vue 3 dataset search UI
 BIDS-SQL/                    Shared indexing and database layer
   input_pipeline.py          BIDS dataset discovery and ingestion
   db/                        ORM models and database helpers
-crawlers/openneuro-crawler/  OpenNeuro/DataLad indexing utilities
+ingest/                      Offline jobs that fill the database
+  openneuro-crawler/         OpenNeuro/DataLad crawler (its own Docker service)
+  backfill/                  Re-run crawler steps over already-indexed datasets
 RAG/                         Vocabulary (value_mappings.yaml) and term-to-code retriever
+  tools/                     Offline tools that build or audit the vocabulary
 LLM_preprocessor/            Intent parsing and the shared LLM client
+scripts/backup/              Database backups (systemd timers on the server)
+docs/                        Research notes and design plans
 ```
 
 ## Checks
@@ -198,7 +203,7 @@ The repository includes benchmark and evaluation material for:
 - OpenNeuro and public-dataset search behavior,
 - remote indexing workflows.
 
-See the `README.md` files and scripts under `RAG/`, `benchmarks/`, and `crawlers/` for the current evaluation tooling.
+See the `README.md` files and scripts under `RAG/`, `benchmarks/`, and `ingest/` for the current evaluation tooling.
 
 ## Contributing
 

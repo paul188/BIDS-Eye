@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-scripts/mine_word_forms.py
+RAG/tools/mine_word_forms.py
 --------------------------
 List the stems under which the catalogue has several word forms, as material
 for RAG/word_forms.yaml.
@@ -15,8 +15,8 @@ that are plainly different words; most groups are ordinary inflections
 
 Reads bids_word_forms (filled after each crawl, post_crawl.py). Then:
 
-    python scripts/mine_word_forms.py
-    python scripts/mine_word_forms.py --limit 400 --min-other 20
+    python RAG/tools/mine_word_forms.py
+    python RAG/tools/mine_word_forms.py --limit 400 --min-other 20
 
 Database connection: DATABASE_URL if set, otherwise the METADATA_DB_* variables.
 """
@@ -29,7 +29,7 @@ import os
 import sys
 from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[1]
+_REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO / "RAG"))
 
 from sqlalchemy import text  # noqa: E402
@@ -54,7 +54,7 @@ def _database_url() -> str:
                 f"{os.environ['METADATA_DB_PASSWORD']}@{os.environ['METADATA_DB_HOST']}:"
                 f"{os.getenv('METADATA_DB_PORT', '5432')}/{os.environ['METADATA_DB_NAME']}")
     except KeyError as exc:
-        raise SystemExit(f"Database settings missing ({exc}). Set DATABASE_URL or METADATA_DB_*.")
+        raise SystemExit(f"Database settings missing ({exc}). Set DATABASE_URL or METADATA_DB_*.") from None
 
 
 def rank(rows, min_other: int):

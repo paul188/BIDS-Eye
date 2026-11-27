@@ -1,4 +1,4 @@
-"""The local mirror of an OpenNeuro dataset (crawlers/openneuro-crawler/
+"""The local mirror of an OpenNeuro dataset (ingest/openneuro-crawler/
 remote/openneuro.py _build_mirror): a metadata file whose download fails is
 fetched again on the next crawl instead of staying an empty stub."""
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-_CRAWLER = ROOT / "crawlers" / "openneuro-crawler"
+_CRAWLER = ROOT / "ingest" / "openneuro-crawler"
 if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 

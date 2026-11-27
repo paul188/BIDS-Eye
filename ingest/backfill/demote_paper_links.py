@@ -1,5 +1,5 @@
 """
-scripts/demote_paper_links.py
+ingest/backfill/demote_paper_links.py
 -----------------------------
 Demote paper links that the paper-relation check (backend/services/
 dataset_description.py, column bids_datasets.paper_relation) found are not the
@@ -8,11 +8,11 @@ lab. A demoted link becomes 'related', stops counting as search evidence, and
 the dataset's paper_text is rebuilt from its remaining primary papers.
 
 The new role carries the prefix "override: " in role_reason, so later runs of
-scripts/backfill_papers.py and the post-crawl step keep it
+ingest/backfill/backfill_papers.py and the post-crawl step keep it
 (remote/paper_store.py, apply_overrides).
 
-    python scripts/demote_paper_links.py --dry-run     # list what would change
-    python scripts/demote_paper_links.py               # write
+    python ingest/backfill/demote_paper_links.py --dry-run     # list what would change
+    python ingest/backfill/demote_paper_links.py               # write
 
 'unclear' links are demoted too when the check listed a mismatch (sample,
 modality, population): a meta-analysis or review behind a dataset is the usual
@@ -23,7 +23,7 @@ Options:
     --keep-unclear                   leave 'unclear' links alone
     --dry-run                        report only
 
-Database connection as scripts/backfill_papers.py (DATABASE_URL or METADATA_DB_*).
+Database connection as ingest/backfill/backfill_papers.py (DATABASE_URL or METADATA_DB_*).
 """
 
 from __future__ import annotations
@@ -33,9 +33,9 @@ import asyncio
 import sys
 from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "crawlers" / "openneuro-crawler"))
-sys.path.insert(0, str(_REPO / "scripts"))
+_REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO / "ingest" / "openneuro-crawler"))
+sys.path.insert(0, str(_REPO / "ingest" / "backfill"))
 
 from sqlalchemy import bindparam, text  # noqa: E402
 from sqlalchemy.dialects.postgresql import ARRAY  # noqa: E402

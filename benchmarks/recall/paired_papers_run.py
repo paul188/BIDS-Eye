@@ -18,7 +18,7 @@ plus, per question in papers_on, `added`: the datasets only paper text found.
 Read-only transactions only; no re-ranker; nothing written to the database.
 
 Needs a database at the newest migration (backend/migrations/README.md) where
-scripts/backfill_papers.py has filled paper_text. Run inside a backend
+ingest/backfill/backfill_papers.py has filled paper_text. Run inside a backend
 container, like eval_recall.py:
 
     python paired_papers_run.py --queries /repo/benchmarks/recall/queries.yaml \\

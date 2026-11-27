@@ -58,7 +58,7 @@ those files explained:
   `paper_text` at weight D. `search_tsv_exact` and `search_tsv_exact_papers`
   are the same without stemming ('simple' instead of 'english'). The
   expressions are written out in
-  `crawlers/openneuro-crawler/remote/openneuro_metadata.py` and
+  `ingest/openneuro-crawler/remote/openneuro_metadata.py` and
   `paper_store.py`; `tests/test_migrations_postgres.py` checks that the
   columns are generated from exactly those.
 - **Changing a search vector** means dropping and recreating the column in a

@@ -22,7 +22,7 @@ from services.schema.revision import (SchemaRevisionError, alembic_config, check
 
 from tests.postgres import needs_postgres, rolled_back, run_on
 
-_CRAWLER = Path(__file__).resolve().parents[2] / "crawlers" / "openneuro-crawler"
+_CRAWLER = Path(__file__).resolve().parents[2] / "ingest" / "openneuro-crawler"
 if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 

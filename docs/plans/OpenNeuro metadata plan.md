@@ -94,11 +94,11 @@ suffixes, participants.tsv).
 | File | Role |
 |---|---|
 | `crawlers/migrate_add_openneuro_metadata.sql` | adds the seven columns plus `deprecated_reason`, idempotent |
-| `crawlers/openneuro-crawler/remote/openneuro_metadata.py` | fetch, clean, write; shared by everything below |
-| `scripts/backfill_openneuro_metadata.py` | fills the columns for datasets that are already indexed |
-| `crawlers/openneuro-crawler/remote/openneuro.py` | S3 crawl path: stores the mirror README, then calls the API for the other fields |
-| `crawlers/openneuro-crawler/remote/graphql.py` | fallback for restricted datasets, now using fields that exist in the API |
-| `crawlers/openneuro-crawler/crawler_service.py` | creates the columns at the start of a crawl cycle |
+| `ingest/openneuro-crawler/remote/openneuro_metadata.py` | fetch, clean, write; shared by everything below |
+| `ingest/backfill/backfill_openneuro_metadata.py` | fills the columns for datasets that are already indexed |
+| `ingest/openneuro-crawler/remote/openneuro.py` | S3 crawl path: stores the mirror README, then calls the API for the other fields |
+| `ingest/openneuro-crawler/remote/graphql.py` | fallback for restricted datasets, now using fields that exist in the API |
+| `ingest/openneuro-crawler/crawler_service.py` | creates the columns at the start of a crawl cycle |
 
 ### Behaviour and decisions
 
@@ -248,12 +248,12 @@ rsync -avR \
   backend/tests/test_schema_capabilities.py backend/tests/test_openneuro_metadata.py \
   backend/tests/test_query_flow.py \
   frontend/src/api/index.ts frontend/src/components/DatasetCard.vue \
-  crawlers/migrate_add_openneuro_metadata.sql crawlers/openneuro_metadata_plan.md \
-  crawlers/openneuro-crawler/crawler_service.py \
-  crawlers/openneuro-crawler/remote/openneuro.py \
-  crawlers/openneuro-crawler/remote/graphql.py \
-  crawlers/openneuro-crawler/remote/openneuro_metadata.py \
-  scripts/backfill_openneuro_metadata.py \
+  crawlers/migrate_add_openneuro_metadata.sql docs/plans/OpenNeuro metadata plan.md \
+  ingest/openneuro-crawler/crawler_service.py \
+  ingest/openneuro-crawler/remote/openneuro.py \
+  ingest/openneuro-crawler/remote/graphql.py \
+  ingest/openneuro-crawler/remote/openneuro_metadata.py \
+  ingest/backfill/backfill_openneuro_metadata.py \
   $H:/home/BIDS-Eye/
 
 # 3) Migration: adds eight empty columns, takes milliseconds.
@@ -261,7 +261,7 @@ ssh $H "cd /home/BIDS-Eye && $PSQL < crawlers/migrate_add_openneuro_metadata.sql
 
 # 4) Backfill in a one-off container of the current backend image
 #    (it has SQLAlchemy, asyncpg and the METADATA_DB_* variables).
-RUN="$C run --rm --no-deps -v /home/BIDS-Eye:/repo:ro backend python /repo/scripts/backfill_openneuro_metadata.py"
+RUN="$C run --rm --no-deps -v /home/BIDS-Eye:/repo:ro backend python /repo/ingest/backfill/backfill_openneuro_metadata.py"
 ssh $H "cd /home/BIDS-Eye && $RUN --dry-run --limit 24"     # look first
 ssh $H "cd /home/BIDS-Eye && $RUN"                          # about 7 minutes
 

@@ -44,7 +44,7 @@ datasets that are already indexed, without crawling them again:
     python post_crawl.py --accessions ds000171,ds004627
 
 The step names are in `post_crawl.STEPS`. To look at a step's results before
-writing them, the scripts in `scripts/` run the same code with `--dry-run`
+writing them, the scripts in `ingest/backfill/` run the same code with `--dry-run`
 and a review file: `backfill_papers.py`, `backfill_dataset_links.py`,
 `backfill_openneuro_metadata.py`, `extract_readme_profiles.py` and
 `describe_datasets.py`.

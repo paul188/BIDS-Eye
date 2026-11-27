@@ -135,7 +135,7 @@ The first 14 items come from the 2026-11-17 search-quality review (`reports/Text
   - the check whether the intent model fills `age_groups` was not run (`benchmarks/easy`, "agegroups", about 42 model calls);
   - datasets entirely inside the group should rank first;
   - the tier's "ages recorded" check still counts age 0.
-- **Participant groups** (`crawlers/openneuro-crawler/remote/participant_groups.py`): applied once on production (17 datasets). The crawler does not run on the server, so new datasets are not decoded.
+- **Participant groups** (`ingest/openneuro-crawler/remote/participant_groups.py`): applied once on production (17 datasets). The crawler does not run on the server, so new datasets are not decoded.
 - **Production gaps:**
   - the retriever's database back-check never runs (no `DATABASE_URL`/psycopg2 in the container);
   - neither does the embedding fallback (no `sentence_transformers`).

@@ -9,7 +9,7 @@ backend/services/indexing/readme_profile.py.
 
 backend/services/indexing/readme_profile_runner.py does the work, the same code
 the crawler runs after each cycle for the datasets it indexed
-(crawlers/openneuro-crawler/post_crawl.py). This script runs it over the whole
+(ingest/openneuro-crawler/post_crawl.py). This script runs it over the whole
 catalogue, or over a sample to review before writing.
 
 Writes bids_datasets.llm_profile / llm_conditions / llm_profile_meta and
@@ -19,9 +19,9 @@ rerun at any time, and a rerun after a README changed redoes only that one.
 
 Usage (inside the backend container, which has the keys and the database):
 
-    python scripts/extract_readme_profiles.py --dry-run --limit 20 --save-jsonl /out/sample.jsonl
-    python scripts/extract_readme_profiles.py                     # all datasets that need it
-    python scripts/extract_readme_profiles.py --accessions ds000171,ds004627 --force
+    python ingest/backfill/extract_readme_profiles.py --dry-run --limit 20 --save-jsonl /out/sample.jsonl
+    python ingest/backfill/extract_readme_profiles.py                     # all datasets that need it
+    python ingest/backfill/extract_readme_profiles.py --accessions ds000171,ds004627 --force
 
 Needs the database at the newest migration (backend/migrations/README.md). Needs GEMINI_API_KEY.
 Database connection: DATABASE_URL, or the METADATA_DB_* variables.
@@ -37,7 +37,7 @@ import sys
 import time
 from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[1]
+_REPO = Path(__file__).resolve().parents[2]
 for _path in (_REPO / "backend", _REPO / "LLM_preprocessor", _REPO / "RAG"):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))

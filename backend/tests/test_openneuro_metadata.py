@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-_CRAWLER = ROOT / "crawlers" / "openneuro-crawler"
+_CRAWLER = ROOT / "ingest" / "openneuro-crawler"
 if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 

@@ -297,7 +297,7 @@ def test_attach_descriptions_shows_the_paper_line_and_summary():
 # ── Crawler ───────────────────────────────────────────────────────────────────
 
 def _post_crawl():
-    crawler = ROOT / "crawlers" / "openneuro-crawler"
+    crawler = ROOT / "ingest" / "openneuro-crawler"
     if str(crawler) not in sys.path:
         sys.path.insert(0, str(crawler))
     import post_crawl

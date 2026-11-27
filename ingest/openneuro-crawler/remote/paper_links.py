@@ -4,7 +4,7 @@ remote/paper_links.py
 Which papers a dataset names, and what each of them is to the dataset.
 
 A dataset's own metadata often does not say who the participants were; the
-paper it links usually does (see crawlers/paper_enrichment_plan.md). This
+paper it links usually does (see docs/plans/Paper enrichment plan.md). This
 module reads paper identifiers out of the places uploaders put them and decides
 the role of each linked paper. It does no network or database work:
 
@@ -414,7 +414,7 @@ def assign_roles(
     to the number of datasets citing the paper.
 
     The rules were checked against 60 hand-labelled links
-    (crawlers/paper_enrichment_plan.md). What they cannot tell apart is two
+    (docs/plans/Paper enrichment plan.md). What they cannot tell apart is two
     experiments of one lab with the same authors.
     """
     counts = datasets_per_paper or {}

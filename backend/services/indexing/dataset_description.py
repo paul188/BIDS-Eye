@@ -28,7 +28,7 @@ an LLM from labelled sources and checked before they are stored:
    only in the paper is allowed only in such a sentence.
 
 Results carry a hash of their inputs and the prompt version, so a rerun redoes
-only what changed. scripts/describe_datasets.py runs this over the database;
+only what changed. ingest/backfill/describe_datasets.py runs this over the database;
 the crawler runs it for the datasets it indexed (post_crawl.py).
 """
 

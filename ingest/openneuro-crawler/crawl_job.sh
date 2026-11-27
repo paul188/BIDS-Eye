@@ -18,7 +18,7 @@ module load PostgreSQL/16.1-GCCcore-12.3.0
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO=/home/s24pjoha_hpc/Text_To_SQL
 VENV=$REPO/BIDS-SQL/venv_hpc
-CRAWLER=$REPO/crawlers/openneuro-crawler
+CRAWLER=$REPO/ingest/openneuro-crawler
 SCRATCH=/lustre/scratch/data/s24pjoha_hpc-llm_sql_data
 PG_DATA=$SCRATCH/postgres_data
 PG_PORT=5429
