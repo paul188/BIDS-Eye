@@ -50,23 +50,21 @@ def _plan_output_schema(include_word_forms: bool = False) -> Dict[str, Any]:
 # collides (word_forms.prompt_block gives the lines above it). The examples
 # are not benchmark words.
 _WORD_FORMS_INSTRUCTION = """\
-For these words, add one more top-level key to the JSON object, "word_forms":
-a list of {"word": "<the word>", "keep": ["<form>", ...]} naming the forms a
-dataset must use to be about what the user asks for. Keep a form that means
-the same ("organizations" for "organization"). Leave out a form that is a
-different word with the same stem ("organ" for "organization", "universe"
-for "university"). When every form fits, keep them all."""
+For these words, add a top-level key "word_forms": a list of
+{"word": "<the word>", "keep": ["<form>", ...]} with the forms a dataset must
+use to match what the user means. Drop forms that are a different word with
+the same stem ("organ" for "organization", "universe" for "university").
+If every form fits, keep them all."""
 
 
 _SHORTHANDS_INSTRUCTION = """\
 ## Shorthands
-`shorthands` gives, for each abbreviation in the query, what the catalogue's
-listings say it stands for. Several entries are several possible meanings.
-- Write every abbreviation exactly as typed in all fields (scan_terms,
-  diagnosis_terms, description_search, topics) and in
-  natural_language_summary. Do not write it out and do not pick one meaning.
-- Take its meaning only from this list, to decide which field it belongs to
-  and which other words describe it."""
+`shorthands` lists what each abbreviation in the query stands for in the
+catalogue (several entries = several possible meanings).
+- Write each abbreviation exactly as typed in every field, including
+  natural_language_summary. Do not expand it or pick one meaning.
+- Use the list only to decide which field it belongs in and which other words
+  describe it."""
 
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]*")
 

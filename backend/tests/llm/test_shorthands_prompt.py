@@ -36,5 +36,5 @@ def test_the_prompt_carries_them_only_when_there_are_some(monkeypatch) -> None:
     intent.preprocess_query("20 patients with TLE")
     intent.preprocess_query("datasets of people listening to music")
     assert '"shorthands": {"TLE": ["temporal lobe epilepsy (diagnosis)"]}' in prompts[0]
-    assert "## Shorthands" in prompts[0] and "do not pick one meaning" in prompts[0]
+    assert "## Shorthands" in prompts[0] and "Do not expand it or pick one meaning" in prompts[0]
     assert "horthands" not in prompts[1]
