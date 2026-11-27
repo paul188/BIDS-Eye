@@ -40,7 +40,6 @@ DB Preprocessing
 scripts
 lottery
 nginx
-postgres
 postgres_data
 certbot
 docker-compose*.yml
