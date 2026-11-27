@@ -21,10 +21,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from security import rate_limits
 import routers.history as history_router
 import routers.search as query_router
-from deps import get_db
+from deps import get_db, require_auth, user_id
 from exceptions.handlers import add_error_handlers
 from models import QueryLog, SearchHistoryConsent, SearchHistoryEntry
-from routers.auth import require_auth, user_id
 from schemas import QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
@@ -78,7 +77,7 @@ def test_a_session_without_account_number_saves_nothing(monkeypatch) -> None:
         return _answer()
 
     monkeypatch.setattr(search, "ask", ask)
-    reply = asyncio.run(query_router.query_datasets(QueryRequest(question="fMRI"), None, {"sub": "ana"}))
+    reply = asyncio.run(query_router.query_datasets(QueryRequest(question="fMRI"), None, None))
     assert reply.history_id is None
 
 

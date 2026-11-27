@@ -17,6 +17,8 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from security import middleware
+from security import sessions
+from deps import require_auth
 from exceptions.handlers import add_error_handlers
 from routers import auth
 
@@ -74,7 +76,7 @@ def _session_data(client: TestClient) -> dict:
     """What the signed session cookie holds (the payload is base64 JSON before the first dot)."""
     import base64
     import json
-    payload = client.cookies[auth.SESSION_COOKIE].split(".")[0]
+    payload = client.cookies[sessions.SESSION_COOKIE].split(".")[0]
     return json.loads(base64.b64decode(payload + "=" * (-len(payload) % 4)))
 
 
@@ -90,7 +92,7 @@ def _build_app(
     app.include_router(auth.auth_router, prefix="/api")
 
     @app.get("/api/protected")
-    def protected(user: dict = Depends(auth.require_auth)) -> dict:
+    def protected(user: dict = Depends(require_auth)) -> dict:
         return {"sub": user["sub"]}
 
     # No Depends(require_auth): RequireLogin must still guard it.
@@ -162,7 +164,7 @@ def test_callback_sets_httponly_cookie_and_keeps_token_out_of_url(client: TestCl
     assert resp.headers["location"] == "/"
 
     session_cookie = next(
-        c for c in resp.headers.get_list("set-cookie") if c.startswith(f"{auth.SESSION_COOKIE}=")
+        c for c in resp.headers.get_list("set-cookie") if c.startswith(f"{sessions.SESSION_COOKIE}=")
     )
     flags = session_cookie.lower()
     assert "httponly" in flags
@@ -200,7 +202,7 @@ def test_cookie_signs_in_and_logout_signs_out(client: TestClient) -> None:
     resp = client.post("/api/auth/logout", headers=_csrf(client))
     assert resp.status_code == 200
     assert any(
-        c.startswith(f"{auth.SESSION_COOKIE}=null") or "expires=thu, 01 jan 1970" in c.lower()
+        c.startswith(f"{sessions.SESSION_COOKIE}=null") or "expires=thu, 01 jan 1970" in c.lower()
         for c in resp.headers.get_list("set-cookie")
     )
     assert client.get("/api/auth/me").status_code == 401
@@ -213,11 +215,11 @@ def test_bearer_header_is_not_accepted(client: TestClient) -> None:
 
 def test_tampered_cookie_is_rejected(client: TestClient) -> None:
     _login(client)
-    value = client.cookies[auth.SESSION_COOKIE]
+    value = client.cookies[sessions.SESSION_COOKIE]
     client.cookies.clear()
 
     def call_with(cookie_value: str) -> int:
-        headers = {"Cookie": f"{auth.SESSION_COOKIE}={cookie_value}"}
+        headers = {"Cookie": f"{sessions.SESSION_COOKIE}={cookie_value}"}
         return client.get("/api/protected", headers=headers).status_code
 
     assert call_with(value) == 200
@@ -225,7 +227,7 @@ def test_tampered_cookie_is_rejected(client: TestClient) -> None:
 
 
 def test_session_ends_after_its_lifetime_even_when_used(client: TestClient) -> None:
-    half = auth._SESSION_MAX_AGE / 2 + 60
+    half = sessions._SESSION_MAX_AGE / 2 + 60
     with time_machine.travel(time.time(), tick=False) as clock:
         _login(client)
         clock.shift(half)
@@ -234,12 +236,12 @@ def test_session_ends_after_its_lifetime_even_when_used(client: TestClient) -> N
         assert client.get("/api/protected").status_code == 401
 
 
-@pytest.mark.parametrize("age", [None, auth._SESSION_MAX_AGE + 60])
+@pytest.mark.parametrize("age", [None, sessions._SESSION_MAX_AGE + 60])
 def test_a_session_past_its_login_time_is_refused(age: float | None) -> None:
     """The second guard, without the middleware's own max_age in front of it."""
     user = {"sub": "octo"} if age is None else {"sub": "octo", "iat": time.time() - age}
     session = {"user": user}
-    assert auth.session_user(session) is None
+    assert sessions.session_user(session) is None
     assert session == {}  # emptied, so the middleware deletes the cookie
 
 
@@ -276,7 +278,7 @@ def test_login_started_on_other_host_moves_to_callback_host_first(client: TestCl
         "/api/auth/github", headers={"host": "www.testserver"}, follow_redirects=False
     )
     assert resp.headers["location"] == f"https://{HOST}/api/auth/github?hop=1"
-    assert auth.SESSION_COOKIE not in resp.headers.get("set-cookie", "")
+    assert sessions.SESSION_COOKIE not in resp.headers.get("set-cookie", "")
 
     # At most one hop, even if the host still looks different (e.g. a proxy).
     resp = client.get(

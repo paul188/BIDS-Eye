@@ -42,8 +42,9 @@ import request_log
 import worker_db
 from security.middleware import install_security_middleware
 from db.db import engine
+from deps import require_auth
 from exceptions.handlers import add_error_handlers
-from routers.auth import auth_router, require_auth
+from routers.auth import auth_router
 from routers.history import history_router
 from routers.search import search_router
 from services import in_process_crawler, switches

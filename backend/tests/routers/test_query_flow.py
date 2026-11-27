@@ -149,7 +149,7 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
 
         session = _FakeSession()
         first = await query_router.query_datasets(
-            query_router.QueryRequest(question="find datasets"), session, {"sub": "tester"}
+            query_router.QueryRequest(question="find datasets"), session, None
         )
 
         assert first.total == 2
