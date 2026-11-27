@@ -36,11 +36,10 @@ benchmarks
 reports
 research_notes
 docs
-scripts
 ingest/backfill
 ingest/scan_crawl_errors.py
 lottery
-nginx
+deploy
 postgres_data
 certbot
 docker-compose*.yml

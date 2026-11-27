@@ -4,5 +4,5 @@ After=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/home/BIDS-Eye/scripts/backup/restore_test.sh
+ExecStart=/home/BIDS-Eye/deploy/backup/restore_test.sh
 Nice=10

@@ -146,7 +146,7 @@ jobs:
           # the rule flags nearly every query.
           args="--metrics=off --config p/python --config p/secrets"
           args="$args --exclude-rule python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text"
-          paths="backend ingest scripts frontend/src"
+          paths="backend ingest deploy frontend/src"
           if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             semgrep scan $args --error --baseline-commit "$BASE" $paths
           else

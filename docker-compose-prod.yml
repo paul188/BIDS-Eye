@@ -6,7 +6,7 @@
 #          -v $(pwd)/certbot/www:/var/www/certbot certbot/certbot certonly \
 #          --standalone -d YOUR_DOMAIN --agree-tos -m YOUR_EMAIL
 #
-#   2. Edit nginx/bids-eye.conf — replace YOUR_DOMAIN with your actual domain.
+#   2. Edit deploy/nginx/bids-eye.conf — replace YOUR_DOMAIN with your actual domain.
 #
 #   3. Fill in .env (copy from .env.example), including GITHUB_CLIENT_ID,
 #      GITHUB_CLIENT_SECRET, GITHUB_ORG (or ALLOW_ANY_GITHUB_USER),
@@ -31,7 +31,7 @@ services:
     logging: *default-logging
     restart: unless-stopped
     volumes:
-      - ./nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
+      - ./deploy/nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./lottery:/var/www/lottery:ro
