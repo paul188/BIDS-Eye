@@ -23,6 +23,13 @@ Steps that run after a crawl cycle, for the datasets the cycle indexed:
                 paper, from OpenAlex (remote/paper_affiliations.refresh).
   -. places    city, region and country of each new site name, from the
                 Research Organization Registry (remote/site_places.match_new).
+  -. profiles  what each README says: a short profile, the conditions with
+                their role (patients, controls, excluded, ...) and the
+                paradigms, each with a checked quote
+                (backend/services/indexing/readme_profile_runner.py, the same
+                code as scripts/extract_readme_profiles.py). Only datasets
+                whose README or study fields changed. Needs GEMINI_API_KEY;
+                the text goes to Gemini only.
   2. descriptions  how each primary paper relates to its dataset, and a
                 generated summary where the README is thin
                 (backend/services/indexing/dataset_description.py, the same code as
@@ -44,11 +51,23 @@ Environment:
     CRAWL_SITE_PLACES       "false" skips matching site names to places (default on)
     CRAWL_PAPER_AFFILIATIONS "false" skips the lead authors' institutions as sites (default on)
     CRAWL_PAPERS            "false" skips step 1 (default on)
+    CRAWL_README_PROFILES   "false" skips the README profiles (default on)
     CRAWL_DESCRIPTIONS      "false" skips step 2 (default on)
     CRAWL_WORD_FORMS        "false" skips step 3 (default on)
     CRAWL_VACUUM            "false" skips step 4 (default on)
     PAPER_RECHECK_DAYS      how old a paper lookup may get (default 30)
     DATASET_DESCRIPTION_MODEL  Gemini model for step 2 (default gemini-2.5-flash)
+    README_PROFILE_MODEL    Gemini model for the README profiles
+
+The same steps over datasets that are already indexed, without crawling
+them (from this folder, with the crawler's environment):
+
+    python post_crawl.py --all                          # every dataset
+    python post_crawl.py --accessions ds000171,ds004627
+    python post_crawl.py --all --only profiles,descriptions
+
+--only runs the named steps and ignores the CRAWL_* switches; the names are
+those in STEPS. Each step skips what is already up to date.
 
 The steps create the tables and columns they write, skip what is already
 done, and never fail the crawl: an error is logged and the next cycle tries
@@ -63,7 +82,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import Collection, Dict, List, Optional, Sequence
 
 from sqlalchemy import text
 
@@ -73,6 +92,11 @@ log = logging.getLogger(__name__)
 # crawler in its Docker image (/app/crawler, /app/backend, /app/LLM_preprocessor).
 _HERE = Path(__file__).resolve()
 _ROOTS = (_HERE.parents[2], _HERE.parents[1])
+
+
+# The steps in the order they run, by the names --only takes.
+STEPS = ("summaries", "groups", "codes", "links", "papers", "affiliations", "places",
+         "profiles", "descriptions", "word_forms", "vacuum")
 
 
 def _flag(name: str, default: bool = True) -> bool:
@@ -104,14 +128,18 @@ async def lookup_papers(engine, accessions: Sequence[str]) -> Dict[str, int]:
         return await paper_store.enrich(conn, due)
 
 
+def _add_to_path(*names: str) -> None:
+    for name in names:
+        path = next((root / name for root in _ROOTS if (root / name).is_dir()), None)
+        if path is not None and str(path) not in sys.path:
+            sys.path.insert(0, str(path))
+
+
 def _descriptions_available() -> bool:
     if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
         log.info("[post-crawl] No GEMINI_API_KEY: dataset descriptions skipped.")
         return False
-    for name in ("backend", "LLM_preprocessor"):
-        path = next((root / name for root in _ROOTS if (root / name).is_dir()), None)
-        if path is not None and str(path) not in sys.path:
-            sys.path.insert(0, str(path))
+    _add_to_path("backend", "LLM_preprocessor")
     try:
         import llm_client  # noqa: F401
         from google import genai  # noqa: F401  (llm_client imports it only when called)
@@ -122,6 +150,30 @@ def _descriptions_available() -> bool:
     return True
 
 
+def _profiles_available() -> bool:
+    if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
+        log.info("[post-crawl] No GEMINI_API_KEY: README profiles skipped.")
+        return False
+    # RAG/ holds the diagnosis resolver that codes the conditions.
+    _add_to_path("backend", "LLM_preprocessor", "RAG")
+    try:
+        import llm_client  # noqa: F401
+        import retriever  # noqa: F401
+        from google import genai  # noqa: F401  (llm_client imports it only when called)
+        from services.indexing import readme_profile_runner  # noqa: F401
+    except ImportError as exc:
+        log.warning("[post-crawl] README profiles skipped: %s", exc)
+        return False
+    return True
+
+
+async def profile_readmes(engine, accessions: Sequence[str]) -> Dict[str, int]:
+    """The counts of readme_profile_runner.run."""
+    from services.indexing import readme_profile_runner
+
+    return dict(await readme_profile_runner.run(engine, list(accessions)))
+
+
 async def describe(engine, accessions: Sequence[str]) -> Dict[str, int]:
     """Step 2. Returns the counts of dataset_description.run."""
     from services.indexing import dataset_description
@@ -130,9 +182,7 @@ async def describe(engine, accessions: Sequence[str]) -> Dict[str, int]:
 
 
 def _backend_services_available() -> bool:
-    path = next((root / "backend" for root in _ROOTS if (root / "backend").is_dir()), None)
-    if path is not None and str(path) not in sys.path:
-        sys.path.insert(0, str(path))
+    _add_to_path("backend")
     try:
         from services.fulltext import word_form_counts  # noqa: F401
     except ImportError as exc:
@@ -167,29 +217,42 @@ async def vacuum_file_table(engine) -> None:
             await conn.execute(text("RESET statement_timeout"))
 
 
-async def run_post_crawl(accessions: Sequence[str]) -> None:
-    """The steps for *accessions*; logs and swallows every error."""
+async def run_post_crawl(accessions: Sequence[str],
+                         only: Optional[Collection[str]] = None) -> None:
+    """The steps for *accessions*; logs and swallows every error.
+
+    *only* runs just the named steps (STEPS) and ignores the CRAWL_* switches.
+    """
     accessions = [a for a in accessions if a]
     if not accessions:
         return
+    unknown = set(only or ()) - set(STEPS)
+    if unknown:
+        raise ValueError(f"unknown post-crawl steps: {', '.join(sorted(unknown))}")
     from db.db import engine
+
+    def wanted(step: str, switch: Optional[str] = None) -> bool:
+        if only is not None:
+            return step in only
+        return switch is None or _flag(switch)
 
     # The search reads per-dataset summaries of bids_objects, not the file
     # table: a dataset whose files changed is found by its new data types
-    # only after this (remote/dataset_facets.py). Always on.
-    try:
-        from remote import dataset_facets
+    # only after this (remote/dataset_facets.py). Always on in a crawl.
+    if wanted("summaries"):
+        try:
+            from remote import dataset_facets
 
-        async with engine.begin() as conn:
-            stats = await dataset_facets.refresh(conn, accessions)
-        log.info("[post-crawl] Dataset summaries: %s", stats)
-    except Exception as exc:
-        log.error("[post-crawl] Dataset summaries failed: %s", exc, exc_info=True)
+            async with engine.begin() as conn:
+                stats = await dataset_facets.refresh(conn, accessions)
+            log.info("[post-crawl] Dataset summaries: %s", stats)
+        except Exception as exc:
+            log.error("[post-crawl] Dataset summaries failed: %s", exc, exc_info=True)
 
     # Participant diagnoses from a group column and its participants.json
     # Levels ("F" = "Frontotemporal Dementia Group"; remote/participant_groups.py).
     # Only datasets without any coded diagnosis. Reads OpenNeuro's public S3.
-    if _flag("CRAWL_PARTICIPANT_GROUPS"):
+    if wanted("groups", "CRAWL_PARTICIPANT_GROUPS"):
         try:
             from remote import participant_groups
 
@@ -203,7 +266,7 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
     # Participant sex and handedness as typed ('F', 'Female', 'Ambidextrous')
     # become the vocabulary's standard codes (remote/participant_codes.py). A
     # crawl writes the typed value again, so this runs after every cycle.
-    if _flag("CRAWL_PARTICIPANT_CODES"):
+    if wanted("codes", "CRAWL_PARTICIPANT_CODES"):
         try:
             from remote import participant_codes
 
@@ -216,7 +279,7 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         except Exception as exc:
             log.error("[post-crawl] Participant codes failed: %s", exc, exc_info=True)
 
-    if _flag("CRAWL_LINKS"):
+    if wanted("links", "CRAWL_LINKS"):
         try:
             from remote import dataset_links
 
@@ -226,7 +289,7 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         except Exception as exc:
             log.error("[post-crawl] Derivatives and sites failed: %s", exc, exc_info=True)
 
-    if _flag("CRAWL_PAPERS"):
+    if wanted("papers", "CRAWL_PAPERS"):
         try:
             stats = await lookup_papers(engine, accessions)
             log.info("[post-crawl] Papers looked up: %s", stats or "none due")
@@ -235,7 +298,7 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
 
     # The institutions of the first and last author of each primary paper
     # (OpenAlex, with their ROR id) are sites too (remote/paper_affiliations.py).
-    if _flag("CRAWL_PAPER_AFFILIATIONS"):
+    if wanted("affiliations", "CRAWL_PAPER_AFFILIATIONS"):
         try:
             from remote import paper_affiliations
 
@@ -246,7 +309,7 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
 
     # Where the sites are: names not matched yet go to ROR once
     # (remote/site_places.py); questions that name a place read the result.
-    if _flag("CRAWL_SITE_PLACES"):
+    if wanted("places", "CRAWL_SITE_PLACES"):
         try:
             from remote import site_places
 
@@ -256,23 +319,80 @@ async def run_post_crawl(accessions: Sequence[str]) -> None:
         except Exception as exc:
             log.error("[post-crawl] Site places failed: %s", exc, exc_info=True)
 
-    if _flag("CRAWL_DESCRIPTIONS") and _descriptions_available():
+    # What each README says (services/indexing/readme_profile_runner.py): the
+    # search indexes the profile and the studied conditions, and the
+    # re-ranker reads the profile.
+    if wanted("profiles", "CRAWL_README_PROFILES") and _profiles_available():
+        try:
+            stats = await profile_readmes(engine, accessions)
+            log.info("[post-crawl] README profiles: %s", stats)
+        except Exception as exc:
+            log.error("[post-crawl] README profiles failed: %s", exc, exc_info=True)
+
+    if wanted("descriptions", "CRAWL_DESCRIPTIONS") and _descriptions_available():
         try:
             stats = await describe(engine, accessions)
             log.info("[post-crawl] Dataset descriptions: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Dataset descriptions failed: %s", exc, exc_info=True)
 
-    if _flag("CRAWL_WORD_FORMS") and _backend_services_available():
+    if wanted("word_forms", "CRAWL_WORD_FORMS") and _backend_services_available():
         try:
             stats = await refresh_word_forms(engine)
             log.info("[post-crawl] Word forms: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Word forms failed: %s", exc, exc_info=True)
 
-    if _flag("CRAWL_VACUUM"):
+    if wanted("vacuum", "CRAWL_VACUUM"):
         try:
             await vacuum_file_table(engine)
             log.info("[post-crawl] File table vacuumed.")
         except Exception as exc:
             log.error("[post-crawl] Vacuum of the file table failed: %s", exc, exc_info=True)
+
+
+async def _indexed_accessions(engine) -> List[str]:
+    async with engine.connect() as conn:
+        rows = await conn.execute(text(
+            "SELECT DISTINCT accession_id FROM bids_datasets "
+            "WHERE accession_id IS NOT NULL ORDER BY 1"))
+        return [row[0] for row in rows]
+
+
+async def _main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Run the post-crawl steps over datasets that are already indexed.")
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--all", action="store_true", help="every indexed dataset")
+    target.add_argument("--accessions", help="comma-separated accession ids")
+    parser.add_argument("--only", help=f"comma-separated steps of: {', '.join(STEPS)}")
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s  %(message)s",
+                        datefmt="%H:%M:%S")
+    for noisy in ("httpx", "google_genai", "google_genai.models"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+    only = [s.strip() for s in args.only.split(",") if s.strip()] if args.only else None
+    unknown = set(only or ()) - set(STEPS)
+    if unknown:
+        parser.error(f"unknown steps: {', '.join(sorted(unknown))} (steps: {', '.join(STEPS)})")
+    from db.db import engine
+
+    if args.all:
+        accessions = await _indexed_accessions(engine)
+    else:
+        accessions = [a.strip() for a in args.accessions.split(",") if a.strip()]
+    log.info("[post-crawl] %d datasets, steps: %s", len(accessions), ", ".join(only or STEPS))
+    try:
+        await run_post_crawl(accessions, only=only)
+    finally:
+        await engine.dispose()
+    return 0
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    sys.exit(asyncio.run(_main()))
