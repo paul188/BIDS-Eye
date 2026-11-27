@@ -11,11 +11,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from services.evidence.base import PieceOfEvidence, Source, Strength
+from services.evidence.base import Source, Strength, UncertainEvidence
 
 
 @dataclass(frozen=True)
-class ContradictedEvidence(PieceOfEvidence):
+class ContradictedEvidence(UncertainEvidence):
     """Contradicted: the dataset records the field, and the condition did not
     hold for it, so the recorded values do not fit. Base of the contradicted
     kinds; each says where the record is kept.
@@ -31,6 +31,10 @@ class ContradictedEvidence(PieceOfEvidence):
 
     def sql(self) -> Optional[str]:
         return self.recorded
+
+    def reason(self) -> str:
+        # A contradicted dataset is left out, so no card shows it.
+        return ""
 
 
 @dataclass(frozen=True)

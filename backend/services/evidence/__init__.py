@@ -7,7 +7,8 @@ recorded and a default is assumed. Each way is one PieceOfEvidence: where it was
 found (its source), what it proves (its strength), the SQL that is true for a
 dataset it holds for, and the text a result card shows.
 
-  base.py          PieceOfEvidence, where it is found (Source) and what it proves (Strength)
+  base.py          PieceOfEvidence, where it is found (Source) and what it proves (Strength),
+                   UncertainEvidence (card text per level; confirmed: per dataset)
 
 One file per strength; a kind holds what it is about and writes its SQL and
 its card text from that:

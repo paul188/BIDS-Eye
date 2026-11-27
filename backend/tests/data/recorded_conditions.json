@@ -299,8 +299,8 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -318,8 +318,8 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -345,8 +345,8 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -365,8 +365,8 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -376,16 +376,16 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -403,8 +403,8 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -414,8 +414,8 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text"
   ]
@@ -427,12 +427,12 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain"
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain"
   ]
  },
  {
@@ -442,17 +442,17 @@
    "ConfirmedInParticipantListEvidence participants",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence readme",
    "ConfirmedInDatasetTextEvidence short_text",
    "ConfirmedInDatasetTextEvidence short_text",
-   "ConfirmedInDatasetColumnEvidence field dx_status",
-   "ConfirmedInDatasetColumnEvidence field study_domain",
+   "ConfirmedInDatasetColumnEvidence label dx_status",
+   "ConfirmedInDatasetColumnEvidence label study_domain",
    "ConfirmedInDatasetTextEvidence readme"
   ]
  },

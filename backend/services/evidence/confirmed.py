@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import ClassVar, Dict, List, Optional, Tuple
 
 from sqlglot import exp
@@ -20,6 +21,20 @@ from sqlglot import exp
 from services.evidence.base import PieceOfEvidence, Source, Strength
 
 _MAX_VALUE_CHARS = 60
+
+
+class CardColumn(str, Enum):
+    """Columns of the card query (results/match_reasons.build_sql),
+    by what they hold. Written there and read by reason() here."""
+    HOLDS = "h"       # the branch holds; per suffix
+    COUNT = "n"       # participant rows it holds for; per suffix
+    YOUNGEST = "lo"   # their lowest age; per suffix
+    OLDEST = "hi"     # their highest age; per suffix
+    FIELD = "f_"      # a dataset column as text; per column name
+
+    def of(self, key: str) -> str:
+        """The column for *key*: a branch's suffix ("0_1") or a column name."""
+        return f"{self.value}{key}"
 
 
 def age_span(low: float, high: float) -> str:
@@ -57,14 +72,15 @@ class ConfirmedEvidence(PieceOfEvidence):
         """The dataset columns whose values the card text shows."""
         return ()
 
-    def number_columns(self, name: str) -> List[str]:
-        """SQL columns for the numbers the card text shows, named after *name*."""
+    def number_columns(self, suffix: str) -> List[str]:
+        """SQL columns for the numbers the card text shows, named with *suffix*."""
         return []
 
     @abstractmethod
-    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
+    def reason(self, row: dict, suffix: str, total: Optional[int] = None) -> Optional[str]:
         """The card text for one dataset; None says nothing. *row* holds the
-        columns asked for above, *total* the dataset's number of participants."""
+        columns asked for above (CardColumn), *total* the dataset's number of
+        participants."""
 
     @property
     def key(self) -> Tuple[Source, Tuple[str, ...]]:
@@ -81,7 +97,7 @@ class _ConfirmedWhereFound(ConfirmedEvidence):
         if self.source not in self.TEXTS:
             raise ValueError(f"{type(self).__name__} has no card text for {self.source}")
 
-    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
+    def reason(self, row: dict, suffix: str, total: Optional[int] = None) -> Optional[str]:
         return self.TEXTS[self.source]
 
 
@@ -124,14 +140,15 @@ class ConfirmedInParticipantListEvidence(ConfirmedEvidence):
     reads_diagnosis: bool = False
     source: Source = field(default=Source.PARTICIPANTS, kw_only=True)
 
-    def number_columns(self, name: str) -> List[str]:
+    def number_columns(self, suffix: str) -> List[str]:
         if self.participant_rows is None:
             return []
-        columns = [f"{self._aggregate('COUNT', exp.Star())} AS n{name}"]
+        aggregates = [("COUNT", exp.Star(), CardColumn.COUNT)]
         if self.age_column is not None:
-            columns.append(f"{self._aggregate('MIN', self.age_column)} AS lo{name}")
-            columns.append(f"{self._aggregate('MAX', self.age_column)} AS hi{name}")
-        return columns
+            aggregates += [("MIN", self.age_column, CardColumn.YOUNGEST),
+                           ("MAX", self.age_column, CardColumn.OLDEST)]
+        return [f"{self._aggregate(function, argument)} AS {column.of(suffix)}"
+                for function, argument, column in aggregates]
 
     def _aggregate(self, function: str, argument) -> str:
         assert self.participant_rows is not None
@@ -143,13 +160,14 @@ class ConfirmedInParticipantListEvidence(ConfirmedEvidence):
             select.set(key, None)
         return f"({select.sql(dialect='postgres')})"
 
-    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
-        count = row.get(f"n{name}")
+    def reason(self, row: dict, suffix: str, total: Optional[int] = None) -> Optional[str]:
+        count = row.get(CardColumn.COUNT.of(suffix))
         if count is None:
             return "recorded in the participant list"
         whom = (f"{count} of {total} participants" if total and total >= count
                 else f"{count} participants")
-        low, high = row.get(f"lo{name}"), row.get(f"hi{name}")
+        low = row.get(CardColumn.YOUNGEST.of(suffix))
+        high = row.get(CardColumn.OLDEST.of(suffix))
         if self.age_column is not None and low is not None and high is not None:
             return f"{whom} aged {age_span(float(low), float(high))}"
         return f"coded for {whom}" if self.reads_diagnosis else f"recorded for {whom}"
@@ -172,8 +190,8 @@ class ConfirmedInDatasetColumnEvidence(ConfirmedEvidence):
     def read_columns(self) -> Tuple[str, ...]:
         return self.columns
 
-    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
-        values = {column: row.get(f"f_{column}") for column in self.columns}
+    def reason(self, row: dict, suffix: str, total: Optional[int] = None) -> Optional[str]:
+        values = {column: row.get(CardColumn.FIELD.of(column)) for column in self.columns}
         if {"age_min", "age_max"} & set(values):
             low, high = _age(values.get("age_min")), _age(values.get("age_max"))
             # 0 to 0 is a placeholder, not an age: the four datasets that
@@ -215,7 +233,7 @@ class ConfirmedByDefaultEvidence(ConfirmedEvidence):
     def read_columns(self) -> Tuple[str, ...]:
         return self.columns
 
-    def phrase(self, row: dict, name: str, total: Optional[int] = None) -> Optional[str]:
+    def reason(self, row: dict, suffix: str, total: Optional[int] = None) -> Optional[str]:
         if self.source == Source.ASSUMED_ABSENT:
             return self.ABSENT_DIAGNOSIS
         return self.TEXTS[self.columns[0]]

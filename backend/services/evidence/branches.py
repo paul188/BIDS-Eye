@@ -25,7 +25,7 @@ from services.evidence.confirmed import (ConfirmedByDefaultEvidence, ConfirmedEv
                                          ConfirmedInParticipantListEvidence)
 from services.fulltext.text_search import Clause
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN, PAPER_FTS_COLUMN
-from services.schema.tables import COLUMN_TEXT, TABLE_ABOUT, About, TextKind
+from services.schema.tables import COLUMN_TEXT, LABELS_IN_TEXT, TABLE_ABOUT, About, TextKind
 
 log = logging.getLogger(__name__)
 
@@ -181,7 +181,10 @@ def _from_dataset_columns(sql_branch: sql_tree.SqlBranch) -> Optional[ConfirmedE
     if {"age_min", "age_max"} & set(names):
         # Either bound alone ("d.age_min < 3") is shown as the whole range.
         names = tuple(dict.fromkeys(("age_min", "age_max") + names))
-    return ConfirmedInDatasetColumnEvidence(sql_branch.sql, columns=names) if names else None
+    if not names:
+        return None
+    source = Source.LABEL if LABELS_IN_TEXT.intersection(names) else Source.FIELD
+    return ConfirmedInDatasetColumnEvidence(sql_branch.sql, columns=names, source=source)
 
 
 def branch_evidence(branch: EvidenceBranch) -> Tuple[ConfirmedEvidence, ...]:

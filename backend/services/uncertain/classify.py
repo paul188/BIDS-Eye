@@ -23,7 +23,7 @@ from services import sql_tree
 from services.fulltext.text_search import Clause
 from services.uncertain.conditions import LABEL_RE, ClauseEvidence
 from services.uncertain.text import query_words, relax_text_condition
-from services.evidence.base import PieceOfEvidence, Source, Strength
+from services.evidence.base import Source, Strength, UncertainEvidence
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import ConfirmedEvidence
 from services.evidence.possible import PossibleNotRecordedEvidence
@@ -192,7 +192,7 @@ def loose_term(clause: Clause, alias: str, papers: bool = False) -> Optional[Cla
     ))
 
 
-def _paper_only(clause: Clause, alias: str, papers: bool) -> Tuple[PieceOfEvidence, ...]:
+def _paper_only(clause: Clause, alias: str, papers: bool) -> Tuple[UncertainEvidence, ...]:
     """The evidence that the text searches of the condition *clause* match only
     in a paper; none without paper text or without a positive text search."""
     searches = paper_searches(clause) if papers else ()
@@ -224,7 +224,7 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
             return loose
     # Part of a text search the condition holds, anywhere in the text.
     relaxed = relax_text_condition(clause, alias)
-    weaker_search: Tuple[PieceOfEvidence, ...] = (relaxed,) if relaxed else ()
+    weaker_search: Tuple[UncertainEvidence, ...] = (relaxed,) if relaxed else ()
     paper = _paper_only(clause, alias, papers)
     if kind != "text":
         # A field a dataset may not record. What is particular to the field
@@ -233,7 +233,7 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
         # The dataset's own text names the asked value: counts in place of a
         # part of the search.
         named = field.named_in_text(node, alias) if field.named_in_text else None
-        weaker: Tuple[PieceOfEvidence, ...] = (named,) if named is not None else weaker_search
+        weaker: Tuple[UncertainEvidence, ...] = (named,) if named is not None else weaker_search
         if field.paper_evidence:
             # Without it a paper-only match is 'possible' like any other
             # dataset that records nothing.
@@ -250,7 +250,7 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
 
 
 @dataclass(frozen=True)
-class ProbablePatientsNotCountedEvidence(PieceOfEvidence):
+class ProbablePatientsNotCountedEvidence(UncertainEvidence):
     """Probable, for "at least *minimum* participants with one of *codes*":
     the dataset does not record who has the diagnosis, and it has enough
     participants to hold them."""
