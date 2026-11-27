@@ -343,6 +343,43 @@ def test_post_crawl_switches(monkeypatch):
     assert calls == []
 
 
+def _record_model_steps(monkeypatch, post_crawl, calls):
+    monkeypatch.setitem(sys.modules, "db.db", types.SimpleNamespace(engine=object()))
+    for name in ("lookup_papers", "profile_readmes", "describe"):
+        async def record(engine, accessions, name=name):
+            calls.append(name)
+            return {}
+        monkeypatch.setattr(post_crawl, name, record)
+    monkeypatch.setattr(post_crawl, "_profiles_available", lambda: True)
+    monkeypatch.setattr(post_crawl, "_descriptions_available", lambda: True)
+
+
+def test_post_crawl_profiles_the_readmes_before_the_descriptions(monkeypatch):
+    post_crawl = _post_crawl()
+    calls = []
+    _record_model_steps(monkeypatch, post_crawl, calls)
+    asyncio.run(post_crawl.run_post_crawl(["ds1"]))
+    assert calls == ["lookup_papers", "profile_readmes", "describe"]
+
+    calls.clear()
+    monkeypatch.setenv("CRAWL_README_PROFILES", "false")
+    asyncio.run(post_crawl.run_post_crawl(["ds1"]))
+    assert calls == ["lookup_papers", "describe"]
+
+
+def test_post_crawl_only_runs_the_named_steps_whatever_the_switches(monkeypatch):
+    import pytest
+
+    post_crawl = _post_crawl()
+    calls = []
+    _record_model_steps(monkeypatch, post_crawl, calls)
+    monkeypatch.setenv("CRAWL_README_PROFILES", "false")
+    asyncio.run(post_crawl.run_post_crawl(["ds1"], only=["profiles"]))
+    assert calls == ["profile_readmes"]
+    with pytest.raises(ValueError, match="profile"):
+        asyncio.run(post_crawl.run_post_crawl(["ds1"], only=["profile"]))
+
+
 def test_post_crawl_skips_descriptions_without_a_key(monkeypatch):
     post_crawl = _post_crawl()
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)

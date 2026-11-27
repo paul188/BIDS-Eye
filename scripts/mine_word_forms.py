@@ -13,7 +13,7 @@ It decides nothing. Read the list, and add to word_forms.yaml only the groups
 that are plainly different words; most groups are ordinary inflections
 ("scan", "scans", "scanning") and need no entry.
 
-Reads bids_word_forms (scripts/refresh_word_forms.py). Then:
+Reads bids_word_forms (filled after each crawl, post_crawl.py). Then:
 
     python scripts/mine_word_forms.py
     python scripts/mine_word_forms.py --limit 400 --min-other 20
