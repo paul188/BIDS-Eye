@@ -18,6 +18,8 @@ from typing import Any, Collection, Dict, List, Tuple
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, BigInteger, JSON, String, Table, Uuid
 from sqlalchemy.dialects.postgresql import ARRAY
 
+from criteria import species_prompt_lines
+
 from services.schema import tables as _tables
 from services.schema.tables import referred_column
 
@@ -91,25 +93,18 @@ _DATASET_NOTES: Dict[str, List[str]] = {
         "of datasets, nearly all of them human), e.g. 'Human', 'Mouse', 'Rat', 'Macaque',",
         "'Monkey', 'Nonhunam primates (Macaca mulatta)', 'Sus scrofa domesticus', 'Phantom'.",
         "When the question context has a 'species' line, copy that condition exactly and",
-        "add no other species condition. Without one (older planner), use these recipes.",
-        "Use it for animal / non-human questions, and ALWAYS add the title/description",
-        "fallback for datasets without a species (many animal datasets are unlabelled):",
-        "  mice: (d.species ~* '\\m(mouse|mice|mus)\\M'",
-        "         OR (d.species IS NULL AND text_match('mouse | mice | murine', 'short')))",
-        "  macaques/monkeys: (d.species ~* '(macaque|macaca|monkey|primate|baboon|marmoset|rhesus|capuchin|cynomolgus)'",
-        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
-        "             AND text_match('macaque | macaca | monkey | rhesus | marmoset | baboon')))",
-        "  any animal: (d.species !~* '(human|homo sapiens|phantom|synthetic|printed|^\\s*(other|n/?a|unknown)\\s*$)'",
-        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
-        "             AND text_match('mouse | mice | rat | rats | macaque | monkey | animal', 'short')))",
-        "A label 'Other', 'n/a' or 'unknown' says nothing: treat it like NULL (text fallback).",
-        "Mouse/rat/any-animal fallbacks stay on title and description ('short'): human READMEs",
-        "say 'mouse click'. Primate words are safe in the README of an unlabelled dataset.",
-        "Never AND an extra text_match of the species word: the species condition is complete.",
-        "non-human primates / NHP: (d.species ~* '(macaque|macaca|monkey|primate|marmoset|baboon|chimpanzee|rhesus|capuchin|cynomolgus)'",
-        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
-        "             AND text_match('macaque | macaca | monkey | rhesus | marmoset | primate | baboon')))",
-        "  Never search the abbreviation 'NHP' as text.",
+        "add no other species condition.",
+        "Without one, use it for animal / non-human questions, and ALWAYS add the",
+        "title/description fallback for datasets without a species (many animal datasets",
+        "are unlabelled). A label 'Other', 'n/a' or 'unknown' says nothing: treat it like",
+        "NULL (text fallback). Mouse/rat/any-animal fallbacks stay on title and description",
+        "('short'): human READMEs say 'mouse click'. Primate words are safe in the README of",
+        "an unlabelled dataset. Never AND an extra text_match of the species word: the",
+        "species condition is complete. Never search the abbreviation 'NHP' as text.",
+        "The condition per species asked for (other species: the same shape):",
+        # Built by RAG/criteria.py, the code that writes the planner's species
+        # line, so the two cannot drift apart.
+        *species_prompt_lines(),
     ],
     "study_longitudinal": [
         "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",

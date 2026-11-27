@@ -162,3 +162,21 @@ def test_size_limit_becomes_a_filter_only_when_the_column_is_available() -> None
 
     no_limit = QueryPlan(query_family="scan_filter", natural_language_summary="Find fMRI datasets.")
     assert _build_augmented_question(no_limit, [], available_columns={"size_bytes"}) == "Find fMRI datasets."
+
+
+def test_the_schema_shows_the_species_conditions_the_planner_line_carries() -> None:
+    """The SQL model's own species filter must not drift from RAG/criteria.py:
+    the hand-written copy had lost the 'Other' label for mice, had no rat
+    condition and two different primate conditions."""
+    from criteria import ANY_ANIMAL, species_condition, species_prompt_lines
+
+    ddl = schema_ddl.build_schema_ddl({"species"})
+    for code in ("mouse", "rat", "primate", ANY_ANIMAL):
+        assert f": {species_condition([code])}\n" in ddl
+    # The column's own notes write no condition out by hand.
+    written = schema_ddl._DATASET_NOTES["species"][:-len(species_prompt_lines())]
+    assert not any("d.species" in note for note in written)
+
+
+def test_the_schema_without_the_species_column_has_no_species_condition() -> None:
+    assert "d.species" not in schema_ddl.build_schema_ddl(())

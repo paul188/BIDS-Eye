@@ -199,6 +199,21 @@ def species_condition(codes: Sequence[str], has_column: bool = True) -> Optional
     return "(" + " OR ".join(parts) + ")"
 
 
+# The species the SQL model is shown a condition for, for a question whose
+# plan carries no species (the species line of the augmented question is the
+# normal route). Rarer species follow the same shape.
+_PROMPT_SPECIES = (("mice", "mouse"), ("rats", "rat"),
+                   ("monkeys / non-human primates (NHP)", "primate"), ("any animal", ANY_ANIMAL))
+
+
+def species_prompt_lines() -> Tuple[str, ...]:
+    """One "  <asked for>: <condition>" line per common species, for the schema
+    shown to the SQL model (backend/services/translate/prompt/schema_ddl.py).
+    Built by species_condition, so the model's own filter is the one the
+    planner's species line carries."""
+    return tuple(f"  {asked}: {species_condition([code])}" for asked, code in _PROMPT_SPECIES)
+
+
 # ── Age group ────────────────────────────────────────────────────────────────
 
 AGE_GROUP = Criterion(
