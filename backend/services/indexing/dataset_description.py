@@ -570,8 +570,7 @@ async def run(
     async with engine.connect() as conn:
         if not await has_columns(conn):
             raise RuntimeError("paper_relation / dataset_summary or the paper tables are missing: "
-                               "run crawlers/migrate_add_paper_search.sql and "
-                               "crawlers/migrate_add_dataset_descriptions.sql first")
+                               "run `alembic upgrade head` in backend/ first")
         rows = (await conn.execute(text(_SELECT_SQL.format(scope=scope)), params)).mappings().all()
 
     jobs = []

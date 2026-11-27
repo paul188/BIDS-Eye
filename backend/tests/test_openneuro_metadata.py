@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import sys
 from pathlib import Path
 
@@ -82,22 +81,9 @@ def test_decode_readme_bytes_handles_utf16() -> None:
     assert meta.decode_readme_bytes(sample.encode("utf-16-le")) == sample       # without BOM
 
 
-def test_migration_file_matches_metadata_columns() -> None:
-    sql = (ROOT / "crawlers" / "migrate_add_openneuro_metadata.sql").read_text()
-    added = dict(re.findall(r"ADD COLUMN IF NOT EXISTS (\w+)\s+([A-Z][A-Z ]*[A-Z])", sql))
-    assert added == {**meta.METADATA_COLUMNS, **meta.STATUS_COLUMNS}
-
-
 def test_every_metadata_column_is_known_to_the_prompt_layer() -> None:
     """A column the crawler fills must be describable to the SQL model."""
     assert set(meta.METADATA_COLUMNS) <= set(constants.OPTIONAL_DATASET_COLUMNS)
-
-
-def test_ensure_columns_sql_is_idempotent_ddl() -> None:
-    statements = meta.ensure_columns_sql()
-    assert len(statements) == len(meta.CRAWLER_MANAGED_COLUMNS)
-    assert all("ADD COLUMN IF NOT EXISTS" in statement for statement in statements)
-    assert any("institutions TEXT[]" in statement for statement in statements)
 
 
 def test_deprecation_reason_covers_unavailable_and_flagged_datasets() -> None:

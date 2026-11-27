@@ -13,7 +13,7 @@ that are already indexed (new datasets get them from post_crawl.py):
 The 'ethics_board' site rows come with the OpenNeuro metadata
 (scripts/backfill_openneuro_metadata.py).
 
-Run crawlers/migrate_add_dataset_links.sql first. Then:
+Needs the database at the newest migration (backend/migrations/README.md). Then:
 
     python scripts/backfill_dataset_links.py --dry-run --limit 20
     python scripts/backfill_dataset_links.py
@@ -59,7 +59,7 @@ def _q(value) -> str:
 
 def sql_for(found: Dict[str, Dict[str, List[links.Derivative]]], accessions: List[str]) -> str:
     """The writes as one psql script: replace per (dataset, source), then dicom sites."""
-    lines = ["BEGIN;"] + [s.rstrip() + ";" for s in links.TABLES_SQL]
+    lines = ["BEGIN;"]
     for source, per_dataset in found.items():
         for accession, derivatives in sorted(per_dataset.items()):
             lines.append(
@@ -131,7 +131,6 @@ async def _accessions_from_db(engine) -> List[str]:
 
 async def _write(engine, found, accessions: List[str]) -> None:
     async with engine.begin() as conn:
-        await links.ensure_tables(conn)
         for source, per_dataset in found.items():
             for accession, derivatives in per_dataset.items():
                 await links.replace_derivatives(conn, accession, source, derivatives)

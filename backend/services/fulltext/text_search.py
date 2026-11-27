@@ -36,8 +36,7 @@ Exact word forms (TEXT_SEARCH_EXACT=true). The 'english' configuration
 matches a word by its stem, and some stems merge words that mean different
 things: "ageing" also finds "age", "weight" finds "T1-weighted". For a word
 whose forms were decided (RAG/word_forms.py), a term also requires one of
-those forms on search_tsv_exact, the same vector without stemming
-(crawlers/migrate_add_exact_search.sql):
+those forms on search_tsv_exact, the same vector without stemming:
 
     (d.search_tsv @@ to_tsquery('english', 'ageing & mri')
      AND d.search_tsv_exact @@ to_tsquery('simple', '(ageing | aging)'))

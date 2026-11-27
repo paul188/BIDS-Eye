@@ -9,13 +9,13 @@ bids_datasets.search_tsv is a stored tsvector over
               llm_conditions (studied conditions read from the README)
     weight C  llm_profile (LLM-written profile, services/indexing/readme_profile.py)
     weight D  readme_text
-(see crawlers/migrate_add_search_tsv.sql).
+(SEARCH_VECTOR_EXPRESSION in crawlers/openneuro-crawler/remote/openneuro_metadata.py).
 
 search_tsv_papers is search_tsv plus, at weight D, the title, abstract and
 keywords of the papers the dataset names as its own (TEXT_SEARCH_PAPERS,
 papers_enabled). search_tsv_exact and search_tsv_exact_papers hold the same
 text without stemming, for words that must match in the form asked for
-(TEXT_SEARCH_EXACT, exact_enabled; crawlers/migrate_add_exact_search.sql).
+(TEXT_SEARCH_EXACT, exact_enabled).
 How a search uses them: services/fulltext/text_search.py.
 """
 

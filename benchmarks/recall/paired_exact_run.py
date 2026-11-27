@@ -91,7 +91,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
         worker_db.install(worker_db.PooledWorkerDb(engine, asyncio.get_running_loop()))
     if not (has_exact_fts() and has_word_forms()):
         raise SystemExit("search_tsv_exact or bids_word_forms is missing: run "
-                         "crawlers/migrate_add_exact_search.sql and scripts/refresh_word_forms.py")
+                         "`alembic upgrade head` in backend/ and scripts/refresh_word_forms.py")
     print(f"label={label!r} database={database}", file=sys.stderr, flush=True)
 
     # The translation rewrites the model's SQL once. Keep what it was given,
