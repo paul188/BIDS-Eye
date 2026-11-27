@@ -19,6 +19,7 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+import cohort_count
 from services import sql_tree
 from services.fulltext.text_search import Clause
 from services.uncertain.conditions import LABEL_RE, ClauseEvidence
@@ -79,15 +80,6 @@ def _joined_row_tables(node, alias: str) -> set:
     return tables - {alias, ""}
 
 
-def _patient_count_parts(sql: str):
-    """(codes, minimum) of "at least N participants with a diagnosis", else None."""
-    try:
-        import cohort_count
-    except ImportError:  # the RAG package is not on the path
-        return None
-    return cohort_count.parse_expanded(sql)
-
-
 def _denies_a_sidecar_value(node) -> bool:
     """A NOT stands around a sidecar value; "IS NOT NULL" only asks that it is recorded."""
     def asks_if_recorded(negation) -> bool:
@@ -128,8 +120,7 @@ def soft_kind(clause: Clause, alias: str) -> Optional[str]:
         return None
     if _joined_row_tables(node, alias):
         return None
-    sql = node.sql(dialect="postgres")
-    if _patient_count_parts(sql) is not None:
+    if cohort_count.find(node) is not None:
         return "patient_count"
     kinds = {fields.KIND_OF_COLUMN[column] for column in columns & fields.KIND_OF_COLUMN.keys()}
     if len(kinds) > 1:
@@ -217,7 +208,7 @@ def classify(clause: Clause, alias: str, papers: bool = False) -> Optional[Claus
         return sidecar(clause, alias)
     confirming = confirming_evidence(clause, alias)
     if kind == "patient_count":
-        return _patient_count(sql, alias, confirming)
+        return _patient_count(node, alias, confirming)
     if kind == "text":
         loose = loose_term(clause, alias, papers)
         if loose is not None:
@@ -262,7 +253,6 @@ class ProbablePatientsNotCountedEvidence(UncertainEvidence):
     strength: Strength = dataclasses.field(default=Strength.PROBABLE, kw_only=True)
 
     def sql(self) -> Optional[str]:
-        import cohort_count
         from services.schema.tables import datasets
         stored = (f"COALESCE({self.alias}.{datasets.c.n_subjects.name}, 0)"
                   if self.stored_subject_counts else None)
@@ -272,7 +262,7 @@ class ProbablePatientsNotCountedEvidence(UncertainEvidence):
         return "how many participants have the diagnosis is not recorded"
 
 
-def _patient_count(sql: str, alias: str,
+def _patient_count(node, alias: str,
                    confirming: Tuple[ConfirmedEvidence, ...] = ()) -> Optional[ClauseEvidence]:
     """"At least N participants with the diagnosis" (backend/vocabulary/cohort_count.py).
 
@@ -280,20 +270,16 @@ def _patient_count(sql: str, alias: str,
     dataset does not record who has the diagnosis and is large enough to hold
     them. Excluded when its participant rows show fewer.
     """
-    try:
-        import cohort_count
-    except ImportError:  # the RAG package is not on the path
+    found = cohort_count.find(node)
+    if found is None:
         return None
-    parsed = cohort_count.parse_expanded(sql)
-    if parsed is None:
-        return None
-    codes, minimum = parsed
+    codes, minimum = found
     stored = False
     try:
         from services.database_stats.database_stats import database_stats
         stored = bool(database_stats.summaries.subject_counts)
     except ImportError:
         pass
-    return ClauseEvidence(kind="patient_count", sql=sql, confirming=confirming, evidence=(
+    return ClauseEvidence(kind="patient_count", sql=node.sql(dialect="postgres"), confirming=confirming, evidence=(
         ProbablePatientsNotCountedEvidence(tuple(codes), minimum, stored, alias=alias),
     ))
