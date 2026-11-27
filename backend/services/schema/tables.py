@@ -66,6 +66,8 @@ FLAG = "flag"
 ABOUT = "about"   # of a table: its About
 TEXT = "text"     # of a column: its TextKind
 LABEL_IN_TEXT = "label_in_text"   # of a column: an uploader label that search_tsv also holds
+# For the schema shown to the SQL model:
+REFERS_TO = "refers_to"   # of a column: the column of another table it holds
 
 
 class About(str, Enum):
@@ -107,7 +109,7 @@ def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]],
                       flag: str | None = None, text: TextKind | None = None,
                       label_in_text: bool = False) -> Column[Any]:
     """A column to add to bids_datasets; *migration* and *flag* as in _created_by."""
-    info = _created_by(migration, flag)
+    info: dict[str, Any] = _created_by(migration, flag)
     if text:
         info[TEXT] = text
     if label_in_text:
@@ -194,13 +196,33 @@ for _column in (datasets.c.name, datasets.c.description_text):
 
 metadata = MetaData()
 
+
+def _dataset_id(**options: Any) -> Column[Any]:
+    """The bids_datasets.id a row belongs to.
+
+    These tables declare no keys (they are for queries only), so the column
+    records what it refers to in its info.
+    """
+    return Column("dataset_id", UUID(as_uuid=True), info={REFERS_TO: datasets.c.id}, **options)
+
+
+def referred_column(column: Column[Any]) -> Column[Any] | None:
+    """The column of another table that *column* holds, or None.
+
+    From the foreign key where the table declares one (BIDS-SQL's models),
+    else from REFERS_TO.
+    """
+    for key in column.foreign_keys:
+        return key.column
+    return cast("Column[Any] | None", column.info.get(REFERS_TO))
+
+
 # One row per dataset and (datatype, suffix, task) it has files for: a small
 # summary of bids_objects that the executed SQL reads instead
 # (sql_rewriter._use_summaries). Refreshed after each crawl.
 dataset_facets = Table(
     "bids_dataset_facets", metadata,
-    # bids_datasets.id.
-    Column("dataset_id", UUID(as_uuid=True)),
+    _dataset_id(),
     # BIDS datatype folder, e.g. 'anat', 'func', 'eeg'.
     Column("datatype", Text),
     # BIDS suffix, e.g. 'T1w', 'bold', 'events'.
@@ -258,8 +280,7 @@ papers = Table(
 # Which dataset names which paper, and in which role.
 dataset_papers = Table(
     "bids_dataset_papers", metadata,
-    # bids_datasets.id.
-    Column("dataset_id", UUID(as_uuid=True), primary_key=True),
+    _dataset_id(primary_key=True),
     # bids_papers.id.
     Column("paper_id", BigInteger, primary_key=True),
     # 'primary', 'related', 'tool' or 'reuse'.
@@ -280,8 +301,7 @@ dataset_papers = Table(
 derivatives = Table(
     "bids_derivatives", metadata,
     Column("id", BigInteger, primary_key=True),
-    # bids_datasets.id.
-    Column("dataset_id", UUID(as_uuid=True)),
+    _dataset_id(),
     # Normalised pipeline: 'fmriprep', 'mriqc', 'freesurfer', … 'unspecified'.
     Column("pipeline", Text),
     # The pipeline as the source names it, and its version (GeneratedBy).
@@ -301,8 +321,7 @@ derivatives = Table(
 dataset_sites = Table(
     "bids_dataset_sites", metadata,
     Column("id", BigInteger, primary_key=True),
-    # bids_datasets.id.
-    Column("dataset_id", UUID(as_uuid=True)),
+    _dataset_id(),
     # The name or statement as found.
     Column("name_raw", Text),
     # 'dicom' (scanner headers) or 'ethics_board' (approvals).

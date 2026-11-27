@@ -14,10 +14,11 @@ from __future__ import annotations
 
 from typing import Any, Collection, Dict, List, Tuple
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, BigInteger, JSON, String, Uuid
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, BigInteger, JSON, String, Table, Uuid
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from services.schema.tables import datasets as _datasets
+from services.schema import tables as _tables
+from services.schema.tables import referred_column
 
 
 def prompt_type(column: Column[Any]) -> str:
@@ -152,14 +153,143 @@ _OPTIONAL_NOTES: Dict[str, List[str]] = {
     ],
 }
 
-# (name, type, comment lines). A note on a column tables.py lacks fails here.
-_CORE_DATASET_COLUMNS: List[Tuple[str, str, List[str]]] = [
-    (name, prompt_type(_datasets.c[name]) + (" PRIMARY KEY" if _datasets.c[name].primary_key else ""), notes)
-    for name, notes in _CORE_NOTES.items()
-]
-OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
-    name: (prompt_type(_datasets.c[name]), notes) for name, notes in _OPTIONAL_NOTES.items()
+# The other tables the model is shown, column → comment lines.
+_OBJECT_NOTES: Dict[str, List[str]] = {
+    "id": [],
+    "dataset_id": [],
+    "subject": [],
+    "subject_index": [],
+    "session": [],
+    "task": [
+        "normalized standard_code, e.g. 'resting_state', 'nback'",
+        "A broad category key is expanded to its task codes at runtime:",
+        "  'memory', 'sleep', 'language_speech', 'working_memory', etc.",
+    ],
+    "run": [],
+    "suffix": [
+        "normalized code, e.g. 'fmri_bold' (fMRI), 't1_weighted_mri' (T1w),",
+        "     't2_weighted_mri' (T2w), 'diffusion_mri_dwi', 'eeg', 'meg',",
+        "     'intracranial_eeg', 'pet'",
+    ],
+    "datatype": [
+        "normalized code, e.g. 'functional_mri', 'anatomical_mri',",
+        "     'diffusion_mri', 'field_maps', 'electroencephalography',",
+        "     'magnetoencephalography', 'intracranial_eeg', 'behavioural_data',",
+        "     'positron_emission_tomography', 'perfusion_asl', 'fnirs'",
+    ],
+    "extension": [
+        "file format ONLY: '.nii.gz', '.json', '.tsv', '.eeg', etc.",
+        "NEVER contains metadata field names",
+    ],
+    "other_entities": [
+        "sidecar metadata + secondary BIDS entities (JSON, not JSONB:",
+        "  json_typeof works, jsonb_* functions and ?/@> do not)",
+        "Scanner hardware keys (use ILIKE for string fields):",
+        "  Manufacturer          TEXT  e.g. 'Siemens', 'Philips', 'GE', 'Bruker'",
+        "  ManufacturersModelName TEXT e.g. 'Prisma', 'Skyra', 'Achieva', 'MAGNETOM'",
+        "    (the BIDS key; the SQL layer also reads a few datasets'",
+        "    DICOM spelling ManufacturerModelName)",
+        "  MagneticFieldStrength FLOAT e.g. 1.5, 3.0, 7.0  (Tesla). Vendors write",
+        "    approximate values (2.89 for 3 T, 6.98 for 7 T): compare with a",
+        "    range, e.g. 7 T → BETWEEN 6.5 AND 7.5, never = 7.0",
+        "  SoftwareVersions      TEXT  e.g. 'syngo MR E11'",
+        "PET tracer keys (on PET files):",
+        "  TracerName          TEXT  e.g. 'FDG', '[11C]PS13', 'UCB-J', 'AV-45 florbetapir'",
+        "  TracerRadionuclide  TEXT  written 'C11', '11C', '[11C]' or 'C-11': match",
+        "    every form, e.g. carbon-11 → other_entities->>'TracerRadionuclide' ~* '(c-?11|11c)'",
+        "    (fluorine-18 → '(f-?18|18f)'). Never search tracers with text_match.",
+        "Acquisition params:",
+        "  RepetitionTime, EchoTime, FlipAngle, AcquisitionTime",
+        "Secondary BIDS entities from the file name: acq, echo, dir, space, res, desc",
+        "  phase-encoding direction in the name (dir-AP / dir-PA): other_entities->>'dir' = 'AP'",
+        "  a file-name part such as _desc-preproc_bold: other_entities->>'desc' = 'preproc'",
+        "    together with the suffix (never a text search for a file name)",
+        "Extract as text : other_entities->>'Manufacturer'",
+        "Cast to numeric : (other_entities->>'MagneticFieldStrength')::float",
+        "  (non-numeric values such as 'n/a' are skipped automatically)",
+    ],
 }
+
+_PARTICIPANT_NOTES: Dict[str, List[str]] = {
+    "id": [],
+    "dataset_id": [],
+    "participant_id": [],
+    "age": [],
+    "sex": ["'male', 'female' or 'other_diverse'; NULL when not known"],
+    "handedness": ["'right_handed', 'left_handed' or 'ambidextrous'; NULL when not known"],
+    "diagnosis": [
+        "normalized standard_code, e.g. 'epilepsy', 'schizophrenia',",
+        "  'healthy_control', 'major_depressive_disorder', 'adhd'",
+        "Use broad concept keys for categories (auto-expanded at runtime):",
+        "  'psychiatric_disorder', 'neurodevelopmental', 'neurodegenerative', etc.",
+    ],
+    "extra": [
+        "non-standard participant columns from participants.tsv (JSON, not JSONB)",
+        'e.g. {"concern_dieting": "yes", "bmi": 24.5, "group": "control"}',
+        "Use ->> to extract: p.extra->>'concern_dieting'",
+    ],
+}
+
+_DERIVATIVE_NOTES: Dict[str, List[str]] = {
+    "dataset_id": [],
+    "pipeline": [
+        "lower case: 'fmriprep', 'mriqc', 'xcpd', 'freesurfer', 'fitlins',",
+        "  'qsiprep', 'aslprep', 'eeglab', 'preprocessed', 'unspecified', ...",
+    ],
+    "pipeline_version": [],
+    "source": ["'in_dataset' (derivatives/ folder) or 'openneuro_derivatives'"],
+}
+
+_DATASET_PAPER_NOTES: Dict[str, List[str]] = {
+    "dataset_id": [],
+    "paper_id": [],
+    "role": [
+        "'primary' = the paper that describes or first used the dataset;",
+        "  'related', 'tool', 'reuse'",
+    ],
+}
+
+
+def _shown_type(column: Column[Any]) -> str:
+    """prompt_type with the key the model is shown: the single primary key, and
+    the column of another table it refers to."""
+    shown = prompt_type(column)
+    if column.primary_key and len(column.table.primary_key.columns) == 1:
+        shown += " PRIMARY KEY"
+    target = referred_column(column)
+    if target is not None:
+        shown += f" REFERENCES {target.table.name}({target.name})"
+    return shown
+
+
+def _columns(table: Table, notes: Dict[str, List[str]]) -> List[Tuple[str, str, List[str]]]:
+    """(name, type, comment lines) of the columns of *table* that *notes* names.
+    A note on a column tables.py lacks fails here."""
+    return [(name, _shown_type(table.c[name]), lines) for name, lines in notes.items()]
+
+
+_CORE_DATASET_COLUMNS = _columns(_tables.datasets, _CORE_NOTES)
+OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
+    name: (sql_type, notes) for name, sql_type, notes in _columns(_tables.datasets, _OPTIONAL_NOTES)
+}
+
+
+def _render_table(name: str, columns: List[Tuple[str, str, List[str]]], about: str = "",
+                  name_width: int = 15, note_column: int = 34) -> str:
+    """CREATE TABLE text for the prompt: *about* after the table name, each
+    column's comment lines from *note_column* on."""
+    head = f"CREATE TABLE {name} ("
+    lines = [f"{head:<32}  -- {about}" if about else head]
+    for index, (column, sql_type, comments) in enumerate(columns):
+        comma = "," if index < len(columns) - 1 else ""
+        definition = f"    {column:<{name_width}} {sql_type}{comma}"
+        if comments:
+            lines.append(f"{definition:<{note_column}}-- {comments[0]}")
+            lines.extend(f"{'':<{note_column}}-- {comment}" for comment in comments[1:])
+        else:
+            lines.append(definition)
+    lines.append(");")
+    return "\n".join(lines)
 
 
 def _render_dataset_table(available: Collection[str]) -> str:
@@ -168,17 +298,7 @@ def _render_dataset_table(available: Collection[str]) -> str:
         for name, (sql_type, comments) in OPTIONAL_DATASET_COLUMNS.items()
         if name in available
     ]
-    lines = ["CREATE TABLE bids_datasets ("]
-    for index, (name, sql_type, comments) in enumerate(columns):
-        comma = "," if index < len(columns) - 1 else ""
-        definition = f"    {name:<17} {sql_type}{comma}"
-        if comments:
-            lines.append(f"{definition:<34}-- {comments[0]}")
-            lines.extend(f"{'':<34}-- {comment}" for comment in comments[1:])
-        else:
-            lines.append(definition)
-    lines.append(");")
-    return "\n".join(lines)
+    return _render_table(_tables.datasets.name, columns, name_width=17)
 
 
 def build_schema_ddl(available: Collection[str] = ()) -> str:
@@ -189,94 +309,22 @@ def build_schema_ddl(available: Collection[str] = ()) -> str:
     return _render_dataset_table(available) + "\n\n" + _OTHER_TABLES_DDL
 
 
-_OTHER_TABLES_DDL = """\
-CREATE TABLE bids_objects (
-    id              UUID PRIMARY KEY,
-    dataset_id      UUID REFERENCES bids_datasets(id),
-    subject         TEXT,
-    subject_index   INTEGER,
-    session         TEXT,
-    task            TEXT,         -- normalized standard_code, e.g. 'resting_state', 'nback'
-                                  -- A broad category key is expanded to its task codes at runtime:
-                                  --   'memory', 'sleep', 'language_speech', 'working_memory', etc.
-    run             TEXT,
-    suffix          TEXT,         -- normalized code, e.g. 'fmri_bold' (fMRI), 't1_weighted_mri' (T1w),
-                                  --      't2_weighted_mri' (T2w), 'diffusion_mri_dwi', 'eeg', 'meg',
-                                  --      'intracranial_eeg', 'pet'
-    datatype        TEXT,         -- normalized code, e.g. 'functional_mri', 'anatomical_mri',
-                                  --      'diffusion_mri', 'field_maps', 'electroencephalography',
-                                  --      'magnetoencephalography', 'intracranial_eeg', 'behavioural_data',
-                                  --      'positron_emission_tomography', 'perfusion_asl', 'fnirs'
-    extension       TEXT,         -- file format ONLY: '.nii.gz', '.json', '.tsv', '.eeg', etc.
-                                  -- NEVER contains metadata field names
-    other_entities  JSON          -- sidecar metadata + secondary BIDS entities (JSON, not JSONB:
-                                  --   json_typeof works, jsonb_* functions and ?/@> do not)
-                                  -- Scanner hardware keys (use ILIKE for string fields):
-                                  --   Manufacturer          TEXT  e.g. 'Siemens', 'Philips', 'GE', 'Bruker'
-                                  --   ManufacturersModelName TEXT e.g. 'Prisma', 'Skyra', 'Achieva', 'MAGNETOM'
-                                  --     (the BIDS key; the SQL layer also reads a few datasets'
-                                  --     DICOM spelling ManufacturerModelName)
-                                  --   MagneticFieldStrength FLOAT e.g. 1.5, 3.0, 7.0  (Tesla). Vendors write
-                                  --     approximate values (2.89 for 3 T, 6.98 for 7 T): compare with a
-                                  --     range, e.g. 7 T → BETWEEN 6.5 AND 7.5, never = 7.0
-                                  --   SoftwareVersions      TEXT  e.g. 'syngo MR E11'
-                                  -- PET tracer keys (on PET files):
-                                  --   TracerName          TEXT  e.g. 'FDG', '[11C]PS13', 'UCB-J', 'AV-45 florbetapir'
-                                  --   TracerRadionuclide  TEXT  written 'C11', '11C', '[11C]' or 'C-11': match
-                                  --     every form, e.g. carbon-11 → other_entities->>'TracerRadionuclide' ~* '(c-?11|11c)'
-                                  --     (fluorine-18 → '(f-?18|18f)'). Never search tracers with text_match.
-                                  -- Acquisition params:
-                                  --   RepetitionTime, EchoTime, FlipAngle, AcquisitionTime
-                                  -- Secondary BIDS entities from the file name: acq, echo, dir, space, res, desc
-                                  --   phase-encoding direction in the name (dir-AP / dir-PA): other_entities->>'dir' = 'AP'
-                                  --   a file-name part such as _desc-preproc_bold: other_entities->>'desc' = 'preproc'
-                                  --     together with the suffix (never a text search for a file name)
-                                  -- Extract as text : other_entities->>'Manufacturer'
-                                  -- Cast to numeric : (other_entities->>'MagneticFieldStrength')::float
-                                  --   (non-numeric values such as 'n/a' are skipped automatically)
-);
-
-CREATE TABLE bids_participants (
-    id             UUID PRIMARY KEY,
-    dataset_id     UUID REFERENCES bids_datasets(id),
-    participant_id TEXT,
-    age            FLOAT,
-    sex            TEXT,        -- 'male', 'female' or 'other_diverse'; NULL when not known
-    handedness     TEXT,        -- 'right_handed', 'left_handed' or 'ambidextrous'; NULL when not known
-    diagnosis      TEXT,        -- normalized standard_code, e.g. 'epilepsy', 'schizophrenia',
-                             --   'healthy_control', 'major_depressive_disorder', 'adhd'
-                             -- Use broad concept keys for categories (auto-expanded at runtime):
-                             --   'psychiatric_disorder', 'neurodevelopmental', 'neurodegenerative', etc.
-    extra          JSON         -- non-standard participant columns from participants.tsv (JSON, not JSONB)
-                                -- e.g. {"concern_dieting": "yes", "bmi": 24.5, "group": "control"}
-                                -- Use ->> to extract: p.extra->>'concern_dieting'
-);
-
-CREATE TABLE bids_derivatives (   -- processed outputs that exist for a dataset
-    dataset_id      UUID REFERENCES bids_datasets(id),
-    pipeline        TEXT,         -- lower case: 'fmriprep', 'mriqc', 'xcpd', 'freesurfer', 'fitlins',
-                                  --   'qsiprep', 'aslprep', 'eeglab', 'preprocessed', 'unspecified', ...
-    pipeline_version TEXT,
-    source          TEXT          -- 'in_dataset' (derivatives/ folder) or 'openneuro_derivatives'
-);
+# Rules that follow a table, and the conventions of every query.
+_DERIVATIVE_RULES = """\
 -- Processed / preprocessed data, fMRIPrep, MRIQC, FreeSurfer outputs: ALWAYS this table, never a
 --   text search for 'preprocessed' or a pipeline name (READMEs rarely mention them):
 --   fMRIPrep outputs:   EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep')
 --   MRIQC outputs:      ... AND dv.pipeline = 'mriqc'
 --   preprocessed fMRI:  ... AND dv.pipeline IN ('fmriprep', 'xcpd', 'cpac', 'halfpipe', 'tedana', 'preprocessed')
---   A request that only PREFERS preprocessed data ("ideally preprocessed") gets no such filter.
+--   A request that only PREFERS preprocessed data ("ideally preprocessed") gets no such filter."""
 
-CREATE TABLE bids_dataset_papers (  -- papers linked to a dataset
-    dataset_id      UUID REFERENCES bids_datasets(id),
-    paper_id        BIGINT,
-    role            TEXT          -- 'primary' = the paper that describes or first used the dataset;
-                                  --   'related', 'tool', 'reuse'
-);
+_DATASET_PAPER_RULES = """\
 -- "has a publication / paper / data descriptor":
 --   EXISTS (SELECT 1 FROM bids_dataset_papers dp WHERE dp.dataset_id = d.id AND dp.role = 'primary')
 --   (d.doi is the DOI of the dataset itself, not of a paper: never use it for this.)
--- What the publication reports or contains cannot be filtered: add no condition for it.
+-- What the publication reports or contains cannot be filtered: add no condition for it."""
 
+_QUERY_CONVENTIONS = """\
 -- Query conventions:
 -- Always alias: bids_datasets AS d, bids_objects AS o, bids_participants AS p
 -- Begin EXACTLY with: SELECT {{COLS}}   ← literal placeholder; never list columns.
@@ -312,3 +360,15 @@ CREATE TABLE bids_dataset_papers (  -- papers linked to a dataset
 --   subject_count alias (from the injected projection) → COUNT(DISTINCT o.subject)
 --   HAVING threshold on participant criteria → COUNT(DISTINCT p.participant_id)\
 """
+
+
+_OTHER_TABLES_DDL = "\n\n".join((
+    _render_table(_tables.objects.name, _columns(_tables.objects, _OBJECT_NOTES)),
+    _render_table(_tables.participants.name, _columns(_tables.participants, _PARTICIPANT_NOTES),
+                  name_width=14, note_column=32),
+    _render_table(_tables.derivatives.name, _columns(_tables.derivatives, _DERIVATIVE_NOTES),
+                  about="processed outputs that exist for a dataset") + "\n" + _DERIVATIVE_RULES,
+    _render_table(_tables.dataset_papers.name, _columns(_tables.dataset_papers, _DATASET_PAPER_NOTES),
+                  about="papers linked to a dataset") + "\n" + _DATASET_PAPER_RULES,
+    _QUERY_CONVENTIONS,
+))
