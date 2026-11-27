@@ -13,7 +13,7 @@ Startup (lifespan):
     it runs as a separate service.
 
 Routes (every /api route needs the signed session cookie, except the three
-marked public; see api_security.py):
+marked public; see security/middleware.py):
   GET  /api/auth/github          — public; redirect to GitHub's consent screen
   GET  /api/auth/github/callback — public; signs the user in (session cookie)
                                    and redirects to the frontend
@@ -40,7 +40,7 @@ import db.models  # noqa: F401 — registers models with Base.metadata
 import models     # noqa: F401 — registers backend-only models (query_log, etc.)
 import request_log
 import worker_db
-from api_security import install_security_middleware
+from security.middleware import install_security_middleware
 from db.db import engine
 from exceptions.handlers import add_error_handlers
 from routers.auth import auth_router, require_auth
@@ -97,7 +97,7 @@ app = FastAPI(
 )
 
 # CORS, CSRF, the signed HttpOnly session cookie and login-by-default for /api
-# (see api_security.py). Raises when SESSION_SECRET or a GitHub sign-in setting
+# (see security/middleware.py). Raises when SESSION_SECRET or a GitHub sign-in setting
 # is missing or unusable (routers/auth.py, AuthSettings).
 install_security_middleware(app)
 

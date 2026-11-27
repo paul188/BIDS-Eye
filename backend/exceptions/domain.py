@@ -17,7 +17,7 @@ the code that raises it, without knowing about FastAPI:
                               NotInGitHubOrgError       403
                               GitHubOrgCheckError       502
                               GitHubUnreachableError    502
-    rate_limits.py            RateLimitError            429
+    security/rate_limits.py   RateLimitError            429
     services/stores/search_history.py
                               HistoryUnavailableError   503
                               HistoryEntryNotFoundError 404

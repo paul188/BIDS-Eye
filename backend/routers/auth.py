@@ -14,14 +14,14 @@ from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from exceptions.domain import DomainError
-from rate_limits import Category, rate_limit
+from security.rate_limits import Category, rate_limit
 
 logger = logging.getLogger(__name__)
 
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 
-# The login lives in Starlette's SessionMiddleware (see api_security.py): a
+# The login lives in Starlette's SessionMiddleware (see security/middleware.py): a
 # signed, HttpOnly cookie that page scripts cannot read. The browser sends it on
 # every /api request; the frontend never sees the value.
 #
@@ -47,7 +47,7 @@ _OAUTH_STATE_SECONDS = 10 * 60
 
 
 class AuthSettings(BaseSettings):
-    """Read from the environment once, when api_security.py builds the middleware.
+    """Read from the environment once, when security/middleware.py builds the middleware.
 
     A missing or contradictory value stops the app from starting, instead of
     showing up at the first sign-in or, worse, not at all.
@@ -97,7 +97,7 @@ class AuthSettings(BaseSettings):
 
 
 def _settings(request: Request) -> AuthSettings:
-    """The settings install_security_middleware (api_security.py) read at startup."""
+    """The settings install_security_middleware (security/middleware.py) read at startup."""
     return request.app.state.auth_settings
 
 
@@ -107,7 +107,7 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 # ── Errors (answered by exceptions/handlers.py) ───────────────────────────────
 
 class NotSignedInError(DomainError, status_code=401, detail="Not signed in"):
-    """No signed-in session. RequireLoginMiddleware (api_security.py) sends the
+    """No signed-in session. RequireLoginMiddleware (security/middleware.py) sends the
     same answer before routing, where exception handlers do not reach."""
 
 

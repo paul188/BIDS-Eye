@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import rate_limits
+from security import rate_limits
 import routers.history as history_router
 import routers.search as query_router
 from deps import get_db

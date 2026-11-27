@@ -1,7 +1,7 @@
 """Login session and API security middleware.
 
 GitHub and the database are faked. Everything else is the real stack from
-api_security.install_security_middleware: CORS, CSRF, the signed HttpOnly
+middleware.install_security_middleware: CORS, CSRF, the signed HttpOnly
 session cookie and RequireLogin, in front of the real auth router.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-import api_security
+from security import middleware
 from exceptions.handlers import add_error_handlers
 from routers import auth
 
@@ -85,7 +85,7 @@ def _build_app(
     monkeypatch.setenv("FRONTEND_URL", frontend_url)
 
     app = FastAPI()
-    api_security.install_security_middleware(app)
+    middleware.install_security_middleware(app)
     add_error_handlers(app)
     app.include_router(auth.auth_router, prefix="/api")
 
@@ -149,7 +149,7 @@ def _login(client: TestClient) -> httpx.Response:
 
 
 def _csrf(client: TestClient) -> dict:
-    return {api_security.CSRF_HEADER: client.cookies[api_security.CSRF_COOKIE]}
+    return {middleware.CSRF_HEADER: client.cookies[middleware.CSRF_COOKIE]}
 
 
 # ── Session cookie ───────────────────────────────────────────────────────────
@@ -443,11 +443,11 @@ def test_public_paths_work_signed_out(app: FastAPI) -> None:
 
 def test_post_needs_csrf_header_once_signed_in(client: TestClient) -> None:
     _login(client)
-    assert api_security.CSRF_COOKIE in client.cookies
+    assert middleware.CSRF_COOKIE in client.cookies
 
     assert client.post("/api/forgot-the-dependency").status_code == 403
     assert client.post(
-        "/api/forgot-the-dependency", headers={api_security.CSRF_HEADER: "made-up"}
+        "/api/forgot-the-dependency", headers={middleware.CSRF_HEADER: "made-up"}
     ).status_code == 403
     assert client.post("/api/auth/logout").status_code == 403  # still signed in
     assert client.get("/api/auth/me").status_code == 200
@@ -491,7 +491,7 @@ def test_missing_or_placeholder_secret_refuses_to_start(
     else:
         monkeypatch.setenv("SESSION_SECRET", value)
     with pytest.raises(ValidationError, match="SESSION_SECRET") as refused:
-        api_security.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI())
     # A rejected value never reaches the logs.
     if value and value.strip():
         assert value not in str(refused.value)
@@ -518,7 +518,7 @@ def test_missing_org_refuses_to_start_unless_open_is_asked_for(
         else:
             monkeypatch.setenv(name, value)
     with pytest.raises(ValidationError, match="ALLOW_ANY_GITHUB_USER"):
-        api_security.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI())
 
 
 def test_org_or_explicit_open_starts(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -549,7 +549,7 @@ def test_missing_oauth_app_credentials_refuse_to_start(
     else:
         monkeypatch.setenv(name, value)
     with pytest.raises(ValidationError, match=name):
-        api_security.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI())
 
 
 def test_client_secret_stays_out_of_error_and_repr(monkeypatch: pytest.MonkeyPatch) -> None:

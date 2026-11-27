@@ -16,7 +16,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from deps import AsyncSessionDep
-from rate_limits import Category, rate_limit
+from security.rate_limits import Category, rate_limit
 from routers.auth import CurrentUserDep, user_id
 from schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
@@ -36,7 +36,7 @@ async def query_datasets(
 
     A question that is already being searched for, by anyone, gets that
     search's answer (or error) without another language-model call
-    (services/search.py ask). The rate limit (rate_limits.py, SEARCH) still
+    (services/search.py ask). The rate limit (security/rate_limits.py, SEARCH) still
     counts it, since it ran before this function.
 
     The search itself does not know who asked. Only here, and only for a user

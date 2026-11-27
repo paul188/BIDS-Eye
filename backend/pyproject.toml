@@ -48,10 +48,8 @@ test = [
 # is left out: uvicorn and the tests load it from this folder.
 [tool.setuptools]
 py-modules = [
-    "api_security",
     "deps",
     "models",
-    "rate_limits",
     "request_log",
     "schemas",
     "single_flight",

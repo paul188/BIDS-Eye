@@ -13,7 +13,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-import rate_limits
+from security import rate_limits
 import routers.auth as auth
 import routers.search as query_router
 from deps import get_db
