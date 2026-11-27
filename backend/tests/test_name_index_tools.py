@@ -1,6 +1,6 @@
-"""The offline tools that write the name lists the retriever falls back on
-(RAG/tools/build_name_index.py, DB Preprocessing/.../patch_metadata_index.py)
-never replace good values with an empty list after a failed query."""
+"""The offline tool that writes the name lists the retriever falls back on
+(RAG/tools/build_name_index.py) never replaces good values with an empty list
+after a failed query."""
 from __future__ import annotations
 
 import importlib.util
@@ -22,8 +22,6 @@ def _load(path: Path, name: str):
 
 
 build_name_index = _load(ROOT / "RAG" / "tools" / "build_name_index.py", "build_name_index")
-patch_metadata_index = _load(
-    ROOT / "DB Preprocessing" / "Generate_Metadata_index" / "patch_metadata_index.py", "patch_metadata_index")
 
 
 def _funding_query_fails(monkeypatch, module):
@@ -48,16 +46,3 @@ def test_a_failed_name_query_leaves_the_name_index_unchanged(monkeypatch, tmp_pa
     with pytest.raises(SystemExit, match="funding_sources"):
         build_name_index.main()
     assert json.loads(out.read_text()) == {"funding_sources": ["NIH"]}
-
-
-def test_a_failed_category_keeps_its_values_in_the_metadata_index(tmp_path):
-    index = tmp_path / "metadata_index.json"
-    idx = {"values": {"authors": ["Old Author"], "funding_sources": ["NIH"]},
-           "embeddings": {"authors": [[0.1]], "funding_sources": [[0.2]]}}
-    index.write_text(json.dumps(idx))
-    # funding_sources failed, so fetch_authors_and_funding left it out
-    patch_metadata_index.patch_index(index, idx, index, {"authors": ["New Author"]},
-                                     {"authors": [[0.3]]})
-    saved = json.loads(index.read_text())
-    assert saved["values"] == {"authors": ["New Author"], "funding_sources": ["NIH"]}
-    assert saved["embeddings"]["funding_sources"] == [[0.2]]

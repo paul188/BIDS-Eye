@@ -35,11 +35,8 @@ RAG/embed_*.json
 benchmarks
 reports
 research_notes
-DB Preprocessing
 scripts
-lottery
 nginx
-postgres
 postgres_data
 certbot
 docker-compose*.yml

@@ -94,17 +94,9 @@ services:
           cpus: '0.25'
           memory: 512M
 
-  # ── BIDS Validator sidecar (on-demand) ────────────────────────────────────────
-  bids-validator:
-    image: bids/validator
-    container_name: bids_validator
-    networks:
-      - bids-net
-
 networks:
   bids-net:
     driver: bridge
 
 volumes:
-  postgres-bids-data:
   openneuro-mirror:

@@ -27,6 +27,6 @@ Steps 2 and 3 create the tables and columns they write, skip what is done,
 and never fail the cycle. Switch them off with `CRAWL_PAPERS=false` or
 `CRAWL_DESCRIPTIONS=false`.
 
-Run it as a service (`docker compose --profile crawl up crawler`), as one
-cycle on the HPC (`crawl_job.sh`), or for all datasets at once with the
-scripts `scripts/backfill_papers.py` and `scripts/describe_datasets.py`.
+Run it as a service (`docker compose --profile crawl up crawler`), or for all
+datasets at once with the scripts `scripts/backfill_papers.py` and
+`scripts/describe_datasets.py`.
