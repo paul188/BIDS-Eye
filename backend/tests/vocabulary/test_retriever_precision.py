@@ -175,7 +175,7 @@ def test_task_phrasings_resolve_identically(phrasings: list) -> None:
 def test_task_core_is_combined_from_construct_and_task_synonym() -> None:
     codes = _resolve_yaml_term("task", "decision making tasks")
     assert "decision_task_general" in codes      # synonym "decision making task"
-    assert "columbia_card_task" in codes         # through the construct
+    assert "categorization_task" in codes        # through the construct (categorization is a kind of decision making)
     codes = _resolve_yaml_term("task", "language")
     assert "language_control" in codes           # raw dataset label "language"
     assert "picture_naming_task" in codes        # through the construct

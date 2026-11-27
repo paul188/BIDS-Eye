@@ -35,7 +35,8 @@ Two live questions from 2026-11-14 show the three failure modes.
 **"give me all emo studies coauthored by Morgenroth"**
 
 - "emo" matched the start of the construct "emotion" (WRatio 90). The only
-  task linked to that construct in `backend/vocabulary/bids_to_ca_map.json` is
+  task linked to that construct (then in `bids_to_ca_map.json`, now the
+  `measures` of the task entries in `backend/vocabulary/value_mappings.yaml`) is
   `meditation_general`, which became a hard filter, so the search found
   nothing. Fixed in `backend/vocabulary/retriever.py` (see section 12). "emo" now becomes a
   text search and finds both Emo-FilM datasets.

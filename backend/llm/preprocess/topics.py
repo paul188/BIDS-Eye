@@ -28,9 +28,6 @@ _TOPIC_MAX_LLM_ALTERNATIVES = 8
 _TOPIC_MAX_ALTERNATIVES = 16
 
 
-_TOPIC_MAX_CODES = 20
-
-
 def _topic_max_matches() -> int:
     """An alternative from the language model that more datasets match is too broad.
 
@@ -295,7 +292,8 @@ def _topic_codes(
         code: score for code, score in codes.items()
         if code not in excluded and not (set(code.lower().split("_")) & unwanted_words)
     }
-    codes = dict(list(codes.items())[:_TOPIC_MAX_CODES])
+    # Every code is kept: a cut at 20 dropped the codes after the 20th in file
+    # order, not the worst ones.
     if codes:
         live, _miss = _catalogue.verify_codes("task", list(codes), retriever)
         codes = {code: codes[code] for code in live}
