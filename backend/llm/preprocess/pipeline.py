@@ -4,7 +4,7 @@ from __future__ import annotations
 import functools
 import logging
 import re
-from typing import Any, Collection, Dict, List, Optional, Tuple
+from typing import Any, Collection, Dict, List, Tuple
 import reference_vocabulary as _reference_vocabulary
 from services.schema.coded_fields import FILE_FIELDS
 
@@ -129,7 +129,6 @@ def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -
 def run_pipeline(
     query: str,
     retriever: Any = None,
-    api_key: Optional[str] = None,
     available_columns: Collection[str] = (),
 ) -> AugmentedQueryPlan:
     """
@@ -147,11 +146,10 @@ def run_pipeline(
     evidence = word_evidence(query)
     if evidence:
         word_choices: List[Tuple[str, List[str]]] = []
-        plan = preprocess_query(query, api_key=api_key, evidence=evidence,
-                                word_choices=word_choices)
+        plan = preprocess_query(query, evidence=evidence, word_choices=word_choices)
         decided = _decide_word_forms(evidence, word_choices)
     else:
-        plan = preprocess_query(query, api_key=api_key)
+        plan = preprocess_query(query)
         decided = {}
     _names_that_are_conditions(plan, query, retriever)
     _keep_ambiguity_topics(plan)

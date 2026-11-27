@@ -3,7 +3,7 @@ services/stores/translated_queries.py
 -------------------------------------
 In-memory store for translated queries, keyed by an opaque ``query_id``.
 
-The Text-To-SQL pipeline (Gemini intent + RAG + SQL generation) is expensive and
+The Text-To-SQL pipeline (LLM intent + RAG + SQL generation) is expensive and
 non-deterministic, so we run it once per question and cache the resulting base
 SELECT plus its ranking inputs. Pagination then reuses the cached SQL — only the
 relevance ordering + LIMIT/OFFSET are re-applied per page (see

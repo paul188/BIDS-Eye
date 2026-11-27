@@ -142,8 +142,8 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         monkeypatch.setattr(dataset_cards, "rows_to_datasets", _fake_rows_to_datasets)
         monkeypatch.setattr(
             search_runner,
-            "_correct_sql_with_gemini",
-            lambda sql, db_error, question, api_key: sql.replace("{{COLS}}", "d.id"),
+            "_correct_sql",
+            lambda sql, db_error, question: sql.replace("{{COLS}}", "d.id"),
         )
         monkeypatch.setenv("GEMINI_API_KEY", "dummy-key")
 

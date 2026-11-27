@@ -27,13 +27,14 @@ question returned the fallback sample, when there is nothing to reorder, and
 whenever the model fails or is slower than RERANK_TIMEOUT_SECONDS.
 
 Off unless RERANK_ENABLED is "true": the step sends candidate descriptions
-(public catalogue metadata) to Gemini, which needs an explicit decision.
+(public catalogue metadata) to the models of profile rerank (Gemini by
+default), which needs an explicit decision.
 
 Config (env):
   RERANK_ENABLED          "true" turns it on (default off)
-  RERANK_MODEL            Gemini models, comma-separated, in order
-                          (default gemini-3.5-flash-lite, then gemini-2.5-flash-lite)
-  RERANK_THINKING         Gemini 3+ thinking level (default low)
+  RERANK_MODEL            models, comma-separated, in order (default: profile
+                          rerank in backend/llm/llm_config.yaml)
+  RERANK_THINKING         thinking level (default: that profile's, low)
   RERANK_CANDIDATES       how many datasets are judged (default 40)
   RERANK_BATCH            datasets per model call; calls run in parallel (default 20)
   RERANK_TIMEOUT_SECONDS  wall-clock limit for the whole step (default 20)
@@ -115,11 +116,13 @@ class RerankResult:
 
 
 def settings() -> Dict[str, Any]:
-    models = os.getenv("RERANK_MODEL", "gemini-3.5-flash-lite,gemini-2.5-flash-lite")
+    # Models, thinking level and per-call timeouts are in profile rerank of
+    # llm_config.yaml; RERANK_MODEL / RERANK_THINKING override them.
+    models = os.getenv("RERANK_MODEL", "")
     return {
         "enabled": Switch.RERANK_ENABLED.is_on(),
         "models": [m.strip() for m in models.split(",") if m.strip()],
-        "thinking": os.getenv("RERANK_THINKING", "low") or None,
+        "thinking": os.getenv("RERANK_THINKING") or None,
         "candidates": max(2, int(os.getenv("RERANK_CANDIDATES", "40"))),
         "batch": max(1, int(os.getenv("RERANK_BATCH", "20"))),
         "timeout": float(os.getenv("RERANK_TIMEOUT_SECONDS", "20")),
@@ -129,7 +132,8 @@ def settings() -> Dict[str, Any]:
 def should_rerank(apply_relevance: bool, total: int, is_fallback: bool) -> bool:
     if not settings()["enabled"] or is_fallback or not apply_relevance or total < 2:
         return False
-    return bool(os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+    from llm_client import profile_available
+    return profile_available("rerank")
 
 
 # ── Candidate descriptions ────────────────────────────────────────────────────
@@ -233,14 +237,10 @@ def _judge_batch(question: str, interpretation: Optional[str], descriptions: Lis
     raw = llm_generate(
         build_prompt(question, interpretation, descriptions),
         system=SYSTEM_PROMPT,
-        temperature=0.0,
-        max_tokens=2048,
+        profile="rerank",
         models=cfg["models"],
         json_schema=RESPONSE_SCHEMA,
         thinking_level=cfg["thinking"],
-        call_timeout=cfg["timeout"],
-        budget_seconds=cfg["timeout"],
-        use_fallback=False,
     )
     return parse_scores(raw, len(descriptions))
 

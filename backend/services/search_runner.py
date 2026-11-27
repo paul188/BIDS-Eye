@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
@@ -31,7 +30,8 @@ from services import query_guard
 from services.stores.translated_queries import CachedQuery, query_cache
 from services.results.rerank import rerank_candidates, settings as rerank_settings, should_rerank
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL, build_count_sql, build_page_sql
-from services.translate.text_to_sql import _correct_sql_with_gemini
+from llm_client import profile_available
+from services.translate.text_to_sql import _correct_sql
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ async def count_with_base_correction(
     session: AsyncSession, query_id: str, cached: CachedQuery, question: str
 ) -> int:
     """Count total matching datasets, self-correcting the cached *base* SQL once
-    via Gemini if it raises a DB error.
+    by the model if it raises a DB error.
 
     Running the COUNT validates the base SQL before any page is fetched. A fix is
     persisted back to the cache so later page turns reuse the corrected base.
@@ -123,12 +123,9 @@ async def count_with_base_correction(
         # every subsequent execute on the same session fails with
         # InFailedSQLTransactionError.
         await session.rollback()
-        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or ""
-        if not api_key:
+        if not profile_available("sql"):
             raise
-        corrected = await asyncio.to_thread(
-            _correct_sql_with_gemini, cached.base_sql, str(exc), question, api_key
-        )
+        corrected = await asyncio.to_thread(_correct_sql, cached.base_sql, str(exc), question)
         if corrected == cached.base_sql:
             cached.base_sql = _FALLBACK_SQL
             cached.params = {}

@@ -420,26 +420,26 @@ PLAN = {"query_family": "description_search", "natural_language_summary": "x",
 def _model(monkeypatch, answer: dict, schemas: list | None = None) -> list:
     prompts = []
 
-    def call(prompt, api_key, *, json_schema=None):
+    def call(prompt, *, json_schema=None):
         prompts.append(prompt)
         if schemas is not None:
             schemas.append(json_schema)
         return json.dumps(answer)
 
-    monkeypatch.setattr(pp.intent, "_call_gemini", call)
+    monkeypatch.setattr(pp.intent, "_ask_model", call)
     return prompts
 
 
 def test_the_prompt_only_changes_for_a_colliding_word(monkeypatch) -> None:
     prompts = _model(monkeypatch, PLAN)
-    pp.preprocess_query("MRI on ageing", api_key="k")
-    pp.preprocess_query("MRI on ageing", api_key="k", evidence={})
+    pp.preprocess_query("MRI on ageing")
+    pp.preprocess_query("MRI on ageing", evidence={})
     scans = WordEvidence("scans", "scan", 502, (("scans", 280), ("scan", 252)))
-    pp.preprocess_query("MRI on ageing", api_key="k", evidence={"scans": scans})
+    pp.preprocess_query("MRI on ageing", evidence={"scans": scans})
     assert prompts[0] == prompts[1] == prompts[2]
     assert "word_forms" not in prompts[0]
 
-    pp.preprocess_query("MRI on ageing", api_key="k", evidence={"ageing": AGEING})
+    pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING})
     assert '"user_query": "MRI on ageing"' in prompts[3]
     assert '"catalogue_word_form_evidence"' in prompts[3]
     assert "ageing: age (220), aged (44), aging (34), ages (30), ageing (4)" in prompts[3]
@@ -450,14 +450,14 @@ def test_the_models_choice_is_read_outside_the_plan(monkeypatch) -> None:
     _model(monkeypatch, {**PLAN, "word_forms": [
         {"word": "ageing", "keep": ["ageing", "aging"]}, "nonsense", {"word": 3}]})
     choices = []
-    plan = pp.preprocess_query("MRI on ageing", api_key="k", evidence={"ageing": AGEING},
+    plan = pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING},
                                word_choices=choices)
     assert plan.description_search == "ageing"
     assert choices == [("ageing", ["ageing", "aging"])]
     # No answer for the word: nothing decided, the plan is still read.
     _model(monkeypatch, PLAN)
     choices = []
-    pp.preprocess_query("MRI on ageing", api_key="k", evidence={"ageing": AGEING},
+    pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING},
                         word_choices=choices)
     assert choices == []
 
@@ -465,15 +465,15 @@ def test_the_models_choice_is_read_outside_the_plan(monkeypatch) -> None:
 def test_structured_output_schema_includes_conditional_word_forms(monkeypatch) -> None:
     schemas = []
     prompts = _model(monkeypatch, PLAN, schemas)
-    pp.preprocess_query("Find datasets on memory", api_key="k")
+    pp.preprocess_query("Find datasets on memory")
     base_schema = schemas[-1]
     assert "word_forms" not in base_schema["properties"]
     assert "QueryPlan JSON schema" not in prompts[-1]
-    assert "default" not in json.dumps(base_schema)
+    # `default` keywords stay: the Gemini adapter drops them (tests/llm/test_llm_adapters.py).
 
     _model(monkeypatch, {**PLAN, "word_forms": [
         {"word": "ageing", "keep": ["ageing", "aging"]}]}, schemas)
-    pp.preprocess_query("MRI on ageing", api_key="k", evidence={"ageing": AGEING})
+    pp.preprocess_query("MRI on ageing", evidence={"ageing": AGEING})
     form_schema = schemas[-1]
     assert "word_forms" in form_schema["required"]
     assert form_schema["properties"]["word_forms"]["items"]["required"] == ["word", "keep"]
@@ -483,7 +483,7 @@ def test_the_pipeline_hands_the_decided_forms_to_the_search(exact, monkeypatch) 
     word_form_counts.set_lookup(lambda words: [
         ("ageing", "age", 291, ["age:220", "aged:44", "aging:34", "ages:30", "ageing:4"])])
     _model(monkeypatch, {**PLAN, "word_forms": [{"word": "ageing", "keep": ["aging", "ageing"]}]})
-    augmented = pp.run_pipeline("Quantitative MRI datasets on ageing", api_key="k")
+    augmented = pp.run_pipeline("Quantitative MRI datasets on ageing")
     assert augmented.word_forms == {"ageing": ["ageing", "aging"]}
     assert "text_match('ageing')" in augmented.augmented_question
     rewritten = SERVICE.rewrite_generated_sql(
@@ -496,5 +496,5 @@ def test_the_pipeline_hands_the_decided_forms_to_the_search(exact, monkeypatch) 
 def test_the_pipeline_is_untouched_without_the_switch(monkeypatch) -> None:
     word_form_counts.set_lookup(lambda words: pytest.fail("looked up with the switch off"))
     prompts = _model(monkeypatch, PLAN)
-    augmented = pp.run_pipeline("Quantitative MRI datasets on ageing", api_key="k")
+    augmented = pp.run_pipeline("Quantitative MRI datasets on ageing")
     assert augmented.word_forms == {} and "word_forms" not in prompts[0]
