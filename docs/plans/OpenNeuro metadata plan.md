@@ -228,7 +228,7 @@ once the column exists.
 
 ```bash
 H=HetznerServer_BidsEye
-C="docker compose -f docker-compose-hetzner.yml"
+C="docker compose -f docker-compose-prod.yml"
 PSQL='docker exec -i bids_postgres sh -c "psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -v ON_ERROR_STOP=1"'
 
 # 0) Disk is 94% full; 17 GB of it is Docker build cache. Free it before building.

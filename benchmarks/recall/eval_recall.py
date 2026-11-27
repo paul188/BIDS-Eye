@@ -8,7 +8,7 @@ scoring needs only files:
 
 1. run — inside a backend container (it imports the backend code):
 
-       docker compose -f docker-compose-hetzner.yml run --rm --no-deps \\
+       docker compose -f docker-compose-prod.yml run --rm --no-deps \\
            -v /home/BIDS-Eye:/repo:ro -v /tmp/bidseye_recall:/out backend \\
            python /repo/benchmarks/recall/eval_recall.py run --out /out/run.json
 
