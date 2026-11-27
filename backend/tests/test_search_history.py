@@ -77,7 +77,7 @@ def test_a_session_without_account_number_saves_nothing(monkeypatch) -> None:
         return _answer()
 
     monkeypatch.setattr(search, "ask", ask)
-    reply = asyncio.run(query_router.query_datasets(QueryRequest(question="fMRI"), None, {"sub": "ana"}))
+    reply = asyncio.run(query_router.query_datasets(QueryRequest(question="fMRI"), None, None))
     assert reply.history_id is None
 
 

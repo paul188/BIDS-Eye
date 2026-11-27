@@ -58,7 +58,10 @@ class _Session:
         self.released.clear()
 
 
-def _search(monkeypatch, session: _Session, question: str = "fMRI datasets with n-back"):
+def _search(
+    monkeypatch, session: _Session, question: str = "fMRI datasets with n-back",
+    github_id: int | None = None,
+):
     async def translate(question_: str) -> TextToSQLResult:
         return TextToSQLResult(sql="SELECT 1", explanation="")
 
@@ -69,7 +72,7 @@ def _search(monkeypatch, session: _Session, question: str = "fMRI datasets with 
     monkeypatch.setattr(search_runner, "run_page", empty_page)
     monkeypatch.setattr(search, "_filters_for", lambda cached: [])
     return asyncio.run(query_router.query_datasets(
-        QueryRequest(question=question), session, {"sub": "some-login"}))
+        QueryRequest(question=question), session, github_id))
 
 
 def test_a_search_is_logged_and_committed(monkeypatch) -> None:
@@ -83,10 +86,20 @@ def test_a_search_is_logged_and_committed(monkeypatch) -> None:
 
 
 def test_no_row_records_who_asked(monkeypatch) -> None:
-    session = _Session()
-    _search(monkeypatch, session)
+    # The route gets the GitHub account number (GithubIdDep), never the login.
+    # With history on it goes into the history entry only (stubbed here).
+    saved: list = []
 
+    async def record(session_, github_id, question, response):
+        saved.append(github_id)
+        return None
+
+    monkeypatch.setattr(query_router.search_history, "record", record)
+    session = _Session()
+    _search(monkeypatch, session, github_id=4242)
+
+    assert saved == [4242]
     rows = session.committed + session.released + session.pending
     assert {type(row).__name__ for row in rows} == {"QueryLog"}
     for row in rows:
-        assert "some-login" not in {str(value) for value in vars(row).values()}, row
+        assert "4242" not in {str(value) for value in vars(row).values()}, row

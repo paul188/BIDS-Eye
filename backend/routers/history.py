@@ -17,7 +17,7 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from deps import AsyncSessionDep, CurrentUserDep, user_id
+from deps import AsyncSessionDep, CurrentUserDep, GithubIdDep
 from exceptions.domain import DomainError
 from rate_limits import Category, rate_limit
 from schemas import HistoryEnabled, HistoryEntry, HistoryList
@@ -37,10 +37,10 @@ class SignInAgainError(
 @history_router.get("", dependencies=[rate_limit(Category.LIGHT)])
 async def list_history(
     session: AsyncSessionDep,
-    user: CurrentUserDep,
+    github_id: GithubIdDep,
 ) -> HistoryList:
     """Whether the user's searches are saved, and the saved ones, newest first."""
-    entries = await search_history.list_entries(session, user_id(user))
+    entries = await search_history.list_entries(session, github_id)
     return HistoryList(
         enabled=entries is not None,
         retention_days=search_history.RETENTION_DAYS,
@@ -53,9 +53,9 @@ async def set_history_enabled(
     body: HistoryEnabled,
     session: AsyncSessionDep,
     user: CurrentUserDep,
+    github_id: GithubIdDep,
 ) -> HistoryEnabled:
     """Turn saving on, or off: off deletes everything saved for the user."""
-    github_id = user_id(user)
     if github_id is None:
         if body.enabled:
             raise SignInAgainError(user.get("sub", ""))
@@ -71,17 +71,17 @@ async def set_history_enabled(
 async def get_history_entry(
     entry_id: UUID,
     session: AsyncSessionDep,
-    user: CurrentUserDep,
+    github_id: GithubIdDep,
 ) -> HistoryEntry:
     """One saved search as it was answered then."""
-    return await search_history.get_entry(session, user_id(user), entry_id)
+    return await search_history.get_entry(session, github_id, entry_id)
 
 
 @history_router.delete("/{entry_id}", status_code=204, dependencies=[rate_limit(Category.LIGHT)])
 async def delete_history_entry(
     entry_id: UUID,
     session: AsyncSessionDep,
-    user: CurrentUserDep,
+    github_id: GithubIdDep,
 ) -> None:
     """Delete one saved search."""
-    await search_history.delete_entry(session, user_id(user), entry_id)
+    await search_history.delete_entry(session, github_id, entry_id)

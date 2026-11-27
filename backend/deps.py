@@ -55,3 +55,14 @@ def require_auth(request: Request) -> dict:
 
 # What a route writes to get the signed-in user: ``user: CurrentUserDep``.
 CurrentUserDep = Annotated[dict, Depends(require_auth)]
+
+
+def github_id(user: CurrentUserDep) -> int | None:
+    """The signed-in user's GitHub account number (user_id); None for a
+    session from before sign-in kept it."""
+    return user_id(user)
+
+
+# What a route writes to get the account number: ``github_id: GithubIdDep``.
+# It goes through require_auth, so overriding that in a test covers it too.
+GithubIdDep = Annotated[int | None, Depends(github_id)]
