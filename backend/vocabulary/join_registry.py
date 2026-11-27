@@ -16,6 +16,7 @@ Public API
 ----------
   get_field_info(field)       -> dict | None
   field_to_db_col(field)      -> tuple[str, str] | None
+  field_column(field)         -> FieldColumn
   check_contradictions(resolved) -> list[ContradictionWarning]
   build_join_context_block()  -> str
 """
@@ -42,6 +43,22 @@ class ContradictionWarning(NamedTuple):
     contradiction_id: str   # e.g. "eeg_mri_suffix"
     severity: str           # "hard" or "soft"
     message: str            # human-readable explanation
+
+
+class FieldColumn(NamedTuple):
+    """Where a field's values are stored, for writing SQL about it."""
+    table: str    # e.g. 'bids_objects'
+    alias: str    # alias inside the correlated EXISTS ('o2', 'p2'); 'd' on bids_datasets itself
+    column: str   # e.g. 'task', 'institutions'
+
+    @property
+    def ref(self) -> str:
+        """The column as the SQL names it, e.g. 'o2.task' or 'd.institutions'."""
+        return f"{self.alias}.{self.column}"
+
+
+# The outer query's alias for bids_datasets: fields stored there need no EXISTS.
+_DATASETS_ALIAS = "d"
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +119,19 @@ def field_to_db_col(field: str) -> Optional[Tuple[str, str]]:
     if info.get("exists_alias") == "none":
         return None
     return (info["table"], info["column"])
+
+
+def field_column(field: str) -> FieldColumn:
+    """Table, alias and column of *field*; KeyError when join_paths.yaml lacks it.
+
+    Unlike field_to_db_col this also answers for the fields stored on
+    bids_datasets itself (author, funding, institution), with the alias 'd'.
+    """
+    info = get_field_info(field)
+    if info is None:
+        raise KeyError(f"{field!r} has no entry in join_paths.yaml")
+    alias = info.get("exists_alias", "none")
+    return FieldColumn(info["table"], _DATASETS_ALIAS if alias == "none" else alias, info["column"])
 
 
 def check_contradictions(

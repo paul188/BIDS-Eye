@@ -5,6 +5,7 @@ import logging
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator
+from services.schema.coded_fields import CodedField
 from criteria import SPECIES_CODES as _SPECIES_CODES, normalise_species as _normalise_species
 from criteria import AGE_GROUP_CODES as _AGE_GROUP_CODES, \
     normalise_age_groups as _normalise_age_groups
@@ -45,14 +46,21 @@ class QueryFamily(str, Enum):
 
 
 class RAGField(str, Enum):
-    DIAGNOSIS = "diagnosis"
-    TASK      = "task"
-    SUFFIX    = "suffix"
-    DATATYPE  = "datatype"
+    """A field the RAG layer resolves user terms for.
+
+    The value is the field's key in backend/vocabulary/join_paths.yaml, which
+    says where it is stored (join_registry.field_column); the coded ones are
+    the CodedField of the same column. tests/services/schema/test_schema_tables.py
+    checks both, for every member but SCAN.
+    """
+    DIAGNOSIS = CodedField.DIAGNOSIS.value
+    TASK      = CodedField.TASK.value
+    SUFFIX    = CodedField.SUFFIX.value
+    DATATYPE  = CodedField.DATATYPE.value
     AUTHOR    = "author"
     FUNDING   = "funding"
     INSTITUTION = "institution"
-    SCAN      = "scan"      # internal: multi-field lookup across datatype+suffix+task
+    SCAN      = "scan"      # internal: multi-field lookup across datatype+suffix+task; no column
 
 
 class RAGRequest(BaseModel):

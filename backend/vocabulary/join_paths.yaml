@@ -6,7 +6,9 @@
 #
 # Used by backend/vocabulary/join_registry.py, which is imported by:
 #   - backend/vocabulary/retriever.py              (db_verify_codes — replaces _FIELD_TO_DB_COL)
-#   - backend/llm/preprocess.py  (_build_augmented_question)
+#   - backend/llm/preprocess/rag.py and augment.py (table, alias and column of
+#     every RAGField; tests/services/schema/test_schema_tables.py checks that
+#     each RAGField but scan has an entry here)
 # -------------------------------------------------------------------
 
 # ── Field definitions ────────────────────────────────────────────────────────
@@ -131,6 +133,19 @@ fields:
       Funding source strings stored as TEXT[]. Resolved by RAG via name_index.json fuzzy match.
       The SQL predicate uses ANY(d.funding) — no EXISTS subquery needed.
 
+  institution:
+    table: bids_datasets
+    column: institutions
+    value_type: array
+    multi_value: array_overlap
+    exists_alias: none
+    rag_backed: true
+    sql_pattern: "d.institutions && ARRAY['{val}']::text[]"
+    description: >
+      Institution names (InstitutionName of the scans) stored as TEXT[]. Resolved by
+      backend/vocabulary/institution_index.py by exact phrase match; the filter line
+      is built in backend/llm/preprocess/augment.py (_institution_lines).
+
 
 # ── Combination rules ────────────────────────────────────────────────────────
 # Defines which fields may share a single EXISTS subquery vs. must be in
@@ -170,10 +185,10 @@ combination_rules:
       they describe the same participant row.
 
   - group_name: dataset_array_fields
-    fields: [author, funding]
+    fields: [author, funding, institution]
     combine_op: AND
     rationale: >
-      Author and funding live on bids_datasets as TEXT[] columns. No EXISTS needed —
+      Author, funding and institution live on bids_datasets as TEXT[] columns. No EXISTS needed —
       use ANY() predicates directly in the outer WHERE clause.
 
 
