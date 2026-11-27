@@ -13,7 +13,7 @@ import asyncio
 import uuid
 
 from criteria import age_condition, species_condition
-from schemas import DatasetSchema, ParticipantSummarySchema
+from routers.schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
 from services.results import match_reasons, query_filters, readme_snippets
 

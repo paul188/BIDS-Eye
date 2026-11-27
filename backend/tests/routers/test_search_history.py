@@ -23,8 +23,8 @@ import routers.history as history_router
 import routers.search as query_router
 from deps import get_db, require_auth, user_id
 from exceptions.handlers import add_error_handlers
-from models import QueryLog, SearchHistoryConsent, SearchHistoryEntry
-from schemas import QueryRequest, QueryResponse
+from database.app_tables import QueryLog, SearchHistoryConsent, SearchHistoryEntry
+from routers.schemas import QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
 

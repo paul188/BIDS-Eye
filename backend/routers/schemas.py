@@ -1,5 +1,5 @@
 """
-schemas.py
+routers/schemas.py
 ----------
 Pydantic response models for the BIDS-Eye API.
 """
@@ -144,7 +144,9 @@ class QueryRequest(BaseModel):
 class QueryPageRequest(BaseModel):
     """Fetch a different page of an already-translated query, reusing the cached
     base SQL (no new LLM call)."""
-    query_id: str
+    # The id is uuid4().hex (32 characters, services/stores/translated_queries.py);
+    # anything much longer is not one of ours.
+    query_id: Annotated[str, StringConstraints(min_length=1, max_length=64)]
     page: int = 1
     page_size: int = 20
 

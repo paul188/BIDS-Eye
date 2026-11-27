@@ -50,7 +50,7 @@ _VERSION_DIRS = (_BACKEND / "llm", _BACKEND / "llm" / "preprocess",
 _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # The backend modules the translation imports (text_to_sql.py and everything
 # it reaches; test_interpretations.py checks this list against the
-# imports), and the few-shot examples. models.py and schemas.py are left out:
+# imports), and the few-shot examples. database/app_tables.py and routers/schemas.py are left out:
 # they define the shape of rows and responses, not the translation; so is
 # exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers,
 # and exceptions/expected.py, the base class of the errors.
@@ -96,7 +96,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "uncertain" / "fields" / "sex.py",
     _BACKEND / "services" / "uncertain" / "text.py",
     _BACKEND / "services" / "fulltext" / "word_form_counts.py",
-    _BACKEND / "worker_db.py",
+    _BACKEND / "database" / "worker.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
                 "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT")
@@ -174,7 +174,7 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
     returned, since translating anew is what the store exists to avoid."""
     if not enabled():
         return None
-    from models import QueryInterpretation
+    from database.app_tables import QueryInterpretation
     try:
         row = (await session.execute(
             select(QueryInterpretation).where(QueryInterpretation.key == _key(question))
@@ -210,7 +210,7 @@ async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any
     A database error is logged and the search answers anyway; anything else
     (a payload json cannot encode) is a bug and is raised.
     """
-    from models import QueryLog
+    from database.app_tables import QueryLog
     row = QueryLog(
         question=question, pipeline_version=pipeline_version(),
         payload=json.dumps(payload, ensure_ascii=False), total=total,
@@ -240,7 +240,7 @@ async def put(session: AsyncSession, question: str, payload: Dict[str, Any], tot
         return
     from sqlalchemy.dialects.postgresql import insert
 
-    from models import QueryInterpretation
+    from database.app_tables import QueryInterpretation
     statement = insert(QueryInterpretation).values(
         key=_key(question), pipeline_version=pipeline_version(), question=question,
         question_normalized=normalize(question),

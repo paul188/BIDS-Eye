@@ -20,7 +20,7 @@ if str(_CRAWLER) not in sys.path:
 import word_forms  # noqa: E402
 from services.fulltext import word_form_counts as store  # noqa: E402
 from services.fulltext import vectors  # noqa: E402
-from worker_db import WorkerDbError  # noqa: E402
+from database.worker import WorkerDbError  # noqa: E402
 from word_forms import WordEvidence  # noqa: E402
 
 AGEING = WordEvidence("ageing", "age", 291, (

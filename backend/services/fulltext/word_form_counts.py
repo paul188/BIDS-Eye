@@ -22,7 +22,7 @@ until the next one.
 lookup() answers for the words of one question, cached_evidence() for one
 word at a time (a reviewed word the question's decisions do not cover). Like
 the word counts in services/fulltext/text_search.py they are called from the
-translation worker thread, so they reach the database through worker_db.
+translation worker thread, so they reach the database through database/worker.py.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import text
 
-import worker_db
+from database import worker as worker_db
 from services.schema.tables import datasets, word_forms
 from services.fulltext import vectors
 

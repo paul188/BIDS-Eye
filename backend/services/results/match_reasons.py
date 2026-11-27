@@ -32,7 +32,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas import DatasetSchema
+from routers.schemas import DatasetSchema
 from services.evidence.base import Source
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import CardColumn, ConfirmedByDefaultEvidence, ConfirmedEvidence

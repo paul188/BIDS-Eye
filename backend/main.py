@@ -8,7 +8,7 @@ Startup (lifespan):
   - Stops when the LLM config (backend/llm/llm_config.yaml) is invalid.
   - Stops when a migration is missing; reads what the catalogue database
     holds into memory (services/database_stats/database_stats.py).
-  - Gives the translation worker thread its database access (worker_db.py).
+  - Gives the translation worker thread its database access (database/worker.py).
   - Starts the OpenNeuro crawler in this process when
     RUN_CRAWLER_IN_PROCESS=true (services/in_process_crawler.py); in Docker
     it runs as a separate service.
@@ -38,10 +38,10 @@ from typing import AsyncGenerator
 from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata
+import database.app_tables  # noqa: F401 — registers backend-only models (query_log, etc.)
 import llm_client
-import models     # noqa: F401 — registers backend-only models (query_log, etc.)
 import request_log
-import worker_db
+from database import worker as worker_db
 from security.middleware import install_security_middleware
 from db.db import engine
 from deps import require_auth

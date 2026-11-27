@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 import routers.search as query_router
 from security.rate_limits import RateLimitError
-from schemas import QueryRequest, QueryResponse
+from routers.schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
 
 
@@ -115,3 +115,11 @@ def test_questions_are_trimmed_and_capped():
     QueryRequest(question="x" * 2000)
     with pytest.raises(ValidationError):
         QueryRequest(question="x" * 2001)
+
+
+def test_page_query_ids_are_capped():
+    from uuid import uuid4
+    QueryPageRequest(query_id=uuid4().hex)
+    for bad in ("", "x" * 65):
+        with pytest.raises(ValidationError):
+            QueryPageRequest(query_id=bad)

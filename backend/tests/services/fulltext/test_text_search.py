@@ -15,8 +15,8 @@ if str(_CRAWLER) not in sys.path:
 import text_terms  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E402
-import worker_db  # noqa: E402
-from worker_db import WorkerDbError  # noqa: E402
+from database import worker as worker_db  # noqa: E402
+from database.worker import WorkerDbError  # noqa: E402
 from services.translate.sql_rewriter import SqlRewriteService, build_count_sql, build_page_sql  # noqa: E402
 from services.fulltext.ranking import RankQuery  # noqa: E402
 

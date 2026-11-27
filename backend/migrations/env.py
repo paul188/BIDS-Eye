@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 import db.models  # noqa: F401  (BIDS-SQL's tables, into Base.metadata)
-import models     # noqa: F401  (the backend's own tables, into Base.metadata)
+import database.app_tables  # noqa: F401  (the backend's own tables, into Base.metadata)
 from db.base import Base
 from services.schema import tables  # also adds the extension columns of bids_datasets
 from services.schema.revision import declared_only

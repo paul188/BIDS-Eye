@@ -383,7 +383,7 @@ class _Session:
 
 def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
     from services.results import readme_snippets
-    from schemas import DatasetSchema
+    from routers.schemas import DatasetSchema
 
     datasets = [DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
                               source_type="openneuro", participants=[]) for n in (1, 2)]

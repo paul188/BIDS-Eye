@@ -21,7 +21,7 @@ from security import sessions
 from deps import get_db, require_auth
 from exceptions.domain import DomainError
 from exceptions.handlers import UNEXPECTED_DETAIL, add_error_handlers
-from schemas import QueryResponse
+from routers.schemas import QueryResponse
 from services import query_guard, search
 
 

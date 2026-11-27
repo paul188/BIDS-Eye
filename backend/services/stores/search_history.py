@@ -18,7 +18,7 @@ The rules, all enforced here:
 - A user is GitHub's account number (deps.py user_id), never the
   login, and a row is only ever read or deleted through its owner's number.
 
-query_log (models.QueryLog) stays anonymous: nothing here points at it.
+query_log (database/app_tables.py QueryLog) stays anonymous: nothing here points at it.
 """
 from __future__ import annotations
 
@@ -34,8 +34,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.domain import DomainError
-from models import SearchHistoryConsent, SearchHistoryEntry
-from schemas import HistoryEntry, HistoryEntrySummary, QueryResponse
+from database.app_tables import SearchHistoryConsent, SearchHistoryEntry
+from routers.schemas import HistoryEntry, HistoryEntrySummary, QueryResponse
 
 log = logging.getLogger(__name__)
 
