@@ -30,7 +30,7 @@ from typing import List, Optional
 
 log = logging.getLogger(__name__)
 
-from schemas import TextToSQLResult  # noqa: E402
+from routers.schemas import TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
 from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402

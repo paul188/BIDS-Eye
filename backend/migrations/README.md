@@ -92,7 +92,7 @@ revision and retry. Build an index on `bids_objects` with
 
 ## Changing the schema
 
-1. Change the model (`models.py`, BIDS-SQL's `db/models.py`) or the
+1. Change the model (`database/app_tables.py`, BIDS-SQL's `db/models.py`) or the
    declaration in `services/schema/tables.py`.
 2. Write the revision:
 

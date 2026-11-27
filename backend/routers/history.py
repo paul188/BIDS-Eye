@@ -20,7 +20,7 @@ from fastapi import APIRouter
 from deps import AsyncSessionDep, CurrentUserDep, GithubIdDep
 from exceptions.domain import DomainError
 from security.rate_limits import Category, rate_limit
-from schemas import HistoryEnabled, HistoryEntry, HistoryList
+from routers.schemas import HistoryEnabled, HistoryEntry, HistoryList
 from services.stores import search_history
 
 history_router = APIRouter(prefix="/history", tags=["history"])
