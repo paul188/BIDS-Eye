@@ -197,8 +197,10 @@ async def _revoke_token(
             json={"access_token": access_token},
             headers={"Accept": "application/vnd.github+json"},
         )
+    # Semgrep reads "token" in these messages as a secret. They log only the
+    # error's class name or GitHub's status code, never the token itself.
     except httpx.HTTPError as exc:
-        logger.warning("GitHub access token not revoked: %s", type(exc).__name__)
+        logger.warning("GitHub access token not revoked: %s", type(exc).__name__)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         return
     if revoked.status_code != 204:
-        logger.warning("GitHub access token not revoked: answered %s", revoked.status_code)
+        logger.warning("GitHub access token not revoked: answered %s", revoked.status_code)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
