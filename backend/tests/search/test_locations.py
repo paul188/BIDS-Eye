@@ -21,7 +21,7 @@ from services.translate import participant_query_compiler as pqc  # noqa: E402
 from services.results import query_filters  # noqa: E402
 from services.fulltext import text_search, word_frequencies  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest" / "openneuro-crawler"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "ingest" / "openneuro-crawler"))
 from remote import site_places  # noqa: E402
 
 PLACES = [("city", "Bonn"), ("city", "Cologne"), ("city", "Washington"), ("region", "Washington"),

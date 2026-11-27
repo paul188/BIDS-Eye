@@ -7,7 +7,7 @@ import re
 import sys
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[4]
 for _p in ("backend/llm", "backend/vocabulary"):
     if str(_ROOT / _p) not in sys.path:
         sys.path.insert(0, str(_ROOT / _p))

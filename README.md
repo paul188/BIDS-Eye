@@ -181,6 +181,12 @@ METADATA_DB_NAME=x METADATA_DB_USER=x METADATA_DB_PASSWORD=x METADATA_DB_HOST=lo
   python -m pytest -q tests
 ```
 
+`backend/tests/` mirrors the source: `services/<stage>/`, `routers/`,
+`vocabulary/`, `llm/`, `ingest/` (the crawler) and `migrations/`;
+`search/` holds end-to-end search behaviour that spans several stages, and
+the root the tests of the top-level modules. `python -m pytest tests/vocabulary`
+runs one part.
+
 The tests that need real SQL are skipped unless `BIDSEYE_TEST_PG_DSN` names an
 empty scratch PostgreSQL; `backend/tests/postgres.py` says how to start one. CI
 runs them, and prints a coverage table (`--cov`).
