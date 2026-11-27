@@ -24,6 +24,16 @@ const CONTROL_LABELS = new Set([
   'healthy_control', 'ctrl', 'ctl', 'cn', 'nc', 'con', 'normal', 'typical',
 ])
 
+// Names OpenNeuro shows when the uploader set none. The backend already sends
+// the accession id instead (display_name in services/results/dataset_cards.py);
+// this covers older backends, so a card never has an empty, unclickable title.
+const PLACEHOLDER_NAMES = new Set(['unnamed dataset', 'untitled', 'untitled dataset', 'n/a'])
+const title = computed(() => {
+  const name = (props.dataset.name ?? '').replace(/\s+/g, ' ').trim()
+  if (name && !PLACEHOLDER_NAMES.has(name.toLowerCase())) return name
+  return props.dataset.accession_id || 'Untitled dataset'
+})
+
 const href = computed(() => {
   const d = props.dataset
   if (d.accession_id) return `https://openneuro.org/datasets/${d.accession_id}`
@@ -188,8 +198,8 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
         target="_blank"
         rel="noopener"
         class="text-link visited:text-link-visited hover:underline decoration-1 underline-offset-2 break-words"
-      >{{ dataset.name }}</a>
-      <span v-else class="text-ink break-words">{{ dataset.name }}</span>
+      >{{ title }}</a>
+      <span v-else class="text-ink break-words">{{ title }}</span>
     </h3>
     <p v-if="authorLine || institutionLine" class="-mt-0.5 text-[13px] text-muted break-words">
       <span v-if="authorLine" class="text-author">{{ authorLine }}</span>
