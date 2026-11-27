@@ -16,7 +16,7 @@ import pytest
 from services.evidence.branches import confirming_evidence
 from services.results import query_filters
 
-RECORDED = json.loads((Path(__file__).parent / "data" / "recorded_conditions.json").read_text(encoding="utf-8"))
+RECORDED = json.loads((Path(__file__).resolve().parents[2] / "data" / "recorded_conditions.json").read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize("recorded", RECORDED, ids=lambda r: r["condition"][:60])

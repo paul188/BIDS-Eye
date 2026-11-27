@@ -14,7 +14,7 @@ import pytest
 
 from services.indexing import dataset_description as dd
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]
 
 README = ("Resting-state fMRI of patients with Parkinson's disease, scanned ON and OFF "
           "medication. See participants.tsv for UPDRS scores.")

@@ -6,7 +6,7 @@ import pytest
 
 from llm_client import LLMAllFailedError
 from services.indexing import dataset_description as dd
-from tests.test_dataset_description import _source
+from tests.services.indexing.test_dataset_description import _source
 
 
 def test_a_failed_model_call_is_recorded_in_the_outcome(monkeypatch):

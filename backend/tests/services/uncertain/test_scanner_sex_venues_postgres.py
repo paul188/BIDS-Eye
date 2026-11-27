@@ -16,7 +16,7 @@ import pytest
 
 from services.uncertain import scanner as tier_scanner, tier as ut
 
-from tests.test_scanner_sex_venues import (
+from tests.services.uncertain.test_scanner_sex_venues import (
     FEMALE, GE_OR_PHILIPS, ONLY_FEMALE, PRISMA, STRENGTH_7T, STRENGTH_7T_FMRI, _HEAD)
 from tests.postgres import fresh_schema, needs_postgres, run_statements, scratch_engine
 

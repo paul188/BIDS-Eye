@@ -23,7 +23,7 @@ from services.query_guard import QueryRefusedError, SearchBusyError, check_stati
 from services.translate.sql_rewriter import SqlRewriteService
 
 REWRITER = SqlRewriteService()
-REAL_QUERIES = json.loads((Path(__file__).parent / "data" / "real_search_sql.json").read_text())["queries"]
+REAL_QUERIES = json.loads((Path(__file__).resolve().parents[1] / "data" / "real_search_sql.json").read_text())["queries"]
 
 _HEAD = ("SELECT d.id FROM bids_datasets AS d "
          "LEFT JOIN bids_objects AS o ON o.dataset_id = d.id AND NOT o.subject IS NULL ")

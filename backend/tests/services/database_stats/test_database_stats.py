@@ -295,7 +295,7 @@ def test_each_part_names_the_modules_that_use_it() -> None:
     import re
     from pathlib import Path
 
-    backend = Path(__file__).resolve().parents[1]
+    backend = Path(__file__).resolve().parents[3]
     own = backend / "services" / "database_stats" / "database_stats.py"
     folders = (backend,)  # llm/ and vocabulary/ are inside it
     sources = [path for folder in folders for path in folder.rglob("*.py")
