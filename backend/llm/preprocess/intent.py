@@ -1,6 +1,7 @@
 """The model call: a question in, a QueryPlan out (create_query_plan)."""
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import re
@@ -22,7 +23,8 @@ def _plan_output_schema(include_word_forms: bool = False) -> Dict[str, Any]:
     (backend/llm/llm_client.py)."""
     schema = QueryPlan.model_json_schema()
     if include_word_forms:
-        schema = json.loads(json.dumps(schema))
+        # Copy before adding word_forms, so a cached schema could never keep it.
+        schema = copy.deepcopy(schema)
         schema.setdefault("properties", {})["word_forms"] = {
             "type": "array",
             "items": {
