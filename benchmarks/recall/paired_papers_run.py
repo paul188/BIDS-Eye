@@ -56,13 +56,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from services.stores.translated_queries import CachedQuery, query_cache
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
     from services.translate.text_to_sql import text_to_sql
-    from services.catalogue.schema_capabilities import has_fts, has_paper_fts, refresh_available_columns
+    from backend_capabilities import has_fts, has_paper_fts, start
     from services.fulltext import text_search, word_frequencies
-    try:
-        import institution_index
-    except ImportError:
-        institution_index = None
-
     database = f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}"
     started = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     variants = ("papers_off", "papers_on")
@@ -73,9 +68,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     }
     results: Dict[str, List[Dict[str, Any]]] = {v: [] for v in variants}
 
-    await refresh_available_columns(engine)
-    if institution_index is not None:
-        await institution_index.refresh_from_db(engine)
+    await start(engine)
     try:
         import worker_db
     except ImportError:  # backend before worker_db.py
