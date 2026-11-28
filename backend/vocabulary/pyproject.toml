@@ -23,6 +23,7 @@ dependencies = [
 [tool.setuptools]
 py-modules = [
     "bids_entities",
+    "code_names",
     "cohort_count",
     "criteria",
     "group_labels",

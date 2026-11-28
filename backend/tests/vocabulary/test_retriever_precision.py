@@ -347,7 +347,7 @@ def test_a_shorthand_with_two_listings_keeps_both() -> None:
     assert "parkinsons_disease" in _resolve_yaml_term("diagnosis", "PD")
     assert _resolve_yaml_term("task", "PD") == ["strategic_interaction_game"]
     assert retriever.shorthand_meanings("PD") == [
-        "Parkinson's disease (diagnosis)", "Strategic interaction game (task)"]
+        "Parkinson's disease (diagnosis)", "strategic interaction game (task)"]
 
 
 def test_an_english_word_in_small_letters_is_not_a_shorthand() -> None:
@@ -366,7 +366,7 @@ def test_dbs_is_deep_brain_stimulation(term: str) -> None:
     # neurofeedback and TMS among them (2026-11-23).
     assert _resolve_yaml_term("task", term) == DBS_TASKS
     assert set(DBS_TASKS) <= set(_resolve_yaml_term("task", "neuromodulation"))
-    assert retriever.shorthand_meanings("DBS") == ["Deep brain stimulation (task)"]
+    assert retriever.shorthand_meanings("DBS") == ["deep brain stimulation (task)"]
 
 
 def test_meanings_come_from_the_listings() -> None:

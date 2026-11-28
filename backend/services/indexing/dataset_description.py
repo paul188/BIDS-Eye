@@ -46,6 +46,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple
 
+from code_names import code_name  # backend/vocabulary is on the path wherever the backend runs
 from services.indexing.readme_profile import quote_in_source
 from services.schema.tables import dataset_papers as _dataset_papers, datasets as _datasets
 
@@ -73,13 +74,6 @@ RELATION_LABELS = {
 }
 SOURCES = ("README", "CATALOGUE", "PAPER")
 
-_MODALITIES = {
-    "functional_mri": "fMRI", "anatomical_mri": "structural MRI", "diffusion_mri": "diffusion MRI",
-    "electroencephalography": "EEG", "magnetoencephalography": "MEG", "intracranial_eeg": "iEEG",
-    "positron_emission_tomography": "PET", "fnirs": "fNIRS", "perfusion_asl": "ASL perfusion",
-    "magnetic_resonance_spectroscopy": "MR spectroscopy", "motion_capture": "motion capture",
-    "behavioural_data": "behavioural data", "field_maps": "field maps",
-}
 _NUMBER_RE = re.compile(r"\d+(?:[.,]\d+)?")
 _WORD_RE = re.compile(r"[a-z0-9]+(?:['’-][a-z0-9]+)*")
 _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9“\"])")
@@ -139,7 +133,9 @@ def catalogue_fields(row: Dict[str, Any]) -> Tuple[Tuple[str, str], ...]:
         shown = ", ".join(values[:limit])
         return shown + (f" (+{len(values) - limit} more)" if len(values) > limit else "")
 
-    modalities = [_MODALITIES.get(v, v.replace("_", " ")) for v in sorted(row.get("datatypes") or [])]
+    modalities = [code_name("datatype", v) for v in sorted(row.get("datatypes") or [])]
+    # Not code_name: the catalogue text is part of summary_input_sha, and names
+    # instead of codes would write every summary again.
     tasks = [t.replace("_", " ") for t in sorted(row.get("tasks") or [])]
     diagnoses = row.get("diagnoses") or {}
     if isinstance(diagnoses, str):

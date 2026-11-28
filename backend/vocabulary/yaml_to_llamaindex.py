@@ -80,6 +80,10 @@ text_evidence_db: Dict[str, Any] = {}
 #   measures_db {construct_code: [task standard_code, ...]}
 measures_db: Dict[str, List[str]] = {}
 
+# The name a code is shown under (code_names.py): its short_label, else its label.
+#   code_name_db     {category: {standard_code: name}}
+code_name_db: Dict[str, Dict[str, str]] = {}
+
 
 # Shorthands the vocabulary lists, lower-cased: a label or synonym written as
 # one short token with at least two capitals ("APT", "TLE", "fMRI", "T1w").
@@ -197,6 +201,10 @@ def _parse_flat(
         text_words = [str(word).lower() for word in value.get("text_words") or []]
         if text_words:
             text_words_db.setdefault(category, {})[std_code] = text_words
+
+        shown = value.get("short_label") or label
+        if shown:
+            code_name_db.setdefault(category, {})[std_code] = str(shown)
 
     # ── Pass 2: group lookups ─────────────────────────────────────────────────
     # Build children map: concept_key → [direct child keys]
@@ -316,6 +324,8 @@ _CATEGORIES = [
     "datatype", "sidecar_fields", "participant_extra_fields",
     "cognitive_construct",
 ]
+# Sections that only name stored codes (code_name_db); not searched.
+_NAMED_ONLY = ["source_type"]
 
 
 def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = None) -> Tuple[
@@ -392,6 +402,12 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
             construct_parts if cat == "cognitive_construct" else None,
         )
         _collect_shorthands(cat, cat_data)
+
+    for cat in _NAMED_ONLY:
+        for value in (schema.get(cat) or {}).values():
+            shown = value.get("short_label") or value.get("label")
+            if value.get("standard_code") and shown:
+                code_name_db.setdefault(cat, {})[value["standard_code"]] = str(shown)
 
     return leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db
 
