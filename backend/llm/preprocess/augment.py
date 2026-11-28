@@ -7,7 +7,6 @@ from typing import Collection, Dict, List, Optional, Sequence, Tuple
 from join_registry import (
     build_join_context_block as _build_join_context_block,
     check_contradictions as _check_contradictions,
-    field_column as _field_column,
 )
 from retriever import is_listed as _is_listed
 from text_terms import (
@@ -39,17 +38,12 @@ from .rag import _HEALTHY_WORDS, _build_scored_filters, _is_healthy_term, _parti
 log = logging.getLogger("preprocess")
 
 
-def _column(field: RAGField) -> str:
-    """The field's column as the SQL names it (join_paths.yaml), e.g. 'o2.task'."""
-    return _field_column(field.value).ref
-
-
 def _exists(fields: Collection[RAGField], where: str) -> str:
-    """EXISTS over the rows that store *fields* (join_paths.yaml), for dataset d.
+    """EXISTS over the rows that store *fields* (RAGField.stored), for dataset d.
 
     All the fields must live in the same table: one EXISTS is one row.
     """
-    columns = {_field_column(f.value)[:2] for f in fields}
+    columns = {(f.stored.table, f.stored.alias) for f in fields}
     if len(columns) != 1:
         raise ValueError(f"{sorted(f.value for f in fields)} are not stored in one table")
     (table, alias), = columns
@@ -168,7 +162,7 @@ def _institution_lines(
         [t for t in plan.institution_terms if t and t.strip()] + list(resolved_names) + list(unresolved)
     ))
     terms = [t for t in terms if t not in excluded]
-    stored = _field_column(RAGField.INSTITUTION.value)
+    stored = RAGField.INSTITUTION.stored
     use_column = stored.column in available_columns
     column = stored.ref
 
@@ -503,7 +497,7 @@ def _diagnosis_condition(term_to_codes: Dict[str, List[str]], qualifier: List[st
     if not codes:
         return None
     vals = ", ".join(f"'{c}'" for c in codes)
-    condition = _exists([RAGField.DIAGNOSIS], f"{_column(RAGField.DIAGNOSIS)} IN ({vals})")
+    condition = _exists([RAGField.DIAGNOSIS], f"{RAGField.DIAGNOSIS.stored.ref} IN ({vals})")
     # Structured diagnosis rows are sparse: back them up with the user's words
     # and the vocabulary synonyms in name, description and study fields.
     text_fallback = _format_text_match(_diagnosis_alternatives(term_to_codes), _MODE_SHORT)
@@ -633,7 +627,7 @@ def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, Lis
             return None
         values = ", ".join(f"'{c}'" for c in codes)
         match = f"= {values}" if len(codes) == 1 else f"IN ({values})"
-        condition = _exists([field], f"{_column(field)} {match}")
+        condition = _exists([field], f"{field.stored.ref} {match}")
         text = _format_task_text_match([term]) if field == RAGField.TASK else None
         return f"({condition} OR {text})" if text else condition
 
@@ -853,7 +847,7 @@ def _build_augmented_question(
     # property of the files (backend/vocabulary/bids_entities.py), not a word
     # of the README: as text, "dir-AP and dir-PA" found 1 of 58 datasets.
     unknown_scans = unresolved_terms.get(RAGField.SCAN.value, [])
-    objects_table = _field_column(RAGField.SUFFIX.value)[0]
+    objects_table = RAGField.SUFFIX.stored.table
     entity_terms = {t: c for t in unknown_scans if (c := _entity_condition(t, objects_table))}
     for term, condition in entity_terms.items():
         add_scan_line(term, condition)
@@ -868,7 +862,7 @@ def _build_augmented_question(
     # Task gets a separate EXISTS so compound terms like "resting state fMRI"
     # correctly emit both a modality filter and a task filter.
     # datatype, suffix and task are columns of one table, so the codes of one
-    # term can share an EXISTS (_exists checks that join_paths.yaml agrees).
+    # term can share an EXISTS (_exists checks that their .stored agree).
     for term, field_codes in scan_by_term.items():
         modality_conds: List[str] = []   # datatype + suffix codes
         task_conds: List[str] = []       # task codes
@@ -877,7 +871,7 @@ def _build_augmented_question(
             if field not in field_codes:
                 continue
             codes = field_codes[field]
-            col   = _column(field)
+            col   = field.stored.ref
             if len(codes) == 1:
                 cond = f"{col} = '{codes[0]}'"
             else:

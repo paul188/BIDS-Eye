@@ -6,7 +6,7 @@ import logging
 import re
 from typing import Any, Collection, Dict, List, Tuple
 import reference_vocabulary as _reference_vocabulary
-from services.schema.coded_fields import FILE_FIELDS
+from services.schema.fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
 from .plan import AugmentedQueryPlan, ParticipantGroup, QueryPlan, RAGField, ScanRequirement

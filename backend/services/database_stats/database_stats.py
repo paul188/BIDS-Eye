@@ -60,7 +60,7 @@ import institution_index
 import place_index
 from services.translate.prompt.schema_ddl import OPTIONAL_DATASET_COLUMNS
 from services.schema.check import check_schema
-from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS, PARTICIPANT_FIELDS
+from services.schema.fields import CODED_FIELDS, FILE_FIELDS, PARTICIPANT_FIELDS
 from services.schema.tables import dataset_facets, datasets, objects, participants, site_places
 
 log = logging.getLogger(__name__)

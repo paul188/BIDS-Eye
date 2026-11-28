@@ -39,7 +39,7 @@ from sqlglot import exp
 
 from services import sql_tree
 from services.database_stats.database_stats import database_stats
-from services.schema.coded_fields import FILE_FIELDS
+from services.schema.fields import FILE_FIELDS
 
 log = logging.getLogger(__name__)
 
