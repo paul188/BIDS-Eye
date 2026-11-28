@@ -1,54 +1,37 @@
 """Feature switches are true or false, nothing else."""
 import pytest
+from pydantic import ValidationError
 
-from services import switches
-from services.switches import InvalidSwitchError, Switch
+from config.settings import Settings, settings_obj
+from services.switches import Switch
 
 
 @pytest.fixture(autouse=True)
 def _all_unset(monkeypatch):
     for switch in Switch:
-        monkeypatch.delenv(switch.value, raising=False)
+        monkeypatch.setattr(settings_obj, switch.value, False)
 
 
 @pytest.mark.parametrize("switch", list(Switch))
 def test_true_is_on_false_and_unset_are_off(monkeypatch, switch):
     assert switch.is_on() is False
-    monkeypatch.setenv(switch.value, "true")
+    monkeypatch.setattr(settings_obj, switch.value, True)
     assert switch.is_on() is True
-    monkeypatch.setenv(switch.value, "false")
-    assert switch.is_on() is False
-
-
-@pytest.mark.parametrize("value", ["1", "0", "yes", "no", "on", "off", "True", "FALSE", "ture", " true", ""])
-def test_any_other_value_is_an_error_that_names_the_switch(monkeypatch, value):
-    monkeypatch.setenv("TEXT_SEARCH_PAPERS", value)
-    with pytest.raises(InvalidSwitchError, match="TEXT_SEARCH_PAPERS must be true or false"):
-        Switch.TEXT_SEARCH_PAPERS.is_on()
 
 
 @pytest.mark.parametrize("switch", list(Switch))
-def test_the_startup_check_reads_every_switch(monkeypatch, switch):
-    switches.check()
-    monkeypatch.setenv(switch.value, "1")
-    with pytest.raises(InvalidSwitchError, match=switch.value):
-        switches.check()
+def test_every_switch_is_a_setting_read_from_true_or_false(monkeypatch, switch):
+    monkeypatch.setenv(switch.value, "true")
+    assert getattr(Settings(), switch.value) is True
+    monkeypatch.setenv(switch.value, "false")
+    assert getattr(Settings(), switch.value) is False
+    monkeypatch.delenv(switch.value)
+    assert getattr(Settings(), switch.value) is False
 
 
-def test_startup_stops_on_a_bad_switch_before_anything_else(monkeypatch):
-    import asyncio
-
-    import main
-
-    async def unexpected(engine):
-        raise AssertionError("the database was reached before the switches were checked")
-
-    monkeypatch.setattr(main, "check_revision", unexpected)
-    monkeypatch.setenv("UNCERTAIN_TIER", "on")
-
-    async def start():
-        async with main.lifespan(main.app):
-            pass
-
-    with pytest.raises(InvalidSwitchError, match="UNCERTAIN_TIER"):
-        asyncio.run(start())
+@pytest.mark.parametrize("value", ["1", "0", "yes", "no", "on", "off", "True", "FALSE", "ture", " true", ""])
+def test_any_other_value_stops_the_start_and_names_the_switch(monkeypatch, value):
+    # Settings() is what config/settings.py builds at import, before the app exists.
+    monkeypatch.setenv("TEXT_SEARCH_PAPERS", value)
+    with pytest.raises(ValidationError, match="TEXT_SEARCH_PAPERS"):
+        Settings()

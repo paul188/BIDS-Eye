@@ -66,13 +66,13 @@ This module does the rewrite (apply). The parts it uses:
 
 from __future__ import annotations
 
-import os
 import re
 from typing import Any, List, Optional
 
 import sqlglot
 from sqlglot import exp
 
+from config.settings import settings_obj
 from services import sql_tree
 from services.uncertain.conditions import QueryEvidence, ClauseEvidence
 from services.uncertain.fields.sex import keep_only_sex_pairs
@@ -83,7 +83,7 @@ from services.switches import Switch
 
 
 # Conditions per dataset that may be unconfirmed.
-MAX_UNSURE = int(os.getenv("UNCERTAIN_MAX_UNSURE", "1"))
+MAX_UNSURE = settings_obj.UNCERTAIN_MAX_UNSURE
 
 
 def hoist_terms_enabled() -> bool:

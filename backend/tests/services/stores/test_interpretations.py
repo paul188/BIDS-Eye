@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from config.settings import settings_obj
 from services.stores import interpretations as store
 from services.stores.translated_queries import CachedQuery
 
@@ -12,7 +13,8 @@ _ROOT = _BACKEND.parent
 # responses (see interpretations._VERSION_FILES).
 _NOT_TRANSLATION = {_BACKEND / "database" / "app_tables.py", _BACKEND / "routers" / "schemas.py",
                     _BACKEND / "exceptions" / "domain.py",
-                    _BACKEND / "exceptions" / "expected.py"}
+                    _BACKEND / "exceptions" / "expected.py",
+                    _BACKEND / "security" / "settings.py"}  # sign-in, via config/settings.py
 
 
 def test_questions_that_differ_only_in_form_share_a_key():
@@ -43,9 +45,9 @@ def test_different_questions_never_share_a_cache_key(a, b):
 
 
 def test_cache_is_off_by_default(monkeypatch):
-    monkeypatch.setenv("INTERPRETATION_CACHE", "false")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", False)
     assert not store.enabled()
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     assert store.enabled()
 
 
@@ -188,7 +190,7 @@ def _get(session):
 def test_a_failed_hit_count_keeps_the_stored_translation(monkeypatch):
     from sqlalchemy.exc import OperationalError
 
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     session = _Session(row=_StoredRow(), update_error=OperationalError("UPDATE", {}, Exception("lock timeout")))
     assert _get(session) == store.StoredTranslation(sql="SELECT 1")
     assert session.rollbacks == 1 and session.commits == 0
@@ -197,7 +199,7 @@ def test_a_failed_hit_count_keeps_the_stored_translation(monkeypatch):
 def test_a_translation_reviewed_as_wrong_translates_anew(monkeypatch):
     from database.app_tables import ReviewVerdict
 
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     row = _StoredRow()
     row.review_verdict = "wrong"  # as the database returns it
     assert ReviewVerdict.WRONG.value == "wrong"
@@ -212,7 +214,7 @@ def test_a_translation_reviewed_as_wrong_translates_anew(monkeypatch):
     '{"sql": "SELECT 1", "scored_filters": [{"field": "task"}]}',
 ])
 def test_a_stored_payload_that_is_not_a_translation_translates_anew(monkeypatch, payload):
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     row = _StoredRow()
     row.payload = payload
     assert _get(_Session(row=row)) is None
@@ -237,14 +239,14 @@ def test_an_unsafe_stored_tsquery_is_dropped():
 def test_a_failed_lookup_translates_anew(monkeypatch):
     from sqlalchemy.exc import OperationalError
 
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     session = _Session(select_error=OperationalError("SELECT", {}, Exception("connection reset")))
     assert _get(session) is None
     assert session.rollbacks == 1
 
 
 def test_a_bug_in_the_lookup_is_raised(monkeypatch):
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     with pytest.raises(TypeError):
         _get(_Session(select_error=TypeError("a bug")))
 
@@ -287,7 +289,7 @@ def _put(session, payload=None):
 
 
 def test_a_question_stored_twice_at_once_keeps_the_first(monkeypatch):
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     session = _WriteSession()
     _put(session)
     assert "ON CONFLICT (key) DO NOTHING" in session.statements[0]
@@ -297,14 +299,14 @@ def test_a_question_stored_twice_at_once_keeps_the_first(monkeypatch):
 def test_a_failed_store_is_logged_and_the_search_answers(monkeypatch):
     from sqlalchemy.exc import OperationalError
 
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     session = _WriteSession(execute_error=OperationalError("INSERT", {}, Exception("disk full")))
     _put(session)
     assert session.rollbacks == 1
 
 
 def test_a_payload_json_cannot_encode_is_a_bug(monkeypatch):
-    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    monkeypatch.setattr(settings_obj, "INTERPRETATION_CACHE", True)
     with pytest.raises(TypeError):
         _put(_WriteSession(), payload={"params": {"since": object()}})
 

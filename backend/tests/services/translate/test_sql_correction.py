@@ -14,6 +14,7 @@ pytest.importorskip("sqlglot")
 
 from sqlglot import exp, parse_one  # noqa: E402
 
+from config.settings import settings_obj
 from services.uncertain import tier as uncertain_tier  # noqa: E402
 from services.translate import text_to_sql  # noqa: E402
 from services.translate.sql_rewriter import (  # noqa: E402
@@ -34,7 +35,7 @@ QUESTION = "resting-state fMRI in adults with ADHD"
 
 @pytest.fixture
 def tiered_sql(monkeypatch) -> str:
-    monkeypatch.setenv("UNCERTAIN_TIER", "true")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", True)
     sql = rewrite_generated_sql(MODEL_SQL, QUESTION).sql
     assert uncertain_tier.LEVEL_COLUMN in sql
     return sql
@@ -81,7 +82,7 @@ def test_an_answer_without_sql_is_the_fallback(tiered_sql):
 
 
 def test_an_untiered_query_is_repaired_the_same_way(monkeypatch):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     sql = rewrite_generated_sql(MODEL_SQL, QUESTION).sql
     repaired = finish_corrected_sql(f"```sql\n{_repair(sql)}\n```", sql)
     assert "'anatomical_mri'" in repaired

@@ -15,6 +15,7 @@ from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import text
 
+from config.settings import settings_obj
 from services.schema import tables
 from services.schema.check import check_schema
 from services.schema.revision import (SchemaRevisionError, alembic_config, check_revision,
@@ -50,8 +51,8 @@ def test_an_empty_database_is_refused_at_startup(empty_database: str) -> None:
 
 @needs_postgres
 def test_a_migrated_database_passes_the_startup_checks(migrated_database: str, monkeypatch) -> None:
-    monkeypatch.setenv(tables.EXACT_FLAG, "true")
-    monkeypatch.setenv(tables.PAPERS_FLAG, "true")
+    monkeypatch.setattr(settings_obj, tables.EXACT_FLAG, True)
+    monkeypatch.setattr(settings_obj, tables.PAPERS_FLAG, True)
 
     async def checks(engine):
         await check_revision(engine)

@@ -1,24 +1,24 @@
 """
 security/settings.py
 --------------------
-The sign-in settings, read from the environment once at startup by
-security/middleware.py and kept in app.state.auth_settings. A missing or
-contradictory value stops the app from starting.
+The sign-in settings, checked: what config.settings.Settings.sign_in()
+returns. security/middleware.py checks them once at startup and keeps them in
+app.state.auth_settings. A missing or contradictory value stops the app from
+starting.
 """
 from __future__ import annotations
 
-from pydantic import Field, SecretStr, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 
-class AuthSettings(BaseSettings):
-    """Read from the environment once, when security/middleware.py builds the middleware.
+class AuthSettings(BaseModel):
+    """Checked once, when security/middleware.py builds the middleware.
 
     A missing or contradictory value stops the app from starting, instead of
     showing up at the first sign-in or, worse, not at all.
     """
 
-    model_config = SettingsConfigDict(str_strip_whitespace=True, hide_input_in_errors=True)
+    model_config = ConfigDict(str_strip_whitespace=True, hide_input_in_errors=True)
 
     # Signs the session and CSRF cookies. With a missing or guessable key anyone
     # who reads the repo could sign a session for any user, so the app refuses

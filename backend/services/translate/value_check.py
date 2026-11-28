@@ -30,13 +30,13 @@ LIKE / ILIKE patterns that match no known value are dropped the same way.
 from __future__ import annotations
 
 import logging
-import os
 import re
 from functools import lru_cache
 from typing import Any, List, Optional, Tuple
 
 from sqlglot import exp
 
+from config.settings import settings_obj
 from services import sql_tree
 from services.database_stats.database_stats import database_stats
 from services.schema.fields import FILE_FIELDS
@@ -112,7 +112,7 @@ def enabled() -> bool:
     "nothing loaded" means "do not check".
     """
     return (all(database_stats.values.loaded(field) for field in FIELDS)
-            and os.getenv(ENV, "true").strip().lower() not in ("false", "0", "no", "off"))
+            and settings_obj.CATALOGUE_VALUE_CHECK)
 
 
 def _field_of(node: Any) -> Optional[str]:

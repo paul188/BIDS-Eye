@@ -8,12 +8,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import re
 import uuid
 
 import pytest
 
+from config.settings import settings_obj
 from services.uncertain import scanner as tier_scanner, tier as ut
 
 from tests.services.uncertain.test_scanner_sex_venues import (
@@ -132,11 +132,11 @@ def test_field_strength_from_sidecars_then_text():
         finally:
             database_stats.summaries = summaries
         # With a 'possible' level the full recorded check gives the same states.
-        os.environ["UNCERTAIN_POSSIBLE"] = "true"
+        settings_obj.UNCERTAIN_POSSIBLE = True
         try:
             possible = await _tiers(session, ids, STRENGTH_7T)
         finally:
-            del os.environ["UNCERTAIN_POSSIBLE"]
+            settings_obj.UNCERTAIN_POSSIBLE = False
         assert {k: v for k, v in possible.items() if v[0] < 2} == found
     asyncio.run(_run(check))
 

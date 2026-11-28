@@ -6,6 +6,7 @@ import pytest
 
 pytest.importorskip("sqlglot")
 
+from config.settings import settings_obj
 from services.database_stats.database_stats import ValueCounts, database_stats  # noqa: E402
 from services.translate import value_check as vc  # noqa: E402
 
@@ -24,7 +25,7 @@ LEAVES = {"suffix": {"bold": "fmri_bold", "t1w": "t1_weighted_mri"},
 def known_values(monkeypatch):
     monkeypatch.setattr(database_stats, "values", ValueCounts(dict(KNOWN)))
     monkeypatch.setattr(vc, "_vocabulary", lambda: (GROUPS, LEAVES))
-    monkeypatch.delenv(vc.ENV, raising=False)
+    monkeypatch.setattr(settings_obj, vc.ENV, True)
 
 
 def _exists(condition: str) -> str:
@@ -110,9 +111,9 @@ def test_pattern_that_matches_nothing_is_dropped() -> None:
 
 def test_off_without_known_values_or_by_switch(monkeypatch) -> None:
     original = _exists("o2.suffix = 'bold'")
-    monkeypatch.setenv(vc.ENV, "false")
+    monkeypatch.setattr(settings_obj, vc.ENV, False)
     assert vc.check_sql(original) == (original, [])
-    monkeypatch.delenv(vc.ENV)
+    monkeypatch.setattr(settings_obj, vc.ENV, True)
     database_stats.clear()
     assert vc.check_sql(original) == (original, [])
 

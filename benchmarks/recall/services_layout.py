@@ -111,3 +111,15 @@ def use_either_layout() -> bool:
     flat = importlib.util.find_spec("services.translate") is None
     sys.meta_path.append(_OlderLayout(flat))
     return flat
+
+
+def set_setting(name: str, value: str) -> None:
+    """Set a backend setting while the harness runs, e.g. set_setting("TEXT_SEARCH_EXACT", "true").
+
+    An older backend reads the environment at every call. A current one reads
+    it once at import into config.settings.settings_obj, which is changed here.
+    """
+    os.environ[name] = value
+    settings = sys.modules.get("config.settings")
+    if settings is not None:
+        setattr(settings.settings_obj, name, getattr(settings.Settings(), name))

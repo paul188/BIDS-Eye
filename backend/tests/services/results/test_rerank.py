@@ -10,6 +10,7 @@ from uuid import UUID
 import pytest
 
 from llm_client import LLMAllFailedError
+from config.settings import settings_obj
 from services.results import rerank
 from services.database_stats.database_stats import database_stats
 from tests.helpers import full_coverage
@@ -26,7 +27,7 @@ BASE = (
 @pytest.fixture(autouse=True)
 def _env(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test")
-    monkeypatch.setenv("RERANK_ENABLED", "true")
+    monkeypatch.setattr(settings_obj, "RERANK_ENABLED", True)
     database_stats.coverage = full_coverage({"readme_text", "dx_status"})
     yield
     database_stats.coverage = full_coverage(())
@@ -63,9 +64,9 @@ def test_should_rerank_respects_order_requests_fallback_and_switch(monkeypatch) 
     assert not rerank.should_rerank(False, 10, False)     # user asked for an order / top N
     assert not rerank.should_rerank(True, 10, True)       # fallback sample
     assert not rerank.should_rerank(True, 1, False)
-    monkeypatch.setenv("RERANK_ENABLED", "false")
+    monkeypatch.setattr(settings_obj, "RERANK_ENABLED", False)
     assert not rerank.should_rerank(True, 10, False)
-    monkeypatch.delenv("RERANK_ENABLED")
+    monkeypatch.setattr(settings_obj, "RERANK_ENABLED", False)
     assert not rerank.should_rerank(True, 10, False)   # off unless switched on
 
 
@@ -99,7 +100,7 @@ class _Session:
 
 
 def test_rerank_judges_in_parallel_batches(monkeypatch) -> None:
-    monkeypatch.setenv("RERANK_BATCH", "4")
+    monkeypatch.setattr(settings_obj, "RERANK_BATCH", 4)
     prompts = []
 
     def fake_judge(question, interpretation, descriptions, cfg):
@@ -125,7 +126,7 @@ def test_rerank_gives_up_quietly_on_errors_and_timeouts(monkeypatch) -> None:
     monkeypatch.setattr(rerank, "_judge_batch", broken)
     assert asyncio.run(rerank.rerank_candidates(_Session(), IDS, "q")) is None
 
-    monkeypatch.setenv("RERANK_TIMEOUT_SECONDS", "0.2")
+    monkeypatch.setattr(settings_obj, "RERANK_TIMEOUT_SECONDS", 0.2)
 
     def slow(*args):
         time.sleep(1)

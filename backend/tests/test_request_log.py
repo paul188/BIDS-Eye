@@ -11,8 +11,10 @@ import logging
 
 import httpx
 import pytest
+from pydantic import ValidationError
 from fastapi import FastAPI
 
+from config.settings import Settings, settings_obj
 import request_log
 from exceptions.domain import DomainError
 from exceptions.handlers import UNEXPECTED_DETAIL, add_error_handlers
@@ -220,10 +222,11 @@ def test_a_text_line_marks_no_request_with_a_dash():
     (None, TextFormatter), ("text", TextFormatter), ("json", JsonFormatter),
 ])
 def test_log_format_chooses_the_lines(monkeypatch, value, formatter):
-    monkeypatch.delenv(request_log.LOG_FORMAT_VARIABLE, raising=False)
+    monkeypatch.delenv("LOG_FORMAT", raising=False)
     if value is not None:
-        monkeypatch.setenv(request_log.LOG_FORMAT_VARIABLE, value)
-    assert type(LogFormat.from_environment().formatter()) is formatter
+        monkeypatch.setenv("LOG_FORMAT", value)
+    monkeypatch.setattr(settings_obj, "LOG_FORMAT", Settings().LOG_FORMAT)
+    assert type(LogFormat.from_settings().formatter()) is formatter
 
 
 @pytest.fixture
@@ -242,7 +245,7 @@ def _loggers_put_back():
 def test_a_logger_with_its_own_handler_writes_json_once(monkeypatch, _loggers_put_back, name):
     # As SQLAlchemy does for an engine that echoes its SQL.
     logging.getLogger(name).addHandler(logging.StreamHandler())
-    monkeypatch.setenv(request_log.LOG_FORMAT_VARIABLE, "json")
+    monkeypatch.setattr(settings_obj, "LOG_FORMAT", "json")
 
     request_log.configure()
 
@@ -259,6 +262,6 @@ def test_uvicorns_access_line_is_dropped(_loggers_put_back):
 
 @pytest.mark.parametrize("value", ["JSON", "true", ""])
 def test_any_other_log_format_stops_the_start(monkeypatch, value):
-    monkeypatch.setenv(request_log.LOG_FORMAT_VARIABLE, value)
-    with pytest.raises(request_log.InvalidLogFormatError, match="must be text or json"):
-        request_log.configure()
+    monkeypatch.setenv("LOG_FORMAT", value)
+    with pytest.raises(ValidationError, match="LOG_FORMAT"):
+        Settings()

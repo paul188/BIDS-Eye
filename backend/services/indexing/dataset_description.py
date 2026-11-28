@@ -38,7 +38,6 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import re
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -47,6 +46,7 @@ from datetime import datetime, timezone
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple
 
 from code_names import code_name  # backend/vocabulary is on the path wherever the backend runs
+from config.settings import settings_obj
 from services.indexing.readme_profile import quote_in_source
 from services.schema.tables import dataset_papers as _dataset_papers, datasets as _datasets
 
@@ -54,7 +54,7 @@ log = logging.getLogger(__name__)
 
 RELATION_PROMPT_VERSION = "1"
 SUMMARY_PROMPT_VERSION = "2"
-DEFAULT_MODEL = os.getenv("DATASET_DESCRIPTION_MODEL", "gemini-2.5-flash")
+DEFAULT_MODEL = settings_obj.DATASET_DESCRIPTION_MODEL
 FALLBACK_MODEL = "gemini-2.5-flash-lite"
 
 THIN_CHARS = 500           # README + description shorter than this: write a summary

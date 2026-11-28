@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from config.settings import settings_obj
 import re
 import sys
 from pathlib import Path
@@ -298,9 +299,9 @@ def test_papers_switch_widens_positive_matches_only(monkeypatch) -> None:
 
 def test_papers_switch_follows_the_flag(monkeypatch) -> None:
     text_search, vectors = _text_search()
-    monkeypatch.setenv("TEXT_SEARCH_PAPERS", "true")
+    monkeypatch.setattr(settings_obj, "TEXT_SEARCH_PAPERS", True)
     assert vectors.papers_enabled()
-    monkeypatch.setenv("TEXT_SEARCH_PAPERS", "false")
+    monkeypatch.setattr(settings_obj, "TEXT_SEARCH_PAPERS", False)
     assert not vectors.papers_enabled()
 
 

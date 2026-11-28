@@ -18,6 +18,7 @@ if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
 import stem_collisions  # noqa: E402
+from config.settings import settings_obj  # noqa: E402
 from services.fulltext import word_form_counts as store  # noqa: E402
 from services.fulltext import vectors  # noqa: E402
 from database.worker import WorkerDbError  # noqa: E402
@@ -157,7 +158,7 @@ def test_the_shipped_list_is_consistent() -> None:
 @pytest.fixture
 def word_forms_table(monkeypatch):
     # Words are looked up only while exact search is on (it needs the table).
-    monkeypatch.setenv(vectors.EXACT_ENV, "true")
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, True)
     yield
     store.reset_lookup()
 
@@ -187,7 +188,7 @@ def test_lookup_never_breaks_a_search(word_forms_table, monkeypatch) -> None:
     store.set_lookup(None)
     assert store.lookup(["ageing"]) == {}
     # With exact search off nothing is asked at all.
-    monkeypatch.delenv(vectors.EXACT_ENV)
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, False)
     store.set_lookup(lambda words: pytest.fail("looked up with exact search off"))
     assert store.lookup(["ageing"]) == {}
 
@@ -364,7 +365,7 @@ def test_the_guard_of_a_reviewed_word_lists_its_stem_minus_the_excluded(
         reviewed_list, word_forms_table, monkeypatch) -> None:
     from services.fulltext import tsquery, vectors
 
-    monkeypatch.setenv(vectors.EXACT_ENV, "true")
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, True)
     reviewed_list({"exact": [{"forms": ["weight", "weights"], "excludes": ["weighted", "weighting"],
                               "why": "x"}]})
     store.set_lookup(lambda words: [("weight", "weight", 1400,

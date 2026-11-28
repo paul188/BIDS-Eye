@@ -9,11 +9,11 @@ Skipped unless BIDSEYE_TEST_PG_DSN names a scratch database
 from __future__ import annotations
 
 import asyncio
-import os
 import uuid
 
 import pytest
 
+from config.settings import settings_obj
 from services.uncertain import tier as ut
 
 from tests.postgres import fresh_schema, needs_postgres, run_statements
@@ -60,11 +60,11 @@ async def _scores(condition: str, hoist: bool, possible: bool = False) -> dict:
                 for n, age in enumerate(ages):
                     await conn.execute(text("INSERT INTO bids_participants VALUES (:id, :p, :age)"),
                                        {"id": ids[key], "p": f"sub-{n}", "age": age})
-        os.environ["UNCERTAIN_POSSIBLE"] = "true" if possible else "false"
+        settings_obj.UNCERTAIN_POSSIBLE = possible
         try:
             sql = ut.apply(_HEAD + condition, papers=True, hoist_terms=hoist)
         finally:
-            del os.environ["UNCERTAIN_POSSIBLE"]
+            settings_obj.UNCERTAIN_POSSIBLE = False
         async with AsyncSession(engine) as session:
             rows = (await session.execute(text(sql))).mappings().all()
         by_id = {value: key for key, value in ids.items()}

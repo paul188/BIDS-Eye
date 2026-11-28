@@ -44,7 +44,7 @@ EXACT_ENV = "TEXT_SEARCH_EXACT"
 
 async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: str) -> None:
     sys.path.insert(0, backend_dir)
-    from services_layout import use_either_layout  # older backends: flat services/
+    from services_layout import set_setting, use_either_layout  # older backends: flat services/
     use_either_layout()
     from rank_compat import rank_json, rank_kwargs, rank_of  # rank_tsquery before RankQuery
     import main  # noqa: F401  — sets up import paths exactly as the app does
@@ -110,13 +110,13 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
         per_variant: Dict[str, Dict[str, Any]] = {v: {} for v in variants}
         try:
             seen.clear()
-            os.environ[EXACT_ENV] = "true"
+            set_setting(EXACT_ENV, "true")
             translation = await translator.text_to_sql(q["question"])
             sqls = {"exact_on": (translation.sql, rank_of(translation))}
             if seen:
-                os.environ[EXACT_ENV] = "false"
+                set_setting(EXACT_ENV, "false")
                 stemmed = rewrite(seen["raw"], seen["question"], None)
-                os.environ[EXACT_ENV] = "true"
+                set_setting(EXACT_ENV, "true")
                 sqls["exact_off"] = (stemmed.sql, rank_of(stemmed))
             else:   # keyword fallback: nothing was rewritten, both are the same
                 sqls["exact_off"] = sqls["exact_on"]

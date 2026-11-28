@@ -26,7 +26,6 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import os
 import re
 import unicodedata
 from pathlib import Path
@@ -37,6 +36,7 @@ from sqlalchemy import select, update, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config.settings import settings_obj
 from routers.schemas import ScoredFilter
 from services.fulltext.ranking import RankQuery, rank_from_json
 from services.search import search_runner
@@ -105,9 +105,10 @@ _VERSION_FILES = (
     _BACKEND / "services" / "uncertain" / "text.py",
     _BACKEND / "services" / "fulltext" / "word_form_counts.py",
     _BACKEND / "database" / "worker.py",
+    _BACKEND / "config" / "settings.py",
 )
-_VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
-                "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT")
+_VERSION_SETTINGS = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
+                     "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT")
 _version: Optional[str] = None
 
 
@@ -139,8 +140,8 @@ def pipeline_version() -> str:
                 digest.update(path.read_bytes())
             except OSError:
                 digest.update(b"missing")
-        for name in _VERSION_ENV:
-            digest.update(f"{name}={os.getenv(name, '')};".encode())
+        for name in _VERSION_SETTINGS:
+            digest.update(f"{name}={getattr(settings_obj, name)};".encode())
         _version = digest.hexdigest()[:16]
     return _version
 

@@ -23,11 +23,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import List, Optional
 
 log = logging.getLogger(__name__)
 
+from config.settings import settings_obj  # noqa: E402
 from routers.schemas import ScoredFilter, TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, profile_available, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
@@ -112,7 +112,7 @@ def _run_local(question: str) -> TextToSQLResult:
         try:
             retriever = MetadataRetriever(
                 str(name_index_path),
-                db_url=os.getenv("DATABASE_URL"),
+                db_url=settings_obj.DATABASE_URL,
             )
         except (OSError, ValueError) as exc:  # unreadable, or not JSON
             log.warning("Could not load RAG name index: %s", exc)
@@ -273,7 +273,7 @@ async def text_to_sql(question: str) -> TextToSQLResult:
         # generation). Cloudflare drops the request at ~100s; if the LLMs are
         # pathologically slow (a provider's 503 storm + slow fallback) we must return
         # *something* fast rather than let the browser see a NetworkError.
-        deadline = float(os.getenv("PIPELINE_DEADLINE_SECONDS", "80"))
+        deadline = settings_obj.PIPELINE_DEADLINE_SECONDS
         try:
             return await asyncio.wait_for(
                 asyncio.to_thread(_run_local, question),

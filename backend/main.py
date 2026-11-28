@@ -49,7 +49,7 @@ from exceptions.handlers import add_error_handlers
 from routers.auth import auth_router
 from routers.history import history_router
 from routers.search import search_router
-from services import in_process_crawler, switches
+from services import in_process_crawler
 from services.database_stats.database_stats import database_stats
 from services.schema.revision import check_revision
 from services.translate import optional_columns
@@ -62,9 +62,6 @@ request_log.configure()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    # Stop when a feature switch is neither true nor false.
-    switches.check()
-
     # Stop when the LLM config (backend/llm/llm_config.yaml) names an unknown
     # model or setting; warn about profile tiers whose provider has no key.
     llm_client.check_config()

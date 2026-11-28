@@ -15,6 +15,9 @@ from fastapi import FastAPI
 from fastapi.dependencies.utils import get_flat_dependant
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
+
+from config.settings import settings_obj
 from deps import require_auth
 from security.middleware import PUBLIC_API_PATHS
 from security.sessions import NotSignedInError
@@ -27,11 +30,11 @@ IDENTITY_NAMES = {"uid", "user", "user_id", "github_id", "github_login", "sub"}
 @pytest.fixture
 def app(monkeypatch: pytest.MonkeyPatch) -> FastAPI:
     """main.app, built as in production."""
-    monkeypatch.setenv("SESSION_SECRET", "test-secret-" + "x" * 40)
-    monkeypatch.setenv("GITHUB_CLIENT_ID", "x")
-    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "x")
-    monkeypatch.setenv("ALLOW_ANY_GITHUB_USER", "true")
-    monkeypatch.delenv("GITHUB_ORG", raising=False)
+    monkeypatch.setattr(settings_obj, "SESSION_SECRET", SecretStr("test-secret-" + "x" * 40))
+    monkeypatch.setattr(settings_obj, "GITHUB_CLIENT_ID", "x")
+    monkeypatch.setattr(settings_obj, "GITHUB_CLIENT_SECRET", SecretStr("x"))
+    monkeypatch.setattr(settings_obj, "ALLOW_ANY_GITHUB_USER", True)
+    monkeypatch.setattr(settings_obj, "GITHUB_ORG", "")
     for name in ("METADATA_DB_NAME", "METADATA_DB_USER", "METADATA_DB_PASSWORD", "METADATA_DB_HOST"):
         monkeypatch.setenv(name, "x")
     return importlib.import_module("main").app

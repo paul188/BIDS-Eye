@@ -10,6 +10,7 @@ import pytest
 import sqlglot
 from sqlglot import exp
 
+from config.settings import settings_obj
 from services.uncertain import classify as tier_classify, scanner as tier_scanner, tier as ut
 from services import asked
 from services.results.display import highlights
@@ -142,7 +143,7 @@ def test_file_part_reads_the_facets_summary_when_it_covers_every_dataset(monkeyp
 
 
 def test_known_is_every_candidate_with_a_possible_level(monkeypatch):
-    monkeypatch.setenv("UNCERTAIN_POSSIBLE", "true")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_POSSIBLE", True)
     assert _classify(STRENGTH_7T).known.startswith("EXISTS(SELECT 1 FROM bids_objects AS uk")
 
 
