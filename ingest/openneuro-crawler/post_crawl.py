@@ -219,13 +219,27 @@ async def vacuum_file_table(engine) -> None:
 
 
 async def run_post_crawl(accessions: Sequence[str],
-                         only: Optional[Collection[str]] = None) -> None:
+                         only: Optional[Collection[str]] = None, *,
+                         files: Optional[Sequence[str]] = None,
+                         papers: Optional[Sequence[str]] = None) -> None:
     """The steps for *accessions*; logs and swallows every error.
 
     *only* runs just the named steps (STEPS) and ignores the CRAWL_* switches.
+
+    A crawl cycle passes three lists (crawler_service.py):
+      files       the datasets whose files were indexed: the steps that read
+                  the file table or the dataset's S3 files (summaries, groups,
+                  codes, links, vacuum)
+      papers      every dataset: the paper step itself skips those checked
+                  within PAPER_RECHECK_DAYS
+      accessions  the datasets indexed or whose README or uploader fields
+                  changed: the other steps
+    Without *files* or *papers* those steps take *accessions* too.
     """
     accessions = [a for a in accessions if a]
-    if not accessions:
+    files = accessions if files is None else [a for a in files if a]
+    papers = accessions if papers is None else [a for a in papers if a]
+    if not (accessions or files or papers):
         return
     unknown = set(only or ()) - set(STEPS)
     if unknown:
@@ -240,12 +254,12 @@ async def run_post_crawl(accessions: Sequence[str],
     # The search reads per-dataset summaries of bids_objects, not the file
     # table: a dataset whose files changed is found by its new data types
     # only after this (remote/dataset_facets.py). Always on in a crawl.
-    if wanted("summaries"):
+    if files and wanted("summaries"):
         try:
             from remote import dataset_facets
 
             async with engine.begin() as conn:
-                stats = await dataset_facets.refresh(conn, accessions)
+                stats = await dataset_facets.refresh(conn, files)
             log.info("[post-crawl] Dataset summaries: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Dataset summaries failed: %s", exc, exc_info=True)
@@ -253,12 +267,12 @@ async def run_post_crawl(accessions: Sequence[str],
     # Participant diagnoses from a group column and its participants.json
     # Levels ("F" = "Frontotemporal Dementia Group"; remote/participant_groups.py).
     # Only datasets without any coded diagnosis. Reads OpenNeuro's public S3.
-    if wanted("groups", "CRAWL_PARTICIPANT_GROUPS"):
+    if files and wanted("groups", "CRAWL_PARTICIPANT_GROUPS"):
         try:
             from remote import participant_groups
 
             async with engine.begin() as conn:
-                reports = await participant_groups.run(conn, accessions, apply=True)
+                reports = await participant_groups.run(conn, files, apply=True)
             log.info("[post-crawl] Participant groups decoded: %d datasets, %d rows",
                      len(reports), sum(r["written"] for r in reports))
         except Exception as exc:
@@ -267,12 +281,12 @@ async def run_post_crawl(accessions: Sequence[str],
     # Participant sex and handedness as typed ('F', 'Female', 'Ambidextrous')
     # become the vocabulary's standard codes (remote/participant_codes.py). A
     # crawl writes the typed value again, so this runs after every cycle.
-    if wanted("codes", "CRAWL_PARTICIPANT_CODES"):
+    if files and wanted("codes", "CRAWL_PARTICIPANT_CODES"):
         try:
             from remote import participant_codes
 
             async with engine.begin() as conn:
-                reports = await participant_codes.run(conn, accessions, apply=True)
+                reports = await participant_codes.run(conn, files, apply=True)
             log.info("[post-crawl] Participant codes: %d rows rewritten in %d datasets, "
                      "%d of them values nothing names",
                      sum(r["written"] for r in reports), len({r["accession"] for r in reports}),
@@ -280,26 +294,26 @@ async def run_post_crawl(accessions: Sequence[str],
         except Exception as exc:
             log.error("[post-crawl] Participant codes failed: %s", exc, exc_info=True)
 
-    if wanted("links", "CRAWL_LINKS"):
+    if files and wanted("links", "CRAWL_LINKS"):
         try:
             from remote import dataset_links
 
             async with engine.begin() as conn:
-                stats = await dataset_links.refresh_links(conn, accessions)
+                stats = await dataset_links.refresh_links(conn, files)
             log.info("[post-crawl] Derivatives and sites: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Derivatives and sites failed: %s", exc, exc_info=True)
 
-    if wanted("papers", "CRAWL_PAPERS"):
+    if papers and wanted("papers", "CRAWL_PAPERS"):
         try:
-            stats = await lookup_papers(engine, accessions)
+            stats = await lookup_papers(engine, papers)
             log.info("[post-crawl] Papers looked up: %s", stats or "none due")
         except Exception as exc:
             log.error("[post-crawl] Paper lookup failed: %s", exc, exc_info=True)
 
     # The institutions of the first and last author of each primary paper
     # (OpenAlex, with their ROR id) are sites too (remote/paper_affiliations.py).
-    if wanted("affiliations", "CRAWL_PAPER_AFFILIATIONS"):
+    if accessions and wanted("affiliations", "CRAWL_PAPER_AFFILIATIONS"):
         try:
             from remote import paper_affiliations
 
@@ -310,7 +324,7 @@ async def run_post_crawl(accessions: Sequence[str],
 
     # Where the sites are: names not matched yet go to ROR once
     # (remote/site_places.py); questions that name a place read the result.
-    if wanted("places", "CRAWL_SITE_PLACES"):
+    if (accessions or files) and wanted("places", "CRAWL_SITE_PLACES"):
         try:
             from remote import site_places
 
@@ -323,28 +337,29 @@ async def run_post_crawl(accessions: Sequence[str],
     # What each README says (services/indexing/readme_profile_runner.py): the
     # search indexes the profile and the studied conditions, and the
     # re-ranker reads the profile.
-    if wanted("profiles", "CRAWL_README_PROFILES") and _profiles_available():
+    if accessions and wanted("profiles", "CRAWL_README_PROFILES") and _profiles_available():
         try:
             stats = await profile_readmes(engine, accessions)
             log.info("[post-crawl] README profiles: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] README profiles failed: %s", exc, exc_info=True)
 
-    if wanted("descriptions", "CRAWL_DESCRIPTIONS") and _descriptions_available():
+    if accessions and wanted("descriptions", "CRAWL_DESCRIPTIONS") and _descriptions_available():
         try:
             stats = await describe(engine, accessions)
             log.info("[post-crawl] Dataset descriptions: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Dataset descriptions failed: %s", exc, exc_info=True)
 
-    if wanted("word_forms", "CRAWL_WORD_FORMS") and _backend_services_available():
+    if (accessions or files) and wanted("word_forms", "CRAWL_WORD_FORMS") \
+            and _backend_services_available():
         try:
             stats = await refresh_word_forms(engine)
             log.info("[post-crawl] Word forms: %s", stats)
         except Exception as exc:
             log.error("[post-crawl] Word forms failed: %s", exc, exc_info=True)
 
-    if wanted("vacuum", "CRAWL_VACUUM"):
+    if files and wanted("vacuum", "CRAWL_VACUUM"):
         try:
             await vacuum_file_table(engine)
             log.info("[post-crawl] File table vacuumed.")

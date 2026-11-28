@@ -68,13 +68,13 @@ def test_parse_keeps_roles_and_uses_only_verified_studied_conditions() -> None:
     assert "stroke" not in text and "schizophrenia" not in text
 
 
-def test_parse_rejects_unusable_answers_and_tolerates_fences() -> None:
+def test_parse_rejects_unusable_answers_and_drops_unknown_roles() -> None:
     with pytest.raises(ValueError):
         rp.parse_response("Sure! Here is the profile.", SOURCE)
     with pytest.raises(ValueError):
         rp.parse_response("[]", SOURCE)
-    fenced = "```json\n" + _answer(conditions=[{"term": "x", "role": "nonsense", "evidence": ""}]) + "\n```"
-    profile = rp.parse_response(fenced, SOURCE)
+    answer = _answer(conditions=[{"term": "x", "role": "nonsense", "evidence": ""}])
+    profile = rp.parse_response(answer, SOURCE)
     assert [f for f in profile.facts if f.kind == "condition"] == []
 
 

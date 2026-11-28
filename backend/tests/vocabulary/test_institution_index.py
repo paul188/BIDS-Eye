@@ -118,7 +118,6 @@ def _augmented(term_to_names: dict, available=("institutions",), unresolved=()) 
     from preprocess import QueryPlan, RAGField, ResolvedTerms, _build_augmented_question
 
     plan = QueryPlan(
-        query_family="combined_filter",
         natural_language_summary="Find datasets from the given institution.",
         institution_terms=list(term_to_names) + list(unresolved),
     )
@@ -193,7 +192,6 @@ def test_excluded_institution_keeps_datasets_without_recorded_institution() -> N
     from preprocess import QueryPlan, RAGField, ResolvedTerms, _build_augmented_question, build_rag_requests
 
     plan = QueryPlan(
-        query_family="combined_filter",
         natural_language_summary="Find fMRI datasets not collected at Stanford.",
         excluded_institution_terms=["Stanford"],
     )

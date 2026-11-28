@@ -3,13 +3,13 @@
 backend/vocabulary/tools/mine_word_forms.py
 --------------------------
 List the stems under which the catalogue has several word forms, as material
-for backend/vocabulary/word_forms.yaml.
+for backend/vocabulary/stem_collisions.yaml.
 
 The search matches a word by its stem. Where a stem merges words that mean
 different things ("severe" and "several"), a search for one returns every
 dataset with the other. This script prints the stems where that would cost
 most: those with the most datasets in forms other than the commonest one.
-It decides nothing. Read the list, and add to word_forms.yaml only the groups
+It decides nothing. Read the list, and add to stem_collisions.yaml only the groups
 that are plainly different words; most groups are ordinary inflections
 ("scan", "scans", "scanning") and need no entry.
 
@@ -35,7 +35,7 @@ sys.path.insert(0, str(_REPO / "backend" / "vocabulary"))
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
 
-from word_forms import inflections  # noqa: E402
+from stem_collisions import inflections  # noqa: E402
 
 # Stems ranked by the datasets in forms that are not the commonest form's
 # plural or singular; the regular inflections are folded in Python below.

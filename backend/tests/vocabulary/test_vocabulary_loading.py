@@ -1,5 +1,5 @@
 """Vocabulary files that cannot be read are logged and the search goes on
-without them (backend/vocabulary/reference_vocabulary.py, backend/vocabulary/cohort_count.py); a missing
+without them (backend/vocabulary/reference_vocabulary.py, backend/vocabulary/group_labels.py); a missing
 optional file stays silent."""
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import logging
 
 import pytest
 
-import cohort_count
+import group_labels
 import reference_vocabulary
 
 
@@ -38,34 +38,34 @@ def test_a_missing_reference_vocabulary_is_silent(monkeypatch, tmp_path, caplog)
 def test_an_unreadable_cohort_vocabulary_is_logged(monkeypatch, tmp_path, caplog):
     broken = tmp_path / "value_mappings.yaml"
     broken.write_text("diagnosis: {a: [\n")
-    monkeypatch.setattr(cohort_count, "_VOCABULARY", broken)
-    cohort_count._vocabulary.cache_clear()
+    monkeypatch.setattr(group_labels, "_VOCABULARY", broken)
+    group_labels._vocabulary.cache_clear()
     try:
         with caplog.at_level(logging.WARNING):
-            assert cohort_count._vocabulary() == {}
+            assert group_labels._vocabulary() == {}
         assert "only coded diagnoses" in caplog.text
         empty = tmp_path / "empty.yaml"
         empty.write_text("")
-        monkeypatch.setattr(cohort_count, "_VOCABULARY", empty)
-        cohort_count._vocabulary.cache_clear()
-        assert cohort_count._vocabulary() == {}  # an empty file is no error
+        monkeypatch.setattr(group_labels, "_VOCABULARY", empty)
+        group_labels._vocabulary.cache_clear()
+        assert group_labels._vocabulary() == {}  # an empty file is no error
     finally:
-        cohort_count._vocabulary.cache_clear()
+        group_labels._vocabulary.cache_clear()
 
 
 def test_a_word_forms_list_that_is_no_mapping_is_ignored(monkeypatch, tmp_path, caplog):
-    import word_forms
+    import stem_collisions
 
-    odd = tmp_path / "word_forms.yaml"
+    odd = tmp_path / "stem_collisions.yaml"
     odd.write_text("- just\n- a list\n")
-    monkeypatch.setattr(word_forms, "_PATH", odd)
-    word_forms._reviewed.cache_clear()
+    monkeypatch.setattr(stem_collisions, "_PATH", odd)
+    stem_collisions._reviewed.cache_clear()
     try:
         with caplog.at_level(logging.WARNING):
-            assert word_forms._reviewed() == {}
+            assert stem_collisions._reviewed() == {}
         assert "not a mapping" in caplog.text
     finally:
-        word_forms._reviewed.cache_clear()
+        stem_collisions._reviewed.cache_clear()
 
 
 def test_a_failed_embedding_model_is_tried_again_later(monkeypatch):

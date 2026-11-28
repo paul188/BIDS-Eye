@@ -1,6 +1,6 @@
 """
-backend/vocabulary/word_forms.py
------------------
+backend/vocabulary/stem_collisions.py
+-------------------------------------
 Which forms of a searched word may match.
 
 Full-text search matches a word by its stem (PostgreSQL's 'english'
@@ -13,7 +13,7 @@ second.
 For such a word the search can require the forms that may match
 (backend/services/fulltext/text_search.py writes the condition). This module decides
 which forms those are. It has no database access; the catalogue's forms come
-in as WordEvidence (backend/services/fulltext/word_form_counts.py).
+in as StemCounts (backend/services/fulltext/word_form_counts.py).
 
 Whether a form may match is a question about two words, never about one: a
 search for "ageing" must not find "age", but a search for "aged" may well find
@@ -23,7 +23,7 @@ search requires are the catalogue's forms of the stem minus the ones judged
 different (allowed_forms); a word without such a pair is searched by stem.
 
 The pairs come from, in this order:
-  1. word_forms.yaml, a short reviewed list: each form of a group against
+  1. stem_collisions.yaml, a short reviewed list: each form of a group against
      each of its excludes. It applies to every searched word, also to
      synonyms a vocabulary or the language model added.
   2. word_form_pairs.json, the catalogue's colliding pairs judged offline (a
@@ -51,7 +51,7 @@ from text_terms import POSTGRES_STOPWORDS
 
 log = logging.getLogger(__name__)
 
-_PATH = Path(__file__).with_name("word_forms.yaml")
+_PATH = Path(__file__).with_name("stem_collisions.yaml")
 _PAIRS_PATH = Path(__file__).with_name("word_form_pairs.json")
 _WORD_RE = re.compile(r"[a-z]+")
 # A form goes into a tsquery literal as it is, so nothing else may pass.
@@ -74,11 +74,11 @@ PROMPT_FORMS = 8
 MAX_QUESTION_WORDS = 40
 
 # word → the forms that may match (asked word first)
-ExactForms = Dict[str, Tuple[str, ...]]
+AllowedForms = Dict[str, Tuple[str, ...]]
 
 
 @dataclass(frozen=True)
-class WordEvidence:
+class StemCounts:
     """What the catalogue says about one searched word."""
     word: str
     stem: str
@@ -335,13 +335,13 @@ def search_variants(word: str) -> Tuple[str, ...]:
     return tuple(sorted(found))
 
 
-def family_docs(evidence: WordEvidence) -> int:
+def family_docs(counts: StemCounts) -> int:
     """Datasets with the asked word itself (or its plural or singular).
 
     The largest single count, a lower bound: the forms mostly occur together.
     """
-    own = inflections(evidence.word)
-    return max((n for form, n in evidence.forms if form in own), default=0)
+    own = inflections(counts.word)
+    return max((n for form, n in counts.forms if form in own), default=0)
 
 
 def own_forms(word: str) -> Set[str]:
@@ -355,24 +355,24 @@ def own_forms(word: str) -> Set[str]:
     return found
 
 
-def colliding_forms(evidence: WordEvidence) -> Tuple[str, ...]:
+def colliding_forms(counts: StemCounts) -> Tuple[str, ...]:
     """The other forms of the stem that bring in many datasets the word may not
     mean, most frequent first. Each is one pair to judge."""
-    own = own_forms(evidence.word)
-    floor = max(MIN_EXTRA, (MIN_RATIO - 1) * max(family_docs(evidence), 1))
-    return tuple(form for form, n in evidence.forms if form not in own and n >= floor)
+    own = own_forms(counts.word)
+    floor = max(MIN_EXTRA, (MIN_RATIO - 1) * max(family_docs(counts), 1))
+    return tuple(form for form, n in counts.forms if form not in own and n >= floor)
 
 
-def is_collision(evidence: WordEvidence) -> bool:
+def is_collision(counts: StemCounts) -> bool:
     """True when some other form of the stem collides with the word."""
-    return bool(colliding_forms(evidence))
+    return bool(colliding_forms(counts))
 
 
 # ── Reviewed list ─────────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
 class _Group:
-    """One `exact` group of word_forms.yaml."""
+    """One `exact` group of stem_collisions.yaml."""
     forms: Tuple[str, ...]      # forms that mean the same
     excludes: FrozenSet[str]    # forms each of them is different from, in every spelling
 
@@ -385,15 +385,15 @@ def _safe_forms(values: object) -> Tuple[str, ...]:
 
 @lru_cache(maxsize=1)
 def _reviewed() -> Dict[str, Optional[_Group]]:
-    """word → its group, or None where stemming is right. From word_forms.yaml."""
+    """word → its group, or None where stemming is right. From stem_collisions.yaml."""
     # A broken list must not stop the search. UnicodeDecodeError is a ValueError.
     try:
         data = yaml.safe_load(_PATH.read_text()) or {}
     except (OSError, ValueError, yaml.YAMLError) as exc:
-        log.warning("word_forms.yaml could not be read (%s) — ignoring it", exc)
+        log.warning("stem_collisions.yaml could not be read (%s) — ignoring it", exc)
         return {}
     if not isinstance(data, dict):
-        log.warning("word_forms.yaml is not a mapping — ignoring it")
+        log.warning("stem_collisions.yaml is not a mapping — ignoring it")
         return {}
     found: Dict[str, Optional[_Group]] = {}
     for entry in data.get("exact") or []:
@@ -441,7 +441,7 @@ def _stored_pairs() -> Dict[str, Tuple[FrozenSet[str], FrozenSet[str]]]:
     stem). From word_form_pairs.json; {} without it."""
     if not _PAIRS_PATH.exists():
         return {}
-    # A broken file must not stop the search, as with word_forms.yaml.
+    # A broken file must not stop the search, as with stem_collisions.yaml.
     try:
         data = json.loads(_PAIRS_PATH.read_text())
     except (OSError, ValueError) as exc:
@@ -494,44 +494,44 @@ def _asked_first(word: str, forms: Iterable[str]) -> Tuple[str, ...]:
     return tuple(f for f in dict.fromkeys([word, *forms]) if _FORM_RE.fullmatch(f))
 
 
-def allowed_forms(evidence: WordEvidence, different: Iterable[str]) -> Optional[Tuple[str, ...]]:
+def allowed_forms(counts: StemCounts, different: Iterable[str]) -> Optional[Tuple[str, ...]]:
     """The forms a search for the word requires: the catalogue's forms of its
     stem except the ones judged *different*, asked word first, then by count.
 
     None when none of *different* is a form of the stem: the search then
     matches by stem, as before.
     """
-    drop = set(different) - own_forms(evidence.word)
-    if not drop & {form for form, _ in evidence.forms}:
+    drop = set(different) - own_forms(counts.word)
+    if not drop & {form for form, _ in counts.forms}:
         return None
-    return _asked_first(evidence.word, [form for form, _ in evidence.forms if form not in drop])
+    return _asked_first(counts.word, [form for form, _ in counts.forms if form not in drop])
 
 
 # ── Deciding ──────────────────────────────────────────────────────────────────
 
-def open_forms(evidence: WordEvidence) -> Tuple[str, ...]:
+def open_forms(counts: StemCounts) -> Tuple[str, ...]:
     """The colliding forms of the word that neither the reviewed list nor the
     stored pairs have judged against it, most frequent first."""
-    listed, group = _entry(evidence.word)
+    listed, group = _entry(counts.word)
     if listed and group is None:
         return ()       # the list says the stem is right for every form
     judged = (set(group.forms) | group.excludes) if group else set()
-    judged |= set().union(*_stored_for(evidence.word))
-    return tuple(form for form in colliding_forms(evidence) if form not in judged)
+    judged |= set().union(*_stored_for(counts.word))
+    return tuple(form for form in colliding_forms(counts) if form not in judged)
 
 
-def needs_decision(evidence: Mapping[str, WordEvidence]) -> List[WordEvidence]:
+def needs_decision(stem_counts: Mapping[str, StemCounts]) -> List[StemCounts]:
     """The words the language model is asked about: those with open pairs."""
-    return [e for e in evidence.values() if open_forms(e)]
+    return [e for e in stem_counts.values() if open_forms(e)]
 
 
-def prompt_block(evidence: Sequence[WordEvidence]) -> str:
-    """The open forms of each word in *evidence*, for the intent prompt.
+def prompt_block(stem_counts: Sequence[StemCounts]) -> str:
+    """The open forms of each word in *stem_counts*, for the intent prompt.
 
     "" when there is nothing to ask.
     """
     lines = []
-    for item in evidence:
+    for item in stem_counts:
         shown = [(form, item.count(form)) for form in open_forms(item)[:PROMPT_FORMS]]
         if not shown:
             continue
@@ -540,22 +540,22 @@ def prompt_block(evidence: Sequence[WordEvidence]) -> str:
         lines.append(f"  {item.word}: {forms}")
     if not lines:
         return ""
-    return ("Word forms in the catalogue. The search finds a word by its stem, so for each\n"
+    return ("Stem collisions in the catalogue. The search finds a word by its stem, so for each\n"
             "of these words of the query it also finds the other forms listed (in brackets:\n"
-            "datasets that contain the form). Fill word_forms for them:\n" + "\n".join(lines))
+            "datasets that contain the form). Fill same_meaning for them:\n" + "\n".join(lines))
 
 
-def _complete(kept: Sequence[str], evidence: WordEvidence) -> List[str]:
+def _complete(kept: Sequence[str], counts: StemCounts) -> List[str]:
     """*kept* plus the catalogue's regular inflections of each kept form."""
     wanted: Set[str] = set()
     for form in kept:
         wanted |= inflections(form)
-    extra = [form for form, _ in evidence.forms if form in wanted and form not in kept]
+    extra = [form for form, _ in counts.forms if form in wanted and form not in kept]
     return list(kept) + extra
 
 
-def decide(evidence: Mapping[str, WordEvidence],
-           choices: Iterable[Tuple[str, Sequence[str]]]) -> ExactForms:
+def decide(stem_counts: Mapping[str, StemCounts],
+           choices: Iterable[Tuple[str, Sequence[str]]]) -> AllowedForms:
     """The forms each word of the question must match in; {} for none.
 
     *choices* are the language model's (word, forms to keep) answers about the
@@ -564,12 +564,12 @@ def decide(evidence: Mapping[str, WordEvidence],
     count too, so a listed word of the question gets its forms here from the
     catalogue's forms of its stem.
 
-    Anything in an answer that does not fit the evidence is dropped, never an
+    Anything in an answer that does not fit the counts is dropped, never an
     error: a word that was not asked about, a form the catalogue does not have
     under that stem. A choice that keeps every form shown restricts nothing.
     """
     different: Dict[str, Set[str]] = {}
-    asked = {e.word: e for e in needs_decision(evidence)}
+    asked = {e.word: e for e in needs_decision(stem_counts)}
     for word, keep in choices:
         word = str(word).strip().lower()
         item = asked.get(word)
@@ -579,8 +579,8 @@ def decide(evidence: Mapping[str, WordEvidence],
         kept = [f for f in dict.fromkeys(str(k).strip().lower() for k in keep) if f in known]
         kept_all = set(_complete(_asked_first(word, kept), item))
         different[word] = {form for form in open_forms(item)[:PROMPT_FORMS] if form not in kept_all}
-    decided: ExactForms = {}
-    for item in evidence.values():
+    decided: AllowedForms = {}
+    for item in stem_counts.values():
         forms = allowed_forms(item, different.get(item.word, set()) | excluded_forms(item.word))
         if forms:
             decided[item.word] = forms
@@ -588,7 +588,7 @@ def decide(evidence: Mapping[str, WordEvidence],
 
 
 # The catalogue's forms of one word, or None when it cannot say.
-Catalogue = Callable[[str], Optional[WordEvidence]]
+Catalogue = Callable[[str], Optional[StemCounts]]
 
 
 def forms_for(word: str, decided: Optional[Mapping[str, Sequence[str]]] = None,
@@ -611,7 +611,7 @@ def forms_for(word: str, decided: Optional[Mapping[str, Sequence[str]]] = None,
         return _asked_first(word, [form for form in chosen if form not in different])
     if not different:
         return None
-    evidence = catalogue(word) if catalogue else None
-    if evidence is not None:
-        return allowed_forms(evidence, different)
+    counts = catalogue(word) if catalogue else None
+    if counts is not None:
+        return allowed_forms(counts, different)
     return _asked_first(word, group.forms) if group is not None else None

@@ -248,11 +248,8 @@ class Relation:
 
 
 def _load_json(raw: str) -> Optional[dict]:
-    raw = (raw or "").strip()
-    if raw.startswith("```"):
-        raw = raw.strip("`").split("\n", 1)[-1]
     try:
-        value = json.loads(raw)
+        value = json.loads(raw or "")
     except ValueError:
         return None
     return value if isinstance(value, dict) else None

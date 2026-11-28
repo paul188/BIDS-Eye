@@ -77,7 +77,7 @@ def test_covered_terms_need_nothing_more(term: str) -> None:
 def _augmented(term: str, codes: list) -> str:
     import preprocess as p
 
-    plan = p.QueryPlan(query_family="concept_query", natural_language_summary=term,
+    plan = p.QueryPlan(natural_language_summary=term,
                        groups=[p.ParticipantGroup(group_name="g", diagnosis_terms=[term])])
     resolved = [p.ResolvedTerms(field=p.RAGField.DIAGNOSIS, term_to_codes={term: codes})]
     return p._build_augmented_question(plan, resolved)
@@ -112,10 +112,10 @@ def test_a_known_diagnosis_without_participant_rows_keeps_its_line(monkeypatch) 
         def db_verify_codes(self, field, codes):
             return [], list(codes)
 
-    plan = p.QueryPlan(query_family="concept_query", natural_language_summary="FTD",
+    plan = p.QueryPlan(natural_language_summary="FTD",
                        groups=[p.ParticipantGroup(group_name="g",
                                                   diagnosis_terms=["frontotemporal dementia"])])
-    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question: plan)
+    monkeypatch.setattr(p.pipeline, "create_query_plan", lambda question: plan)
     augmented = p.run_pipeline("frontotemporal dementia", retriever=Retriever()).augmented_question
     assert "DB MISS" not in augmented
     assert "p2.diagnosis IN ('frontotemporal_dementia')" in augmented
@@ -138,9 +138,9 @@ def test_a_diagnosis_keeps_its_own_code_when_only_a_narrower_one_has_rows(monkey
         def retrieve_for_field_multi_scored(self, field, terms):
             return {t: [(code, 1.0) for code in codes] for t in terms}
 
-    plan = p.QueryPlan(query_family="concept_query", natural_language_summary="TLE",
+    plan = p.QueryPlan(natural_language_summary="TLE",
                        groups=[p.ParticipantGroup(group_name="g", diagnosis_terms=["TLE"])])
-    monkeypatch.setattr(p.pipeline, "preprocess_query", lambda question: plan)
+    monkeypatch.setattr(p.pipeline, "create_query_plan", lambda question: plan)
     augmented = p.run_pipeline("20 patients with TLE", retriever=Retriever()).augmented_question
     line = next(ln for ln in augmented.splitlines() if ln.startswith("  diagnosis:"))
     assert "DB MISS" not in augmented

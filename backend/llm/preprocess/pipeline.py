@@ -6,11 +6,12 @@ import logging
 import re
 from typing import Any, Collection, Dict, List, Tuple
 import reference_vocabulary as _reference_vocabulary
-from services.schema.coded_fields import FILE_FIELDS
+from services.schema.fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
-from .plan import AugmentedQueryPlan, ParticipantGroup, QueryFamily, QueryPlan, RAGField, ScanRequirement
-from .intent import preprocess_query, word_evidence
+from .plan import AugmentedQueryPlan, ParticipantAttribute, ParticipantGroup, QueryPlan, RAGField, ScanRequirement
+from .intent import create_query_plan
+from .prompt_context import count_stem_forms
 from .rag import build_rag_requests
 from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, check_scan_term_alternatives, resolve_topics
 from .augment import augment_with_rag
@@ -18,18 +19,18 @@ from .augment import augment_with_rag
 log = logging.getLogger("preprocess")
 
 
-def _decide_word_forms(evidence: Dict[str, Any],
-                       word_choices: List[Tuple[str, List[str]]]) -> Dict[str, List[str]]:
+def _decide_allowed_forms(stem_counts: Dict[str, Any],
+                          same_meaning: List[Tuple[str, List[str]]]) -> Dict[str, List[str]]:
     """The forms each colliding word of the question must match in ({} for none)."""
     try:
-        import word_forms
+        import stem_collisions
     except ImportError as exc:
-        log.warning("Word forms not decided (%s) — searching by stem", exc)
+        log.warning("Allowed forms not decided (%s) — searching by stem", exc)
         return {}
     decided = {word: list(forms)
-               for word, forms in word_forms.decide(evidence, word_choices).items()}
+               for word, forms in stem_collisions.decide(stem_counts, same_meaning).items()}
     if decided:
-        log.info("Exact word forms: %s", decided)
+        log.info("Allowed forms: %s", decided)
     return decided
 
 
@@ -41,10 +42,10 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
 
     These come from the vocabulary or from the model's own wording, not from
     the question, so the model was not asked about them. They are searched by
-    stem. The log is the material for backend/vocabulary/word_forms.yaml.
+    stem. The log is the material for backend/vocabulary/stem_collisions.yaml.
     """
     try:
-        import word_forms
+        import stem_collisions
         word_form_counts = _catalogue.word_form_counts()
     except ImportError:  # outside the backend
         return
@@ -54,12 +55,12 @@ def _log_undecided_words(augmented_question: str, decided: Dict[str, List[str]])
     open_words = [w for w in searched if w not in decided]
     # {} when the catalogue cannot answer (lookup catches that).
     undecided = [e for e in word_form_counts.lookup(open_words).values()
-                 if word_forms.open_forms(e)]
+                 if stem_collisions.open_forms(e)]
     for item in undecided:
         log.info("Searched by stem although it collides: %s (%d datasets; own forms %d; "
                  "nobody judged %s)",
-                 item.word, item.stem_docs, word_forms.family_docs(item),
-                 ", ".join(f"{form} {item.count(form)}" for form in word_forms.open_forms(item)[:5]))
+                 item.word, item.stem_docs, stem_collisions.family_docs(item),
+                 ", ".join(f"{form} {item.count(form)}" for form in stem_collisions.open_forms(item)[:5]))
 
 
 # Words that say a name is a person: "datasets by Huntington", "the Wilson lab".
@@ -98,10 +99,9 @@ def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -
             continue
         field, label = concept
         if field == "diagnosis":
-            if not plan.groups:
+            if not plan.cohorts:
                 plan.groups.append(ParticipantGroup(group_name="patient_group"))
-            if name not in plan.groups[0].diagnosis_terms:
-                plan.groups[0].diagnosis_terms.append(name)
+            plan.cohorts[0].add_terms(ParticipantAttribute.DIAGNOSIS, [name])
         else:
             plan.scan_requirements.append(ScanRequirement(scan_terms=[name]))
         moved.append((name, field, label))
@@ -109,9 +109,6 @@ def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -
     if not moved:
         return
     plan.author_names = kept
-    if not kept and plan.query_family == QueryFamily.AUTHOR_QUERY:
-        plan.query_family = (QueryFamily.CONCEPT_QUERY if moved[0][1] == "diagnosis"
-                             else QueryFamily.SCAN_FILTER)
     readings = "; ".join(
         f"'{name}' is the {'diagnosis' if field == 'diagnosis' else 'task'} {label}, not an author"
         for name, field, label in moved
@@ -142,20 +139,20 @@ def run_pipeline(
     retrieve_for_field_multi() calls otherwise.
     """
     # Words whose stem also matches unrelated words ("ageing" and "age"): the
-    # model sees the catalogue's forms and picks the ones meant (backend/vocabulary/word_forms.py).
-    evidence = word_evidence(query)
-    if evidence:
-        word_choices: List[Tuple[str, List[str]]] = []
-        plan = preprocess_query(query, evidence=evidence, word_choices=word_choices)
-        decided = _decide_word_forms(evidence, word_choices)
+    # model sees the catalogue's forms and picks the ones meant (backend/vocabulary/stem_collisions.py).
+    stem_counts = count_stem_forms(query)
+    if stem_counts:
+        same_meaning: List[Tuple[str, List[str]]] = []
+        plan = create_query_plan(query, stem_counts=stem_counts, same_meaning=same_meaning)
+        decided = _decide_allowed_forms(stem_counts, same_meaning)
     else:
-        plan = preprocess_query(query)
+        plan = create_query_plan(query)
         decided = {}
     _names_that_are_conditions(plan, query, retriever)
     _keep_ambiguity_topics(plan)
     _detach_topic_terms(plan)
     if decided:
-        count_matches = functools.partial(_count_topic_matches, exact_forms=decided)
+        count_matches = functools.partial(_count_topic_matches, allowed_forms=decided)
         topics = resolve_topics(plan, retriever, count_matches)
         check_description_alternatives(plan, count_matches)
         check_scan_term_alternatives(plan, count_matches)
@@ -165,8 +162,8 @@ def run_pipeline(
         check_scan_term_alternatives(plan)
 
     def finished(augmented: AugmentedQueryPlan) -> AugmentedQueryPlan:
-        augmented.word_forms = decided
-        if evidence:
+        augmented.allowed_forms = decided
+        if stem_counts:
             _log_undecided_words(augmented.augmented_question, decided)
         return augmented
 

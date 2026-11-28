@@ -85,6 +85,25 @@ def _no_sleep(monkeypatch):
     monkeypatch.setattr(llm_client.time, "sleep", lambda s: None)
 
 
+# ── JSON answers ─────────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("answer", [
+    '{"a": 1}', '```json\n{"a": 1}\n```', '```\n{"a": 1}\n```  ',
+    '```json {"a": 1}```', '```json\n{"a": 1}',
+])
+def test_a_json_answer_comes_without_its_code_fence(monkeypatch, answer):
+    _install(monkeypatch, {"p": _profile("gemini-a")},
+             gemini=FakeProvider("gemini", lambda *a: answer))
+    assert llm_client.llm_generate("q", profile="p", json_schema={"type": "object"}) == '{"a": 1}'
+
+
+def test_a_text_answer_keeps_its_code_fence(monkeypatch):
+    fenced = "```sql\nSELECT 1\n```"
+    _install(monkeypatch, {"p": _profile("gemini-a")},
+             gemini=FakeProvider("gemini", lambda *a: fenced))
+    assert llm_client.llm_generate("q", profile="p") == fenced
+
+
 # ── usage ────────────────────────────────────────────────────────────────────
 
 def test_usage_is_collected_with_purpose_and_model(monkeypatch):

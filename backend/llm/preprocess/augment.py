@@ -25,16 +25,29 @@ import place_index as _place_index
 from cohort_count import placeholder as _patients_placeholder
 import text_formula as _text_formula
 from sql_text import contains_pattern as _contains_pattern, sql_string as _sql_string
+from bids_entities import entity_condition as _entity_condition
 from criteria import species_condition as _species_condition
 from criteria import without_diagnosis as _without_diagnosis
 from criteria import normalise_age_groups as _normalise_age_groups, age_condition as _age_condition, \
     age_group_label as _age_group_label
 
 from . import catalogue as _catalogue
-from .plan import AugmentedQueryPlan, QueryPlan, RAGField, ResolvedTerms, ResolvedTopic, ScoredFilter
+from .plan import AugmentedQueryPlan, ParticipantAttribute, QueryPlan, RAGField, ResolvedTerms, ResolvedTopic, ScoredFilter
 from .rag import _HEALTHY_WORDS, _build_scored_filters, _is_healthy_term, _participant_conditions
 
 log = logging.getLogger("preprocess")
+
+
+def _exists(fields: Collection[RAGField], where: str) -> str:
+    """EXISTS over the rows that store *fields* (RAGField.stored), for dataset d.
+
+    All the fields must live in the same table: one EXISTS is one row.
+    """
+    columns = {(f.stored.table, f.stored.alias) for f in fields}
+    if len(columns) != 1:
+        raise ValueError(f"{sorted(f.value for f in fields)} are not stored in one table")
+    (table, alias), = columns
+    return f"EXISTS (SELECT 1 FROM {table} {alias} WHERE {alias}.dataset_id = d.id AND {where})"
 
 
 def augment_with_rag(
@@ -51,7 +64,7 @@ def augment_with_rag(
 
     Parameters
     ----------
-    plan             : output of preprocess_query()
+    plan             : output of create_query_plan()
     rag_results      : {field: {term: [canonical_code, ...]}}
                        e.g. {"diagnosis": {"schizophrenia": ["schizophrenia_spectrum"]},
                               "datatype":  {"fMRI": ["func"]},
@@ -149,7 +162,9 @@ def _institution_lines(
         [t for t in plan.institution_terms if t and t.strip()] + list(resolved_names) + list(unresolved)
     ))
     terms = [t for t in terms if t not in excluded]
-    use_column = "institutions" in available_columns
+    stored = RAGField.INSTITUTION.stored
+    use_column = stored.column in available_columns
+    column = stored.ref
 
     def _array(names: List[str]) -> str:
         return "ARRAY[" + ", ".join(_sql_string(n) for n in names) + "]::text[]"
@@ -158,7 +173,7 @@ def _institution_lines(
     for term in excluded:
         names = list(dict.fromkeys(resolved_names.get(term, []))) if use_column else []
         if names:
-            condition = f"NOT COALESCE(d.institutions && {_array(names)}, false)"
+            condition = f"NOT COALESCE({column} && {_array(names)}, false)"
         else:
             text_part = _format_text_match(_institution_text_alternatives(term) or [term], _MODE_SHORT)
             if not text_part:
@@ -176,7 +191,7 @@ def _institution_lines(
         if names or ror_names:
             parts = []
             if names:
-                parts.append(f"d.institutions && {_array(names)}")
+                parts.append(f"{column} && {_array(names)}")
             if ror_names:
                 tables = _catalogue.tables()
                 parts.append(f"EXISTS (SELECT 1 FROM {tables.dataset_sites.name} AS s "
@@ -455,7 +470,7 @@ def _diagnosis_lines(plan: QueryPlan,
         return everything
     by_key = {term.strip().casefold(): term for term in term_to_codes}
     per_group: List[Dict[str, List[str]]] = []
-    for group in plan.groups:
+    for group in plan.cohorts:
         terms = {by_key[t.strip().casefold()]: term_to_codes[by_key[t.strip().casefold()]]
                  for t in group.diagnosis_terms if t.strip().casefold() in by_key}
         if any(terms.values()):
@@ -482,10 +497,7 @@ def _diagnosis_condition(term_to_codes: Dict[str, List[str]], qualifier: List[st
     if not codes:
         return None
     vals = ", ".join(f"'{c}'" for c in codes)
-    condition = (
-        f"EXISTS (SELECT 1 FROM {_catalogue.tables().participants.name} p2 "
-        f"WHERE p2.dataset_id = d.id AND p2.diagnosis IN ({vals}))"
-    )
+    condition = _exists([RAGField.DIAGNOSIS], f"{RAGField.DIAGNOSIS.stored.ref} IN ({vals})")
     # Structured diagnosis rows are sparse: back them up with the user's words
     # and the vocabulary synonyms in name, description and study fields.
     text_fallback = _format_text_match(_diagnosis_alternatives(term_to_codes), _MODE_SHORT)
@@ -499,7 +511,7 @@ def _excluded_diagnosis_keys(plan: QueryPlan) -> set:
     """The excluded diagnosis terms, as _term_key. A term a group also asks
     for stays asked: the planner contradicted itself, and a search that
     excludes what it looks for finds nothing."""
-    asked = {_term_key(t) for g in plan.groups for t in g.diagnosis_terms}
+    asked = {_term_key(t) for g in plan.cohorts for t in g.diagnosis_terms}
     return {_term_key(t) for t in plan.excluded_diagnosis_terms
             if t and t.strip() and not _is_healthy_term(t)} - asked
 
@@ -535,6 +547,31 @@ def _excluded_diagnosis_lines(plan: QueryPlan, resolved: List[ResolvedTerms],
     return [f'  not diagnosis "{term.replace(chr(34), chr(39))}" (complete, datasets that record '
             f'no diagnosis stay): {_without_diagnosis(stated)}'
             for term, stated in conditions.items()]
+
+
+def _excluded_group_lines(plan: QueryPlan) -> List[str]:
+    """One line per group with quantifier none that is more than a diagnosis
+    ("no left-handed participants", "no epilepsy patients over 60").
+
+    No fixed SQL exists for these yet: the line describes the participants in
+    words for the SQL model, and the compiler declines it (its label is no
+    complete condition).
+    """
+    lines = []
+    for group in plan.excluded_groups():
+        parts = []
+        for c in group.criteria:
+            if c.attribute == ParticipantAttribute.AGE:
+                bounds = ([f"age >= {c.min:g}"] if c.min is not None else []) + (
+                    [f"age <= {c.max:g}"] if c.max is not None else [])
+                parts.append(" AND ".join(bounds) or "age recorded")
+            else:
+                words = " or ".join(repr(t) for t in c.terms)
+                parts.append(f"{c.attribute.value} {words}")
+        if parts:
+            lines.append("  no participant (write this condition: no row of bids_participants "
+                         "of the dataset has all of these): " + "; ".join(parts))
+    return lines
 
 
 _SCAN_FIELD_NAMES = frozenset(f.value for f in (RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK))
@@ -599,7 +636,6 @@ def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, Lis
     in one subject", an exclusion whose codes a required term has too, and a
     term without codes to exclude (_excluded_codes).
     """
-    objects = _catalogue.tables().objects.name
     excluded_codes = {_term_key(t): _excluded_codes(t, codes) for t, codes in excluded.items()}
     unknown = {_term_key(t) for t in unresolved}
     # A required sequence does not ask for the whole datatype either.
@@ -616,7 +652,7 @@ def _excluded_scan_lines(plan: QueryPlan, excluded: Dict[str, Dict[RAGField, Lis
             return None
         values = ", ".join(f"'{c}'" for c in codes)
         match = f"= {values}" if len(codes) == 1 else f"IN ({values})"
-        condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND o2.{field.value} {match})"
+        condition = _exists([field], f"{field.stored.ref} {match}")
         text = _format_task_text_match([term]) if field == RAGField.TASK else None
         return f"({condition} OR {text})" if text else condition
 
@@ -677,6 +713,12 @@ def _build_augmented_question(
     participant_lines = _participant_conditions(plan)
     design_cond = _study_structure_condition(plan, available_columns)
     species_cond = _species_condition(plan.species, "species" in available_columns)
+    if not plan.species and any(line.lstrip().startswith("participant sex")
+                                for line in participant_lines):
+        # Participants of a sex are people unless the plan names a species:
+        # "only female participants" returned female mice, rats, sheep and
+        # macaques (gold request qx09: 5 of 41 results).
+        species_cond = _species_condition(["human"], "species" in available_columns)
     # An age group the planner left in description_search ("children") is the
     # age filter too, not the word "children" in the text.
     description_age_groups = _age_groups_only(plan.description_search)
@@ -694,6 +736,7 @@ def _build_augmented_question(
             and not plan.institution_terms
             and not plan.excluded_institution_terms
             and not plan.excluded_diagnosis_terms
+            and not plan.excluded_groups()
             and not plan.location_terms
             and not unresolved_terms and not db_miss_terms
             and not any(t.condition for t in topics)):
@@ -826,12 +869,26 @@ def _build_augmented_question(
         # A term with a modality and a task condition matches on either.
         held[key] = f"({held[key]} OR {condition})" if key in held else condition
 
+    # A scan term that is a BIDS filename entity ("dir-AP", "acq-highres") is a
+    # property of the files (backend/vocabulary/bids_entities.py), not a word
+    # of the README: as text, "dir-AP and dir-PA" found 1 of 58 datasets.
+    unknown_scans = unresolved_terms.get(RAGField.SCAN.value, [])
+    objects_table = RAGField.SUFFIX.stored.table
+    entity_terms = {t: c for t in unknown_scans if (c := _entity_condition(t, objects_table))}
+    for term, condition in entity_terms.items():
+        add_scan_line(term, condition)
+    if entity_terms:
+        unresolved_terms[RAGField.SCAN.value] = [t for t in unknown_scans if t not in entity_terms]
+        if not unresolved_terms[RAGField.SCAN.value]:
+            del unresolved_terms[RAGField.SCAN.value]
+
     # Build EXISTS hints per source term.
     # Modality (datatype + suffix) uses OR — a file qualifies if it matches
     # the modality by EITHER its folder (datatype) OR its file suffix.
     # Task gets a separate EXISTS so compound terms like "resting state fMRI"
     # correctly emit both a modality filter and a task filter.
-    objects = _catalogue.tables().objects.name
+    # datatype, suffix and task are columns of one table, so the codes of one
+    # term can share an EXISTS (_exists checks that their .stored agree).
     for term, field_codes in scan_by_term.items():
         modality_conds: List[str] = []   # datatype + suffix codes
         task_conds: List[str] = []       # task codes
@@ -840,12 +897,12 @@ def _build_augmented_question(
             if field not in field_codes:
                 continue
             codes = field_codes[field]
-            col   = field.value
+            col   = field.stored.ref
             if len(codes) == 1:
-                cond = f"o2.{col} = '{codes[0]}'"
+                cond = f"{col} = '{codes[0]}'"
             else:
                 vals = ", ".join(f"'{c}'" for c in codes)
-                cond = f"o2.{col} IN ({vals})"
+                cond = f"{col} IN ({vals})"
             if field == RAGField.TASK:
                 task_conds.append(cond)
             else:
@@ -881,7 +938,7 @@ def _build_augmented_question(
             or_part = " OR ".join(all_conds)
             if len(all_conds) > 1:
                 or_part = f"({or_part})"
-            condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})"
+            condition = _exists(field_order, or_part)
             text_fallback = with_alternatives(term, _format_task_text_match([term]))
             if text_fallback:
                 condition = f"({condition} OR {text_fallback})"
@@ -895,7 +952,7 @@ def _build_augmented_question(
                     or_part = f"({or_part})"
                 add_scan_line(
                     term,
-                    f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {or_part})",
+                    _exists(field_order, or_part),
                 )
 
             # Task EXISTS: separate from modality so both constraints apply independently.
@@ -904,7 +961,7 @@ def _build_augmented_question(
                 where_part = " OR ".join(task_conds)
                 if len(task_conds) > 1:
                     where_part = f"({where_part})"
-                condition = f"EXISTS (SELECT 1 FROM {objects} o2 WHERE o2.dataset_id = d.id AND {where_part})"
+                condition = _exists([RAGField.TASK], where_part)
                 text_fallback = with_alternatives(term, _format_task_text_match([term]))
                 if text_fallback:
                     condition = f"({condition} OR {text_fallback})"
@@ -958,6 +1015,7 @@ def _build_augmented_question(
     _unknown_diagnoses = unresolved_terms.pop(RAGField.DIAGNOSIS.value, [])
     context_lines.extend(_excluded_diagnosis_lines(
         plan, resolved, [t for t in _unknown_diagnoses if _term_key(t) in excluded_diagnoses]))
+    context_lines.extend(_excluded_group_lines(plan))
     _unknown_diagnoses = [t for t in _unknown_diagnoses if _term_key(t) not in excluded_diagnoses]
     if _unknown_diagnoses:
         unresolved_terms[RAGField.DIAGNOSIS.value] = _unknown_diagnoses
@@ -983,8 +1041,7 @@ def _build_augmented_question(
     not_searched = [w for w in plan.request_wishes if w.strip()]
     # Who the participants are is decided by the participant lines, never by
     # a text search for "healthy", "adult" or "male".
-    said_healthy = any(_is_healthy_term(t) for t in plan.excluded_diagnosis_terms) or any(
-        _is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
+    said_healthy = any(_is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
 
     def searched_words(phrase: str) -> str:
         nonlocal said_healthy

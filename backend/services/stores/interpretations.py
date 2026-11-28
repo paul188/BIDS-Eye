@@ -44,7 +44,7 @@ _BACKEND = Path(__file__).resolve().parents[2]
 # Every code and vocabulary file of these folders decides what a question is
 # translated into, so all of them count, new ones included (a hand-kept list
 # missed the compiler, criteria.py, cohort_count.py, senses.yaml and
-# word_forms.yaml). Not recursive: __pycache__ stays out.
+# stem_collisions.yaml). Not recursive: __pycache__ stays out.
 _VERSION_DIRS = (_BACKEND / "llm", _BACKEND / "llm" / "preprocess",
                  _BACKEND / "vocabulary")
 _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
@@ -57,10 +57,11 @@ _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 _VERSION_FILES = (
     _BACKEND / "services" / "database_stats" / "database_stats.py",
     _BACKEND / "services" / "schema" / "check.py",
-    _BACKEND / "services" / "schema" / "coded_fields.py",
+    _BACKEND / "services" / "schema" / "fields.py",
     _BACKEND / "services" / "schema" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
     _BACKEND / "services" / "translate" / "optional_columns.py",
+    _BACKEND / "services" / "translate" / "prompt" / "example_families.py",
     _BACKEND / "services" / "translate" / "prompt" / "examples.py",
     _BACKEND / "services" / "translate" / "prompt" / "few_shot_examples.json",
     _BACKEND / "services" / "translate" / "prompt" / "instructions.py",

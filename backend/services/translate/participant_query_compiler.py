@@ -49,15 +49,14 @@ def _is_healthy_term(term: str) -> bool:
 
 # Plan fields the compiler reads, or that do not change the SQL.
 _KNOWN_PLAN_FIELDS = frozenset({
-    "query_family", "natural_language_summary",
+    "natural_language_summary",
     "groups", "group_operator", "scan_requirements",
-    "order_direction",   # only meaningful with order_by, which must be unset
+    "ordering",   # ORDER BY / LIMIT (order_clause)
     # Written by preprocess/ as complete filter lines, read from there:
     "age_groups", "description_search", "description_alternatives", "request_wishes",
     "scan_term_alternatives",
     "species", "study_structure", "max_size_gb", "min_size_gb", "topics", "name_search",
     "location_terms",
-    "excluded_diagnosis_terms",   # the "not diagnosis" lines
     # Built here (_fixed_conditions):
     "doi_required", "min_sessions",
 })
@@ -71,16 +70,12 @@ _UNSUPPORTED_PLAN_FIELDS = (
     "excluded_institution_terms",
     "metadata_filters",
     "count_comparison",
-    "result_limit",
-    "order_by",
     "rag_requests",
 )
 
-# Group fields with no filter line. sex, age_min, age_max and min_subjects
-# are written by preprocess/ as "participant ..." / "subject count" lines.
-_GROUP_DEFAULTS: Tuple[Tuple[str, Any], ...] = (
-    ("task_terms", []), ("handedness", []), ("extra_participant_fields", {}),
-)
+# Participant criteria with a filter line or a condition built here: the
+# diagnosis (here), sex and age (preprocess/ "participant ..." lines).
+_COMPILED_ATTRIBUTES = frozenset({"diagnosis", "sex", "age"})
 
 _FILTER_HEADER = "[Resolved DB filters"
 # A plain scan line, or a list of alternatives that preprocess/ already
@@ -147,6 +142,37 @@ def _unsupported_field(plan: Any) -> Optional[str]:
     for name in _UNSUPPORTED_PLAN_FIELDS:
         if not _empty(_value(plan, name)):
             return name
+    return None
+
+
+def _quantifier(group: Any) -> str:
+    return _value(group, "quantifier", "some") or "some"
+
+
+def _group_attributes(group: Any) -> set:
+    criteria = _value(group, "criteria", None)
+    if criteria is not None:
+        return {getattr(a, "value", a) for a in (_value(c, "attribute") for c in criteria)}
+    # A plain dict with the flat keys (tests).
+    flat = {"diagnosis": "diagnosis_terms", "sex": "sex", "handedness": "handedness"}
+    found = {a for a, key in flat.items() if not _empty(_value(group, key))}
+    if _value(group, "age_min") is not None or _value(group, "age_max") is not None:
+        found.add("age")
+    return found
+
+
+def _unsupported_group(group: Any) -> Optional[str]:
+    """Why a participant group cannot be compiled, or None."""
+    attributes = _group_attributes(group)
+    for attribute in sorted(attributes - _COMPILED_ATTRIBUTES):
+        return f"group criterion {attribute}"
+    quantifier = _quantifier(group)
+    if quantifier == "none" and attributes != {"diagnosis"}:
+        # Only a plain excluded diagnosis has a line ("not diagnosis ...").
+        return "excluded group beyond a diagnosis"
+    if quantifier == "all" and "diagnosis" in attributes:
+        # Every participant has the diagnosis: no line says so.
+        return "every participant has a diagnosis"
     return None
 
 
@@ -310,7 +336,7 @@ _PIPELINE_FILLER = frozenset({"data", "dataset", "datasets", "with", "by", "usin
                               "available", "fmri"})
 
 
-def _derivatives_condition(description: Optional[str]) -> Optional[str]:
+def derivatives_condition(description: Optional[str]) -> Optional[str]:
     """bids_derivatives for a description that only names preprocessing ("fMRIPrep", "preprocessed")."""
     words = [w for w in re.findall(r"[a-z][a-z0-9-]*", (description or "").lower())
              if w not in _PIPELINE_FILLER]
@@ -342,7 +368,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
     having: List[str] = []
     lines = text.splitlines()
     start = next((i for i, line in enumerate(lines) if line.startswith(_FILTER_HEADER)), None)
-    derivatives = _derivatives_condition(_value(plan, "description_search"))
+    derivatives = derivatives_condition(_value(plan, "description_search"))
     if start is not None:
         for line in lines[start + 1:]:
             if not line.strip():
@@ -379,7 +405,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
         for (field, term), call in zip(terms, calls):
             if field == "diagnosis":
                 continue
-            pipeline = _derivatives_condition(term)
+            pipeline = derivatives_condition(term)
             if pipeline:
                 where.append(pipeline)
             elif re.search(r"[_.]|\b(?:nii|gz|tsv|json|edf|bdf|set)\b", term):
@@ -432,6 +458,40 @@ def _fixed_conditions(plan: Any) -> List[str]:
     return conditions
 
 
+# The column of each SortKey (llm/preprocess/plan.py). Every one exists for
+# every dataset; NULLS LAST keeps datasets without the value at the end in
+# both directions.
+ORDER_COLUMNS: Dict[str, str] = {
+    "subjects": "subject_count",
+    "size": "d.size_bytes",
+    "published": "d.publish_date",
+    "downloads": "d.downloads",
+    "views": "d.views",
+    "name": "d.name",
+}
+
+
+def order_clause(ordering: Any) -> str:
+    """ORDER BY (and LIMIT) for the plan's ordering; "" when it names no sort key.
+
+    A limit without a sort key is left out: the page orders by relevance,
+    and a LIMIT here would cut the result before that ranking.
+    The search keeps a base query's own ORDER BY and LIMIT
+    (sql_rewriter._has_top_level_order; the uncertain tier leaves it alone).
+    """
+    key = _value(ordering, "sort_key")
+    key = getattr(key, "value", key)
+    column = ORDER_COLUMNS.get(key) if key else None
+    if column is None:
+        return ""
+    direction = "ASC" if _value(ordering, "direction", "DESC") == "ASC" else "DESC"
+    clause = f"\nORDER BY {column} {direction} NULLS LAST, d.id"
+    limit = _value(ordering, "limit")
+    if isinstance(limit, int) and not isinstance(limit, bool) and limit > 0:
+        clause += f"\nLIMIT {limit}"
+    return clause
+
+
 def compile_plan(plan: Any, resolved_terms: Iterable[Any],
                  augmented_question: Optional[str] = None) -> Compiled:
     """Compile the plan into SQL, or decline with the reason.
@@ -448,10 +508,10 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
     if field:
         return _decline(f"plan field {field}")
     for group in groups:
-        for name, default in _GROUP_DEFAULTS:
-            value = _value(group, name, default)
-            if value != default and not _empty(value):
-                return _decline(f"group field {name}")
+        reason = _unsupported_group(group)
+        if reason:
+            return _decline(reason)
+    cohorts = [g for g in groups if _quantifier(g) != "none"]
 
     scans = _value(plan, "scan_requirements", []) or []
     for scan in scans:
@@ -472,7 +532,7 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
 
     resolved = _resolved_diagnoses(resolved_terms)
     cohort_conditions: List[str] = []
-    for group in groups:
+    for group in cohorts:
         if _empty(_value(group, "diagnosis_terms")):
             continue  # "all participants": no condition
         condition = _group_condition(group, resolved)
@@ -480,23 +540,26 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
             return _decline("diagnosis term not resolved")
         if condition:
             cohort_conditions.append(condition)
-    if operator == "OR" and cohort_conditions and len(cohort_conditions) < len(groups):
+    if operator == "OR" and cohort_conditions and len(cohort_conditions) < len(cohorts):
         # "patients or anyone": an alternative without a condition admits every dataset.
         return _decline("an alternative group has no condition")
     if cohort_conditions:
-        cohorts = f" {operator} ".join(cohort_conditions)  # operator validated above
-        where.append(f"({cohorts})" if len(cohort_conditions) > 1 else cohorts)
+        joined = f" {operator} ".join(cohort_conditions)  # operator validated above
+        where.append(f"({joined})" if len(cohort_conditions) > 1 else joined)
 
     where.extend(_fixed_conditions(plan))
     where = list(dict.fromkeys(where))
-    if not where and not having:
+    order = order_clause(_value(plan, "ordering"))
+    if not where and not having and not order:
+        # Only an order may list every dataset ("the 10 largest datasets").
         return _decline("nothing to filter")
     sql = ("SELECT {{COLS}}\n"
            f"FROM {_datasets.name} d\n"
            f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
            + (f"WHERE {' AND '.join(where)}\n" if where else "")
            + "GROUP BY d.id"
-           + (f"\nHAVING {' AND '.join(having)}" if having else ""))
+           + (f"\nHAVING {' AND '.join(having)}" if having else "")
+           + order)
     return Compiled(sql=sql)
 
 

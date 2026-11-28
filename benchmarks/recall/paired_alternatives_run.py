@@ -98,12 +98,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from services.uncertain import tier as uncertain_tier
     from services.translate import text_to_sql as translator
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
-    from services.catalogue.schema_capabilities import has_fts, refresh_available_columns
-    try:
-        import institution_index
-    except ImportError:
-        institution_index = None
-
+    from backend_capabilities import has_fts, start
     database = f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}"
     started = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     variants = (["alt_off", "alt_on", "alt_flat"] + [f"alt_cap{cap}" for cap in caps]
@@ -113,9 +108,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
                  "uncertain_tier": uncertain_tier.enabled()} for v in variants}
     results: Dict[str, List[Dict[str, Any]]] = {v: [] for v in variants}
 
-    await refresh_available_columns(engine)
-    if institution_index is not None:
-        await institution_index.refresh_from_db(engine)
+    await start(engine)
     try:
         try:
             from database import worker as worker_db
@@ -134,9 +127,9 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     captured: Dict[str, Any] = {}
     rewrite = translator._rewrite_generated_sql
 
-    def capturing(raw_sql, augmented_question, word_forms=None):
-        captured.update(raw=raw_sql, question=augmented_question, forms=word_forms)
-        return rewrite(raw_sql, augmented_question, word_forms)
+    def capturing(raw_sql, augmented_question, allowed_forms=None):
+        captured.update(raw=raw_sql, question=augmented_question, forms=allowed_forms)
+        return rewrite(raw_sql, augmented_question, allowed_forms)
 
     translator._rewrite_generated_sql = capturing
 

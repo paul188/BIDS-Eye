@@ -107,8 +107,7 @@ def test_healthy_terms_are_not_looked_up_as_a_diagnosis():
     assert not preprocess._is_healthy_term("Alzheimer's disease")
     assert not preprocess._is_healthy_term("patients")
     plan = preprocess.QueryPlan.model_validate({
-        "natural_language_summary": "x", "query_family": "participant_filter",
-        "groups": [{"group_name": "a", "diagnosis_terms": ["healthy controls", "epilepsy"]}],
+        "natural_language_summary": "x", "groups": [{"group_name": "a", "diagnosis_terms": ["healthy controls", "epilepsy"]}],
     })
     diagnosis = [r for r in preprocess.build_rag_requests(plan) if r.field == preprocess.RAGField.DIAGNOSIS]
     assert [r.terms for r in diagnosis] == [["epilepsy"]]
@@ -116,8 +115,7 @@ def test_healthy_terms_are_not_looked_up_as_a_diagnosis():
 
 def test_sex_and_age_are_written_by_preprocessing():
     plan = preprocess.QueryPlan.model_validate({
-        "natural_language_summary": "healthy adult male EEG during rest", "query_family": "participant_filter",
-        "description_search": "healthy adult controls",
+        "natural_language_summary": "healthy adult male EEG during rest", "description_search": "healthy adult controls",
         "groups": [{"group_name": "a", "sex": ["male"]}],
     })
     lines = preprocess._participant_conditions(plan)
@@ -133,8 +131,7 @@ def test_sex_and_age_are_written_by_preprocessing():
     assert "text_match" not in question and "participant sex:" in question
     assert "not searchable (add NO condition for these): healthy" in question
     children = preprocess.QueryPlan.model_validate({
-        "natural_language_summary": "x", "query_family": "comparison_query",
-        "groups": [{"group_name": "a", "sex": ["male"], "age_min": 2, "age_max": 12}, {"group_name": "b", "sex": ["female"]}],
+        "natural_language_summary": "x", "groups": [{"group_name": "a", "sex": ["male"], "age_min": 2, "age_max": 12}, {"group_name": "b", "sex": ["female"]}],
     })
     assert preprocess._participant_conditions(children) == [
         "  participant age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
@@ -143,8 +140,7 @@ def test_sex_and_age_are_written_by_preprocessing():
 
 def test_a_stated_age_and_sex_describe_one_participant():
     plan = preprocess.QueryPlan.model_validate({
-        "natural_language_summary": "male, 40 years old", "query_family": "participant_filter",
-        "groups": [{"group_name": "a", "sex": ["male"], "age_min": 40, "age_max": 40}],
+        "natural_language_summary": "male, 40 years old", "groups": [{"group_name": "a", "sex": ["male"], "age_min": 40, "age_max": 40}],
     })
     assert preprocess._participant_conditions(plan) == [
         "  participant sex and age: (EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
@@ -160,10 +156,60 @@ def test_more_request_words():
 
 
 def test_only_one_sex_means_every_participant():
+    # The quantifier decides, not the word "only" in the summary.
     plan = preprocess.QueryPlan.model_validate({
-        "natural_language_summary": "Find datasets containing only female participants.",
-        "query_family": "participant_filter", "groups": [{"group_name": "a", "sex": ["female"]}],
+        "natural_language_summary": "Find datasets containing female participants.",
+        "groups": [{"group_name": "a", "quantifier": "all",
+                    "criteria": [{"attribute": "sex", "terms": ["female"]}]}],
     })
     (line,) = preprocess._participant_conditions(plan)
     assert "p2.sex = 'female')" in line and "OR p3.sex <> 'female'))" in line
     assert "NOT EXISTS (SELECT 1 FROM bids_participants p3 WHERE p3.dataset_id = d.id AND (p3.sex IS NULL" in line
+    some = preprocess.QueryPlan.model_validate({
+        "natural_language_summary": "Find datasets containing only female participants.",
+        "groups": [{"group_name": "a", "sex": ["female"]}],
+    })
+    (line,) = preprocess._participant_conditions(some)
+    assert "p3" not in line
+
+
+def test_every_participant_in_an_age_range():
+    plan = preprocess.QueryPlan.model_validate({
+        "natural_language_summary": "only participants over 60",        "groups": [{"group_name": "a", "quantifier": "all",
+                    "criteria": [{"attribute": "age", "min": 60}]}],
+    })
+    (line,) = preprocess._participant_conditions(plan)
+    assert line == (
+        "  participant age: ((EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+        "AND p2.age IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM bids_participants p3 "
+        "WHERE p3.dataset_id = d.id AND (p3.age < 60))) "
+        "OR (NOT EXISTS (SELECT 1 FROM bids_participants p2 WHERE p2.dataset_id = d.id "
+        "AND p2.age IS NOT NULL) AND d.age_min >= 60))")
+
+
+def test_an_excluded_group_beyond_a_diagnosis_is_described_not_resolved():
+    plan = preprocess.QueryPlan.model_validate({
+        "natural_language_summary": "EEG without epilepsy patients over 60",        "groups": [{"group_name": "x", "quantifier": "none", "criteria": [
+            {"attribute": "diagnosis", "terms": ["epilepsy"]}, {"attribute": "age", "min": 60}]}],
+    })
+    assert plan.excluded_diagnosis_terms == [] and plan.cohorts == []
+    assert not [r for r in preprocess.build_rag_requests(plan) if r.field == preprocess.RAGField.DIAGNOSIS]
+    assert preprocess._participant_conditions(plan) == []
+    question = preprocess._build_augmented_question(plan, [])
+    assert ("  no participant (write this condition: no row of bids_participants of the dataset "
+            "has all of these): diagnosis 'epilepsy'; age >= 60") in question
+
+
+def test_plans_with_the_flat_group_fields_still_load():
+    plan = preprocess.QueryPlan.model_validate({
+        "natural_language_summary": "x",        "groups": [{"group_name": "a", "diagnosis_terms": ["ADHD"], "sex": ["female"],
+                    "age_min": 8, "age_max": 12, "task_terms": ["n-back"], "min_subjects": 20}],
+        "excluded_diagnosis_terms": ["epilepsy"],
+    })
+    (group, excluded) = plan.groups
+    assert [c.attribute.value for c in group.criteria] == ["diagnosis", "sex", "age"]
+    assert (group.diagnosis_terms, group.sex, group.age_min, group.age_max, group.min_subjects) == (
+        ["ADHD"], ["female"], 8, 12, 20)
+    assert excluded.quantifier == "none" and plan.excluded_diagnosis_terms == ["epilepsy"]
+    # A task is done by the dataset's subjects: a scan requirement, not a group criterion.
+    assert [r.scan_terms for r in plan.scan_requirements] == [["n-back"]]

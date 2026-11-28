@@ -7,7 +7,7 @@ Flow:
   User query
       │
       ▼
-  preprocess_query()          ← intent.py
+  create_query_plan()          ← intent.py
       │  returns QueryPlan (structured Pydantic object)
       │
       ▼
@@ -39,7 +39,8 @@ the env var that holds each provider's key is named there.
 Modules, in import order (each uses only those before it):
   plan.py      The plan the model returns (QueryPlan) and the plan after RAG (AugmentedQueryPlan).
   prompt.py    The system prompt of the intent-extraction call.
-  intent.py    The model call: a question in, a QueryPlan out (preprocess_query).
+  prompt_context.py  What the model is told besides the question: shorthands, stem collisions.
+  intent.py    The model call: a question in, a QueryPlan out (create_query_plan).
   rag.py       What to look up in the vocabulary for a plan, and the scored filters that come back.
   topics.py    Topics: a qualified subject, searched as one unit; description alternatives.
   augment.py   The plan with RAG results: filter lines and the augmented question (augment_with_rag).
@@ -52,8 +53,10 @@ from __future__ import annotations
 from .plan import (  # noqa: F401
     AugmentedQueryPlan,
     MetadataFilter,
+    Ordering,
+    ParticipantAttribute,
+    ParticipantCriterion,
     ParticipantGroup,
-    QueryFamily,
     QueryPlan,
     RAGField,
     RAGRequest,
@@ -61,16 +64,21 @@ from .plan import (  # noqa: F401
     ResolvedTopic,
     ScanRequirement,
     ScoredFilter,
+    SortKey,
     TermAlternatives,
     Topic,
 )
 from .prompt import (  # noqa: F401
     _SYSTEM_PROMPT,
 )
+from .prompt_context import (  # noqa: F401
+    count_stem_forms,
+    listed_shorthands,
+    planner_input,
+)
 from .intent import (  # noqa: F401
     _plan_output_schema,
-    preprocess_query,
-    word_evidence,
+    create_query_plan,
 )
 from .rag import (  # noqa: F401
     _is_healthy_term,
