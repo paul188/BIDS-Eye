@@ -693,6 +693,12 @@ def _build_augmented_question(
     participant_lines = _participant_conditions(plan)
     design_cond = _study_structure_condition(plan, available_columns)
     species_cond = _species_condition(plan.species, "species" in available_columns)
+    if not plan.species and any(line.lstrip().startswith("participant sex")
+                                for line in participant_lines):
+        # Participants of a sex are people unless the plan names a species:
+        # "only female participants" returned female mice, rats, sheep and
+        # macaques (gold request qx09: 5 of 41 results).
+        species_cond = _species_condition(["human"], "species" in available_columns)
     # An age group the planner left in description_search ("children") is the
     # age filter too, not the word "children" in the text.
     description_age_groups = _age_groups_only(plan.description_search)
