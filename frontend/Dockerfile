@@ -1,8 +1,9 @@
 ## Stage 1: build
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY frontend/package.json ./
-RUN npm install
+# npm ci installs exactly the versions in the lockfile, as CI does.
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
 COPY frontend/ .
 RUN npm run build
 

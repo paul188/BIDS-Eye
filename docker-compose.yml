@@ -22,7 +22,8 @@ services:
       # directory to use an existing data directory instead.
       - ${POSTGRES_DATA:-postgres-bids-data}:/var/lib/postgresql/data
     ports:
-      - '${METADATA_DB_PORT:-5432}:5432'
+      # 127.0.0.1: reachable from this machine only, not from the network.
+      - '127.0.0.1:${METADATA_DB_PORT:-5432}:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${METADATA_DB_USER} -d ${METADATA_DB_NAME}']
       interval: 5s
@@ -42,7 +43,7 @@ services:
       METADATA_DB_HOST: postgres
       METADATA_DB_PORT: 5432
     ports:
-      - '8000:8000'
+      - '127.0.0.1:8000:8000'
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,7 +58,7 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: bids_frontend
     ports:
-      - '3000:80'
+      - '127.0.0.1:3000:80'
     depends_on:
       - backend
     networks:

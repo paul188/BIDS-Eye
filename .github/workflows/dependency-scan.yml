@@ -1,0 +1,37 @@
+name: Dependency scan
+
+# Known vulnerabilities in the pinned Python and npm packages. Also runs weekly:
+# new advisories appear without any commit here.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trivy:
+    name: Trivy (pinned packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Scan
+        run: |
+          # Trivy finds Python pins only in a file named requirements.txt, so
+          # the image's constraints.txt is scanned under that name.
+          mkdir -p scan/backend scan/frontend
+          cp constraints.txt scan/backend/requirements.txt
+          cp frontend/package-lock.json scan/frontend/
+          # Pinned by digest: a tag can be moved to another image.
+          # Fails on HIGH and CRITICAL findings that have a fixed version.
+          docker run --rm -v "$PWD/scan:/scan:ro" \
+            aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb \
+            fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed \
+            --exit-code 1 --no-progress /scan
