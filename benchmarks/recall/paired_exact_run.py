@@ -59,14 +59,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from services.fulltext import word_frequencies
     from services.translate import text_to_sql as translator
     from services.stores.translated_queries import CachedQuery, query_cache
-    from services.catalogue.schema_capabilities import (
-        has_exact_fts, has_fts, has_word_forms, refresh_available_columns)
+    from backend_capabilities import has_exact_fts, has_fts, has_word_forms, start
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
-    try:
-        import institution_index
-    except ImportError:
-        institution_index = None
-
     database = f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}"
     started = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     variants = ("exact_off", "exact_on")
@@ -78,9 +72,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     }
     results: Dict[str, List[Dict[str, Any]]] = {v: [] for v in variants}
 
-    await refresh_available_columns(engine)
-    if institution_index is not None:
-        await institution_index.refresh_from_db(engine)
+    await start(engine)
     try:
         try:
             from database import worker as worker_db

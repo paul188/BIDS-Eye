@@ -3,20 +3,19 @@ backend/vocabulary/join_registry.py
 --------------------
 Lightweight loader for backend/vocabulary/join_paths.yaml.
 
-Provides a single source of truth for:
-  - Which DB table and column each semantic field maps to
-  - Which fields can be combined in one EXISTS clause vs. need separate ones
+Provides:
   - What field-value combinations indicate a user query contradiction
+  - The join-path block of the SQL prompt (which table holds which field)
 
-No external dependencies beyond PyYAML (already a project dependency).
+Where each field is stored is not here: it is on the field itself
+(services/schema/fields.py, CatalogueField.stored).
+
+Needs PyYAML and services/schema/fields.py only.
 Does NOT import from retriever.py or yaml_to_llamaindex.py — it is a
 lower-level utility that those modules may safely import.
 
 Public API
 ----------
-  get_field_info(field)       -> dict | None
-  field_to_db_col(field)      -> tuple[str, str] | None
-  field_column(field)         -> FieldColumn
   check_contradictions(resolved) -> list[ContradictionWarning]
   build_join_context_block()  -> str
 """
@@ -26,9 +25,11 @@ from __future__ import annotations
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import Dict, List, NamedTuple
 
 import yaml
+
+from services.schema.fields import CatalogueField  # backend/ is on the path wherever RAG runs
 
 log = logging.getLogger(__name__)
 
@@ -43,22 +44,6 @@ class ContradictionWarning(NamedTuple):
     contradiction_id: str   # e.g. "eeg_mri_suffix"
     severity: str           # "hard" or "soft"
     message: str            # human-readable explanation
-
-
-class FieldColumn(NamedTuple):
-    """Where a field's values are stored, for writing SQL about it."""
-    table: str    # e.g. 'bids_objects'
-    alias: str    # alias inside the correlated EXISTS ('o2', 'p2'); 'd' on bids_datasets itself
-    column: str   # e.g. 'task', 'institutions'
-
-    @property
-    def ref(self) -> str:
-        """The column as the SQL names it, e.g. 'o2.task' or 'd.institutions'."""
-        return f"{self.alias}.{self.column}"
-
-
-# The outer query's alias for bids_datasets: fields stored there need no EXISTS.
-_DATASETS_ALIAS = "d"
 
 
 # ---------------------------------------------------------------------------
@@ -86,53 +71,6 @@ def _load() -> dict:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
-
-def get_field_info(field: str) -> Optional[Dict]:
-    """Return the registry entry for *field*, or None if not found.
-
-    Parameters
-    ----------
-    field : semantic field name, e.g. 'diagnosis', 'task', 'datatype', 'suffix',
-            'sex', 'handedness', 'age', 'author', 'funding'
-
-    Returns
-    -------
-    dict with keys: table, column, value_type, multi_value, exists_alias,
-                    rag_backed, description, and optionally sql_pattern.
-    None if the field is not registered.
-    """
-    return _load().get("fields", {}).get(field)
-
-
-def field_to_db_col(field: str) -> Optional[Tuple[str, str]]:
-    """Return (table, column) for *field*, or None.
-
-    Drop-in replacement for the ``_FIELD_TO_DB_COL`` dict that used to live
-    in ``backend/vocabulary/retriever.py``.
-
-    Returns None for array fields that live directly on bids_datasets
-    (exists_alias == 'none') and for unknown fields.
-    """
-    info = get_field_info(field)
-    if info is None:
-        return None
-    if info.get("exists_alias") == "none":
-        return None
-    return (info["table"], info["column"])
-
-
-def field_column(field: str) -> FieldColumn:
-    """Table, alias and column of *field*; KeyError when join_paths.yaml lacks it.
-
-    Unlike field_to_db_col this also answers for the fields stored on
-    bids_datasets itself (author, funding, institution), with the alias 'd'.
-    """
-    info = get_field_info(field)
-    if info is None:
-        raise KeyError(f"{field!r} has no entry in join_paths.yaml")
-    alias = info.get("exists_alias", "none")
-    return FieldColumn(info["table"], _DATASETS_ALIAS if alias == "none" else alias, info["column"])
-
 
 def check_contradictions(
     resolved: Dict[str, List[str]],
@@ -209,19 +147,14 @@ def build_join_context_block() -> str:
           Rule: datatype+suffix from the same user term share one EXISTS (OR between
                 them); task always gets its own EXISTS clause.
     """
-    fields_cfg = _load().get("fields", {})
-
     table_fields: Dict[str, List[str]] = {}
-    for fname, info in fields_cfg.items():
-        if not isinstance(info, dict):
-            continue
-        alias = info.get("exists_alias", "none")
-        table = info.get("table", "unknown")
+    for field in CatalogueField:
+        stored = field.stored
         key = (
-            f"{table} (direct, no EXISTS)" if alias == "none"
-            else f"{table} (alias {alias})"
+            f"{stored.table} (alias {stored.alias})" if stored.needs_exists
+            else f"{stored.table} (direct, no EXISTS)"
         )
-        table_fields.setdefault(key, []).append(fname)
+        table_fields.setdefault(key, []).append(field.value)
 
     lines = ["[Join paths — table routing for EXISTS subqueries]"]
     for table_label, fnames in sorted(table_fields.items()):

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable, List
 
-from services.translate.participant_query_compiler import _derivatives_condition
+from services.translate.participant_query_compiler import derivatives_condition
 
 # A family that several of the others combine into.
 COMBINED = "combined_filter"
@@ -30,7 +30,7 @@ def _get(obj: Any, name: str, default: Any = None) -> Any:
 
 
 def _names_pipeline(terms: Iterable[str]) -> bool:
-    return any(_derivatives_condition(term) for term in terms if term)
+    return any(derivatives_condition(term) for term in terms if term)
 
 
 def plan_families(plan: Any) -> List[str]:
@@ -85,7 +85,7 @@ def plan_families(plan: Any) -> List[str]:
     if _get(plan, "doi_required") is not None:
         add("doi_query")
     description = _get(plan, "description_search", "")
-    if (description and not _derivatives_condition(description)) or _get(plan, "name_search") \
+    if (description and not derivatives_condition(description)) or _get(plan, "name_search") \
             or _get(plan, "topics", []):
         # A description that only names a pipeline ("fMRIPrep") is the derivatives lookup.
         add("description_search")

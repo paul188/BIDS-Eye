@@ -1,21 +1,19 @@
 """What services/schema/tables.py records about its tables and text columns,
 and that the maps built from it, the schema shown to the SQL model and the
-coded fields agree with it."""
+fields (services/schema/fields.py) agree with it."""
 
 from __future__ import annotations
 
 import re
 
 from services.translate.prompt import schema_ddl
-import join_registry
-from preprocess import RAGField
 from sqlalchemy import Table
 
 from services.evidence import branches
 from services.results import query_filters
 from services.schema import tables
-from services.schema import coded_fields
-from services.schema.coded_fields import CodedField
+from services.schema import fields
+from services.schema.fields import CatalogueField
 from services.schema.tables import About, TextKind
 
 
@@ -45,7 +43,7 @@ def test_every_text_kind_has_a_source() -> None:
 
 def test_the_prompt_schema_names_declared_columns_with_their_types() -> None:
     declared = {table.name: table for table in tables.CATALOGUE_TABLES}
-    ddl = schema_ddl.build_schema_ddl(schema_ddl.OPTIONAL_DATASET_COLUMNS)
+    ddl = schema_ddl.build_schema_ddl(tables.OPTIONAL_DATASET_COLUMNS)
     shown = re.findall(r"CREATE TABLE (\w+) \(.*?\n(.*?)\n\);", ddl, re.S)
     assert [name for name, _ in shown] == ["bids_datasets", "bids_objects", "bids_participants",
                                            "bids_derivatives", "bids_dataset_papers"]
@@ -66,47 +64,37 @@ def test_the_prompt_schema_links_every_other_table_to_its_dataset() -> None:
     assert "PRIMARY KEY REFERENCES" not in ddl
 
 
-# ── Coded fields (services/schema/coded_fields.py) ───────────────────────────
+# ── Fields (services/schema/fields.py) ────────────────────────────────────────
 
-def test_coded_fields_are_columns_where_the_groups_say() -> None:
-    assert set(coded_fields.CODED_FIELDS) == {field.value for field in CodedField}
-    assert set(coded_fields.CONCEPT_FIELDS) <= set(coded_fields.CODED_FIELDS)
-    for name in coded_fields.FILE_FIELDS:
-        assert name in tables.objects.c and name in tables.dataset_facets.c
-    for name in coded_fields.PARTICIPANT_FIELDS:
-        assert name in tables.participants.c
-
-
-def test_join_paths_agrees_with_the_coded_fields() -> None:
-    for table, names in ((tables.objects, coded_fields.FILE_FIELDS),
-                         (tables.participants, coded_fields.PARTICIPANT_FIELDS)):
-        for name in names:
-            assert join_registry.field_to_db_col(name) == (table.name, name)
+def test_every_field_is_stored_in_a_declared_column() -> None:
+    """fields.py names tables and columns as strings; these are the declared ones."""
     declared = {table.name: table for table in tables.CATALOGUE_TABLES}
-    for name, info in join_registry._load()["fields"].items():
-        assert info["column"] in declared[info["table"]].c, name
-    codes = {name for name, info in join_registry._load()["fields"].items()
-             if info["value_type"] == "canonical_code"}
-    assert codes == set(coded_fields.CONCEPT_FIELDS)
+    for field in CatalogueField:
+        assert field.stored.column in declared[field.stored.table].c, field
+        # The outer alias d is bids_datasets, and only bids_datasets.
+        assert (field.stored.table == tables.datasets.name) == (not field.stored.needs_exists), field
 
 
-# ── RAG fields (backend/llm/preprocess/plan.py) ───────────────────────────────
-
-def test_every_rag_field_says_where_it_is_stored() -> None:
-    """The bridge from a RAGField to its column: its join_paths.yaml entry."""
-    declared = {table.name: table for table in tables.CATALOGUE_TABLES}
-    for field in RAGField:
-        if field is RAGField.SCAN:  # a lookup across datatype, suffix and task
-            continue
-        info = join_registry.get_field_info(field.value)
-        assert info is not None, f"{field.value} has no entry in join_paths.yaml"
-        assert info["rag_backed"], field.value
-        stored = join_registry.field_column(field.value)
-        assert stored.column in declared[stored.table].c, field.value
+def test_the_coded_field_groups_are_where_they_say() -> None:
+    assert set(fields.CONCEPT_FIELDS) <= set(fields.CODED_FIELDS)
+    for name in fields.FILE_FIELDS:
+        assert CatalogueField(name).stored.table == tables.objects.name
+        assert name in tables.dataset_facets.c
+    for name in fields.PARTICIPANT_FIELDS:
+        assert CatalogueField(name).stored.table == tables.participants.name
 
 
-def test_the_coded_rag_fields_are_the_coded_fields() -> None:
-    coded = {field.value for field in RAGField} & set(coded_fields.CODED_FIELDS)
-    assert coded == set(coded_fields.CONCEPT_FIELDS)
-    rag_backed = {name for name, info in join_registry._load()["fields"].items() if info["rag_backed"]}
-    assert rag_backed == {field.value for field in RAGField} - {RAGField.SCAN.value}
+def test_a_card_names_a_column_by_its_label_or_its_name() -> None:
+    assert tables.card_label("dx_status") == "diagnosis label"
+    assert tables.card_label("species") == "species label"
+    assert tables.card_label("age_min") == "age min"
+    assert tables.card_label("not_a_column") == "not a column"
+
+
+def test_the_optional_columns_are_declared_on_bids_datasets_with_notes() -> None:
+    """schema_ddl shows an optional column only with its notes, after the
+    columns that are always shown; it fails to import otherwise."""
+    assert "readme_text" in tables.OPTIONAL_DATASET_COLUMNS
+    assert "name" not in tables.OPTIONAL_DATASET_COLUMNS
+    shown = [name for name, _, _ in schema_ddl._OPTIONAL_DATASET_COLUMNS]
+    assert sorted(shown) == sorted(tables.OPTIONAL_DATASET_COLUMNS)

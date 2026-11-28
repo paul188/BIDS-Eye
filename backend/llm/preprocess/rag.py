@@ -5,10 +5,7 @@ import logging
 import re
 from typing import Dict, List, Optional
 from participant_codes import sex_code
-from services.schema.coded_fields import CONCEPT_FIELDS
-from join_registry import (
-    field_to_db_col as _field_to_db_col,
-)
+from services.schema.fields import CONCEPT_FIELDS
 
 from . import catalogue as _catalogue
 from .plan import ParticipantGroup, QueryPlan, RAGField, RAGRequest, ScoredFilter
@@ -240,9 +237,9 @@ def _build_scored_filters(
     out: List[ScoredFilter] = []
     seen: set[tuple[str, str]] = set()
     for field, term_map in rag_results.items():
-        # Only codes with a queryable column are scored: author and funding are
-        # arrays on bids_datasets (exists_alias 'none').
-        if field not in CONCEPT_FIELDS or _field_to_db_col(field) is None:
+        # Only concept codes are scored (columns of files and participants);
+        # author, funding and institution are names on bids_datasets.
+        if field not in CONCEPT_FIELDS:
             continue
         field_scores = scores.get(field, {})
         for codes in term_map.values():

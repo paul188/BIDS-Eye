@@ -22,8 +22,10 @@ dependencies = [
 
 [tool.setuptools]
 py-modules = [
+    "bids_entities",
     "cohort_count",
     "criteria",
+    "group_labels",
     "institution_index",
     "join_registry",
     "participant_codes",

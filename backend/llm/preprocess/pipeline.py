@@ -6,11 +6,12 @@ import logging
 import re
 from typing import Any, Collection, Dict, List, Tuple
 import reference_vocabulary as _reference_vocabulary
-from services.schema.coded_fields import FILE_FIELDS
+from services.schema.fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
 from .plan import AugmentedQueryPlan, ParticipantAttribute, ParticipantGroup, QueryPlan, RAGField, ScanRequirement
-from .intent import count_stem_forms, create_query_plan
+from .intent import create_query_plan
+from .prompt_context import count_stem_forms
 from .rag import build_rag_requests
 from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, check_scan_term_alternatives, resolve_topics
 from .augment import augment_with_rag

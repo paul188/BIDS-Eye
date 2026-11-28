@@ -476,7 +476,11 @@ def test_structured_output_schema_includes_conditional_same_meaning(monkeypatch)
     pp.create_query_plan("MRI on ageing", stem_counts={"ageing": AGEING})
     form_schema = schemas[-1]
     assert "same_meaning" in form_schema["required"]
-    assert form_schema["properties"]["same_meaning"]["items"]["required"] == ["word", "forms"]
+    entry = form_schema["properties"]["same_meaning"]["items"]["$ref"].rsplit("/", 1)[-1]
+    assert form_schema["$defs"][entry]["required"] == ["word", "forms"]
+    # The plan's own fields are the same with and without same_meaning.
+    assert {k: v for k, v in form_schema["properties"].items() if k != "same_meaning"} \
+        == base_schema["properties"]
 
 
 def test_the_pipeline_hands_the_decided_forms_to_the_search(exact, monkeypatch) -> None:

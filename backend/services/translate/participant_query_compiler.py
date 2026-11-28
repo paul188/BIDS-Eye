@@ -336,7 +336,7 @@ _PIPELINE_FILLER = frozenset({"data", "dataset", "datasets", "with", "by", "usin
                               "available", "fmri"})
 
 
-def _derivatives_condition(description: Optional[str]) -> Optional[str]:
+def derivatives_condition(description: Optional[str]) -> Optional[str]:
     """bids_derivatives for a description that only names preprocessing ("fMRIPrep", "preprocessed")."""
     words = [w for w in re.findall(r"[a-z][a-z0-9-]*", (description or "").lower())
              if w not in _PIPELINE_FILLER]
@@ -368,7 +368,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
     having: List[str] = []
     lines = text.splitlines()
     start = next((i for i, line in enumerate(lines) if line.startswith(_FILTER_HEADER)), None)
-    derivatives = _derivatives_condition(_value(plan, "description_search"))
+    derivatives = derivatives_condition(_value(plan, "description_search"))
     if start is not None:
         for line in lines[start + 1:]:
             if not line.strip():
@@ -405,7 +405,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
         for (field, term), call in zip(terms, calls):
             if field == "diagnosis":
                 continue
-            pipeline = _derivatives_condition(term)
+            pipeline = derivatives_condition(term)
             if pipeline:
                 where.append(pipeline)
             elif re.search(r"[_.]|\b(?:nii|gz|tsv|json|edf|bdf|set)\b", term):

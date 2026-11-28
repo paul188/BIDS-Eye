@@ -223,3 +223,43 @@ def test_a_condition_is_not_added_to_sql_that_cannot_be_parsed() -> None:
     # front of the filter without brackets.
     sql = "SELECT d.id FROM bids_datasets d WHERE EXISTS (TABLE users)"
     assert SqlRewriteService()._and_into_where(sql, "d.n_subjects >= 10") == sql
+
+
+def test_vocab_miss_naming_a_pipeline_is_not_added_next_to_its_derivatives_lookup() -> None:
+    """Gold request qx06 ("datasets with MRIQC derivatives"): the compiler looks the
+    pipeline up in bids_derivatives; ANDing the README text back in kept 53 of 633."""
+    raw_sql = (
+        "SELECT {{COLS}}\n"
+        "FROM bids_datasets d\n"
+        "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
+        "WHERE EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id "
+        "AND dv.pipeline IN ('mriqc'))\n"
+        "GROUP BY d.id"
+    )
+    augmented_question = (
+        "[VOCABULARY MISS — these terms are not in the known concept vocabulary: "
+        "scan: 'MRIQC derivatives'. Do NOT filter bids_participants.diagnosis or "
+        "bids_objects.task/datatype/suffix for these terms — those columns store canonical "
+        "codes, not free text. For free-text search use: text_match('mriqc derivatives', 'loose')]"
+    )
+
+    rewritten = SERVICE.rewrite_generated_sql(raw_sql, augmented_question)
+
+    assert "dv.pipeline IN ('mriqc')" in rewritten.sql
+    assert "to_tsquery" not in rewritten.sql.lower()
+
+
+def test_vocab_miss_naming_a_pipeline_is_added_without_a_derivatives_lookup() -> None:
+    raw_sql = (
+        "SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o "
+        "ON o.dataset_id = d.id AND o.subject IS NOT NULL GROUP BY d.id"
+    )
+    augmented_question = (
+        "[VOCABULARY MISS — these terms are not in the known concept vocabulary: "
+        "scan: 'MRIQC derivatives'. Do NOT filter. For free-text search use: "
+        "text_match('mriqc derivatives', 'loose')]"
+    )
+
+    rewritten = SERVICE.rewrite_generated_sql(raw_sql, augmented_question)
+
+    assert "to_tsquery('english', 'mriqc" in rewritten.sql.lower()

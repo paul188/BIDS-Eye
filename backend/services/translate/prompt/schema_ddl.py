@@ -5,9 +5,10 @@ Used by the SQL-generation and SQL-correction prompts. Names and types come
 from services/schema/tables.py; here are only the notes shown to the model.
 
 The schema shown to the SQL model is built per request by build_schema_ddl():
-columns in OPTIONAL_DATASET_COLUMNS appear only when the database really has
-them filled (see services/translate/optional_columns.py). A column the model is told
-about but that is missing or empty produces failing or empty queries.
+the optional columns (OPTIONAL in tables.py) appear only when the database
+really has them filled (see services/translate/optional_columns.py). A column
+the model is told about but that is missing or empty produces failing or
+empty queries.
 """
 
 from __future__ import annotations
@@ -16,6 +17,8 @@ from typing import Any, Collection, Dict, List, Tuple
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, BigInteger, JSON, String, Table, Uuid
 from sqlalchemy.dialects.postgresql import ARRAY
+
+from criteria import species_prompt_lines
 
 from services.schema import tables as _tables
 from services.schema.tables import referred_column
@@ -33,8 +36,9 @@ def prompt_type(column: Column[Any]) -> str:
     raise TypeError(f"no prompt type for {column}")
 
 
-# Column → comment lines; always present on bids_datasets.
-_CORE_NOTES: Dict[str, List[str]] = {
+# bids_datasets column → comment lines, in the order shown. Every optional
+# column must follow every other one (tables.OPTIONAL_DATASET_COLUMNS).
+_DATASET_NOTES: Dict[str, List[str]] = {
     "id": [],
     "name": [],
     "accession_id": [],
@@ -55,11 +59,7 @@ _CORE_NOTES: Dict[str, List[str]] = {
         "free-text description from dataset_description.json;",
         "search it with text_match('keyword'), not ILIKE",
     ],
-}
-
-# Columns that exist only after a migration + backfill. Each one is shown to
-# the SQL model only when the running database has it populated.
-_OPTIONAL_NOTES: Dict[str, List[str]] = {
+    # The optional columns; each is shown only when the database fills it.
     "institutions": [
         "scanning institutions from MRI sidecar JSONs, e.g. ARRAY['Child Mind Institute', 'NYU_Center_for_Brain_Imaging']",
         "Names come from DICOM headers — expect underscores, abbreviations, and",
@@ -93,25 +93,18 @@ _OPTIONAL_NOTES: Dict[str, List[str]] = {
         "of datasets, nearly all of them human), e.g. 'Human', 'Mouse', 'Rat', 'Macaque',",
         "'Monkey', 'Nonhunam primates (Macaca mulatta)', 'Sus scrofa domesticus', 'Phantom'.",
         "When the question context has a 'species' line, copy that condition exactly and",
-        "add no other species condition. Without one (older planner), use these recipes.",
-        "Use it for animal / non-human questions, and ALWAYS add the title/description",
-        "fallback for datasets without a species (many animal datasets are unlabelled):",
-        "  mice: (d.species ~* '\\m(mouse|mice|mus)\\M'",
-        "         OR (d.species IS NULL AND text_match('mouse | mice | murine', 'short')))",
-        "  macaques/monkeys: (d.species ~* '(macaque|macaca|monkey|primate|baboon|marmoset|rhesus|capuchin|cynomolgus)'",
-        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
-        "             AND text_match('macaque | macaca | monkey | rhesus | marmoset | baboon')))",
-        "  any animal: (d.species !~* '(human|homo sapiens|phantom|synthetic|printed|^\\s*(other|n/?a|unknown)\\s*$)'",
-        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
-        "             AND text_match('mouse | mice | rat | rats | macaque | monkey | animal', 'short')))",
-        "A label 'Other', 'n/a' or 'unknown' says nothing: treat it like NULL (text fallback).",
-        "Mouse/rat/any-animal fallbacks stay on title and description ('short'): human READMEs",
-        "say 'mouse click'. Primate words are safe in the README of an unlabelled dataset.",
-        "Never AND an extra text_match of the species word: the species condition is complete.",
-        "non-human primates / NHP: (d.species ~* '(macaque|macaca|monkey|primate|marmoset|baboon|chimpanzee|rhesus|capuchin|cynomolgus)'",
-        "         OR ((d.species IS NULL OR d.species ~* '^\\s*(other|n/?a|unknown)\\s*$')",
-        "             AND text_match('macaque | macaca | monkey | rhesus | marmoset | primate | baboon')))",
-        "  Never search the abbreviation 'NHP' as text.",
+        "add no other species condition.",
+        "Without one, use it for animal / non-human questions, and ALWAYS add the",
+        "title/description fallback for datasets without a species (many animal datasets",
+        "are unlabelled). A label 'Other', 'n/a' or 'unknown' says nothing: treat it like",
+        "NULL (text fallback). Mouse/rat/any-animal fallbacks stay on title and description",
+        "('short'): human READMEs say 'mouse click'. Primate words are safe in the README of",
+        "an unlabelled dataset. Never AND an extra text_match of the species word: the",
+        "species condition is complete. Never search the abbreviation 'NHP' as text.",
+        "The condition per species asked for (other species: the same shape):",
+        # Built by RAG/criteria.py, the code that writes the planner's species
+        # line, so the two cannot drift apart.
+        *species_prompt_lines(),
     ],
     "study_longitudinal": [
         "design as picked by the uploader: 'Cross-Sectional', 'Longitudinal', 'Other',",
@@ -268,10 +261,21 @@ def _columns(table: Table, notes: Dict[str, List[str]]) -> List[Tuple[str, str, 
     return [(name, _shown_type(table.c[name]), lines) for name, lines in notes.items()]
 
 
-_CORE_DATASET_COLUMNS = _columns(_tables.datasets, _CORE_NOTES)
-OPTIONAL_DATASET_COLUMNS: Dict[str, Tuple[str, List[str]]] = {
-    name: (sql_type, notes) for name, sql_type, notes in _columns(_tables.datasets, _OPTIONAL_NOTES)
-}
+def _dataset_columns() -> Tuple[List[Tuple[str, str, List[str]]], List[Tuple[str, str, List[str]]]]:
+    """(always shown, optional) bids_datasets columns with their notes; fails
+    when an optional column has no notes or comes before a column that is not."""
+    columns = _columns(_tables.datasets, _DATASET_NOTES)
+    optional = set(_tables.OPTIONAL_DATASET_COLUMNS)
+    missing = optional - set(_DATASET_NOTES)
+    if missing:
+        raise ValueError(f"optional bids_datasets columns without notes: {sorted(missing)}")
+    flags = [name in optional for name, _, _ in columns]
+    if flags != sorted(flags):
+        raise ValueError("an optional bids_datasets column comes before one that is always shown")
+    return ([c for c in columns if c[0] not in optional], [c for c in columns if c[0] in optional])
+
+
+_CORE_DATASET_COLUMNS, _OPTIONAL_DATASET_COLUMNS = _dataset_columns()
 
 
 def _render_table(name: str, columns: List[Tuple[str, str, List[str]]], about: str = "",
@@ -294,17 +298,15 @@ def _render_table(name: str, columns: List[Tuple[str, str, List[str]]], about: s
 
 def _render_dataset_table(available: Collection[str]) -> str:
     columns = list(_CORE_DATASET_COLUMNS) + [
-        (name, sql_type, comments)
-        for name, (sql_type, comments) in OPTIONAL_DATASET_COLUMNS.items()
-        if name in available
-    ]
+        column for column in _OPTIONAL_DATASET_COLUMNS if column[0] in available]
     return _render_table(_tables.datasets.name, columns, name_width=17)
 
 
 def build_schema_ddl(available: Collection[str] = ()) -> str:
     """Schema text for the SQL-generation and SQL-correction prompts.
 
-    *available* names the OPTIONAL_DATASET_COLUMNS the database has populated.
+    *available* names the optional columns the database has populated
+    (tables.OPTIONAL_DATASET_COLUMNS).
     """
     return _render_dataset_table(available) + "\n\n" + _OTHER_TABLES_DDL
 
