@@ -1,5 +1,5 @@
 """The server-side twins of the search page's guards: one search per question
-while it runs, whoever asks it (services/search.py ``_in_flight``), and no
+while it runs, whoever asks it (services/search/search.py ``_in_flight``), and no
 blank questions (schemas.QueryRequest). Who asked is not recorded:
 tests/test_query_logging.py."""
 from __future__ import annotations
@@ -12,7 +12,7 @@ from pydantic import ValidationError
 import routers.search as query_router
 from security.rate_limits import RateLimitError
 from routers.schemas import QueryPageRequest, QueryRequest, QueryResponse
-from services import search
+from services.search import search
 
 
 def _response(total: int) -> QueryResponse:

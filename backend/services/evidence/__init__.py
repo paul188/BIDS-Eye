@@ -25,7 +25,7 @@ Three sizes, each made of the one before:
                    the order they count (services/uncertain/conditions.py)
   QueryEvidence    the whole query: its clauses combined (same file)
 
-Used by results/match_reasons.py (why a confirmed result matched: one
+Used by results/display/match_reasons.py (why a confirmed result matched: one
 ConfirmedEvidence per OR branch of a condition) and by services/uncertain/
 (which state a condition has for a dataset it does not hold for: an ordered
 list of pieces, the first that holds decides).

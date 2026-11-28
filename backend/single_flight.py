@@ -3,7 +3,7 @@ single_flight.py
 ----------------
 One running call per key: a second call with the same key while the first
 runs does not start another, it waits for the first one's result or error.
-services/search.py uses it so that a double submit, a retry, a second tab or
+services/search/search.py uses it so that a double submit, a retry, a second tab or
 another user asking the same question gets the running search's answer
 instead of starting (and paying for) a second search.
 

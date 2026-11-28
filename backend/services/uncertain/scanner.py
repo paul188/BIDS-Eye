@@ -19,13 +19,14 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+from services import asked, sql_tree
 from services.evidence.branches import confirming_evidence
 from services.fulltext.text_search import Clause
 from services.evidence.contradicted import ContradictedInFileTablesEvidence
 from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
-from services.uncertain.conditions import (ClauseEvidence, own_text, own_text_matches, possible_enabled,
-                                           sql_literal)
+from services.uncertain.conditions import (ClauseEvidence, possible_enabled, sql_literal,
+                                           text_from_dataset, text_from_dataset_matches)
 from services.schema.tables import objects as _objects
 
 
@@ -34,9 +35,7 @@ from services.schema.tables import objects as _objects
 # record no field strength; 52 of them name one in their text. 26 without a
 # recorded manufacturer name it. Echo and repetition times are not here: a
 # README states them in too many forms to read reliably.
-FIELD_STRENGTH_KEY = "MagneticFieldStrength"
-# The strengths scanners are sold at; a range asks for the ones inside it.
-NOMINAL_TESLA = (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 4.7, 7.0, 9.4, 10.5, 11.7, 14.0)
+FIELD_STRENGTH_KEY = asked.FIELD_STRENGTH_KEY
 
 
 def _tesla_number(value: float) -> str:
@@ -54,7 +53,7 @@ def field_strength_regex(strengths: Iterable[float], postgres: bool = False) -> 
     word starting with T ("7 T1w images", "3 The") or a gradient spec
     ("200 T/m/s"). Spaces include the thin ones some READMEs use.
 
-    Python's re by default (query_filters.field_strength_pattern marks it in
+    Python's re by default (highlights.field_strength_pattern marks it in
     excerpts); *postgres*: for Postgres's ~ (POSIX classes, no backslashes),
     which this tier runs over the dataset's text. Both forms are checked
     against each other on a real database
@@ -78,45 +77,6 @@ def field_strength_regex(strengths: Iterable[float], postgres: bool = False) -> 
             rf"{group}T|[Tt]esla|TESLA)(?!{word}/])")
 
 
-def asked_field_strengths(node) -> List[float]:
-    """The nominal strengths a field-strength condition asks for: "> 6.5 AND
-    < 7.5" → [7.0], "= 1.5" → [1.5], "≥ 3" → [3.0, 4.0, …]."""
-    low, high = 0.0, float("inf")
-    low_open = high_open = False
-    exact = None
-    found = False
-    ops = {exp.GT: ">", exp.GTE: ">=", exp.LT: "<", exp.LTE: "<=", exp.EQ: "="}
-    for comparison in node.find_all(exp.GT, exp.GTE, exp.LT, exp.LTE, exp.EQ, exp.Between):
-        if FIELD_STRENGTH_KEY.lower() not in [k.lower() for k in _json_keys(comparison.this)]:
-            continue
-        try:
-            if isinstance(comparison, exp.Between):
-                low = max(low, float(comparison.args["low"].this))
-                high = min(high, float(comparison.args["high"].this))
-                found = True
-                continue
-            right = comparison.expression
-            if not (isinstance(right, exp.Literal) and not right.is_string):
-                continue
-            value = float(right.this)
-        except (KeyError, ValueError, AttributeError):
-            continue
-        found = True
-        op = ops[type(comparison)]
-        if op == "=":
-            exact = value
-        elif op.startswith(">") and value >= low:
-            low, low_open = value, op == ">"
-        elif op.startswith("<") and value <= high:
-            high, high_open = value, op == "<"
-    if not found:
-        return []
-    if exact is not None:
-        return [exact]
-    return [t for t in NOMINAL_TESLA
-            if (t > low if low_open else t >= low) and (t < high if high_open else t <= high)]
-
-
 _TEXT_SIDECAR_KEYS = {"magneticfieldstrength": FIELD_STRENGTH_KEY,
                       "manufacturer": "Manufacturer",
                       "manufacturermodelname": "ManufacturerModelName"}
@@ -134,29 +94,6 @@ _VENDOR_WORDS = {
 }
 _SIDECAR_LABELS = {FIELD_STRENGTH_KEY: "field strength", "Manufacturer": "scanner manufacturer",
                    "ManufacturerModelName": "scanner model"}
-
-
-def _json_keys(node) -> List[str]:
-    keys = []
-    for extract in node.find_all(exp.JSONExtractScalar, exp.JSONExtract):
-        key = extract.expression
-        name = key.this if isinstance(key, exp.Literal) else key.sql().strip("'$.")
-        keys.append(name)
-    return keys
-
-
-def _key_values(node, key: str) -> List[str]:
-    """String values compared with other_entities ->> *key* ('%GE%' → 'GE')."""
-    values = []
-    for comparison in node.find_all(exp.EQ, exp.In, exp.ILike, exp.Like):
-        if key.lower() not in [k.lower() for k in _json_keys(comparison)]:
-            continue
-        for literal in comparison.find_all(exp.Literal):
-            if literal.is_string and literal.this.lower() != key.lower():
-                value = literal.this.strip("%").strip()
-                if value:
-                    values.append(value)
-    return list(dict.fromkeys(values))
 
 
 def sidecar_words(key: str, values: Sequence[str]) -> List[str]:
@@ -231,7 +168,7 @@ def _file_rows(select, alias: str) -> Optional[Tuple[str, List[str], List[str], 
             continue
         if any(c.table not in (inner, "") for c in columns):
             return None
-        if _json_keys(part):
+        if sql_tree.json_keys(part):
             sidecar.append(part.sql(dialect="postgres"))
         else:
             files.append(part.sql(dialect="postgres"))
@@ -294,7 +231,7 @@ def sidecar(clause: Clause, alias: str) -> Optional[ClauseEvidence]:
     says.
     """
     node = clause.node
-    keys = {k.lower() for k in _json_keys(node)}
+    keys = {k.lower() for k in sql_tree.json_keys(node)}
     if len(keys) != 1 or not keys <= set(_TEXT_SIDECAR_KEYS):
         return None
     key = _TEXT_SIDECAR_KEYS[next(iter(keys))]
@@ -327,11 +264,11 @@ def sidecar(clause: Clause, alias: str) -> Optional[ClauseEvidence]:
     strengths: Tuple[float, ...] = ()
     values: Tuple[str, ...] = ()
     if key == FIELD_STRENGTH_KEY:
-        strengths = tuple(asked_field_strengths(node))
+        strengths = tuple(asked.field_strengths(node))
         if not field_strength_regex(strengths, postgres=True):
             return None
     else:
-        values = tuple(_key_values(node, key))
+        values = tuple(sql_tree.compared_values(node, json_key=key))
         if not (values and _value_tsquery(key, values)):
             return None
     named = ProbableScannerValueNamedEvidence(key=key, strengths=strengths, values=values, file_set=file_select,
@@ -364,11 +301,11 @@ class ProbableScannerValueNamedEvidence(ProbableNamedInTextEvidence):
             # The indexed words first: the regex then reads a few hundred texts.
             text = (f"{self.alias}.search_tsv @@ TO_TSQUERY('english', "
                     f"{sql_literal(_strength_tsquery(self.strengths))}) "
-                    f"AND {own_text(self.alias)} ~ {sql_literal(pattern)}")
+                    f"AND {text_from_dataset(self.alias)} ~ {sql_literal(pattern)}")
         else:
             query = _value_tsquery(self.key, self.values)
             assert query is not None
-            text = own_text_matches(self.alias, query)
+            text = text_from_dataset_matches(self.alias, query)
         return f"({text}) AND ({self.alias}.id IN ({self.file_set}))" if self.file_set else text
 
     def key_recorded(self) -> str:

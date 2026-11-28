@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
 }>(), { terms: () => [], strengths: () => [], emphasis: () => [] })
 
 // The backend sends at most this many participants per dataset
-// (_MAX_PARTICIPANTS_PER_DATASET in backend/routers/query.py). Below it the
+// (MAX_PARTICIPANTS_PER_DATASET in backend/services/results/display/dataset_cards.py). Below it the
 // list is complete and counts are exact; at it, they would undercount.
 const PARTICIPANT_CAP = 50
 const MAX_GROUPS_SHOWN = 4

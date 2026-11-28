@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from services.stores import interpretations as store
+from services.stores.translated_queries import CachedQuery
 
 _BACKEND = Path(store.__file__).resolve().parents[2]
 _ROOT = _BACKEND.parent
@@ -42,7 +43,7 @@ def test_different_questions_never_share_a_cache_key(a, b):
 
 
 def test_cache_is_off_by_default(monkeypatch):
-    monkeypatch.delenv("INTERPRETATION_CACHE", raising=False)
+    monkeypatch.setenv("INTERPRETATION_CACHE", "false")
     assert not store.enabled()
     monkeypatch.setenv("INTERPRETATION_CACHE", "true")
     assert store.enabled()
@@ -126,15 +127,13 @@ def test_a_new_vocabulary_file_changes_the_version(monkeypatch, tmp_path):
 ])
 def test_only_a_translation_that_ran_as_written_is_stored(total, fallback, self_corrected,
                                                           relaxed, expected):
-    from services import search
     from services.translate.sql_rewriter import FALLBACK_SQL
-    from services.stores.translated_queries import CachedQuery
 
     cached = CachedQuery(base_sql=FALLBACK_SQL if fallback else "SELECT 1",
                          params={}, scored_filters=[], apply_relevance=False)
     cached.self_corrected = self_corrected
     cached.relaxed = relaxed
-    assert search._worth_storing(cached, total) is expected
+    assert store.worth_storing(cached, total) is expected
 
 
 def test_version_reads_every_preprocessing_module():
@@ -191,8 +190,48 @@ def test_a_failed_hit_count_keeps_the_stored_translation(monkeypatch):
 
     monkeypatch.setenv("INTERPRETATION_CACHE", "true")
     session = _Session(row=_StoredRow(), update_error=OperationalError("UPDATE", {}, Exception("lock timeout")))
-    assert _get(session) == {"sql": "SELECT 1"}
+    assert _get(session) == store.StoredTranslation(sql="SELECT 1")
     assert session.rollbacks == 1 and session.commits == 0
+
+
+def test_a_translation_reviewed_as_wrong_translates_anew(monkeypatch):
+    from database.app_tables import ReviewVerdict
+
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    row = _StoredRow()
+    row.review_verdict = "wrong"  # as the database returns it
+    assert ReviewVerdict.WRONG.value == "wrong"
+    assert _get(_Session(row=row)) is None
+    row.review_verdict = ReviewVerdict.OK.value
+    assert _get(_Session(row=row)) == store.StoredTranslation(sql="SELECT 1")
+
+
+@pytest.mark.parametrize("payload", [
+    "not json",
+    '{"params": {}}',                                   # no SQL
+    '{"sql": "SELECT 1", "scored_filters": [{"field": "task"}]}',
+])
+def test_a_stored_payload_that_is_not_a_translation_translates_anew(monkeypatch, payload):
+    monkeypatch.setenv("INTERPRETATION_CACHE", "true")
+    row = _StoredRow()
+    row.payload = payload
+    assert _get(_Session(row=row)) is None
+
+
+def test_a_translation_reads_back_as_it_was_written():
+    from services.fulltext.ranking import RankQuery
+
+    written = store.StoredTranslation(
+        sql="SELECT 1", params={"n": 3}, apply_relevance=True,
+        scored_filters=[{"field": "task", "code": "resting_state", "score": 0.9}],
+        rank_query=RankQuery(stemmed="memory", exact="ageing"), sql_path="compiled")
+    assert store.StoredTranslation.model_validate_json(written.to_json()) == written
+
+
+def test_an_unsafe_stored_tsquery_is_dropped():
+    read = store.StoredTranslation.model_validate_json(
+        '{"sql": "SELECT 1", "rank_query": {"stemmed": "memory", "exact": "x\'; DROP"}}')
+    assert read.rank_query.stemmed == "memory" and read.rank_query.exact is None
 
 
 def test_a_failed_lookup_translates_anew(monkeypatch):
@@ -242,7 +281,9 @@ class _WriteSession:
 
 def _put(session, payload=None):
     import asyncio
-    asyncio.run(store.put(session, "fMRI datasets", payload or {"sql": "SELECT 1"}, 25))
+    cached = CachedQuery(base_sql="SELECT 1", params={}, scored_filters=[], apply_relevance=False)
+    asyncio.run(store.put(session, "fMRI datasets",
+                          store.StoredTranslation(sql="SELECT 1", **(payload or {})), cached, 25))
 
 
 def test_a_question_stored_twice_at_once_keeps_the_first(monkeypatch):
@@ -273,6 +314,6 @@ def test_a_failed_query_log_commit_rolls_back_and_the_search_answers():
     from sqlalchemy.exc import OperationalError
 
     session = _WriteSession(commit_error=OperationalError("COMMIT", {}, Exception("connection reset")))
-    asyncio.run(store.log_query(session, "q", {"sql": "SELECT 1"}, 3, from_cache=False,
+    asyncio.run(store.log_query(session, "q", store.StoredTranslation(sql="SELECT 1"), 3, from_cache=False,
                                 relaxed=False, self_corrected=False, fallback=False))
     assert len(session.added) == 1 and session.rollbacks == 1

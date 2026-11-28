@@ -120,3 +120,13 @@ def test_without_literals_leaves_no_bit_string(value):
 def test_without_literals_writes_postgres():
     node = _where("d.search_tsv @@ to_tsquery('english', 'secret')")
     assert sql_tree.without_literals(node) == "d.search_tsv @@ TO_TSQUERY(?, ?)"
+
+
+def test_order_keys_read_a_select_alias_as_what_it_names():
+    tree = sql_tree.parse_select(
+        "SELECT d.id, COUNT(DISTINCT o.subject) AS subject_count FROM bids_datasets AS d "
+        "GROUP BY d.id ORDER BY subject_count DESC, d.name LIMIT 3")
+    keys = sql_tree.order_keys(tree)
+    assert [(key.columns, key.descending) for key in keys] == [(("subject",), True), (("name",), False)]
+    assert sql_tree.row_limit(tree) == 3
+    assert sql_tree.row_limit(sql_tree.parse_select("SELECT 1")) is None

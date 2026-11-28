@@ -68,7 +68,7 @@ from __future__ import annotations
 
 import os
 import re
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import sqlglot
 from sqlglot import exp
@@ -77,7 +77,7 @@ from services import sql_tree
 from services.uncertain.conditions import QueryEvidence, ClauseEvidence
 from services.uncertain.fields.sex import keep_only_sex_pairs
 from services.uncertain.classify import classify
-from services.fulltext.text_search import Clause, read_clauses
+from services.fulltext.text_search import Clause, read_clauses, text_searches
 from services.schema.tables import datasets as _datasets
 from services.switches import Switch
 
@@ -131,6 +131,29 @@ def _dataset_alias(select) -> Optional[str]:
     if isinstance(table, exp.Table) and table.name == _datasets.name:
         return table.alias_or_name
     return None
+
+
+_TS_CONFIGS = frozenset({"english", "simple"})
+
+
+def _hoist_tsqueries(trees: List[Any], table: str) -> List[str]:
+    """Replace each to_tsquery('english'|'simple', '<query>') in *trees* by a
+    column of *table*, one per distinct call; returns the CTE's select items
+    ("TO_TSQUERY('english', '...') AS q0", ...)."""
+    columns: dict[tuple[str, str], str] = {}
+    values: List[str] = []
+    for tree in trees:
+        for search in text_searches(tree):
+            arguments = search.call.expressions
+            if (len(arguments) != 2 or not all(isinstance(a, exp.Literal) and a.is_string for a in arguments)
+                    or arguments[0].this.lower() not in _TS_CONFIGS):
+                continue
+            key = (arguments[0].this.lower(), search.query)
+            if key not in columns:
+                columns[key] = f"q{len(columns)}"
+                values.append(f"{search.call.sql(dialect='postgres')} AS {columns[key]}")
+            search.call.replace(exp.column(columns[key], table=table))
+    return values
 
 
 def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] = None) -> str:
@@ -244,41 +267,24 @@ def apply(sql: str, papers: Optional[bool] = None, hoist_terms: Optional[bool] =
     # Full-text predicates are used in the candidate filter and again to label
     # their evidence level. Hoist identical tsquery values into a one-row CTE;
     # both stages refer to q.qN instead of copying long synonym lists.
-    tsquery_re = re.compile(
-        r"TO_TSQUERY\(\s*'(?P<config>english|simple)'\s*,\s*'(?P<query>[^']*)'\s*\)",
-        re.IGNORECASE,
-    )
-    query_values: dict[tuple[str, str], str] = {}
-    for match in tsquery_re.finditer(inner_sql + "\n" + raw_sql):
-        key = (match.group("config").lower(), match.group("query"))
-        query_values.setdefault(key, f"q{len(query_values)}")
-
     terms_cte = None
-    if query_values and hoist_terms:
-        def replace_tsquery(match: re.Match) -> str:
-            key = (match.group("config").lower(), match.group("query"))
-            return f"{terms_alias}.{query_values[key]}"
-
-        inner_sql = tsquery_re.sub(replace_tsquery, inner_sql)
-        raw_sql = tsquery_re.sub(replace_tsquery, raw_sql)
-        terms_select = ", ".join(
-            f"TO_TSQUERY('{config}', '{query}') AS {column}"
-            for (config, query), column in query_values.items()
-        )
-        terms_cte = f"{terms_name} AS (SELECT {terms_select})"
-
-        # The query CTE is one row; joining it makes its named tsquery values
-        # visible to the indexed candidate WHERE and the evidence expressions.
-        inner_tree = sqlglot.parse_one(inner_sql, read="postgres")
-        query_table = exp.Table(
-            this=exp.to_identifier(terms_name),
-            alias=exp.TableAlias(this=exp.to_identifier(terms_alias)),
-        )
-        joins = list(inner_tree.args.get("joins") or [])
-        joins.append(exp.Join(this=query_table, kind="CROSS"))
-        inner_tree.set("joins", joins)
-        inner_sql = inner_tree.sql(dialect="postgres")
-        raw_sql += f"\nCROSS JOIN {terms_name} AS {terms_alias}"
+    if hoist_terms:
+        raw_tree = sqlglot.parse_one(raw_sql, read="postgres")
+        values = _hoist_tsqueries([inner, raw_tree], terms_alias)
+        if values:
+            terms_cte = f"{terms_name} AS (SELECT {', '.join(values)})"
+            # The query CTE is one row; joining it makes its named tsquery values
+            # visible to the indexed candidate WHERE and the evidence expressions.
+            for hoisted in (inner, raw_tree):
+                query_table = exp.Table(
+                    this=exp.to_identifier(terms_name),
+                    alias=exp.TableAlias(this=exp.to_identifier(terms_alias)),
+                )
+                joins = list(hoisted.args.get("joins") or [])
+                joins.append(exp.Join(this=query_table, kind="CROSS"))
+                hoisted.set("joins", joins)
+            inner_sql = inner.sql(dialect="postgres")
+            raw_sql = raw_tree.sql(dialect="postgres")
     raw_sql += raw_where
 
     # OFFSET 0 keeps the planner from merging these subqueries into the outer

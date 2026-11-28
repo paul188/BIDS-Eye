@@ -96,7 +96,10 @@ def main() -> None:
 
     # The search runner asks a model to repair SQL the database rejects; keep the repair.
     try:
-        from services import search_runner as runner
+        try:
+            from services.search import search_runner as runner
+        except ImportError:  # before services/search/ was a folder
+            from services import search_runner as runner
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         import routers.query as runner

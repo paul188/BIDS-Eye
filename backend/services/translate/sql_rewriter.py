@@ -208,10 +208,10 @@ class RewriteResult:
     # None without text terms.
     rank_query: Optional[ranking.RankQuery] = None
     # The query before the uncertain tier wraps it: its WHERE conditions are
-    # the filter chips (services/results/query_filters.py). Equals sql without the tier.
+    # the filter chips (services/results/display/chips.py). Equals sql without the tier.
     filter_sql: Optional[str] = None
     # The same query without its free-text-only conditions, for the case that
-    # the full query finds nothing (services/search_runner.py); None when there is no
+    # the full query finds nothing (services/search/search_runner.py); None when there is no
     # such condition to drop.
     relaxed_sql: Optional[str] = None
     # Values the catalogue check corrected or dropped (services/translate/value_check.py).
@@ -405,7 +405,9 @@ class SqlRewriteService:
         tiered = _uncertain_tier.LEVEL_COLUMN in base_sql
         if not (tiered or judged or ranked) and _has_top_level_order(base_sql):
             # An order the user asked for ("the largest first") is kept:
-            # sorting the page again would undo the request.
+            # sorting the page again would undo the request. Rows that tie in
+            # it are told apart by id, so pages cannot repeat or skip one.
+            ordered = _order_ties_by_id(ordered)
             order_clause = ""
         else:
             # Postgres does not promise to keep a subquery's order, and
@@ -1823,6 +1825,20 @@ class SqlRewriteService:
             ") AS ranked\n"
             f"{order}"
         )
+
+
+def _order_ties_by_id(sql: str) -> str:
+    """*sql* with its result column ``id`` as the last ORDER BY term; unchanged
+    when it cannot be parsed or has no such column."""
+    if parse_one is None:
+        return sql
+    try:
+        tree = parse_one(sql, read="postgres")
+    except SqlglotError:
+        return sql
+    if not isinstance(tree, exp.Select) or "id" not in tree.named_selects:
+        return sql
+    return tree.order_by("id", dialect="postgres").sql(dialect="postgres")
 
 
 def _has_top_level_order(sql: str) -> bool:

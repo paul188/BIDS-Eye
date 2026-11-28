@@ -10,7 +10,6 @@ diagnosis, sex, scanner fields, matches only in a paper the dataset names
 from __future__ import annotations
 
 import dataclasses
-import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
@@ -22,8 +21,9 @@ except ImportError:  # pragma: no cover
 import cohort_count
 from services import sql_tree
 from services.fulltext.text_search import Clause
-from services.uncertain.conditions import LABEL_RE, ClauseEvidence
-from services.uncertain.text import query_words, relax_text_condition
+from services.fulltext.tsquery import is_near, query_words, without_labels
+from services.uncertain.conditions import ClauseEvidence
+from services.uncertain.text import relax_text_condition
 from services.evidence.base import Source, Strength, UncertainEvidence
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import ConfirmedEvidence
@@ -138,12 +138,9 @@ def paper_searches(clause: Clause) -> Tuple[TextSearch, ...]:
     Without labels: paper text carries the lowest weight, so a search scoped
     to the name and short fields could never reach it.
     """
-    return tuple(TextSearch(LABEL_RE.sub("", search.query),
-                            LABEL_RE.sub("", search.guard.query) if search.guard else None)
+    return tuple(TextSearch(without_labels(search.query),
+                            without_labels(search.guard.query) if search.guard else None)
                  for search in clause.find(stemmed=True, negated=False))
-
-
-_DISTANCE_RE = re.compile(r"<\d+>")
 
 
 def _positive_words(clause: Clause) -> set:
@@ -169,7 +166,7 @@ def loose_term(clause: Clause, alias: str, papers: bool = False) -> Optional[Cla
     core = node.right.sql(dialect="postgres")
     # A topic search (phrase OR alternatives AND NOT unwanted meanings, or a
     # 'near' search) has its own weaker forms (text.relax_text_condition).
-    if node.find(exp.Not) is not None or _DISTANCE_RE.search(every_word):
+    if node.find(exp.Not) is not None or is_near(every_word):
         return None
     left, right = clause.part(node.left), clause.part(node.right)
     words, core_words = _positive_words(left), _positive_words(right)

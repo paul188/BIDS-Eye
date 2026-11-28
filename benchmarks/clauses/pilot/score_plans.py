@@ -415,6 +415,8 @@ def run(args) -> None:
     plans: dict = done.get("plans", {})
     errors: dict = done.get("errors", {})
     for item in load_own():
+        if args.only and item["id"] not in args.only.split(","):
+            continue
         for _ in range(args.repeats - len(plans.get(item["id"], []))):
             try:
                 plan = preprocess.create_query_plan(item["text"])
@@ -435,6 +437,7 @@ def main() -> None:
     r.add_argument("--out", type=Path, required=True)
     r.add_argument("--repeats", type=int, default=3)
     r.add_argument("--label", default="plans")
+    r.add_argument("--only", default="", help="comma-separated item ids")
     s = sub.add_parser("score")
     s.add_argument("plans", type=Path)
     s.add_argument("--errors", action="store_true")

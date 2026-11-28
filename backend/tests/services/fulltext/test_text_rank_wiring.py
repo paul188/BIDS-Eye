@@ -13,7 +13,8 @@ import pytest
 
 import preprocess
 import retriever
-from services.database_stats.database_stats import ColumnCoverage, database_stats
+from services.database_stats.database_stats import database_stats
+from tests.helpers import full_coverage
 from services.fulltext import word_frequencies
 from services.translate import text_to_sql
 from services.translate.sql_rewriter import build_page_sql
@@ -27,10 +28,10 @@ BASE = (
 
 @pytest.fixture(autouse=True)
 def _full_text_available():
-    database_stats.coverage = ColumnCoverage.full(())
+    database_stats.coverage = full_coverage(())
     word_frequencies.set_frequency_lookup(None)
     yield
-    database_stats.coverage = ColumnCoverage.full(())
+    database_stats.coverage = full_coverage(())
     word_frequencies.set_frequency_lookup(None)
 
 

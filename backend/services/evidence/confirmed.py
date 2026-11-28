@@ -25,7 +25,7 @@ _MAX_VALUE_CHARS = 60
 
 
 class CardColumn(str, Enum):
-    """Columns of the card query (results/match_reasons.build_sql),
+    """Columns of the card query (results/display/match_reasons.build_sql),
     by what they hold. Written there and read by reason() here."""
     HOLDS = "h"       # the branch holds; per suffix
     COUNT = "n"       # participant rows it holds for; per suffix

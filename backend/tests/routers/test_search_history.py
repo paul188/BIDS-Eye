@@ -25,7 +25,7 @@ from deps import get_db, require_auth, user_id
 from exceptions.handlers import add_error_handlers
 from database.app_tables import QueryLog, SearchHistoryConsent, SearchHistoryEntry
 from routers.schemas import QueryRequest, QueryResponse
-from services import search
+from services.search import search
 from services.stores import search_history
 
 from tests.postgres import fresh_schema, needs_postgres

@@ -514,6 +514,7 @@ def test_default_limits() -> None:
     assert session.statements == [
         "SET LOCAL statement_timeout = '120s'",
         "SET LOCAL work_mem = '32MB'",
+        "SET LOCAL jit = off",
         "SET LOCAL temp_file_limit = '1GB'",
     ]
 

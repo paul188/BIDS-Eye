@@ -12,10 +12,11 @@ import pytest
 sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
-from services.results import query_filters  # noqa: E402
+from services.results.display.chips import describe  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.fulltext import ranking, text_search, word_frequencies  # noqa: E402
 from services import sql_tree  # noqa: E402
+from services.fulltext.text_search import Clause  # noqa: E402
 from services.uncertain import text as tier_text  # noqa: E402
 
 
@@ -105,13 +106,13 @@ def test_the_search_the_chip_and_the_tier_read_the_condition() -> None:
     assert "'dead & people'" in sql
     assert "(post <-> mortem) | (ex <1> vivo" in sql and "| deceased'" in sql
 
-    chips = query_filters.describe(sql)
+    chips = describe(sql)
     assert len(chips) == 1 and chips[0].label == "dead people"
-    assert "post mortem" in chips[0].detail and "ex vivo" in chips[0].detail
+    assert "post mortem" in chips[0].text_words and "ex vivo" in chips[0].text_words
 
     # Only the user's own words get a weaker form, not the alternatives; and
     # "people" alone is none (without counts the longer word would be kept).
-    weaker = tier_text.relax_text_condition(text_search.Clause.read(sql_tree.parse(sql)), "d")
+    weaker = tier_text.relax_text_condition(Clause.read(sql_tree.parse(sql)), "d")
     relaxed = weaker.sql() if weaker else None
     assert relaxed is None or ("mortem" not in relaxed and "vivo" not in relaxed)
     assert relaxed is None or "'people'" not in relaxed

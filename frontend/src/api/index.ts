@@ -59,16 +59,21 @@ export interface QueryFilter {
   id: string
   /** 'topic': a qualified subject searched as one unit; 'sense': the meanings it
    *  excludes (id = topic id + "n"; removing it removes only the exclusion);
-   *  'sort': the query's ORDER BY / LIMIT (id "o0"; removing it shows every match). */
-  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'field' | 'topic' | 'sense' | 'sort' | 'other'
+   *  'sort': the query's ORDER BY / LIMIT (id "o0"; removing it shows every match).
+   *  Searches saved before 2026-11-26 call 'column' 'field'. */
+  kind: 'diagnosis' | 'modality' | 'task' | 'age' | 'sex' | 'subjects' | 'count' | 'text' | 'column' | 'topic' | 'sense' | 'sort' | 'other'
+  /** What the chip is about ("Diagnosis"). */
   field: string
   label: string
   negated: boolean
   /** Words also searched in the dataset text; a "text" chip is only these. */
   text_words: string[]
   detail: string
-  /** Every value behind a label shortened to "+N"; [] when nothing is hidden. */
+  /** Of a label that lists values: all of them, and how many the label lists
+   *  (the page shows "+N" for the rest). [] and 0 for any other label. Saved
+   *  searches from before 2026-11-26 have no `shown` and "+N" in the label. */
   values?: string[]
+  shown?: number
 }
 
 export interface QueryResponse {
@@ -178,7 +183,7 @@ export const api = {
 
   // `signal` lets the caller abort a page it no longer wants.
   queryPage: (queryId: string, page: number, pageSize: number, signal?: AbortSignal) =>
-    request<QueryResponse>('POST', '/query/page', { body: { query_id: queryId, page, page_size: pageSize }, signal }),
+    request<QueryResponse>('GET', `/query/${encodeURIComponent(queryId)}?page=${page}&page_size=${pageSize}`, { signal }),
 
   // 401 when not signed in: the frontend cannot read the cookie itself.
   me: () =>

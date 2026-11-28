@@ -326,3 +326,86 @@ def keyword_query(question: str) -> Optional[str]:
 def is_safe_tsquery(query: Optional[str]) -> bool:
     """True if *query* was built here and can be inlined into SQL."""
     return bool(query) and _SAFE_TSQUERY_RE.match(query or "") is not None
+
+
+# ── Reading a query string back ───────────────────────────────────────────────
+# The one reader of the strings written above, for everything that reads a
+# generated search: the chips, the evidence, the uncertain tier, highlights.
+
+# Weight labels (":AB", ":A") and the prefix mark (":*") after a word.
+_LABEL_RE = re.compile(r":[A-D*]+")
+# Exact word distances (`a <2> b`), written only by 'near' terms (_near_query);
+# `<->` inside a hyphenated word is not one of them.
+_DISTANCE_RE = re.compile(r"<\d+>")
+_ADJACENT_RE = re.compile(r"<(?:-|\d+)>")
+_WORD_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*", re.IGNORECASE)
+_SHORT_WEIGHTS = {"A", "B"}   # name; description and study fields (migrate_add_search_tsv.sql)
+
+
+def without_labels(query: str) -> str:
+    """*query* searching the whole text: "parkinson:AB & disease" → "parkinson & disease"."""
+    return _LABEL_RE.sub("", query)
+
+
+def split_top_level(query: str, operator: str) -> List[str]:
+    """*query* split on *operator* ("&" or "|") outside parentheses."""
+    parts, depth, current = [], 0, ""
+    for char in query:
+        depth += (char == "(") - (char == ")")
+        if char == operator and depth == 0:
+            parts.append(current.strip())
+            current = ""
+        else:
+            current += char
+    parts.append(current.strip())
+    return [part for part in parts if part]
+
+
+def outer_parentheses_removed(query: str) -> str:
+    query = query.strip()
+    while _is_parenthesised(query):
+        query = query[1:-1].strip()
+    return query
+
+
+def is_near(query: str) -> bool:
+    """True when *query* has word distances, i.e. comes from a 'near' term."""
+    return _DISTANCE_RE.search(query) is not None
+
+
+def near_parts(alternative: str) -> List[str]:
+    """The words of a 'near' alternative in their first written order, labels
+    kept: "(social <1> conflict | conflict <1> social)" → ["social", "conflict"]."""
+    first = split_top_level(outer_parentheses_removed(alternative), "|")[0]
+    return [part.strip() for part in _DISTANCE_RE.split(first) if part.strip()]
+
+
+def query_words(query: str) -> List[str]:
+    """Every word of *query* once, in order, without labels and operators."""
+    return list(dict.fromkeys(_WORD_RE.findall(_ADJACENT_RE.sub(" ", without_labels(query)))))
+
+
+def query_phrases(query: str) -> List[str]:
+    """Its alternatives as phrases: '(alzheimer:AB & disease:AB) | ad:AB' →
+    ['alzheimer disease', 'ad']; a 'near' alternative in its first word order."""
+    phrases = []
+    for alternative in split_top_level(without_labels(query), "|"):
+        if is_near(alternative):
+            alternative = " ".join(near_parts(alternative))
+        words = query_words(alternative)
+        if words:
+            phrases.append(" ".join(words))
+    return list(dict.fromkeys(phrases))
+
+
+def short_fields_only(query: str) -> bool:
+    """True when every word of *query* is limited to weights A and B
+    ('parkinson:AB'): the name and description, never the README (D)."""
+    tokens = re.findall(r"[^\s&|!()]+", re.sub(r"<[^>]*>", " ", query))
+    if not tokens:
+        return False
+    for token in tokens:
+        labels = set(token.split(":", 1)[1]) - {"*"} if ":" in token else set()
+        if not labels or labels - _SHORT_WEIGHTS:
+            return False
+    return True

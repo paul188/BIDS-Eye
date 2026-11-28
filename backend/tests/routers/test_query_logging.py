@@ -19,7 +19,7 @@ import asyncio
 
 import routers.search as query_router
 from routers.schemas import QueryRequest, TextToSQLResult
-from services import search, search_runner
+from services.search import search, search_runner
 
 
 class _Savepoint:
@@ -70,7 +70,6 @@ def _search(
 
     monkeypatch.setattr(search, "text_to_sql", translate)
     monkeypatch.setattr(search_runner, "run_page", empty_page)
-    monkeypatch.setattr(search, "_filters_for", lambda cached: [])
     return asyncio.run(query_router.query_datasets(
         QueryRequest(question=question), session, github_id))
 

@@ -43,20 +43,25 @@ class ProbablePaperOnlyEvidence(UncertainEvidence):
         atoms = []
         for search in self.searches:
             paper = f"{self.alias}.{PAPER_FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
-            own = f"{self.alias}.{FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
+            from_dataset = f"{self.alias}.{FTS_COLUMN} @@ TO_TSQUERY('english', '{search.query}')"
             if search.guard:
                 # Exact word forms count in the paper as in the dataset's text.
                 paper = (f"({paper} AND {self.alias}.{EXACT_PAPER_FTS_COLUMN} @@ "
                          f"TO_TSQUERY('simple', '{search.guard}'))")
-                own = (f"({own} AND {self.alias}.{EXACT_FTS_COLUMN} @@ "
-                       f"TO_TSQUERY('simple', '{search.guard}'))")
+                from_dataset = (f"({from_dataset} AND {self.alias}.{EXACT_FTS_COLUMN} @@ "
+                                f"TO_TSQUERY('simple', '{search.guard}'))")
             # The paper vector also holds the dataset's own text; "only in a
             # paper" means it matches there and not in the dataset's text.
-            atoms.append(f"({paper} AND NOT {own})")
+            atoms.append(f"({paper} AND NOT {from_dataset})")
         return " OR ".join(dict.fromkeys(atoms))
 
     def reason(self) -> str:
         return "found only in a paper the dataset names"
+
+    def score(self) -> float:
+        # 41.6% of 101 judged rows relevant, against 86.1% of confirmed rows
+        # (recall benchmark, development questions, LLM judge, 2026-11-13).
+        return 0.48
 
 
 def _listed(terms: Sequence[str], limit: int) -> str:

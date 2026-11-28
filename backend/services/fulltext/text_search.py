@@ -361,6 +361,16 @@ class Clause:
                 and (not outer or not sql_tree.in_subquery(search.call, self.node))
                 and (negated is None or self.negated(search) == negated)]
 
+    def queries(self, *, negated: Optional[bool] = None, guards: bool = False) -> List[str]:
+        """The query strings of its searches (find)."""
+        return [search.query for search in self.find(negated=negated, guards=guards)]
+
+    def guard_forms(self, *, negated: Optional[bool] = False) -> List[str]:
+        """The word forms its searches require, e.g. ['ageing', 'aging']."""
+        forms = [word for query in self.queries(negated=negated, guards=True)
+                 for word in tsquery.query_words(query)]
+        return list(dict.fromkeys(forms))
+
 
 def _split_and(node: Any) -> List[Any]:
     """The AND conditions of *node*; a guarded pair stays one."""

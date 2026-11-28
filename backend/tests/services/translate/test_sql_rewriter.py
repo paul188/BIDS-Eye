@@ -181,6 +181,8 @@ def test_a_requested_order_is_kept_on_the_page() -> None:
     ).sql
     page_sql, _ = build_page_sql(base_sql, [], False, 20, 0)
     assert "ORDER BY" not in _outer_order(page_sql)
+    # Datasets of the same size keep one order on every page.
+    assert "ORDER BY d.size_bytes DESC, id" in " ".join(page_sql.split())
 
 
 _UNIFIED = ("COALESCE(bo.other_entities ->> 'ManufacturersModelName', "

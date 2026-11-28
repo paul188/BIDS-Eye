@@ -1,6 +1,6 @@
 // What the page marks in descriptions and generated summaries (src/highlight.ts).
 // The README excerpt is marked by the backend (backend/services/results/
-// query_filters.py, highlight_terms); both follow the same rules:
+// highlights.py, highlight_terms); both follow the same rules:
 // every chip that is not negated, whatever its kind. Run: npm test.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -63,4 +63,9 @@ test('words of the sex and scanner venues are marked; a strength inside a modali
   assert.deepEqual(fieldStrengths([fmri7t]), [7])
   const pattern = termPattern(highlightTerms([fmri7t]), fieldStrengths([fmri7t]))!
   assert.deepEqual([...'Scanned at 7 T and 7T; not 17T.'.matchAll(pattern)].map(m => m[0]), ['7 T', '7T'])
+})
+
+test('a coded chip marks the values its label lists, not a "+N"', () => {
+  const adhd = { ...chip('diagnosis', 'ADHD', []), values: ['ADHD', 'Autism'], shown: 1 }
+  assert.deepEqual(marked('ADHD and autism cohorts', [adhd]), ['ADHD'])
 })

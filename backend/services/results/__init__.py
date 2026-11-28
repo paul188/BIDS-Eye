@@ -1,1 +1,1 @@
-"""What a result page shows: filter chips and highlighting, re-ranking, dataset cards, README excerpts."""
+"""The results of a search: their order (rankers.py, rerank.py) and how the page shows them (display/)."""

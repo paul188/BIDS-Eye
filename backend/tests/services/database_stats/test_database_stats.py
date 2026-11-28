@@ -10,6 +10,7 @@ import pytest
 from sqlalchemy.exc import ProgrammingError
 
 from services.database_stats.database_stats import ColumnCoverage, DatabaseStats, Names, Summaries, ValueCounts, database_stats
+from tests.helpers import full_coverage
 from services.schema import tables
 from services.schema.check import MissingSchemaError, check_schema, sql_type
 
@@ -129,11 +130,6 @@ def test_coverage_counts_the_datasets_that_fill_each_optional_column() -> None:
     assert coverage.filled["institutions"] == 0
 
 
-def test_full_coverage_rejects_unknown_names() -> None:
-    with pytest.raises(ValueError):
-        ColumnCoverage.full({"no_such_column"})
-
-
 def test_every_optional_column_is_declared() -> None:
     assert set(tables.OPTIONAL_DATASET_COLUMNS) <= set(tables.datasets.c.keys())
 
@@ -235,7 +231,7 @@ def test_the_name_indexes_are_rebuilt_from_changed_lists_only(monkeypatch) -> No
 
 def test_a_failed_read_keeps_that_part_and_the_others_still_load() -> None:
     state = DatabaseStats()
-    state.coverage = ColumnCoverage.full({"readme_text"})
+    state.coverage = full_coverage({"readme_text"})
     connection = _Connection(fails=("coverage", tables.dataset_facets.name))
     _load(connection, into=state)
     assert state.coverage.filled == {"readme_text": 1}
@@ -348,7 +344,7 @@ def test_columns_behind_a_switch_are_needed_only_while_it_is_on(monkeypatch) -> 
     exact = {("bids_datasets", "search_tsv_exact"), ("bids_datasets", "search_tsv_exact_papers")}
     exact |= {("bids_word_forms", name) for name in tables.word_forms.c.keys()}
     connection = _Connection(columns=_all_columns(without=exact))
-    monkeypatch.delenv(tables.EXACT_FLAG, raising=False)
+    monkeypatch.setenv(tables.EXACT_FLAG, "false")
     asyncio.run(check_schema(connection))
     monkeypatch.setenv(tables.EXACT_FLAG, "true")
     with pytest.raises(MissingSchemaError, match="bids_word_forms.form"):

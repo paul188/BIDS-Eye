@@ -4,14 +4,13 @@ services/evidence/branches.py
 The evidence that confirms a condition of the generated query, read from its
 SQL: each OR branch of the condition is one way it holds (confirming_evidence).
 
-Used by results/match_reasons.py (what a result card says) and by
+Used by results/display/match_reasons.py (what a result card says) and by
 services/uncertain/ (ClauseEvidence.confirming).
 """
 
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -24,6 +23,7 @@ from services.evidence.confirmed import (ConfirmedByDefaultEvidence, ConfirmedEv
                                          ConfirmedInFileTablesEvidence, ConfirmedInPaperEvidence,
                                          ConfirmedInParticipantListEvidence)
 from services.fulltext.text_search import Clause
+from services.fulltext.tsquery import short_fields_only
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_PAPER_FTS_COLUMN, FTS_COLUMN, PAPER_FTS_COLUMN
 from services.schema.tables import COLUMN_TEXT, LABELS_IN_TEXT, TABLE_ABOUT, About, TextKind
 
@@ -53,24 +53,6 @@ _WITHOUT_PAPERS = {PAPER_FTS_COLUMN: FTS_COLUMN, EXACT_PAPER_FTS_COLUMN: EXACT_F
 
 
 # ── Reading the SQL ───────────────────────────────────────────────────────────
-
-_TS_OPERATOR_RE = re.compile(r"<[^>]*>")
-_TS_TOKEN_RE = re.compile(r"[^\s&|!()]+")
-_TS_SHORT_WEIGHTS = {"A", "B"}   # name; description and study fields (fulltext/vectors.py)
-
-
-def short_fields_only(tsquery: str) -> bool:
-    """True when every word of *tsquery* is limited to weights A and B
-    ('parkinson:AB'): the name and description, never the README (D)."""
-    tokens = _TS_TOKEN_RE.findall(_TS_OPERATOR_RE.sub(" ", tsquery))
-    if not tokens:
-        return False
-    for token in tokens:
-        labels = set(token.split(":", 1)[1]) - {"*"} if ":" in token else set()
-        if not labels or labels - _TS_SHORT_WEIGHTS:
-            return False
-    return True
-
 
 @dataclass(frozen=True)
 class EvidenceBranch:

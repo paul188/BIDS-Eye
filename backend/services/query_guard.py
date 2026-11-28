@@ -22,7 +22,8 @@ four independent guards:
    estimated at 12 million and was far larger in reality.
 3. apply_limits(): each transaction that runs generated SQL gets a statement
    timeout, a cap on temporary file space and a bounded sort memory, so a
-   query that slips through fails alone instead of starving the server.
+   query that slips through fails alone instead of starving the server. JIT
+   compilation is off: it can take longer than the search itself.
 4. slot(): at most SEARCH_MAX_CONCURRENT generated queries run at the same
    time (the server has 2 cores); a request that waits too long gets a
    "busy" error instead of piling up.
@@ -382,11 +383,13 @@ def _setting(name: str, default: str) -> str:
 
 
 async def apply_limits(session: Any) -> None:
-    """Statement timeout, temp file cap and sort memory for this transaction."""
+    """Statement timeout, temp file cap, sort memory and no JIT for this transaction."""
     from sqlalchemy import text
     from sqlalchemy.exc import DBAPIError
     await session.execute(text(f"SET LOCAL statement_timeout = '{_setting('SEARCH_STATEMENT_TIMEOUT', '120s')}'"))
     await session.execute(text(f"SET LOCAL work_mem = '{_setting('SEARCH_WORK_MEM', '32MB')}'"))
+    # Compiling one search took 4 s, running it 0.1 s (2026-11-25).
+    await session.execute(text("SET LOCAL jit = off"))
     # temp_file_limit can only be set by a superuser; a savepoint keeps a
     # refusal from aborting the transaction.
     try:

@@ -231,7 +231,7 @@ def _location_lines(plan: QueryPlan) -> List[str]:
     Its own top-level condition, not a NOT beside the text search: the
     uncertain tier keeps a negated condition as a hard filter, so the README
     of a University of New Mexico dataset is no "probable" match either, and
-    the chips show it as a location chip of its own (query_filters.py).
+    the chips show it as a location chip of its own (chips.py).
     A place no site is in is searched in the whole dataset text, README
     included, where labs often say where they scanned.
     """

@@ -14,14 +14,14 @@ from pathlib import Path
 import pytest
 
 from services.evidence.branches import confirming_evidence
-from services.results import query_filters
+from services.results.display.chips import where_conditions
 
 RECORDED = json.loads((Path(__file__).resolve().parents[2] / "data" / "recorded_conditions.json").read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize("recorded", RECORDED, ids=lambda r: r["condition"][:60])
 def test_the_evidence_is_read_as_recorded(recorded):
-    _, found = query_filters.where_conditions(
+    _, found = where_conditions(
         f"SELECT d.id FROM bids_datasets AS d WHERE {recorded['condition']}")
     assert len(found) == 1
     chip, clause = found[0]

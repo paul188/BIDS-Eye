@@ -2,7 +2,7 @@
 rate limit) reaches the client as its own status and text through the one
 handler (exceptions/handlers.py); any other exception gets the handlers'
 plain 500 without its message; and identical questions sent at the same time
-over HTTP still share one search (services/search.py ``_in_flight``).
+over HTTP still share one search (services/search/search.py ``_in_flight``).
 
 Needs the backend image (routers.search imports the db package)."""
 from __future__ import annotations
@@ -22,7 +22,8 @@ from deps import get_db, require_auth
 from exceptions.domain import DomainError
 from exceptions.handlers import UNEXPECTED_DETAIL, add_error_handlers
 from routers.schemas import QueryResponse
-from services import query_guard, search
+from services import query_guard
+from services.search import pagination, search
 
 
 def _app() -> FastAPI:
@@ -56,8 +57,18 @@ def _response(total: int) -> QueryResponse:
                          total=total, page=1, page_size=20, has_more=False)
 
 
-def test_an_unknown_query_id_is_410_from_the_real_service():
-    reply = asyncio.run(_post("/api/query/page", {"query_id": "no-such-query"}))
+async def _get(path: str) -> httpx.Response:
+    transport = httpx.ASGITransport(app=_app())
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        return await client.get(path)
+
+
+@pytest.mark.parametrize("ask", [
+    lambda: _get("/api/query/no-such-query?page=2"),
+    lambda: _post("/api/query/page", {"query_id": "no-such-query"}),  # the old address
+])
+def test_an_unknown_query_id_is_410_from_the_real_service(ask):
+    reply = asyncio.run(ask())
     assert reply.status_code == 410
     assert reply.json() == {"detail": "This search has expired. Please run the query again."}
 
@@ -67,7 +78,7 @@ def test_an_unknown_query_id_is_410_from_the_real_service():
     [
         (query_guard.SearchBusyError("no search slot free within 30s"), 503,
          "The search is busy. Please try again in a minute."),
-        (search.SearchExpiredError("q"), 410, "This search has expired. Please run the query again."),
+        (pagination.SearchExpiredError("q"), 410, "This search has expired. Please run the query again."),
     ],
 )
 def test_each_error_from_the_search_gets_its_answer(monkeypatch, error, status, detail):
@@ -85,14 +96,27 @@ def test_busy_on_a_later_page_is_503(monkeypatch):
     async def busy(session, query_id, page, page_size):
         raise query_guard.SearchBusyError("no search slot free within 30s")
 
-    monkeypatch.setattr(search, "next_page", busy)
-    reply = asyncio.run(_post("/api/query/page", {"query_id": "q"}))
+    monkeypatch.setattr(pagination, "next_page", busy)
+    reply = asyncio.run(_get("/api/query/q?page=2"))
     assert reply.status_code == 503
+
+
+def test_a_later_page_takes_its_number_from_the_address(monkeypatch):
+    async def page_of(session, query_id, page, page_size):
+        return _response(total=100).model_copy(
+            update={"query_id": query_id, "page": page, "page_size": page_size})
+
+    monkeypatch.setattr(pagination, "next_page", page_of)
+    reply = asyncio.run(_get("/api/query/abc?page=3&page_size=10"))
+    old = asyncio.run(_post("/api/query/page", {"query_id": "abc", "page": 3, "page_size": 10}))
+    assert (reply.json()["query_id"], reply.json()["page"], reply.json()["page_size"]) == ("abc", 3, 10)
+    assert old.json() == reply.json()
+    assert reply.headers["cache-control"] == "private"
 
 
 def test_every_planned_error_is_a_domain_error_with_its_own_answer():
     errors = (
-        query_guard.SearchBusyError, search.SearchExpiredError, rate_limits.RateLimitError,
+        query_guard.SearchBusyError, pagination.SearchExpiredError, rate_limits.RateLimitError,
         sessions.NotSignedInError, auth.OAuthStateError, github_oauth.GitHubTokenError,
         github_oauth.GitHubLoginMissingError, github_oauth.NotInGitHubOrgError,
     )
@@ -145,6 +169,36 @@ def test_an_error_raised_with_its_own_detail_and_headers_sends_them():
     assert reply.headers["retry-after"] == "7"
     # The class default is untouched by the instance's detail.
     assert rate_limits.RateLimitError.detail == {"code": "rate_limit_exceeded"}
+
+
+@pytest.mark.parametrize("error, level, has_traceback", [
+    (pagination.SearchExpiredError("query q7 not in the store"), "WARNING", False),
+    (query_guard.SearchBusyError("all 4 search slots taken"), "ERROR", True),
+])
+def test_the_handler_logs_the_message_by_status(caplog, error, level, has_traceback):
+    app = FastAPI()
+    add_error_handlers(app)
+
+    @app.get("/fails")
+    def fails():
+        raise error
+
+    async def get():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            return await client.get("/fails")
+
+    with caplog.at_level("WARNING", logger="exceptions.handlers"):
+        reply = asyncio.run(get())
+
+    (record,) = [r for r in caplog.records if r.name == "exceptions.handlers"]
+    assert record.levelname == level
+    assert str(error) in record.getMessage()
+    assert type(error).__name__ in record.getMessage()
+    assert f"GET /fails -> {reply.status_code}" in record.getMessage()
+    assert (record.exc_info is not None) == has_traceback
+    # The message stays in the log; the client gets only the detail.
+    assert str(error) not in reply.text
 
 
 def test_identical_questions_over_http_share_one_search(monkeypatch):

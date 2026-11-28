@@ -14,12 +14,20 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
+
+
+class ReviewVerdict(str, Enum):
+    """What an offline check found for a stored translation; the value is what
+    query_interpretations.review_verdict holds. NULL there means not checked."""
+    OK = "ok"
+    WRONG = "wrong"  # never served again
 
 
 class QueryInterpretation(Base):
@@ -42,7 +50,7 @@ class QueryInterpretation(Base):
     )
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Filled by a later offline check of the translation against the database:
-    # 'ok', 'wrong' (never served again) or NULL (not checked).
+    # a ReviewVerdict value, or NULL (not checked).
     review_verdict: Mapped[str | None] = mapped_column(String(16), nullable=True)
     review_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

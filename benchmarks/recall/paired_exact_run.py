@@ -52,7 +52,10 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from sqlalchemy import text
     from db.db import async_session_maker, engine
     try:
-        from services.search_runner import count_with_base_correction
+        try:
+            from services.search.search_runner import count_with_base_correction
+        except ImportError:  # before services/search/ was a folder
+            from services.search_runner import count_with_base_correction
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         from routers.query import _count_with_base_correction as count_with_base_correction

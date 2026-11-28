@@ -5,7 +5,8 @@ Where an error becomes an HTTP response. main.py adds these to the app;
 tests add them to their own small apps.
 
 - DomainError (exceptions/domain.py): the error's own status, ``detail`` and
-  headers.
+  headers. Its message is logged here: a warning for a 4xx, an error with
+  the traceback for a 5xx.
 - Any other exception: a bug or an outage nobody planned an answer for. The
   client gets UNEXPECTED_STATUS and UNEXPECTED_DETAIL below, never the
   exception's message. Starlette still raises the exception again after the
@@ -16,6 +17,8 @@ for a request body that fails validation.
 """
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -25,10 +28,18 @@ from exceptions.domain import DomainError
 UNEXPECTED_STATUS = 500
 UNEXPECTED_DETAIL = "The request could not be completed."
 
+log = logging.getLogger(__name__)
+
 
 async def domain_error_response(request: Request, exc: DomainError) -> JSONResponse:
     """The error's answer, in the same ``{"detail": ...}`` body that
     FastAPI's own errors give, so the frontend reads both alike."""
+    line = "%s %s -> %d %s: %s"
+    args = (request.method, request.url.path, exc.status_code, type(exc).__name__, exc)
+    if exc.status_code >= 500:
+        log.error(line, *args, exc_info=exc)
+    else:
+        log.warning(line, *args)
     return JSONResponse(
         status_code=exc.status_code, content={"detail": exc.detail}, headers=exc.headers
     )

@@ -65,10 +65,6 @@ if str(_LLM_DIR) not in sys.path:
 _HERE = Path(__file__).resolve().parents[1]  # backend/vocabulary/, where the vocabulary lives
 _DEFAULT_YAML = _HERE / "value_mappings.yaml"
 
-_METADATA_KEYS = {
-    "label", "standard_code", "description",
-    "synonyms", "codes", "extra_codes", "dataset_codes",
-}
 
 _CATEGORIES = [
     "diagnosis", "task", "suffix", "handedness", "sex",
@@ -454,9 +450,6 @@ Rules — apply all of them:
 4. Source texts are hints — use them, but do not restrict yourself to only what appears there.
 5. Respond with a JSON array of strings only. No explanation, no markdown, no code fences.\
 """
-
-# Default for backward compatibility
-_SYSTEM = _SYSTEM_AUGMENT
 
 
 def _build_prompt(node: dict, texts: List[str], mode: str = "augment") -> str:

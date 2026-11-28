@@ -16,7 +16,7 @@ from services.uncertain import classify  # noqa: E402  (loads every kind of evid
 GROUPS = {
     SourceGroup.RECORDS: {Source.PARTICIPANTS, Source.FIELD, Source.FILES, Source.DERIVATIVES,
                           Source.SITES},
-    SourceGroup.OWN_TEXT: {Source.LABEL, Source.SHORT_TEXT, Source.TEXT, Source.README},
+    SourceGroup.TEXT_FROM_DATASET: {Source.LABEL, Source.SHORT_TEXT, Source.TEXT, Source.README},
     SourceGroup.PAPER: {Source.PAPERS},
 }
 WITHOUT_GROUP = {Source.ASSUMED, Source.ASSUMED_ABSENT, Source.NOT_RECORDED}

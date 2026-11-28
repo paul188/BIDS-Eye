@@ -42,7 +42,7 @@ here.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, cast
+from typing import Any, NamedTuple, cast
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, Double, Integer, MetaData,
                         Table, Text)
@@ -74,10 +74,19 @@ ABOUT = "about"   # of a table: its About
 TEXT = "text"     # of a column: its TextKind
 LABEL_IN_TEXT = "label_in_text"   # of a column: an uploader label that search_tsv also holds
 LABEL = "label"   # of a column: how a card names one of its values, e.g. 'diagnosis label'
+SHOWN_AS = "shown_as"        # of a column: the word a filter chip names it by
+VOCABULARY = "vocabulary"    # of a column: the value_mappings.yaml section naming its values
+SORTED_AS = "sorted_as"      # of a column: the SortWords a sort chip says its order in
 # For the search and the schema shown to the SQL model:
 OPTIONAL = "optional"   # of a column: used only where the database fills it
 # For the schema shown to the SQL model:
 REFERS_TO = "refers_to"   # of a column: the column of another table it holds
+
+
+class SortWords(NamedTuple):
+    """How a sort chip says rows are ordered by a column."""
+    descending: str
+    ascending: str
 
 
 class About(str, Enum):
@@ -120,9 +129,9 @@ def _created_by(migration: str, flag: str | None = None) -> dict[str, str]:
 def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]], migration: str,
                       flag: str | None = None, text: TextKind | None = None,
                       label_in_text: bool = False, optional: bool = False,
-                      label: str | None = None) -> Column[Any]:
+                      label: str | None = None, shown_as: str | None = None) -> Column[Any]:
     """A column to add to bids_datasets; *migration* and *flag* as in _created_by,
-    *optional* and *label* as OPTIONAL and LABEL."""
+    *optional*, *label* and *shown_as* as OPTIONAL, LABEL and SHOWN_AS."""
     info: dict[str, Any] = _created_by(migration, flag)
     if text:
         info[TEXT] = text
@@ -132,6 +141,8 @@ def _migration_column(name: str, type_: TypeEngine[Any] | type[TypeEngine[Any]],
         info[OPTIONAL] = True
     if label:
         info[LABEL] = label
+    if shown_as:
+        info[SHOWN_AS] = shown_as
     return Column(name, type_, info=info)
 
 
@@ -172,7 +183,7 @@ datasets = extend(
                       label="study domain"),
     # Uploader's study design, e.g. 'Longitudinal'.
     _migration_column("study_design", Text, _BASELINE, label_in_text=True, optional=True,
-                      label="study design"),
+                      label="study design", shown_as="Study design"),
     # Uploader's species, e.g. 'Human', 'Mouse'.
     _migration_column("species", Text, _BASELINE, optional=True, label="species label"),
     # Uploader's 'Cross-Sectional', 'Longitudinal', …
@@ -197,7 +208,7 @@ datasets = extend(
     _migration_column("deprecated_reason", Text, _BASELINE),
 
     # Every InstitutionName in the dataset's sidecar JSON files.
-    _migration_column("institutions", ARRAY(Text), _BASELINE, optional=True),
+    _migration_column("institutions", ARRAY(Text), _BASELINE, optional=True, shown_as="Institution"),
 
     # Written by an LLM; read by the API itself, never by generated SQL.
     # Short README profile in standard terms; in search_tsv and read by the re-ranker.
@@ -219,6 +230,22 @@ datasets.info[ABOUT] = About.DATASET
 # BIDS-SQL's own text columns.
 for _column in (datasets.c.name, datasets.c.description_text):
     _column.info[TEXT] = TextKind.SHORT_TEXT
+# BIDS-SQL's columns a filter chip names.
+for _column, _shown_as in ((datasets.c.name, "Name"), (datasets.c.source_type, "Source"),
+                           (datasets.c.authors, "Author"), (datasets.c.license, "License"),
+                           (datasets.c.doi, "DOI"), (datasets.c.funding, "Funding")):
+    _column.info[SHOWN_AS] = _shown_as
+datasets.c.source_type.info[VOCABULARY] = "source_type"
+# The columns a sort chip says the order of.
+for _column, _sorted_as in (
+        (objects.c.subject, SortWords("most participants first", "fewest participants first")),
+        (participants.c.participant_id, SortWords("most participants first", "fewest participants first")),
+        (datasets.c.size_bytes, SortWords("largest size first", "smallest size first")),
+        (datasets.c.publish_date, SortWords("newest first", "oldest first")),
+        (datasets.c.downloads, SortWords("most downloaded first", "least downloaded first")),
+        (datasets.c.views, SortWords("most viewed first", "least viewed first")),
+        (datasets.c.name, SortWords("by name, Z–A", "by name"))):
+    _column.info[SORTED_AS] = _sorted_as
 
 
 # ── Tables the migrations add ────────────────────────────────────────────────
@@ -282,7 +309,7 @@ papers = Table(
     # doi:…, pmid:…, pmcid:… or arxiv:…; unique.
     Column("paper_key", Text),
     # The published version's DOI; preprint_doi for the preprint.
-    Column("doi", Text),
+    Column("doi", Text, info={SHOWN_AS: "DOI"}),
     Column("preprint_doi", Text),
     Column("pmid", Text),
     Column("pmcid", Text),
@@ -293,13 +320,13 @@ papers = Table(
     Column("journal", Text),
     # True when no published version is known.
     Column("is_preprint", Boolean),
-    Column("authors", ARRAY(Text)),
+    Column("authors", ARRAY(Text), info={SHOWN_AS: "Author"}),
     # Medical Subject Headings; mesh_major the main ones.
     Column("mesh_terms", ARRAY(Text)),
     Column("mesh_major", ARRAY(Text)),
     Column("keywords", ARRAY(Text)),
     Column("is_open_access", Boolean),
-    Column("license", Text),
+    Column("license", Text, info={SHOWN_AS: "License"}),
     # Where the record came from: europepmc, biorxiv, medrxiv, arxiv, openalex.
     Column("source", Text),
     Column("fetched_at", DateTime(timezone=True)),
@@ -372,11 +399,11 @@ site_places = Table(
     # https://ror.org/…; '' when checked and not matched.
     Column("ror_id", Text, primary_key=True),
     # ROR display name.
-    Column("institution", Text),
-    Column("city", Text),
+    Column("institution", Text, info={SHOWN_AS: "Institution"}),
+    Column("city", Text, info={SHOWN_AS: "Location"}),
     # State, province or Land, e.g. 'North Rhine-Westphalia'.
-    Column("region", Text),
-    Column("country", Text),
+    Column("region", Text, info={SHOWN_AS: "Location"}),
+    Column("country", Text, info={SHOWN_AS: "Location"}),
     # ISO 3166-1 alpha-2.
     Column("country_code", Text),
     Column("lat", Double),
@@ -403,6 +430,28 @@ COLUMN_TEXT: dict[str, TextKind] = {column.name: column.info[TEXT] for column in
 # (ingest/openneuro-crawler/remote/openneuro_metadata.py).
 LABELS_IN_TEXT: frozenset[str] = frozenset(column.name for column in datasets.c
                                            if column.info.get(LABEL_IN_TEXT))
+
+# Column name -> the word a filter chip names it by; one word per name in
+# every table, or this fails.
+COLUMN_SHOWN_AS: dict[str, str] = {}
+for _table in CATALOGUE_TABLES:
+    for _column in _table.c:
+        if SHOWN_AS in _column.info and COLUMN_SHOWN_AS.setdefault(
+                _column.name, _column.info[SHOWN_AS]) != _column.info[SHOWN_AS]:
+            raise ValueError(f"column {_column.name} is shown as two words")
+
+# Column name -> how a sort chip says the order by it; one per name, or this fails.
+COLUMN_SORTED_AS: dict[str, SortWords] = {}
+for _table in CATALOGUE_TABLES:
+    for _column in _table.c:
+        if SORTED_AS in _column.info and COLUMN_SORTED_AS.setdefault(
+                _column.name, _column.info[SORTED_AS]) != _column.info[SORTED_AS]:
+            raise ValueError(f"column {_column.name} is sorted as two orders")
+
+# Column name -> the value_mappings.yaml section naming its values.
+COLUMN_VOCABULARY: dict[str, str] = {
+    column.name: column.info[VOCABULARY]
+    for table in CATALOGUE_TABLES for column in table.c if VOCABULARY in column.info}
 
 # The full-text search vectors of bids_datasets.
 SEARCH_VECTORS = frozenset(column.name for column in datasets.c

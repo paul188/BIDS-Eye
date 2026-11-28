@@ -16,7 +16,7 @@ from sqlglot import exp  # noqa: E402
 
 import preprocess as pp  # noqa: E402
 from services import query_guard  # noqa: E402
-from services.results import query_filters  # noqa: E402
+from services.results.display.chips import describe  # noqa: E402
 from services.translate import sql_rewriter  # noqa: E402
 from services.translate.participant_query_compiler import compile_plan  # noqa: E402
 from sql_text import contains_pattern, pattern_words  # noqa: E402
@@ -50,7 +50,7 @@ def test_the_name_stays_one_literal(name):
 
 @pytest.mark.parametrize("name", NAMES)
 def test_the_chip_shows_the_name_as_asked(name):
-    chip, = query_filters.describe(_sql(name))
+    chip, = describe(_sql(name))
     assert (chip.field, chip.label) == ("Name", name) or name in chip.label or name in chip.values
 
 

@@ -1,5 +1,5 @@
 // Which words of a search to bold in a dataset's description, and the
-// pattern that finds them. Mirrors backend/services/results/query_filters.py
+// pattern that finds them. Mirrors backend/services/results/display/highlights.py
 // (highlight_terms), which does the same for README excerpts.
 import type { QueryFilter } from './api'
 
@@ -60,8 +60,9 @@ export function highlightTerms(filters: QueryFilter[]): string[] {
     const found = f.text_words.flatMap(phrase => phraseTerms(phrase, false))
     // Coded values also show up in descriptions ("fMRI", "EEG", "ADHD").
     if (['modality', 'diagnosis', 'task'].includes(f.kind)) {
-      for (const part of f.label.replace(/\s\+\d+$/, '').split(/\s+or\s+/)) {
-        found.push(...phraseTerms(part, true))
+      const shown = f.values?.slice(0, f.shown ?? 0) ?? []
+      for (const name of shown.length ? shown : [f.label]) {
+        found.push(...phraseTerms(name, true))
       }
     }
     for (const term of found) {
@@ -72,7 +73,7 @@ export function highlightTerms(filters: QueryFilter[]): string[] {
 }
 
 // ── Field strength ────────────────────────────────────────────────────────
-// Mirrors query_filters.highlight_field_strengths / field_strength_pattern:
+// Mirrors highlights.highlight_field_strengths / field_strength_pattern:
 // a field-strength chip is a number range ("6.5–7.5") with no words, while
 // READMEs write "7T", "7 T", "7-Tesla", "3.0T", "1.5 Tesla".
 

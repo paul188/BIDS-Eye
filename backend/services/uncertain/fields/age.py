@@ -10,42 +10,19 @@ for ("infants", "older adults").
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
+from services import asked
 from services.evidence.contradicted import ContradictedEvidence, ContradictedInDatasetColumnEvidence
 from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
-from services.uncertain.conditions import own_text_matches
+from services.uncertain.conditions import text_from_dataset_matches
 from services.uncertain.fields.base import SoftField, participant_rows_record
 import text_evidence  # backend/vocabulary/ is on the path wherever the backend runs
 
 
 LABEL = "ages"   # how a result card names the field
-
-_NUMBER_COMPARISON_RE = re.compile(
-    r"\bage(?:_min|_max)?\s*(?P<op><=|>=|<|>|=)\s*(?P<value>\d+(?:\.\d+)?)", re.IGNORECASE)
-_BETWEEN_RE = re.compile(
-    r"\bage(?:_min|_max)?\s+BETWEEN\s+(?P<low>\d+(?:\.\d+)?)\s+AND\s+(?P<high>\d+(?:\.\d+)?)",
-    re.IGNORECASE)
-
-
-def asked_age_range(sql: str) -> Tuple[float, float]:
-    """The age range an age condition asks for, read from its comparisons."""
-    low, high = 0.0, 120.0
-    for match in _BETWEEN_RE.finditer(sql):
-        low = max(low, float(match.group("low")))
-        high = min(high, float(match.group("high")))
-    for match in _NUMBER_COMPARISON_RE.finditer(sql):
-        value = float(match.group("value"))
-        op = match.group("op")
-        if op in (">", ">="):
-            low = max(low, value)
-        elif op in ("<", "<="):
-            high = min(high, value)
-    return low, high
-
 
 def age_group_words(low: float, high: float) -> List[str]:
     """README words for the age groups that overlap [low, high]."""
@@ -78,7 +55,7 @@ class ProbableAgeGroupNamedEvidence(ProbableNamedInTextEvidence):
     words: Tuple[str, ...] = ()
 
     def sql(self) -> Optional[str]:
-        return own_text_matches(self.alias, tsquery_for_words(self.words))
+        return text_from_dataset_matches(self.alias, tsquery_for_words(self.words))
 
     def score(self) -> float:
         # 45.7% of 92 judged rows relevant, against 86.1% of confirmed rows
@@ -92,7 +69,7 @@ class ProbableAgeGroupNamedEvidence(ProbableNamedInTextEvidence):
 def age_group_named(node, alias: str) -> Optional[ProbableAgeGroupNamedEvidence]:
     """The age group an age condition asks for, as a text would name it; None
     if the asked range fits no group."""
-    group_words = age_group_words(*asked_age_range(node.sql(dialect="postgres")))
+    group_words = age_group_words(*asked.age_range(node))
     return ProbableAgeGroupNamedEvidence(words=tuple(group_words), alias=alias) if group_words else None
 
 

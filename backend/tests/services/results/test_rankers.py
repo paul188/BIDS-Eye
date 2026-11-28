@@ -117,7 +117,7 @@ def test_a_piece_of_evidence_has_a_score_measured_or_by_its_strength() -> None:
     from services.evidence.probable import ProbablePaperOnlyEvidence, TextSearch
 
     assert DEFAULT_SCORES[Strength.CONFIRMED] == 1 and DEFAULT_SCORES[Strength.CONTRADICTED] == 0
-    assert ProbablePaperOnlyEvidence((TextSearch("x"),), alias="d").score() == DEFAULT_SCORES[Strength.PROBABLE]
+    assert ProbablePaperOnlyEvidence((TextSearch("x"),), alias="d").score() == 0.48   # measured
     assert PossibleNotRecordedEvidence("participant sex").score() == DEFAULT_SCORES[Strength.POSSIBLE]
     assert PossibleNotRecordedEvidence("ages", 0.33).score() == 0.33
 
@@ -130,10 +130,11 @@ def test_the_query_score_multiplies_the_scores_of_its_clauses() -> None:
             "WHEN evidence.u0 = 2 THEN 0.33 ELSE 0 END)")
     # A paper and the dataset's own text are two sources: the stronger in
     # full, the other at SHARED_EVIDENCE_DISCOUNT, on the scale -ln(1 - score).
-    paper = "CASE WHEN evidence.papers_1 THEN 0.5108 ELSE 0 END"
-    own_text = "CASE WHEN evidence.text_1 THEN 0.4620 ELSE 0 END"
+    paper = "CASE WHEN evidence.papers_1 THEN 0.6539 ELSE 0 END"
+    text_from_dataset = "CASE WHEN evidence.text_1 THEN 0.4620 ELSE 0 END"
     text = (f"(CASE WHEN evidence.u1 = 0 THEN 1 WHEN evidence.u1 = 1 THEN 1 - EXP(-("
-            f"GREATEST({paper}, {own_text}) + 0.5 * ({paper} + {own_text} - GREATEST({paper}, {own_text}))"
+            f"GREATEST({paper}, {text_from_dataset}) + "
+            f"0.5 * ({paper} + {text_from_dataset} - GREATEST({paper}, {text_from_dataset}))"
             f")) ELSE 0 END)")
     assert f"{ages} * {text} AS evidence_score" in tiered
 

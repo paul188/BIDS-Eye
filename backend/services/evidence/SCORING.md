@@ -27,13 +27,14 @@ good as confirmed" and 0 means "never relevant".
 |---|---|---|
 | a weaker form of a text search (`ProbableWeakerSearchEvidence`) | 0.37 | 555 judged rows |
 | the text names the age group (`ProbableAgeGroupNamedEvidence`) | 0.53 | 92 judged rows |
+| found only in a paper (`ProbablePaperOnlyEvidence`) | 0.48 | 101 judged rows, paper text switched on without the tier |
 | ages not recorded | 0.33 | 21 judged rows |
 | diagnosis not recorded | 0.04 | 95 judged rows |
 | any other probable piece | 0.4 | hand-set (`base.DEFAULT_SCORES`) |
 | any other "not recorded" | 0.1 | hand-set |
 
 The measured values are from the recall benchmark with an LLM judge
-(2026-11-13). The ranges of the first three overlap; only the last is
+(2026-11-13). The ranges of the first four overlap; only the last is
 established as low.
 
 On the scale where independent evidence adds up, a piece weighs
@@ -85,8 +86,8 @@ Examples with λ = 0.5:
 | Pieces that hold | S |
 |---|---|
 | weaker text match (0.37) | 0.37 |
-| only in a paper (0.4) | 0.40 |
-| weaker text match and a paper | 1 - 0.60 · 0.63^0.5 = 0.52 |
+| only in a paper (0.48) | 0.48 |
+| weaker text match and a paper | 1 - 0.52 · 0.63^0.5 = 0.59 |
 | ages not recorded, the text names the age group (0.53) | 0.53 |
 | ages not recorded, no hint | 0.33 |
 
