@@ -55,7 +55,7 @@ def _extract_synonyms(raw: Any) -> List[Tuple[str, float]]:
 _CONCEPT_META = frozenset({
     "label", "standard_code", "is_group", "broader", "part_of", "description",
     "definition_text", "ca_id", "synonyms", "codes", "extra_codes",
-    "dataset_codes", "count", "text_words",
+    "dataset_codes", "count", "text_words", "measures",
 })
 
 
@@ -72,6 +72,13 @@ display_codes_db: Dict[str, Dict[str, List[str]]] = {}
 #   text_evidence_db the vocabulary's text_evidence section as written
 text_words_db: Dict[str, Dict[str, List[str]]] = {}
 text_evidence_db: Dict[str, Any] = {}
+
+# What each task measures, reversed: a cognitive construct → the task codes
+# whose value_mappings.yaml entry lists it under `measures` (see
+# tools/apply_task_measures.py). Only tasks with a standard_code count: a
+# group has no datasets of its own.
+#   measures_db {construct_code: [task standard_code, ...]}
+measures_db: Dict[str, List[str]] = {}
 
 
 # Shorthands the vocabulary lists, lower-cased: a label or synonym written as
@@ -123,6 +130,7 @@ def _parse_flat(
     group_display_db: Dict[str, Dict[str, List[str]]],
     hierarchy_db: Dict[str, Dict],
     weight_db: Dict[str, Dict[str, float]],
+    parts: Optional[Dict[str, List[str]]] = None,
 ) -> None:
     """Populate all six lookup dicts from a flat SKOS category dict.
 
@@ -133,6 +141,10 @@ def _parse_flat(
         Derives a children map from 'broader' back-links, then DFS-aggregates
         all descendant standard_codes for each group/dual node.
         Builds group_db and group_display_db.
+
+    *parts* ({whole: [part, ...]}, construct_parts.yaml) adds one PARTOF step:
+    a group also covers the KINDOF descendants of the listed parts of itself
+    and of each of its KINDOF descendants, but never the parts of a part.
     """
 
     # ── Pass 1: leaf concepts ─────────────────────────────────────────────────
@@ -188,15 +200,18 @@ def _parse_flat(
 
     # ── Pass 2: group lookups ─────────────────────────────────────────────────
     # Build children map: concept_key → [direct child keys]
-    # Follows both KINDOF (broader) and PARTOF (part_of) edges so that
-    # querying "attention" expands to all its parts and kinds alike.
+    # Follows KINDOF (broader) edges only. The Cognitive Atlas PARTOF edges
+    # (part_of, which only cognitive_atlas_constructs.yaml has) do not say that
+    # a study of the part is a study of the whole: working memory is PARTOF
+    # decision making, decision making PARTOF set shifting, so "set shifting"
+    # reached 153 tasks, most of them working-memory and reasoning tasks.
     children: Dict[str, List[str]] = defaultdict(list)
     for key, value in concepts.items():
-        for parent_key in (value.get("broader") or []) + (value.get("part_of") or []):
+        for parent_key in value.get("broader") or []:
             children[parent_key].append(key)
 
     # Memoised DFS: collect all descendant standard_codes under a concept.
-    # Uses a sentinel to detect back-edges (cycles introduced by CA PARTOF edges)
+    # Uses a sentinel to detect back-edges (a cycle in the imported edges)
     # and returns [] for any node that is currently being computed, breaking the
     # cycle without raising RecursionError.
     computing = object()
@@ -219,12 +234,34 @@ def _parse_flat(
         _cache[key] = result
         return result
 
+    parts = parts or {}
+
+    def _kind_keys(key: str) -> List[str]:
+        """*key* and its KINDOF descendants."""
+        seen = [key]
+        stack = [key]
+        while stack:
+            for child_key in children.get(stack.pop(), []):
+                if child_key not in seen:
+                    seen.append(child_key)
+                    stack.append(child_key)
+        return seen
+
+    def _group_codes(key: str) -> List[str]:
+        codes = list(_all_codes(key))
+        if parts:
+            for kind_key in _kind_keys(key):
+                for part_key in parts.get(kind_key, []):
+                    codes.extend(_all_codes(part_key))
+        return list(dict.fromkeys(codes))
+
     for key, value in concepts.items():
-        # Only register group entries for concepts that ARE parents (have children)
-        if not children.get(key):
+        # Only register group entries for concepts that ARE parents (have
+        # children or listed parts)
+        if not children.get(key) and not parts.get(key):
             continue  # pure leaf with no children — no group entry needed
 
-        leaf_codes = _all_codes(key)
+        leaf_codes = _group_codes(key)
         if not leaf_codes:
             continue
 
@@ -251,13 +288,13 @@ def _ancestor_codes(key: str, concepts: Dict[str, dict]) -> List[str]:
     """Return the list of ancestor concept keys that have standard_codes.
 
     Group nodes (no standard_code) are transparent — traversed but not listed.
-    The node's own key is always first (self-referential path for pruning logic).
-    Used by retriever._prune_redundant_parents.
+    The node's own key is always first. KINDOF (broader) edges only, like the
+    group lookups (see _parse_flat).
     """
     path: List[str] = [key]
     visited: set = {key}
     node0 = concepts.get(key, {})
-    queue = list((node0.get("broader") or []) + (node0.get("part_of") or []))
+    queue = list(node0.get("broader") or [])
     while queue:
         parent_key = queue.pop(0)
         if parent_key in visited:
@@ -266,7 +303,7 @@ def _ancestor_codes(key: str, concepts: Dict[str, dict]) -> List[str]:
         parent = concepts.get(parent_key, {})
         if "standard_code" in parent:
             path.append(parent_key)
-        queue.extend((parent.get("broader") or []) + (parent.get("part_of") or []))
+        queue.extend(parent.get("broader") or [])
     return path
 
 
@@ -309,7 +346,7 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
     hierarchy_db : {standard_code: {path, label, description}}
         Ancestor chain and metadata for every leaf concept.
         'path' contains the concept's own key plus any ancestor keys that
-        have standard_codes — used by retriever._prune_redundant_parents.
+        have standard_codes.
 
     weight_db : {category: {term_lower: float}}
         The "weight" of every term in display_db: how often the synonym
@@ -332,6 +369,8 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
 
     text_evidence_db.clear()
     text_evidence_db.update(schema.get("text_evidence") or {})
+    measures_db.clear()
+    measures_db.update(build_measures_db(schema.get("task") or {}))
 
     leaf_db:         Dict[str, Dict[str, str]]        = {cat: {} for cat in _CATEGORIES}
     display_db:      Dict[str, Dict[str, str]]        = {cat: {} for cat in _CATEGORIES}
@@ -340,6 +379,7 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
     hierarchy_db:    Dict[str, Dict]                  = {}
     weight_db:       Dict[str, Dict[str, float]]      = {cat: {} for cat in _CATEGORIES}
 
+    construct_parts = load_construct_parts()
     for cat in _CATEGORIES:
         if cat not in schema:
             continue
@@ -349,30 +389,43 @@ def build_knowledge_base(yaml_path: str, ca_constructs_path: Optional[str] = Non
         _parse_flat(
             cat, cat_data,
             leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db,
+            construct_parts if cat == "cognitive_construct" else None,
         )
         _collect_shorthands(cat, cat_data)
 
     return leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db
 
 
-def build_measures_db(bridge_path: Optional[str] = None) -> Dict[str, List[str]]:
-    """Build reverse index: cognitive construct key → [BIDS task standard_codes].
+CONSTRUCT_PARTS_PATH = Path(__file__).parent / "construct_parts.yaml"
 
-    Populated from bids_to_ca_map.json (the curated human-reviewed bridge
-    generated by backend/vocabulary/tools/generate_task_bridge.py).  Returns {} gracefully when
-    the file does not exist so the rest of the system keeps working without CA.
+
+def load_construct_parts(path: Path = CONSTRUCT_PARTS_PATH) -> Dict[str, List[str]]:
+    """The Cognitive Atlas PARTOF links construct expansion follows: {whole: [part, ...]}.
+
+    See construct_parts.yaml for why only these. Without the file no PARTOF
+    link is followed.
     """
-    if not bridge_path or not Path(bridge_path).exists():
+    if not path.exists():
         return {}
-    import json as _json
-    with open(bridge_path, "r", encoding="utf-8") as fh:
-        bridge: Dict[str, dict] = _json.load(fh)
+    with open(path, "r", encoding="utf-8") as fh:
+        data = yaml.safe_load(fh) or {}
+    return {str(whole): [str(p) for p in listed or []] for whole, listed in data.items()}
+
+
+def build_measures_db(tasks: Dict[str, Any]) -> Dict[str, List[str]]:
+    """Reverse the `measures` lists of the task entries: construct code → [task codes].
+
+    *tasks* is the task section of value_mappings.yaml. A group entry's
+    measures are ignored: its key is no task code.
+    """
     result: Dict[str, List[str]] = {}
-    for task_code, entry in bridge.items():
+    for entry in tasks.values():
+        if not isinstance(entry, dict) or not entry.get("standard_code"):
+            continue
         for construct_key in entry.get("measures") or []:
-            result.setdefault(construct_key, [])
-            if task_code not in result[construct_key]:
-                result[construct_key].append(task_code)
+            codes = result.setdefault(construct_key, [])
+            if entry["standard_code"] not in codes:
+                codes.append(entry["standard_code"])
     return result
 
 
@@ -500,12 +553,8 @@ def _build_embedding_index(
 
 _YAML_PATH     = str(Path(__file__).parent / "value_mappings.yaml")
 _CA_PATH       = str(Path(__file__).parent / "cognitive_atlas_constructs.yaml")
-_BRIDGE_PATH   = str(Path(__file__).parent / "bids_to_ca_map.json")
 
 leaf_db, display_db, group_db, group_display_db, hierarchy_db, weight_db = build_knowledge_base(
     _YAML_PATH,
     _CA_PATH if Path(_CA_PATH).exists() else None,
-)
-measures_db: Dict[str, List[str]] = build_measures_db(
-    _BRIDGE_PATH if Path(_BRIDGE_PATH).exists() else None
 )

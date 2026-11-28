@@ -5,9 +5,10 @@ BIDS-Eye FastAPI application.
 
 Startup (lifespan):
   - Creates missing DB tables.
+  - Stops when the LLM config (backend/llm/llm_config.yaml) is invalid.
   - Stops when a migration is missing; reads what the catalogue database
     holds into memory (services/database_stats/database_stats.py).
-  - Gives the translation worker thread its database access (worker_db.py).
+  - Gives the translation worker thread its database access (database/worker.py).
   - Starts the OpenNeuro crawler in this process when
     RUN_CRAWLER_IN_PROCESS=true (services/in_process_crawler.py); in Docker
     it runs as a separate service.
@@ -37,9 +38,10 @@ from typing import AsyncGenerator
 from fastapi import Depends, FastAPI
 
 import db.models  # noqa: F401 — registers models with Base.metadata
-import models     # noqa: F401 — registers backend-only models (query_log, etc.)
+import database.app_tables  # noqa: F401 — registers backend-only models (query_log, etc.)
+import llm_client
 import request_log
-import worker_db
+from database import worker as worker_db
 from security.middleware import install_security_middleware
 from db.db import engine
 from deps import require_auth
@@ -62,6 +64,10 @@ request_log.configure()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Stop when a feature switch is neither true nor false.
     switches.check()
+
+    # Stop when the LLM config (backend/llm/llm_config.yaml) names an unknown
+    # model or setting; warn about profile tiers whose provider has no key.
+    llm_client.check_config()
 
     # Stop when the database is not at the newest migration (migrations/README.md).
     await check_revision(engine)
@@ -99,7 +105,7 @@ app = FastAPI(
 
 # CORS, CSRF, the signed HttpOnly session cookie and login-by-default for /api
 # (see security/middleware.py). Raises when SESSION_SECRET or a GitHub sign-in setting
-# is missing or unusable (routers/auth.py, AuthSettings).
+# is missing or unusable (security/settings.py, AuthSettings).
 install_security_middleware(app)
 
 # Outermost: an ID per request, on its log lines and in the X-Request-ID

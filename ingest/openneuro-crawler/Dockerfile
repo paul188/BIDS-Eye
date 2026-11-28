@@ -8,7 +8,7 @@ COPY ingest/openneuro-crawler/ /app/crawler/
 # shared LLM client, with the Gemini SDK pinned like the backend's.
 COPY backend/services/ /app/backend/services/
 COPY backend/exceptions/ /app/backend/exceptions/
-COPY backend/constraints.txt /app/backend/constraints.txt
+COPY constraints.txt /app/constraints.txt
 COPY backend/llm/ /app/backend/llm/
 # The vocabulary: its standard codes for participant sex and handedness
 # (remote/participant_codes.py), and the diagnosis resolver that codes the
@@ -18,9 +18,9 @@ COPY backend/llm/ /app/backend/llm/
 COPY backend/vocabulary/ /app/backend/vocabulary/
 
 RUN pip install --no-cache-dir -e /app/BIDS-SQL && \
-    pip install --no-cache-dir -c /app/backend/constraints.txt -e /app/backend/vocabulary && \
+    pip install --no-cache-dir -c /app/constraints.txt -e /app/backend/vocabulary && \
     pip install --no-cache-dir -e /app/crawler && \
-    pip install --no-cache-dir -c /app/backend/constraints.txt google-genai
+    pip install --no-cache-dir -c /app/constraints.txt google-genai
 
 WORKDIR /app/crawler
 

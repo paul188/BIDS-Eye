@@ -28,13 +28,13 @@ def test_the_shorthands_of_a_question_with_their_listed_meanings() -> None:
 def test_the_prompt_carries_them_only_when_there_are_some(monkeypatch) -> None:
     prompts = []
 
-    def fake_call(prompt, key, json_schema=None):
+    def fake_call(prompt, **kwargs):
         prompts.append(prompt)
-        return json.dumps({"query_family": "concept_query", "natural_language_summary": "s"})
+        return json.dumps({"natural_language_summary": "s"})
 
-    monkeypatch.setattr(intent, "_call_gemini", fake_call)
-    intent.preprocess_query("20 patients with TLE", api_key="k")
-    intent.preprocess_query("datasets of people listening to music", api_key="k")
+    monkeypatch.setattr(intent, "llm_generate", fake_call)
+    intent.create_query_plan("20 patients with TLE")
+    intent.create_query_plan("datasets of people listening to music")
     assert '"shorthands": {"TLE": ["temporal lobe epilepsy (diagnosis)"]}' in prompts[0]
-    assert "## Shorthands" in prompts[0] and "do not pick one meaning" in prompts[0]
+    assert "## Shorthands" in prompts[0] and "Do not expand it or pick one meaning" in prompts[0]
     assert "horthands" not in prompts[1]

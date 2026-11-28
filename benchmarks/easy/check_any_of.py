@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -85,7 +84,6 @@ def main() -> None:
     sys.path.insert(0, args.backend_dir)
     import main as _app  # noqa: F401 — sets up the import paths as the app does
     import preprocess
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
     cases = [(q, lambda plan, a=a, m=m: judge_or(plan, a, m), "or") for q, a, m in OR_PHRASINGS]
     cases += [(q, judge_control, "control") for q in CONTROLS]
@@ -94,7 +92,7 @@ def main() -> None:
         wrong = []
         for _ in range(args.repeats):
             try:
-                problem = judge(preprocess.preprocess_query(question, api_key=api_key))
+                problem = judge(preprocess.create_query_plan(question))
             except Exception as exc:  # noqa: BLE001
                 problem = f"error: {str(exc)[:80]}"
             if problem:

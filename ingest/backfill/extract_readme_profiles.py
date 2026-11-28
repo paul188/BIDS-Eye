@@ -23,7 +23,8 @@ Usage (inside the backend container, which has the keys and the database):
     python ingest/backfill/extract_readme_profiles.py                     # all datasets that need it
     python ingest/backfill/extract_readme_profiles.py --accessions ds000171,ds004627 --force
 
-Needs the database at the newest migration (backend/migrations/README.md). Needs GEMINI_API_KEY.
+Needs the database at the newest migration (backend/migrations/README.md). Needs a model of
+LLM profile readme_profile (backend/llm/llm_config.yaml).
 Database connection: DATABASE_URL, or the METADATA_DB_* variables.
 """
 
@@ -76,7 +77,7 @@ async def main() -> int:
     parser.add_argument("--force", action="store_true", help="redo datasets that are up to date")
     parser.add_argument("--model", default=runner.DEFAULT_MODEL)
     parser.add_argument("--thinking", default=runner.DEFAULT_THINKING,
-                        help="Gemini 3+ thinking level: minimal, low, medium, high")
+                        help="thinking level for models that take one: minimal, low, medium, high")
     parser.add_argument("--workers", type=int, default=6, help="parallel model calls")
     parser.add_argument("--no-codes", action="store_true", help="skip diagnosis code mapping")
     parser.add_argument("--save-jsonl", type=Path, help="append every result here for review")
@@ -84,8 +85,9 @@ async def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-        log.error("GEMINI_API_KEY is not set")
+    import llm_client
+    if not llm_client.profile_available("readme_profile"):
+        log.error("No model of LLM profile readme_profile can be called (key or SDK missing)")
         return 2
 
     started = time.monotonic()

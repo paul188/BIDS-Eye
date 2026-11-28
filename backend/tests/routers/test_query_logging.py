@@ -18,7 +18,7 @@ from __future__ import annotations
 import asyncio
 
 import routers.search as query_router
-from schemas import QueryRequest, TextToSQLResult
+from routers.schemas import QueryRequest, TextToSQLResult
 from services import search, search_runner
 
 

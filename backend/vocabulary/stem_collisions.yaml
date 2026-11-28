@@ -1,4 +1,4 @@
-# Word forms that full-text search must not merge (backend/vocabulary/word_forms.py).
+# Word forms that full-text search must not merge (backend/vocabulary/stem_collisions.py).
 #
 # The search matches a word by its stem, so "depression" also finds
 # "depressive". Some stems merge words that mean different things: "severe"

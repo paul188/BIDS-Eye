@@ -216,7 +216,6 @@ class Profile:
 
 _MARKUP_RE = re.compile(r"[*_`#>|\[\]]+")
 _SPACE_RE = re.compile(r"\s+")
-_JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
 
 
 def _normalise(text: str) -> str:
@@ -265,9 +264,8 @@ def parse_response(raw_text: str, source: ProfileSource) -> Profile:
 
     Raises ValueError when the answer is not usable JSON.
     """
-    text = _JSON_FENCE_RE.sub("", (raw_text or "").strip())
     try:
-        data = json.loads(text)
+        data = json.loads(raw_text or "")
     except json.JSONDecodeError as exc:
         raise ValueError(f"model answer is not JSON: {exc}") from exc
     if not isinstance(data, dict):

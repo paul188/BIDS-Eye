@@ -1,5 +1,5 @@
 """Paired measurement of exact word forms (backend/services/fulltext/text_search.py,
-TEXT_SEARCH_EXACT; backend/vocabulary/word_forms.py).
+TEXT_SEARCH_EXACT; backend/vocabulary/stem_collisions.py).
 
 Each question goes through the search pipeline once, with exact word forms
 on: the intent model sees the catalogue's forms of the question's colliding
@@ -16,10 +16,10 @@ environment (UNCERTAIN_TIER), the same for both.
 Output: exact_off.json and exact_on.json in the format of eval_recall.py
 (score them with `eval_recall.py score`, or `--held-out` for held-out runs).
 exact_on rows also carry
-  word_forms  the forms decided for the question's words
-  guarded     whether any search in the SQL was limited to word forms
-  removed     datasets exact_off returned and exact_on did not
-  added       the reverse (a NOT term that no longer excludes by stem)
+  allowed_forms  the forms decided for the question's words
+  guarded        whether any search in the SQL was limited to word forms
+  removed        datasets exact_off returned and exact_on did not
+  added          the reverse (a NOT term that no longer excludes by stem)
 and both carry `levels` (accession -> 0 confirmed, 1 probable, 2 possible).
 Read-only transactions only; no re-ranker; nothing written to the database.
 
@@ -59,14 +59,8 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     from services.fulltext import word_frequencies
     from services.translate import text_to_sql as translator
     from services.stores.translated_queries import CachedQuery, query_cache
-    from services.catalogue.schema_capabilities import (
-        has_exact_fts, has_fts, has_word_forms, refresh_available_columns)
+    from backend_capabilities import has_exact_fts, has_fts, has_word_forms, start
     from services.translate.sql_rewriter import FALLBACK_SQL, build_page_sql
-    try:
-        import institution_index
-    except ImportError:
-        institution_index = None
-
     database = f"{settings_obj.METADATA_DB_HOST}:{settings_obj.METADATA_DB_PORT}/{settings_obj.METADATA_DB_NAME}"
     started = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     variants = ("exact_off", "exact_on")
@@ -78,11 +72,12 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     }
     results: Dict[str, List[Dict[str, Any]]] = {v: [] for v in variants}
 
-    await refresh_available_columns(engine)
-    if institution_index is not None:
-        await institution_index.refresh_from_db(engine)
+    await start(engine)
     try:
-        import worker_db
+        try:
+            from database import worker as worker_db
+        except ImportError:  # backend before database/
+            import worker_db
     except ImportError:  # backend before worker_db.py
         if has_fts():
             word_frequencies.set_frequency_lookup(
@@ -100,9 +95,9 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     seen: Dict[str, Any] = {}
     rewrite = translator._rewrite_generated_sql
 
-    def recording_rewrite(raw_sql, augmented_question, word_forms=None):
-        seen.update(raw=raw_sql, question=augmented_question, word_forms=word_forms)
-        return rewrite(raw_sql, augmented_question, word_forms)
+    def recording_rewrite(raw_sql, augmented_question, allowed_forms=None):
+        seen.update(raw=raw_sql, question=augmented_question, allowed_forms=allowed_forms)
+        return rewrite(raw_sql, augmented_question, allowed_forms)
 
     translator._rewrite_generated_sql = recording_rewrite
 
@@ -167,7 +162,7 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
             off = per_variant["exact_off"]["returned"]
             on = per_variant["exact_on"]["returned"]
             per_variant["exact_on"].update(
-                word_forms=seen.get("word_forms") or {},
+                allowed_forms=seen.get("allowed_forms") or {},
                 guarded="search_tsv_exact" in per_variant["exact_on"]["sql"],
                 removed=[a for a in off if a not in set(on)],
                 added=[a for a in on if a not in set(off)],

@@ -29,7 +29,7 @@ import logging
 import math
 import re
 
-from services.translate.prompt.schema_ddl import OPTIONAL_DATASET_COLUMNS
+from services.schema.tables import OPTIONAL_DATASET_COLUMNS
 from services.database_stats.database_stats import ColumnCoverage
 
 log = logging.getLogger(__name__)

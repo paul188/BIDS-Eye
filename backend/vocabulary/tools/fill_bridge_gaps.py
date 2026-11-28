@@ -10,7 +10,9 @@ those CA tasks to BIDS task codes.
 Run from repo root:
     python backend/vocabulary/tools/fill_bridge_gaps.py
 
-Merges results directly into backend/vocabulary/bids_to_ca_map.json.
+Writes the new matches as proposals to backend/vocabulary/proposed_gap_mappings.json.
+Review them, then write them into value_mappings.yaml with
+    python backend/vocabulary/tools/apply_task_measures.py backend/vocabulary/proposed_gap_mappings.json
 Requires: rapidfuzz
 """
 import argparse
@@ -83,15 +85,18 @@ def load_bids_tasks(yaml_path: str) -> Dict[str, str]:
     with open(yaml_path) as f:
         schema = yaml.safe_load(f)
     tasks = schema.get("task", {})
-    return {k: v.get("label", k) for k, v in tasks.items() if isinstance(v, dict)}
+    # Tasks only, by standard_code: a group key is no task code (see generate_task_bridge.py).
+    return {v["standard_code"]: v.get("label", k) for k, v in tasks.items()
+            if isinstance(v, dict) and v.get("standard_code")}
 
 
-def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
-    # ── Load existing bridge ──────────────────────────────────────────────────
-    with open(bridge_path) as f:
-        bridge: Dict[str, dict] = json.load(f)
-    existing_ca_ids = {v["ca_task_id"] for v in bridge.values()}
-    print(f"Existing bridge: {len(bridge)} entries  ({len(existing_ca_ids)} unique CA task IDs)")
+def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
+    # ── CA tasks already linked (the ca_id of a task entry) ───────────────────
+    with open(yaml_path) as f:
+        linked = [v for v in (yaml.safe_load(f).get("task") or {}).values()
+                  if isinstance(v, dict) and v.get("ca_id")]
+    existing_ca_ids = {v["ca_id"] for v in linked}
+    print(f"Linked tasks: {len(linked)}  ({len(existing_ca_ids)} unique CA task IDs)")
 
     # ── Build target construct set ────────────────────────────────────────────
     cc, ca_children = load_constructs(ca_yaml_path)
@@ -140,7 +145,7 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
         if not ca_id or not ca_name:
             continue
 
-        # Skip tasks already in the bridge
+        # Skip CA tasks already linked to a task
         if ca_id in existing_ca_ids:
             continue
 
@@ -205,13 +210,13 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
             "confidence":   round(best_score / 100.0, 3),
             "measures":     measures,
         }
-        prev = new_entries.get(best_code) or bridge.get(best_code)
+        prev = new_entries.get(best_code)
         if prev is None or prev["confidence"] < entry["confidence"]:
             new_entries[best_code] = entry
 
     print(f"\nScanned {scanned} new CA tasks  → {len(new_entries)} new BIDS matches")
-    # The bridge only gains entries here, so what was found is still written;
-    # the exit status says that a run again may find more.
+    # What was found is still written; the exit status says that a run again
+    # may find more.
     if failed:
         print(f"WARNING: {len(failed)} CA task(s) could not be read and were not scanned: "
               f"{', '.join(failed[:10])}{' …' if len(failed) > 10 else ''}. Run again.",
@@ -220,29 +225,16 @@ def main(yaml_path: str, ca_yaml_path: str, bridge_path: str) -> None:
     if not new_entries:
         if failed:
             sys.exit(1)
-        print("No new entries found — bridge is already as complete as the CA API allows.")
+        print("No new entries found — the task links are as complete as the CA API allows.")
         return
 
-    # ── Merge into bridge ─────────────────────────────────────────────────────
-    updated = 0
+    # ── Write proposals ───────────────────────────────────────────────────────
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(new_entries, f, indent=2, ensure_ascii=False)
     for code, entry in new_entries.items():
-        if code not in bridge:
-            bridge[code] = entry
-            updated += 1
-            print(f"  + {code}: {entry['ca_task_name']}  measures={entry['measures']}")
-        else:
-            # Extend measures of existing entry
-            existing_measures = set(bridge[code].get("measures") or [])
-            new_measures = set(entry["measures"]) - existing_measures
-            if new_measures:
-                bridge[code]["measures"] = sorted(existing_measures | new_measures)
-                updated += 1
-                print(f"  ~ {code}: added measures {sorted(new_measures)}")
-
-    with open(bridge_path, "w", encoding="utf-8") as f:
-        json.dump(bridge, f, indent=2, ensure_ascii=False)
-
-    print(f"\nWrote {len(bridge)} entries to {bridge_path}  ({updated} changed)")
+        print(f"  + {code}: {entry['ca_task_name']}  measures={entry['measures']}")
+    print(f"\nWrote {len(new_entries)} proposal(s) to {out_path}.\n"
+          f"Next: review them, then apply with backend/vocabulary/tools/apply_task_measures.py {out_path}")
     if failed:
         sys.exit(1)
 
@@ -251,6 +243,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--yaml",          default="backend/vocabulary/value_mappings.yaml")
     parser.add_argument("--ca-constructs", default="backend/vocabulary/cognitive_atlas_constructs.yaml")
-    parser.add_argument("--bridge",        default="backend/vocabulary/bids_to_ca_map.json")
+    parser.add_argument("--out",           default="backend/vocabulary/proposed_gap_mappings.json")
     args = parser.parse_args()
-    main(args.yaml, args.ca_constructs, args.bridge)
+    main(args.yaml, args.ca_constructs, args.out)

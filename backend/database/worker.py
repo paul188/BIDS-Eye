@@ -1,5 +1,5 @@
 """
-worker_db.py
+database/worker.py
 ------------
 Database access for code that runs in a worker thread.
 

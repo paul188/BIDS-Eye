@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
 from pathlib import Path
@@ -118,7 +117,6 @@ def main() -> None:
     root = Path(args.backend_dir).resolve().parent
     sys.path[:0] = [str(root / name) for name in ("backend", "backend/llm", "backend/vocabulary")]
     import preprocess
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
     cases = [(q, lambda p, e=e, r=r: judge_exclusion(p, e, r), "exclusion") for q, e, r in EXCLUSIONS]
     cases += [(q, lambda p, e=e, r=r: judge_exclusion(p, e, r, True), "together") for q, e, r in TOGETHER]
@@ -128,7 +126,7 @@ def main() -> None:
         wrong, errors = [], []
         for _ in range(args.repeats):
             try:
-                problem = judge(preprocess.preprocess_query(question, api_key=api_key))
+                problem = judge(preprocess.create_query_plan(question))
             except Exception as exc:  # noqa: BLE001
                 errors.append(f"{type(exc).__name__}: {str(exc)[:80]}")
                 continue

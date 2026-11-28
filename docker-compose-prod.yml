@@ -34,7 +34,6 @@ services:
       - ./deploy/nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
-      - ./lottery:/var/www/lottery:ro
     ports:
       - "80:80"
       - "443:443"
@@ -86,6 +85,47 @@ services:
         condition: service_healthy
     networks:
       - bids-net
+
+  # ── OpenNeuro crawler (ingest/openneuro-crawler/README.md) ─────────────────
+  # Not started by a plain `up -d`. Start it with
+  #   docker compose -f docker-compose-prod.yml --profile crawl up -d crawler
+  # or run one cycle with
+  #   docker compose -f docker-compose-prod.yml --profile crawl run --rm crawler \
+  #     python crawler_service.py --once
+  # A cycle checks every OpenNeuro dataset against the API and indexes only the
+  # new and changed ones. The limits keep it from taking the memory and CPU
+  # PostgreSQL and the backend need on this 2-core, 4 GB server: when pybids
+  # runs out of memory, the crawler is killed, not the database.
+  crawler:
+    profiles: [crawl]
+    build:
+      context: .
+      dockerfile: ingest/openneuro-crawler/Dockerfile
+    container_name: bids_crawler
+    logging: *default-logging
+    env_file: .env
+    environment:
+      METADATA_DB_HOST: postgres
+      METADATA_DB_PORT: 5432
+      CRAWL_INTERVAL_HOURS: ${CRAWL_INTERVAL_HOURS:-24}
+      CRAWL_DELAY_SECONDS: ${CRAWL_DELAY_SECONDS:-5}
+      CRAWL_MAX_PER_CYCLE: ${CRAWL_MAX_PER_CYCLE:-0}
+      CRAWL_MAX_FILES: ${CRAWL_MAX_FILES:-50000}
+      OPENNEURO_ACCESSIONS: ${OPENNEURO_ACCESSIONS:-}
+      # These two send dataset text to Gemini: off until that is agreed for production.
+      CRAWL_README_PROFILES: ${CRAWL_README_PROFILES:-false}
+      CRAWL_DESCRIPTIONS: ${CRAWL_DESCRIPTIONS:-false}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bids-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1200M
 
   # ── PostgreSQL (not exposed externally) ───────────────────────────────────
   postgres:

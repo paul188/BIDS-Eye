@@ -1,5 +1,5 @@
 """OpenNeuro's own search (the search page's advancedSearch), cached on disk."""
-import json, time, urllib.request, urllib.error, os, hashlib
+import json, time, urllib.request, urllib.error, os
 G = os.path.dirname(os.path.abspath(__file__))
 CACHE = f"{G}/onsearch_cache.json"
 _cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}

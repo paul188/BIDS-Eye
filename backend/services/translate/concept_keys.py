@@ -25,7 +25,7 @@ import re
 from functools import lru_cache
 from typing import Dict, FrozenSet, List, Optional, Tuple
 
-from services.schema.coded_fields import CONCEPT_FIELDS
+from services.schema.fields import CONCEPT_FIELDS
 
 log = logging.getLogger(__name__)
 

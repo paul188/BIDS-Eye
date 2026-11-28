@@ -33,7 +33,7 @@ EEG = ResolvedTerms(field=RAGField.DATATYPE, term_to_codes={"EEG": ["electroence
 
 def _plan(minimum=40, diagnosis=("Parkinson's disease",), scans=()):
     return QueryPlan(
-        query_family="participant_filter", natural_language_summary="Summary.",
+        natural_language_summary="Summary.",
         groups=[ParticipantGroup(group_name="patients", diagnosis_terms=list(diagnosis),
                                  min_subjects=minimum)],
         scan_requirements=[ScanRequirement(scan_terms=list(scans))] if scans else [],
@@ -115,7 +115,7 @@ def test_the_filter_line_counts_patients_and_not_all_subjects():
 
 
 def test_a_minimum_without_a_diagnosis_is_still_the_size_of_the_dataset():
-    plan = QueryPlan(query_family="participant_filter", natural_language_summary="Summary.",
+    plan = QueryPlan(natural_language_summary="Summary.",
                      groups=[ParticipantGroup(group_name="all", min_subjects=50)],
                      description_search="memory")
     augmented = _build_augmented_question(plan, [])
@@ -125,7 +125,7 @@ def test_a_minimum_without_a_diagnosis_is_still_the_size_of_the_dataset():
 
 def test_healthy_controls_are_not_counted_as_a_diagnosis():
     plan = QueryPlan(
-        query_family="participant_filter", natural_language_summary="Summary.",
+        natural_language_summary="Summary.",
         groups=[ParticipantGroup(group_name="hc", diagnosis_terms=["healthy controls"], min_subjects=20)])
     resolved = [ResolvedTerms(field=RAGField.DIAGNOSIS, term_to_codes={"healthy controls": ["healthy_control"]})]
     augmented = _build_augmented_question(plan, resolved)

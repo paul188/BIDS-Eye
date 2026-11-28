@@ -28,9 +28,6 @@ _TOPIC_MAX_LLM_ALTERNATIVES = 8
 _TOPIC_MAX_ALTERNATIVES = 16
 
 
-_TOPIC_MAX_CODES = 20
-
-
 def _topic_max_matches() -> int:
     """An alternative from the language model that more datasets match is too broad.
 
@@ -57,10 +54,10 @@ def _word_set(text: str) -> frozenset:
 
 
 def _count_topic_matches(alternatives: List[str],
-                         exact_forms: Optional[Dict[str, List[str]]] = None) -> Optional[List[int]]:
+                         allowed_forms: Optional[Dict[str, List[str]]] = None) -> Optional[List[int]]:
     """Datasets matching each alternative, from the backend's full-text search; None if unknown.
 
-    *exact_forms*: word forms decided for this question; such a word is
+    *allowed_forms*: word forms decided for this question; such a word is
     counted in those forms, as it will be searched.
     """
     try:
@@ -68,8 +65,8 @@ def _count_topic_matches(alternatives: List[str],
     except ImportError:
         return None
     # None when the catalogue cannot answer (count_matches catches that).
-    if exact_forms:
-        return tsquery.count_matches(alternatives, _MODE_NEAR, exact_forms)
+    if allowed_forms:
+        return tsquery.count_matches(alternatives, _MODE_NEAR, allowed_forms)
     return tsquery.count_matches(alternatives, _MODE_NEAR)
 
 
@@ -295,7 +292,8 @@ def _topic_codes(
         code: score for code, score in codes.items()
         if code not in excluded and not (set(code.lower().split("_")) & unwanted_words)
     }
-    codes = dict(list(codes.items())[:_TOPIC_MAX_CODES])
+    # Every code is kept: a cut at 20 dropped the codes after the 20th in file
+    # order, not the worst ones.
     if codes:
         live, _miss = _catalogue.verify_codes("task", list(codes), retriever)
         codes = {code: codes[code] for code in live}

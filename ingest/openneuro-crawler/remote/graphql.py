@@ -31,6 +31,7 @@ from remote.openneuro_metadata import (
     METADATA_SELECTION,
     OpenNeuroAPIError,
     apply_fields,
+    clean_dataset_name,
     deprecation_reason,
     extract_fields,
     post_graphql,
@@ -107,7 +108,8 @@ def _build_description(accession_id: str, ds: dict, snapshot_desc: dict) -> dict
     meta = ds.get("metadata") or {}
     summary = (ds.get("latestSnapshot") or {}).get("summary") or {}
     return {
-        "Name":            meta.get("datasetName") or snapshot_desc.get("Name") or accession_id,
+        "Name":            (clean_dataset_name(meta.get("datasetName"))
+                            or clean_dataset_name(snapshot_desc.get("Name")) or accession_id),
         "BIDSVersion":     snapshot_desc.get("BIDSVersion") or "unknown",
         "Acknowledgements": snapshot_desc.get("Acknowledgements") or "",
         "Species":         meta.get("species") or "",

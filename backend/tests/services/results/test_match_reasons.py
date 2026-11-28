@@ -9,7 +9,7 @@ import pytest
 import sqlglot
 
 from criteria import age_condition, species_condition
-from schemas import DatasetSchema, ParticipantSummarySchema
+from routers.schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
 from services import sql_tree
 from services.evidence.confirmed import (ConfirmedByDefaultEvidence, ConfirmedEvidence, ConfirmedInDatasetColumnEvidence,

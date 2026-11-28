@@ -9,7 +9,7 @@ _BACKEND = Path(store.__file__).resolve().parents[2]
 _ROOT = _BACKEND.parent
 # Imported by the translation, but they only define the shape of rows and
 # responses (see interpretations._VERSION_FILES).
-_NOT_TRANSLATION = {_BACKEND / "models.py", _BACKEND / "schemas.py",
+_NOT_TRANSLATION = {_BACKEND / "database" / "app_tables.py", _BACKEND / "routers" / "schemas.py",
                     _BACKEND / "exceptions" / "domain.py",
                     _BACKEND / "exceptions" / "expected.py"}
 
@@ -89,7 +89,7 @@ def test_version_covers_every_backend_module_the_translation_imports():
 def test_version_reads_the_files_the_old_list_missed():
     names = {f"{p.parent.name}/{p.name}" for p in store.version_paths()}
     assert {"translate/participant_query_compiler.py", "vocabulary/criteria.py",
-            "vocabulary/cohort_count.py", "vocabulary/senses.yaml", "vocabulary/word_forms.yaml"} <= names
+            "vocabulary/cohort_count.py", "vocabulary/senses.yaml", "vocabulary/stem_collisions.yaml"} <= names
     assert not any("__pycache__" in str(p) for p in store.version_paths())
 
 

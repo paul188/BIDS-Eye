@@ -19,6 +19,7 @@ from typing import ClassVar, Dict, List, Optional, Tuple
 from sqlglot import exp
 
 from services.evidence.base import PieceOfEvidence, Source, Strength
+from services.schema.tables import card_label
 
 _MAX_VALUE_CHARS = 60
 
@@ -180,13 +181,6 @@ class ConfirmedInDatasetColumnEvidence(ConfirmedEvidence):
     "dataset age range 6–11 years", "species label “mouse”"."""
     columns: Tuple[str, ...] = ()
     source: Source = field(default=Source.FIELD, kw_only=True)
-    # How a card names a column; others by their own name.
-    LABELS: ClassVar[Dict[str, str]] = {
-        "species": "species label",
-        "dx_status": "diagnosis label",
-        "study_design": "study design",
-        "study_domain": "study domain",
-    }
 
     def read_columns(self) -> Tuple[str, ...]:
         return self.columns
@@ -209,7 +203,7 @@ class ConfirmedInDatasetColumnEvidence(ConfirmedEvidence):
             value = str(value)
             if len(value) > _MAX_VALUE_CHARS:
                 value = value[:_MAX_VALUE_CHARS].rstrip() + "…"
-            shown.append(f"{self.LABELS.get(column, column.replace('_', ' '))} “{value}”")
+            shown.append(f"{card_label(column)} “{value}”")
         return ", ".join(shown) or None
 
 

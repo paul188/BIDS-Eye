@@ -49,9 +49,9 @@ def _is_healthy_term(term: str) -> bool:
 
 # Plan fields the compiler reads, or that do not change the SQL.
 _KNOWN_PLAN_FIELDS = frozenset({
-    "query_family", "natural_language_summary",
+    "natural_language_summary",
     "groups", "group_operator", "scan_requirements",
-    "order_direction",   # only meaningful with order_by, which must be unset
+    "ordering",   # ORDER BY / LIMIT (order_clause)
     # Written by preprocess/ as complete filter lines, read from there:
     "age_groups", "description_search", "description_alternatives", "request_wishes",
     "scan_term_alternatives",
@@ -71,8 +71,6 @@ _UNSUPPORTED_PLAN_FIELDS = (
     "excluded_institution_terms",
     "metadata_filters",
     "count_comparison",
-    "result_limit",
-    "order_by",
     "rag_requests",
 )
 
@@ -267,19 +265,12 @@ def _scan_conditions(augmented_question: Optional[str]) -> Tuple[Optional[List[s
         if _DIAGNOSIS_LINE_RE.match(line):
             continue
         if _AGE_LINE_RE.match(line):
-            continue  # _age_conditions
+            continue
         match = _SCAN_LINE_RE.match(line)
         if not match:
             return None, f"filter line not supported: {line.strip()[:40]}"
         conditions.append((match.group("condition") or match.group("any_of")).strip())
     return conditions, ""
-
-
-def _age_conditions(augmented_question: Optional[str]) -> List[str]:
-    """The age-group condition of the augmented question, if it has one."""
-    return [match.group("condition")
-            for match in map(_AGE_LINE_RE.match, (augmented_question or "").splitlines())
-            if match]
 
 
 # Filter lines that are complete conditions: ANDed as they are.
@@ -317,7 +308,7 @@ _PIPELINE_FILLER = frozenset({"data", "dataset", "datasets", "with", "by", "usin
                               "available", "fmri"})
 
 
-def _derivatives_condition(description: Optional[str]) -> Optional[str]:
+def derivatives_condition(description: Optional[str]) -> Optional[str]:
     """bids_derivatives for a description that only names preprocessing ("fMRIPrep", "preprocessed")."""
     words = [w for w in re.findall(r"[a-z][a-z0-9-]*", (description or "").lower())
              if w not in _PIPELINE_FILLER]
@@ -349,7 +340,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
     having: List[str] = []
     lines = text.splitlines()
     start = next((i for i, line in enumerate(lines) if line.startswith(_FILTER_HEADER)), None)
-    derivatives = _derivatives_condition(_value(plan, "description_search"))
+    derivatives = derivatives_condition(_value(plan, "description_search"))
     if start is not None:
         for line in lines[start + 1:]:
             if not line.strip():
@@ -386,7 +377,7 @@ def _filter_conditions(augmented_question: Optional[str], plan: Any,
         for (field, term), call in zip(terms, calls):
             if field == "diagnosis":
                 continue
-            pipeline = _derivatives_condition(term)
+            pipeline = derivatives_condition(term)
             if pipeline:
                 where.append(pipeline)
             elif re.search(r"[_.]|\b(?:nii|gz|tsv|json|edf|bdf|set)\b", term):
@@ -437,6 +428,40 @@ def _fixed_conditions(plan: Any) -> List[str]:
         conditions.append(f"EXISTS (SELECT 1 FROM {_objects.name} s2 WHERE s2.dataset_id = d.id "
                           "AND s2.subject IS NOT NULL)")
     return conditions
+
+
+# The column of each SortKey (llm/preprocess/plan.py). Every one exists for
+# every dataset; NULLS LAST keeps datasets without the value at the end in
+# both directions.
+ORDER_COLUMNS: Dict[str, str] = {
+    "subjects": "subject_count",
+    "size": "d.size_bytes",
+    "published": "d.publish_date",
+    "downloads": "d.downloads",
+    "views": "d.views",
+    "name": "d.name",
+}
+
+
+def order_clause(ordering: Any) -> str:
+    """ORDER BY (and LIMIT) for the plan's ordering; "" when it names no sort key.
+
+    A limit without a sort key is left out: the page orders by relevance,
+    and a LIMIT here would cut the result before that ranking.
+    The search keeps a base query's own ORDER BY and LIMIT
+    (sql_rewriter._has_top_level_order; the uncertain tier leaves it alone).
+    """
+    key = _value(ordering, "sort_key")
+    key = getattr(key, "value", key)
+    column = ORDER_COLUMNS.get(key) if key else None
+    if column is None:
+        return ""
+    direction = "ASC" if _value(ordering, "direction", "DESC") == "ASC" else "DESC"
+    clause = f"\nORDER BY {column} {direction} NULLS LAST, d.id"
+    limit = _value(ordering, "limit")
+    if isinstance(limit, int) and not isinstance(limit, bool) and limit > 0:
+        clause += f"\nLIMIT {limit}"
+    return clause
 
 
 def compile_plan(plan: Any, resolved_terms: Iterable[Any],
@@ -496,14 +521,17 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
 
     where.extend(_fixed_conditions(plan))
     where = list(dict.fromkeys(where))
-    if not where and not having:
+    order = order_clause(_value(plan, "ordering"))
+    if not where and not having and not order:
+        # Only an order may list every dataset ("the 10 largest datasets").
         return _decline("nothing to filter")
     sql = ("SELECT {{COLS}}\n"
            f"FROM {_datasets.name} d\n"
            f"LEFT JOIN {_objects.name} o ON o.dataset_id = d.id AND o.subject IS NOT NULL\n"
            + (f"WHERE {' AND '.join(where)}\n" if where else "")
            + "GROUP BY d.id"
-           + (f"\nHAVING {' AND '.join(having)}" if having else ""))
+           + (f"\nHAVING {' AND '.join(having)}" if having else "")
+           + order)
     return Compiled(sql=sql)
 
 

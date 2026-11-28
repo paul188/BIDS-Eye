@@ -21,6 +21,8 @@ from security import sessions
 from deps import require_auth
 from exceptions.handlers import add_error_handlers
 from routers import auth
+from security.settings import AuthSettings
+from services import github_oauth
 
 SECRET = "test-secret-" + "x" * 40
 CLIENT_ID = "test-client-id"
@@ -66,7 +68,7 @@ def _answer_with(monkeypatch: pytest.MonkeyPatch, answer) -> list[httpx.Request]
         return answer(request)
 
     monkeypatch.setattr(
-        auth.httpx, "AsyncClient",
+        github_oauth.httpx, "AsyncClient",
         lambda **kw: _REAL_ASYNC_CLIENT(transport=httpx.MockTransport(record), **kw),
     )
     return seen
@@ -113,7 +115,7 @@ def github_calls(monkeypatch: pytest.MonkeyPatch) -> list:
         return _github(request)
 
     monkeypatch.setattr(
-        auth.httpx, "AsyncClient",
+        github_oauth.httpx, "AsyncClient",
         lambda **kw: _REAL_ASYNC_CLIENT(transport=httpx.MockTransport(answer), **kw),
     )
     return calls
@@ -296,7 +298,7 @@ def test_missing_github_login_is_an_error(
         return _github(request)
 
     monkeypatch.setattr(
-        auth.httpx, "AsyncClient",
+        github_oauth.httpx, "AsyncClient",
         lambda **kw: _REAL_ASYNC_CLIENT(transport=httpx.MockTransport(no_login), **kw),
     )
     assert _login(client).status_code == 502
@@ -337,7 +339,7 @@ def test_unreachable_github_is_a_502(
     client = _browser(app)
     resp = _login(client)
     assert resp.status_code == 502
-    assert resp.json() == {"detail": auth.GitHubUnreachableError.detail}
+    assert resp.json() == {"detail": github_oauth.GitHubUnreachableError.detail}
     assert client.get("/api/auth/me").status_code == 401
 
 
@@ -419,7 +421,7 @@ def test_unanswered_membership_check_is_not_called_non_membership(
     client, _ = _org_client(monkeypatch, status)
     resp = _login(client)
     assert resp.status_code == 502
-    assert resp.json() == {"detail": auth.GitHubOrgCheckError.detail}
+    assert resp.json() == {"detail": github_oauth.GitHubOrgCheckError.detail}
     assert client.get("/api/auth/me").status_code == 401
 
 
@@ -501,7 +503,7 @@ def test_missing_or_placeholder_secret_refuses_to_start(
 
 def test_real_secret_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_github_env(monkeypatch)
-    assert auth.AuthSettings().SESSION_SECRET.get_secret_value() == SECRET
+    assert AuthSettings().SESSION_SECRET.get_secret_value() == SECRET
 
 
 # ── Who may sign in ──────────────────────────────────────────────────────────
@@ -525,11 +527,11 @@ def test_missing_org_refuses_to_start_unless_open_is_asked_for(
 
 def test_org_or_explicit_open_starts(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_github_env(monkeypatch)
-    settings = auth.AuthSettings()
+    settings = AuthSettings()
     assert (settings.GITHUB_ORG, settings.ALLOW_ANY_GITHUB_USER) == ("", True)
 
     _set_github_env(monkeypatch, org=" my-lab ")
-    settings = auth.AuthSettings()
+    settings = AuthSettings()
     assert (settings.GITHUB_ORG, settings.ALLOW_ANY_GITHUB_USER) == ("my-lab", False)
 
 
@@ -537,7 +539,7 @@ def test_org_together_with_open_refuses_to_start(monkeypatch: pytest.MonkeyPatch
     _set_github_env(monkeypatch, org="my-lab")
     monkeypatch.setenv("ALLOW_ANY_GITHUB_USER", "true")
     with pytest.raises(ValidationError, match="contradict"):
-        auth.AuthSettings()
+        AuthSettings()
 
 
 @pytest.mark.parametrize("name", ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"])
@@ -556,4 +558,4 @@ def test_missing_oauth_app_credentials_refuse_to_start(
 
 def test_client_secret_stays_out_of_error_and_repr(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_github_env(monkeypatch)
-    assert CLIENT_SECRET not in repr(auth.AuthSettings())
+    assert CLIENT_SECRET not in repr(AuthSettings())

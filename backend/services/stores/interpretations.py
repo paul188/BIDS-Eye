@@ -44,23 +44,24 @@ _BACKEND = Path(__file__).resolve().parents[2]
 # Every code and vocabulary file of these folders decides what a question is
 # translated into, so all of them count, new ones included (a hand-kept list
 # missed the compiler, criteria.py, cohort_count.py, senses.yaml and
-# word_forms.yaml). Not recursive: __pycache__ stays out.
+# stem_collisions.yaml). Not recursive: __pycache__ stays out.
 _VERSION_DIRS = (_BACKEND / "llm", _BACKEND / "llm" / "preprocess",
                  _BACKEND / "vocabulary")
 _VERSION_SUFFIXES = (".py", ".yaml", ".yml", ".json")
 # The backend modules the translation imports (text_to_sql.py and everything
 # it reaches; test_interpretations.py checks this list against the
-# imports), and the few-shot examples. models.py and schemas.py are left out:
+# imports), and the few-shot examples. database/app_tables.py and routers/schemas.py are left out:
 # they define the shape of rows and responses, not the translation; so is
 # exceptions/domain.py (query_guard's SearchBusyError), which only sets HTTP answers,
 # and exceptions/expected.py, the base class of the errors.
 _VERSION_FILES = (
     _BACKEND / "services" / "database_stats" / "database_stats.py",
     _BACKEND / "services" / "schema" / "check.py",
-    _BACKEND / "services" / "schema" / "coded_fields.py",
+    _BACKEND / "services" / "schema" / "fields.py",
     _BACKEND / "services" / "schema" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
     _BACKEND / "services" / "translate" / "optional_columns.py",
+    _BACKEND / "services" / "translate" / "prompt" / "example_families.py",
     _BACKEND / "services" / "translate" / "prompt" / "examples.py",
     _BACKEND / "services" / "translate" / "prompt" / "few_shot_examples.json",
     _BACKEND / "services" / "translate" / "prompt" / "instructions.py",
@@ -96,17 +97,18 @@ _VERSION_FILES = (
     _BACKEND / "services" / "uncertain" / "fields" / "sex.py",
     _BACKEND / "services" / "uncertain" / "text.py",
     _BACKEND / "services" / "fulltext" / "word_form_counts.py",
-    _BACKEND / "worker_db.py",
+    _BACKEND / "database" / "worker.py",
 )
 _VERSION_ENV = ("UNCERTAIN_TIER", "UNCERTAIN_POSSIBLE", "UNCERTAIN_MAX_UNSURE",
-                "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT", "GEMINI_MODEL_CASCADE",
-                "ANTHROPIC_FALLBACK_MODEL", "GEMINI_SEED")
+                "TEXT_SEARCH_PAPERS", "TEXT_SEARCH_EXACT")
 _version: Optional[str] = None
 
 
 def version_paths() -> list:
     """The files pipeline_version() reads, in a fixed order."""
-    paths = list(_VERSION_FILES)
+    import llm_client
+    # Models, seed and fallback order: the LLM config in use (LLM_CONFIG_PATH or the default).
+    paths = list(_VERSION_FILES) + [llm_client.config_path()]
     for directory in _VERSION_DIRS:
         if directory.is_dir():
             paths.extend(sorted(p for p in directory.iterdir()
@@ -173,7 +175,7 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
     returned, since translating anew is what the store exists to avoid."""
     if not enabled():
         return None
-    from models import QueryInterpretation
+    from database.app_tables import QueryInterpretation
     try:
         row = (await session.execute(
             select(QueryInterpretation).where(QueryInterpretation.key == _key(question))
@@ -209,7 +211,7 @@ async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any
     A database error is logged and the search answers anyway; anything else
     (a payload json cannot encode) is a bug and is raised.
     """
-    from models import QueryLog
+    from database.app_tables import QueryLog
     row = QueryLog(
         question=question, pipeline_version=pipeline_version(),
         payload=json.dumps(payload, ensure_ascii=False), total=total,
@@ -239,7 +241,7 @@ async def put(session: AsyncSession, question: str, payload: Dict[str, Any], tot
         return
     from sqlalchemy.dialects.postgresql import insert
 
-    from models import QueryInterpretation
+    from database.app_tables import QueryInterpretation
     statement = insert(QueryInterpretation).values(
         key=_key(question), pipeline_version=pipeline_version(), question=question,
         question_normalized=normalize(question),
