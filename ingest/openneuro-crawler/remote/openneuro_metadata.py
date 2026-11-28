@@ -52,6 +52,7 @@ import re
 import time
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -101,6 +102,14 @@ METADATA_COLUMNS: Dict[str, str] = {
 # Upstream status. Unlike the metadata columns it is overwritten on every
 # check, because it describes the present, not something to accumulate.
 STATUS_COLUMNS: Dict[str, str] = {"deprecated_reason": "TEXT"}
+# Which snapshot the files were indexed from (record_snapshot); the crawler
+# compares them with the API's latest snapshot (snapshot_plan.py).
+SNAPSHOT_COLUMNS: Dict[str, str] = {
+    "snapshot_tag": "TEXT",
+    "snapshot_hexsha": "TEXT",
+    "files_indexed_at": "TIMESTAMPTZ",
+    "indexer_version": "INTEGER",
+}
 REMOVED_REASON = "No longer available on OpenNeuro"
 
 # What bids_datasets.search_tsv is generated from. The column itself comes
@@ -130,10 +139,10 @@ EXACT_SEARCH_VECTOR_EXPRESSION = SEARCH_VECTOR_EXPRESSION.replace(
 # Selection shared by every query in this module.
 METADATA_SELECTION = """
     publishDate onBrainlife
-    metadata { species studyDesign studyDomain studyLongitudinal seniorAuthor dxStatus ages }
+    metadata { datasetName species studyDesign studyDomain studyLongitudinal seniorAuthor dxStatus ages }
     latestSnapshot {
-      tag readme size summary { size } deprecated { reason }
-      description { EthicsApprovals } analytics { downloads views }
+      tag hexsha created readme size summary { size } deprecated { reason }
+      description { Name EthicsApprovals } analytics { downloads views }
     }
 """
 
@@ -321,6 +330,18 @@ def _clean_line(value: Any) -> Optional[str]:
     return line or None
 
 
+# Names OpenNeuro shows when the uploader set none; they are not titles.
+_PLACEHOLDER_NAMES = frozenset({"unnamed dataset", "untitled", "untitled dataset", "n/a"})
+
+
+def clean_dataset_name(value: Any) -> Optional[str]:
+    """A dataset title, or None when *value* is blank or a placeholder name."""
+    line = _clean_line(value)
+    if line is None or line.lower() in _PLACEHOLDER_NAMES:
+        return None
+    return line
+
+
 def _age_bounds(ages: Any) -> Tuple[Optional[float], Optional[float]]:
     low, high = _AGE_RANGE
     plausible = [
@@ -378,6 +399,9 @@ def extract_fields(record: Optional[dict]) -> Dict[str, Any]:
     analytics = snapshot.get("analytics") or {}
     description = snapshot.get("description")  # None (absent or null) = unknown
     return {
+        # The uploader's name first, then dataset_description.json's Name.
+        "name":         clean_dataset_name(metadata.get("datasetName"))
+                        or clean_dataset_name((description or {}).get("Name")),
         "readme_text":  readme_text,
         "dx_status":    _clean_line(metadata.get("dxStatus")),
         "study_domain": _clean_line(metadata.get("studyDomain")),
@@ -424,6 +448,16 @@ def deprecation_reason(record: Optional[dict], unavailable: Optional[str] = None
 _UPDATE_SQL = text(
     """
     UPDATE bids_datasets SET
+        -- A title only replaces a missing one: blank, a placeholder, or the
+        -- accession id the GraphQL fallback stores when there is no name.
+        name = CASE
+            WHEN :name IS NOT NULL
+                 AND (name IS NULL OR btrim(name) = ''
+                      OR lower(btrim(name)) IN ('unnamed dataset', 'untitled', 'untitled dataset', 'n/a')
+                      OR name = accession_id)
+            THEN :name
+            ELSE name
+        END,
         readme_text  = COALESCE(:readme_text,  readme_text),
         dx_status    = COALESCE(:dx_status,    dx_status),
         study_domain = COALESCE(:study_domain, study_domain),
@@ -446,7 +480,11 @@ _UPDATE_SQL = text(
         END
     WHERE accession_id = :accession_id
     """
-).bindparams(bindparam("readme_urls", type_=ARRAY(String)))
+).bindparams(
+    bindparam("readme_urls", type_=ARRAY(String)),
+    # Typed, or asyncpg cannot tell what ":name IS NOT NULL" compares.
+    bindparam("name", type_=String),
+)
 
 
 async def apply_fields(session: Any, accession_id: str, fields: Dict[str, Any]) -> int:
@@ -456,6 +494,8 @@ async def apply_fields(session: Any, accession_id: str, fields: Dict[str, Any]) 
     Returns the number of rows updated (0 when the accession is not indexed).
     """
     params: Dict[str, Any] = {name: fields.get(name) for name in METADATA_COLUMNS}
+    name = fields.get("name")
+    params["name"] = name[:300] if name else None
     params["readme_urls"] = list(fields.get("readme_urls") or []) or None
     params["accession_id"] = accession_id
     result = await session.execute(_UPDATE_SQL, params)
@@ -475,5 +515,46 @@ async def set_deprecation(session: Any, accession_id: str, reason: Optional[str]
     result = await session.execute(
         text("UPDATE bids_datasets SET deprecated_reason = :reason WHERE accession_id = :accession_id"),
         {"reason": reason, "accession_id": accession_id},
+    )
+    return int(result.rowcount or 0)
+
+
+# ── Snapshot ──────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class Snapshot:
+    """The latest snapshot of a dataset as the API reports it."""
+
+    tag: Optional[str]
+    hexsha: str
+    created: Optional[datetime]
+
+
+def snapshot_of(record: Optional[dict]) -> Optional[Snapshot]:
+    """The latest snapshot of an API record; None without a commit hash."""
+    snapshot = (record or {}).get("latestSnapshot") or {}
+    hexsha = snapshot.get("hexsha")
+    if not isinstance(hexsha, str) or not hexsha.strip():
+        return None
+    tag = snapshot.get("tag")
+    return Snapshot(tag=tag if isinstance(tag, str) and tag else None,
+                    hexsha=hexsha.strip(), created=_timestamp(snapshot.get("created")))
+
+
+async def record_snapshot(session: Any, accession_id: str, snapshot: Optional[Snapshot],
+                          indexer_version: int, indexed_at: datetime) -> int:
+    """Note that the files of *accession_id* were indexed from *snapshot*.
+
+    Call it only after the whole indexing succeeded. *snapshot* None (the API
+    did not say) stores no hash, so the next cycle indexes the dataset again.
+    The caller commits.
+    """
+    result = await session.execute(
+        text("UPDATE bids_datasets SET snapshot_tag = :tag, snapshot_hexsha = :hexsha, "
+             "files_indexed_at = :at, indexer_version = :version "
+             "WHERE accession_id = :accession_id"),
+        {"tag": snapshot.tag if snapshot else None,
+         "hexsha": snapshot.hexsha if snapshot else None,
+         "at": indexed_at, "version": indexer_version, "accession_id": accession_id},
     )
     return int(result.rowcount or 0)

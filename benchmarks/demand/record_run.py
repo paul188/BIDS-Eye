@@ -67,7 +67,9 @@ def main() -> None:
 
     recording: dict = {}
     current: dict = {}
-    run_pipeline, generate = preprocess.run_pipeline, t2s._gemini_sql_generation
+    # The names before llm_client's profiles (2026-11-27) carried "gemini".
+    generate_name = "_generate_sql" if hasattr(t2s, "_generate_sql") else "_gemini_sql_generation"
+    run_pipeline, generate = preprocess.run_pipeline, getattr(t2s, generate_name)
 
     def save() -> None:
         args.recording.write_text(json.dumps(recording, indent=1))
@@ -98,7 +100,8 @@ def main() -> None:
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         import routers.query as runner
-    correct = runner._correct_sql_with_gemini
+    correct_name = "_correct_sql" if hasattr(runner, "_correct_sql") else "_correct_sql_with_gemini"
+    correct = getattr(runner, correct_name)
 
     def recording_correct(sql, *a, **k):
         fixed = correct(sql, *a, **k)
@@ -107,9 +110,10 @@ def main() -> None:
             save()
         return fixed
 
-    runner._correct_sql_with_gemini = t2s._correct_sql_with_gemini = recording_correct
+    setattr(runner, correct_name, recording_correct)
+    setattr(t2s, correct_name, recording_correct)
     preprocess.run_pipeline = recording_pipeline
-    t2s._gemini_sql_generation = recording_generate
+    setattr(t2s, generate_name, recording_generate)
     asyncio.run(eval_recall._run(load_questions(args.queries, args.prefix), args.out,
                                  args.backend_dir, args.label))
 

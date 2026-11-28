@@ -4,8 +4,6 @@ import json
 
 import pytest
 
-import llm_client
-from google.genai import errors as genai_errors  # noqa: E402
 from services.indexing import readme_profile as rp
 
 README = (
@@ -70,13 +68,13 @@ def test_parse_keeps_roles_and_uses_only_verified_studied_conditions() -> None:
     assert "stroke" not in text and "schizophrenia" not in text
 
 
-def test_parse_rejects_unusable_answers_and_tolerates_fences() -> None:
+def test_parse_rejects_unusable_answers_and_drops_unknown_roles() -> None:
     with pytest.raises(ValueError):
         rp.parse_response("Sure! Here is the profile.", SOURCE)
     with pytest.raises(ValueError):
         rp.parse_response("[]", SOURCE)
-    fenced = "```json\n" + _answer(conditions=[{"term": "x", "role": "nonsense", "evidence": ""}]) + "\n```"
-    profile = rp.parse_response(fenced, SOURCE)
+    answer = _answer(conditions=[{"term": "x", "role": "nonsense", "evidence": ""}])
+    profile = rp.parse_response(answer, SOURCE)
     assert [f for f in profile.facts if f.kind == "condition"] == []
 
 
@@ -117,41 +115,3 @@ def test_long_readmes_are_cut_before_they_reach_the_model() -> None:
     source = rp.ProfileSource(accession_id="x", name="x", readme="word " * 10_000)
     assert len(source.text()) < rp.MAX_README_CHARS + 500
     assert "[README truncated]" in rp.build_prompt(source)
-
-
-# ── llm_client options used by extraction and re-ranking ─────────────────────
-
-def test_llm_generate_passes_model_schema_and_thinking(monkeypatch) -> None:
-    calls = []
-
-    def fake_gemini(model, prompt, system, temperature, api_key, **kwargs):
-        calls.append((model, kwargs))
-        if model == "gemini-down":
-            raise genai_errors.ClientError(400, {"error": {"status": "NOT_FOUND"}})
-        return '{"ok": true}'
-
-    monkeypatch.setattr(llm_client, "_call_gemini", fake_gemini)
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "set")
-    schema = {"type": "object"}
-    out = llm_client.llm_generate(
-        "p", api_key="k", models=["gemini-down", "gemini-ok"], json_schema=schema,
-        thinking_level="low", call_timeout=5, use_fallback=False,
-    )
-    assert out == '{"ok": true}'
-    assert [c[0] for c in calls] == ["gemini-down", "gemini-ok"]
-    assert calls[1][1]["json_schema"] == schema and calls[1][1]["thinking_level"] == "low"
-
-    # use_fallback=False never reaches Claude.
-    calls.clear()
-    monkeypatch.setattr(llm_client, "_call_gemini",
-                        lambda *a, **k: (_ for _ in ()).throw(
-                            genai_errors.ClientError(400, {"error": {"status": "INVALID_ARGUMENT"}})))
-    with pytest.raises(llm_client.LLMAllFailedError) as info:
-        llm_client.llm_generate("p", api_key="k", models=["gemini-x"], use_fallback=False)
-    assert "anthropic" not in str(info.value)
-
-
-def test_default_cascade_is_unchanged_without_options(monkeypatch) -> None:
-    monkeypatch.delenv("GEMINI_MODEL_CASCADE", raising=False)
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    assert [t.model for t in llm_client._build_cascade()] == llm_client._DEFAULT_GEMINI_CASCADE

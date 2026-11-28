@@ -85,11 +85,10 @@ from yaml_to_llamaindex import (
     EmbeddingIndexError,
     build_embedding_index,
 )
-from join_registry import field_to_db_col as _field_to_db_col
 import institution_index as _institution_index
 import reference_vocabulary as _reference
 import shorthands as _shorthands
-from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS  # backend/ is on the path wherever RAG runs
+from services.schema.fields import CODED_FIELDS, FILE_FIELDS, CatalogueField  # backend/ is on the path wherever RAG runs
 
 log = logging.getLogger(__name__)
 
@@ -180,7 +179,7 @@ _MIN_FUZZY_SCORE = 88
 _MIN_PREFIX_TERM = 5
 
 # A construct linked to fewer task codes than this does not stand for the
-# construct: bids_to_ca_map.json links "emotion" and "anxiety" to the
+# construct: the task measures in value_mappings.yaml link "emotion" and "anxiety" to the
 # meditation task alone, so "emo studies" filtered on meditation_general and
 # found nothing. Such a link still widens a term that also names a task, but
 # on its own it is ignored; the term goes on to fuzzy matching and, if that
@@ -270,9 +269,7 @@ def _load_embedding_tier(model_name: str) -> Optional[Any]:
 
 
 def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]:
-    """Scored variant of _embedding_fallback.
-
-    Two-tier biomedical embedding search for *term* in *field*.
+    """Two-tier biomedical embedding search for *term* in *field*.
     Called when RapidFuzz WRatio misses (score < threshold).
     Tier 1: BioLORD-2023-C, cosine ≥ 0.75 — returns on first hit.
     Tier 2: SapBERT,         cosine ≥ 0.65 — reached only if tier 1 misses.
@@ -302,7 +299,7 @@ def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]
         if emb_model is None:
             continue
 
-        terms_list, embs, code_lists = cat_data
+        _, embs, code_lists = cat_data
         query_emb = emb_model.encode(
             [term_lower], normalize_embeddings=True, show_progress_bar=False
         )[0]
@@ -318,11 +315,6 @@ def _embedding_fallback_scored(field: str, term: str) -> List[tuple[str, float]]
             return [(code, score) for code in code_lists[best_idx]]
 
     return []
-
-
-def _embedding_fallback(field: str, term: str) -> List[str]:
-    """Two-tier biomedical embedding search (codes only — thin wrapper)."""
-    return [code for code, _ in _embedding_fallback_scored(field, term)]
 
 
 # ── YAML-field resolution helpers ──────────────────────────────────────────────
@@ -586,23 +578,6 @@ def is_listed(field: str, term: str) -> bool:
                for form in _plural_variants(_normalize_term(term)))
 
 
-def _prune_redundant_parents(codes: List[str]) -> List[str]:
-    """Remove a code if a more-specific child of it is already in the list."""
-    if len(codes) < 2:
-        return codes
-    code_paths: Dict[str, set] = {}
-    for code in codes:
-        info = hierarchy_db.get(code)
-        code_paths[code] = set(info["path"]) if (info and "path" in info) else {code}
-    to_remove = {
-        code
-        for code, path in code_paths.items()
-        for other, other_path in code_paths.items()
-        if other != code and code in other_path
-    }
-    return [c for c in codes if c not in to_remove]
-
-
 def _resolve_via_constructs(term: str, fuzzy: bool = True) -> List[tuple[str, float]]:
     """Try term against cognitive_construct, then expand to task codes via measures_db.
 
@@ -611,7 +586,7 @@ def _resolve_via_constructs(term: str, fuzzy: bool = True) -> List[tuple[str, fl
     Returns (task_standard_code, score) pairs — or [] when:
       - the term doesn't match any cognitive construct, or
       - none of the matched constructs have task links in measures_db yet
-        (i.e. bids_to_ca_map.json hasn't been generated / reviewed yet).
+        (no task entry in value_mappings.yaml lists them under `measures`).
     """
     if not measures_db:
         return []
@@ -1014,11 +989,12 @@ class MetadataRetriever:
         """
         if not self._db_url or not codes:
             return codes, []
-        db_column = _field_to_db_col(field)
-        if db_column is None:
+        # Only fields with rows of their own (files, participants) have codes to count.
+        catalogue_field = CatalogueField.named(field)
+        if catalogue_field is None or not catalogue_field.stored.needs_exists:
             return codes, []
 
-        table, col = db_column
+        table, col = catalogue_field.stored.table, catalogue_field.stored.column
         try:
             import psycopg2
         except ImportError:
@@ -1106,17 +1082,17 @@ class MetadataRetriever:
         n_results: int = 20,
     ) -> List[str]:
         """
-        Resolve *term* for *field* and return up to *n_results* canonical values.
+        Resolve *term* for *field* and return its canonical values.
 
         Semantic fields (diagnosis / task / suffix / datatype / sex / handedness):
-            returns standard_code strings from value_mappings.yaml
+            returns every standard_code from value_mappings.yaml the term
+            resolves to. *n_results* does not apply: see retrieve_for_field_multi.
 
         Name fields (author / funding):
-            returns exact DB strings from name_index.json
+            returns up to *n_results* exact DB strings from name_index.json
         """
         if field in _YAML_FIELDS:
-            codes = _resolve_yaml_term(field, term)
-            return codes[:n_results]
+            return _resolve_yaml_term(field, term)
 
         if field == _INSTITUTION_FIELD:
             return [name for name, _ in self._resolve_institution(term)][:n_results]
@@ -1137,8 +1113,11 @@ class MetadataRetriever:
         Resolve multiple *terms* for *field*.
         Returns {term: [codes]} — terms with no match are omitted.
 
-        n_results_per_term is a safety cap; threshold-based filtering in
-        _resolve_yaml_term already limits results to high-confidence matches.
+        n_results_per_term caps the fuzzy name fields only. A vocabulary term
+        keeps every code it resolves to: "memory" resolves to more than a
+        hundred tasks, and the first 20 of them were no better than the rest
+        (a group or construct match gives every code the same score, in file
+        order), so the cut dropped datasets at random.
         """
         result: Dict[str, List[str]] = {}
         for term in terms:
@@ -1183,14 +1162,15 @@ class MetadataRetriever:
         terms: List[str],
         n_results_per_term: int = 20,
     ) -> Dict[str, List[tuple[str, float]]]:
-        """Scored variant of retrieve_for_field_multi.
+        """Scored variant of retrieve_for_field_multi (n_results_per_term
+        caps the name fields only, as there).
 
         Returns {term: [(code, score), ...]} — terms with no match are omitted.
         """
         result: Dict[str, List[tuple[str, float]]] = {}
         for term in terms:
             if field in _YAML_FIELDS:
-                scored = _resolve_yaml_term_scored(field, term)[:n_results_per_term]
+                scored = _resolve_yaml_term_scored(field, term)
             elif field == _INSTITUTION_FIELD:
                 scored = self._resolve_institution(term)
             elif field in _NAME_FIELDS:

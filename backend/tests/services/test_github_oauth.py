@@ -1,9 +1,9 @@
-"""Parsing GitHub's answers in the sign-in callback (routers/auth.py)."""
+"""Parsing GitHub's answers in the sign-in (services/github_oauth.py)."""
 from __future__ import annotations
 
 import pytest
 
-from routers.auth import _github_login
+from services.github_oauth import _github_login
 
 
 class Answer:

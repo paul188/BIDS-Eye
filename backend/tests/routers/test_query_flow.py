@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy.exc import ProgrammingError
 
 import routers.search as query_router
-from schemas import DatasetSchema, TextToSQLResult
+from routers.schemas import DatasetSchema, TextToSQLResult
 from services.results import dataset_cards
 from services import search, search_runner
 from services.stores.translated_queries import query_cache
@@ -142,8 +142,8 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         monkeypatch.setattr(dataset_cards, "rows_to_datasets", _fake_rows_to_datasets)
         monkeypatch.setattr(
             search_runner,
-            "_correct_sql_with_gemini",
-            lambda sql, db_error, question, api_key: sql.replace("{{COLS}}", "d.id"),
+            "_correct_sql",
+            lambda sql, db_error, question: sql.replace("{{COLS}}", "d.id"),
         )
         monkeypatch.setenv("GEMINI_API_KEY", "dummy-key")
 

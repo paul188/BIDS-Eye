@@ -69,6 +69,9 @@ backend/vocabulary/name_index.json
 backend/vocabulary/embed_*.npz
 backend/vocabulary/embed_*.json
 
+# ── Task-link proposals to review (backend/vocabulary/tools/apply_task_measures.py) ──
+backend/vocabulary/proposed_*.json
+
 # ── Benchmark working data (pools, judging runs, downloads; large) ────────────
 benchmarks/*/work/
 

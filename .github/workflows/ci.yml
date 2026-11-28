@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # mypy reads the installed packages' types: same versions as the image.
-      PIP_CONSTRAINT: ${{ github.workspace }}/backend/constraints.txt
+      PIP_CONSTRAINT: ${{ github.workspace }}/constraints.txt
     steps:
       - uses: actions/checkout@v7
         with:
@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: backend/constraints.txt
+          cache-dependency-path: constraints.txt
       - name: Install as the backend image does
         run: |
           pip install -r BIDS-SQL/requirements.txt
@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Same pinned versions as the production image (backend/Dockerfile).
-      PIP_CONSTRAINT: ${{ github.workspace }}/backend/constraints.txt
+      PIP_CONSTRAINT: ${{ github.workspace }}/constraints.txt
       # BIDS-SQL reads these at import. No test connects to this database.
       METADATA_DB_NAME: ci
       METADATA_DB_USER: ci
@@ -85,7 +85,7 @@ jobs:
       METADATA_DB_HOST: localhost
       METADATA_DB_PORT: "5432"
       SESSION_SECRET: ci-only-not-a-secret-ci-only-not-a-secret
-      # The app refuses to start without the sign-in settings (routers/auth.py).
+      # The app refuses to start without the sign-in settings (security/settings.py).
       GITHUB_CLIENT_ID: ci
       GITHUB_CLIENT_SECRET: ci-only-not-a-secret
       ALLOW_ANY_GITHUB_USER: "true"
@@ -110,7 +110,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: backend/constraints.txt
+          cache-dependency-path: constraints.txt
       - name: Install as the backend image does
         run: |
           pip install -r BIDS-SQL/requirements.txt

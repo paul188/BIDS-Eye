@@ -62,7 +62,7 @@ def _evaluate_entry(
     # Resolution path: introspect retriever internals when possible
     path = "unresolved"
     if returned:
-        path = _infer_path(retriever, field, term, returned[0])
+        path = _infer_path(retriever, field, term)
 
     return {
         "term": term,
@@ -79,7 +79,7 @@ def _evaluate_entry(
 
 
 def _infer_path(
-    retriever: MetadataRetriever, field: str, term: str, top_code: str
+    retriever: MetadataRetriever, field: str, term: str
 ) -> str:
     """Heuristic to classify which tier resolved the term."""
     import sys

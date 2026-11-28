@@ -36,7 +36,10 @@ async def run():
         pass
     try:
         try:
-            import worker_db
+            try:
+                from database import worker as worker_db
+            except ImportError:  # backend before database/
+                import worker_db
         except ImportError:  # backend before worker_db.py
             try:
                 from services.fulltext import word_frequencies

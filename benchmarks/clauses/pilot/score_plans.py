@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import random
 import re
 import sys
@@ -409,7 +408,6 @@ def run(args) -> None:
     root = args.backend_dir.resolve().parent
     sys.path[:0] = [str(root / n) for n in ("backend", "backend/llm", "backend/vocabulary")]
     import preprocess
-    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     # A run that was stopped continues: complete requests are kept.
     done = json.loads(args.out.read_text()) if args.out.exists() else {}
     if done and done["label"] != args.label:
@@ -419,7 +417,7 @@ def run(args) -> None:
     for item in load_own():
         for _ in range(args.repeats - len(plans.get(item["id"], []))):
             try:
-                plan = preprocess.preprocess_query(item["text"], api_key=key)
+                plan = preprocess.create_query_plan(item["text"])
             except Exception as exc:  # noqa: BLE001 - one failed call must not stop the run
                 errors[item["id"]] = errors.get(item["id"], 0) + 1
                 print(f"{item['id']}: {type(exc).__name__}: {str(exc)[:80]}", file=sys.stderr, flush=True)

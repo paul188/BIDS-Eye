@@ -11,9 +11,11 @@ Output: backend/vocabulary/proposed_task_mappings.json
 
 Next step (manual):
     Review the file.  Correct wrong matches, remove noise, add missing entries.
-    Then rename / copy to backend/vocabulary/bids_to_ca_map.json and commit it.
-    yaml_to_llamaindex.py loads that file at startup to build the measures_db
-    reverse index (cognitive construct → task codes).
+    Then write it into the task entries of value_mappings.yaml (their ca_id and
+    measures) with
+        python backend/vocabulary/tools/apply_task_measures.py backend/vocabulary/proposed_task_mappings.json
+    and commit value_mappings.yaml. yaml_to_llamaindex.py reads the measures at
+    startup into the measures_db reverse index (cognitive construct → task codes).
 
 Requires: rapidfuzz  (pip install rapidfuzz)
 """
@@ -54,11 +56,14 @@ def _strip_task_suffix(name: str) -> str:
 
 
 def load_bids_tasks(yaml_path: str) -> Dict[str, str]:
-    """Return {standard_code: label}."""
+    """Return {standard_code: label} of the tasks. Groups have no standard_code
+    and are left out: a group key is no task code, and a link on it reached
+    the search as a code no dataset has."""
     with open(yaml_path) as fh:
         schema = yaml.safe_load(fh)
     tasks = schema.get("task", {})
-    return {k: v.get("label", k) for k, v in tasks.items() if isinstance(v, dict)}
+    return {v["standard_code"]: v.get("label", k) for k, v in tasks.items()
+            if isinstance(v, dict) and v.get("standard_code")}
 
 
 def load_ca_constructs(ca_yaml_path: str) -> Dict[str, str]:
@@ -177,8 +182,8 @@ def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
         if prev is None or prev["confidence"] < entry["confidence"]:
             results[best_code] = entry
 
-    # A task whose JSON could not be read would be written without its
-    # construct links, into a file that replaces the old one in full.
+    # A task whose JSON could not be read would be proposed without its
+    # construct links.
     if failed:
         sys.exit(f"ERROR: {len(failed)} CA task(s) could not be read ({', '.join(failed[:10])}"
                  f"{' …' if len(failed) > 10 else ''}); {out_path} is unchanged. Run again.")
@@ -194,8 +199,8 @@ def main(yaml_path: str, ca_yaml_path: str, out_path: str) -> None:
     print(f"  {n_with} with concept links (measures)")
     print(f"  {len(results) - n_with} without concept links")
     print(
-        f"\nNext: review {out_file}, correct errors, "
-        "then rename to backend/vocabulary/bids_to_ca_map.json"
+        f"\nNext: review {out_file}, correct errors, then apply it with "
+        f"backend/vocabulary/tools/apply_task_measures.py {out_file}"
     )
 
 

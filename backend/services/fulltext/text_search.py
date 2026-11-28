@@ -35,7 +35,7 @@ paper text at all, because it carries weight D.
 Exact word forms (TEXT_SEARCH_EXACT=true). The 'english' configuration
 matches a word by its stem, and some stems merge words that mean different
 things: "ageing" also finds "age", "weight" finds "T1-weighted". For a word
-whose forms were decided (backend/vocabulary/word_forms.py), a term also requires one of
+whose forms were decided (backend/vocabulary/stem_collisions.py), a term also requires one of
 those forms on search_tsv_exact, the same vector without stemming:
 
     (d.search_tsv @@ to_tsquery('english', 'ageing & mri')
@@ -398,11 +398,11 @@ def read_clauses(tree: Any) -> List[Clause]:
 
 def expand_text_search(
     sql: str, papers: Optional[bool] = None,
-    exact_forms: Optional[tsquery.ExactForms] = None,
+    allowed_forms: Optional[tsquery.AllowedForms] = None,
 ) -> ExpandedSearch:
     """Replace every text_match() placeholder in *sql* and build the rank queries.
 
-    *papers* overrides the TEXT_SEARCH_PAPERS switch (tests). *exact_forms*: the word forms decided
+    *papers* overrides the TEXT_SEARCH_PAPERS switch (tests). *allowed_forms*: the word forms decided
     for this question; with TEXT_SEARCH_EXACT on, those words and the ones on
     the reviewed list also need one of their forms (module docstring).
     """
@@ -432,7 +432,7 @@ def expand_text_search(
             # Nothing searchable ("???"): the term cannot match any dataset.
             return f"{negated}FALSE"
         # What each alternative requires: a loose term its core, counted once here.
-        required = [tsquery.filter_term(term, mode, exact_forms) for term in terms]
+        required = [tsquery.filter_term(term, mode, allowed_forms) for term in terms]
         if also and not inside_not and previous_filter:
             own_parts.append(previous_filter[-1])
         elif not inside_not:
@@ -441,10 +441,10 @@ def expand_text_search(
             if own_filter:
                 previous_filter.append(own_filter)
         if not negated:
-            rank = tsquery.build_rank_tsquery(terms, mode, exact_forms)
+            rank = tsquery.build_rank_tsquery(terms, mode, allowed_forms)
             if rank:
                 rank_parts.append(rank)
-            rank_exact = tsquery.build_exact_rank_tsquery(terms, mode, exact_forms)
+            rank_exact = tsquery.build_exact_rank_tsquery(terms, mode, allowed_forms)
             if rank_exact:
                 rank_exact_parts.append(rank_exact)
         column = PAPER_FTS_COLUMN if (use_papers and not inside_not) else FTS_COLUMN
@@ -462,7 +462,7 @@ def expand_text_search(
                 return plain_core
             label = tsquery.SCOPE_LABEL[mode]
             # Each alternative's guard if it has exact words.
-            guards = [tsquery.exact_guard(term, label, exact_forms) for term in required]
+            guards = [tsquery.exact_guard(term, label, allowed_forms) for term in required]
             if not any(guards):
                 return plain_core
             # One pair per alternative with exact words; the others share one

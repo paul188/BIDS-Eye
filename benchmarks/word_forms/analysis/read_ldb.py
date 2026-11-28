@@ -1,5 +1,5 @@
 """Pull one localStorage key out of a Chrome LevelDB .ldb table (no deps)."""
-import struct, sys, json
+import struct, sys
 
 def varint(b, i):
     r = s = 0

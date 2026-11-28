@@ -274,7 +274,7 @@ class _Session:
 
 def test_attach_descriptions_shows_the_paper_line_and_summary():
     from services.results import dataset_cards
-    from schemas import DatasetSchema
+    from routers.schemas import DatasetSchema
 
     def dataset(n):
         return DatasetSchema(id=UUID(int=n), name=f"d{n}", dataset_type="raw",

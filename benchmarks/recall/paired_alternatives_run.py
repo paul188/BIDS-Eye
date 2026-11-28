@@ -110,7 +110,10 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
 
     await start(engine)
     try:
-        import worker_db
+        try:
+            from database import worker as worker_db
+        except ImportError:  # backend before database/
+            import worker_db
     except ImportError:  # backend before worker_db.py
         if has_fts():
             word_frequencies.set_frequency_lookup(
@@ -124,9 +127,9 @@ async def _run(questions: List[dict], out_dir: Path, backend_dir: str, label: st
     captured: Dict[str, Any] = {}
     rewrite = translator._rewrite_generated_sql
 
-    def capturing(raw_sql, augmented_question, word_forms=None):
-        captured.update(raw=raw_sql, question=augmented_question, forms=word_forms)
-        return rewrite(raw_sql, augmented_question, word_forms)
+    def capturing(raw_sql, augmented_question, allowed_forms=None):
+        captured.update(raw=raw_sql, question=augmented_question, forms=allowed_forms)
+        return rewrite(raw_sql, augmented_question, allowed_forms)
 
     translator._rewrite_generated_sql = capturing
 

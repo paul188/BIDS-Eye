@@ -7,7 +7,7 @@ Flow:
   User query
       │
       ▼
-  preprocess_query()          ← intent.py
+  create_query_plan()          ← intent.py
       │  returns QueryPlan (structured Pydantic object)
       │
       ▼
@@ -21,7 +21,7 @@ Flow:
       │  returns AugmentedQueryPlan with canonical codes filled in
       │
       ▼
-  SQL generation LLM (Gemini, in backend/services/translate/text_to_sql.py)
+  SQL generation LLM (profile sql, in backend/services/translate/text_to_sql.py)
 
 The LLM's job is STRUCTURAL ONLY:
   - Identify which terms are scan-related (put in ScanRequirement.scan_terms)
@@ -33,16 +33,13 @@ The RAG layer handles ALL cardinality decisions using threshold-based fuzzy
 matching.  The LLM never sets expected code counts or classifies scan terms
 into datatype vs suffix vs task.
 
-Authentication:
-  export GEMINI_API_KEY=...   or   export GOOGLE_API_KEY=...
-
-Requires:
-  pip install google-genai pydantic
+Models and keys: profile intent in backend/llm/llm_config.yaml (llm_client.py);
+the env var that holds each provider's key is named there.
 
 Modules, in import order (each uses only those before it):
   plan.py      The plan the model returns (QueryPlan) and the plan after RAG (AugmentedQueryPlan).
   prompt.py    The system prompt of the intent-extraction call.
-  intent.py    The model call: a question in, a QueryPlan out (preprocess_query).
+  intent.py    The model call: a question in, a QueryPlan out (create_query_plan).
   rag.py       What to look up in the vocabulary for a plan, and the scored filters that come back.
   topics.py    Topics: a qualified subject, searched as one unit; description alternatives.
   augment.py   The plan with RAG results: filter lines and the augmented question (augment_with_rag).
@@ -55,8 +52,8 @@ from __future__ import annotations
 from .plan import (  # noqa: F401
     AugmentedQueryPlan,
     MetadataFilter,
+    Ordering,
     ParticipantGroup,
-    QueryFamily,
     QueryPlan,
     RAGField,
     RAGRequest,
@@ -64,6 +61,7 @@ from .plan import (  # noqa: F401
     ResolvedTopic,
     ScanRequirement,
     ScoredFilter,
+    SortKey,
     TermAlternatives,
     Topic,
 )
@@ -71,9 +69,9 @@ from .prompt import (  # noqa: F401
     _SYSTEM_PROMPT,
 )
 from .intent import (  # noqa: F401
-    _gemini_output_schema,
-    preprocess_query,
-    word_evidence,
+    _plan_output_schema,
+    create_query_plan,
+    count_stem_forms,
 )
 from .rag import (  # noqa: F401
     _is_healthy_term,

@@ -1,4 +1,4 @@
-"""Database queries from a worker thread (worker_db.py): the database failing
+"""Database queries from a worker thread (database/worker.py): the database failing
 or being slow is WorkerDbError, a bug is not."""
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from contextlib import asynccontextmanager
 import pytest
 from sqlalchemy.exc import OperationalError
 
-import worker_db
-from worker_db import OnEventLoopError, WorkerDbError
+from database import worker as worker_db
+from database.worker import OnEventLoopError, WorkerDbError
 
 
 @pytest.fixture

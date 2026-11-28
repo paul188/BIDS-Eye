@@ -85,11 +85,11 @@ def _count(session, sql, corrector):
 def test_exploding_query_never_reaches_the_database(monkeypatch) -> None:
     seen = []
 
-    def corrector(sql, error, question, api_key):
+    def corrector(sql, error, question):
         seen.append(error)
         return _SAFE
 
-    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini", corrector)
+    monkeypatch.setattr(search_runner, "_correct_sql", corrector)
     session = _Session()
     total, cached = _count(session, _EXPLODING, corrector)
     assert total == 5
@@ -99,7 +99,7 @@ def test_exploding_query_never_reaches_the_database(monkeypatch) -> None:
 
 
 def test_refused_twice_gives_the_fallback_sample(monkeypatch) -> None:
-    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini", lambda sql, error, q, key: _EXPLODING + " ")
+    monkeypatch.setattr(search_runner, "_correct_sql", lambda sql, error, q: _EXPLODING + " ")
     session = _Session()
     total, cached = _count(session, _EXPLODING, None)
     assert cached.base_sql == FALLBACK_SQL
@@ -108,8 +108,8 @@ def test_refused_twice_gives_the_fallback_sample(monkeypatch) -> None:
 
 def test_plan_explosion_is_refused_too(monkeypatch) -> None:
     errors = []
-    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
-                        lambda sql, error, q, key: errors.append(error) or sql)
+    monkeypatch.setattr(search_runner, "_correct_sql",
+                        lambda sql, error, q: errors.append(error) or sql)
     session = _Session(plan_rows=50_000_000)
     total, cached = _count(session, _SAFE, None)
     assert "rows at one step" in errors[0]
@@ -264,8 +264,8 @@ def test_the_database_error_itself_is_sent_to_self_correction(monkeypatch) -> No
     from sqlalchemy.exc import ProgrammingError
 
     errors = []
-    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
-                        lambda sql, error, q, key: errors.append(error) or _SAFE + " ")
+    monkeypatch.setattr(search_runner, "_correct_sql",
+                        lambda sql, error, q: errors.append(error) or _SAFE + " ")
     session = _FailingCountSession(ProgrammingError("SELECT", {}, Exception("column d.modality does not exist")))
     total, cached = _count(session, _SAFE, None)
     assert "column d.modality does not exist" in errors[0]
@@ -274,7 +274,7 @@ def test_the_database_error_itself_is_sent_to_self_correction(monkeypatch) -> No
 
 def test_a_bug_is_not_sent_to_self_correction(monkeypatch) -> None:
     called = []
-    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
+    monkeypatch.setattr(search_runner, "_correct_sql",
                         lambda *args: called.append(args) or _SAFE)
     with pytest.raises(TypeError):
         _count(_FailingCountSession(TypeError("a bug")), _SAFE, None)
@@ -285,7 +285,7 @@ def test_a_lost_connection_is_not_sent_to_self_correction(monkeypatch) -> None:
     from sqlalchemy.exc import OperationalError
 
     called = []
-    monkeypatch.setattr(search_runner, "_correct_sql_with_gemini",
+    monkeypatch.setattr(search_runner, "_correct_sql",
                         lambda *args: called.append(args) or _SAFE)
     lost = OperationalError("SELECT", {}, Exception("connection was closed"), connection_invalidated=True)
     with pytest.raises(OperationalError):

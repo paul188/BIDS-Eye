@@ -245,9 +245,9 @@ def test_writes_locks_and_batches_are_refused(sql: str, words: str) -> None:
 # any table outside the catalogue (production had one until November 2026).
 
 def _app_tables() -> list[str]:
-    import models  # backend/models.py: the app's own tables, not the catalogue
-    return sorted({cls.__tablename__ for cls in vars(models).values()
-                   if isinstance(cls, type) and cls.__module__ == "models" and hasattr(cls, "__tablename__")})
+    from database import app_tables  # the app's own tables, not the catalogue
+    return sorted({cls.__tablename__ for cls in vars(app_tables).values()
+                   if isinstance(cls, type) and cls.__module__ == "database.app_tables" and hasattr(cls, "__tablename__")})
 
 
 def test_the_app_tables_are_known() -> None:
@@ -257,9 +257,9 @@ def test_the_app_tables_are_known() -> None:
 def test_no_app_table_holds_a_user() -> None:
     # The privacy notice (frontend/src/components/CookieBanner.vue) says the
     # server stores nothing about a user.
-    import models
-    for cls in vars(models).values():
-        if isinstance(cls, type) and cls.__module__ == "models" and hasattr(cls, "__tablename__"):
+    from database import app_tables
+    for cls in vars(app_tables).values():
+        if isinstance(cls, type) and cls.__module__ == "database.app_tables" and hasattr(cls, "__tablename__"):
             columns = {c.name for c in cls.__table__.columns}
             assert not columns & {"github_login", "github_email", "email", "user", "user_id"}, (
                 cls.__tablename__, columns)

@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 import preprocess
-from preprocess import ParticipantGroup, QueryFamily, QueryPlan, RAGField, ResolvedTerms, ScanRequirement
+from preprocess import Ordering, ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement
 from services.translate import participant_query_compiler as pqc
 
 SCZ = ["schizophrenia", "schizophrenia_with_avh"]
@@ -15,8 +15,6 @@ FMRI_LINE = ("EXISTS (SELECT 1 FROM bids_objects o2 WHERE o2.dataset_id = d.id "
 
 def _plan(*groups, operator="AND", **fields) -> QueryPlan:
     return QueryPlan(
-        query_family=QueryFamily.CONCEPT_QUERY if hasattr(QueryFamily, "CONCEPT_QUERY")
-        else list(QueryFamily)[0],
         natural_language_summary="demo",
         groups=[ParticipantGroup(group_name=f"g{i}", diagnosis_terms=list(terms))
                 for i, terms in enumerate(groups)],
@@ -89,8 +87,7 @@ def test_scan_conditions_come_from_the_augmented_question() -> None:
 @pytest.mark.parametrize("plan, augmented, reason", [
     (_plan(), None, "nothing to filter"),
     (_plan([]), None, "nothing to filter"),
-    (_plan(["schizophrenia"], result_limit=10), None, "plan field result_limit"),
-    (_plan(["schizophrenia"], order_by="size_gb"), None, "plan field order_by"),
+    (_plan(ordering=Ordering(limit=10)), None, "nothing to filter"),
     (_plan(["schizophrenia"], license_search="cc0"), None, "plan field license_search"),
     (_plan(["schizophrenia"], scan_requirements=[ScanRequirement(scan_terms=["EEG"], required=False)]),
      _augmented('  scan "EEG": EXISTS (...)'), "negated scan without a filter line"),

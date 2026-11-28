@@ -38,7 +38,6 @@ CAT_COLORS = {
 }
 
 HUB_RADIUS = 520
-WARMUP_TICKS = 300
 
 
 def load_yaml(path: str) -> dict:

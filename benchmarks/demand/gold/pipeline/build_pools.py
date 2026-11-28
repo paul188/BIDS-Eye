@@ -47,8 +47,6 @@ def pool(q):
         if q.get("need_all_text") and len(hits) < len(rx):
             hits = []
         if hits and not (q.get("review_only_unmatched") and any(w.startswith("facts:relevant") for w in why[k])):
-            if ok_must == "unknown" and mod_rx and not (mod_rx.search(text) or True):
-                pass
             why[k].append("text:" + "; ".join(hits[:3]))
         if in_ours and q.get("dx"):
             dx = " ".join((d.get("participants") or {}).get("dx_counts") or {}) + " " + (d.get("dx_status") or "")

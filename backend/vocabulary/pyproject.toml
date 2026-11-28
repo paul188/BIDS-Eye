@@ -22,6 +22,7 @@ dependencies = [
 
 [tool.setuptools]
 py-modules = [
+    "bids_entities",
     "cohort_count",
     "criteria",
     "institution_index",
@@ -36,6 +37,6 @@ py-modules = [
     "text_formula",
     "sql_text",
     "text_terms",
-    "word_forms",
+    "stem_collisions",
     "yaml_to_llamaindex",
 ]

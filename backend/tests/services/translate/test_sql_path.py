@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("sqlglot")
 
-from schemas import TextToSQLResult  # noqa: E402
+from routers.schemas import TextToSQLResult  # noqa: E402
 from services.translate import text_to_sql  # noqa: E402
 from services.translate.participant_query_compiler import _line_kind  # noqa: E402
 

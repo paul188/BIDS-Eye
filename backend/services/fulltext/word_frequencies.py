@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable, List, Optional, Sequence
 
-import worker_db
+from database import worker as worker_db
 from services.fulltext.vectors import EXACT_FTS_COLUMN, EXACT_TS_CONFIG, FTS_COLUMN, TS_CONFIG
 from services.schema.tables import datasets as _datasets
 

@@ -248,11 +248,8 @@ class Relation:
 
 
 def _load_json(raw: str) -> Optional[dict]:
-    raw = (raw or "").strip()
-    if raw.startswith("```"):
-        raw = raw.strip("`").split("\n", 1)[-1]
     try:
-        value = json.loads(raw)
+        value = json.loads(raw or "")
     except ValueError:
         return None
     return value if isinstance(value, dict) else None
@@ -381,13 +378,9 @@ def worth_summarising(source: DatasetSource) -> bool:
 def _ask(prompt: str, system: str, schema: dict, model: str) -> str:
     from llm_client import llm_generate
 
-    return llm_generate(
-        prompt, system=system, temperature=0.1,
-        # Gemini 2.5 spends output tokens on thinking first; small caps cut answers off.
-        max_tokens=4096, models=[model, FALLBACK_MODEL], json_schema=schema,
-        call_timeout=90, budget_seconds=240,
-        use_fallback=False,  # dataset and paper text go to Gemini only
-    )
+    # Profile dataset_description in llm_config.yaml: Gemini only, the text goes to Gemini only.
+    return llm_generate(prompt, profile="dataset_description", system=system,
+                        models=[model, FALLBACK_MODEL], json_schema=schema)
 
 
 @dataclass

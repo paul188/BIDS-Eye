@@ -289,7 +289,7 @@ async def _execute_live(sql: str, params: dict[str, Any], label: str,
     if str(ROOT / "backend" / "vocabulary") not in sys.path:
         sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     import main  # noqa: F401
-    from db.db import async_session_maker, engine
+    from db.db import async_session_maker
     from sqlalchemy import text
     from services import query_guard
     from services.translate.sql_rewriter import build_count_sql

@@ -37,10 +37,8 @@ def _full_text_available():
 def _fake_pipeline(monkeypatch, generated_sql: str, **plan_overrides) -> None:
     """Replace the two LLM stages and the resolver; keep the real rewriter."""
     plan = SimpleNamespace(
-        query_family=SimpleNamespace(value="description_search"),
         natural_language_summary="demo",
-        result_limit=None,
-        order_by=None,
+        user_ordered=False,
         groups=[],
     )
     for name, value in plan_overrides.items():
@@ -52,14 +50,14 @@ def _fake_pipeline(monkeypatch, generated_sql: str, **plan_overrides) -> None:
     monkeypatch.setattr(preprocess, "run_pipeline", lambda *args, **kwargs: augmented)
     monkeypatch.setattr(retriever, "MetadataRetriever", lambda *args, **kwargs: None)
     monkeypatch.setattr(
-        text_to_sql, "_gemini_sql_generation", lambda *args, **kwargs: generated_sql
+        text_to_sql, "_generate_sql", lambda *args, **kwargs: generated_sql
     )
 
 
 def test_run_local_passes_the_rank_query_on(monkeypatch) -> None:
     _fake_pipeline(monkeypatch, BASE + "WHERE text_match('ketamine') GROUP BY d.id")
 
-    result = text_to_sql._run_local("datasets mentioning ketamine", "dummy-key")
+    result = text_to_sql._run_local("datasets mentioning ketamine")
 
     assert "search_tsv @@" in result.sql
     assert result.rank_query == RankQuery("ketamine")
@@ -77,6 +75,6 @@ def test_run_local_passes_the_rank_query_on(monkeypatch) -> None:
 def test_run_local_has_no_rank_query_without_text_terms(monkeypatch) -> None:
     _fake_pipeline(monkeypatch, BASE + "WHERE d.license ILIKE '%CC0%' GROUP BY d.id")
 
-    result = text_to_sql._run_local("CC0 datasets", "dummy-key")
+    result = text_to_sql._run_local("CC0 datasets")
 
     assert result.rank_query is None

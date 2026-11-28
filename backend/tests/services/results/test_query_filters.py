@@ -351,7 +351,7 @@ class _SnippetSession:
 
 
 def _dataset(n: int):
-    from schemas import DatasetSchema
+    from routers.schemas import DatasetSchema
     return DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
                          source_type="openneuro", participants=[])
 
@@ -426,7 +426,7 @@ def test_topic_chip_text_words_stay_a_list():
     # "datasets of twin studies" (2026-11-18) answered 500: the topic branch
     # reused the name `searched` for its detail string, so text_words became a
     # string and the response schema rejected it after the search had run.
-    from schemas import QueryFilterSchema
+    from routers.schemas import QueryFilterSchema
 
     near = "(monozygotic <1> twins | twins <1> monozygotic) | (genetic <1> studies | studies <1> genetic)"
     condition = (f"(d.search_tsv @@ TO_TSQUERY('english', 'twin & studies') "
