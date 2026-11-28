@@ -847,7 +847,7 @@ def _build_augmented_question(
     # property of the files (backend/vocabulary/bids_entities.py), not a word
     # of the README: as text, "dir-AP and dir-PA" found 1 of 58 datasets.
     unknown_scans = unresolved_terms.get(RAGField.SCAN.value, [])
-    objects_table = _field_column(RAGField.SUFFIX.value)[0]
+    objects_table = RAGField.SUFFIX.stored.table
     entity_terms = {t: c for t in unknown_scans if (c := _entity_condition(t, objects_table))}
     for term, condition in entity_terms.items():
         add_scan_line(term, condition)
