@@ -1,11 +1,12 @@
 """The model call: a question in, a QueryPlan out (create_query_plan)."""
 from __future__ import annotations
 
-import copy
 import json
 import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
+
+from pydantic import BaseModel, ValidationError
 
 from llm_client import llm_generate
 
@@ -16,29 +17,27 @@ from .prompt import _SYSTEM_PROMPT
 log = logging.getLogger("preprocess")
 
 
+class SameMeaning(BaseModel):
+    """The model's answer for one word whose stem collides: the forms that mean
+    what the user means (stem_collisions.decide)."""
+    word: str
+    forms: List[str]
+
+
+class QueryPlanWithSameMeaning(QueryPlan):
+    """The answer asked for when the prompt lists colliding words: the plan
+    plus same_meaning. same_meaning is not part of the plan itself, so the
+    plan's schema, and every prompt without colliding words, stays as it is."""
+    same_meaning: List[SameMeaning]
+
+
 def _plan_output_schema(include_same_meaning: bool = False) -> Dict[str, Any]:
-    """The JSON Schema of the answer: a QueryPlan, plus same_meaning when asked.
+    """The JSON Schema of the answer, for the provider's structured output.
 
     Provider limits on JSON Schema (Gemini drops `default`) are the adapters' job
     (backend/llm/llm_client.py)."""
-    schema = QueryPlan.model_json_schema()
-    if include_same_meaning:
-        # Copy before adding same_meaning, so a cached schema could never keep it.
-        schema = copy.deepcopy(schema)
-        schema.setdefault("properties", {})["same_meaning"] = {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "word": {"type": "string"},
-                    "forms": {"type": "array", "items": {"type": "string"}},
-                },
-                "required": ["word", "forms"],
-            },
-        }
-        schema.setdefault("required", []).append("same_meaning")
-
-    return schema
+    answer = QueryPlanWithSameMeaning if include_same_meaning else QueryPlan
+    return answer.model_json_schema()
 
 
 # Added to the intent prompt only for a question with a word whose stem
@@ -178,9 +177,9 @@ def _stem_collisions_block(stem_counts: Optional[Dict[str, Any]]) -> str:
 def _take_same_meaning(raw: str, same_meaning: Optional[List[Tuple[str, List[str]]]]) -> str:
     """Move the answer's "same_meaning" key into *same_meaning*; the rest is the plan.
 
-    The key is not part of QueryPlan, so the plan's schema, and with it every
-    prompt without colliding words, stays as it was. Anything unexpected is
-    dropped: the words are then searched by stem.
+    Each entry is read as a SameMeaning on its own: one the model got wrong is
+    dropped, and its word is then searched by stem, without losing the plan or
+    the other words.
     """
     try:
         data = json.loads(raw)
@@ -191,9 +190,10 @@ def _take_same_meaning(raw: str, same_meaning: Optional[List[Tuple[str, List[str
     answers = data.pop("same_meaning")
     if same_meaning is not None and isinstance(answers, list):
         for answer in answers:
-            if not isinstance(answer, dict):
+            try:
+                entry = SameMeaning.model_validate(answer)
+            except ValidationError:
+                log.info("same_meaning entry dropped: %r", answer)
                 continue
-            word, forms = answer.get("word"), answer.get("forms")
-            if isinstance(word, str) and isinstance(forms, list):
-                same_meaning.append((word, [str(form) for form in forms]))
+            same_meaning.append((entry.word, entry.forms))
     return json.dumps(data)

@@ -61,6 +61,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "schema" / "tables.py",
     _BACKEND / "services" / "translate" / "concept_keys.py",
     _BACKEND / "services" / "translate" / "optional_columns.py",
+    _BACKEND / "services" / "translate" / "prompt" / "example_families.py",
     _BACKEND / "services" / "translate" / "prompt" / "examples.py",
     _BACKEND / "services" / "translate" / "prompt" / "few_shot_examples.json",
     _BACKEND / "services" / "translate" / "prompt" / "instructions.py",

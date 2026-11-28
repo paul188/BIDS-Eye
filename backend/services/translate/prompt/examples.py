@@ -2,9 +2,10 @@
 The few-shot examples of the SQL prompt: the pool, and which of them a
 question is shown.
 
-The pool is few_shot_examples.json in this folder. pick_examples() chooses
-from it without a model call; format_examples() writes the chosen ones as the
-prompt shows them.
+The pool is few_shot_examples.json in this folder, one list per family.
+pick_examples() chooses from it without a model call, preferring the families
+the plan asks for (example_families.plan_families); format_examples() writes
+the chosen ones as the prompt shows them.
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ import logging
 import math
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 
 from services.database_stats.database_stats import database_stats as _database_stats
 from services.schema.fields import CONCEPT_FIELDS
@@ -35,11 +36,6 @@ if _FEW_SHOT_PATH.exists():
     log.info("Loaded %d few-shot families from %s",
              len(FEW_SHOT_POOL), _FEW_SHOT_PATH)
 
-_FAMILY_ALIASES: Dict[str, str] = {
-    "subject_multimodal": "subject_multimodal_query",
-    "metadata_query":     "json_query",
-    "json_numeric_query": "json_numeric_query",
-}
 _FALLBACK_FAMILIES = ["combined_filter", "concept_query", "scan_filter"]
 
 
@@ -264,14 +260,6 @@ def _static_guard_reason(sql: str) -> Optional[str]:
     return check_static(sql.replace("{{COLS}}", "d.id"))
 
 
-def _family_key(query_family: str, pool: Dict[str, List[dict]]) -> str:
-    """Resolve a legacy family alias only when the exact pool key is absent."""
-    if query_family in pool:
-        return query_family
-    alias = _FAMILY_ALIASES.get(query_family)
-    return alias if alias in pool else query_family
-
-
 def extract_resolved_codes(augmented_question: str) -> Dict[str, List[str]]:
     """Parse resolved ontology codes from the augmented question string.
 
@@ -294,13 +282,14 @@ def extract_resolved_codes(augmented_question: str) -> Dict[str, List[str]]:
     return codes
 
 
-def pick_examples(pool: Dict[str, List[dict]], query_family: str,
+def pick_examples(pool: Dict[str, List[dict]], families: Sequence[str],
                    n: int = 5, seed: str = "",
                    resolved_codes: Optional[Dict[str, List[str]]] = None) -> List[dict]:
     """Select safe, relevant and varied examples with deterministic retrieval.
 
     Relevance combines typed ontology-code coverage, BM25 over question and
-    example metadata, query-family match, and SQL-shape cues. Greedy MMR then
+    example metadata, a match with one of *families* (the pool keys the plan
+    asks for, example_families.plan_families), and SQL-shape cues. Greedy MMR then
     reduces near-duplicates so a prompt teaches several useful patterns. It
     never calls an LLM. The weights and diversity penalties below are an
     **ASSISTANT PROPOSAL — REVIEW THESE VALUES**; keep the selection method
@@ -309,7 +298,7 @@ def pick_examples(pool: Dict[str, List[dict]], query_family: str,
     if not pool or not seed:
         return []
 
-    family_key = _family_key(query_family, pool)
+    wanted = set(families)
 
     all_examples: List[dict] = []
     for fam, examples in pool.items():
@@ -335,7 +324,7 @@ def pick_examples(pool: Dict[str, List[dict]], query_family: str,
     has_codes = any(requested.values())
     query_tokens = _example_tokens(seed)
     query_shape = _query_structure(seed)
-    query_categories = _intent_features(seed, family_key, requested)
+    query_categories = _intent_features(seed, " ".join(families), requested)
     specific_categories = query_categories & {
         "age", "clinical", "acquisition", "recency", "paper_reference",
         "provenance", "license", "sessions", "dataset_publication_date",
@@ -383,7 +372,7 @@ def pick_examples(pool: Dict[str, List[dict]], query_family: str,
         else:
             code_score = 0.0
         lexical = lexical_score / max_bm25 if max_bm25 else 0.0
-        family = (1.0 if item["family"] == family_key else
+        family = (1.0 if item["family"] in wanted else
                   0.4 if item["family"] in _FALLBACK_FAMILIES else 0.0)
         shape = (0.8 * len(query_shape & item["structure"]) / len(query_shape) +
                  0.2 * len(query_shape & item["structure"]) / max(len(item["structure"]), 1)

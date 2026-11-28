@@ -34,9 +34,8 @@ def _full_text_available():
 def _fake_pipeline(monkeypatch, question: str, generated_sql: str, **plan_overrides) -> None:
     """Replace the two LLM stages and the resolver; keep the real rewriter."""
     plan = SimpleNamespace(
-        query_family=SimpleNamespace(value="description_search"),
         natural_language_summary="Datasets related to Bonn.",
-        result_limit=None, order_by=None, groups=[],
+        user_ordered=False, groups=[],
     )
     for name, value in plan_overrides.items():
         setattr(plan, name, value)
@@ -61,7 +60,7 @@ def test_no_condition_becomes_a_keyword_search(monkeypatch) -> None:
 
 def test_a_ranking_question_may_keep_every_dataset(monkeypatch) -> None:
     sql = BASE + "GROUP BY d.id ORDER BY subject_count DESC LIMIT 10"
-    _fake_pipeline(monkeypatch, "the 10 largest datasets", sql, result_limit=10)
+    _fake_pipeline(monkeypatch, "the 10 largest datasets", sql, user_ordered=True)
 
     result = text_to_sql._run_local("the 10 largest datasets")
 

@@ -192,3 +192,21 @@ def test_a_bug_is_not_retried(monkeypatch):
     _answers(monkeypatch, TypeError("a bug"))
     with pytest.raises(TypeError):
         meta.post_graphql("{ x }")
+
+
+def test_dataset_name_skips_blank_and_placeholder_names() -> None:
+    assert meta.clean_dataset_name(" Visual  search ") == "Visual search"
+    for value in (None, "", " ", "Unnamed Dataset", "N/A"):
+        assert meta.clean_dataset_name(value) is None
+
+
+def test_extract_fields_takes_uploader_name_then_description_name() -> None:
+    both = {"metadata": {"datasetName": "Uploader title"},
+            "latestSnapshot": {"description": {"Name": "File title"}}}
+    assert meta.extract_fields(both)["name"] == "Uploader title"
+    placeholder = {"metadata": {"datasetName": "Unnamed Dataset"},
+                   "latestSnapshot": {"description": {"Name": "File title"}}}
+    assert meta.extract_fields(placeholder)["name"] == "File title"
+    neither = {"metadata": {"datasetName": "Unnamed Dataset"},
+               "latestSnapshot": {"description": {"Name": " "}}}
+    assert meta.extract_fields(neither)["name"] is None
