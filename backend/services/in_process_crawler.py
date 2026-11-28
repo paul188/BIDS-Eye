@@ -15,11 +15,12 @@ main.py wraps the time the API serves requests in running():
 from __future__ import annotations
 
 import logging
-import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, AsyncGenerator
+
+from config.settings import settings_obj
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ CRAWLER_DIR = Path(__file__).resolve().parents[2] / "ingest" / "openneuro-crawle
 
 def wanted() -> bool:
     """True when RUN_CRAWLER_IN_PROCESS=true."""
-    return os.getenv("RUN_CRAWLER_IN_PROCESS", "false").lower() == "true"
+    return settings_obj.RUN_CRAWLER_IN_PROCESS
 
 
 def start() -> Any | None:

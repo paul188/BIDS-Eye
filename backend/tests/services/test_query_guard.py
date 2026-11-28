@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy.exc import DBAPIError
 
+from config.settings import settings_obj
 from services import query_guard
 from services.query_guard import QueryRefusedError, SearchBusyError, check_static, largest_step
 from services.translate.sql_rewriter import SqlRewriteService
@@ -457,7 +458,7 @@ def test_small_database_still_allows_a_million_rows() -> None:
 
 
 def test_configured_plan_limit_wins(monkeypatch) -> None:
-    monkeypatch.setenv("SEARCH_MAX_PLAN_ROWS", "500")
+    monkeypatch.setattr(settings_obj, "SEARCH_MAX_PLAN_ROWS", 500)
     with pytest.raises(QueryRefusedError):
         _vet(_Session(rows=501))
 
@@ -524,7 +525,7 @@ def test_default_limits() -> None:
     ("0", "0"), ("45s'; DROP TABLE bids_datasets; --", "120s"), ("", "120s"), ("1 hour", "120s"),
 ])
 def test_statement_timeout_setting_is_validated(monkeypatch, value: str, expected: str) -> None:
-    monkeypatch.setenv("SEARCH_STATEMENT_TIMEOUT", value)
+    monkeypatch.setattr(settings_obj, "SEARCH_STATEMENT_TIMEOUT", value)
     session = _Session()
     asyncio.run(query_guard.apply_limits(session))
     assert f"SET LOCAL statement_timeout = '{expected}'" in session.statements
@@ -532,7 +533,7 @@ def test_statement_timeout_setting_is_validated(monkeypatch, value: str, expecte
 
 @pytest.mark.parametrize("value, expected", [("500MB", "500MB"), ("2GB", "2GB"), ("-1", "1GB"), ("lots", "1GB")])
 def test_temp_file_limit_setting_is_validated(monkeypatch, value: str, expected: str) -> None:
-    monkeypatch.setenv("SEARCH_TEMP_FILE_LIMIT", value)
+    monkeypatch.setattr(settings_obj, "SEARCH_TEMP_FILE_LIMIT", value)
     session = _Session()
     asyncio.run(query_guard.apply_limits(session))
     assert f"SET LOCAL temp_file_limit = '{expected}'" in session.statements
@@ -548,8 +549,8 @@ def test_role_without_temp_file_permission_keeps_the_other_limits() -> None:
 # ── 4. concurrency ────────────────────────────────────────────────────────────
 
 def test_slot_reports_busy_instead_of_queueing_forever(monkeypatch) -> None:
-    monkeypatch.setenv("SEARCH_MAX_CONCURRENT", "1")
-    monkeypatch.setenv("SEARCH_SLOT_WAIT_SECONDS", "0.05")
+    monkeypatch.setattr(settings_obj, "SEARCH_MAX_CONCURRENT", 1)
+    monkeypatch.setattr(settings_obj, "SEARCH_SLOT_WAIT_SECONDS", 0.05)
 
     async def scenario():
         async with query_guard.slot():
@@ -563,7 +564,7 @@ def test_slot_reports_busy_instead_of_queueing_forever(monkeypatch) -> None:
 
 
 def test_at_most_the_configured_number_run_at_once(monkeypatch) -> None:
-    monkeypatch.setenv("SEARCH_MAX_CONCURRENT", "2")
+    monkeypatch.setattr(settings_obj, "SEARCH_MAX_CONCURRENT", 2)
     running, peak = 0, 0
 
     async def search():
@@ -582,8 +583,8 @@ def test_at_most_the_configured_number_run_at_once(monkeypatch) -> None:
 
 
 def test_a_failing_search_releases_its_slot(monkeypatch) -> None:
-    monkeypatch.setenv("SEARCH_MAX_CONCURRENT", "1")
-    monkeypatch.setenv("SEARCH_SLOT_WAIT_SECONDS", "0.05")
+    monkeypatch.setattr(settings_obj, "SEARCH_MAX_CONCURRENT", 1)
+    monkeypatch.setattr(settings_obj, "SEARCH_SLOT_WAIT_SECONDS", 0.05)
 
     async def scenario():
         with pytest.raises(RuntimeError):
@@ -617,7 +618,7 @@ def test_timeouts_are_recognised_also_when_wrapped() -> None:
 
 def test_ranked_page_timeout_setting(monkeypatch) -> None:
     assert query_guard.ranked_page_timeout() == "25s"
-    monkeypatch.setenv("SEARCH_RANKED_PAGE_TIMEOUT", "10s")
+    monkeypatch.setattr(settings_obj, "SEARCH_RANKED_PAGE_TIMEOUT", "10s")
     assert query_guard.ranked_page_timeout() == "10s"
-    monkeypatch.setenv("SEARCH_RANKED_PAGE_TIMEOUT", "10s'; SELECT 1")
+    monkeypatch.setattr(settings_obj, "SEARCH_RANKED_PAGE_TIMEOUT", "10s'; SELECT 1")
     assert query_guard.ranked_page_timeout() == "25s"

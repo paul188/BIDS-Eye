@@ -24,7 +24,6 @@ a Compose file would start more). A restart starts all counts from zero.
 """
 from __future__ import annotations
 
-import os
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -32,6 +31,7 @@ from enum import Enum
 
 from fastapi import Depends, Request
 
+from config.settings import settings_obj
 from exceptions.domain import DomainError
 
 MINUTE = 60
@@ -57,12 +57,11 @@ class Window:
 
 
 def _daily_search_limit() -> int:
-    return int(os.getenv("DAILY_MESSAGE_LIMIT", "20"))
+    return settings_obj.DAILY_MESSAGE_LIMIT
 
 
 def _admin_logins() -> frozenset[str]:
-    raw = os.getenv("ADMIN_GITHUB_LOGINS", "paul188")
-    return frozenset(u.strip() for u in raw.split(",") if u.strip())
+    return settings_obj.admin_logins
 
 
 LIMITS: dict[Category, tuple[Window, ...]] = {

@@ -9,6 +9,7 @@ import asyncio
 import pytest
 from fastapi import Response
 
+from config.settings import settings_obj
 import routers.search as query_router
 from services.results.display import dataset_cards, readme_snippets
 from services import query_guard
@@ -149,8 +150,8 @@ def test_page_query_runs_with_limits(monkeypatch) -> None:
 
 
 def test_busy_search_answers_503(monkeypatch) -> None:
-    monkeypatch.setenv("SEARCH_MAX_CONCURRENT", "1")
-    monkeypatch.setenv("SEARCH_SLOT_WAIT_SECONDS", "0.05")
+    monkeypatch.setattr(settings_obj, "SEARCH_MAX_CONCURRENT", 1)
+    monkeypatch.setattr(settings_obj, "SEARCH_SLOT_WAIT_SECONDS", 0.05)
     cached = CachedQuery(base_sql=_SAFE, params={}, scored_filters=[], apply_relevance=False, explanation="",
                          rerank_done=True)
     query_id = query_cache.put(cached)

@@ -6,6 +6,7 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
+from config.settings import settings_obj  # noqa: E402
 from services import asked, sql_tree  # noqa: E402
 from services.fulltext import tsquery, word_frequencies  # noqa: E402
 from services.fulltext.text_search import read_clauses  # noqa: E402
@@ -28,7 +29,7 @@ def _counts(monkeypatch):
     counts = {"young": 300, "children": 120, "evaluated": 500, "resective": 30, "surgery": 90,
               "resective & surgery": 7}
     monkeypatch.setattr(word_frequencies, "_lookup_counts", lambda qs: [counts.get(q, 1000) for q in qs])
-    monkeypatch.setenv("UNCERTAIN_POSSIBLE", "true")  # the tests cover both levels
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_POSSIBLE", True)  # the tests cover both levels
 
 
 def test_relax_keeps_the_rarer_half_and_drops_scope_labels() -> None:
@@ -75,7 +76,7 @@ def test_age_condition_knows_missing_ages_and_contradictions() -> None:
 
 
 def test_without_the_possible_tier_missing_fields_need_a_hint(monkeypatch) -> None:
-    monkeypatch.setenv("UNCERTAIN_POSSIBLE", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_POSSIBLE", False)
     sql = BASE.format(where="(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
                             "AND p2.diagnosis = 'adhd'))")
     tiered = ut.apply(sql)

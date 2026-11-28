@@ -16,6 +16,7 @@ import yaml
 
 import preprocess as pp
 import stem_collisions
+from config.settings import settings_obj
 from services.results.display import highlights
 from services.results.display.chips import describe
 from services.database_stats.database_stats import database_stats
@@ -53,7 +54,7 @@ def _database_with_full_text(tmp_path, monkeypatch):
     path.write_text("{}")
     monkeypatch.setattr(stem_collisions, "_PATH", path)
     stem_collisions._reviewed.cache_clear()
-    monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, False)
     database_stats.coverage = full_coverage(())
     word_frequencies.set_frequency_lookup(None)
     word_form_counts.set_lookup(None)
@@ -65,7 +66,7 @@ def _database_with_full_text(tmp_path, monkeypatch):
 
 @pytest.fixture
 def exact(monkeypatch):
-    monkeypatch.setenv(vectors.EXACT_ENV, "true")
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, True)
 
 
 # ── Switch ────────────────────────────────────────────────────────────────────
@@ -181,7 +182,7 @@ def test_read_clauses_reads_back_what_the_expansion_wrote(
         monkeypatch, mode, exact_on, papers, negated) -> None:
     """Every shape expand_text_search writes is one condition to read_clauses,
     with its words, its guard and its negation, as the chips and the tier read it."""
-    monkeypatch.setenv(vectors.EXACT_ENV, "true" if exact_on else "false")
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, exact_on)
     search = f"{'NOT ' if negated else ''}text_match('ageing brain', '{mode}')"
     sql = ts.expand_text_search(_where(f"{MODALITY} AND {search}"), papers=papers,
                                 allowed_forms=FORMS).sql
@@ -261,7 +262,7 @@ def test_exact_words_rank_on_the_unstemmed_vector(exact, monkeypatch) -> None:
     assert "ft.search_tsv_exact, to_tsquery('simple', '(ageing | aging)'), 0)" in both
     assert ranking.rank_expression("ft", None) is None
     # A cached rank from before the switch went off: the exact part is ignored.
-    monkeypatch.delenv(vectors.EXACT_ENV)
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, False)
     assert ranking.rank_expression("ft", mixed.rank_query) == ranking.ts_rank_cd_expression(
         "ft.search_tsv", "quantitative & mri & ageing")
     assert ranking.rank_expression("ft", alone.rank_query) is None

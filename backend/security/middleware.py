@@ -18,7 +18,6 @@ Requests pass through, outermost first:
 """
 from __future__ import annotations
 
-import os
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -27,7 +26,7 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette_csrf import CSRFMiddleware
 
-from security.settings import AuthSettings
+from config.settings import Settings, settings_obj
 from security.sessions import (
     SESSION_COOKIE,
     NotSignedInError,
@@ -79,13 +78,13 @@ def _needs_login(path: str) -> bool:
     return in_api and path not in PUBLIC_API_PATHS
 
 
-def install_security_middleware(app: FastAPI) -> None:
+def install_security_middleware(app: FastAPI, all_settings: Settings = settings_obj) -> None:
     """Add the middleware stack and leave the sign-in settings in app.state.
 
     Raises when a setting is missing or unusable: SESSION_SECRET, the GitHub
     OAuth App's credentials, or the choice of who may sign in (AuthSettings).
     """
-    settings = AuthSettings()
+    settings = all_settings.sign_in()
     app.state.auth_settings = settings  # read by routers/auth.py at each sign-in
     secret = settings.SESSION_SECRET.get_secret_value()
 
@@ -105,7 +104,7 @@ def install_security_middleware(app: FastAPI) -> None:
         cookie_samesite="strict",
     )
 
-    frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+    frontend_url = all_settings.FRONTEND_URL.strip().rstrip("/")
     if frontend_url and frontend_url != "*":
         app.add_middleware(
             CORSMiddleware,

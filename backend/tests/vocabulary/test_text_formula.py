@@ -16,6 +16,7 @@ sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
 import text_formula as tf  # noqa: E402
+from config.settings import settings_obj  # noqa: E402
 from services.fulltext import text_search, tsquery, vectors, word_frequencies  # noqa: E402
 from services import sql_tree  # noqa: E402
 from services.uncertain import text as tier_text  # noqa: E402
@@ -311,7 +312,7 @@ def full_text(monkeypatch):
 
 def _rewrite(monkeypatch, description: str, model_where: Optional[str] = None, tier: bool = True):
     from services.results.display.chips import describe
-    monkeypatch.setenv("UNCERTAIN_TIER", "true" if tier else "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", tier)
     question = _question(description_search=description)
     line = next(ln for ln in question.splitlines() if "dataset text:" in ln)
     where = model_where if model_where is not None else line.split("dataset text: ", 1)[1]

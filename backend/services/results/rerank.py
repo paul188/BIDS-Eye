@@ -45,7 +45,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
@@ -54,6 +53,7 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from config.settings import settings_obj
 from services.database_stats.database_stats import database_stats
 from services.schema.tables import datasets as _datasets
 from services.switches import Switch
@@ -118,14 +118,14 @@ class RerankResult:
 def settings() -> Dict[str, Any]:
     # Models, thinking level and per-call timeouts are in profile rerank of
     # llm_config.yaml; RERANK_MODEL / RERANK_THINKING override them.
-    models = os.getenv("RERANK_MODEL", "")
+    models = settings_obj.RERANK_MODEL
     return {
         "enabled": Switch.RERANK_ENABLED.is_on(),
         "models": [m.strip() for m in models.split(",") if m.strip()],
-        "thinking": os.getenv("RERANK_THINKING") or None,
-        "candidates": max(2, int(os.getenv("RERANK_CANDIDATES", "40"))),
-        "batch": max(1, int(os.getenv("RERANK_BATCH", "20"))),
-        "timeout": float(os.getenv("RERANK_TIMEOUT_SECONDS", "20")),
+        "thinking": settings_obj.RERANK_THINKING,
+        "candidates": max(2, settings_obj.RERANK_CANDIDATES),
+        "batch": max(1, settings_obj.RERANK_BATCH),
+        "timeout": settings_obj.RERANK_TIMEOUT_SECONDS,
     }
 
 

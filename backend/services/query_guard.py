@@ -48,10 +48,10 @@ import asyncio
 import contextlib
 import json
 import logging
-import os
 import re
 from typing import Any, AsyncIterator, Optional
 
+from config.settings import Settings, settings_obj
 from exceptions.domain import DomainError
 from exceptions.expected import ExpectedError
 
@@ -313,9 +313,9 @@ async def max_plan_rows(session: Any) -> float:
     failed read must not abort it). After a failure this search uses
     _PLAN_ROWS_DEFAULT and the next one reads again."""
     global _max_plan_rows
-    configured = os.getenv("SEARCH_MAX_PLAN_ROWS")
+    configured = settings_obj.SEARCH_MAX_PLAN_ROWS
     if configured:
-        return float(configured)
+        return configured
     if _max_plan_rows is None:
         from sqlalchemy import text
         from sqlalchemy.exc import DBAPIError
@@ -377,17 +377,18 @@ async def check_plan(session: Any, sql: str, params: Optional[dict] = None) -> O
 _SETTING_RE = re.compile(r"^[0-9]+\s*(?:ms|s|min|h|kB|MB|GB)?$", re.IGNORECASE)
 
 
-def _setting(name: str, default: str) -> str:
-    value = os.getenv(name, default).strip()
-    return value if _SETTING_RE.match(value) else default
+def _setting(name: str) -> str:
+    """Setting *name* of settings_obj; its default when it is no Postgres size or time."""
+    value = str(getattr(settings_obj, name)).strip()
+    return value if _SETTING_RE.match(value) else str(Settings.model_fields[name].default)
 
 
 async def apply_limits(session: Any) -> None:
     """Statement timeout, temp file cap, sort memory and no JIT for this transaction."""
     from sqlalchemy import text
     from sqlalchemy.exc import DBAPIError
-    await session.execute(text(f"SET LOCAL statement_timeout = '{_setting('SEARCH_STATEMENT_TIMEOUT', '120s')}'"))
-    await session.execute(text(f"SET LOCAL work_mem = '{_setting('SEARCH_WORK_MEM', '32MB')}'"))
+    await session.execute(text(f"SET LOCAL statement_timeout = '{_setting('SEARCH_STATEMENT_TIMEOUT')}'"))
+    await session.execute(text(f"SET LOCAL work_mem = '{_setting('SEARCH_WORK_MEM')}'"))
     # Compiling one search took 4 s, running it 0.1 s (2026-11-25).
     await session.execute(text("SET LOCAL jit = off"))
     # temp_file_limit can only be set by a superuser; a savepoint keeps a
@@ -395,7 +396,7 @@ async def apply_limits(session: Any) -> None:
     try:
         async with session.begin_nested():
             await session.execute(text(
-                f"SET LOCAL temp_file_limit = '{_setting('SEARCH_TEMP_FILE_LIMIT', '1GB')}'"))
+                f"SET LOCAL temp_file_limit = '{_setting('SEARCH_TEMP_FILE_LIMIT')}'"))
     except DBAPIError as exc:  # pragma: no cover - depends on the role
         log.warning("temp_file_limit not set: %s", exc)
 
@@ -403,7 +404,7 @@ async def apply_limits(session: Any) -> None:
 def ranked_page_timeout() -> str:
     """Timeout of a relevance-ranked page; past it the router serves the page
     unranked (SEARCH_RANKED_PAGE_TIMEOUT, default '25s')."""
-    return _setting("SEARCH_RANKED_PAGE_TIMEOUT", "25s")
+    return _setting("SEARCH_RANKED_PAGE_TIMEOUT")
 
 
 def is_timeout(exc: BaseException) -> bool:
@@ -427,7 +428,7 @@ _semaphore: Optional[asyncio.Semaphore] = None
 def _get_semaphore() -> asyncio.Semaphore:
     global _semaphore
     if _semaphore is None:
-        _semaphore = asyncio.Semaphore(max(1, int(os.getenv("SEARCH_MAX_CONCURRENT", "2"))))
+        _semaphore = asyncio.Semaphore(max(1, settings_obj.SEARCH_MAX_CONCURRENT))
     return _semaphore
 
 
@@ -435,7 +436,7 @@ def _get_semaphore() -> asyncio.Semaphore:
 async def slot() -> AsyncIterator[None]:
     """Hold one of the few places for running generated SQL."""
     semaphore = _get_semaphore()
-    wait = float(os.getenv("SEARCH_SLOT_WAIT_SECONDS", "30"))
+    wait = settings_obj.SEARCH_SLOT_WAIT_SECONDS
     try:
         await asyncio.wait_for(semaphore.acquire(), timeout=wait)
     except asyncio.TimeoutError:

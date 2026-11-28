@@ -22,6 +22,7 @@ from preprocess import (  # noqa: E402
     ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement,
     _build_augmented_question,
 )
+from config.settings import settings_obj  # noqa: E402
 from services.fulltext.text_search import Clause  # noqa: E402
 from services.uncertain import classify as tier_classify, tier as uncertain_tier  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql  # noqa: E402
@@ -147,7 +148,7 @@ MODEL_SQL = (
 
 
 def _final_sql(monkeypatch, tier: bool) -> str:
-    monkeypatch.setenv("UNCERTAIN_TIER", "true" if tier else "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", tier)
     augmented = _build_augmented_question(_plan(), [PD])
     return " ".join(rewrite_generated_sql(MODEL_SQL, augmented).sql.split())
 
@@ -192,7 +193,7 @@ def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
 
 def test_the_filter_chips_can_read_the_query(monkeypatch):
     from services.results.display.chips import describe
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     augmented = _build_augmented_question(_plan(), [PD])
     rewritten = rewrite_generated_sql(MODEL_SQL, augmented)
     chips = describe(rewritten.filter_sql or rewritten.sql)
@@ -208,14 +209,14 @@ _JOINED = ("SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.d
 
 @pytest.mark.parametrize("side", ["LEFT", ""])
 def test_a_join_on_participants_only_to_count_them_becomes_the_subject_count(monkeypatch, side):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     sql = rewrite_generated_sql(_JOINED % (side, ""), "datasets with at least 100 participants").sql
     assert "bids_participants" not in sql
     assert re.search(r"HAVING COUNT\(DISTINCT o\.subject\) >= 100", sql)
 
 
 def test_a_count_of_filtered_participants_is_left_alone(monkeypatch):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     sql = rewrite_generated_sql(_JOINED % ("", "WHERE p.sex = 'female'"), "at least 100 women").sql
     assert "bids_participants" in sql and "p.participant_id" in sql
 
@@ -236,7 +237,7 @@ _OWN_HAVING = (" HAVING (SELECT COUNT(*) FROM bids_participants p WHERE p.datase
 
 @pytest.mark.parametrize("having", ["", _OWN_HAVING])
 def test_the_models_own_count_is_replaced(monkeypatch, having):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     augmented = _build_augmented_question(_plan(), [PD])
     sql = " ".join(rewrite_generated_sql(OWN_COUNT_SQL % having, augmented).sql.split())
     assert sql.count("cohort_n.diagnosis IN") == 1
@@ -246,7 +247,7 @@ def test_the_models_own_count_is_replaced(monkeypatch, having):
 
 
 def test_the_count_is_added_when_the_model_wrote_none(monkeypatch):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     augmented = _build_augmented_question(_plan(), [PD])
     plain = MODEL_SQL.replace(" AND patients_with('parkinsons_disease, de_novo_parkinsons') >= 40", "")
     assert "patients_with" not in plain
@@ -255,12 +256,12 @@ def test_the_count_is_added_when_the_model_wrote_none(monkeypatch):
 
 
 def test_a_copied_count_is_not_added_twice(monkeypatch):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     augmented = _build_augmented_question(_plan(), [PD])
     assert rewrite_generated_sql(MODEL_SQL, augmented).sql.count("cohort_n.diagnosis IN") == 1
 
 
 def test_no_filter_line_no_count(monkeypatch):
-    monkeypatch.setenv("UNCERTAIN_TIER", "false")
+    monkeypatch.setattr(settings_obj, "UNCERTAIN_TIER", False)
     sql = rewrite_generated_sql(OWN_COUNT_SQL % "", "datasets with Parkinson's patients").sql
     assert "cohort_n" not in sql and "COUNT(DISTINCT p.participant_id)" in sql

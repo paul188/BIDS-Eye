@@ -3,23 +3,14 @@ services/switches.py
 --------------------
 The environment variables that turn a search feature on or off. Each is
 "true" or "false"; unset is off. Any other value stops the backend at startup
-(check, called by main.py), so a typo does not silently mean off.
+(config/settings.py, OnOff), so a typo does not silently mean off.
 """
 
 from __future__ import annotations
 
-import os
 from enum import Enum
 
-from exceptions.expected import ExpectedError
-
-
-class InvalidSwitchError(ExpectedError):
-    """A switch is set to something other than true or false.
-
-    Raised at startup and not caught: the backend does not start until the
-    value is corrected.
-    """
+from config.settings import settings_obj
 
 
 class Switch(str, Enum):
@@ -44,15 +35,5 @@ class Switch(str, Enum):
         return self.value
 
     def is_on(self) -> bool:
-        """True when the switch is on. Read on every call, so a one-off
-        container or a test can set the variable after import."""
-        value = os.getenv(self.value, "false")
-        if value not in ("true", "false"):
-            raise InvalidSwitchError(f"{self.value} must be true or false, not {value!r}.")
-        return value == "true"
-
-
-def check() -> None:
-    """Raise InvalidSwitchError when a switch has a value other than true or false."""
-    for switch in Switch:
-        switch.is_on()
+        """True when the switch is on (settings_obj, read at startup)."""
+        return bool(getattr(settings_obj, self.value))

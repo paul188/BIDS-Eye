@@ -22,20 +22,20 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO, Any, List, Optional, Sequence
 
+from config.settings import settings_obj
 from exceptions.expected import ExpectedError
 from services.indexing import readme_profile as rp
 
 log = logging.getLogger(__name__)
 
-DEFAULT_MODEL = os.getenv("README_PROFILE_MODEL", "gemini-3.8-flash")
-DEFAULT_THINKING = os.getenv("README_PROFILE_THINKING") or None
+DEFAULT_MODEL = settings_obj.README_PROFILE_MODEL
+DEFAULT_THINKING = settings_obj.README_PROFILE_THINKING
 
 _REQUIRED_COLUMNS = ("llm_profile", "llm_conditions", "llm_profile_meta")
 

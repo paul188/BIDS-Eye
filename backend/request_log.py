@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 import time
 import uuid
@@ -34,10 +33,9 @@ from typing import Any
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from exceptions.expected import ExpectedError
+from config.settings import settings_obj
 
 HEADER = "X-Request-ID"
-LOG_FORMAT_VARIABLE = "LOG_FORMAT"
 
 # An incoming ID is kept only in this shape; anything else is replaced.
 _WELL_FORMED = re.compile(r"[A-Za-z0-9._-]{1,64}")
@@ -60,14 +58,6 @@ def id_header(scope: Scope) -> dict[str, str]:
 
 
 # ── Log lines ─────────────────────────────────────────────────────────────────
-
-class InvalidLogFormatError(ExpectedError):
-    """LOG_FORMAT is set to something other than text or json.
-
-    Raised at startup and not caught: the backend does not start until the
-    value is corrected.
-    """
-
 
 class TextFormatter(logging.Formatter):
     """One readable line; "-" stands for no request."""
@@ -117,14 +107,9 @@ class LogFormat(str, Enum):
         return self.value
 
     @classmethod
-    def from_environment(cls) -> LogFormat:
-        value = os.getenv(LOG_FORMAT_VARIABLE, cls.TEXT.value)
-        try:
-            return cls(value)
-        except ValueError:
-            raise InvalidLogFormatError(
-                f"{LOG_FORMAT_VARIABLE} must be text or json, not {value!r}."
-            ) from None
+    def from_settings(cls) -> LogFormat:
+        """LOG_FORMAT (config/settings.py, which refuses any other value)."""
+        return cls(settings_obj.LOG_FORMAT)
 
     def formatter(self) -> logging.Formatter:
         return JsonFormatter() if self is LogFormat.JSON else TextFormatter()
@@ -137,7 +122,7 @@ def configure() -> None:
     before it imports main, so they can be changed here.
     """
     handler = logging.StreamHandler()
-    handler.setFormatter(LogFormat.from_environment().formatter())
+    handler.setFormatter(LogFormat.from_settings().formatter())
     logging.basicConfig(level=logging.INFO, handlers=[handler])
 
     # These write through a handler of their own (SQLAlchemy's when the

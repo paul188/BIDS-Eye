@@ -21,7 +21,7 @@ from security import sessions
 from deps import require_auth
 from exceptions.handlers import add_error_handlers
 from routers import auth
-from security.settings import AuthSettings
+from config.settings import Settings
 from services import github_oauth
 
 SECRET = "test-secret-" + "x" * 40
@@ -89,7 +89,7 @@ def _build_app(
     monkeypatch.setenv("FRONTEND_URL", frontend_url)
 
     app = FastAPI()
-    middleware.install_security_middleware(app)
+    middleware.install_security_middleware(app, Settings())
     add_error_handlers(app)
     app.include_router(auth.auth_router, prefix="/api")
 
@@ -495,7 +495,7 @@ def test_missing_or_placeholder_secret_refuses_to_start(
     else:
         monkeypatch.setenv("SESSION_SECRET", value)
     with pytest.raises(ValidationError, match="SESSION_SECRET") as refused:
-        middleware.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI(), Settings())
     # A rejected value never reaches the logs.
     if value and value.strip():
         assert value not in str(refused.value)
@@ -503,7 +503,7 @@ def test_missing_or_placeholder_secret_refuses_to_start(
 
 def test_real_secret_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_github_env(monkeypatch)
-    assert AuthSettings().SESSION_SECRET.get_secret_value() == SECRET
+    assert Settings().sign_in().SESSION_SECRET.get_secret_value() == SECRET
 
 
 # ── Who may sign in ──────────────────────────────────────────────────────────
@@ -522,16 +522,16 @@ def test_missing_org_refuses_to_start_unless_open_is_asked_for(
         else:
             monkeypatch.setenv(name, value)
     with pytest.raises(ValidationError, match="ALLOW_ANY_GITHUB_USER"):
-        middleware.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI(), Settings())
 
 
 def test_org_or_explicit_open_starts(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_github_env(monkeypatch)
-    settings = AuthSettings()
+    settings = Settings().sign_in()
     assert (settings.GITHUB_ORG, settings.ALLOW_ANY_GITHUB_USER) == ("", True)
 
     _set_github_env(monkeypatch, org=" my-lab ")
-    settings = AuthSettings()
+    settings = Settings().sign_in()
     assert (settings.GITHUB_ORG, settings.ALLOW_ANY_GITHUB_USER) == ("my-lab", False)
 
 
@@ -539,7 +539,7 @@ def test_org_together_with_open_refuses_to_start(monkeypatch: pytest.MonkeyPatch
     _set_github_env(monkeypatch, org="my-lab")
     monkeypatch.setenv("ALLOW_ANY_GITHUB_USER", "true")
     with pytest.raises(ValidationError, match="contradict"):
-        AuthSettings()
+        Settings().sign_in()
 
 
 @pytest.mark.parametrize("name", ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"])
@@ -553,9 +553,10 @@ def test_missing_oauth_app_credentials_refuse_to_start(
     else:
         monkeypatch.setenv(name, value)
     with pytest.raises(ValidationError, match=name):
-        middleware.install_security_middleware(FastAPI())
+        middleware.install_security_middleware(FastAPI(), Settings())
 
 
 def test_client_secret_stays_out_of_error_and_repr(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_github_env(monkeypatch)
-    assert CLIENT_SECRET not in repr(AuthSettings())
+    assert CLIENT_SECRET not in repr(Settings())
+    assert CLIENT_SECRET not in repr(Settings().sign_in())

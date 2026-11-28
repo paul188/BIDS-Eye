@@ -6,6 +6,7 @@ from __future__ import annotations
 import pytest
 
 import stem_collisions
+from config.settings import settings_obj
 from services.database_stats.database_stats import database_stats
 from tests.helpers import full_coverage
 from services.fulltext import tsquery, vectors, word_frequencies
@@ -92,7 +93,7 @@ def test_the_exact_guard_accepts_both_spellings(tmp_path, monkeypatch, full_text
     path = tmp_path / "stem_collisions.yaml"
     path.write_text("exact:\n  - forms: [localizer, localizers]\n    excludes: [local]\n")
     monkeypatch.setattr(stem_collisions, "_PATH", path)
-    monkeypatch.setenv(vectors.EXACT_ENV, "true")
+    monkeypatch.setattr(settings_obj, vectors.EXACT_ENV, True)
     stem_collisions._reviewed.cache_clear()
     try:
         guard = tsquery.exact_guard([("localizer",)])
