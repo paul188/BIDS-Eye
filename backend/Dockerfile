@@ -32,4 +32,9 @@ RUN pip install --no-cache-dir -e /app/backend
 
 WORKDIR /app/backend
 
+# Run as an unprivileged user. It can read /app but not change it; its home
+# directory is the only place it can write.
+RUN useradd --create-home --uid 10001 app
+USER app
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

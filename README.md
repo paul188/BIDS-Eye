@@ -94,7 +94,7 @@ BIDS-Eye is built to grow beyond OpenNeuro. The current architecture could suppo
 ### Prerequisites
 
 - Python 3.11+ for backend and indexing tasks
-- Node.js 20+ and pnpm 10+ for the frontend
+- Node.js 20+ and npm for the frontend
 - A PostgreSQL database or other compatible backend configured for `BIDS-SQL`
 
 ### Run locally
