@@ -10,7 +10,7 @@ _CRAWLER = ROOT / "ingest" / "openneuro-crawler"
 if str(_CRAWLER) not in sys.path:
     sys.path.insert(0, str(_CRAWLER))
 
-from services.translate.prompt import schema_ddl  # noqa: E402
+from services.schema import tables  # noqa: E402
 from remote import openneuro_metadata as meta  # noqa: E402
 
 
@@ -83,7 +83,7 @@ def test_decode_readme_bytes_handles_utf16() -> None:
 
 def test_every_metadata_column_is_known_to_the_prompt_layer() -> None:
     """A column the crawler fills must be describable to the SQL model."""
-    assert set(meta.METADATA_COLUMNS) <= set(schema_ddl.OPTIONAL_DATASET_COLUMNS)
+    assert set(meta.METADATA_COLUMNS) <= set(tables.OPTIONAL_DATASET_COLUMNS)
 
 
 def test_deprecation_reason_covers_unavailable_and_flagged_datasets() -> None:
@@ -136,7 +136,7 @@ def test_fetch_batch_separates_unavailable_from_unknown(monkeypatch) -> None:
 
 
 def test_status_column_is_not_shown_to_the_sql_model() -> None:
-    assert not set(meta.STATUS_COLUMNS) & set(schema_ddl.OPTIONAL_DATASET_COLUMNS)
+    assert not set(meta.STATUS_COLUMNS) & set(tables.OPTIONAL_DATASET_COLUMNS)
 
 
 class _Body:
