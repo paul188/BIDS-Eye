@@ -138,7 +138,7 @@ def test_abbreviation_searches_typed_and_written_out_forms() -> None:
 
 def test_scan_terms_inside_a_topic_are_removed() -> None:
     plan = pp.QueryPlan(
-        query_family="combined_filter", natural_language_summary="x", topics=[SOCIAL],
+        natural_language_summary="x", topics=[SOCIAL],
         scan_requirements=[pp.ScanRequirement(scan_terms=["conflict"]),
                            pp.ScanRequirement(scan_terms=["fMRI"])],
         description_search="social conflicts",
@@ -149,7 +149,7 @@ def test_scan_terms_inside_a_topic_are_removed() -> None:
 
 
 def test_topic_becomes_a_filter_line_and_ranks_its_codes() -> None:
-    plan = pp.QueryPlan(query_family="description_search", natural_language_summary="x",
+    plan = pp.QueryPlan(natural_language_summary="x",
                         topics=[SOCIAL])
     retriever = _Retriever({"social conflict": [("competition_task", 0.8)]})
     topics = pp.resolve_topics(plan, retriever, _counts({}))
@@ -267,7 +267,7 @@ def test_a_narrower_phrase_keeps_its_codes() -> None:
 
 def test_only_ambiguous_or_abbreviated_topics_stay_topics() -> None:
     plan = pp.QueryPlan(
-        query_family="combined_filter", natural_language_summary="x",
+        natural_language_summary="x",
         topics=[SOCIAL,
                 pp.Topic(phrase="emotion", typed="emo", head="emotion"),
                 pp.Topic(phrase="sign language processing", typed="sign language processing",

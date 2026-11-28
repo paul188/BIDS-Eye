@@ -24,7 +24,7 @@ TASKS = ResolvedTerms(field=RAGField.TASK, term_to_codes={
 
 
 def _plan(*requirements: ScanRequirement) -> QueryPlan:
-    return QueryPlan(query_family="scan_filter", natural_language_summary="Summary.",
+    return QueryPlan(natural_language_summary="Summary.",
                      scan_requirements=list(requirements))
 
 

@@ -37,7 +37,7 @@ def _places(monkeypatch):
 
 
 def _plan(**fields) -> pp.QueryPlan:
-    return pp.QueryPlan(query_family=list(pp.QueryFamily)[0], natural_language_summary="demo", **fields)
+    return pp.QueryPlan(natural_language_summary="demo", **fields)
 
 
 def test_place_names_resolve_to_the_stored_value() -> None:
