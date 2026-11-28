@@ -3,7 +3,7 @@ services/results/display/dataset_cards.py
 -----------------------------------------
 The datasets of one result page as the cards show them: the catalogue fields
 of the generated query's rows, plus what is read with queries of their own
-(participants and their summary, deprecation notes, the generated summary
+(the participant summary, deprecation notes, the generated summary
 and the linked paper). Those extra reads leave the generated SQL unchanged,
 and databases without the newer columns keep working.
 """
@@ -25,8 +25,6 @@ from services.indexing import dataset_description
 from services.schema.tables import datasets as _datasets, papers as _papers
 
 log = logging.getLogger(__name__)
-
-MAX_PARTICIPANTS_PER_DATASET = 50
 
 # Names OpenNeuro shows when the uploader set none (the crawler's
 # remote.openneuro_metadata.clean_dataset_name skips the same ones).
@@ -62,8 +60,7 @@ async def participants_for(
 
 
 def summarize_participants(participants: Sequence[ParticipantSchema]) -> Optional[ParticipantSummarySchema]:
-    """Group, sex and age counts over every participant, so a card can show
-    exact numbers for datasets larger than the participant cap."""
+    """Group, sex and age counts over every participant."""
     if not participants:
         return None
     diagnoses: dict[str, int] = {}
@@ -109,7 +106,7 @@ async def deprecations_for(
 
 
 async def rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[DatasetSchema]:
-    """Build DatasetSchema objects (with capped participants) from result rows."""
+    """Build DatasetSchema objects (with the participant summary) from result rows."""
     dataset_ids = [UUID(str(r["id"])) for r in raw]
     participants_map = await participants_for(session, dataset_ids)
     deprecations = await deprecations_for(session, dataset_ids)
@@ -130,9 +127,6 @@ async def rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Dataset
             uncertain_level=r.get("uncertain_level"),
             uncertain_reasons=r.get("uncertain_reasons"),
             subject_count=r.get("subject_count"),
-            participants=participants_map.get(UUID(str(r["id"])), [])[
-                :MAX_PARTICIPANTS_PER_DATASET
-            ],
             participant_summary=summarize_participants(participants_map.get(UUID(str(r["id"])), [])),
         )
         for r in raw

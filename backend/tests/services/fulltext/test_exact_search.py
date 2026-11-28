@@ -386,7 +386,7 @@ def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
     from routers.schemas import DatasetSchema
 
     datasets = [DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
-                              source_type="openneuro", participants=[]) for n in (1, 2)]
+                              source_type="openneuro") for n in (1, 2)]
     session = _Session([
         # The stemmed passage is about ages; the unstemmed one has the word.
         (UUID(int=1), "⟦Age⟧ range 20-30. Mean ⟦age⟧ 25.", ["age", "age"], ["age", "age"],

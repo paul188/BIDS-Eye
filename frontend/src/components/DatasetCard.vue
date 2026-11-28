@@ -13,10 +13,6 @@ const props = withDefaults(defineProps<{
   emphasis?: string[]
 }>(), { terms: () => [], strengths: () => [], emphasis: () => [] })
 
-// The backend sends at most this many participants per dataset
-// (MAX_PARTICIPANTS_PER_DATASET in backend/services/results/display/dataset_cards.py). Below it the
-// list is complete and counts are exact; at it, they would undercount.
-const PARTICIPANT_CAP = 50
 const MAX_GROUPS_SHOWN = 4
 
 const CONTROL_LABELS = new Set([
@@ -40,74 +36,37 @@ const href = computed(() => {
   return d.remote_url || null
 })
 
-// The backend's counts over all participants; older backends send only the
-// capped list, counted here when it is complete.
+// The backend's counts over all participants (none for a dataset without a
+// participants.tsv).
 const summary = computed(() => props.dataset.participant_summary ?? null)
 
-const participantsComplete = computed(() => {
-  if (summary.value) return true
-  const n = props.dataset.participants.length
-  return n > 0 && n < PARTICIPANT_CAP
-})
-
-// Diagnosis groups, patient groups first by size, controls last. Counts only
-// when they cover every participant.
+// Diagnosis groups, patient groups first by size, controls last.
 const groups = computed(() => {
-  const raw = new Map<string, number>()
-  if (summary.value) {
-    for (const [label, n] of Object.entries(summary.value.diagnoses)) raw.set(label, n)
-  } else {
-    for (const p of props.dataset.participants) {
-      const label = p.diagnosis?.trim()
-      if (label) raw.set(label, (raw.get(label) ?? 0) + 1)
-    }
-  }
   const counts = new Map<string, number>()
-  for (const [rawLabel, n] of raw) {
+  for (const [rawLabel, n] of Object.entries(summary.value?.diagnoses ?? {})) {
     const label = CONTROL_LABELS.has(rawLabel.toLowerCase()) ? 'control' : rawLabel
     counts.set(label, (counts.get(label) ?? 0) + n)
   }
   const all = [...counts.entries()]
-    .map(([label, n]) => ({ label, n: participantsComplete.value ? n : null }))
+    .map(([label, n]) => ({ label, n }))
     .sort((a, b) => {
       if ((a.label === 'control') !== (b.label === 'control')) return a.label === 'control' ? 1 : -1
-      return (b.n ?? 0) - (a.n ?? 0)
+      return b.n - a.n
     })
   return { shown: all.slice(0, MAX_GROUPS_SHOWN), more: Math.max(0, all.length - MAX_GROUPS_SHOWN) }
 })
 
 const ageRange = computed(() => {
-  if (!participantsComplete.value) return ''
-  let lo: number, hi: number
-  if (summary.value) {
-    if (summary.value.age_min === null || summary.value.age_max === null) return ''
-    lo = Math.round(summary.value.age_min)
-    hi = Math.round(summary.value.age_max)
-  } else {
-    const ages = props.dataset.participants
-      .map(p => p.age)
-      .filter((a): a is number => typeof a === 'number' && a > 0)
-    if (!ages.length) return ''
-    lo = Math.round(Math.min(...ages))
-    hi = Math.round(Math.max(...ages))
-  }
+  const s = summary.value
+  if (!s || s.age_min === null || s.age_max === null) return ''
+  const lo = Math.round(s.age_min)
+  const hi = Math.round(s.age_max)
   return lo === hi ? `${lo}` : `${lo}–${hi}`
 })
 
 const sexSplit = computed(() => {
-  if (!participantsComplete.value) return ''
-  let f = 0, m = 0
-  if (summary.value) {
-    f = summary.value.female
-    m = summary.value.male
-  } else {
-    for (const p of props.dataset.participants) {
-      const s = p.sex?.trim().toLowerCase()
-      if (s === 'f' || s === 'female') f++
-      else if (s === 'm' || s === 'male') m++
-    }
-  }
-  return f + m ? `${f} F, ${m} M` : ''
+  const s = summary.value
+  return s && s.female + s.male ? `${s.female} F, ${s.male} M` : ''
 })
 
 // Authors: first three, then "+N"; institutions follow on the same line.
@@ -119,9 +78,9 @@ const authorLine = computed(() => {
 })
 const institutionLine = computed(() => (props.dataset.institutions ?? []).join(', '))
 
-// "42 PD, 4 control" (counts only when the participant list is complete).
+// "42 PD, 4 control".
 const groupsText = computed(() => {
-  const parts = groups.value.shown.map(g => (g.n !== null ? `${g.n} ${g.label}` : g.label))
+  const parts = groups.value.shown.map(g => `${g.n} ${g.label}`)
   if (groups.value.more) parts.push(`+${groups.value.more} more`)
   return parts.join(', ')
 })
@@ -270,15 +229,7 @@ function highlighted(text: string): { text: string; hit: boolean }[] {
         <span class="font-semibold tabular-nums">{{ dataset.subject_count }}</span>
         subject{{ dataset.subject_count === 1 ? '' : 's' }}
       </span>
-      <span
-        v-if="groups.shown.length"
-        class="tabular-nums"
-        :class="factClass('diagnosis')"
-        :title="participantsComplete ? undefined : `Groups seen in the first ${dataset.participants.length} participants; others may differ`"
-      >
-        {{ groupsText }}
-        <span v-if="!participantsComplete" class="font-normal text-muted-soft">(first {{ dataset.participants.length }} participants)</span>
-      </span>
+      <span v-if="groups.shown.length" class="tabular-nums" :class="factClass('diagnosis')">{{ groupsText }}</span>
       <span v-if="ageRange" class="tabular-nums" :class="factClass('age')">ages {{ ageRange }}</span>
       <span v-if="sexSplit" class="tabular-nums" :class="factClass('sex')">{{ sexSplit }}</span>
     </p>

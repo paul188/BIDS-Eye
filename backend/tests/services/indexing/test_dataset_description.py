@@ -278,7 +278,7 @@ def test_attach_descriptions_shows_the_paper_line_and_summary():
 
     def dataset(n):
         return DatasetSchema(id=UUID(int=n), name=f"d{n}", dataset_type="raw",
-                             source_type="openneuro", participants=[])
+                             source_type="openneuro")
 
     session = _Session([
         (UUID(int=1), None, "reports", "A paper", 2021, "10.1/x", None, None, None),
