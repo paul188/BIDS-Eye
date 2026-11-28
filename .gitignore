@@ -63,11 +63,14 @@ Thumbs.db
 *.orig
 
 # ── Generated indexes (rebuilt from DB) ───────────────────────────────────────
-RAG/name_index.json
+backend/vocabulary/name_index.json
 
-# ── Embedding cache written by RAG/yaml_to_llamaindex.py ──────────────────────
-RAG/embed_*.npz
-RAG/embed_*.json
+# ── Embedding cache written by backend/vocabulary/yaml_to_llamaindex.py ──────────────────────
+backend/vocabulary/embed_*.npz
+backend/vocabulary/embed_*.json
+
+# ── Task-link proposals to review (backend/vocabulary/tools/apply_task_measures.py) ──
+backend/vocabulary/proposed_*.json
 
 # ── Benchmark working data (pools, judging runs, downloads; large) ────────────
 benchmarks/*/work/

@@ -19,8 +19,8 @@ Rollback images exist on the server for every deploy (`bids-eye-backend:pre-live
 
 ## 2. How a search works now
 
-1. **Intent model** (`LLM_preprocessor/preprocess/`): question → `QueryPlan` (diagnoses per group, scans, tasks, age groups, sex, counts, topics, description text, request wishes …).
-2. **Vocabulary** (`RAG/retriever.py`, `RAG/value_mappings.yaml`, `RAG/text_terms.py`): plan terms → codes, plus text fallbacks.
+1. **Intent model** (`backend/llm/preprocess/`): question → `QueryPlan` (diagnoses per group, scans, tasks, age groups, sex, counts, topics, description text, request wishes …).
+2. **Vocabulary** (`backend/vocabulary/retriever.py`, `backend/vocabulary/value_mappings.yaml`, `backend/vocabulary/text_terms.py`): plan terms → codes, plus text fallbacks.
 3. **Compiler** (`backend/services/translate/participant_query_compiler.py`, since f3fd9bb): builds the SQL in code for about 55 of the 70 gold requests. It declines sidecar fields, licences, ordering, result limits, institutions/authors/funding, negated or same-subject scans, contradictions and file names; those go to the **SQL model** (`backend/services/translate/text_to_sql.py`, few-shot examples in `backend/few_shot_examples.json`).
 4. **Rewriter** (`backend/services/translate/sql_rewriter.py`): concept keys, catalogue value check (`translate/value_check.py`, against the values `database_stats/database_stats.py` counts), patient counts, participants-join fix, summary tables (`bids_dataset_facets`, `bids_datasets.n_subjects`).
 5. **Text search** (`backend/services/fulltext/`): `text_search.py` turns `text_match()` placeholders into Postgres full text (modes all / short / loose / near / also); `tsquery.py` builds the tsquery strings, `ranking.py` the text rank, `word_frequencies.py` counts matching datasets, `vectors.py` names the stored vectors and their switches.
@@ -96,9 +96,9 @@ The first 14 items come from the 2026-11-17 search-quality review (`reports/Text
 1. ~~Loose-text sweep~~ — done, on main since 2026-11-18 (`loose-text-live`).
 2. **Keep alternatives; no datatype+suffix OR** (~3 h):
    - a rare own phrase drops the validated alternatives too (`preprocess/` near "not searchable"; qf03 returned 354 results);
-   - `(datatype='anatomical_mri' OR suffix='mp2rage')` means "any anatomical scan", and is empty when negated (qf27); the OR is still built on purpose in `LLM_preprocessor/preprocess/augment.py` (modality EXISTS, "partially-annotated files"), against the SQL prompt's own rule not to combine the two (checked 2026-11-27);
+   - `(datatype='anatomical_mri' OR suffix='mp2rage')` means "any anatomical scan", and is empty when negated (qf27); the OR is still built on purpose in `backend/llm/preprocess/augment.py` (modality EXISTS, "partially-annotated files"), against the SQL prompt's own rule not to combine the two (checked 2026-11-27);
    - "CT" resolves to PET through the PET-CT synonyms (qf40).
-3. ~~Cache hygiene~~ — done: the version hash covers the whole `LLM_preprocessor/`, `preprocess/` and `RAG/` folders, and only a search that ran as written with a real result is stored (`services/search.py`).
+3. ~~Cache hygiene~~ — done: the version hash covers the whole `backend/llm/`, `preprocess/` and `backend/vocabulary/` folders, and only a search that ran as written with a real result is stored (`services/search.py`).
 4. ~~Self-correction of tiered SQL~~ — done in cf27e58: the repair is not rewritten again (`sql_rewriter.finish_corrected_sql`, `tests/test_sql_correction.py`).
 5. **Uncertain-tier evidence** (~½ day + gold run): keep the `:AB` scope when a diagnosis or task is promoted from README or paper text. In earlier checks, second-tier results were wrong for 9 of 16 Alzheimer's and 5 of 5 ADHD results. Log `uncertain_level` per result in `record_run.py`.
 6. **Measurement protocol** (~1 day): 3 uncached runs per variant, per-request means, a paired sign-flip test, a stability metric, and a lockbox of new requests from `query_log`.
@@ -109,7 +109,7 @@ The first 14 items come from the 2026-11-17 search-quality review (`reports/Text
     - language without gambling, delay-discounting and food-choice tasks, with reading;
     - BCI with oddball and P300;
     - emotion recognition is not emotion induction.
-11. **Vocabulary lookup**: replace the WRatio partial match by retrieve-top-k-then-choose with a "none" option (`RAG/retriever.py`; "task-based" → a release-from-suppression task, qf29).
+11. **Vocabulary lookup**: replace the WRatio partial match by retrieve-top-k-then-choose with a "none" option (`backend/vocabulary/retriever.py`; "task-based" → a release-from-suppression task, qf29).
 12. **Relaxed fallback**: may drop `(EXISTS task OR text)` conjuncts, never a protected condition.
 13. **Compiler coverage** (1–2 weeks): extend `participant_query_compiler.py` beyond cohort searches to modality, datatype, recorded facts, task and text conditions; log its decline rate; add the "patients and healthy controls" case.
 14. **Later**:
@@ -135,7 +135,7 @@ The first 14 items come from the 2026-11-17 search-quality review (`reports/Text
   - the check whether the intent model fills `age_groups` was not run (`benchmarks/easy`, "agegroups", about 42 model calls);
   - datasets entirely inside the group should rank first;
   - the tier's "ages recorded" check still counts age 0.
-- **Participant groups** (`crawlers/openneuro-crawler/remote/participant_groups.py`): applied once on production (17 datasets). The crawler does not run on the server, so new datasets are not decoded.
+- **Participant groups** (`ingest/openneuro-crawler/remote/participant_groups.py`): applied once on production (17 datasets). The crawler does not run on the server, so new datasets are not decoded.
 - **Production gaps:**
   - the retriever's database back-check never runs (no `DATABASE_URL`/psycopg2 in the container);
   - neither does the embedding fallback (no `sentence_transformers`).

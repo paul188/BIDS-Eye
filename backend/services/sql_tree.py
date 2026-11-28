@@ -178,12 +178,6 @@ class SqlBranch:
         """Whether *node* is negated in this branch."""
         return under_negation(node, self.node)
 
-    def function_calls(self, name: str) -> list:
-        """Outermost calls to a SQL function named *name*."""
-        name = name.lower()
-        return [call for call in self.node.find_all(exp.Anonymous, exp.Func)
-                if (call.name if isinstance(call, exp.Anonymous) else call.sql_name()).lower() == name
-                and not in_subquery(call, self.node)]
 
     def has_negation(self) -> bool:
         """Whether this branch contains any negation."""

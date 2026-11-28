@@ -14,7 +14,7 @@ The stages it calls:
                coverage, known values, institution and place names
   results/     what a result page shows: filter chips, highlighting, re-ranking, cards
   stores/      records of translated questions (durable and in memory)
-  indexing/    offline LLM jobs over datasets (scripts/ and the crawler, not requests)
+  indexing/    offline LLM jobs over datasets (ingest/backfill/ and the crawler, not requests)
 
 A module is named for what it holds, a noun phrase with the main noun last
 (word_form_counts, interpretations, translated_queries). The package already
@@ -26,7 +26,7 @@ language model up to three times and several groups serve more than one step
 
   1. stored translation   stores/interpretations: the same question gets
                           the same translation; a hit skips steps 2-4
-  2. preprocessing        LLM_preprocessor/ (outside backend/): vocabulary,
+  2. preprocessing        llm/preprocess/ (next to services/): vocabulary,
                           word forms and topic counts, then the INTENT MODEL
                           writes a QueryPlan
   3. SQL                  translate/participant_query_compiler compiles the

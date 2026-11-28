@@ -2,8 +2,9 @@
 # (see docker-compose*.yml). This file keeps out what no Dockerfile copies,
 # so the context stays small and secrets never reach the build daemon.
 #
-# The Dockerfiles copy: BIDS-SQL/, backend/ (tests included: they run inside
-# the image), LLM_preprocessor/, RAG/, frontend/, crawlers/openneuro-crawler/.
+# The Dockerfiles copy: constraints.txt, BIDS-SQL/, backend/ (tests included:
+# they run inside the image), backend/llm/, backend/vocabulary/, frontend/,
+# ingest/openneuro-crawler/.
 # Do not exclude any of those.
 
 # Version control and local tooling
@@ -28,17 +29,17 @@ frontend/.vite
 **/.pytest_cache
 
 # Local caches
-RAG/embed_*.npz
-RAG/embed_*.json
+backend/vocabulary/embed_*.npz
+backend/vocabulary/embed_*.json
 
 # Not part of any image
 benchmarks
 reports
 research_notes
 docs
-scripts
-lottery
-nginx
+ingest/backfill
+ingest/scan_crawl_errors.py
+deploy
 postgres_data
 certbot
 docker-compose*.yml

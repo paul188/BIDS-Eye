@@ -1,5 +1,5 @@
 """Which datasets hold files ending in _desc-preproc_bold.nii.gz? Walk OpenNeuro's file tree where preprocessed outputs can sit."""
-import json, re, time, urllib.request, os
+import json, re, time, urllib.request
 import lib
 D, ON = lib.load()
 G = lib.G

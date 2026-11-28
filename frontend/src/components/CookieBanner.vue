@@ -5,10 +5,10 @@ import { ref } from 'vue'
 // so the banner informs and has one button: there is no cookie to opt out of.
 // It also says what happens to a search, since that is the data people care
 // about: questions are stored on the server without who asked (query_log,
-// backend/models.py; tests/test_query_logging.py checks no row records the
+// backend/database/app_tables.py; tests/test_query_logging.py checks no row records the
 // asker) and sent to Google's Gemini API on a paid key, whose prompts Google
 // does not train on. Nothing about a user is stored on the server (no users
-// table, no e-mail address; backend/routers/auth.py, backend/models.py),
+// table, no e-mail address; backend/security/sessions.py, backend/database/app_tables.py),
 // with one exception the user has to turn on: "Remember my searches and
 // search results" (App.vue) keeps their searches under their GitHub account
 // number for 12 months, until they turn it off

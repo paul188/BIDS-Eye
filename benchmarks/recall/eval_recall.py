@@ -8,7 +8,7 @@ scoring needs only files:
 
 1. run — inside a backend container (it imports the backend code):
 
-       docker compose -f docker-compose-hetzner.yml run --rm --no-deps \\
+       docker compose -f docker-compose-prod.yml run --rm --no-deps \\
            -v /home/BIDS-Eye:/repo:ro -v /tmp/bidseye_recall:/out backend \\
            python /repo/benchmarks/recall/eval_recall.py run --out /out/run.json
 
@@ -143,7 +143,10 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     if institution_index is not None and hasattr(institution_index, "refresh_from_db"):
         await institution_index.refresh_from_db(engine)
     try:
-        import worker_db
+        try:
+            from database import worker as worker_db
+        except ImportError:  # backend before database/
+            import worker_db
     except ImportError:  # backend before worker_db.py
         if has_fts() and word_frequencies is not None:
             word_frequencies.set_frequency_lookup(

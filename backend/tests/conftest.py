@@ -36,9 +36,9 @@ def migrated_database():
 
 @pytest.fixture(autouse=True)
 def _fresh_rate_limits():
-    """Every test starts with empty rate-limit counts (rate_limits.py keeps them
+    """Every test starts with empty rate-limit counts (security/rate_limits.py keeps them
     in memory for the whole process)."""
-    import rate_limits
+    from security import rate_limits
 
     rate_limits.reset()
     yield

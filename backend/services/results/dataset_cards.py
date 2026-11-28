@@ -20,13 +20,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
 
-from schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
+from routers.schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
 from services.indexing import dataset_description
 from services.schema.tables import datasets as _datasets, papers as _papers
 
 log = logging.getLogger(__name__)
 
 MAX_PARTICIPANTS_PER_DATASET = 50
+
+# Names OpenNeuro shows when the uploader set none (the crawler's
+# remote.openneuro_metadata.clean_dataset_name skips the same ones).
+_PLACEHOLDER_NAMES = frozenset({"unnamed dataset", "untitled", "untitled dataset", "n/a"})
+
+
+def display_name(name: Optional[str], accession_id: Optional[str]) -> str:
+    """The card title: the dataset's name, or its accession id when the name
+    is blank or a placeholder (a card without a title has nothing to click)."""
+    cleaned = " ".join((name or "").split())
+    if cleaned and cleaned.lower() not in _PLACEHOLDER_NAMES:
+        return cleaned
+    return accession_id or "Untitled dataset"
 
 
 async def participants_for(
@@ -103,7 +116,7 @@ async def rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Dataset
     return [
         DatasetSchema(
             id=r["id"],
-            name=r["name"],
+            name=display_name(r["name"], r.get("accession_id")),
             accession_id=r.get("accession_id"),
             bids_version=r.get("bids_version"),
             dataset_type=r["dataset_type"],

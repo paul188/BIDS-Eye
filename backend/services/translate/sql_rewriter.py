@@ -33,8 +33,8 @@ except ImportError:  # pragma: no cover - keep the service usable when the dep i
     parse_one = None  # type: ignore[assignment]
     SqlglotError = ()  # type: ignore[assignment,misc]  # nothing is parsed, so nothing to catch
 
-from join_registry import field_to_db_col as _field_to_db_col  # noqa: E402
 from services.translate.concept_keys import expand_concept_keys as _expand_concept_keys  # noqa: E402
+from services.translate.participant_query_compiler import derivatives_condition as _derivatives_condition  # noqa: E402
 from text_terms import parse_alternatives as _parse_alternatives  # noqa: E402
 import cohort_count as _cohort_count  # noqa: E402
 from participant_codes import handedness_code as _handedness_code, sex_code as _sex_code  # noqa: E402
@@ -44,9 +44,10 @@ from services.fulltext.ranking import other_words_only_expression as _other_word
 from services.results import rankers as _rankers  # noqa: E402
 from services.uncertain import tier as _uncertain_tier  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
-from services.schema.coded_fields import CONCEPT_FIELDS, FILE_FIELDS  # noqa: E402
+from services.schema.fields import CONCEPT_FIELDS, FILE_FIELDS, CatalogueField  # noqa: E402
 from services.schema.tables import (  # noqa: E402
-    dataset_facets as _dataset_facets, datasets as _datasets, objects as _objects, participants as _participants,
+    dataset_facets as _dataset_facets, datasets as _datasets, derivatives as _derivatives, objects as _objects,
+    participants as _participants,
 )
 from services import sql_tree  # noqa: E402
 from services.translate import value_check as _value_check  # noqa: E402
@@ -173,7 +174,7 @@ _PARTICIPANTS_COUNT_SUBQUERY_RE = re.compile(
 )
 
 
-# The filter line of "at least N patients with X" (LLM_preprocessor/preprocess/).
+# The filter line of "at least N patients with X" (backend/llm/preprocess/).
 _PATIENTS_LINE_RE = re.compile(
     r"^  patients \([^)\n]*\): (patients_with\('[a-z0-9_, ]+'\) >= \d+)\s*$", re.MULTILINE)
 
@@ -267,7 +268,7 @@ class SqlRewriteService:
         return _FALLBACK_SQL
 
     def rewrite_generated_sql(self, raw_sql: str, augmented_question: str,
-                              word_forms: Optional[Mapping[str, Sequence[str]]] = None,
+                              allowed_forms: Optional[Mapping[str, Sequence[str]]] = None,
                               ) -> RewriteResult:
         """Normalize raw LLM output into executable SQL plus bind parameters.
 
@@ -275,8 +276,8 @@ class SqlRewriteService:
         the caller's state. That keeps the translation pipeline easy to cache and
         makes the rewrite behavior testable in isolation.
 
-        *word_forms*: the forms decided for words of this question
-        (RAG/word_forms.py); text search then requires them
+        *allowed_forms*: the forms decided for words of this question
+        (backend/vocabulary/stem_collisions.py); text search then requires them
         (services/fulltext/text_search.py, TEXT_SEARCH_EXACT).
         """
         sql = self.extract_sql(raw_sql)
@@ -304,7 +305,7 @@ class SqlRewriteService:
         sql = self._restore_description_alternatives(sql, augmented_question)
         sql = self._restore_description_formula(sql, augmented_question)
         # "At least N patients with X": patients_with(...) >= N becomes a count of
-        # the participants known to have the diagnosis (RAG/cohort_count.py).
+        # the participants known to have the diagnosis (backend/vocabulary/cohort_count.py).
         sql = self._inject_patient_counts(sql, augmented_question)
         sql = _cohort_count.expand(sql)
         tiered = _uncertain_tier.enabled()
@@ -318,7 +319,7 @@ class SqlRewriteService:
         # With the tier on, paper text is evidence for the second tier only;
         # confirmed results match on the dataset's own text.
         expanded = _text_search.expand_text_search(
-            sql, papers=False if tiered else None, exact_forms=word_forms)
+            sql, papers=False if tiered else None, allowed_forms=allowed_forms)
         sql = expanded.sql
         filter_sql = sql
         if tiered:
@@ -874,7 +875,7 @@ class SqlRewriteService:
         """Write each sex literal as the code the column holds.
 
         bids_participants.sex holds 'male', 'female' or 'other_diverse' (the
-        crawler's remote/participant_codes.py; RAG/participant_codes.py). The SQL model
+        crawler's remote/participant_codes.py; backend/vocabulary/participant_codes.py). The SQL model
         still writes 'F', 'Female' or IN ('M', 'male'): each literal the
         vocabulary knows becomes its code, so that p.sex = 'F' does not come
         back empty. A literal it does not know is left as written.
@@ -916,7 +917,7 @@ class SqlRewriteService:
     def _handedness_code(cls, literal: str) -> Optional[str]:
         """The stored code a handedness value stands for, or None if unclear."""
         # What a request or the SQL model says for each code: the vocabulary
-        # (RAG/participant_codes.py). A word it does not list is read by its
+        # (backend/vocabulary/participant_codes.py). A word it does not list is read by its
         # beginning ('lefty', 'right-dominant people').
         code = _handedness_code(literal)
         if code is not None:
@@ -1556,6 +1557,12 @@ class SqlRewriteService:
         The [VOCABULARY MISS] block of the augmented question carries one
         text_match() placeholder per unresolved term. A placeholder the model
         already copied (same search terms) is not added twice.
+
+        A term that only names a preprocessing pipeline ("MRIQC derivatives")
+        is not added when the SQL already looks it up in bids_derivatives:
+        the plan compiler writes that lookup instead of the text search, and
+        few READMEs name the pipeline (gold request qx06: 53 of 633 MRIQC
+        datasets with the text ANDed in, all 633 without).
         """
         cleaned, _ = self._strip_outer_scan_filters_fallback(sql)
         hinted: list[str] = []
@@ -1568,8 +1575,13 @@ class SqlRewriteService:
             argument = _TEXT_MATCH_CALL_RE.match(call).group(1)  # type: ignore[union-attr]
             return tuple(sorted(str(term) for term in _parse_alternatives(argument)))
 
+        def looked_up(call: str) -> bool:
+            condition = _derivatives_condition(_TEXT_MATCH_CALL_RE.match(call).group(1))  # type: ignore[union-attr]
+            return condition is not None and _derivatives.name in cleaned
+
         present = {key(m.group(0)) for m in _TEXT_MATCH_CALL_RE.finditer(cleaned)}
-        missing = [call for call in dict.fromkeys(hinted) if key(call) not in present]
+        missing = [call for call in dict.fromkeys(hinted)
+                   if key(call) not in present and not looked_up(call)]
         if not missing:
             return cleaned
 
@@ -1643,7 +1655,7 @@ class SqlRewriteService:
     def _restore_description_formula(self, sql: str, augmented_question: str) -> str:
         """AND back the exclusions of a description formula the model left out.
 
-        A formula line (RAG/text_formula.py) reads, for "memory but not sleep",
+        A formula line (backend/vocabulary/text_formula.py) reads, for "memory but not sleep",
             dataset text: text_match('memory') AND NOT text_match('sleep')
         Its top-level AND parts are separate conditions. A model that copied
         only the first would search for memory and keep the sleep studies.
@@ -1754,10 +1766,8 @@ class SqlRewriteService:
             if not _CODE_RE.match(str(code)):
                 continue
 
-            col_info = _field_to_db_col(field)
-            if col_info is None:
-                continue
-            field_cols[field] = col_info
+            stored = CatalogueField(field).stored
+            field_cols[field] = (stored.table, stored.column)
             rows.append(f"('{field}', '{code}', {float(score):.4f})")
 
         text_rank = ranking.rank_expression("ft", rank_query)
@@ -1834,9 +1844,9 @@ def extract_sql(raw: str) -> str:
 
 
 def rewrite_generated_sql(raw_sql: str, augmented_question: str,
-                          word_forms: Optional[Mapping[str, Sequence[str]]] = None,
+                          allowed_forms: Optional[Mapping[str, Sequence[str]]] = None,
                           ) -> RewriteResult:
-    return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, word_forms)
+    return sql_rewrite_service.rewrite_generated_sql(raw_sql, augmented_question, allowed_forms)
 
 
 def finish_corrected_sql(raw: str, failed_sql: str) -> str:

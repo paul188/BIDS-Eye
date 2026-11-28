@@ -4,21 +4,19 @@ services/translate/text_to_sql.py
 Text-to-SQL service for BIDS-Eye.
 
 Pipeline:
-  1. Gemini preprocessing  → structured QueryPlan (intent extraction)
+  1. LLM preprocessing     → structured QueryPlan (intent extraction)
   2. RAG resolution        → canonical DB codes (diagnoses, tasks, scan types)
  3. SQL construction      → deterministic compiler for supported typed plans,
-                             otherwise Gemini SQL generation with examples
+                             otherwise LLM SQL generation with examples
                              (prompt text, schema and examples: prompt/)
   4. SQL rewrite service    → projection normalization, filter cleanup,
                              VOCABULARY MISS fallback predicates, and expansion
                              of text_match() into full-text search
-  5. Gemini error corrector → fixes any SQL that fails at runtime
+  5. LLM error corrector   → fixes any SQL that fails at runtime
 
-Which mode is used:
-  - If GEMINI_API_KEY is set → the pipeline above runs
-  - If it is absent          → returns a bounded sample of datasets
-
-Set environment variables in .env (see .env.example).
+The models: profiles intent and sql in backend/llm/llm_config.yaml. When
+neither can be asked (no key for any of its models), the service returns a
+bounded sample of datasets.
 """
 
 from __future__ import annotations
@@ -30,14 +28,15 @@ from typing import List, Optional
 
 log = logging.getLogger(__name__)
 
-from schemas import TextToSQLResult  # noqa: E402
-from llm_client import llm_generate, LLMAllFailedError  # noqa: E402
+from routers.schemas import TextToSQLResult  # noqa: E402
+from llm_client import llm_generate, profile_available, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
 from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
 from services.translate.sql_rewriter import finish_corrected_sql as _finish_corrected_sql  # noqa: E402
 from services.translate.sql_rewriter import rewrite_generated_sql as _rewrite_generated_sql  # noqa: E402
 from services.database_stats.database_stats import database_stats as _database_stats  # noqa: E402
 from services.translate import optional_columns as _optional_columns  # noqa: E402
+from services.translate.prompt import example_families as _example_families  # noqa: E402
 from services.translate.prompt import examples as _examples  # noqa: E402
 from services.translate.prompt import instructions as _instructions  # noqa: E402
 from services.translate.prompt import schema_ddl as _schema_ddl  # noqa: E402
@@ -47,9 +46,9 @@ from services.translate.participant_query_compiler import (  # noqa: E402
 )
 
 
-def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: str) -> str:
+def _correct_sql(sql: str, db_error: str, question: str) -> str:
     """
-    Stage 4 — ask Gemini to fix a SQL query that failed with a PostgreSQL error.
+    Stage 4 — ask the model to fix a SQL query that failed with a PostgreSQL error.
     Returns the corrected SQL, or the original if correction fails.
 
     *sql* is the rewritten query that ran (uncertain tier included); the
@@ -59,8 +58,7 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
     prompt = _instructions.correction_prompt(question, schema_ddl, sql, db_error)
 
     try:
-        raw = llm_generate(prompt, temperature=0.0, api_key=api_key,
-                           purpose="sql_correction")
+        raw = llm_generate(prompt, profile="sql", purpose="sql_correction")
         corrected = _finish_corrected_sql(raw, sql)
         return corrected if corrected != _FALLBACK_SQL else sql
     except LLMAllFailedError as exc:
@@ -68,14 +66,10 @@ def _correct_sql_with_gemini(sql: str, db_error: str, question: str, api_key: st
         return sql
 
 
-# ── Stage 3 local fallback: Gemini SQL generation ─────────────────────────────
+# ── Stage 3: SQL generation ───────────────────────────────────────────────────
 
-def _gemini_sql_generation(augmented_question: str, api_key: str,
-                           examples: Optional[List[dict]] = None) -> str:
-    """
-    Primary SQL generation using Gemini with few-shot examples.
-    Previously a fallback; now the main pipeline.
-    """
+def _generate_sql(augmented_question: str, examples: Optional[List[dict]] = None) -> str:
+    """SQL generation by the model (profile sql), with few-shot examples."""
     schema_ddl = _schema_ddl.build_schema_ddl(_optional_columns.usable_columns(_database_stats.coverage))
 
     # The model never writes a text predicate itself. It copies or writes
@@ -92,17 +86,17 @@ def _gemini_sql_generation(augmented_question: str, api_key: str,
     # Cascade + retries + cross-provider fallback handled by llm_client; raises
     # LLMAllFailedError if every tier fails (caught upstream for graceful degrade).
     return _extract_sql(llm_generate(
-        prompt, system=system_prompt, temperature=0.0, api_key=api_key, purpose="sql"))
+        prompt, profile="sql", system=system_prompt))
 
 
-# ── Pipeline (stages 1–2 + Gemini SQL as stage 3) ─────────────────────────────
+# ── Pipeline (stages 1–2 + SQL generation as stage 3) ─────────────────────────
 
-def _run_local(question: str, api_key: str) -> TextToSQLResult:
+def _run_local(question: str) -> TextToSQLResult:
     """
     Translation pipeline:
-      Stage 1: Gemini preprocessing  → QueryPlan
+      Stage 1: LLM preprocessing     → QueryPlan
       Stage 2: RAG resolution        → augmented question with DB codes
-      Stage 3: Gemini SQL generation → SELECT statement (+ few-shot examples)
+      Stage 3: LLM SQL generation    → SELECT statement (+ few-shot examples)
     """
     try:
         from preprocess import run_pipeline
@@ -125,11 +119,10 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
 
     # Stages 1 + 2
     augmented_plan = run_pipeline(
-        question, retriever=retriever, api_key=api_key,
+        question, retriever=retriever,
         available_columns=_optional_columns.usable_columns(_database_stats.coverage),
     )
     augmented_question = augmented_plan.augmented_question
-    query_family = augmented_plan.plan.query_family.value
     explanation = augmented_plan.plan.natural_language_summary
     # A phrase too few datasets say is left out of the search
     # (preprocess/augment.py): "epilepsy ONLY postictal" listed every epilepsy
@@ -157,13 +150,14 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
         # One line per search: which plans the compiler declines, and why,
         # shows what to support next.
         log.info("SQL path: model (compiler declined: %s)", compiled.reason)
-        examples = _examples.pick_examples(_examples.FEW_SHOT_POOL, query_family, n=5, seed=question,
-                                  resolved_codes=resolved_codes)
+        families = _example_families.plan_families(plan)
+        examples = _examples.pick_examples(_examples.FEW_SHOT_POOL, families, n=5, seed=question,
+                                           resolved_codes=resolved_codes)
         if examples:
-            log.info("Injecting %d few-shot examples for family '%s' (resolved codes: %s)",
-                     len(examples), query_family,
+            log.info("Injecting %d few-shot examples for families %s (resolved codes: %s)",
+                     len(examples), families,
                      {k: v for k, v in resolved_codes.items() if v})
-        raw_sql = _gemini_sql_generation(augmented_question, api_key, examples)
+        raw_sql = _generate_sql(augmented_question, examples)
 
     # Keep LLM generation and SQL rewriting separate: the model emits raw SQL,
     # or the supported typed-plan compiler emits it; the rewrite service then
@@ -171,8 +165,8 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     rewritten = _rewrite_generated_sql(
         raw_sql,
         augmented_question,
-        # Word forms decided for this question (RAG/word_forms.py); {} mostly.
-        getattr(augmented_plan, "word_forms", None) or None,
+        # Allowed forms decided for this question (backend/vocabulary/stem_collisions.py); {} mostly.
+        getattr(augmented_plan, "allowed_forms", None) or None,
     )
 
     # Relevance ranking is applied later by services.translate.sql_rewriter.build_page_sql
@@ -180,7 +174,7 @@ def _run_local(question: str, api_key: str) -> TextToSQLResult:
     # order clause. We still decide *whether* to rank: skip for explicit top-N
     # / user-ordered queries so we don't override the order the user asked for.
     plan = augmented_plan.plan
-    apply_relevance = plan.result_limit is None and plan.order_by is None
+    apply_relevance = not plan.user_ordered
     # The whole catalogue is no answer to a search: "bonn" and "datasets
     # related to drawings or art" got all 1,721 datasets, in no useful order
     # (live, 2026-11-17/18). Only a ranking or top-N question ("the 10
@@ -267,27 +261,26 @@ def keyword_fallback(question: str, explanation: str) -> TextToSQLResult:
 async def text_to_sql(question: str) -> TextToSQLResult:
     """
     Translate a natural-language question into a PostgreSQL SELECT statement via
-    the Gemini pipeline. Falls back to a bounded sample of datasets when no
-    GEMINI_API_KEY is configured or every LLM tier is unavailable.
+    the LLM pipeline. Falls back to a bounded sample of datasets when no model
+    of profiles intent and sql can be asked, and to a keyword search when every
+    one fails.
 
     Always runs in a thread pool to avoid blocking the FastAPI event loop.
     """
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-
-    if api_key:
-        log.info("Using Gemini pipeline")
+    if profile_available("intent") and profile_available("sql"):
+        log.info("Using the LLM pipeline")
         # Hard wall-clock deadline for the whole LLM pipeline (intent + RAG + SQL
         # generation). Cloudflare drops the request at ~100s; if the LLMs are
-        # pathologically slow (Gemini 503 storm + slow fallback) we must return
+        # pathologically slow (a provider's 503 storm + slow fallback) we must return
         # *something* fast rather than let the browser see a NetworkError.
         deadline = float(os.getenv("PIPELINE_DEADLINE_SECONDS", "80"))
         try:
             return await asyncio.wait_for(
-                asyncio.to_thread(_run_local, question, api_key),
+                asyncio.to_thread(_run_local, question),
                 timeout=deadline,
             )
         except LLMAllFailedError as exc:
-            # Every LLM tier (all Gemini models + the Claude fallback) is down.
+            # Every model of the profile is down.
             # Degrade gracefully instead of 500ing the request.
             log.warning("All LLM providers failed (%s) — falling back to a keyword search", exc)
             return keyword_fallback(
@@ -297,7 +290,7 @@ async def text_to_sql(question: str) -> TextToSQLResult:
             return keyword_fallback(
                 question, "Understanding that question took too long right now.")
 
-    log.warning("No GEMINI_API_KEY set — returning a sample of datasets")
+    log.warning("No LLM configured for profiles intent and sql — returning a sample of datasets")
     return TextToSQLResult(
         sql=_FALLBACK_SQL,
         explanation="No API credentials configured — showing a sample of datasets.",

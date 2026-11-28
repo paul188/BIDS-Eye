@@ -20,7 +20,9 @@ BUILTIN_EXCEPTIONS = {
 def _sources():
     for path in sorted(BACKEND.rglob("*.py")):
         relative = path.relative_to(BACKEND)
-        if relative.parts[0] in {"tests", ".venv", "venv"}:
+        # llm/ and vocabulary/ are installed on their own and do not import
+        # the backend's exceptions/.
+        if relative.parts[0] in {"tests", ".venv", "venv", "llm", "vocabulary"}:
             continue
         yield relative, path.read_text(encoding="utf-8")
 

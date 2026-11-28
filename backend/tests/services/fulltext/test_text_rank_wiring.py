@@ -1,0 +1,80 @@
+"""The full-text rank query must travel from the SQL rewriter to the page query.
+
+The rewriter computes ``rank_query`` and the router passes
+``translation.rank_query`` to ``build_page_sql``. ``_run_local`` sits between
+the two; when it dropped the value, results were filtered by full-text search
+but never ordered by it.
+"""
+from __future__ import annotations
+
+from types import SimpleNamespace
+
+import pytest
+
+import preprocess
+import retriever
+from services.database_stats.database_stats import ColumnCoverage, database_stats
+from services.fulltext import word_frequencies
+from services.translate import text_to_sql
+from services.translate.sql_rewriter import build_page_sql
+from services.fulltext.ranking import RankQuery
+
+BASE = (
+    "SELECT {{COLS}} FROM bids_datasets d "
+    "LEFT JOIN bids_objects o ON o.dataset_id = d.id AND o.subject IS NOT NULL "
+)
+
+
+@pytest.fixture(autouse=True)
+def _full_text_available():
+    database_stats.coverage = ColumnCoverage.full(())
+    word_frequencies.set_frequency_lookup(None)
+    yield
+    database_stats.coverage = ColumnCoverage.full(())
+    word_frequencies.set_frequency_lookup(None)
+
+
+def _fake_pipeline(monkeypatch, generated_sql: str, **plan_overrides) -> None:
+    """Replace the two LLM stages and the resolver; keep the real rewriter."""
+    plan = SimpleNamespace(
+        natural_language_summary="demo",
+        user_ordered=False,
+        groups=[],
+    )
+    for name, value in plan_overrides.items():
+        setattr(plan, name, value)
+    augmented = SimpleNamespace(
+        plan=plan, augmented_question="datasets mentioning ketamine", scored_filters=[],
+        resolved=[],
+    )
+    monkeypatch.setattr(preprocess, "run_pipeline", lambda *args, **kwargs: augmented)
+    monkeypatch.setattr(retriever, "MetadataRetriever", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        text_to_sql, "_generate_sql", lambda *args, **kwargs: generated_sql
+    )
+
+
+def test_run_local_passes_the_rank_query_on(monkeypatch) -> None:
+    _fake_pipeline(monkeypatch, BASE + "WHERE text_match('ketamine') GROUP BY d.id")
+
+    result = text_to_sql._run_local("datasets mentioning ketamine")
+
+    assert "search_tsv @@" in result.sql
+    assert result.rank_query == RankQuery("ketamine")
+    # What the router does with it: the page query orders by the text rank.
+    # Compared in lower case: with sqlglot installed the rewriter re-renders
+    # function names and keywords in upper case.
+    page_sql, _ = build_page_sql(
+        result.sql, result.scored_filters, result.apply_relevance, 20, 0,
+        rank_query=result.rank_query,
+    )
+    assert "ts_rank_cd" in page_sql.lower()
+    assert "ranked.relevance_score + ranked.text_rank desc" in page_sql.lower()
+
+
+def test_run_local_has_no_rank_query_without_text_terms(monkeypatch) -> None:
+    _fake_pipeline(monkeypatch, BASE + "WHERE d.license ILIKE '%CC0%' GROUP BY d.id")
+
+    result = text_to_sql._run_local("CC0 datasets")
+
+    assert result.rank_query is None

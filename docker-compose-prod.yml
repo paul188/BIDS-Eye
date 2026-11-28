@@ -1,0 +1,155 @@
+# BIDS-Eye — production deployment (runs on the Hetzner VPS)
+#
+# Prerequisites on the VPS:
+#   1. Get SSL cert (first time only, before starting nginx):
+#        docker run --rm -p 80:80 -v $(pwd)/certbot/conf:/etc/letsencrypt \
+#          -v $(pwd)/certbot/www:/var/www/certbot certbot/certbot certonly \
+#          --standalone -d YOUR_DOMAIN --agree-tos -m YOUR_EMAIL
+#
+#   2. Edit deploy/nginx/bids-eye.conf — replace YOUR_DOMAIN with your actual domain.
+#
+#   3. Fill in .env (copy from .env.example), including GITHUB_CLIENT_ID,
+#      GITHUB_CLIENT_SECRET, GITHUB_ORG (or ALLOW_ANY_GITHUB_USER),
+#      GITHUB_REDIRECT_URI, SESSION_SECRET and METADATA_DB_HOST=postgres.
+#
+#   4. Start everything:
+#        docker compose -f docker-compose-prod.yml up -d
+
+# Rotate container logs (the default json-file log grows without limit).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+
+  # ── Reverse proxy + SSL ────────────────────────────────────────────────────
+  nginx:
+    image: nginx:stable-alpine
+    container_name: bids_nginx
+    logging: *default-logging
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx/bids-eye.conf:/etc/nginx/conf.d/bids-eye.conf:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - bids-net
+
+  # ── SSL certificate renewal (runs certbot renew every 12 h) ───────────────
+  certbot:
+    image: certbot/certbot
+    container_name: bids_certbot
+    logging: *default-logging
+    volumes:
+      - ./certbot/www:/var/www/certbot:rw
+      - ./certbot/conf:/etc/letsencrypt:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - bids-net
+
+  # ── Vue 3 frontend (nginx, static build) ──────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: bids_frontend
+    logging: *default-logging
+    restart: unless-stopped
+    networks:
+      - bids-net
+
+  # ── FastAPI backend ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: bids_backend
+    logging: *default-logging
+    env_file: .env
+    environment:
+      METADATA_DB_HOST: postgres
+      METADATA_DB_PORT: 5432
+      # One JSON object per log line (backend/request_log.py).
+      LOG_FORMAT: json
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bids-net
+
+  # ── OpenNeuro crawler (ingest/openneuro-crawler/README.md) ─────────────────
+  # Not started by a plain `up -d`. Start it with
+  #   docker compose -f docker-compose-prod.yml --profile crawl up -d crawler
+  # or run one cycle with
+  #   docker compose -f docker-compose-prod.yml --profile crawl run --rm crawler \
+  #     python crawler_service.py --once
+  # A cycle checks every OpenNeuro dataset against the API and indexes only the
+  # new and changed ones. The limits keep it from taking the memory and CPU
+  # PostgreSQL and the backend need on this 2-core, 4 GB server: when pybids
+  # runs out of memory, the crawler is killed, not the database.
+  crawler:
+    profiles: [crawl]
+    build:
+      context: .
+      dockerfile: ingest/openneuro-crawler/Dockerfile
+    container_name: bids_crawler
+    logging: *default-logging
+    env_file: .env
+    environment:
+      METADATA_DB_HOST: postgres
+      METADATA_DB_PORT: 5432
+      CRAWL_INTERVAL_HOURS: ${CRAWL_INTERVAL_HOURS:-24}
+      CRAWL_DELAY_SECONDS: ${CRAWL_DELAY_SECONDS:-5}
+      CRAWL_MAX_PER_CYCLE: ${CRAWL_MAX_PER_CYCLE:-0}
+      CRAWL_MAX_FILES: ${CRAWL_MAX_FILES:-50000}
+      OPENNEURO_ACCESSIONS: ${OPENNEURO_ACCESSIONS:-}
+      # These two send dataset text to Gemini: off until that is agreed for production.
+      CRAWL_README_PROFILES: ${CRAWL_README_PROFILES:-false}
+      CRAWL_DESCRIPTIONS: ${CRAWL_DESCRIPTIONS:-false}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bids-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1200M
+
+  # ── PostgreSQL (not exposed externally) ───────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: bids_postgres
+    logging: *default-logging
+    env_file: .env
+    environment:
+      POSTGRES_DB:       ${METADATA_DB_NAME}
+      POSTGRES_USER:     ${METADATA_DB_USER}
+      POSTGRES_PASSWORD: ${METADATA_DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${METADATA_DB_USER} -d ${METADATA_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bids-net
+
+networks:
+  bids-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

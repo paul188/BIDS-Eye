@@ -1,6 +1,6 @@
 """Classify each labelled pair: inflection (same word, -s/-ed/-ing) or derivation
 (-al, -ion, -ive, -ly, -er, -ity, -ance ...), and compare with the labels."""
-import json, sys, os
+import json, sys
 from collections import Counter, defaultdict
 
 S = sys.argv[1]

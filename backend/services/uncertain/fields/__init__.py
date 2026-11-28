@@ -10,7 +10,7 @@ the field (classify.soft_kind decides, classify.classify builds the states).
 
 To add a field: write its file with a FIELD, list it in FIELDS below, and add
 its file to stores/interpretations._VERSION_FILES. The words its text form looks for
-belong in RAG/value_mappings.yaml (RAG/text_evidence.py reads them).
+belong in backend/vocabulary/value_mappings.yaml (backend/vocabulary/text_evidence.py reads them).
 
 Scanner values are not here: they are recorded with the files, not as a
 column, and need their own lookup (scanner.py).

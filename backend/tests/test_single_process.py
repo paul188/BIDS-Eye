@@ -4,7 +4,7 @@ memory and are only correct when every request reaches the same process:
 
 - the query cache (services/stores/translated_queries.py): paging a query_id made by
   another process fails,
-- the rate-limit counts (rate_limits.py): each process would count on its own,
+- the rate-limit counts (security/rate_limits.py): each process would count on its own,
 - the searches running now (services/search.py ``_in_flight``): a repeated
   question on another process would start a second search.
 
@@ -27,9 +27,9 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = ROOT / "backend" / "Dockerfile"
 COMPOSE_FILES = sorted(ROOT.glob("docker-compose*.yml"))
-# The server runs ``docker compose -f docker-compose-hetzner.yml``; its fixed container_name is
+# The server runs ``docker compose -f docker-compose-prod.yml``; its fixed container_name is
 # also what makes ``docker compose up --scale backend=2`` fail there.
-PRODUCTION_COMPOSE = ROOT / "docker-compose-hetzner.yml"
+PRODUCTION_COMPOSE = ROOT / "docker-compose-prod.yml"
 ENV_EXAMPLE = ROOT / ".env.example"
 
 if not DOCKERFILE.is_file() or not COMPOSE_FILES:

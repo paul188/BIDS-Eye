@@ -110,7 +110,7 @@ One straightforward local setup is:
 
 ```bash
 pip install -e BIDS-SQL
-pip install -e RAG -e LLM_preprocessor
+pip install -e backend/vocabulary -e backend/llm
 pip install -e backend
 
 cd backend
@@ -132,24 +132,32 @@ Users sign in with GitHub. The backend refuses to start until `.env` (see [`.env
 The session is a signed cookie; the server keeps no list of sessions. What follows from that:
 
 - Organization membership is checked at sign-in only. Someone removed from the organization keeps access until
-  their cookie expires, at most `SESSION_DAYS` (7, in [`backend/routers/auth.py`](./backend/routers/auth.py)).
+  their cookie expires, at most `SESSION_DAYS` (7, in [`backend/security/sessions.py`](./backend/security/sessions.py)).
 - Signing out deletes the cookie in that browser. A copied cookie stays valid until it expires.
 - **To sign everyone out at once**, set a new `SESSION_SECRET` and restart the backend.
 
 ## Project Layout
 
 ```text
-backend/                     FastAPI app, auth, query routing
+backend/                     FastAPI app and everything it runs at request time
   services/                  Search pipeline, grouped by stage (see services/__init__.py)
   routers/                   Query, auth, and crawler endpoints
+  llm/                       Intent parsing (preprocess/) and the shared LLM client
+  vocabulary/                Curated vocabulary (value_mappings.yaml) and term-to-code retriever
+    tools/                   Offline tools that build or audit the vocabulary
 frontend/                    Vue 3 dataset search UI
   src/                       Chat interface, dataset cards, and state management
-BIDS-SQL/                    Shared indexing and database layer
+ingest/                      Offline jobs that fill the database
+  openneuro-crawler/         OpenNeuro/DataLad crawler (its own Docker service)
+  backfill/                  Re-run crawler steps over already-indexed datasets
+BIDS-SQL/                    Shared indexing and database layer (git submodule)
   input_pipeline.py          BIDS dataset discovery and ingestion
   db/                        ORM models and database helpers
-crawlers/openneuro-crawler/  OpenNeuro/DataLad indexing utilities
-RAG/                         Vocabulary (value_mappings.yaml) and term-to-code retriever
-LLM_preprocessor/            Intent parsing and the shared LLM client
+benchmarks/                  Search quality benchmarks
+deploy/                      What runs the site on the server
+  nginx/                     Reverse proxy and TLS configuration
+  backup/                    Database backups (systemd timers on the server)
+docs/                        Research notes and design plans
 ```
 
 ## Checks
@@ -175,6 +183,12 @@ METADATA_DB_NAME=x METADATA_DB_USER=x METADATA_DB_PASSWORD=x METADATA_DB_HOST=lo
   python -m pytest -q tests
 ```
 
+`backend/tests/` mirrors the source: `services/<stage>/`, `routers/`,
+`vocabulary/`, `llm/`, `ingest/` (the crawler) and `migrations/`;
+`search/` holds end-to-end search behaviour that spans several stages, and
+the root the tests of the top-level modules. `python -m pytest tests/vocabulary`
+runs one part.
+
 The tests that need real SQL are skipped unless `BIDSEYE_TEST_PG_DSN` names an
 empty scratch PostgreSQL; `backend/tests/postgres.py` says how to start one. CI
 runs them, and prints a coverage table (`--cov`).
@@ -198,7 +212,7 @@ The repository includes benchmark and evaluation material for:
 - OpenNeuro and public-dataset search behavior,
 - remote indexing workflows.
 
-See the `README.md` files and scripts under `RAG/`, `benchmarks/`, and `crawlers/` for the current evaluation tooling.
+See the `README.md` files and scripts under `backend/vocabulary/`, `benchmarks/`, and `ingest/` for the current evaluation tooling.
 
 ## Contributing
 

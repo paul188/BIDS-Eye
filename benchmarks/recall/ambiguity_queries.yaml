@@ -7,7 +7,7 @@
 # words for it (recall over the judged pool).
 #
 # Caveats:
-#   - The heads are the ones in RAG/senses.yaml, so these questions test the
+#   - The heads are the ones in backend/vocabulary/senses.yaml, so these questions test the
 #     mechanism, not how it generalises. The held-out split of queries.yaml
 #     checks that.
 #   - None of these questions may appear in a prompt or a few-shot example.

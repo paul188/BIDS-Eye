@@ -1,5 +1,5 @@
 """Root file listing of every public OpenNeuro dataset, plus one level below derivatives/, stimuli/, sourcedata/, phenotype/ (resumable)."""
-import json, os, time, urllib.request, urllib.error, sys
+import json, os, time, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
 G = os.path.dirname(os.path.abspath(__file__))
 OUT = f"{G}/on_trees.jsonl"
@@ -10,7 +10,7 @@ def post(v):
         try:
             d = json.load(urllib.request.urlopen(req, timeout=120))
             return ((d.get("data") or {}).get("snapshot") or {}).get("files") or []
-        except Exception as e:
+        except Exception:
             time.sleep(2 * (attempt + 1))
     return None
 def one(o):

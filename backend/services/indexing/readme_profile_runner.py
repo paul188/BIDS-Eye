@@ -11,9 +11,10 @@ from the same input with the same prompt version, so a run can be stopped and
 repeated at any time, and a changed README redoes only that dataset.
 
 Two callers: the crawler after each cycle, for the datasets it indexed
-(crawlers/openneuro-crawler/post_crawl.py), and
-scripts/extract_readme_profiles.py, for the whole catalogue or a sample to
-review. Needs GEMINI_API_KEY; the text goes to Gemini only.
+(ingest/openneuro-crawler/post_crawl.py), and
+ingest/backfill/extract_readme_profiles.py, for the whole catalogue or a sample to
+review. Needs a model of LLM profile readme_profile (backend/llm/llm_config.yaml);
+the profile has Gemini models only, so the text goes to Gemini only.
 """
 
 from __future__ import annotations
@@ -88,10 +89,10 @@ async def missing_schema(conn: Any) -> List[str]:
 
 
 def code_lookup() -> rp.CodeLookup:
-    """Diagnosis resolver from the search pipeline (RAG/retriever.py).
+    """Diagnosis resolver from the search pipeline (backend/vocabulary/retriever.py).
 
     Raises ResolverUnavailableError when its files or modules are missing:
-    importing the retriever reads RAG/value_mappings.yaml, and it reads
+    importing the retriever reads backend/vocabulary/value_mappings.yaml, and it reads
     name_index.json next to itself.
     """
     import yaml
@@ -111,28 +112,16 @@ def code_lookup() -> rp.CodeLookup:
     return lookup
 
 
-def _ask_model(source: rp.ProfileSource, model: str, thinking: Optional[str]) -> str:
-    from llm_client import llm_generate
-
-    return llm_generate(
-        rp.build_prompt(source),
-        system=rp.SYSTEM_PROMPT,
-        temperature=0.0,
-        max_tokens=4096,
-        models=[model],
-        json_schema=rp.RESPONSE_SCHEMA,
-        thinking_level=thinking,
-        call_timeout=120,
-        budget_seconds=300,
-        use_fallback=False,
-    )
-
-
 def _extract(source: rp.ProfileSource, model: str, thinking: Optional[str]) -> rp.Profile:
     """Ask the model, retrying once when the answer is not usable JSON."""
+    from llm_client import llm_generate
+
+    prompt = rp.build_prompt(source)
     last_error: Optional[ValueError] = None
     for _attempt in range(2):
-        raw = _ask_model(source, model, thinking)
+        raw = llm_generate(prompt, profile="readme_profile", system=rp.SYSTEM_PROMPT,
+                           models=[model], json_schema=rp.RESPONSE_SCHEMA,
+                           thinking_level=thinking)
         try:
             return rp.parse_response(raw, source)
         except ValueError as exc:

@@ -35,9 +35,10 @@ Two live questions from 2026-11-14 show the three failure modes.
 **"give me all emo studies coauthored by Morgenroth"**
 
 - "emo" matched the start of the construct "emotion" (WRatio 90). The only
-  task linked to that construct in `RAG/bids_to_ca_map.json` is
+  task linked to that construct (then in `bids_to_ca_map.json`, now the
+  `measures` of the task entries in `backend/vocabulary/value_mappings.yaml`) is
   `meditation_general`, which became a hard filter, so the search found
-  nothing. Fixed in `RAG/retriever.py` (see section 12). "emo" now becomes a
+  nothing. Fixed in `backend/vocabulary/retriever.py` (see section 12). "emo" now becomes a
   text search and finds both Emo-FilM datasets.
 - The underlying problem remains: "emo" means *emotion*, and Emo-FilM
   (ds004892, ds004872) says so nowhere in its own metadata. It has no
@@ -91,7 +92,7 @@ Without a fixed yardstick, every later step is anecdote.
     abbreviation "emo"
 - Keep them in a separate file (`benchmarks/recall/ambiguity_queries.yaml`),
   not in `queries.yaml`, and never as prompt examples. The rule in
-  `LLM_preprocessor/preprocess.py` above `_SYSTEM_PROMPT` applies: a prompt
+  `backend/llm/preprocess.py` above `_SYSTEM_PROMPT` applies: a prompt
   that names the test questions makes their score meaningless.
 - Judge the pool with the existing judge (`benchmarks/recall/build_pool.py`,
   `merge_judgments.py`). Seed "social conflict" with the verdicts in section 1.
@@ -107,7 +108,7 @@ Without a fixed yardstick, every later step is anecdote.
 
 ### Schema
 
-New field on `QueryPlan` in `LLM_preprocessor/preprocess.py`:
+New field on `QueryPlan` in `backend/llm/preprocess.py`:
 
 ```python
 class Topic(BaseModel):
@@ -162,7 +163,7 @@ conflict" is looked up as a whole; if it misses, it does *not* fall back to
 
 ### Vocabulary
 
-`RAG/retriever.py` gets `resolve_topic(topic)`:
+`backend/vocabulary/retriever.py` gets `resolve_topic(topic)`:
 
 1. Look up `phrase`, then each alternative, with the existing task and
    construct matching (`_match_yaml_term`).
@@ -194,7 +195,7 @@ benchmark can show exactly what was searched.
 
 ### Near matching
 
-The `text_match` grammar (`RAG/text_terms.py`) matches every word of a term
+The `text_match` grammar (`backend/vocabulary/text_terms.py`) matches every word of a term
 anywhere in the text. A new mode `near` requires the words of a term to be
 within 3 positions of each other, in either order. PostgreSQL's tsquery has
 only exact-distance operators, so `near` expands to an OR of them:
@@ -239,7 +240,7 @@ couples-conflict task.
 LLM output varies between runs and model versions. For the 20 to 30 heads
 that matter most, a curated file makes the behaviour fixed and testable.
 
-`RAG/senses.yaml`:
+`backend/vocabulary/senses.yaml`:
 
 ```yaml
 conflict:
@@ -267,7 +268,7 @@ Use:
   (stage 7).
 - The LLM's alternatives are kept next to the inventory's, after validation.
 
-Building the file: a script (`scripts/mine_senses.py`) lists, for each
+Building the file: a script (`backend/vocabulary/tools/mine_senses.py`) lists, for each
 frequent head word in names, descriptions and READMEs, the words that occur
 next to it (1–2 positions left and right) and how many datasets use each
 pair. "conflict" will show *Simon, response, cognitive, approach-avoidance,
@@ -283,7 +284,7 @@ ds004274 says "aggression" in its title but not "social". Three existing
 pieces close that gap. Each one sends catalogue metadata to an outside model.
 
 1. **README profiles** (`backend/services/readme_profile.py`, runner
-   `scripts/extract_readme_profiles.py`). Already written; 0 of 1,721 datasets
+   `ingest/backfill/extract_readme_profiles.py`). Already written; 0 of 1,721 datasets
    have a profile on production. A profile lists research topics and
    paradigms with verbatim quotes. Adding the linked paper's abstract to the
    profile input would turn "Taylor Aggression Paradigm" into the topic
@@ -366,12 +367,12 @@ recall benchmark before deploy. Stage 4 can follow on its own.
 
 | Stage | What | Where |
 |---|---|---|
-| "emo" fixes | short-prefix rule, thin-construct rule | `RAG/retriever.py` |
-| 1 | `Topic` in the QueryPlan, prompt section "Topics" (examples are not benchmark questions) | `LLM_preprocessor/preprocess.py` |
-| 2 | `resolve_topic`: sense pick, alternative checks (head or qualifier alone, excluded meaning, 0 datasets, more than `TOPIC_MAX_ALTERNATIVE_MATCHES`=90), task codes from the phrase minus what the head alone gives | `LLM_preprocessor/preprocess.py` |
-| 3 | `near` text mode (gap ≤ 2, both orders for two words); one topic line per topic; rewriter re-adds a topic line the SQL model dropped | `RAG/text_terms.py`, `backend/services/text_search.py`, `backend/services/sql_rewriter.py` |
+| "emo" fixes | short-prefix rule, thin-construct rule | `backend/vocabulary/retriever.py` |
+| 1 | `Topic` in the QueryPlan, prompt section "Topics" (examples are not benchmark questions) | `backend/llm/preprocess.py` |
+| 2 | `resolve_topic`: sense pick, alternative checks (head or qualifier alone, excluded meaning, 0 datasets, more than `TOPIC_MAX_ALTERNATIVE_MATCHES`=90), task codes from the phrase minus what the head alone gives | `backend/llm/preprocess.py` |
+| 3 | `near` text mode (gap ≤ 2, both orders for two words); one topic line per topic; rewriter re-adds a topic line the SQL model dropped | `backend/vocabulary/text_terms.py`, `backend/services/text_search.py`, `backend/services/sql_rewriter.py` |
 | 3 | second tier: only the phrase is loosened (words anywhere); dropping the NOT guard is the alternatives' weaker form | `backend/services/uncertain_tier.py` |
-| 4 | inventory of 10 heads, loader, mining script | `RAG/senses.yaml`, `RAG/senses.py`, `scripts/mine_senses.py` |
+| 4 | inventory of 10 heads, loader, mining script | `backend/vocabulary/senses.yaml`, `backend/vocabulary/senses.py`, `backend/vocabulary/tools/mine_senses.py` |
 | 6 | "Topic" chip, removable "Not meant" chip (id + `n`) | `backend/services/query_filters.py`, `frontend/src/components/QueryChips.vue`, `frontend/src/api/index.ts` |
 | 0 | 12 ambiguity questions (not judged yet) | `benchmarks/recall/ambiguity_queries.yaml` |
 
@@ -447,7 +448,7 @@ topic (47% → 38%); the other 135 were unchanged (61% → 60%). The model made
 topics of plain subjects ("sign language processing", "gambling choices")
 and listed unwanted meanings for nearly all of them.
 
-Fix: a topic stays a topic only when its head word is in `RAG/senses.yaml`
+Fix: a topic stays a topic only when its head word is in `backend/vocabulary/senses.yaml`
 or the user abbreviated it (`_keep_ambiguity_topics`); every other topic
 goes back to the scan-term path as before. Rerun of the 24 questions on the
 newer production image (8c8d657): baseline 39%, topics 43% recall. One run

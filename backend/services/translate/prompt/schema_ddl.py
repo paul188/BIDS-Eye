@@ -317,7 +317,11 @@ _DERIVATIVE_RULES = """\
 --   text search for 'preprocessed' or a pipeline name (READMEs rarely mention them):
 --   fMRIPrep outputs:   EXISTS (SELECT 1 FROM bids_derivatives dv WHERE dv.dataset_id = d.id AND dv.pipeline = 'fmriprep')
 --   MRIQC outputs:      ... AND dv.pipeline = 'mriqc'
---   preprocessed fMRI:  ... AND dv.pipeline IN ('fmriprep', 'xcpd', 'cpac', 'halfpipe', 'tedana', 'preprocessed')
+--   preprocessed fMRI:  ... AND dv.pipeline IN ('fmriprep', 'xcpd', 'cpac', 'halfpipe', 'tedana', 'preprocessed',
+--                       'preprocessed-data', 'preprocessing', 'preproc')
+--   masks / segmentations: ... AND (dv.pipeline ILIKE '%mask%' OR dv.pipeline ILIKE '%segment%'
+--                       OR dv.pipeline IN ('labels', 'label'))
+--   bids_datasets.dataset_type is 'raw' for every dataset: never use it for processed data.
 --   A request that only PREFERS preprocessed data ("ideally preprocessed") gets no such filter."""
 
 _DATASET_PAPER_RULES = """\

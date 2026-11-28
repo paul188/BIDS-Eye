@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import random
 import re
 import sys
@@ -36,7 +35,7 @@ sys.path.insert(0, str(HERE))
 from build import load_own, names, parse, tables  # noqa: E402
 
 REPO = HERE.parents[2]
-for _p in ("RAG", "LLM_preprocessor", "backend"):
+for _p in ("backend/vocabulary", "backend/llm", "backend"):
     sys.path.append(str(REPO / _p))
 
 
@@ -97,7 +96,7 @@ def negated(part: str) -> str:
 
 
 def formula_tree(formula, atoms: Atoms) -> str:
-    """A description_search formula as a tree (RAG/text_formula.py)."""
+    """A description_search formula as a tree (backend/vocabulary/text_formula.py)."""
     import text_formula as tf
     if formula is None:
         return ""
@@ -407,9 +406,8 @@ def report(items: dict, plans: dict, show: bool) -> None:
 
 def run(args) -> None:
     root = args.backend_dir.resolve().parent
-    sys.path[:0] = [str(root / n) for n in ("backend", "LLM_preprocessor", "RAG")]
+    sys.path[:0] = [str(root / n) for n in ("backend", "backend/llm", "backend/vocabulary")]
     import preprocess
-    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     # A run that was stopped continues: complete requests are kept.
     done = json.loads(args.out.read_text()) if args.out.exists() else {}
     if done and done["label"] != args.label:
@@ -419,7 +417,7 @@ def run(args) -> None:
     for item in load_own():
         for _ in range(args.repeats - len(plans.get(item["id"], []))):
             try:
-                plan = preprocess.preprocess_query(item["text"], api_key=key)
+                plan = preprocess.create_query_plan(item["text"])
             except Exception as exc:  # noqa: BLE001 - one failed call must not stop the run
                 errors[item["id"]] = errors.get(item["id"], 0) + 1
                 print(f"{item['id']}: {type(exc).__name__}: {str(exc)[:80]}", file=sys.stderr, flush=True)

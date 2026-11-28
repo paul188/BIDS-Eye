@@ -1,8 +1,0 @@
-[Unit]
-Description=BIDS-Eye backup restore test
-After=docker.service
-
-[Service]
-Type=oneshot
-ExecStart=/home/BIDS-Eye/scripts/backup/restore_test.sh
-Nice=10

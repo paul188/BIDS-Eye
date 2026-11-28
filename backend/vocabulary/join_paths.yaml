@@ -1,0 +1,87 @@
+# backend/vocabulary/join_paths.yaml
+# -------------------------------------------------------------------
+# How fields combine in EXISTS subqueries, and what combinations signal
+# a contradiction in a user query. Read by backend/vocabulary/join_registry.py.
+#
+# Where each field is stored (table, alias, column) is not here: it is on
+# the field itself, services/schema/fields.py (CatalogueField.stored).
+# -------------------------------------------------------------------
+
+# ── Combination rules ────────────────────────────────────────────────────────
+# Defines which fields may share a single EXISTS subquery vs. must be in
+# separate EXISTS clauses.
+#
+# group_name  : human-readable label
+# fields      : fields that can be combined in one EXISTS (they live in the same table)
+# combine_op  : "OR"  — use OR between predicates from different fields for the same user term
+#               "AND" — use AND between predicates
+# rationale   : plain-English explanation
+
+combination_rules:
+
+  - group_name: modality_in_objects
+    fields: [datatype, suffix]
+    combine_op: OR
+    rationale: >
+      A single user term like "fMRI" maps to both datatype ('func') and suffix ('bold').
+      A BIDS file may have one annotation missing, so OR is correct: a file qualifies if
+      its folder is 'func' OR its suffix is 'bold'. Both refer to the same bids_objects
+      row, so they share one EXISTS clause.
+
+  - group_name: task_in_objects
+    fields: [task]
+    combine_op: OR
+    rationale: >
+      Task always gets its own EXISTS clause, even when the same user term also produces
+      datatype/suffix hits. "Resting state fMRI" emits both a modality EXISTS and a task
+      EXISTS so both constraints must be satisfied simultaneously (AND logic between them).
+
+  - group_name: participant_properties
+    fields: [diagnosis, sex, handedness, age]
+    combine_op: AND
+    rationale: >
+      All participant properties live in bids_participants. Multiple participant filters
+      (e.g. sex=F AND diagnosis=schizophrenia) can be combined in one EXISTS with AND —
+      they describe the same participant row.
+
+  - group_name: dataset_array_fields
+    fields: [author, funding, institution]
+    combine_op: AND
+    rationale: >
+      Author, funding and institution live on bids_datasets as TEXT[] columns. No EXISTS needed —
+      use ANY() predicates directly in the outer WHERE clause.
+
+
+# ── Contradiction rules ──────────────────────────────────────────────────────
+# This section is for situations where a single EXISTS clause would contain
+# mutually exclusive conditions and therefore always return zero rows.
+#
+# Cross-modality combinations like "EEG and fMRI" or "EEG and T1w" are NOT
+# contradictions — the pipeline generates a separate EXISTS clause per user
+# term, so "EEG and T1w" correctly finds multimodal datasets that contain
+# files of BOTH types (two EXISTS clauses joined by AND).
+#
+# Only list rules here if the SAME EXISTS clause would be self-contradictory.
+#
+# severity     : "soft" — unusual; emit a clarification note in the prompt
+# trigger      : {field: [codes]} — codes that activate this rule
+# incompatible : {field: [codes]} — codes that conflict with the trigger
+#                Use ["*"] as a wildcard meaning "any non-empty list of codes"
+# message      : clarification note emitted in the augmented question
+
+contradictions:
+
+  - id: ieeg_eeg_suffix
+    severity: soft
+    description: >
+      iEEG and scalp-EEG/MEG suffixes together are unusual but technically
+      possible in multimodal datasets. This is a clarification note only.
+    trigger:
+      datatype: [ieeg]
+    incompatible:
+      suffix: [eeg, meg]
+    message: >
+      Note: your query combines iEEG (intracranial) and scalp-EEG/MEG suffixes.
+      This will find datasets that contain files of BOTH types (two separate
+      EXISTS clauses). If you meant to query for iEEG data only, remove the
+      EEG/MEG suffix filter.

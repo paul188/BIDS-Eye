@@ -31,7 +31,7 @@ def types(acc):
         if not ch or not ch.get("urls"): continue
         try:
             text = urllib.request.urlopen(urllib.request.Request(ch["urls"][0], headers={"user-agent": UA["user-agent"]}), timeout=120).read().decode("utf-8", "replace")
-        except Exception as e:
+        except Exception:
             continue
         lines = [l.split("\t") for l in text.splitlines() if l.strip()]
         if not lines: continue

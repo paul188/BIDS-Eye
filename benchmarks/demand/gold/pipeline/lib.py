@@ -1,5 +1,5 @@
 """Local store for building the gold answers: our database facts + OpenNeuro's own catalogue."""
-import json, re, os, collections
+import json, re, os
 G = os.path.dirname(os.path.abspath(__file__))
 
 def _load(name):

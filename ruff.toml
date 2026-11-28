@@ -1,6 +1,6 @@
 # Ruff: the Python linter, run by CI (.github/workflows/ci.yml, job "lint")
-# on backend/, LLM_preprocessor/ and RAG/. The VS Code Ruff extension and a
-# local `ruff check backend LLM_preprocessor RAG` read the same rules here.
+# on backend/, backend/llm/ and backend/vocabulary/. The VS Code Ruff extension and a
+# local `ruff check backend` read the same rules here.
 #
 # Formatting (`ruff format`, with import sorting "I" and line length "E501")
 # is not on yet: it rewrites most files at once, so it goes in as one commit

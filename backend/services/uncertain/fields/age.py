@@ -19,7 +19,7 @@ from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
 from services.uncertain.conditions import own_text_matches
 from services.uncertain.fields.base import SoftField, participant_rows_record
-import text_evidence  # RAG/ is on the path wherever the backend runs
+import text_evidence  # backend/vocabulary/ is on the path wherever the backend runs
 
 
 LABEL = "ages"   # how a result card names the field

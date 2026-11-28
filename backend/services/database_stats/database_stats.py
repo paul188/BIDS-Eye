@@ -32,8 +32,8 @@ they are, and DatabaseStats keeps that in four parts:
              dataset.
   names      Names: the institution names of the datasets and the places and
              institutions of their sites, as lists. Names in a question are
-             matched against them (RAG/institution_index.py,
-             RAG/place_index.py). Those two indexes are rebuilt when a load
+             matched against them (backend/vocabulary/institution_index.py,
+             backend/vocabulary/place_index.py). Those two indexes are rebuilt when a load
              finds the lists changed, so a name a crawl adds can be asked for
              after the next load.
 
@@ -59,7 +59,7 @@ from sqlalchemy.sql.schema import Column
 import institution_index
 import place_index
 from services.schema.check import check_schema
-from services.schema.coded_fields import CODED_FIELDS, FILE_FIELDS, PARTICIPANT_FIELDS
+from services.schema.fields import CODED_FIELDS, FILE_FIELDS, PARTICIPANT_FIELDS
 from services.schema.tables import (OPTIONAL_DATASET_COLUMNS, dataset_facets, datasets, objects,
                                     participants, site_places)
 
@@ -133,7 +133,7 @@ class ValueCounts:
       services/translate/value_check.py        datatype, suffix and task
           values in generated SQL are corrected or dropped when no dataset
           has them (loaded, known_values).
-      LLM_preprocessor/preprocess/catalogue.py verify_codes: vocabulary codes
+      backend/llm/preprocess/catalogue.py verify_codes: vocabulary codes
           no dataset has are left out of the resolved filters
           (loaded, dataset_count).
     """
@@ -158,12 +158,12 @@ class Names:
     """The institution and place names that occur, each list sorted.
 
     A list is None until it was read: the institution index then still works
-    from RAG/name_index.json (RAG/retriever.py), and place names are searched
+    from backend/vocabulary/name_index.json (backend/vocabulary/retriever.py), and place names are searched
     as text.
 
     Used by:
       fill_name_indexes (below)                hands them to
-          RAG/institution_index.py and RAG/place_index.py, which match the
+          backend/vocabulary/institution_index.py and backend/vocabulary/place_index.py, which match the
           names in a question against them.
     """
 
@@ -176,7 +176,7 @@ class Names:
 
 
 def fill_name_indexes(names: Names, before: Names) -> None:
-    """Rebuild the name indexes of RAG/ whose lists differ from *before*."""
+    """Rebuild the name indexes of backend/vocabulary/ whose lists differ from *before*."""
     if names.dataset_institutions is not None and names.dataset_institutions != before.dataset_institutions:
         institution_index.set_names(names.dataset_institutions)
         log.info("Loaded %d distinct institution names for query matching",
@@ -220,7 +220,7 @@ class DatabaseStats:
     def clear(self) -> None:
         """Forget everything read: no optional column, no summaries, no values.
 
-        The name lists are forgotten too, but the indexes of RAG/ built from
+        The name lists are forgotten too, but the indexes of backend/vocabulary/ built from
         them stay as they are until the next load.
         """
         self.coverage = ColumnCoverage()

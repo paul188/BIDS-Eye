@@ -17,7 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas import DatasetSchema
+from routers.schemas import DatasetSchema
 from services.results import query_filters
 from services.schema.tables import datasets as _datasets
 

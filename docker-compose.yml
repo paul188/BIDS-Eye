@@ -1,4 +1,5 @@
-## BIDS-Eye — full-stack docker compose
+## BIDS-Eye — full stack on a local machine
+## (production runs docker-compose-prod.yml: nginx + TLS, no open DB port)
 ## Usage:
 ##   docker compose up --build          # start everything
 ##   docker compose up --build backend  # rebuild only the backend
@@ -17,7 +18,9 @@ services:
       POSTGRES_USER:     ${METADATA_DB_USER}
       POSTGRES_PASSWORD: ${METADATA_DB_PASSWORD}
     volumes:
-      - /home/paul_johannssen/Desktop/postgres_data:/var/lib/postgresql/data
+      # A named volume by default; set POSTGRES_DATA in .env to a host
+      # directory to use an existing data directory instead.
+      - ${POSTGRES_DATA:-postgres-bids-data}:/var/lib/postgresql/data
     ports:
       - '${METADATA_DB_PORT:-5432}:5432'
     healthcheck:
@@ -69,7 +72,7 @@ services:
     profiles: [crawl]
     build:
       context: .
-      dockerfile: crawlers/openneuro-crawler/Dockerfile
+      dockerfile: ingest/openneuro-crawler/Dockerfile
     container_name: bids_crawler
     env_file: .env
     environment:

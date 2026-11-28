@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 TEXT, LEMMA, POS, DEP, HEAD, SPACE = range(6)
 
@@ -563,15 +563,6 @@ def _abbreviations(s: Sentence, abbreviations: Dict[str, str]) -> List[Expansion
 
 
 # ---------------------------------------------------------------- whole texts
-
-def expand_document(sentences: Iterable[Sequence[Sequence]], text: str = "",
-                    attested: Optional[Set[Tuple[str, str]]] = None,
-                    compounds: Optional[Set[Tuple[str, str]]] = None) -> List[Expansion]:
-    abbr = abbreviations_in(text) if text else None
-    out: List[Expansion] = []
-    for toks in sentences:
-        out += expand_sentence(toks, attested, abbr, compounds)
-    return out
 
 
 def index_text(expansions: Iterable[Expansion], gap: int = 4) -> str:

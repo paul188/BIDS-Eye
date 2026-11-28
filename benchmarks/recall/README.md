@@ -134,7 +134,7 @@ On the server, in a one-off backend container (needs the LLM keys and the
 database; writes nothing to the database):
 
 ```bash
-docker compose -f docker-compose-hetzner.yml run --rm --no-deps \
+docker compose -f docker-compose-prod.yml run --rm --no-deps \
   -v /home/BIDS-Eye:/repo:ro -v /tmp/bidseye_recall:/out backend \
   python /repo/benchmarks/recall/eval_recall.py run --out /out/run.json
 ```

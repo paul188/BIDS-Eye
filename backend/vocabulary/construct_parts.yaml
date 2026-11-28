@@ -1,0 +1,102 @@
+# Cognitive Atlas PARTOF links that construct expansion follows.
+#
+# A search for a construct ("working memory studies") is expanded to the tasks
+# that measure it or any construct below it (value_mappings.yaml, `measures`).
+# "Below" means KINDOF (`broader` in cognitive_atlas_constructs.yaml), plus
+# only the PARTOF links listed here, one level deep: from a whole listed
+# here to its listed parts, then KINDOF downwards from each part, never a
+# second PARTOF step.
+#
+# Why a list: a PARTOF link means different things depending on the whole.
+#   - When the whole is a domain, a study of a part is a study of the whole:
+#     a sentence-comprehension study is a language study.
+#   - When the whole is a process, its parts are sub-steps: a working-memory
+#     study is no decision-making study, yet the Cognitive Atlas lists working
+#     memory PARTOF decision making, and decision making PARTOF set shifting.
+#     Following every PARTOF link made "set shifting" reach 153 tasks.
+# The Cognitive Atlas does not record that difference, so it is decided here,
+# per link.
+#
+# How the list was made (2026-11-27): every construct was ranked by how many
+# tasks it loses when PARTOF links are not followed; the big losers were
+# reviewed one part at a time. Left out on purpose:
+#   - process wholes: set_shifting, task_switching, decision_making,
+#     cognitive_control, performance_monitoring, recognition, categorization,
+#     speech_perception, reading, reward_learning, addiction, perception;
+#   - parts that drift: memory → retrieval (reaches lexical retrieval: picture
+#     naming), declarative_memory → recognition (reaches face and emotion
+#     recognition), language → semantic_memory / semantic_knowledge (memory,
+#     not language), working_memory → central_executive / interference_*
+#     (control, not storage), visual_perception → perceptual_priming /
+#     transduction.
+#
+# Every link must exist as `part_of` in cognitive_atlas_constructs.yaml
+# (backend/tests/vocabulary/test_construct_parts.py).
+
+language:
+- auditory_word_comprehension
+- imageability
+- language_learning
+- language_processing
+- language_production
+- lexical_processing
+- lexicon
+- orthography
+- past_tense
+- sentence_comprehension
+- speech_processing
+- word_pronunciation
+
+language_processing:
+- phonological_processing
+- reading
+
+music_cognition:
+- music_perception
+- music_semantics
+- music_syntax
+
+memory:
+- encoding
+- retention
+
+declarative_memory:
+- familiarity
+- recall
+
+long_term_memory:
+- consolidation
+
+working_memory:
+- active_maintenance
+- articulatory_loop
+- capacity_limitation
+- chunking
+- episodic_buffer
+- limited_capacity
+- maintenance
+- rehearsal_loop
+- updating
+- working_memory_maintenance
+- working_memory_retrieval
+- working_memory_storage
+- working_memory_updating
+
+emotion:
+- emotion_recognition
+- emotional_expression
+
+social_cognition:
+- social_norm_processing
+
+visual_perception:
+- border_ownership
+- figure_ground_segregation
+- gestalt_grouping
+- lateral_masking
+- perceptual_identification
+- perceptual_learning
+- phototransduction
+- visual_acuity
+- visual_angle
+- visual_localization

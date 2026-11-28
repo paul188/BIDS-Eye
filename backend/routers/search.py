@@ -15,10 +15,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from deps import AsyncSessionDep
-from rate_limits import Category, rate_limit
-from routers.auth import CurrentUserDep, user_id
-from schemas import QueryPageRequest, QueryRequest, QueryResponse
+from deps import AsyncSessionDep, GithubIdDep
+from security.rate_limits import Category, rate_limit
+from routers.schemas import QueryPageRequest, QueryRequest, QueryResponse
 from services import search
 from services.stores import search_history
 
@@ -28,7 +27,7 @@ search_router = APIRouter(prefix="/query", tags=["query"])
 async def query_datasets(
     body: QueryRequest,
     session: AsyncSessionDep,
-    user: CurrentUserDep,
+    github_id: GithubIdDep,
 ) -> QueryResponse:
     """
     Submit a natural-language question and receive the first page of matching
@@ -36,7 +35,7 @@ async def query_datasets(
 
     A question that is already being searched for, by anyone, gets that
     search's answer (or error) without another language-model call
-    (services/search.py ask). The rate limit (rate_limits.py, SEARCH) still
+    (services/search.py ask). The rate limit (security/rate_limits.py, SEARCH) still
     counts it, since it ran before this function.
 
     The search itself does not know who asked. Only here, and only for a user
@@ -44,7 +43,7 @@ async def query_datasets(
     ``history_id`` then names the saved entry.
     """
     response = await search.ask(session, body.question)
-    history_id = await search_history.record(session, user_id(user), body.question, response)
+    history_id = await search_history.record(session, github_id, body.question, response)
     # A copy: identical questions asked at once share one response object.
     return response.model_copy(update={"history_id": history_id}) if history_id else response
 
