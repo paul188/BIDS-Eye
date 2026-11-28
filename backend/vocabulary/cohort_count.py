@@ -154,7 +154,7 @@ def find(node: Any) -> Optional[PatientCount]:
     for found in where.find_all(exp.In) if where is not None else ():
         column = found.this
         if isinstance(column, exp.Column) and column.table == ALIAS and column.name == "diagnosis":
-            codes = valid_codes(e.name for e in found.expressions
-                                if isinstance(e, exp.Literal) and e.is_string)
+            codes = valid_codes([e.name for e in found.expressions
+                                 if isinstance(e, exp.Literal) and e.is_string])
             return PatientCount(codes, int(minimum.this)) if codes else None
     return None
