@@ -82,8 +82,7 @@ def _no_database(monkeypatch):
 
 
 def _question(**fields) -> str:
-    plan = pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH,
-                        natural_language_summary="test", **fields)
+    plan = pp.QueryPlan(natural_language_summary="test", **fields)
     return pp.augment_with_rag(plan, {}).augmented_question
 
 
@@ -123,13 +122,12 @@ def test_a_part_left_out_is_named_in_the_explanation(monkeypatch) -> None:
     from services.translate import text_to_sql
 
     monkeypatch.setattr(pp.augment, "_matches_too_few", lambda text: text == "postictal")
-    plan = pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH,
-                        natural_language_summary="Epilepsy datasets about the postictal state.",
+    plan = pp.QueryPlan(natural_language_summary="Epilepsy datasets about the postictal state.",
                         description_search="postictal", name_search="epilepsy")
     augmented = pp.augment_with_rag(plan, {})
     assert augmented.unmatched_text == ["postictal"]
     # A request wish is not searchable either, but that is no news to the user.
-    wish = pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH, natural_language_summary="test",
+    wish = pp.QueryPlan(natural_language_summary="test",
                         name_search="epilepsy", request_wishes=["for machine learning"])
     assert pp.augment_with_rag(wish, {}).unmatched_text == []
 
@@ -286,7 +284,7 @@ def test_request_wishes_are_cut_out_of_a_formula() -> None:
 
 
 def test_adults_inside_a_formula_go_to_the_participant_lines() -> None:
-    plan = pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH, natural_language_summary="t",
+    plan = pp.QueryPlan(natural_language_summary="t",
                         description_search="adults and (drawings or art)")
     question = pp.augment_with_rag(plan, {}).augmented_question
     assert "participant age" in question

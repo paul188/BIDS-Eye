@@ -28,6 +28,19 @@ log = logging.getLogger(__name__)
 
 MAX_PARTICIPANTS_PER_DATASET = 50
 
+# Names OpenNeuro shows when the uploader set none (the crawler's
+# remote.openneuro_metadata.clean_dataset_name skips the same ones).
+_PLACEHOLDER_NAMES = frozenset({"unnamed dataset", "untitled", "untitled dataset", "n/a"})
+
+
+def display_name(name: Optional[str], accession_id: Optional[str]) -> str:
+    """The card title: the dataset's name, or its accession id when the name
+    is blank or a placeholder (a card without a title has nothing to click)."""
+    cleaned = " ".join((name or "").split())
+    if cleaned and cleaned.lower() not in _PLACEHOLDER_NAMES:
+        return cleaned
+    return accession_id or "Untitled dataset"
+
 
 async def participants_for(
     session: AsyncSession, dataset_ids: list[UUID]
@@ -103,7 +116,7 @@ async def rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Dataset
     return [
         DatasetSchema(
             id=r["id"],
-            name=r["name"],
+            name=display_name(r["name"], r.get("accession_id")),
             accession_id=r.get("accession_id"),
             bids_version=r.get("bids_version"),
             dataset_type=r["dataset_type"],

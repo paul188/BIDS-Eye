@@ -20,8 +20,7 @@ from services.uncertain import text as tier_text  # noqa: E402
 
 
 def _plan(**fields) -> pp.QueryPlan:
-    return pp.QueryPlan(query_family=pp.QueryFamily.DESCRIPTION_SEARCH,
-                        natural_language_summary="datasets from deceased people", **fields)
+    return pp.QueryPlan(natural_language_summary="datasets from deceased people", **fields)
 
 
 def _counts(table, default=5):
