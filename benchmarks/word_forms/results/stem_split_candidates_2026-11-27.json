@@ -1,0 +1,15197 @@
+[
+{
+"stem": "use",
+"a": [
+"using"
+],
+"b": [
+"used"
+],
+"a_docs": 589,
+"b_docs": 521,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0000",
+"judge": "yes"
+},
+{
+"stem": "function",
+"a": [
+"functionally"
+],
+"b": [
+"functional",
+"functionals"
+],
+"a_docs": 6,
+"b_docs": 436,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0001",
+"judge": "context"
+},
+{
+"stem": "imag",
+"a": [
+"imaging"
+],
+"b": [
+"images",
+"image",
+"imag"
+],
+"a_docs": 432,
+"b_docs": 372,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0002",
+"judge": "context"
+},
+{
+"stem": "base",
+"a": [
+"base",
+"bases"
+],
+"b": [
+"based"
+],
+"a_docs": 9,
+"b_docs": 284,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p103",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0003",
+"judge": "no"
+},
+{
+"stem": "scan",
+"a": [
+"scanning"
+],
+"b": [
+"scans",
+"scan"
+],
+"a_docs": 170,
+"b_docs": 280,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0004",
+"judge": "yes"
+},
+{
+"stem": "scan",
+"a": [
+"scanned"
+],
+"b": [
+"scans",
+"scan"
+],
+"a_docs": 85,
+"b_docs": 280,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0005",
+"judge": "yes"
+},
+{
+"stem": "use",
+"a": [
+"using"
+],
+"b": [
+"use",
+"uses"
+],
+"a_docs": 589,
+"b_docs": 274,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0006",
+"judge": "yes"
+},
+{
+"stem": "use",
+"a": [
+"used"
+],
+"b": [
+"use",
+"uses"
+],
+"a_docs": 521,
+"b_docs": 274,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0007",
+"judge": "yes"
+},
+{
+"stem": "includ",
+"a": [
+"included"
+],
+"b": [
+"includes",
+"include"
+],
+"a_docs": 360,
+"b_docs": 259,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0008",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"recordings",
+"recording"
+],
+"b": [
+"recorded"
+],
+"a_docs": 211,
+"b_docs": 259,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0009",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"record",
+"records"
+],
+"b": [
+"recorded"
+],
+"a_docs": 41,
+"b_docs": 259,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p049",
+"label": "b_to_a",
+"a_side": "a"
+},
+"id": "c0010",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"recorder"
+],
+"b": [
+"recorded"
+],
+"a_docs": 9,
+"b_docs": 259,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0011",
+"judge": "no"
+},
+{
+"stem": "structur",
+"a": [
+"structured"
+],
+"b": [
+"structure",
+"structures"
+],
+"a_docs": 26,
+"b_docs": 239,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0012",
+"judge": "context"
+},
+{
+"stem": "format",
+"a": [
+"formatted"
+],
+"b": [
+"format",
+"formats"
+],
+"a_docs": 37,
+"b_docs": 235,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0013",
+"judge": "yes"
+},
+{
+"stem": "format",
+"a": [
+"formatting"
+],
+"b": [
+"format",
+"formats"
+],
+"a_docs": 7,
+"b_docs": 235,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0014",
+"judge": "yes"
+},
+{
+"stem": "structur",
+"a": [
+"structure",
+"structures"
+],
+"b": [
+"structural",
+"structurals"
+],
+"a_docs": 239,
+"b_docs": 222,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p185",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0015",
+"judge": "yes"
+},
+{
+"stem": "structur",
+"a": [
+"structured"
+],
+"b": [
+"structural",
+"structurals"
+],
+"a_docs": 26,
+"b_docs": 222,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p182",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0016",
+"judge": "no"
+},
+{
+"stem": "age",
+"a": [
+"aged"
+],
+"b": [
+"age",
+"ages"
+],
+"a_docs": 44,
+"b_docs": 220,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0017",
+"judge": "yes"
+},
+{
+"stem": "includ",
+"a": [
+"included"
+],
+"b": [
+"including"
+],
+"a_docs": 360,
+"b_docs": 219,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0018",
+"judge": "yes"
+},
+{
+"stem": "includ",
+"a": [
+"includes",
+"include"
+],
+"b": [
+"including"
+],
+"a_docs": 259,
+"b_docs": 219,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0019",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"recorded"
+],
+"b": [
+"recordings",
+"recording"
+],
+"a_docs": 259,
+"b_docs": 211,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0020",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"record",
+"records"
+],
+"b": [
+"recordings",
+"recording"
+],
+"a_docs": 41,
+"b_docs": 211,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p172",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0021",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"recorder"
+],
+"b": [
+"recordings",
+"recording"
+],
+"a_docs": 9,
+"b_docs": 211,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0022",
+"judge": "no"
+},
+{
+"stem": "experiment",
+"a": [
+"experimenter",
+"experimenters"
+],
+"b": [
+"experimental"
+],
+"a_docs": 14,
+"b_docs": 198,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p032",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0023",
+"judge": "no"
+},
+{
+"stem": "rest",
+"a": [
+"resting"
+],
+"b": [
+"rest",
+"rests"
+],
+"a_docs": 306,
+"b_docs": 183,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0024",
+"judge": "context"
+},
+{
+"stem": "result",
+"a": [
+"resulting"
+],
+"b": [
+"results",
+"result"
+],
+"a_docs": 57,
+"b_docs": 181,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p162",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0025",
+"judge": "yes"
+},
+{
+"stem": "result",
+"a": [
+"resulted"
+],
+"b": [
+"results",
+"result"
+],
+"a_docs": 9,
+"b_docs": 181,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p170",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0026",
+"judge": "yes"
+},
+{
+"stem": "scan",
+"a": [
+"scans",
+"scan"
+],
+"b": [
+"scanning"
+],
+"a_docs": 280,
+"b_docs": 170,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0027",
+"judge": "yes"
+},
+{
+"stem": "scan",
+"a": [
+"scanned"
+],
+"b": [
+"scanning"
+],
+"a_docs": 85,
+"b_docs": 170,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p184",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0028",
+"judge": "yes"
+},
+{
+"stem": "analys",
+"a": [
+"analysed"
+],
+"b": [
+"analyses",
+"analyse"
+],
+"a_docs": 8,
+"b_docs": 162,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0029",
+"judge": "yes"
+},
+{
+"stem": "cross",
+"a": [
+"crossed"
+],
+"b": [
+"cross",
+"crosses",
+"crosse"
+],
+"a_docs": 7,
+"b_docs": 160,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p025",
+"label": "context",
+"a_side": "a"
+},
+"id": "c0030",
+"judge": "context"
+},
+{
+"stem": "preprocess",
+"a": [
+"preprocessing"
+],
+"b": [
+"preprocessed"
+],
+"a_docs": 162,
+"b_docs": 149,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0031",
+"judge": "yes"
+},
+{
+"stem": "follow",
+"a": [
+"following"
+],
+"b": [
+"followed"
+],
+"a_docs": 423,
+"b_docs": 145,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0032",
+"judge": "context"
+},
+{
+"stem": "collect",
+"a": [
+"collected"
+],
+"b": [
+"collection",
+"collections"
+],
+"a_docs": 381,
+"b_docs": 137,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0033",
+"judge": "context"
+},
+{
+"stem": "present",
+"a": [
+"presented"
+],
+"b": [
+"presentation",
+"presentations"
+],
+"a_docs": 280,
+"b_docs": 132,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0034",
+"judge": "yes"
+},
+{
+"stem": "provid",
+"a": [
+"provided"
+],
+"b": [
+"provide",
+"provides"
+],
+"a_docs": 252,
+"b_docs": 132,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0035",
+"judge": "yes"
+},
+{
+"stem": "public",
+"a": [
+"public"
+],
+"b": [
+"publication",
+"publications"
+],
+"a_docs": 96,
+"b_docs": 132,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p163",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0036",
+"judge": "no"
+},
+{
+"stem": "public",
+"a": [
+"publicly"
+],
+"b": [
+"publication",
+"publications"
+],
+"a_docs": 43,
+"b_docs": 132,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0037",
+"judge": "no"
+},
+{
+"stem": "consist",
+"a": [
+"consists",
+"consist"
+],
+"b": [
+"consisted"
+],
+"a_docs": 128,
+"b_docs": 126,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0038",
+"judge": "yes"
+},
+{
+"stem": "scale",
+"a": [
+"scaling"
+],
+"b": [
+"scale",
+"scales"
+],
+"a_docs": 15,
+"b_docs": 120,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p070",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0039",
+"judge": "context"
+},
+{
+"stem": "clinic",
+"a": [
+"clinically"
+],
+"b": [
+"clinical"
+],
+"a_docs": 14,
+"b_docs": 112,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0040",
+"judge": "yes"
+},
+{
+"stem": "clinic",
+"a": [
+"clinic",
+"clinics"
+],
+"b": [
+"clinical"
+],
+"a_docs": 9,
+"b_docs": 112,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p044",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0041",
+"judge": "context"
+},
+{
+"stem": "attent",
+"a": [
+"attentional"
+],
+"b": [
+"attention",
+"attentions"
+],
+"a_docs": 11,
+"b_docs": 111,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p045",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0042",
+"judge": "yes"
+},
+{
+"stem": "detail",
+"a": [
+"details",
+"detail"
+],
+"b": [
+"detailed"
+],
+"a_docs": 298,
+"b_docs": 110,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0043",
+"judge": "yes"
+},
+{
+"stem": "tempor",
+"a": [
+"temporally"
+],
+"b": [
+"temporal"
+],
+"a_docs": 13,
+"b_docs": 108,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p065",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0044",
+"judge": "yes"
+},
+{
+"stem": "function",
+"a": [
+"functional",
+"functionals"
+],
+"b": [
+"function",
+"functions"
+],
+"a_docs": 436,
+"b_docs": 106,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0045",
+"judge": "no"
+},
+{
+"stem": "function",
+"a": [
+"functionally"
+],
+"b": [
+"function",
+"functions"
+],
+"a_docs": 6,
+"b_docs": 106,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0046",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measured"
+],
+"b": [
+"measures",
+"measure"
+],
+"a_docs": 67,
+"b_docs": 105,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p098",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0047",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measurements",
+"measurement"
+],
+"b": [
+"measures",
+"measure"
+],
+"a_docs": 48,
+"b_docs": 105,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p112",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0048",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measuring"
+],
+"b": [
+"measures",
+"measure"
+],
+"a_docs": 14,
+"b_docs": 105,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p186",
+"label": "context",
+"a_side": "a"
+},
+"id": "c0049",
+"judge": "context"
+},
+{
+"stem": "present",
+"a": [
+"presented"
+],
+"b": [
+"present",
+"presents"
+],
+"a_docs": 280,
+"b_docs": 104,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0050",
+"judge": "no"
+},
+{
+"stem": "present",
+"a": [
+"presentation",
+"presentations"
+],
+"b": [
+"present",
+"presents"
+],
+"a_docs": 132,
+"b_docs": 104,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0051",
+"judge": "no"
+},
+{
+"stem": "perform",
+"a": [
+"performed"
+],
+"b": [
+"performance",
+"performances"
+],
+"a_docs": 318,
+"b_docs": 103,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0052",
+"judge": "no"
+},
+{
+"stem": "process",
+"a": [
+"processing"
+],
+"b": [
+"processed"
+],
+"a_docs": 262,
+"b_docs": 102,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0053",
+"judge": "yes"
+},
+{
+"stem": "sampl",
+"a": [
+"sampling"
+],
+"b": [
+"sample",
+"samples"
+],
+"a_docs": 110,
+"b_docs": 101,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0054",
+"judge": "context"
+},
+{
+"stem": "chang",
+"a": [
+"changed"
+],
+"b": [
+"changes",
+"change",
+"chang"
+],
+"a_docs": 27,
+"b_docs": 100,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p015",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0055",
+"judge": "yes"
+},
+{
+"stem": "chang",
+"a": [
+"changing"
+],
+"b": [
+"changes",
+"change",
+"chang"
+],
+"a_docs": 12,
+"b_docs": 100,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0056",
+"judge": "yes"
+},
+{
+"stem": "ad",
+"a": [
+"adding"
+],
+"b": [
+"added"
+],
+"a_docs": 21,
+"b_docs": 99,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0057",
+"judge": "yes"
+},
+{
+"stem": "inform",
+"a": [
+"information",
+"informations"
+],
+"b": [
+"informed"
+],
+"a_docs": 402,
+"b_docs": 98,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0058",
+"judge": "no"
+},
+{
+"stem": "map",
+"a": [
+"maps",
+"map"
+],
+"b": [
+"mapping",
+"mappings"
+],
+"a_docs": 106,
+"b_docs": 98,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0059",
+"judge": "yes"
+},
+{
+"stem": "public",
+"a": [
+"publication",
+"publications"
+],
+"b": [
+"public"
+],
+"a_docs": 132,
+"b_docs": 96,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p163",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0060",
+"judge": "no"
+},
+{
+"stem": "public",
+"a": [
+"publicly"
+],
+"b": [
+"public"
+],
+"a_docs": 43,
+"b_docs": 96,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0061",
+"judge": "yes"
+},
+{
+"stem": "time",
+"a": [
+"time",
+"times"
+],
+"b": [
+"timing",
+"timings"
+],
+"a_docs": 411,
+"b_docs": 96,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0062",
+"judge": "context"
+},
+{
+"stem": "cortic",
+"a": [
+"cortices"
+],
+"b": [
+"cortical"
+],
+"a_docs": 14,
+"b_docs": 95,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0063",
+"judge": "yes"
+},
+{
+"stem": "follow",
+"a": [
+"following"
+],
+"b": [
+"follow",
+"follows"
+],
+"a_docs": 423,
+"b_docs": 95,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0064",
+"judge": "no"
+},
+{
+"stem": "follow",
+"a": [
+"followed"
+],
+"b": [
+"follow",
+"follows"
+],
+"a_docs": 145,
+"b_docs": 95,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0065",
+"judge": "context"
+},
+{
+"stem": "period",
+"a": [
+"periodically"
+],
+"b": [
+"period",
+"periods"
+],
+"a_docs": 9,
+"b_docs": 93,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p122",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0066",
+"judge": "no"
+},
+{
+"stem": "local",
+"a": [
+"local"
+],
+"b": [
+"localizer",
+"localizers"
+],
+"a_docs": 68,
+"b_docs": 92,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0067",
+"judge": "no"
+},
+{
+"stem": "local",
+"a": [
+"localization",
+"localizations"
+],
+"b": [
+"localizer",
+"localizers"
+],
+"a_docs": 24,
+"b_docs": 92,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p158",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0068",
+"judge": "context"
+},
+{
+"stem": "local",
+"a": [
+"localize"
+],
+"b": [
+"localizer",
+"localizers"
+],
+"a_docs": 6,
+"b_docs": 92,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p154",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0069",
+"judge": "context"
+},
+{
+"stem": "local",
+"a": [
+"localized"
+],
+"b": [
+"localizer",
+"localizers"
+],
+"a_docs": 5,
+"b_docs": 92,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0070",
+"judge": "context"
+},
+{
+"stem": "defac",
+"a": [
+"defacing"
+],
+"b": [
+"defaced"
+],
+"a_docs": 85,
+"b_docs": 90,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0071",
+"judge": "yes"
+},
+{
+"stem": "defac",
+"a": [
+"deface"
+],
+"b": [
+"defaced"
+],
+"a_docs": 19,
+"b_docs": 90,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p042",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0072",
+"judge": "yes"
+},
+{
+"stem": "hand",
+"a": [
+"handed"
+],
+"b": [
+"hand",
+"hands"
+],
+"a_docs": 73,
+"b_docs": 90,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p113",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0073",
+"judge": "context"
+},
+{
+"stem": "addit",
+"a": [
+"additional"
+],
+"b": [
+"addition",
+"additions"
+],
+"a_docs": 204,
+"b_docs": 88,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0074",
+"judge": "context"
+},
+{
+"stem": "design",
+"a": [
+"design",
+"designs"
+],
+"b": [
+"designed"
+],
+"a_docs": 209,
+"b_docs": 87,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0075",
+"judge": "context"
+},
+{
+"stem": "work",
+"a": [
+"work",
+"works"
+],
+"b": [
+"working"
+],
+"a_docs": 80,
+"b_docs": 87,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0076",
+"judge": "context"
+},
+{
+"stem": "correct",
+"a": [
+"correction",
+"corrections"
+],
+"b": [
+"correct"
+],
+"a_docs": 99,
+"b_docs": 85,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0077",
+"judge": "no"
+},
+{
+"stem": "correct",
+"a": [
+"corrected"
+],
+"b": [
+"correct"
+],
+"a_docs": 84,
+"b_docs": 85,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0078",
+"judge": "no"
+},
+{
+"stem": "defac",
+"a": [
+"defaced"
+],
+"b": [
+"defacing"
+],
+"a_docs": 90,
+"b_docs": 85,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0079",
+"judge": "yes"
+},
+{
+"stem": "defac",
+"a": [
+"deface"
+],
+"b": [
+"defacing"
+],
+"a_docs": 19,
+"b_docs": 85,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0080",
+"judge": "yes"
+},
+{
+"stem": "scan",
+"a": [
+"scans",
+"scan"
+],
+"b": [
+"scanned"
+],
+"a_docs": 280,
+"b_docs": 85,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0081",
+"judge": "yes"
+},
+{
+"stem": "scan",
+"a": [
+"scanning"
+],
+"b": [
+"scanned"
+],
+"a_docs": 170,
+"b_docs": 85,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p184",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0082",
+"judge": "yes"
+},
+{
+"stem": "correct",
+"a": [
+"correction",
+"corrections"
+],
+"b": [
+"corrected"
+],
+"a_docs": 99,
+"b_docs": 84,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0083",
+"judge": "yes"
+},
+{
+"stem": "complet",
+"a": [
+"completed"
+],
+"b": [
+"complete"
+],
+"a_docs": 179,
+"b_docs": 82,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0084",
+"judge": "context"
+},
+{
+"stem": "locat",
+"a": [
+"location",
+"locations"
+],
+"b": [
+"located"
+],
+"a_docs": 81,
+"b_docs": 82,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0085",
+"judge": "yes"
+},
+{
+"stem": "refer",
+"a": [
+"reference",
+"references"
+],
+"b": [
+"refer",
+"refers"
+],
+"a_docs": 163,
+"b_docs": 80,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0086",
+"judge": "no"
+},
+{
+"stem": "test",
+"a": [
+"test",
+"tests"
+],
+"b": [
+"testing"
+],
+"a_docs": 172,
+"b_docs": 80,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0087",
+"judge": "yes"
+},
+{
+"stem": "depend",
+"a": [
+"depending"
+],
+"b": [
+"dependent"
+],
+"a_docs": 31,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0088",
+"judge": "no"
+},
+{
+"stem": "depend",
+"a": [
+"depends",
+"depend"
+],
+"b": [
+"dependent"
+],
+"a_docs": 6,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0089",
+"judge": "no"
+},
+{
+"stem": "random",
+"a": [
+"random",
+"randoms"
+],
+"b": [
+"randomized"
+],
+"a_docs": 79,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p071",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0090",
+"judge": "yes"
+},
+{
+"stem": "random",
+"a": [
+"random",
+"randoms"
+],
+"b": [
+"randomly"
+],
+"a_docs": 79,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0091",
+"judge": "yes"
+},
+{
+"stem": "random",
+"a": [
+"randomized"
+],
+"b": [
+"random",
+"randoms"
+],
+"a_docs": 79,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p071",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0092",
+"judge": "context"
+},
+{
+"stem": "random",
+"a": [
+"randomized"
+],
+"b": [
+"randomly"
+],
+"a_docs": 79,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p155",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0093",
+"judge": "yes"
+},
+{
+"stem": "random",
+"a": [
+"randomly"
+],
+"b": [
+"random",
+"randoms"
+],
+"a_docs": 79,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0094",
+"judge": "yes"
+},
+{
+"stem": "random",
+"a": [
+"randomly"
+],
+"b": [
+"randomized"
+],
+"a_docs": 79,
+"b_docs": 79,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p155",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0095",
+"judge": "yes"
+},
+{
+"stem": "access",
+"a": [
+"access",
+"accesses"
+],
+"b": [
+"accession"
+],
+"a_docs": 95,
+"b_docs": 78,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0096",
+"judge": "no"
+},
+{
+"stem": "contain",
+"a": [
+"contains",
+"contain"
+],
+"b": [
+"containing"
+],
+"a_docs": 518,
+"b_docs": 78,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0097",
+"judge": "yes"
+},
+{
+"stem": "organ",
+"a": [
+"organized"
+],
+"b": [
+"organization",
+"organizations"
+],
+"a_docs": 83,
+"b_docs": 78,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0098",
+"judge": "context"
+},
+{
+"stem": "store",
+"a": [
+"stores",
+"store"
+],
+"b": [
+"stored"
+],
+"a_docs": 9,
+"b_docs": 78,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0099",
+"judge": "yes"
+},
+{
+"stem": "deriv",
+"a": [
+"derivatives",
+"derivative"
+],
+"b": [
+"derived"
+],
+"a_docs": 269,
+"b_docs": 76,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0100",
+"judge": "context"
+},
+{
+"stem": "addit",
+"a": [
+"additional"
+],
+"b": [
+"additionally"
+],
+"a_docs": 204,
+"b_docs": 75,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0101",
+"judge": "yes"
+},
+{
+"stem": "addit",
+"a": [
+"addition",
+"additions"
+],
+"b": [
+"additionally"
+],
+"a_docs": 88,
+"b_docs": 75,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0102",
+"judge": "context"
+},
+{
+"stem": "instruct",
+"a": [
+"instructed"
+],
+"b": [
+"instructions",
+"instruction"
+],
+"a_docs": 139,
+"b_docs": 74,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0103",
+"judge": "yes"
+},
+{
+"stem": "intern",
+"a": [
+"internalization"
+],
+"b": [
+"international"
+],
+"a_docs": 11,
+"b_docs": 72,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0104",
+"judge": "no"
+},
+{
+"stem": "neuroimag",
+"a": [
+"neuroimaging"
+],
+"b": [
+"neuroimage",
+"neuroimag",
+"neuroimages"
+],
+"a_docs": 124,
+"b_docs": 72,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0105",
+"judge": "no"
+},
+{
+"stem": "organ",
+"a": [
+"organized"
+],
+"b": [
+"organizing"
+],
+"a_docs": 83,
+"b_docs": 72,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0106",
+"judge": "yes"
+},
+{
+"stem": "organ",
+"a": [
+"organization",
+"organizations"
+],
+"b": [
+"organizing"
+],
+"a_docs": 78,
+"b_docs": 72,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0107",
+"judge": "context"
+},
+{
+"stem": "differ",
+"a": [
+"different",
+"differents"
+],
+"b": [
+"differences",
+"difference"
+],
+"a_docs": 279,
+"b_docs": 71,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0108",
+"judge": "yes"
+},
+{
+"stem": "independ",
+"a": [
+"independently"
+],
+"b": [
+"independent"
+],
+"a_docs": 15,
+"b_docs": 69,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p177",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0109",
+"judge": "yes"
+},
+{
+"stem": "indic",
+"a": [
+"indicated"
+],
+"b": [
+"indicate",
+"indicates"
+],
+"a_docs": 84,
+"b_docs": 69,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0110",
+"judge": "yes"
+},
+{
+"stem": "perform",
+"a": [
+"performed"
+],
+"b": [
+"performing"
+],
+"a_docs": 318,
+"b_docs": 69,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0111",
+"judge": "yes"
+},
+{
+"stem": "perform",
+"a": [
+"performance",
+"performances"
+],
+"b": [
+"performing"
+],
+"a_docs": 103,
+"b_docs": 69,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0112",
+"judge": "context"
+},
+{
+"stem": "local",
+"a": [
+"localization",
+"localizations"
+],
+"b": [
+"local"
+],
+"a_docs": 24,
+"b_docs": 68,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0113",
+"judge": "no"
+},
+{
+"stem": "local",
+"a": [
+"localize"
+],
+"b": [
+"local"
+],
+"a_docs": 6,
+"b_docs": 68,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0114",
+"judge": "no"
+},
+{
+"stem": "local",
+"a": [
+"localized"
+],
+"b": [
+"local"
+],
+"a_docs": 5,
+"b_docs": 68,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0115",
+"judge": "no"
+},
+{
+"stem": "select",
+"a": [
+"selection",
+"selections"
+],
+"b": [
+"selected"
+],
+"a_docs": 30,
+"b_docs": 68,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0116",
+"judge": "yes"
+},
+{
+"stem": "select",
+"a": [
+"select"
+],
+"b": [
+"selected"
+],
+"a_docs": 14,
+"b_docs": 68,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0117",
+"judge": "yes"
+},
+{
+"stem": "share",
+"a": [
+"shared"
+],
+"b": [
+"share",
+"shares"
+],
+"a_docs": 88,
+"b_docs": 68,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0118",
+"judge": "yes"
+},
+{
+"stem": "contain",
+"a": [
+"contains",
+"contain"
+],
+"b": [
+"contained"
+],
+"a_docs": 518,
+"b_docs": 67,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0119",
+"judge": "yes"
+},
+{
+"stem": "contain",
+"a": [
+"containing"
+],
+"b": [
+"contained"
+],
+"a_docs": 78,
+"b_docs": 67,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0120",
+"judge": "yes"
+},
+{
+"stem": "make",
+"a": [
+"making"
+],
+"b": [
+"make",
+"makes"
+],
+"a_docs": 61,
+"b_docs": 67,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0121",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measures",
+"measure"
+],
+"b": [
+"measured"
+],
+"a_docs": 105,
+"b_docs": 67,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p098",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0122",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measurements",
+"measurement"
+],
+"b": [
+"measured"
+],
+"a_docs": 48,
+"b_docs": 67,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0123",
+"judge": "yes"
+},
+{
+"stem": "measur",
+"a": [
+"measuring"
+],
+"b": [
+"measured"
+],
+"a_docs": 14,
+"b_docs": 67,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0124",
+"judge": "yes"
+},
+{
+"stem": "previous",
+"a": [
+"previously"
+],
+"b": [
+"previous"
+],
+"a_docs": 79,
+"b_docs": 67,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0125",
+"judge": "yes"
+},
+{
+"stem": "like",
+"a": [
+"likely"
+],
+"b": [
+"like"
+],
+"a_docs": 22,
+"b_docs": 65,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0126",
+"judge": "no"
+},
+{
+"stem": "view",
+"a": [
+"viewed"
+],
+"b": [
+"viewing"
+],
+"a_docs": 79,
+"b_docs": 65,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0127",
+"judge": "yes"
+},
+{
+"stem": "person",
+"a": [
+"personal"
+],
+"b": [
+"person",
+"persons"
+],
+"a_docs": 18,
+"b_docs": 64,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0128",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personalized"
+],
+"b": [
+"person",
+"persons"
+],
+"a_docs": 17,
+"b_docs": 64,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0129",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personally"
+],
+"b": [
+"person",
+"persons"
+],
+"a_docs": 6,
+"b_docs": 64,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0130",
+"judge": "no"
+},
+{
+"stem": "view",
+"a": [
+"viewed"
+],
+"b": [
+"view",
+"views"
+],
+"a_docs": 79,
+"b_docs": 63,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0131",
+"judge": "context"
+},
+{
+"stem": "read",
+"a": [
+"reading",
+"readings"
+],
+"b": [
+"read"
+],
+"a_docs": 56,
+"b_docs": 62,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p052",
+"label": "context",
+"a_side": "a"
+},
+"id": "c0132",
+"judge": "context"
+},
+{
+"stem": "activ",
+"a": [
+"activity",
+"activities"
+],
+"b": [
+"activation",
+"activations"
+],
+"a_docs": 169,
+"b_docs": 60,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0133",
+"judge": "context"
+},
+{
+"stem": "activ",
+"a": [
+"active"
+],
+"b": [
+"activation",
+"activations"
+],
+"a_docs": 54,
+"b_docs": 60,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0134",
+"judge": "no"
+},
+{
+"stem": "current",
+"a": [
+"current",
+"currents"
+],
+"b": [
+"currently"
+],
+"a_docs": 113,
+"b_docs": 59,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0135",
+"judge": "no"
+},
+{
+"stem": "acknowledg",
+"a": [
+"acknowledgements",
+"acknowledgement"
+],
+"b": [
+"acknowledge",
+"acknowledges"
+],
+"a_docs": 30,
+"b_docs": 58,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p063",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0136",
+"judge": "yes"
+},
+{
+"stem": "acknowledg",
+"a": [
+"acknowledgments",
+"acknowledgment"
+],
+"b": [
+"acknowledge",
+"acknowledges"
+],
+"a_docs": 17,
+"b_docs": 58,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p038",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0137",
+"judge": "yes"
+},
+{
+"stem": "perform",
+"a": [
+"performed"
+],
+"b": [
+"perform",
+"performs"
+],
+"a_docs": 318,
+"b_docs": 58,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0138",
+"judge": "yes"
+},
+{
+"stem": "perform",
+"a": [
+"performance",
+"performances"
+],
+"b": [
+"perform",
+"performs"
+],
+"a_docs": 103,
+"b_docs": 58,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0139",
+"judge": "context"
+},
+{
+"stem": "perform",
+"a": [
+"performing"
+],
+"b": [
+"perform",
+"performs"
+],
+"a_docs": 69,
+"b_docs": 58,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0140",
+"judge": "yes"
+},
+{
+"stem": "rate",
+"a": [
+"rate",
+"rates"
+],
+"b": [
+"rating",
+"ratings"
+],
+"a_docs": 127,
+"b_docs": 58,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0141",
+"judge": "no"
+},
+{
+"stem": "review",
+"a": [
+"reviewed"
+],
+"b": [
+"review",
+"reviews"
+],
+"a_docs": 12,
+"b_docs": 58,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p117",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0142",
+"judge": "yes"
+},
+{
+"stem": "specif",
+"a": [
+"specific",
+"specifics"
+],
+"b": [
+"specification",
+"specifications"
+],
+"a_docs": 143,
+"b_docs": 58,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0143",
+"judge": "no"
+},
+{
+"stem": "last",
+"a": [
+"last",
+"lasts"
+],
+"b": [
+"lasted"
+],
+"a_docs": 66,
+"b_docs": 57,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0144",
+"judge": "no"
+},
+{
+"stem": "particip",
+"a": [
+"participants",
+"participant"
+],
+"b": [
+"participated"
+],
+"a_docs": 709,
+"b_docs": 57,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0145",
+"judge": "yes"
+},
+{
+"stem": "result",
+"a": [
+"results",
+"result"
+],
+"b": [
+"resulting"
+],
+"a_docs": 181,
+"b_docs": 57,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p162",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0146",
+"judge": "yes"
+},
+{
+"stem": "result",
+"a": [
+"resulted"
+],
+"b": [
+"resulting"
+],
+"a_docs": 9,
+"b_docs": 57,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p178",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0147",
+"judge": "yes"
+},
+{
+"stem": "read",
+"a": [
+"read"
+],
+"b": [
+"reading",
+"readings"
+],
+"a_docs": 62,
+"b_docs": 56,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p052",
+"label": "context",
+"a_side": "b"
+},
+"id": "c0148",
+"judge": "context"
+},
+{
+"stem": "report",
+"a": [
+"reported"
+],
+"b": [
+"report",
+"reports"
+],
+"a_docs": 147,
+"b_docs": 56,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0149",
+"judge": "yes"
+},
+{
+"stem": "activ",
+"a": [
+"activity",
+"activities"
+],
+"b": [
+"active"
+],
+"a_docs": 169,
+"b_docs": 54,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0150",
+"judge": "no"
+},
+{
+"stem": "control",
+"a": [
+"control",
+"controls"
+],
+"b": [
+"controlled"
+],
+"a_docs": 665,
+"b_docs": 54,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0151",
+"judge": "context"
+},
+{
+"stem": "indic",
+"a": [
+"indicated"
+],
+"b": [
+"indicating"
+],
+"a_docs": 84,
+"b_docs": 54,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0152",
+"judge": "yes"
+},
+{
+"stem": "indic",
+"a": [
+"indicate",
+"indicates"
+],
+"b": [
+"indicating"
+],
+"a_docs": 69,
+"b_docs": 54,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0153",
+"judge": "yes"
+},
+{
+"stem": "run",
+"a": [
+"run",
+"runs"
+],
+"b": [
+"running"
+],
+"a_docs": 353,
+"b_docs": 54,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0154",
+"judge": "context"
+},
+{
+"stem": "ident",
+"a": [
+"identically"
+],
+"b": [
+"identical"
+],
+"a_docs": 8,
+"b_docs": 53,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0155",
+"judge": "yes"
+},
+{
+"stem": "label",
+"a": [
+"labels",
+"label"
+],
+"b": [
+"labeled",
+"labelled"
+],
+"a_docs": 61,
+"b_docs": 53,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0156",
+"judge": "yes"
+},
+{
+"stem": "start",
+"a": [
+"start",
+"starts"
+],
+"b": [
+"started"
+],
+"a_docs": 113,
+"b_docs": 53,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0157",
+"judge": "yes"
+},
+{
+"stem": "appear",
+"a": [
+"appear",
+"appears"
+],
+"b": [
+"appeared"
+],
+"a_docs": 21,
+"b_docs": 52,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0158",
+"judge": "yes"
+},
+{
+"stem": "appear",
+"a": [
+"appearance"
+],
+"b": [
+"appeared"
+],
+"a_docs": 11,
+"b_docs": 52,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0159",
+"judge": "no"
+},
+{
+"stem": "research",
+"a": [
+"research"
+],
+"b": [
+"researchers",
+"researcher"
+],
+"a_docs": 217,
+"b_docs": 52,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0160",
+"judge": "yes"
+},
+{
+"stem": "direct",
+"a": [
+"directly"
+],
+"b": [
+"direction",
+"directions"
+],
+"a_docs": 25,
+"b_docs": 50,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0161",
+"judge": "no"
+},
+{
+"stem": "direct",
+"a": [
+"directed"
+],
+"b": [
+"direction",
+"directions"
+],
+"a_docs": 23,
+"b_docs": 50,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p181",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0162",
+"judge": "no"
+},
+{
+"stem": "direct",
+"a": [
+"direct"
+],
+"b": [
+"direction",
+"directions"
+],
+"a_docs": 18,
+"b_docs": 50,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0163",
+"judge": "no"
+},
+{
+"stem": "find",
+"a": [
+"findings",
+"finding"
+],
+"b": [
+"find"
+],
+"a_docs": 53,
+"b_docs": 50,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0164",
+"judge": "no"
+},
+{
+"stem": "support",
+"a": [
+"support",
+"supports"
+],
+"b": [
+"supported"
+],
+"a_docs": 57,
+"b_docs": 50,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0165",
+"judge": "yes"
+},
+{
+"stem": "fix",
+"a": [
+"fix",
+"fixes"
+],
+"b": [
+"fixed"
+],
+"a_docs": 16,
+"b_docs": 49,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p166",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0166",
+"judge": "no"
+},
+{
+"stem": "identifi",
+"a": [
+"identified"
+],
+"b": [
+"identify",
+"identifies"
+],
+"a_docs": 78,
+"b_docs": 49,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0167",
+"judge": "yes"
+},
+{
+"stem": "assess",
+"a": [
+"assessment",
+"assessments"
+],
+"b": [
+"assessed"
+],
+"a_docs": 74,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0168",
+"judge": "yes"
+},
+{
+"stem": "measur",
+"a": [
+"measures",
+"measure"
+],
+"b": [
+"measurements",
+"measurement"
+],
+"a_docs": 105,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p112",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0169",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measured"
+],
+"b": [
+"measurements",
+"measurement"
+],
+"a_docs": 67,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0170",
+"judge": "yes"
+},
+{
+"stem": "measur",
+"a": [
+"measuring"
+],
+"b": [
+"measurements",
+"measurement"
+],
+"a_docs": 14,
+"b_docs": 48,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0171",
+"judge": "yes"
+},
+{
+"stem": "place",
+"a": [
+"placed"
+],
+"b": [
+"place",
+"places"
+],
+"a_docs": 63,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0172",
+"judge": "context"
+},
+{
+"stem": "process",
+"a": [
+"processing"
+],
+"b": [
+"process",
+"processes"
+],
+"a_docs": 262,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0173",
+"judge": "context"
+},
+{
+"stem": "process",
+"a": [
+"processed"
+],
+"b": [
+"process",
+"processes"
+],
+"a_docs": 102,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0174",
+"judge": "context"
+},
+{
+"stem": "sampl",
+"a": [
+"sampling"
+],
+"b": [
+"sampled"
+],
+"a_docs": 110,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0175",
+"judge": "yes"
+},
+{
+"stem": "sampl",
+"a": [
+"sample",
+"samples"
+],
+"b": [
+"sampled"
+],
+"a_docs": 101,
+"b_docs": 48,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0176",
+"judge": "context"
+},
+{
+"stem": "name",
+"a": [
+"name",
+"names"
+],
+"b": [
+"named"
+],
+"a_docs": 108,
+"b_docs": 47,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0177",
+"judge": "yes"
+},
+{
+"stem": "relat",
+"a": [
+"related"
+],
+"b": [
+"relative",
+"relatives"
+],
+"a_docs": 282,
+"b_docs": 47,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0178",
+"judge": "no"
+},
+{
+"stem": "assess",
+"a": [
+"assessment",
+"assessments"
+],
+"b": [
+"assess",
+"assesses"
+],
+"a_docs": 74,
+"b_docs": 46,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0179",
+"judge": "yes"
+},
+{
+"stem": "assess",
+"a": [
+"assessed"
+],
+"b": [
+"assess",
+"assesses"
+],
+"a_docs": 48,
+"b_docs": 46,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0180",
+"judge": "yes"
+},
+{
+"stem": "compar",
+"a": [
+"comparing"
+],
+"b": [
+"compared"
+],
+"a_docs": 16,
+"b_docs": 46,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p053",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0181",
+"judge": "yes"
+},
+{
+"stem": "compar",
+"a": [
+"comparable"
+],
+"b": [
+"compared"
+],
+"a_docs": 15,
+"b_docs": 46,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p151",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0182",
+"judge": "context"
+},
+{
+"stem": "compar",
+"a": [
+"compare",
+"compares"
+],
+"b": [
+"compared"
+],
+"a_docs": 9,
+"b_docs": 46,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0183",
+"judge": "yes"
+},
+{
+"stem": "consist",
+"a": [
+"consists",
+"consist"
+],
+"b": [
+"consisting"
+],
+"a_docs": 128,
+"b_docs": 46,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0184",
+"judge": "yes"
+},
+{
+"stem": "consist",
+"a": [
+"consisted"
+],
+"b": [
+"consisting"
+],
+"a_docs": 126,
+"b_docs": 46,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0185",
+"judge": "yes"
+},
+{
+"stem": "specif",
+"a": [
+"specific",
+"specifics"
+],
+"b": [
+"specifically"
+],
+"a_docs": 143,
+"b_docs": 46,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0186",
+"judge": "yes"
+},
+{
+"stem": "specif",
+"a": [
+"specification",
+"specifications"
+],
+"b": [
+"specifically"
+],
+"a_docs": 58,
+"b_docs": 46,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0187",
+"judge": "no"
+},
+{
+"stem": "acceler",
+"a": [
+"accelerated"
+],
+"b": [
+"acceleration"
+],
+"a_docs": 5,
+"b_docs": 45,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p183",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0188",
+"judge": "context"
+},
+{
+"stem": "check",
+"a": [
+"checked"
+],
+"b": [
+"check",
+"checks"
+],
+"a_docs": 16,
+"b_docs": 45,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0189",
+"judge": "yes"
+},
+{
+"stem": "subsequ",
+"a": [
+"subsequent"
+],
+"b": [
+"subsequently"
+],
+"a_docs": 48,
+"b_docs": 45,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0190",
+"judge": "yes"
+},
+{
+"stem": "watch",
+"a": [
+"watching"
+],
+"b": [
+"watched"
+],
+"a_docs": 46,
+"b_docs": 45,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0191",
+"judge": "yes"
+},
+{
+"stem": "age",
+"a": [
+"age",
+"ages"
+],
+"b": [
+"aged"
+],
+"a_docs": 220,
+"b_docs": 44,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0192",
+"judge": "yes"
+},
+{
+"stem": "discuss",
+"a": [
+"discussion"
+],
+"b": [
+"discuss"
+],
+"a_docs": 43,
+"b_docs": 44,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0193",
+"judge": "yes"
+},
+{
+"stem": "discuss",
+"a": [
+"discussed"
+],
+"b": [
+"discuss"
+],
+"a_docs": 5,
+"b_docs": 44,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p062",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0194",
+"judge": "yes"
+},
+{
+"stem": "name",
+"a": [
+"name",
+"names"
+],
+"b": [
+"naming"
+],
+"a_docs": 108,
+"b_docs": 44,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0195",
+"judge": "context"
+},
+{
+"stem": "name",
+"a": [
+"named"
+],
+"b": [
+"naming"
+],
+"a_docs": 47,
+"b_docs": 44,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0196",
+"judge": "no"
+},
+{
+"stem": "natur",
+"a": [
+"natural"
+],
+"b": [
+"nature"
+],
+"a_docs": 47,
+"b_docs": 44,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0197",
+"judge": "no"
+},
+{
+"stem": "press",
+"a": [
+"press",
+"presses"
+],
+"b": [
+"pressing"
+],
+"a_docs": 103,
+"b_docs": 44,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0198",
+"judge": "yes"
+},
+{
+"stem": "recal",
+"a": [
+"recalling"
+],
+"b": [
+"recall"
+],
+"a_docs": 10,
+"b_docs": 44,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p176",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0199",
+"judge": "yes"
+},
+{
+"stem": "recal",
+"a": [
+"recalled"
+],
+"b": [
+"recall"
+],
+"a_docs": 9,
+"b_docs": 44,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p180",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0200",
+"judge": "yes"
+},
+{
+"stem": "discuss",
+"a": [
+"discuss"
+],
+"b": [
+"discussion"
+],
+"a_docs": 44,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0201",
+"judge": "yes"
+},
+{
+"stem": "discuss",
+"a": [
+"discussed"
+],
+"b": [
+"discussion"
+],
+"a_docs": 5,
+"b_docs": 43,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0202",
+"judge": "yes"
+},
+{
+"stem": "list",
+"a": [
+"list",
+"lists"
+],
+"b": [
+"listed"
+],
+"a_docs": 63,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0203",
+"judge": "context"
+},
+{
+"stem": "manual",
+"a": [
+"manual",
+"manuals"
+],
+"b": [
+"manually"
+],
+"a_docs": 50,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0204",
+"judge": "context"
+},
+{
+"stem": "match",
+"a": [
+"matched"
+],
+"b": [
+"match",
+"matches"
+],
+"a_docs": 54,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0205",
+"judge": "context"
+},
+{
+"stem": "public",
+"a": [
+"publication",
+"publications"
+],
+"b": [
+"publicly"
+],
+"a_docs": 132,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0206",
+"judge": "no"
+},
+{
+"stem": "public",
+"a": [
+"public"
+],
+"b": [
+"publicly"
+],
+"a_docs": 96,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0207",
+"judge": "yes"
+},
+{
+"stem": "understand",
+"a": [
+"understanding"
+],
+"b": [
+"understand"
+],
+"a_docs": 52,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0208",
+"judge": "yes"
+},
+{
+"stem": "valid",
+"a": [
+"validation",
+"validations"
+],
+"b": [
+"validator",
+"validators"
+],
+"a_docs": 57,
+"b_docs": 43,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0209",
+"judge": "context"
+},
+{
+"stem": "access",
+"a": [
+"access",
+"accesses"
+],
+"b": [
+"accessible"
+],
+"a_docs": 95,
+"b_docs": 42,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0210",
+"judge": "yes"
+},
+{
+"stem": "access",
+"a": [
+"accession"
+],
+"b": [
+"accessible"
+],
+"a_docs": 78,
+"b_docs": 42,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0211",
+"judge": "no"
+},
+{
+"stem": "listen",
+"a": [
+"listening"
+],
+"b": [
+"listened"
+],
+"a_docs": 42,
+"b_docs": 42,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0212",
+"judge": "yes"
+},
+{
+"stem": "separ",
+"a": [
+"separate"
+],
+"b": [
+"separated"
+],
+"a_docs": 96,
+"b_docs": 42,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0213",
+"judge": "yes"
+},
+{
+"stem": "correspond",
+"a": [
+"corresponding"
+],
+"b": [
+"corresponds",
+"correspond"
+],
+"a_docs": 196,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0214",
+"judge": "context"
+},
+{
+"stem": "experi",
+"a": [
+"experiment",
+"experiments"
+],
+"b": [
+"experience",
+"experiences"
+],
+"a_docs": 326,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p072",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0215",
+"judge": "no"
+},
+{
+"stem": "investig",
+"a": [
+"investigate",
+"investigates"
+],
+"b": [
+"investigating"
+],
+"a_docs": 73,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0216",
+"judge": "yes"
+},
+{
+"stem": "licens",
+"a": [
+"license",
+"licenses"
+],
+"b": [
+"licensed"
+],
+"a_docs": 122,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0217",
+"judge": "yes"
+},
+{
+"stem": "need",
+"a": [
+"needed"
+],
+"b": [
+"need",
+"needs"
+],
+"a_docs": 48,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0218",
+"judge": "yes"
+},
+{
+"stem": "record",
+"a": [
+"recorded"
+],
+"b": [
+"record",
+"records"
+],
+"a_docs": 259,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p049",
+"label": "b_to_a",
+"a_side": "b"
+},
+"id": "c0219",
+"judge": "context"
+},
+{
+"stem": "record",
+"a": [
+"recordings",
+"recording"
+],
+"b": [
+"record",
+"records"
+],
+"a_docs": 211,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p172",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0220",
+"judge": "context"
+},
+{
+"stem": "record",
+"a": [
+"recorder"
+],
+"b": [
+"record",
+"records"
+],
+"a_docs": 9,
+"b_docs": 41,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p143",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0221",
+"judge": "no"
+},
+{
+"stem": "share",
+"a": [
+"shared"
+],
+"b": [
+"sharing"
+],
+"a_docs": 88,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0222",
+"judge": "yes"
+},
+{
+"stem": "share",
+"a": [
+"share",
+"shares"
+],
+"b": [
+"sharing"
+],
+"a_docs": 68,
+"b_docs": 41,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0223",
+"judge": "yes"
+},
+{
+"stem": "vari",
+"a": [
+"varied"
+],
+"b": [
+"varying"
+],
+"a_docs": 41,
+"b_docs": 41,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0224",
+"judge": "yes"
+},
+{
+"stem": "magnet",
+"a": [
+"magnetic"
+],
+"b": [
+"magnetization"
+],
+"a_docs": 128,
+"b_docs": 40,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0225",
+"judge": "context"
+},
+{
+"stem": "releas",
+"a": [
+"release",
+"releases"
+],
+"b": [
+"released"
+],
+"a_docs": 97,
+"b_docs": 40,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0226",
+"judge": "yes"
+},
+{
+"stem": "test",
+"a": [
+"test",
+"tests"
+],
+"b": [
+"tested"
+],
+"a_docs": 172,
+"b_docs": 39,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0227",
+"judge": "yes"
+},
+{
+"stem": "test",
+"a": [
+"testing"
+],
+"b": [
+"tested"
+],
+"a_docs": 80,
+"b_docs": 39,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0228",
+"judge": "yes"
+},
+{
+"stem": "evalu",
+"a": [
+"evaluation",
+"evaluations"
+],
+"b": [
+"evaluate",
+"evaluates"
+],
+"a_docs": 40,
+"b_docs": 38,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0229",
+"judge": "yes"
+},
+{
+"stem": "learn",
+"a": [
+"learning"
+],
+"b": [
+"learn"
+],
+"a_docs": 136,
+"b_docs": 38,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0230",
+"judge": "yes"
+},
+{
+"stem": "modifi",
+"a": [
+"modify"
+],
+"b": [
+"modified"
+],
+"a_docs": 6,
+"b_docs": 38,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0231",
+"judge": "yes"
+},
+{
+"stem": "prepar",
+"a": [
+"prepared"
+],
+"b": [
+"preparation"
+],
+"a_docs": 70,
+"b_docs": 38,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0232",
+"judge": "context"
+},
+{
+"stem": "standard",
+"a": [
+"standard",
+"standards"
+],
+"b": [
+"standardized"
+],
+"a_docs": 185,
+"b_docs": 38,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0233",
+"judge": "context"
+},
+{
+"stem": "start",
+"a": [
+"start",
+"starts"
+],
+"b": [
+"starting"
+],
+"a_docs": 113,
+"b_docs": 38,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0234",
+"judge": "yes"
+},
+{
+"stem": "start",
+"a": [
+"started"
+],
+"b": [
+"starting"
+],
+"a_docs": 53,
+"b_docs": 38,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0235",
+"judge": "yes"
+},
+{
+"stem": "format",
+"a": [
+"format",
+"formats"
+],
+"b": [
+"formatted"
+],
+"a_docs": 235,
+"b_docs": 37,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0236",
+"judge": "yes"
+},
+{
+"stem": "format",
+"a": [
+"formatting"
+],
+"b": [
+"formatted"
+],
+"a_docs": 7,
+"b_docs": 37,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0237",
+"judge": "yes"
+},
+{
+"stem": "train",
+"a": [
+"training",
+"trainings"
+],
+"b": [
+"trained"
+],
+"a_docs": 88,
+"b_docs": 37,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0238",
+"judge": "yes"
+},
+{
+"stem": "avoid",
+"a": [
+"avoidance"
+],
+"b": [
+"avoid"
+],
+"a_docs": 5,
+"b_docs": 36,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p114",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0239",
+"judge": "context"
+},
+{
+"stem": "comput",
+"a": [
+"computer",
+"computers"
+],
+"b": [
+"computational"
+],
+"a_docs": 72,
+"b_docs": 36,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0240",
+"judge": "no"
+},
+{
+"stem": "display",
+"a": [
+"displayed"
+],
+"b": [
+"display",
+"displays"
+],
+"a_docs": 60,
+"b_docs": 36,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0241",
+"judge": "yes"
+},
+{
+"stem": "final",
+"a": [
+"final",
+"finals"
+],
+"b": [
+"finally"
+],
+"a_docs": 59,
+"b_docs": 36,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0242",
+"judge": "no"
+},
+{
+"stem": "investig",
+"a": [
+"investigate",
+"investigates"
+],
+"b": [
+"investigated"
+],
+"a_docs": 73,
+"b_docs": 35,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0243",
+"judge": "yes"
+},
+{
+"stem": "investig",
+"a": [
+"investigating"
+],
+"b": [
+"investigated"
+],
+"a_docs": 41,
+"b_docs": 35,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0244",
+"judge": "yes"
+},
+{
+"stem": "remov",
+"a": [
+"removed"
+],
+"b": [
+"remove"
+],
+"a_docs": 77,
+"b_docs": 35,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0245",
+"judge": "yes"
+},
+{
+"stem": "age",
+"a": [
+"age",
+"ages"
+],
+"b": [
+"aging"
+],
+"a_docs": 220,
+"b_docs": 34,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p018",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0246",
+"judge": "context"
+},
+{
+"stem": "age",
+"a": [
+"aged"
+],
+"b": [
+"aging"
+],
+"a_docs": 44,
+"b_docs": 34,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p086",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0247",
+"judge": "context"
+},
+{
+"stem": "combin",
+"a": [
+"combined"
+],
+"b": [
+"combination",
+"combinations"
+],
+"a_docs": 34,
+"b_docs": 34,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0248",
+"judge": "yes"
+},
+{
+"stem": "model",
+"a": [
+"model",
+"models"
+],
+"b": [
+"modeling",
+"modelling"
+],
+"a_docs": 102,
+"b_docs": 34,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0249",
+"judge": "yes"
+},
+{
+"stem": "subject",
+"a": [
+"subjects",
+"subject"
+],
+"b": [
+"subjective"
+],
+"a_docs": 454,
+"b_docs": 34,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0250",
+"judge": "no"
+},
+{
+"stem": "visual",
+"a": [
+"visual"
+],
+"b": [
+"visually"
+],
+"a_docs": 313,
+"b_docs": 34,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0251",
+"judge": "yes"
+},
+{
+"stem": "approv",
+"a": [
+"approved"
+],
+"b": [
+"approval",
+"approvals"
+],
+"a_docs": 81,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0252",
+"judge": "yes"
+},
+{
+"stem": "comput",
+"a": [
+"computer",
+"computers"
+],
+"b": [
+"computed"
+],
+"a_docs": 72,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0253",
+"judge": "no"
+},
+{
+"stem": "comput",
+"a": [
+"computational"
+],
+"b": [
+"computed"
+],
+"a_docs": 36,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0254",
+"judge": "no"
+},
+{
+"stem": "end",
+"a": [
+"end",
+"ends"
+],
+"b": [
+"ended"
+],
+"a_docs": 110,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0255",
+"judge": "yes"
+},
+{
+"stem": "filter",
+"a": [
+"filter",
+"filters"
+],
+"b": [
+"filtered"
+],
+"a_docs": 46,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0256",
+"judge": "yes"
+},
+{
+"stem": "filter",
+"a": [
+"filtering"
+],
+"b": [
+"filtered"
+],
+"a_docs": 32,
+"b_docs": 33,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0257",
+"judge": "yes"
+},
+{
+"stem": "later",
+"a": [
+"later"
+],
+"b": [
+"lateral"
+],
+"a_docs": 66,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p037",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0258",
+"judge": "no"
+},
+{
+"stem": "origin",
+"a": [
+"original"
+],
+"b": [
+"originally"
+],
+"a_docs": 143,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0259",
+"judge": "yes"
+},
+{
+"stem": "rate",
+"a": [
+"rate",
+"rates"
+],
+"b": [
+"rated"
+],
+"a_docs": 127,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0260",
+"judge": "no"
+},
+{
+"stem": "rate",
+"a": [
+"rating",
+"ratings"
+],
+"b": [
+"rated"
+],
+"a_docs": 58,
+"b_docs": 33,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0261",
+"judge": "yes"
+},
+{
+"stem": "align",
+"a": [
+"aligned"
+],
+"b": [
+"alignment",
+"alignments"
+],
+"a_docs": 34,
+"b_docs": 32,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0262",
+"judge": "yes"
+},
+{
+"stem": "creat",
+"a": [
+"created"
+],
+"b": [
+"create",
+"creates"
+],
+"a_docs": 50,
+"b_docs": 32,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0263",
+"judge": "yes"
+},
+{
+"stem": "filter",
+"a": [
+"filter",
+"filters"
+],
+"b": [
+"filtering"
+],
+"a_docs": 46,
+"b_docs": 32,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0264",
+"judge": "yes"
+},
+{
+"stem": "provid",
+"a": [
+"provided"
+],
+"b": [
+"providing"
+],
+"a_docs": 252,
+"b_docs": 32,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0265",
+"judge": "yes"
+},
+{
+"stem": "provid",
+"a": [
+"provide",
+"provides"
+],
+"b": [
+"providing"
+],
+"a_docs": 132,
+"b_docs": 32,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0266",
+"judge": "yes"
+},
+{
+"stem": "select",
+"a": [
+"selected"
+],
+"b": [
+"selective"
+],
+"a_docs": 68,
+"b_docs": 32,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p094",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0267",
+"judge": "no"
+},
+{
+"stem": "select",
+"a": [
+"selection",
+"selections"
+],
+"b": [
+"selective"
+],
+"a_docs": 30,
+"b_docs": 32,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0268",
+"judge": "no"
+},
+{
+"stem": "select",
+"a": [
+"select"
+],
+"b": [
+"selective"
+],
+"a_docs": 14,
+"b_docs": 32,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0269",
+"judge": "no"
+},
+{
+"stem": "depend",
+"a": [
+"dependent"
+],
+"b": [
+"depending"
+],
+"a_docs": 79,
+"b_docs": 31,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0270",
+"judge": "no"
+},
+{
+"stem": "depend",
+"a": [
+"depends",
+"depend"
+],
+"b": [
+"depending"
+],
+"a_docs": 6,
+"b_docs": 31,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0271",
+"judge": "yes"
+},
+{
+"stem": "distribut",
+"a": [
+"distributed"
+],
+"b": [
+"distribution",
+"distributions"
+],
+"a_docs": 36,
+"b_docs": 31,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0272",
+"judge": "context"
+},
+{
+"stem": "press",
+"a": [
+"press",
+"presses"
+],
+"b": [
+"pressed"
+],
+"a_docs": 103,
+"b_docs": 31,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0273",
+"judge": "yes"
+},
+{
+"stem": "press",
+"a": [
+"pressing"
+],
+"b": [
+"pressed"
+],
+"a_docs": 44,
+"b_docs": 31,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0274",
+"judge": "yes"
+},
+{
+"stem": "reconstruct",
+"a": [
+"reconstruction",
+"reconstructions"
+],
+"b": [
+"reconstructed"
+],
+"a_docs": 51,
+"b_docs": 31,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0275",
+"judge": "yes"
+},
+{
+"stem": "accord",
+"a": [
+"according"
+],
+"b": [
+"accordance"
+],
+"a_docs": 141,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0276",
+"judge": "yes"
+},
+{
+"stem": "acknowledg",
+"a": [
+"acknowledge",
+"acknowledges"
+],
+"b": [
+"acknowledgements",
+"acknowledgement"
+],
+"a_docs": 58,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p063",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0277",
+"judge": "yes"
+},
+{
+"stem": "acknowledg",
+"a": [
+"acknowledgments",
+"acknowledgment"
+],
+"b": [
+"acknowledgements",
+"acknowledgement"
+],
+"a_docs": 17,
+"b_docs": 30,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0278",
+"judge": "yes"
+},
+{
+"stem": "comprehens",
+"a": [
+"comprehensive"
+],
+"b": [
+"comprehension"
+],
+"a_docs": 55,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p013",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0279",
+"judge": "no"
+},
+{
+"stem": "determin",
+"a": [
+"determined"
+],
+"b": [
+"determine",
+"determines"
+],
+"a_docs": 38,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0280",
+"judge": "yes"
+},
+{
+"stem": "monitor",
+"a": [
+"monitoring"
+],
+"b": [
+"monitor"
+],
+"a_docs": 48,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0281",
+"judge": "context"
+},
+{
+"stem": "particip",
+"a": [
+"participants",
+"participant"
+],
+"b": [
+"participation"
+],
+"a_docs": 709,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0282",
+"judge": "yes"
+},
+{
+"stem": "particip",
+"a": [
+"participated"
+],
+"b": [
+"participation"
+],
+"a_docs": 57,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0283",
+"judge": "yes"
+},
+{
+"stem": "repres",
+"a": [
+"represented"
+],
+"b": [
+"represent",
+"represents"
+],
+"a_docs": 24,
+"b_docs": 30,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0284",
+"judge": "yes"
+},
+{
+"stem": "requir",
+"a": [
+"required"
+],
+"b": [
+"requires",
+"require"
+],
+"a_docs": 104,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0285",
+"judge": "yes"
+},
+{
+"stem": "select",
+"a": [
+"selected"
+],
+"b": [
+"selection",
+"selections"
+],
+"a_docs": 68,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0286",
+"judge": "yes"
+},
+{
+"stem": "select",
+"a": [
+"select"
+],
+"b": [
+"selection",
+"selections"
+],
+"a_docs": 14,
+"b_docs": 30,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0287",
+"judge": "yes"
+},
+{
+"stem": "similar",
+"a": [
+"similar"
+],
+"b": [
+"similarity"
+],
+"a_docs": 48,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0288",
+"judge": "context"
+},
+{
+"stem": "simultan",
+"a": [
+"simultaneous"
+],
+"b": [
+"simultaneously"
+],
+"a_docs": 51,
+"b_docs": 30,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0289",
+"judge": "yes"
+},
+{
+"stem": "aim",
+"a": [
+"aim",
+"aims"
+],
+"b": [
+"aimed"
+],
+"a_docs": 32,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0290",
+"judge": "yes"
+},
+{
+"stem": "allow",
+"a": [
+"allow",
+"allows"
+],
+"b": [
+"allowed"
+],
+"a_docs": 35,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0291",
+"judge": "yes"
+},
+{
+"stem": "close",
+"a": [
+"closed"
+],
+"b": [
+"close",
+"closes"
+],
+"a_docs": 69,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0292",
+"judge": "no"
+},
+{
+"stem": "ident",
+"a": [
+"identical"
+],
+"b": [
+"identity",
+"identities"
+],
+"a_docs": 53,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p159",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0293",
+"judge": "no"
+},
+{
+"stem": "ident",
+"a": [
+"identically"
+],
+"b": [
+"identity",
+"identities"
+],
+"a_docs": 8,
+"b_docs": 29,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0294",
+"judge": "no"
+},
+{
+"stem": "last",
+"a": [
+"last",
+"lasts"
+],
+"b": [
+"lasting"
+],
+"a_docs": 66,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0295",
+"judge": "no"
+},
+{
+"stem": "last",
+"a": [
+"lasted"
+],
+"b": [
+"lasting"
+],
+"a_docs": 57,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0296",
+"judge": "yes"
+},
+{
+"stem": "match",
+"a": [
+"matched"
+],
+"b": [
+"matching"
+],
+"a_docs": 54,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0297",
+"judge": "context"
+},
+{
+"stem": "match",
+"a": [
+"match",
+"matches"
+],
+"b": [
+"matching"
+],
+"a_docs": 43,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0298",
+"judge": "yes"
+},
+{
+"stem": "separ",
+"a": [
+"separate"
+],
+"b": [
+"separately"
+],
+"a_docs": 96,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0299",
+"judge": "yes"
+},
+{
+"stem": "separ",
+"a": [
+"separated"
+],
+"b": [
+"separately"
+],
+"a_docs": 42,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0300",
+"judge": "yes"
+},
+{
+"stem": "set",
+"a": [
+"set",
+"sets"
+],
+"b": [
+"settings",
+"setting"
+],
+"a_docs": 221,
+"b_docs": 29,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0301",
+"judge": "context"
+},
+{
+"stem": "typic",
+"a": [
+"typical"
+],
+"b": [
+"typically"
+],
+"a_docs": 17,
+"b_docs": 29,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p150",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0302",
+"judge": "yes"
+},
+{
+"stem": "ethic",
+"a": [
+"ethics"
+],
+"b": [
+"ethical"
+],
+"a_docs": 54,
+"b_docs": 28,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0303",
+"judge": "yes"
+},
+{
+"stem": "link",
+"a": [
+"link",
+"links"
+],
+"b": [
+"linked"
+],
+"a_docs": 74,
+"b_docs": 28,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0304",
+"judge": "context"
+},
+{
+"stem": "medic",
+"a": [
+"medical"
+],
+"b": [
+"medication",
+"medications"
+],
+"a_docs": 79,
+"b_docs": 28,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p039",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0305",
+"judge": "no"
+},
+{
+"stem": "reduc",
+"a": [
+"reduce",
+"reduces"
+],
+"b": [
+"reduced"
+],
+"a_docs": 41,
+"b_docs": 28,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0306",
+"judge": "yes"
+},
+{
+"stem": "sensit",
+"a": [
+"sensitive"
+],
+"b": [
+"sensitivity"
+],
+"a_docs": 33,
+"b_docs": 28,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0307",
+"judge": "yes"
+},
+{
+"stem": "variabl",
+"a": [
+"variables",
+"variable"
+],
+"b": [
+"variability"
+],
+"a_docs": 71,
+"b_docs": 28,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0308",
+"judge": "no"
+},
+{
+"stem": "analyz",
+"a": [
+"analyzed"
+],
+"b": [
+"analyzing"
+],
+"a_docs": 38,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0309",
+"judge": "yes"
+},
+{
+"stem": "avail",
+"a": [
+"available"
+],
+"b": [
+"availability"
+],
+"a_docs": 390,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0310",
+"judge": "yes"
+},
+{
+"stem": "chang",
+"a": [
+"changes",
+"change",
+"chang"
+],
+"b": [
+"changed"
+],
+"a_docs": 100,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p015",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0311",
+"judge": "yes"
+},
+{
+"stem": "chang",
+"a": [
+"changing"
+],
+"b": [
+"changed"
+],
+"a_docs": 12,
+"b_docs": 27,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p064",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0312",
+"judge": "yes"
+},
+{
+"stem": "collect",
+"a": [
+"collected"
+],
+"b": [
+"collecting"
+],
+"a_docs": 381,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0313",
+"judge": "yes"
+},
+{
+"stem": "collect",
+"a": [
+"collection",
+"collections"
+],
+"b": [
+"collecting"
+],
+"a_docs": 137,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0314",
+"judge": "context"
+},
+{
+"stem": "high",
+"a": [
+"high"
+],
+"b": [
+"highly"
+],
+"a_docs": 293,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0315",
+"judge": "no"
+},
+{
+"stem": "increas",
+"a": [
+"increased"
+],
+"b": [
+"increase",
+"increases"
+],
+"a_docs": 32,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0316",
+"judge": "yes"
+},
+{
+"stem": "initi",
+"a": [
+"initial",
+"initials"
+],
+"b": [
+"initially"
+],
+"a_docs": 110,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0317",
+"judge": "yes"
+},
+{
+"stem": "product",
+"a": [
+"production"
+],
+"b": [
+"products",
+"product"
+],
+"a_docs": 22,
+"b_docs": 27,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p022",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0318",
+"judge": "no"
+},
+{
+"stem": "receiv",
+"a": [
+"received"
+],
+"b": [
+"receive",
+"receives"
+],
+"a_docs": 75,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0319",
+"judge": "yes"
+},
+{
+"stem": "show",
+"a": [
+"show",
+"shows"
+],
+"b": [
+"showed"
+],
+"a_docs": 29,
+"b_docs": 27,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0320",
+"judge": "yes"
+},
+{
+"stem": "cite",
+"a": [
+"cite"
+],
+"b": [
+"citing"
+],
+"a_docs": 186,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0321",
+"judge": "yes"
+},
+{
+"stem": "collect",
+"a": [
+"collected"
+],
+"b": [
+"collect",
+"collects"
+],
+"a_docs": 381,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0322",
+"judge": "yes"
+},
+{
+"stem": "collect",
+"a": [
+"collection",
+"collections"
+],
+"b": [
+"collect",
+"collects"
+],
+"a_docs": 137,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0323",
+"judge": "context"
+},
+{
+"stem": "collect",
+"a": [
+"collecting"
+],
+"b": [
+"collect",
+"collects"
+],
+"a_docs": 27,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0324",
+"judge": "yes"
+},
+{
+"stem": "consist",
+"a": [
+"consists",
+"consist"
+],
+"b": [
+"consistent"
+],
+"a_docs": 128,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0325",
+"judge": "no"
+},
+{
+"stem": "consist",
+"a": [
+"consisted"
+],
+"b": [
+"consistent"
+],
+"a_docs": 126,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0326",
+"judge": "no"
+},
+{
+"stem": "consist",
+"a": [
+"consisting"
+],
+"b": [
+"consistent"
+],
+"a_docs": 46,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0327",
+"judge": "no"
+},
+{
+"stem": "evalu",
+"a": [
+"evaluation",
+"evaluations"
+],
+"b": [
+"evaluated"
+],
+"a_docs": 40,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0328",
+"judge": "yes"
+},
+{
+"stem": "evalu",
+"a": [
+"evaluate",
+"evaluates"
+],
+"b": [
+"evaluated"
+],
+"a_docs": 38,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0329",
+"judge": "yes"
+},
+{
+"stem": "generat",
+"a": [
+"generated"
+],
+"b": [
+"generate",
+"generates"
+],
+"a_docs": 81,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0330",
+"judge": "yes"
+},
+{
+"stem": "identifi",
+"a": [
+"identified"
+],
+"b": [
+"identifying"
+],
+"a_docs": 78,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0331",
+"judge": "context"
+},
+{
+"stem": "identifi",
+"a": [
+"identify",
+"identifies"
+],
+"b": [
+"identifying"
+],
+"a_docs": 49,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0332",
+"judge": "context"
+},
+{
+"stem": "initi",
+"a": [
+"initial",
+"initials"
+],
+"b": [
+"initiative",
+"initiatives"
+],
+"a_docs": 110,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0333",
+"judge": "no"
+},
+{
+"stem": "initi",
+"a": [
+"initially"
+],
+"b": [
+"initiative",
+"initiatives"
+],
+"a_docs": 27,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0334",
+"judge": "no"
+},
+{
+"stem": "label",
+"a": [
+"labels",
+"label"
+],
+"b": [
+"labeling",
+"labelling"
+],
+"a_docs": 61,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0335",
+"judge": "yes"
+},
+{
+"stem": "learn",
+"a": [
+"learning"
+],
+"b": [
+"learned"
+],
+"a_docs": 136,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0336",
+"judge": "yes"
+},
+{
+"stem": "learn",
+"a": [
+"learn"
+],
+"b": [
+"learned"
+],
+"a_docs": 38,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0337",
+"judge": "yes"
+},
+{
+"stem": "recruit",
+"a": [
+"recruited"
+],
+"b": [
+"recruitment"
+],
+"a_docs": 68,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0338",
+"judge": "yes"
+},
+{
+"stem": "structur",
+"a": [
+"structure",
+"structures"
+],
+"b": [
+"structured"
+],
+"a_docs": 239,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0339",
+"judge": "context"
+},
+{
+"stem": "studi",
+"a": [
+"study",
+"studies"
+],
+"b": [
+"studying"
+],
+"a_docs": 542,
+"b_docs": 26,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0340",
+"judge": "yes"
+},
+{
+"stem": "studi",
+"a": [
+"studied"
+],
+"b": [
+"studying"
+],
+"a_docs": 18,
+"b_docs": 26,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0341",
+"judge": "yes"
+},
+{
+"stem": "affect",
+"a": [
+"affective"
+],
+"b": [
+"affect",
+"affects"
+],
+"a_docs": 62,
+"b_docs": 25,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0342",
+"judge": "context"
+},
+{
+"stem": "convert",
+"a": [
+"converted"
+],
+"b": [
+"convert",
+"converts"
+],
+"a_docs": 108,
+"b_docs": 25,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0343",
+"judge": "yes"
+},
+{
+"stem": "direct",
+"a": [
+"directed"
+],
+"b": [
+"directly"
+],
+"a_docs": 23,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0344",
+"judge": "no"
+},
+{
+"stem": "direct",
+"a": [
+"direct"
+],
+"b": [
+"directly"
+],
+"a_docs": 18,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0345",
+"judge": "context"
+},
+{
+"stem": "obtain",
+"a": [
+"obtained"
+],
+"b": [
+"obtain"
+],
+"a_docs": 132,
+"b_docs": 25,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0346",
+"judge": "yes"
+},
+{
+"stem": "perceiv",
+"a": [
+"perceive"
+],
+"b": [
+"perceived"
+],
+"a_docs": 9,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0347",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predict",
+"predicts"
+],
+"b": [
+"predictive"
+],
+"a_docs": 23,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p169",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0348",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicted"
+],
+"b": [
+"predictive"
+],
+"a_docs": 23,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p152",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0349",
+"judge": "context"
+},
+{
+"stem": "predict",
+"a": [
+"prediction",
+"predictions"
+],
+"b": [
+"predictive"
+],
+"a_docs": 21,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p134",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0350",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicting"
+],
+"b": [
+"predictive"
+],
+"a_docs": 11,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0351",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predictable"
+],
+"b": [
+"predictive"
+],
+"a_docs": 5,
+"b_docs": 25,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0352",
+"judge": "no"
+},
+{
+"stem": "psycholog",
+"a": [
+"psychology"
+],
+"b": [
+"psychological"
+],
+"a_docs": 30,
+"b_docs": 25,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0353",
+"judge": "yes"
+},
+{
+"stem": "sever",
+"a": [
+"several"
+],
+"b": [
+"severe"
+],
+"a_docs": 70,
+"b_docs": 25,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0354",
+"judge": "no"
+},
+{
+"stem": "allow",
+"a": [
+"allow",
+"allows"
+],
+"b": [
+"allowing"
+],
+"a_docs": 35,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0355",
+"judge": "yes"
+},
+{
+"stem": "allow",
+"a": [
+"allowed"
+],
+"b": [
+"allowing"
+],
+"a_docs": 29,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0356",
+"judge": "yes"
+},
+{
+"stem": "compris",
+"a": [
+"comprises",
+"comprise"
+],
+"b": [
+"comprised"
+],
+"a_docs": 53,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0357",
+"judge": "yes"
+},
+{
+"stem": "curat",
+"a": [
+"curators",
+"curator"
+],
+"b": [
+"curated"
+],
+"a_docs": 49,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0358",
+"judge": "context"
+},
+{
+"stem": "develop",
+"a": [
+"development",
+"developments"
+],
+"b": [
+"developed"
+],
+"a_docs": 82,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0359",
+"judge": "context"
+},
+{
+"stem": "equip",
+"a": [
+"equipped"
+],
+"b": [
+"equipment"
+],
+"a_docs": 27,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0360",
+"judge": "yes"
+},
+{
+"stem": "local",
+"a": [
+"local"
+],
+"b": [
+"localization",
+"localizations"
+],
+"a_docs": 68,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0361",
+"judge": "no"
+},
+{
+"stem": "local",
+"a": [
+"localize"
+],
+"b": [
+"localization",
+"localizations"
+],
+"a_docs": 6,
+"b_docs": 24,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0362",
+"judge": "yes"
+},
+{
+"stem": "local",
+"a": [
+"localized"
+],
+"b": [
+"localization",
+"localizations"
+],
+"a_docs": 5,
+"b_docs": 24,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0363",
+"judge": "context"
+},
+{
+"stem": "normal",
+"a": [
+"normal"
+],
+"b": [
+"normalized"
+],
+"a_docs": 63,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0364",
+"judge": "no"
+},
+{
+"stem": "respond",
+"a": [
+"respond"
+],
+"b": [
+"responded"
+],
+"a_docs": 44,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0365",
+"judge": "yes"
+},
+{
+"stem": "screen",
+"a": [
+"screen",
+"screens"
+],
+"b": [
+"screening",
+"screenings"
+],
+"a_docs": 170,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0366",
+"judge": "no"
+},
+{
+"stem": "strip",
+"a": [
+"strip",
+"strips"
+],
+"b": [
+"stripped"
+],
+"a_docs": 6,
+"b_docs": 24,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0367",
+"judge": "context"
+},
+{
+"stem": "unit",
+"a": [
+"united"
+],
+"b": [
+"unit",
+"units"
+],
+"a_docs": 10,
+"b_docs": 24,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0368",
+"judge": "no"
+},
+{
+"stem": "weight",
+"a": [
+"weighted"
+],
+"b": [
+"weight",
+"weights"
+],
+"a_docs": 275,
+"b_docs": 24,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p188",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0369",
+"judge": "no"
+},
+{
+"stem": "delay",
+"a": [
+"delay",
+"delays"
+],
+"b": [
+"delayed"
+],
+"a_docs": 62,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0370",
+"judge": "yes"
+},
+{
+"stem": "detect",
+"a": [
+"detection"
+],
+"b": [
+"detect"
+],
+"a_docs": 74,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0371",
+"judge": "yes"
+},
+{
+"stem": "direct",
+"a": [
+"directly"
+],
+"b": [
+"directed"
+],
+"a_docs": 25,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0372",
+"judge": "no"
+},
+{
+"stem": "direct",
+"a": [
+"direct"
+],
+"b": [
+"directed"
+],
+"a_docs": 18,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0373",
+"judge": "no"
+},
+{
+"stem": "fixat",
+"a": [
+"fixation",
+"fixations"
+],
+"b": [
+"fixate"
+],
+"a_docs": 133,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0374",
+"judge": "yes"
+},
+{
+"stem": "intern",
+"a": [
+"international"
+],
+"b": [
+"internal"
+],
+"a_docs": 72,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p047",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0375",
+"judge": "no"
+},
+{
+"stem": "intern",
+"a": [
+"internalization"
+],
+"b": [
+"internal"
+],
+"a_docs": 11,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0376",
+"judge": "no"
+},
+{
+"stem": "mean",
+"a": [
+"mean",
+"means"
+],
+"b": [
+"meaning"
+],
+"a_docs": 112,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0377",
+"judge": "no"
+},
+{
+"stem": "observ",
+"a": [
+"observed"
+],
+"b": [
+"observational"
+],
+"a_docs": 30,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0378",
+"judge": "no"
+},
+{
+"stem": "option",
+"a": [
+"optional"
+],
+"b": [
+"option",
+"options"
+],
+"a_docs": 21,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0379",
+"judge": "context"
+},
+{
+"stem": "passiv",
+"a": [
+"passive"
+],
+"b": [
+"passively"
+],
+"a_docs": 49,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0380",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predictive"
+],
+"b": [
+"predict",
+"predicts"
+],
+"a_docs": 25,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p169",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0381",
+"judge": "context"
+},
+{
+"stem": "predict",
+"a": [
+"predictive"
+],
+"b": [
+"predicted"
+],
+"a_docs": 25,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p152",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0382",
+"judge": "context"
+},
+{
+"stem": "predict",
+"a": [
+"predict",
+"predicts"
+],
+"b": [
+"predicted"
+],
+"a_docs": 23,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0383",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicted"
+],
+"b": [
+"predict",
+"predicts"
+],
+"a_docs": 23,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0384",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"prediction",
+"predictions"
+],
+"b": [
+"predict",
+"predicts"
+],
+"a_docs": 21,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0385",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"prediction",
+"predictions"
+],
+"b": [
+"predicted"
+],
+"a_docs": 21,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0386",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicting"
+],
+"b": [
+"predict",
+"predicts"
+],
+"a_docs": 11,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0387",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicting"
+],
+"b": [
+"predicted"
+],
+"a_docs": 11,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0388",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predictable"
+],
+"b": [
+"predict",
+"predicts"
+],
+"a_docs": 5,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0389",
+"judge": "context"
+},
+{
+"stem": "predict",
+"a": [
+"predictable"
+],
+"b": [
+"predicted"
+],
+"a_docs": 5,
+"b_docs": 23,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0390",
+"judge": "context"
+},
+{
+"stem": "refer",
+"a": [
+"reference",
+"references"
+],
+"b": [
+"referred"
+],
+"a_docs": 163,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0391",
+"judge": "no"
+},
+{
+"stem": "refer",
+"a": [
+"refer",
+"refers"
+],
+"b": [
+"referred"
+],
+"a_docs": 80,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0392",
+"judge": "yes"
+},
+{
+"stem": "valid",
+"a": [
+"validation",
+"validations"
+],
+"b": [
+"validated"
+],
+"a_docs": 57,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0393",
+"judge": "context"
+},
+{
+"stem": "valid",
+"a": [
+"validator",
+"validators"
+],
+"b": [
+"validated"
+],
+"a_docs": 43,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0394",
+"judge": "context"
+},
+{
+"stem": "watch",
+"a": [
+"watching"
+],
+"b": [
+"watch"
+],
+"a_docs": 46,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0395",
+"judge": "context"
+},
+{
+"stem": "watch",
+"a": [
+"watched"
+],
+"b": [
+"watch"
+],
+"a_docs": 45,
+"b_docs": 23,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0396",
+"judge": "context"
+},
+{
+"stem": "advanc",
+"a": [
+"advanced"
+],
+"b": [
+"advance",
+"advances"
+],
+"a_docs": 30,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0397",
+"judge": "context"
+},
+{
+"stem": "applic",
+"a": [
+"applicable"
+],
+"b": [
+"applications",
+"application"
+],
+"a_docs": 17,
+"b_docs": 22,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p123",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0398",
+"judge": "no"
+},
+{
+"stem": "assess",
+"a": [
+"assessment",
+"assessments"
+],
+"b": [
+"assessing"
+],
+"a_docs": 74,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0399",
+"judge": "yes"
+},
+{
+"stem": "assess",
+"a": [
+"assessed"
+],
+"b": [
+"assessing"
+],
+"a_docs": 48,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0400",
+"judge": "yes"
+},
+{
+"stem": "assess",
+"a": [
+"assess",
+"assesses"
+],
+"b": [
+"assessing"
+],
+"a_docs": 46,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0401",
+"judge": "yes"
+},
+{
+"stem": "describ",
+"a": [
+"described"
+],
+"b": [
+"describing"
+],
+"a_docs": 132,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0402",
+"judge": "yes"
+},
+{
+"stem": "estim",
+"a": [
+"estimated"
+],
+"b": [
+"estimates",
+"estimate"
+],
+"a_docs": 42,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0403",
+"judge": "yes"
+},
+{
+"stem": "examin",
+"a": [
+"examined"
+],
+"b": [
+"examine",
+"examines"
+],
+"a_docs": 22,
+"b_docs": 22,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0404",
+"judge": "yes"
+},
+{
+"stem": "facilit",
+"a": [
+"facilitating"
+],
+"b": [
+"facilitate",
+"facilitates"
+],
+"a_docs": 68,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0405",
+"judge": "yes"
+},
+{
+"stem": "function",
+"a": [
+"functional",
+"functionals"
+],
+"b": [
+"functioning"
+],
+"a_docs": 436,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p189",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0406",
+"judge": "no"
+},
+{
+"stem": "function",
+"a": [
+"functionally"
+],
+"b": [
+"functioning"
+],
+"a_docs": 6,
+"b_docs": 22,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0407",
+"judge": "context"
+},
+{
+"stem": "fund",
+"a": [
+"funding",
+"fundings"
+],
+"b": [
+"funded"
+],
+"a_docs": 41,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0408",
+"judge": "yes"
+},
+{
+"stem": "intellig",
+"a": [
+"intelligent"
+],
+"b": [
+"intelligence"
+],
+"a_docs": 5,
+"b_docs": 22,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p175",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0409",
+"judge": "context"
+},
+{
+"stem": "like",
+"a": [
+"like"
+],
+"b": [
+"likely"
+],
+"a_docs": 65,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0410",
+"judge": "no"
+},
+{
+"stem": "move",
+"a": [
+"moving"
+],
+"b": [
+"move",
+"moves"
+],
+"a_docs": 30,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0411",
+"judge": "yes"
+},
+{
+"stem": "product",
+"a": [
+"products",
+"product"
+],
+"b": [
+"production"
+],
+"a_docs": 27,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p022",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0412",
+"judge": "no"
+},
+{
+"stem": "remain",
+"a": [
+"remaining"
+],
+"b": [
+"remain",
+"remains"
+],
+"a_docs": 47,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0413",
+"judge": "yes"
+},
+{
+"stem": "represent",
+"a": [
+"representations",
+"representation"
+],
+"b": [
+"representational"
+],
+"a_docs": 67,
+"b_docs": 22,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0414",
+"judge": "yes"
+},
+{
+"stem": "ad",
+"a": [
+"added"
+],
+"b": [
+"adding"
+],
+"a_docs": 99,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0415",
+"judge": "yes"
+},
+{
+"stem": "appear",
+"a": [
+"appeared"
+],
+"b": [
+"appear",
+"appears"
+],
+"a_docs": 52,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0416",
+"judge": "yes"
+},
+{
+"stem": "appear",
+"a": [
+"appearance"
+],
+"b": [
+"appear",
+"appears"
+],
+"a_docs": 11,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p157",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0417",
+"judge": "no"
+},
+{
+"stem": "averag",
+"a": [
+"average",
+"averages"
+],
+"b": [
+"averaged"
+],
+"a_docs": 82,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0418",
+"judge": "yes"
+},
+{
+"stem": "complet",
+"a": [
+"completed"
+],
+"b": [
+"completing"
+],
+"a_docs": 179,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0419",
+"judge": "yes"
+},
+{
+"stem": "complet",
+"a": [
+"complete"
+],
+"b": [
+"completing"
+],
+"a_docs": 82,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0420",
+"judge": "context"
+},
+{
+"stem": "comput",
+"a": [
+"computer",
+"computers"
+],
+"b": [
+"computation",
+"computations"
+],
+"a_docs": 72,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0421",
+"judge": "no"
+},
+{
+"stem": "comput",
+"a": [
+"computational"
+],
+"b": [
+"computation",
+"computations"
+],
+"a_docs": 36,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0422",
+"judge": "yes"
+},
+{
+"stem": "comput",
+"a": [
+"computed"
+],
+"b": [
+"computation",
+"computations"
+],
+"a_docs": 33,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0423",
+"judge": "yes"
+},
+{
+"stem": "correct",
+"a": [
+"correction",
+"corrections"
+],
+"b": [
+"correctly"
+],
+"a_docs": 99,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0424",
+"judge": "no"
+},
+{
+"stem": "correct",
+"a": [
+"correct"
+],
+"b": [
+"correctly"
+],
+"a_docs": 85,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0425",
+"judge": "yes"
+},
+{
+"stem": "correct",
+"a": [
+"corrected"
+],
+"b": [
+"correctly"
+],
+"a_docs": 84,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0426",
+"judge": "no"
+},
+{
+"stem": "correl",
+"a": [
+"correlates",
+"correlate"
+],
+"b": [
+"correlated"
+],
+"a_docs": 58,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0427",
+"judge": "context"
+},
+{
+"stem": "correl",
+"a": [
+"correlation",
+"correlations"
+],
+"b": [
+"correlated"
+],
+"a_docs": 18,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0428",
+"judge": "yes"
+},
+{
+"stem": "enabl",
+"a": [
+"enable",
+"enables"
+],
+"b": [
+"enabling"
+],
+"a_docs": 18,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p088",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0429",
+"judge": "yes"
+},
+{
+"stem": "enabl",
+"a": [
+"enabled"
+],
+"b": [
+"enabling"
+],
+"a_docs": 13,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p095",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0430",
+"judge": "yes"
+},
+{
+"stem": "equal",
+"a": [
+"equally"
+],
+"b": [
+"equal",
+"equals"
+],
+"a_docs": 19,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0431",
+"judge": "yes"
+},
+{
+"stem": "estim",
+"a": [
+"estimated"
+],
+"b": [
+"estimation",
+"estimations"
+],
+"a_docs": 42,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0432",
+"judge": "yes"
+},
+{
+"stem": "estim",
+"a": [
+"estimates",
+"estimate"
+],
+"b": [
+"estimation",
+"estimations"
+],
+"a_docs": 22,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0433",
+"judge": "yes"
+},
+{
+"stem": "focus",
+"a": [
+"focus",
+"focuses"
+],
+"b": [
+"focused"
+],
+"a_docs": 36,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0434",
+"judge": "yes"
+},
+{
+"stem": "investig",
+"a": [
+"investigate",
+"investigates"
+],
+"b": [
+"investigation",
+"investigations"
+],
+"a_docs": 73,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0435",
+"judge": "yes"
+},
+{
+"stem": "investig",
+"a": [
+"investigating"
+],
+"b": [
+"investigation",
+"investigations"
+],
+"a_docs": 41,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0436",
+"judge": "yes"
+},
+{
+"stem": "investig",
+"a": [
+"investigated"
+],
+"b": [
+"investigation",
+"investigations"
+],
+"a_docs": 35,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0437",
+"judge": "yes"
+},
+{
+"stem": "manipul",
+"a": [
+"manipulation",
+"manipulations"
+],
+"b": [
+"manipulated"
+],
+"a_docs": 19,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0438",
+"judge": "yes"
+},
+{
+"stem": "minim",
+"a": [
+"minimal"
+],
+"b": [
+"minimize"
+],
+"a_docs": 31,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0439",
+"judge": "context"
+},
+{
+"stem": "predict",
+"a": [
+"predictive"
+],
+"b": [
+"prediction",
+"predictions"
+],
+"a_docs": 25,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p134",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0440",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predict",
+"predicts"
+],
+"b": [
+"prediction",
+"predictions"
+],
+"a_docs": 23,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0441",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicted"
+],
+"b": [
+"prediction",
+"predictions"
+],
+"a_docs": 23,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0442",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicting"
+],
+"b": [
+"prediction",
+"predictions"
+],
+"a_docs": 11,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0443",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predictable"
+],
+"b": [
+"prediction",
+"predictions"
+],
+"a_docs": 5,
+"b_docs": 21,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0444",
+"judge": "context"
+},
+{
+"stem": "take",
+"a": [
+"taking"
+],
+"b": [
+"take",
+"takes"
+],
+"a_docs": 25,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0445",
+"judge": "yes"
+},
+{
+"stem": "updat",
+"a": [
+"updated"
+],
+"b": [
+"update",
+"updates"
+],
+"a_docs": 43,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0446",
+"judge": "yes"
+},
+{
+"stem": "use",
+"a": [
+"using"
+],
+"b": [
+"useful"
+],
+"a_docs": 589,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0447",
+"judge": "no"
+},
+{
+"stem": "use",
+"a": [
+"used"
+],
+"b": [
+"useful"
+],
+"a_docs": 521,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0448",
+"judge": "no"
+},
+{
+"stem": "use",
+"a": [
+"use",
+"uses"
+],
+"b": [
+"useful"
+],
+"a_docs": 274,
+"b_docs": 21,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0449",
+"judge": "no"
+},
+{
+"stem": "compris",
+"a": [
+"comprises",
+"comprise"
+],
+"b": [
+"comprising"
+],
+"a_docs": 53,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0450",
+"judge": "yes"
+},
+{
+"stem": "compris",
+"a": [
+"comprised"
+],
+"b": [
+"comprising"
+],
+"a_docs": 24,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0451",
+"judge": "yes"
+},
+{
+"stem": "cover",
+"a": [
+"covering"
+],
+"b": [
+"covered"
+],
+"a_docs": 20,
+"b_docs": 20,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0452",
+"judge": "yes"
+},
+{
+"stem": "defin",
+"a": [
+"defined"
+],
+"b": [
+"define",
+"defines"
+],
+"a_docs": 59,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0453",
+"judge": "yes"
+},
+{
+"stem": "extens",
+"a": [
+"extension"
+],
+"b": [
+"extensive"
+],
+"a_docs": 57,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0454",
+"judge": "no"
+},
+{
+"stem": "identifi",
+"a": [
+"identified"
+],
+"b": [
+"identifier",
+"identifiers"
+],
+"a_docs": 78,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0455",
+"judge": "no"
+},
+{
+"stem": "identifi",
+"a": [
+"identify",
+"identifies"
+],
+"b": [
+"identifier",
+"identifiers"
+],
+"a_docs": 49,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0456",
+"judge": "no"
+},
+{
+"stem": "identifi",
+"a": [
+"identifying"
+],
+"b": [
+"identifier",
+"identifiers"
+],
+"a_docs": 26,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0457",
+"judge": "context"
+},
+{
+"stem": "increas",
+"a": [
+"increased"
+],
+"b": [
+"increasing"
+],
+"a_docs": 32,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0458",
+"judge": "yes"
+},
+{
+"stem": "increas",
+"a": [
+"increase",
+"increases"
+],
+"b": [
+"increasing"
+],
+"a_docs": 27,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0459",
+"judge": "yes"
+},
+{
+"stem": "map",
+"a": [
+"maps",
+"map"
+],
+"b": [
+"mapped"
+],
+"a_docs": 106,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0460",
+"judge": "yes"
+},
+{
+"stem": "map",
+"a": [
+"mapping",
+"mappings"
+],
+"b": [
+"mapped"
+],
+"a_docs": 98,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0461",
+"judge": "yes"
+},
+{
+"stem": "remov",
+"a": [
+"removed"
+],
+"b": [
+"removal"
+],
+"a_docs": 77,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0462",
+"judge": "yes"
+},
+{
+"stem": "remov",
+"a": [
+"remove"
+],
+"b": [
+"removal"
+],
+"a_docs": 35,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0463",
+"judge": "yes"
+},
+{
+"stem": "respect",
+"a": [
+"respectively"
+],
+"b": [
+"respective"
+],
+"a_docs": 66,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0464",
+"judge": "yes"
+},
+{
+"stem": "segment",
+"a": [
+"segmentation",
+"segmentations"
+],
+"b": [
+"segmented"
+],
+"a_docs": 48,
+"b_docs": 20,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0465",
+"judge": "yes"
+},
+{
+"stem": "ad",
+"a": [
+"added"
+],
+"b": [
+"ad",
+"ads"
+],
+"a_docs": 99,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p073",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0466",
+"judge": "no"
+},
+{
+"stem": "ad",
+"a": [
+"adding"
+],
+"b": [
+"ad",
+"ads"
+],
+"a_docs": 21,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p027",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0467",
+"judge": "no"
+},
+{
+"stem": "affect",
+"a": [
+"affective"
+],
+"b": [
+"affected"
+],
+"a_docs": 62,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0468",
+"judge": "no"
+},
+{
+"stem": "affect",
+"a": [
+"affect",
+"affects"
+],
+"b": [
+"affected"
+],
+"a_docs": 25,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0469",
+"judge": "context"
+},
+{
+"stem": "automat",
+"a": [
+"automatic"
+],
+"b": [
+"automatically"
+],
+"a_docs": 26,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0470",
+"judge": "yes"
+},
+{
+"stem": "defac",
+"a": [
+"defaced"
+],
+"b": [
+"deface"
+],
+"a_docs": 90,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p042",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0471",
+"judge": "yes"
+},
+{
+"stem": "defac",
+"a": [
+"defacing"
+],
+"b": [
+"deface"
+],
+"a_docs": 85,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0472",
+"judge": "yes"
+},
+{
+"stem": "describ",
+"a": [
+"described"
+],
+"b": [
+"describe",
+"describes"
+],
+"a_docs": 132,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0473",
+"judge": "yes"
+},
+{
+"stem": "equal",
+"a": [
+"equal",
+"equals"
+],
+"b": [
+"equally"
+],
+"a_docs": 21,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0474",
+"judge": "yes"
+},
+{
+"stem": "involv",
+"a": [
+"involved"
+],
+"b": [
+"involving"
+],
+"a_docs": 69,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0475",
+"judge": "yes"
+},
+{
+"stem": "mark",
+"a": [
+"marked"
+],
+"b": [
+"mark",
+"marks"
+],
+"a_docs": 23,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0476",
+"judge": "context"
+},
+{
+"stem": "methodolog",
+"a": [
+"methodological"
+],
+"b": [
+"methodology"
+],
+"a_docs": 21,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0477",
+"judge": "yes"
+},
+{
+"stem": "particular",
+"a": [
+"particular"
+],
+"b": [
+"particularly"
+],
+"a_docs": 64,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0478",
+"judge": "yes"
+},
+{
+"stem": "preced",
+"a": [
+"preceding"
+],
+"b": [
+"preceded"
+],
+"a_docs": 18,
+"b_docs": 19,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p008",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0479",
+"judge": "yes"
+},
+{
+"stem": "project",
+"a": [
+"project",
+"projects"
+],
+"b": [
+"projected"
+],
+"a_docs": 226,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0480",
+"judge": "no"
+},
+{
+"stem": "remain",
+"a": [
+"remaining"
+],
+"b": [
+"remained"
+],
+"a_docs": 47,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0481",
+"judge": "yes"
+},
+{
+"stem": "remain",
+"a": [
+"remain",
+"remains"
+],
+"b": [
+"remained"
+],
+"a_docs": 22,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0482",
+"judge": "yes"
+},
+{
+"stem": "score",
+"a": [
+"scores",
+"score"
+],
+"b": [
+"scored"
+],
+"a_docs": 47,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0483",
+"judge": "yes"
+},
+{
+"stem": "show",
+"a": [
+"show",
+"shows"
+],
+"b": [
+"showing"
+],
+"a_docs": 29,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0484",
+"judge": "yes"
+},
+{
+"stem": "show",
+"a": [
+"showed"
+],
+"b": [
+"showing"
+],
+"a_docs": 27,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0485",
+"judge": "yes"
+},
+{
+"stem": "statist",
+"a": [
+"statistical"
+],
+"b": [
+"statistics",
+"statistic"
+],
+"a_docs": 36,
+"b_docs": 19,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0486",
+"judge": "yes"
+},
+{
+"stem": "acquir",
+"a": [
+"acquired"
+],
+"b": [
+"acquire"
+],
+"a_docs": 333,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0487",
+"judge": "yes"
+},
+{
+"stem": "consist",
+"a": [
+"consists",
+"consist"
+],
+"b": [
+"consistency"
+],
+"a_docs": 128,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0488",
+"judge": "no"
+},
+{
+"stem": "consist",
+"a": [
+"consisted"
+],
+"b": [
+"consistency"
+],
+"a_docs": 126,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0489",
+"judge": "no"
+},
+{
+"stem": "consist",
+"a": [
+"consisting"
+],
+"b": [
+"consistency"
+],
+"a_docs": 46,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0490",
+"judge": "no"
+},
+{
+"stem": "consist",
+"a": [
+"consistent"
+],
+"b": [
+"consistency"
+],
+"a_docs": 26,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0491",
+"judge": "yes"
+},
+{
+"stem": "correl",
+"a": [
+"correlates",
+"correlate"
+],
+"b": [
+"correlation",
+"correlations"
+],
+"a_docs": 58,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0492",
+"judge": "context"
+},
+{
+"stem": "dedic",
+"a": [
+"dedication"
+],
+"b": [
+"dedicated"
+],
+"a_docs": 44,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0493",
+"judge": "no"
+},
+{
+"stem": "direct",
+"a": [
+"directly"
+],
+"b": [
+"direct"
+],
+"a_docs": 25,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0494",
+"judge": "yes"
+},
+{
+"stem": "direct",
+"a": [
+"directed"
+],
+"b": [
+"direct"
+],
+"a_docs": 23,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0495",
+"judge": "no"
+},
+{
+"stem": "enabl",
+"a": [
+"enabling"
+],
+"b": [
+"enable",
+"enables"
+],
+"a_docs": 21,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p088",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0496",
+"judge": "yes"
+},
+{
+"stem": "enabl",
+"a": [
+"enabled"
+],
+"b": [
+"enable",
+"enables"
+],
+"a_docs": 13,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p014",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0497",
+"judge": "yes"
+},
+{
+"stem": "encod",
+"a": [
+"encoding"
+],
+"b": [
+"encode",
+"encodes"
+],
+"a_docs": 113,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0498",
+"judge": "context"
+},
+{
+"stem": "imagin",
+"a": [
+"imagine",
+"imagines"
+],
+"b": [
+"imagined"
+],
+"a_docs": 16,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p068",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0499",
+"judge": "yes"
+},
+{
+"stem": "imagin",
+"a": [
+"imagining"
+],
+"b": [
+"imagined"
+],
+"a_docs": 11,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p126",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0500",
+"judge": "yes"
+},
+{
+"stem": "imagin",
+"a": [
+"imagination"
+],
+"b": [
+"imagined"
+],
+"a_docs": 8,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0501",
+"judge": "context"
+},
+{
+"stem": "modal",
+"a": [
+"modalities",
+"modality"
+],
+"b": [
+"modal"
+],
+"a_docs": 60,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0502",
+"judge": "context"
+},
+{
+"stem": "occur",
+"a": [
+"occurred"
+],
+"b": [
+"occurs",
+"occur"
+],
+"a_docs": 31,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0503",
+"judge": "yes"
+},
+{
+"stem": "person",
+"a": [
+"person",
+"persons"
+],
+"b": [
+"personal"
+],
+"a_docs": 64,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0504",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personalized"
+],
+"b": [
+"personal"
+],
+"a_docs": 17,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0505",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personally"
+],
+"b": [
+"personal"
+],
+"a_docs": 6,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0506",
+"judge": "context"
+},
+{
+"stem": "preced",
+"a": [
+"preceded"
+],
+"b": [
+"preceding"
+],
+"a_docs": 19,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p008",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0507",
+"judge": "yes"
+},
+{
+"stem": "precis",
+"a": [
+"precision"
+],
+"b": [
+"precise"
+],
+"a_docs": 22,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0508",
+"judge": "context"
+},
+{
+"stem": "program",
+"a": [
+"program",
+"programs"
+],
+"b": [
+"programming"
+],
+"a_docs": 34,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0509",
+"judge": "context"
+},
+{
+"stem": "referenc",
+"a": [
+"referenced"
+],
+"b": [
+"referencing"
+],
+"a_docs": 47,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0510",
+"judge": "yes"
+},
+{
+"stem": "repres",
+"a": [
+"represent",
+"represents"
+],
+"b": [
+"representing"
+],
+"a_docs": 30,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0511",
+"judge": "yes"
+},
+{
+"stem": "repres",
+"a": [
+"represented"
+],
+"b": [
+"representing"
+],
+"a_docs": 24,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0512",
+"judge": "yes"
+},
+{
+"stem": "respons",
+"a": [
+"response",
+"responses"
+],
+"b": [
+"responsible"
+],
+"a_docs": 228,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0513",
+"judge": "no"
+},
+{
+"stem": "rest",
+"a": [
+"resting"
+],
+"b": [
+"rested"
+],
+"a_docs": 306,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0514",
+"judge": "context"
+},
+{
+"stem": "rest",
+"a": [
+"rest",
+"rests"
+],
+"b": [
+"rested"
+],
+"a_docs": 183,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0515",
+"judge": "context"
+},
+{
+"stem": "schedul",
+"a": [
+"scheduled"
+],
+"b": [
+"schedule",
+"schedules"
+],
+"a_docs": 8,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p120",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0516",
+"judge": "yes"
+},
+{
+"stem": "studi",
+"a": [
+"study",
+"studies"
+],
+"b": [
+"studied"
+],
+"a_docs": 542,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0517",
+"judge": "yes"
+},
+{
+"stem": "target",
+"a": [
+"target",
+"targets"
+],
+"b": [
+"targeting"
+],
+"a_docs": 119,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0518",
+"judge": "yes"
+},
+{
+"stem": "target",
+"a": [
+"targeted"
+],
+"b": [
+"targeting"
+],
+"a_docs": 17,
+"b_docs": 18,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0519",
+"judge": "yes"
+},
+{
+"stem": "upload",
+"a": [
+"uploaded"
+],
+"b": [
+"upload"
+],
+"a_docs": 39,
+"b_docs": 18,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0520",
+"judge": "yes"
+},
+{
+"stem": "acknowledg",
+"a": [
+"acknowledge",
+"acknowledges"
+],
+"b": [
+"acknowledgments",
+"acknowledgment"
+],
+"a_docs": 58,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p038",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0521",
+"judge": "yes"
+},
+{
+"stem": "acknowledg",
+"a": [
+"acknowledgements",
+"acknowledgement"
+],
+"b": [
+"acknowledgments",
+"acknowledgment"
+],
+"a_docs": 30,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0522",
+"judge": "yes"
+},
+{
+"stem": "altern",
+"a": [
+"alternating"
+],
+"b": [
+"alternated"
+],
+"a_docs": 38,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0523",
+"judge": "yes"
+},
+{
+"stem": "applic",
+"a": [
+"applications",
+"application"
+],
+"b": [
+"applicable"
+],
+"a_docs": 22,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p123",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0524",
+"judge": "no"
+},
+{
+"stem": "center",
+"a": [
+"center",
+"centers"
+],
+"b": [
+"centered"
+],
+"a_docs": 139,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0525",
+"judge": "context"
+},
+{
+"stem": "cover",
+"a": [
+"covered"
+],
+"b": [
+"cover",
+"covers"
+],
+"a_docs": 20,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0526",
+"judge": "context"
+},
+{
+"stem": "cover",
+"a": [
+"covering"
+],
+"b": [
+"cover",
+"covers"
+],
+"a_docs": 20,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0527",
+"judge": "context"
+},
+{
+"stem": "critic",
+"a": [
+"critically"
+],
+"b": [
+"critical"
+],
+"a_docs": 9,
+"b_docs": 17,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0528",
+"judge": "yes"
+},
+{
+"stem": "document",
+"a": [
+"documentation"
+],
+"b": [
+"document",
+"documents"
+],
+"a_docs": 19,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0529",
+"judge": "context"
+},
+{
+"stem": "effect",
+"a": [
+"effects",
+"effect"
+],
+"b": [
+"effective"
+],
+"a_docs": 114,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0530",
+"judge": "no"
+},
+{
+"stem": "exclud",
+"a": [
+"excluded"
+],
+"b": [
+"excluding"
+],
+"a_docs": 115,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0531",
+"judge": "yes"
+},
+{
+"stem": "focus",
+"a": [
+"focus",
+"focuses"
+],
+"b": [
+"focusing"
+],
+"a_docs": 36,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0532",
+"judge": "yes"
+},
+{
+"stem": "focus",
+"a": [
+"focused"
+],
+"b": [
+"focusing"
+],
+"a_docs": 21,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0533",
+"judge": "yes"
+},
+{
+"stem": "generat",
+"a": [
+"generated"
+],
+"b": [
+"generation",
+"generations"
+],
+"a_docs": 81,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0534",
+"judge": "context"
+},
+{
+"stem": "generat",
+"a": [
+"generate",
+"generates"
+],
+"b": [
+"generation",
+"generations"
+],
+"a_docs": 26,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0535",
+"judge": "context"
+},
+{
+"stem": "major",
+"a": [
+"major"
+],
+"b": [
+"majority"
+],
+"a_docs": 20,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0536",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"person",
+"persons"
+],
+"b": [
+"personalized"
+],
+"a_docs": 64,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0537",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personal"
+],
+"b": [
+"personalized"
+],
+"a_docs": 18,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0538",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personally"
+],
+"b": [
+"personalized"
+],
+"a_docs": 6,
+"b_docs": 17,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0539",
+"judge": "no"
+},
+{
+"stem": "physiolog",
+"a": [
+"physiological"
+],
+"b": [
+"physiology"
+],
+"a_docs": 73,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0540",
+"judge": "yes"
+},
+{
+"stem": "point",
+"a": [
+"points",
+"point"
+],
+"b": [
+"pointing"
+],
+"a_docs": 63,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0541",
+"judge": "no"
+},
+{
+"stem": "requir",
+"a": [
+"required"
+],
+"b": [
+"requiring"
+],
+"a_docs": 104,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0542",
+"judge": "yes"
+},
+{
+"stem": "requir",
+"a": [
+"requires",
+"require"
+],
+"b": [
+"requiring"
+],
+"a_docs": 30,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0543",
+"judge": "yes"
+},
+{
+"stem": "requir",
+"a": [
+"requirements",
+"requirement"
+],
+"b": [
+"requiring"
+],
+"a_docs": 16,
+"b_docs": 17,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0544",
+"judge": "yes"
+},
+{
+"stem": "revers",
+"a": [
+"reverse",
+"reverses"
+],
+"b": [
+"reversed"
+],
+"a_docs": 14,
+"b_docs": 17,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0545",
+"judge": "yes"
+},
+{
+"stem": "shift",
+"a": [
+"shifted"
+],
+"b": [
+"shift",
+"shifts"
+],
+"a_docs": 18,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0546",
+"judge": "yes"
+},
+{
+"stem": "target",
+"a": [
+"target",
+"targets"
+],
+"b": [
+"targeted"
+],
+"a_docs": 119,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0547",
+"judge": "yes"
+},
+{
+"stem": "typic",
+"a": [
+"typically"
+],
+"b": [
+"typical"
+],
+"a_docs": 29,
+"b_docs": 17,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p150",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0548",
+"judge": "yes"
+},
+{
+"stem": "annot",
+"a": [
+"annotations",
+"annotation"
+],
+"b": [
+"annotated"
+],
+"a_docs": 35,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0549",
+"judge": "yes"
+},
+{
+"stem": "appli",
+"a": [
+"applied"
+],
+"b": [
+"apply",
+"applies"
+],
+"a_docs": 100,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0550",
+"judge": "yes"
+},
+{
+"stem": "biolog",
+"a": [
+"biology"
+],
+"b": [
+"biological"
+],
+"a_docs": 18,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0551",
+"judge": "context"
+},
+{
+"stem": "check",
+"a": [
+"check",
+"checks"
+],
+"b": [
+"checked"
+],
+"a_docs": 45,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0552",
+"judge": "yes"
+},
+{
+"stem": "code",
+"a": [
+"code",
+"codes"
+],
+"b": [
+"coded"
+],
+"a_docs": 305,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0553",
+"judge": "context"
+},
+{
+"stem": "compar",
+"a": [
+"compared"
+],
+"b": [
+"comparing"
+],
+"a_docs": 46,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p053",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0554",
+"judge": "yes"
+},
+{
+"stem": "compar",
+"a": [
+"comparable"
+],
+"b": [
+"comparing"
+],
+"a_docs": 15,
+"b_docs": 16,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0555",
+"judge": "context"
+},
+{
+"stem": "compar",
+"a": [
+"compare",
+"compares"
+],
+"b": [
+"comparing"
+],
+"a_docs": 9,
+"b_docs": 16,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0556",
+"judge": "yes"
+},
+{
+"stem": "compens",
+"a": [
+"compensated"
+],
+"b": [
+"compensation"
+],
+"a_docs": 6,
+"b_docs": 16,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p147",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0557",
+"judge": "yes"
+},
+{
+"stem": "complex",
+"a": [
+"complex"
+],
+"b": [
+"complexity",
+"complexities"
+],
+"a_docs": 23,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0558",
+"judge": "context"
+},
+{
+"stem": "correspond",
+"a": [
+"corresponding"
+],
+"b": [
+"correspondence"
+],
+"a_docs": 196,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0559",
+"judge": "context"
+},
+{
+"stem": "correspond",
+"a": [
+"corresponds",
+"correspond"
+],
+"b": [
+"correspondence"
+],
+"a_docs": 41,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0560",
+"judge": "no"
+},
+{
+"stem": "detect",
+"a": [
+"detection"
+],
+"b": [
+"detected"
+],
+"a_docs": 74,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0561",
+"judge": "yes"
+},
+{
+"stem": "detect",
+"a": [
+"detect"
+],
+"b": [
+"detected"
+],
+"a_docs": 23,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0562",
+"judge": "yes"
+},
+{
+"stem": "enhanc",
+"a": [
+"enhanced"
+],
+"b": [
+"enhancing"
+],
+"a_docs": 13,
+"b_docs": 16,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0563",
+"judge": "yes"
+},
+{
+"stem": "fix",
+"a": [
+"fixed"
+],
+"b": [
+"fix",
+"fixes"
+],
+"a_docs": 49,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p166",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0564",
+"judge": "no"
+},
+{
+"stem": "imagin",
+"a": [
+"imagined"
+],
+"b": [
+"imagine",
+"imagines"
+],
+"a_docs": 18,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p068",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0565",
+"judge": "yes"
+},
+{
+"stem": "imagin",
+"a": [
+"imagining"
+],
+"b": [
+"imagine",
+"imagines"
+],
+"a_docs": 11,
+"b_docs": 16,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0566",
+"judge": "yes"
+},
+{
+"stem": "imagin",
+"a": [
+"imagination"
+],
+"b": [
+"imagine",
+"imagines"
+],
+"a_docs": 8,
+"b_docs": 16,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0567",
+"judge": "context"
+},
+{
+"stem": "individu",
+"a": [
+"individual",
+"individuals"
+],
+"b": [
+"individually"
+],
+"a_docs": 171,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0568",
+"judge": "yes"
+},
+{
+"stem": "lead",
+"a": [
+"lead",
+"leads"
+],
+"b": [
+"leading"
+],
+"a_docs": 32,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0569",
+"judge": "no"
+},
+{
+"stem": "listen",
+"a": [
+"listened"
+],
+"b": [
+"listen"
+],
+"a_docs": 42,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0570",
+"judge": "yes"
+},
+{
+"stem": "listen",
+"a": [
+"listening"
+],
+"b": [
+"listen"
+],
+"a_docs": 42,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0571",
+"judge": "yes"
+},
+{
+"stem": "modul",
+"a": [
+"modulation",
+"modulations"
+],
+"b": [
+"modulated"
+],
+"a_docs": 23,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0572",
+"judge": "yes"
+},
+{
+"stem": "note",
+"a": [
+"note",
+"notes"
+],
+"b": [
+"noted"
+],
+"a_docs": 249,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0573",
+"judge": "context"
+},
+{
+"stem": "particip",
+"a": [
+"participants",
+"participant"
+],
+"b": [
+"participate"
+],
+"a_docs": 709,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0574",
+"judge": "yes"
+},
+{
+"stem": "particip",
+"a": [
+"participated"
+],
+"b": [
+"participate"
+],
+"a_docs": 57,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0575",
+"judge": "yes"
+},
+{
+"stem": "particip",
+"a": [
+"participation"
+],
+"b": [
+"participate"
+],
+"a_docs": 30,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0576",
+"judge": "yes"
+},
+{
+"stem": "play",
+"a": [
+"played"
+],
+"b": [
+"play",
+"plays"
+],
+"a_docs": 27,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0577",
+"judge": "yes"
+},
+{
+"stem": "relat",
+"a": [
+"related"
+],
+"b": [
+"relatively"
+],
+"a_docs": 282,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0578",
+"judge": "no"
+},
+{
+"stem": "relat",
+"a": [
+"relative",
+"relatives"
+],
+"b": [
+"relatively"
+],
+"a_docs": 47,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0579",
+"judge": "context"
+},
+{
+"stem": "repeat",
+"a": [
+"repeated"
+],
+"b": [
+"repeat",
+"repeats"
+],
+"a_docs": 81,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0580",
+"judge": "yes"
+},
+{
+"stem": "requir",
+"a": [
+"required"
+],
+"b": [
+"requirements",
+"requirement"
+],
+"a_docs": 104,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0581",
+"judge": "yes"
+},
+{
+"stem": "requir",
+"a": [
+"requires",
+"require"
+],
+"b": [
+"requirements",
+"requirement"
+],
+"a_docs": 30,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0582",
+"judge": "yes"
+},
+{
+"stem": "respond",
+"a": [
+"respond"
+],
+"b": [
+"responding"
+],
+"a_docs": 44,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0583",
+"judge": "yes"
+},
+{
+"stem": "respond",
+"a": [
+"responded"
+],
+"b": [
+"responding"
+],
+"a_docs": 24,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0584",
+"judge": "yes"
+},
+{
+"stem": "score",
+"a": [
+"scores",
+"score"
+],
+"b": [
+"scoring",
+"scorings"
+],
+"a_docs": 47,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0585",
+"judge": "yes"
+},
+{
+"stem": "score",
+"a": [
+"scored"
+],
+"b": [
+"scoring",
+"scorings"
+],
+"a_docs": 19,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0586",
+"judge": "yes"
+},
+{
+"stem": "speak",
+"a": [
+"speaking"
+],
+"b": [
+"speak"
+],
+"a_docs": 19,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0587",
+"judge": "yes"
+},
+{
+"stem": "vari",
+"a": [
+"varied"
+],
+"b": [
+"varies",
+"vary"
+],
+"a_docs": 41,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0588",
+"judge": "yes"
+},
+{
+"stem": "vari",
+"a": [
+"varying"
+],
+"b": [
+"varies",
+"vary"
+],
+"a_docs": 41,
+"b_docs": 16,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0589",
+"judge": "yes"
+},
+{
+"stem": "acquir",
+"a": [
+"acquired"
+],
+"b": [
+"acquiring"
+],
+"a_docs": 333,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0590",
+"judge": "yes"
+},
+{
+"stem": "acquir",
+"a": [
+"acquire"
+],
+"b": [
+"acquiring"
+],
+"a_docs": 18,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0591",
+"judge": "yes"
+},
+{
+"stem": "calcul",
+"a": [
+"calculated"
+],
+"b": [
+"calculation",
+"calculations"
+],
+"a_docs": 35,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0592",
+"judge": "yes"
+},
+{
+"stem": "compar",
+"a": [
+"compared"
+],
+"b": [
+"comparable"
+],
+"a_docs": 46,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p151",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0593",
+"judge": "context"
+},
+{
+"stem": "compar",
+"a": [
+"comparing"
+],
+"b": [
+"comparable"
+],
+"a_docs": 16,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0594",
+"judge": "context"
+},
+{
+"stem": "compar",
+"a": [
+"compare",
+"compares"
+],
+"b": [
+"comparable"
+],
+"a_docs": 9,
+"b_docs": 15,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0595",
+"judge": "context"
+},
+{
+"stem": "concurr",
+"a": [
+"concurrently"
+],
+"b": [
+"concurrent"
+],
+"a_docs": 5,
+"b_docs": 15,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p002",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0596",
+"judge": "yes"
+},
+{
+"stem": "consid",
+"a": [
+"considered"
+],
+"b": [
+"consider",
+"considers"
+],
+"a_docs": 28,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0597",
+"judge": "yes"
+},
+{
+"stem": "contrast",
+"a": [
+"contrast",
+"contrasts"
+],
+"b": [
+"contrasting"
+],
+"a_docs": 82,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0598",
+"judge": "context"
+},
+{
+"stem": "contribut",
+"a": [
+"contributions",
+"contribution"
+],
+"b": [
+"contributed"
+],
+"a_docs": 27,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0599",
+"judge": "context"
+},
+{
+"stem": "electr",
+"a": [
+"electrical"
+],
+"b": [
+"electric"
+],
+"a_docs": 38,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0600",
+"judge": "yes"
+},
+{
+"stem": "encod",
+"a": [
+"encoding"
+],
+"b": [
+"encoded"
+],
+"a_docs": 113,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0601",
+"judge": "context"
+},
+{
+"stem": "encod",
+"a": [
+"encode",
+"encodes"
+],
+"b": [
+"encoded"
+],
+"a_docs": 18,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0602",
+"judge": "yes"
+},
+{
+"stem": "evalu",
+"a": [
+"evaluation",
+"evaluations"
+],
+"b": [
+"evaluating"
+],
+"a_docs": 40,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0603",
+"judge": "yes"
+},
+{
+"stem": "evalu",
+"a": [
+"evaluate",
+"evaluates"
+],
+"b": [
+"evaluating"
+],
+"a_docs": 38,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0604",
+"judge": "yes"
+},
+{
+"stem": "evalu",
+"a": [
+"evaluated"
+],
+"b": [
+"evaluating"
+],
+"a_docs": 26,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0605",
+"judge": "yes"
+},
+{
+"stem": "familiar",
+"a": [
+"familiarity"
+],
+"b": [
+"familiar"
+],
+"a_docs": 17,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0606",
+"judge": "yes"
+},
+{
+"stem": "general",
+"a": [
+"general"
+],
+"b": [
+"generalized"
+],
+"a_docs": 118,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0607",
+"judge": "no"
+},
+{
+"stem": "group",
+"a": [
+"group",
+"groups"
+],
+"b": [
+"grouped"
+],
+"a_docs": 136,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0608",
+"judge": "yes"
+},
+{
+"stem": "identifi",
+"a": [
+"identified"
+],
+"b": [
+"identifiable"
+],
+"a_docs": 78,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0609",
+"judge": "no"
+},
+{
+"stem": "identifi",
+"a": [
+"identify",
+"identifies"
+],
+"b": [
+"identifiable"
+],
+"a_docs": 49,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0610",
+"judge": "no"
+},
+{
+"stem": "identifi",
+"a": [
+"identifying"
+],
+"b": [
+"identifiable"
+],
+"a_docs": 26,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0611",
+"judge": "context"
+},
+{
+"stem": "identifi",
+"a": [
+"identifier",
+"identifiers"
+],
+"b": [
+"identifiable"
+],
+"a_docs": 20,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0612",
+"judge": "context"
+},
+{
+"stem": "improv",
+"a": [
+"improve",
+"improves"
+],
+"b": [
+"improved"
+],
+"a_docs": 25,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0613",
+"judge": "yes"
+},
+{
+"stem": "independ",
+"a": [
+"independent"
+],
+"b": [
+"independently"
+],
+"a_docs": 69,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p177",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0614",
+"judge": "yes"
+},
+{
+"stem": "involv",
+"a": [
+"involved"
+],
+"b": [
+"involves",
+"involve"
+],
+"a_docs": 69,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0615",
+"judge": "yes"
+},
+{
+"stem": "involv",
+"a": [
+"involving"
+],
+"b": [
+"involves",
+"involve"
+],
+"a_docs": 19,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0616",
+"judge": "yes"
+},
+{
+"stem": "maintain",
+"a": [
+"maintain",
+"maintains"
+],
+"b": [
+"maintained"
+],
+"a_docs": 24,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0617",
+"judge": "yes"
+},
+{
+"stem": "move",
+"a": [
+"moving"
+],
+"b": [
+"moved"
+],
+"a_docs": 30,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0618",
+"judge": "context"
+},
+{
+"stem": "move",
+"a": [
+"move",
+"moves"
+],
+"b": [
+"moved"
+],
+"a_docs": 22,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0619",
+"judge": "yes"
+},
+{
+"stem": "neurosci",
+"a": [
+"neuroscience",
+"neurosciences"
+],
+"b": [
+"neurosci"
+],
+"a_docs": 169,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0620",
+"judge": "yes"
+},
+{
+"stem": "normal",
+"a": [
+"normal"
+],
+"b": [
+"normalization"
+],
+"a_docs": 63,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0621",
+"judge": "no"
+},
+{
+"stem": "normal",
+"a": [
+"normalized"
+],
+"b": [
+"normalization"
+],
+"a_docs": 24,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0622",
+"judge": "yes"
+},
+{
+"stem": "overlap",
+"a": [
+"overlap",
+"overlaps"
+],
+"b": [
+"overlapping"
+],
+"a_docs": 14,
+"b_docs": 15,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0623",
+"judge": "yes"
+},
+{
+"stem": "pace",
+"a": [
+"pace"
+],
+"b": [
+"paced"
+],
+"a_docs": 6,
+"b_docs": 15,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0624",
+"judge": "yes"
+},
+{
+"stem": "paus",
+"a": [
+"paused"
+],
+"b": [
+"pause",
+"pauses"
+],
+"a_docs": 7,
+"b_docs": 15,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p138",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0625",
+"judge": "yes"
+},
+{
+"stem": "practic",
+"a": [
+"practice"
+],
+"b": [
+"practical"
+],
+"a_docs": 40,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0626",
+"judge": "no"
+},
+{
+"stem": "reason",
+"a": [
+"reason",
+"reasons"
+],
+"b": [
+"reasoning"
+],
+"a_docs": 29,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0627",
+"judge": "no"
+},
+{
+"stem": "receiv",
+"a": [
+"received"
+],
+"b": [
+"receiving"
+],
+"a_docs": 75,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0628",
+"judge": "yes"
+},
+{
+"stem": "receiv",
+"a": [
+"receive",
+"receives"
+],
+"b": [
+"receiving"
+],
+"a_docs": 27,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0629",
+"judge": "yes"
+},
+{
+"stem": "remov",
+"a": [
+"removed"
+],
+"b": [
+"removing"
+],
+"a_docs": 77,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0630",
+"judge": "yes"
+},
+{
+"stem": "remov",
+"a": [
+"remove"
+],
+"b": [
+"removing"
+],
+"a_docs": 35,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0631",
+"judge": "yes"
+},
+{
+"stem": "remov",
+"a": [
+"removal"
+],
+"b": [
+"removing"
+],
+"a_docs": 20,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0632",
+"judge": "yes"
+},
+{
+"stem": "repeat",
+"a": [
+"repeated"
+],
+"b": [
+"repeatedly"
+],
+"a_docs": 81,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0633",
+"judge": "yes"
+},
+{
+"stem": "repeat",
+"a": [
+"repeat",
+"repeats"
+],
+"b": [
+"repeatedly"
+],
+"a_docs": 16,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0634",
+"judge": "yes"
+},
+{
+"stem": "respect",
+"a": [
+"respectively"
+],
+"b": [
+"respect"
+],
+"a_docs": 66,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0635",
+"judge": "no"
+},
+{
+"stem": "respect",
+"a": [
+"respective"
+],
+"b": [
+"respect"
+],
+"a_docs": 20,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0636",
+"judge": "no"
+},
+{
+"stem": "scale",
+"a": [
+"scale",
+"scales"
+],
+"b": [
+"scaling"
+],
+"a_docs": 120,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p070",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0637",
+"judge": "context"
+},
+{
+"stem": "section",
+"a": [
+"section",
+"sections"
+],
+"b": [
+"sectional"
+],
+"a_docs": 93,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0638",
+"judge": "no"
+},
+{
+"stem": "segment",
+"a": [
+"segmentation",
+"segmentations"
+],
+"b": [
+"segment",
+"segments"
+],
+"a_docs": 48,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0639",
+"judge": "context"
+},
+{
+"stem": "separ",
+"a": [
+"separate"
+],
+"b": [
+"separation"
+],
+"a_docs": 96,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0640",
+"judge": "context"
+},
+{
+"stem": "separ",
+"a": [
+"separated"
+],
+"b": [
+"separation"
+],
+"a_docs": 42,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0641",
+"judge": "context"
+},
+{
+"stem": "separ",
+"a": [
+"separately"
+],
+"b": [
+"separation"
+],
+"a_docs": 29,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0642",
+"judge": "context"
+},
+{
+"stem": "sign",
+"a": [
+"signed"
+],
+"b": [
+"sign",
+"signs"
+],
+"a_docs": 17,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0643",
+"judge": "context"
+},
+{
+"stem": "smooth",
+"a": [
+"smoothing"
+],
+"b": [
+"smoothed"
+],
+"a_docs": 19,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0644",
+"judge": "yes"
+},
+{
+"stem": "transform",
+"a": [
+"transformation",
+"transformations"
+],
+"b": [
+"transformed"
+],
+"a_docs": 28,
+"b_docs": 15,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0645",
+"judge": "yes"
+},
+{
+"stem": "accompani",
+"a": [
+"accompanying"
+],
+"b": [
+"accompanies",
+"accompany"
+],
+"a_docs": 81,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0646",
+"judge": "yes"
+},
+{
+"stem": "cite",
+"a": [
+"cite"
+],
+"b": [
+"cited"
+],
+"a_docs": 186,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0647",
+"judge": "yes"
+},
+{
+"stem": "cite",
+"a": [
+"citing"
+],
+"b": [
+"cited"
+],
+"a_docs": 26,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0648",
+"judge": "yes"
+},
+{
+"stem": "clinic",
+"a": [
+"clinical"
+],
+"b": [
+"clinically"
+],
+"a_docs": 112,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0649",
+"judge": "yes"
+},
+{
+"stem": "clinic",
+"a": [
+"clinic",
+"clinics"
+],
+"b": [
+"clinically"
+],
+"a_docs": 9,
+"b_docs": 14,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p089",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0650",
+"judge": "context"
+},
+{
+"stem": "complet",
+"a": [
+"completed"
+],
+"b": [
+"completion"
+],
+"a_docs": 179,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0651",
+"judge": "yes"
+},
+{
+"stem": "complet",
+"a": [
+"complete"
+],
+"b": [
+"completion"
+],
+"a_docs": 82,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0652",
+"judge": "context"
+},
+{
+"stem": "complet",
+"a": [
+"completing"
+],
+"b": [
+"completion"
+],
+"a_docs": 21,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0653",
+"judge": "yes"
+},
+{
+"stem": "continu",
+"a": [
+"continuous"
+],
+"b": [
+"continuously"
+],
+"a_docs": 90,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0654",
+"judge": "yes"
+},
+{
+"stem": "correspond",
+"a": [
+"corresponding"
+],
+"b": [
+"corresponded"
+],
+"a_docs": 196,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0655",
+"judge": "context"
+},
+{
+"stem": "correspond",
+"a": [
+"corresponds",
+"correspond"
+],
+"b": [
+"corresponded"
+],
+"a_docs": 41,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0656",
+"judge": "yes"
+},
+{
+"stem": "correspond",
+"a": [
+"correspondence"
+],
+"b": [
+"corresponded"
+],
+"a_docs": 16,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0657",
+"judge": "no"
+},
+{
+"stem": "cortic",
+"a": [
+"cortical"
+],
+"b": [
+"cortices"
+],
+"a_docs": 95,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0658",
+"judge": "yes"
+},
+{
+"stem": "download",
+"a": [
+"download",
+"downloads"
+],
+"b": [
+"downloaded"
+],
+"a_docs": 30,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0659",
+"judge": "yes"
+},
+{
+"stem": "drive",
+"a": [
+"drive",
+"drives"
+],
+"b": [
+"driving"
+],
+"a_docs": 20,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0660",
+"judge": "context"
+},
+{
+"stem": "experiment",
+"a": [
+"experimental"
+],
+"b": [
+"experimenter",
+"experimenters"
+],
+"a_docs": 198,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p032",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0661",
+"judge": "no"
+},
+{
+"stem": "flash",
+"a": [
+"flashed"
+],
+"b": [
+"flashing"
+],
+"a_docs": 15,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0662",
+"judge": "yes"
+},
+{
+"stem": "flash",
+"a": [
+"flash",
+"flashes"
+],
+"b": [
+"flashing"
+],
+"a_docs": 12,
+"b_docs": 14,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0663",
+"judge": "context"
+},
+{
+"stem": "ignor",
+"a": [
+"ignored"
+],
+"b": [
+"ignore"
+],
+"a_docs": 21,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0664",
+"judge": "yes"
+},
+{
+"stem": "interest",
+"a": [
+"interest",
+"interests"
+],
+"b": [
+"interested"
+],
+"a_docs": 57,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0665",
+"judge": "context"
+},
+{
+"stem": "investig",
+"a": [
+"investigate",
+"investigates"
+],
+"b": [
+"investigator",
+"investigators"
+],
+"a_docs": 73,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0666",
+"judge": "no"
+},
+{
+"stem": "investig",
+"a": [
+"investigating"
+],
+"b": [
+"investigator",
+"investigators"
+],
+"a_docs": 41,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0667",
+"judge": "no"
+},
+{
+"stem": "investig",
+"a": [
+"investigated"
+],
+"b": [
+"investigator",
+"investigators"
+],
+"a_docs": 35,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0668",
+"judge": "no"
+},
+{
+"stem": "investig",
+"a": [
+"investigation",
+"investigations"
+],
+"b": [
+"investigator",
+"investigators"
+],
+"a_docs": 21,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0669",
+"judge": "no"
+},
+{
+"stem": "measur",
+"a": [
+"measures",
+"measure"
+],
+"b": [
+"measuring"
+],
+"a_docs": 105,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p186",
+"label": "context",
+"a_side": "b"
+},
+"id": "c0670",
+"judge": "context"
+},
+{
+"stem": "measur",
+"a": [
+"measured"
+],
+"b": [
+"measuring"
+],
+"a_docs": 67,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0671",
+"judge": "yes"
+},
+{
+"stem": "measur",
+"a": [
+"measurements",
+"measurement"
+],
+"b": [
+"measuring"
+],
+"a_docs": 48,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0672",
+"judge": "yes"
+},
+{
+"stem": "oxygen",
+"a": [
+"oxygen"
+],
+"b": [
+"oxygenation"
+],
+"a_docs": 24,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0673",
+"judge": "no"
+},
+{
+"stem": "pass",
+"a": [
+"pass",
+"passes"
+],
+"b": [
+"passed"
+],
+"a_docs": 51,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0674",
+"judge": "context"
+},
+{
+"stem": "produc",
+"a": [
+"produced"
+],
+"b": [
+"produce",
+"produces"
+],
+"a_docs": 27,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0675",
+"judge": "yes"
+},
+{
+"stem": "rang",
+"a": [
+"ranging"
+],
+"b": [
+"ranged"
+],
+"a_docs": 32,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0676",
+"judge": "yes"
+},
+{
+"stem": "select",
+"a": [
+"selected"
+],
+"b": [
+"select"
+],
+"a_docs": 68,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0677",
+"judge": "yes"
+},
+{
+"stem": "select",
+"a": [
+"selection",
+"selections"
+],
+"b": [
+"select"
+],
+"a_docs": 30,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0678",
+"judge": "yes"
+},
+{
+"stem": "silent",
+"a": [
+"silent"
+],
+"b": [
+"silently"
+],
+"a_docs": 19,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0679",
+"judge": "yes"
+},
+{
+"stem": "stimul",
+"a": [
+"stimulation",
+"stimulations"
+],
+"b": [
+"stimulated"
+],
+"a_docs": 129,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0680",
+"judge": "yes"
+},
+{
+"stem": "stop",
+"a": [
+"stop",
+"stops"
+],
+"b": [
+"stopped"
+],
+"a_docs": 38,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0681",
+"judge": "context"
+},
+{
+"stem": "support",
+"a": [
+"support",
+"supports"
+],
+"b": [
+"supporting"
+],
+"a_docs": 57,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0682",
+"judge": "yes"
+},
+{
+"stem": "support",
+"a": [
+"supported"
+],
+"b": [
+"supporting"
+],
+"a_docs": 50,
+"b_docs": 14,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0683",
+"judge": "yes"
+},
+{
+"stem": "accur",
+"a": [
+"accurate"
+],
+"b": [
+"accurately"
+],
+"a_docs": 22,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0684",
+"judge": "yes"
+},
+{
+"stem": "activ",
+"a": [
+"activity",
+"activities"
+],
+"b": [
+"actively"
+],
+"a_docs": 169,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0685",
+"judge": "no"
+},
+{
+"stem": "activ",
+"a": [
+"activation",
+"activations"
+],
+"b": [
+"actively"
+],
+"a_docs": 60,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0686",
+"judge": "no"
+},
+{
+"stem": "activ",
+"a": [
+"active"
+],
+"b": [
+"actively"
+],
+"a_docs": 54,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0687",
+"judge": "context"
+},
+{
+"stem": "adapt",
+"a": [
+"adapted"
+],
+"b": [
+"adaptation",
+"adaptations"
+],
+"a_docs": 28,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0688",
+"judge": "context"
+},
+{
+"stem": "align",
+"a": [
+"aligned"
+],
+"b": [
+"align",
+"aligns"
+],
+"a_docs": 34,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0689",
+"judge": "yes"
+},
+{
+"stem": "align",
+"a": [
+"alignment",
+"alignments"
+],
+"b": [
+"align",
+"aligns"
+],
+"a_docs": 32,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0690",
+"judge": "yes"
+},
+{
+"stem": "altern",
+"a": [
+"alternating"
+],
+"b": [
+"alternative",
+"alternatives"
+],
+"a_docs": 38,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0691",
+"judge": "no"
+},
+{
+"stem": "altern",
+"a": [
+"alternated"
+],
+"b": [
+"alternative",
+"alternatives"
+],
+"a_docs": 17,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0692",
+"judge": "no"
+},
+{
+"stem": "attend",
+"a": [
+"attend"
+],
+"b": [
+"attended"
+],
+"a_docs": 16,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0693",
+"judge": "context"
+},
+{
+"stem": "challeng",
+"a": [
+"challenging"
+],
+"b": [
+"challenge",
+"challenges"
+],
+"a_docs": 5,
+"b_docs": 13,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0694",
+"judge": "context"
+},
+{
+"stem": "character",
+"a": [
+"characterize"
+],
+"b": [
+"characterizing"
+],
+"a_docs": 25,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0695",
+"judge": "yes"
+},
+{
+"stem": "connect",
+"a": [
+"connectivity"
+],
+"b": [
+"connected"
+],
+"a_docs": 104,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0696",
+"judge": "no"
+},
+{
+"stem": "consent",
+"a": [
+"consent",
+"consents"
+],
+"b": [
+"consented"
+],
+"a_docs": 110,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0697",
+"judge": "yes"
+},
+{
+"stem": "demonstr",
+"a": [
+"demonstrated"
+],
+"b": [
+"demonstrate",
+"demonstrates"
+],
+"a_docs": 15,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0698",
+"judge": "yes"
+},
+{
+"stem": "denois",
+"a": [
+"denoising"
+],
+"b": [
+"denoised"
+],
+"a_docs": 16,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0699",
+"judge": "yes"
+},
+{
+"stem": "develop",
+"a": [
+"development",
+"developments"
+],
+"b": [
+"developing"
+],
+"a_docs": 82,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0700",
+"judge": "yes"
+},
+{
+"stem": "develop",
+"a": [
+"developed"
+],
+"b": [
+"developing"
+],
+"a_docs": 24,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0701",
+"judge": "context"
+},
+{
+"stem": "digit",
+"a": [
+"digit",
+"digits"
+],
+"b": [
+"digitized"
+],
+"a_docs": 18,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0702",
+"judge": "no"
+},
+{
+"stem": "enabl",
+"a": [
+"enabling"
+],
+"b": [
+"enabled"
+],
+"a_docs": 21,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p095",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0703",
+"judge": "yes"
+},
+{
+"stem": "enabl",
+"a": [
+"enable",
+"enables"
+],
+"b": [
+"enabled"
+],
+"a_docs": 18,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p014",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0704",
+"judge": "yes"
+},
+{
+"stem": "engag",
+"a": [
+"engagement"
+],
+"b": [
+"engaged"
+],
+"a_docs": 14,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0705",
+"judge": "yes"
+},
+{
+"stem": "examin",
+"a": [
+"examine",
+"examines"
+],
+"b": [
+"examining"
+],
+"a_docs": 22,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0706",
+"judge": "yes"
+},
+{
+"stem": "examin",
+"a": [
+"examined"
+],
+"b": [
+"examining"
+],
+"a_docs": 22,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0707",
+"judge": "yes"
+},
+{
+"stem": "execut",
+"a": [
+"executive"
+],
+"b": [
+"execution"
+],
+"a_docs": 28,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0708",
+"judge": "no"
+},
+{
+"stem": "extract",
+"a": [
+"extracted"
+],
+"b": [
+"extraction"
+],
+"a_docs": 40,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0709",
+"judge": "yes"
+},
+{
+"stem": "general",
+"a": [
+"general"
+],
+"b": [
+"generally"
+],
+"a_docs": 118,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0710",
+"judge": "context"
+},
+{
+"stem": "general",
+"a": [
+"generalized"
+],
+"b": [
+"generally"
+],
+"a_docs": 15,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0711",
+"judge": "no"
+},
+{
+"stem": "immedi",
+"a": [
+"immediately"
+],
+"b": [
+"immediate"
+],
+"a_docs": 47,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0712",
+"judge": "context"
+},
+{
+"stem": "maintain",
+"a": [
+"maintain",
+"maintains"
+],
+"b": [
+"maintaining"
+],
+"a_docs": 24,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0713",
+"judge": "yes"
+},
+{
+"stem": "maintain",
+"a": [
+"maintained"
+],
+"b": [
+"maintaining"
+],
+"a_docs": 15,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0714",
+"judge": "yes"
+},
+{
+"stem": "observ",
+"a": [
+"observed"
+],
+"b": [
+"observe"
+],
+"a_docs": 30,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0715",
+"judge": "yes"
+},
+{
+"stem": "observ",
+"a": [
+"observational"
+],
+"b": [
+"observe"
+],
+"a_docs": 23,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0716",
+"judge": "no"
+},
+{
+"stem": "particip",
+"a": [
+"participants",
+"participant"
+],
+"b": [
+"participating"
+],
+"a_docs": 709,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0717",
+"judge": "yes"
+},
+{
+"stem": "particip",
+"a": [
+"participated"
+],
+"b": [
+"participating"
+],
+"a_docs": 57,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0718",
+"judge": "yes"
+},
+{
+"stem": "particip",
+"a": [
+"participation"
+],
+"b": [
+"participating"
+],
+"a_docs": 30,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0719",
+"judge": "yes"
+},
+{
+"stem": "particip",
+"a": [
+"participate"
+],
+"b": [
+"participating"
+],
+"a_docs": 16,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0720",
+"judge": "yes"
+},
+{
+"stem": "region",
+"a": [
+"regions",
+"region"
+],
+"b": [
+"regional"
+],
+"a_docs": 88,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0721",
+"judge": "yes"
+},
+{
+"stem": "relat",
+"a": [
+"related"
+],
+"b": [
+"relation",
+"relations"
+],
+"a_docs": 282,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0722",
+"judge": "context"
+},
+{
+"stem": "relat",
+"a": [
+"relative",
+"relatives"
+],
+"b": [
+"relation",
+"relations"
+],
+"a_docs": 47,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0723",
+"judge": "no"
+},
+{
+"stem": "relat",
+"a": [
+"relatively"
+],
+"b": [
+"relation",
+"relations"
+],
+"a_docs": 16,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0724",
+"judge": "no"
+},
+{
+"stem": "reproduc",
+"a": [
+"reproducibility"
+],
+"b": [
+"reproduce"
+],
+"a_docs": 12,
+"b_docs": 13,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0725",
+"judge": "yes"
+},
+{
+"stem": "restrict",
+"a": [
+"restricted"
+],
+"b": [
+"restrictions",
+"restriction"
+],
+"a_docs": 17,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0726",
+"judge": "yes"
+},
+{
+"stem": "reveal",
+"a": [
+"revealed"
+],
+"b": [
+"reveals",
+"reveal"
+],
+"a_docs": 23,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0727",
+"judge": "yes"
+},
+{
+"stem": "serv",
+"a": [
+"serve",
+"serves"
+],
+"b": [
+"served"
+],
+"a_docs": 18,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0728",
+"judge": "yes"
+},
+{
+"stem": "simul",
+"a": [
+"simulated"
+],
+"b": [
+"simulator"
+],
+"a_docs": 15,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0729",
+"judge": "no"
+},
+{
+"stem": "tempor",
+"a": [
+"temporal"
+],
+"b": [
+"temporally"
+],
+"a_docs": 108,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p065",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0730",
+"judge": "yes"
+},
+{
+"stem": "train",
+"a": [
+"training",
+"trainings"
+],
+"b": [
+"train",
+"trains"
+],
+"a_docs": 88,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0731",
+"judge": "context"
+},
+{
+"stem": "train",
+"a": [
+"trained"
+],
+"b": [
+"train",
+"trains"
+],
+"a_docs": 37,
+"b_docs": 13,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0732",
+"judge": "context"
+},
+{
+"stem": "actual",
+"a": [
+"actual"
+],
+"b": [
+"actually"
+],
+"a_docs": 27,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0733",
+"judge": "context"
+},
+{
+"stem": "anonym",
+"a": [
+"anonymized"
+],
+"b": [
+"anonymization"
+],
+"a_docs": 35,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0734",
+"judge": "yes"
+},
+{
+"stem": "associ",
+"a": [
+"associated"
+],
+"b": [
+"association",
+"associations"
+],
+"a_docs": 157,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0735",
+"judge": "context"
+},
+{
+"stem": "begin",
+"a": [
+"beginning"
+],
+"b": [
+"begins",
+"begin"
+],
+"a_docs": 96,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0736",
+"judge": "yes"
+},
+{
+"stem": "block",
+"a": [
+"block",
+"blocks"
+],
+"b": [
+"blocked"
+],
+"a_docs": 165,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0737",
+"judge": "context"
+},
+{
+"stem": "captur",
+"a": [
+"capture",
+"captures"
+],
+"b": [
+"captured"
+],
+"a_docs": 34,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0738",
+"judge": "yes"
+},
+{
+"stem": "chang",
+"a": [
+"changes",
+"change",
+"chang"
+],
+"b": [
+"changing"
+],
+"a_docs": 100,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0739",
+"judge": "yes"
+},
+{
+"stem": "chang",
+"a": [
+"changed"
+],
+"b": [
+"changing"
+],
+"a_docs": 27,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p064",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0740",
+"judge": "yes"
+},
+{
+"stem": "character",
+"a": [
+"characterize"
+],
+"b": [
+"characterization"
+],
+"a_docs": 25,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0741",
+"judge": "yes"
+},
+{
+"stem": "character",
+"a": [
+"characterizing"
+],
+"b": [
+"characterization"
+],
+"a_docs": 13,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0742",
+"judge": "yes"
+},
+{
+"stem": "code",
+"a": [
+"code",
+"codes"
+],
+"b": [
+"coding"
+],
+"a_docs": 305,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0743",
+"judge": "context"
+},
+{
+"stem": "code",
+"a": [
+"coded"
+],
+"b": [
+"coding"
+],
+"a_docs": 16,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0744",
+"judge": "context"
+},
+{
+"stem": "color",
+"a": [
+"color",
+"colors"
+],
+"b": [
+"colored"
+],
+"a_docs": 47,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0745",
+"judge": "yes"
+},
+{
+"stem": "complet",
+"a": [
+"completed"
+],
+"b": [
+"completeness"
+],
+"a_docs": 179,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0746",
+"judge": "no"
+},
+{
+"stem": "complet",
+"a": [
+"complete"
+],
+"b": [
+"completeness"
+],
+"a_docs": 82,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0747",
+"judge": "context"
+},
+{
+"stem": "complet",
+"a": [
+"completing"
+],
+"b": [
+"completeness"
+],
+"a_docs": 21,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0748",
+"judge": "no"
+},
+{
+"stem": "comput",
+"a": [
+"computer",
+"computers"
+],
+"b": [
+"computing"
+],
+"a_docs": 72,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0749",
+"judge": "context"
+},
+{
+"stem": "comput",
+"a": [
+"computational"
+],
+"b": [
+"computing"
+],
+"a_docs": 36,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0750",
+"judge": "context"
+},
+{
+"stem": "comput",
+"a": [
+"computed"
+],
+"b": [
+"computing"
+],
+"a_docs": 33,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0751",
+"judge": "yes"
+},
+{
+"stem": "comput",
+"a": [
+"computation",
+"computations"
+],
+"b": [
+"computing"
+],
+"a_docs": 21,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0752",
+"judge": "context"
+},
+{
+"stem": "copi",
+"a": [
+"copy",
+"copies"
+],
+"b": [
+"copied"
+],
+"a_docs": 17,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0753",
+"judge": "yes"
+},
+{
+"stem": "digit",
+"a": [
+"digit",
+"digits"
+],
+"b": [
+"digital"
+],
+"a_docs": 18,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0754",
+"judge": "no"
+},
+{
+"stem": "end",
+"a": [
+"end",
+"ends"
+],
+"b": [
+"ending",
+"endings"
+],
+"a_docs": 110,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0755",
+"judge": "context"
+},
+{
+"stem": "end",
+"a": [
+"ended"
+],
+"b": [
+"ending",
+"endings"
+],
+"a_docs": 33,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0756",
+"judge": "context"
+},
+{
+"stem": "enrol",
+"a": [
+"enrollment",
+"enrollments"
+],
+"b": [
+"enrolled"
+],
+"a_docs": 16,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0757",
+"judge": "yes"
+},
+{
+"stem": "examin",
+"a": [
+"examine",
+"examines"
+],
+"b": [
+"examination",
+"examinations"
+],
+"a_docs": 22,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0758",
+"judge": "context"
+},
+{
+"stem": "examin",
+"a": [
+"examined"
+],
+"b": [
+"examination",
+"examinations"
+],
+"a_docs": 22,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0759",
+"judge": "context"
+},
+{
+"stem": "examin",
+"a": [
+"examining"
+],
+"b": [
+"examination",
+"examinations"
+],
+"a_docs": 13,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0760",
+"judge": "context"
+},
+{
+"stem": "except",
+"a": [
+"except"
+],
+"b": [
+"exception",
+"exceptions"
+],
+"a_docs": 68,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0761",
+"judge": "no"
+},
+{
+"stem": "explicit",
+"a": [
+"explicit"
+],
+"b": [
+"explicitly"
+],
+"a_docs": 13,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0762",
+"judge": "yes"
+},
+{
+"stem": "explor",
+"a": [
+"explore",
+"explores"
+],
+"b": [
+"exploration"
+],
+"a_docs": 20,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0763",
+"judge": "yes"
+},
+{
+"stem": "express",
+"a": [
+"expression",
+"expressions"
+],
+"b": [
+"express"
+],
+"a_docs": 12,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0764",
+"judge": "context"
+},
+{
+"stem": "fit",
+"a": [
+"fit",
+"fits"
+],
+"b": [
+"fitting"
+],
+"a_docs": 25,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0765",
+"judge": "yes"
+},
+{
+"stem": "flash",
+"a": [
+"flashed"
+],
+"b": [
+"flash",
+"flashes"
+],
+"a_docs": 15,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0766",
+"judge": "context"
+},
+{
+"stem": "forc",
+"a": [
+"forced"
+],
+"b": [
+"force",
+"forces"
+],
+"a_docs": 12,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0767",
+"judge": "context"
+},
+{
+"stem": "go",
+"a": [
+"go"
+],
+"b": [
+"going"
+],
+"a_docs": 29,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0768",
+"judge": "no"
+},
+{
+"stem": "implement",
+"a": [
+"implemented"
+],
+"b": [
+"implementation",
+"implementations"
+],
+"a_docs": 24,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0769",
+"judge": "yes"
+},
+{
+"stem": "indic",
+"a": [
+"indicated"
+],
+"b": [
+"indices"
+],
+"a_docs": 84,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0770",
+"judge": "no"
+},
+{
+"stem": "indic",
+"a": [
+"indicate",
+"indicates"
+],
+"b": [
+"indices"
+],
+"a_docs": 69,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0771",
+"judge": "no"
+},
+{
+"stem": "indic",
+"a": [
+"indicating"
+],
+"b": [
+"indices"
+],
+"a_docs": 54,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0772",
+"judge": "no"
+},
+{
+"stem": "initi",
+"a": [
+"initial",
+"initials"
+],
+"b": [
+"initiated"
+],
+"a_docs": 110,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0773",
+"judge": "no"
+},
+{
+"stem": "initi",
+"a": [
+"initially"
+],
+"b": [
+"initiated"
+],
+"a_docs": 27,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0774",
+"judge": "no"
+},
+{
+"stem": "initi",
+"a": [
+"initiative",
+"initiatives"
+],
+"b": [
+"initiated"
+],
+"a_docs": 26,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0775",
+"judge": "no"
+},
+{
+"stem": "institut",
+"a": [
+"institute",
+"institutes",
+"institut"
+],
+"b": [
+"institutions",
+"institution"
+],
+"a_docs": 98,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0776",
+"judge": "yes"
+},
+{
+"stem": "institut",
+"a": [
+"institutional"
+],
+"b": [
+"institutions",
+"institution"
+],
+"a_docs": 35,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0777",
+"judge": "context"
+},
+{
+"stem": "keep",
+"a": [
+"keep"
+],
+"b": [
+"keeping"
+],
+"a_docs": 38,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0778",
+"judge": "yes"
+},
+{
+"stem": "lie",
+"a": [
+"lie",
+"lies"
+],
+"b": [
+"lying"
+],
+"a_docs": 6,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p149",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0779",
+"judge": "context"
+},
+{
+"stem": "modul",
+"a": [
+"modulation",
+"modulations"
+],
+"b": [
+"modulating"
+],
+"a_docs": 23,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0780",
+"judge": "yes"
+},
+{
+"stem": "modul",
+"a": [
+"modulated"
+],
+"b": [
+"modulating"
+],
+"a_docs": 16,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0781",
+"judge": "yes"
+},
+{
+"stem": "neurolog",
+"a": [
+"neurological"
+],
+"b": [
+"neurology"
+],
+"a_docs": 86,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0782",
+"judge": "yes"
+},
+{
+"stem": "numer",
+"a": [
+"numeric"
+],
+"b": [
+"numerical"
+],
+"a_docs": 9,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p006",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0783",
+"judge": "yes"
+},
+{
+"stem": "numer",
+"a": [
+"numerous"
+],
+"b": [
+"numerical"
+],
+"a_docs": 9,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p116",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0784",
+"judge": "no"
+},
+{
+"stem": "optim",
+"a": [
+"optimized"
+],
+"b": [
+"optimization"
+],
+"a_docs": 12,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0785",
+"judge": "yes"
+},
+{
+"stem": "partial",
+"a": [
+"partial"
+],
+"b": [
+"partially"
+],
+"a_docs": 32,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0786",
+"judge": "yes"
+},
+{
+"stem": "person",
+"a": [
+"person",
+"persons"
+],
+"b": [
+"personality"
+],
+"a_docs": 64,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p135",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0787",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personal"
+],
+"b": [
+"personality"
+],
+"a_docs": 18,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p020",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0788",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personalized"
+],
+"b": [
+"personality"
+],
+"a_docs": 17,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p165",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0789",
+"judge": "no"
+},
+{
+"stem": "person",
+"a": [
+"personally"
+],
+"b": [
+"personality"
+],
+"a_docs": 6,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0790",
+"judge": "no"
+},
+{
+"stem": "phase",
+"a": [
+"phase",
+"phases"
+],
+"b": [
+"phased"
+],
+"a_docs": 129,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0791",
+"judge": "context"
+},
+{
+"stem": "possibl",
+"a": [
+"possible"
+],
+"b": [
+"possibly"
+],
+"a_docs": 102,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0792",
+"judge": "yes"
+},
+{
+"stem": "review",
+"a": [
+"review",
+"reviews"
+],
+"b": [
+"reviewed"
+],
+"a_docs": 58,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p117",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0793",
+"judge": "yes"
+},
+{
+"stem": "signific",
+"a": [
+"significant"
+],
+"b": [
+"significantly"
+],
+"a_docs": 42,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0794",
+"judge": "yes"
+},
+{
+"stem": "space",
+"a": [
+"space",
+"spaces"
+],
+"b": [
+"spaced"
+],
+"a_docs": 122,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0795",
+"judge": "no"
+},
+{
+"stem": "space",
+"a": [
+"spacing"
+],
+"b": [
+"spaced"
+],
+"a_docs": 10,
+"b_docs": 12,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0796",
+"judge": "yes"
+},
+{
+"stem": "spatial",
+"a": [
+"spatial"
+],
+"b": [
+"spatially"
+],
+"a_docs": 111,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0797",
+"judge": "yes"
+},
+{
+"stem": "titl",
+"a": [
+"title",
+"titles"
+],
+"b": [
+"titled"
+],
+"a_docs": 50,
+"b_docs": 12,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0798",
+"judge": "yes"
+},
+{
+"stem": "accompani",
+"a": [
+"accompanying"
+],
+"b": [
+"accompanied"
+],
+"a_docs": 81,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0799",
+"judge": "yes"
+},
+{
+"stem": "accompani",
+"a": [
+"accompanies",
+"accompany"
+],
+"b": [
+"accompanied"
+],
+"a_docs": 14,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0800",
+"judge": "yes"
+},
+{
+"stem": "advanc",
+"a": [
+"advanced"
+],
+"b": [
+"advancing"
+],
+"a_docs": 30,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0801",
+"judge": "context"
+},
+{
+"stem": "advanc",
+"a": [
+"advance",
+"advances"
+],
+"b": [
+"advancing"
+],
+"a_docs": 22,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0802",
+"judge": "context"
+},
+{
+"stem": "align",
+"a": [
+"aligned"
+],
+"b": [
+"aligning"
+],
+"a_docs": 34,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0803",
+"judge": "yes"
+},
+{
+"stem": "align",
+"a": [
+"alignment",
+"alignments"
+],
+"b": [
+"aligning"
+],
+"a_docs": 32,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0804",
+"judge": "yes"
+},
+{
+"stem": "align",
+"a": [
+"align",
+"aligns"
+],
+"b": [
+"aligning"
+],
+"a_docs": 13,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0805",
+"judge": "yes"
+},
+{
+"stem": "analyz",
+"a": [
+"analyzed"
+],
+"b": [
+"analyze",
+"analyzes"
+],
+"a_docs": 38,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0806",
+"judge": "yes"
+},
+{
+"stem": "analyz",
+"a": [
+"analyzing"
+],
+"b": [
+"analyze",
+"analyzes"
+],
+"a_docs": 27,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0807",
+"judge": "yes"
+},
+{
+"stem": "appear",
+"a": [
+"appeared"
+],
+"b": [
+"appearance"
+],
+"a_docs": 52,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0808",
+"judge": "no"
+},
+{
+"stem": "appear",
+"a": [
+"appear",
+"appears"
+],
+"b": [
+"appearance"
+],
+"a_docs": 21,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p157",
+"label": "neither",
+"a_side": "b"
+},
+"id": "c0809",
+"judge": "no"
+},
+{
+"stem": "appli",
+"a": [
+"applied"
+],
+"b": [
+"applying"
+],
+"a_docs": 100,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0810",
+"judge": "yes"
+},
+{
+"stem": "appli",
+"a": [
+"apply",
+"applies"
+],
+"b": [
+"applying"
+],
+"a_docs": 16,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0811",
+"judge": "yes"
+},
+{
+"stem": "attent",
+"a": [
+"attention",
+"attentions"
+],
+"b": [
+"attentional"
+],
+"a_docs": 111,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p045",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0812",
+"judge": "yes"
+},
+{
+"stem": "common",
+"a": [
+"common",
+"commons"
+],
+"b": [
+"commonly"
+],
+"a_docs": 55,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0813",
+"judge": "context"
+},
+{
+"stem": "compli",
+"a": [
+"complied"
+],
+"b": [
+"comply",
+"complies"
+],
+"a_docs": 7,
+"b_docs": 11,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p107",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0814",
+"judge": "yes"
+},
+{
+"stem": "comput",
+"a": [
+"computer",
+"computers"
+],
+"b": [
+"compute",
+"comput",
+"computes"
+],
+"a_docs": 72,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0815",
+"judge": "no"
+},
+{
+"stem": "comput",
+"a": [
+"computational"
+],
+"b": [
+"compute",
+"comput",
+"computes"
+],
+"a_docs": 36,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0816",
+"judge": "context"
+},
+{
+"stem": "comput",
+"a": [
+"computed"
+],
+"b": [
+"compute",
+"comput",
+"computes"
+],
+"a_docs": 33,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0817",
+"judge": "yes"
+},
+{
+"stem": "comput",
+"a": [
+"computation",
+"computations"
+],
+"b": [
+"compute",
+"comput",
+"computes"
+],
+"a_docs": 21,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0818",
+"judge": "yes"
+},
+{
+"stem": "comput",
+"a": [
+"computing"
+],
+"b": [
+"compute",
+"comput",
+"computes"
+],
+"a_docs": 12,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0819",
+"judge": "yes"
+},
+{
+"stem": "contribut",
+"a": [
+"contributions",
+"contribution"
+],
+"b": [
+"contribute",
+"contributes"
+],
+"a_docs": 27,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0820",
+"judge": "context"
+},
+{
+"stem": "contribut",
+"a": [
+"contributed"
+],
+"b": [
+"contribute",
+"contributes"
+],
+"a_docs": 15,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0821",
+"judge": "yes"
+},
+{
+"stem": "curat",
+"a": [
+"curators",
+"curator"
+],
+"b": [
+"curating"
+],
+"a_docs": 49,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0822",
+"judge": "context"
+},
+{
+"stem": "curat",
+"a": [
+"curated"
+],
+"b": [
+"curating"
+],
+"a_docs": 24,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0823",
+"judge": "yes"
+},
+{
+"stem": "decid",
+"a": [
+"decide",
+"decides"
+],
+"b": [
+"decided"
+],
+"a_docs": 8,
+"b_docs": 11,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p132",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0824",
+"judge": "yes"
+},
+{
+"stem": "document",
+"a": [
+"documentation"
+],
+"b": [
+"documented"
+],
+"a_docs": 19,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0825",
+"judge": "yes"
+},
+{
+"stem": "educ",
+"a": [
+"education"
+],
+"b": [
+"educational"
+],
+"a_docs": 29,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0826",
+"judge": "yes"
+},
+{
+"stem": "elig",
+"a": [
+"eligibility"
+],
+"b": [
+"eligible"
+],
+"a_docs": 14,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0827",
+"judge": "yes"
+},
+{
+"stem": "episod",
+"a": [
+"episodic"
+],
+"b": [
+"episode",
+"episodes"
+],
+"a_docs": 27,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0828",
+"judge": "no"
+},
+{
+"stem": "estim",
+"a": [
+"estimated"
+],
+"b": [
+"estimating"
+],
+"a_docs": 42,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0829",
+"judge": "yes"
+},
+{
+"stem": "estim",
+"a": [
+"estimates",
+"estimate"
+],
+"b": [
+"estimating"
+],
+"a_docs": 22,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0830",
+"judge": "yes"
+},
+{
+"stem": "estim",
+"a": [
+"estimation",
+"estimations"
+],
+"b": [
+"estimating"
+],
+"a_docs": 21,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0831",
+"judge": "yes"
+},
+{
+"stem": "expect",
+"a": [
+"expected"
+],
+"b": [
+"expectation",
+"expectations"
+],
+"a_docs": 21,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0832",
+"judge": "context"
+},
+{
+"stem": "explor",
+"a": [
+"explore",
+"explores"
+],
+"b": [
+"exploring"
+],
+"a_docs": 20,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0833",
+"judge": "yes"
+},
+{
+"stem": "explor",
+"a": [
+"exploration"
+],
+"b": [
+"exploring"
+],
+"a_docs": 12,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0834",
+"judge": "yes"
+},
+{
+"stem": "extern",
+"a": [
+"external",
+"externals"
+],
+"b": [
+"externalization"
+],
+"a_docs": 12,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0835",
+"judge": "no"
+},
+{
+"stem": "imagin",
+"a": [
+"imagined"
+],
+"b": [
+"imagining"
+],
+"a_docs": 18,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p126",
+"label": "neither",
+"a_side": "a"
+},
+"id": "c0836",
+"judge": "yes"
+},
+{
+"stem": "imagin",
+"a": [
+"imagine",
+"imagines"
+],
+"b": [
+"imagining"
+],
+"a_docs": 16,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0837",
+"judge": "yes"
+},
+{
+"stem": "imagin",
+"a": [
+"imagination"
+],
+"b": [
+"imagining"
+],
+"a_docs": 8,
+"b_docs": 11,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0838",
+"judge": "context"
+},
+{
+"stem": "integr",
+"a": [
+"integration"
+],
+"b": [
+"integrated"
+],
+"a_docs": 28,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0839",
+"judge": "context"
+},
+{
+"stem": "intern",
+"a": [
+"international"
+],
+"b": [
+"internalization"
+],
+"a_docs": 72,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0840",
+"judge": "no"
+},
+{
+"stem": "intern",
+"a": [
+"internal"
+],
+"b": [
+"internalization"
+],
+"a_docs": 23,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0841",
+"judge": "no"
+},
+{
+"stem": "log",
+"a": [
+"log",
+"logs"
+],
+"b": [
+"logged"
+],
+"a_docs": 33,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0842",
+"judge": "context"
+},
+{
+"stem": "metabol",
+"a": [
+"metabolism"
+],
+"b": [
+"metabolic"
+],
+"a_docs": 14,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0843",
+"judge": "yes"
+},
+{
+"stem": "monitor",
+"a": [
+"monitoring"
+],
+"b": [
+"monitored"
+],
+"a_docs": 48,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0844",
+"judge": "yes"
+},
+{
+"stem": "monitor",
+"a": [
+"monitor"
+],
+"b": [
+"monitored"
+],
+"a_docs": 30,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0845",
+"judge": "context"
+},
+{
+"stem": "occasion",
+"a": [
+"occasionally"
+],
+"b": [
+"occasional"
+],
+"a_docs": 5,
+"b_docs": 11,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0846",
+"judge": "yes"
+},
+{
+"stem": "phenotyp",
+"a": [
+"phenotype",
+"phenotypes"
+],
+"b": [
+"phenotypic"
+],
+"a_docs": 26,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0847",
+"judge": "yes"
+},
+{
+"stem": "potenti",
+"a": [
+"potential",
+"potentials"
+],
+"b": [
+"potentially"
+],
+"a_docs": 75,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0848",
+"judge": "no"
+},
+{
+"stem": "predict",
+"a": [
+"predictive"
+],
+"b": [
+"predicting"
+],
+"a_docs": 25,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0849",
+"judge": "context"
+},
+{
+"stem": "predict",
+"a": [
+"predict",
+"predicts"
+],
+"b": [
+"predicting"
+],
+"a_docs": 23,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0850",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predicted"
+],
+"b": [
+"predicting"
+],
+"a_docs": 23,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0851",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"prediction",
+"predictions"
+],
+"b": [
+"predicting"
+],
+"a_docs": 21,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0852",
+"judge": "yes"
+},
+{
+"stem": "predict",
+"a": [
+"predictable"
+],
+"b": [
+"predicting"
+],
+"a_docs": 5,
+"b_docs": 11,
+"old_test": true,
+"label_set_stem": true,
+"id": "c0853",
+"judge": "context"
+},
+{
+"stem": "present",
+"a": [
+"presented"
+],
+"b": [
+"presenting"
+],
+"a_docs": 280,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0854",
+"judge": "yes"
+},
+{
+"stem": "present",
+"a": [
+"presentation",
+"presentations"
+],
+"b": [
+"presenting"
+],
+"a_docs": 132,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0855",
+"judge": "yes"
+},
+{
+"stem": "present",
+"a": [
+"present",
+"presents"
+],
+"b": [
+"presenting"
+],
+"a_docs": 104,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0856",
+"judge": "no"
+},
+{
+"stem": "suggest",
+"a": [
+"suggest",
+"suggests"
+],
+"b": [
+"suggesting"
+],
+"a_docs": 16,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0857",
+"judge": "yes"
+},
+{
+"stem": "valid",
+"a": [
+"validation",
+"validations"
+],
+"b": [
+"valid"
+],
+"a_docs": 57,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0858",
+"judge": "no"
+},
+{
+"stem": "valid",
+"a": [
+"validator",
+"validators"
+],
+"b": [
+"valid"
+],
+"a_docs": 43,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0859",
+"judge": "no"
+},
+{
+"stem": "valid",
+"a": [
+"validated"
+],
+"b": [
+"valid"
+],
+"a_docs": 23,
+"b_docs": 11,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0860",
+"judge": "no"
+},
+{
+"stem": "access",
+"a": [
+"access",
+"accesses"
+],
+"b": [
+"accessed"
+],
+"a_docs": 95,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0861",
+"judge": "yes"
+},
+{
+"stem": "access",
+"a": [
+"accession"
+],
+"b": [
+"accessed"
+],
+"a_docs": 78,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0862",
+"judge": "no"
+},
+{
+"stem": "access",
+"a": [
+"accessible"
+],
+"b": [
+"accessed"
+],
+"a_docs": 42,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0863",
+"judge": "yes"
+},
+{
+"stem": "achiev",
+"a": [
+"achieved"
+],
+"b": [
+"achieve"
+],
+"a_docs": 14,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0864",
+"judge": "yes"
+},
+{
+"stem": "alter",
+"a": [
+"altered"
+],
+"b": [
+"alter",
+"alters"
+],
+"a_docs": 16,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0865",
+"judge": "yes"
+},
+{
+"stem": "anonym",
+"a": [
+"anonymized"
+],
+"b": [
+"anonymity"
+],
+"a_docs": 35,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0866",
+"judge": "context"
+},
+{
+"stem": "anonym",
+"a": [
+"anonymization"
+],
+"b": [
+"anonymity"
+],
+"a_docs": 12,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0867",
+"judge": "context"
+},
+{
+"stem": "assign",
+"a": [
+"assigned"
+],
+"b": [
+"assignment",
+"assignments"
+],
+"a_docs": 51,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0868",
+"judge": "yes"
+},
+{
+"stem": "balanc",
+"a": [
+"balanced"
+],
+"b": [
+"balance"
+],
+"a_docs": 22,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0869",
+"judge": "no"
+},
+{
+"stem": "calcul",
+"a": [
+"calculated"
+],
+"b": [
+"calculate"
+],
+"a_docs": 35,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0870",
+"judge": "yes"
+},
+{
+"stem": "calcul",
+"a": [
+"calculation",
+"calculations"
+],
+"b": [
+"calculate"
+],
+"a_docs": 15,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0871",
+"judge": "yes"
+},
+{
+"stem": "combin",
+"a": [
+"combination",
+"combinations"
+],
+"b": [
+"combining"
+],
+"a_docs": 34,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0872",
+"judge": "yes"
+},
+{
+"stem": "combin",
+"a": [
+"combined"
+],
+"b": [
+"combining"
+],
+"a_docs": 34,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0873",
+"judge": "yes"
+},
+{
+"stem": "correct",
+"a": [
+"correction",
+"corrections"
+],
+"b": [
+"corrective"
+],
+"a_docs": 99,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0874",
+"judge": "no"
+},
+{
+"stem": "correct",
+"a": [
+"correct"
+],
+"b": [
+"corrective"
+],
+"a_docs": 85,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0875",
+"judge": "no"
+},
+{
+"stem": "correct",
+"a": [
+"corrected"
+],
+"b": [
+"corrective"
+],
+"a_docs": 84,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0876",
+"judge": "no"
+},
+{
+"stem": "correct",
+"a": [
+"correctly"
+],
+"b": [
+"corrective"
+],
+"a_docs": 21,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0877",
+"judge": "no"
+},
+{
+"stem": "cue",
+"a": [
+"cue",
+"cues"
+],
+"b": [
+"cueing"
+],
+"a_docs": 72,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0878",
+"judge": "yes"
+},
+{
+"stem": "determin",
+"a": [
+"determined"
+],
+"b": [
+"determination"
+],
+"a_docs": 38,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0879",
+"judge": "yes"
+},
+{
+"stem": "determin",
+"a": [
+"determine",
+"determines"
+],
+"b": [
+"determination"
+],
+"a_docs": 30,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0880",
+"judge": "yes"
+},
+{
+"stem": "ensur",
+"a": [
+"ensure",
+"ensures"
+],
+"b": [
+"ensuring"
+],
+"a_docs": 120,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0881",
+"judge": "yes"
+},
+{
+"stem": "even",
+"a": [
+"even"
+],
+"b": [
+"evenly"
+],
+"a_docs": 31,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0882",
+"judge": "no"
+},
+{
+"stem": "extend",
+"a": [
+"extended"
+],
+"b": [
+"extending"
+],
+"a_docs": 46,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0883",
+"judge": "context"
+},
+{
+"stem": "face",
+"a": [
+"faces",
+"face"
+],
+"b": [
+"facing"
+],
+"a_docs": 69,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0884",
+"judge": "no"
+},
+{
+"stem": "generat",
+"a": [
+"generated"
+],
+"b": [
+"generating"
+],
+"a_docs": 81,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0885",
+"judge": "yes"
+},
+{
+"stem": "generat",
+"a": [
+"generate",
+"generates"
+],
+"b": [
+"generating"
+],
+"a_docs": 26,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0886",
+"judge": "yes"
+},
+{
+"stem": "generat",
+"a": [
+"generation",
+"generations"
+],
+"b": [
+"generating"
+],
+"a_docs": 17,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0887",
+"judge": "context"
+},
+{
+"stem": "imag",
+"a": [
+"imaging"
+],
+"b": [
+"imaged"
+],
+"a_docs": 432,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0888",
+"judge": "yes"
+},
+{
+"stem": "imag",
+"a": [
+"images",
+"image",
+"imag"
+],
+"b": [
+"imaged"
+],
+"a_docs": 372,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0889",
+"judge": "context"
+},
+{
+"stem": "implant",
+"a": [
+"implanted"
+],
+"b": [
+"implantation",
+"implantations"
+],
+"a_docs": 13,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0890",
+"judge": "yes"
+},
+{
+"stem": "interfac",
+"a": [
+"interface",
+"interfaces"
+],
+"b": [
+"interfacing"
+],
+"a_docs": 19,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0891",
+"judge": "context"
+},
+{
+"stem": "interpol",
+"a": [
+"interpolation",
+"interpolations"
+],
+"b": [
+"interpolated"
+],
+"a_docs": 17,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0892",
+"judge": "yes"
+},
+{
+"stem": "judg",
+"a": [
+"judged"
+],
+"b": [
+"judge"
+],
+"a_docs": 9,
+"b_docs": 10,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p092",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0893",
+"judge": "yes"
+},
+{
+"stem": "mask",
+"a": [
+"masks",
+"mask"
+],
+"b": [
+"masking"
+],
+"a_docs": 35,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0894",
+"judge": "context"
+},
+{
+"stem": "minim",
+"a": [
+"minimal"
+],
+"b": [
+"minimally"
+],
+"a_docs": 31,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0895",
+"judge": "yes"
+},
+{
+"stem": "minim",
+"a": [
+"minimize"
+],
+"b": [
+"minimally"
+],
+"a_docs": 21,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0896",
+"judge": "no"
+},
+{
+"stem": "neurophysiolog",
+"a": [
+"neurophysiology"
+],
+"b": [
+"neurophysiological"
+],
+"a_docs": 16,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0897",
+"judge": "yes"
+},
+{
+"stem": "possibl",
+"a": [
+"possible"
+],
+"b": [
+"possibility",
+"possibilities"
+],
+"a_docs": 102,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0898",
+"judge": "yes"
+},
+{
+"stem": "possibl",
+"a": [
+"possibly"
+],
+"b": [
+"possibility",
+"possibilities"
+],
+"a_docs": 12,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0899",
+"judge": "yes"
+},
+{
+"stem": "post",
+"a": [
+"post",
+"posts"
+],
+"b": [
+"posted"
+],
+"a_docs": 117,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0900",
+"judge": "no"
+},
+{
+"stem": "practic",
+"a": [
+"practice"
+],
+"b": [
+"practiced"
+],
+"a_docs": 40,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0901",
+"judge": "yes"
+},
+{
+"stem": "practic",
+"a": [
+"practical"
+],
+"b": [
+"practiced"
+],
+"a_docs": 15,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0902",
+"judge": "no"
+},
+{
+"stem": "reach",
+"a": [
+"reach",
+"reaches"
+],
+"b": [
+"reaching"
+],
+"a_docs": 19,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0903",
+"judge": "context"
+},
+{
+"stem": "reactiv",
+"a": [
+"reactivity"
+],
+"b": [
+"reactive"
+],
+"a_docs": 21,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0904",
+"judge": "yes"
+},
+{
+"stem": "recal",
+"a": [
+"recall"
+],
+"b": [
+"recalling"
+],
+"a_docs": 44,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": true,
+"paul": {
+"pair": "p176",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0905",
+"judge": "yes"
+},
+{
+"stem": "recal",
+"a": [
+"recalled"
+],
+"b": [
+"recalling"
+],
+"a_docs": 9,
+"b_docs": 10,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p066",
+"label": "both",
+"a_side": "a"
+},
+"id": "c0906",
+"judge": "yes"
+},
+{
+"stem": "reliabl",
+"a": [
+"reliability"
+],
+"b": [
+"reliable"
+],
+"a_docs": 37,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0907",
+"judge": "yes"
+},
+{
+"stem": "revis",
+"a": [
+"revision",
+"revisions"
+],
+"b": [
+"revised"
+],
+"a_docs": 13,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0908",
+"judge": "yes"
+},
+{
+"stem": "save",
+"a": [
+"saved"
+],
+"b": [
+"save",
+"saves"
+],
+"a_docs": 30,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0909",
+"judge": "yes"
+},
+{
+"stem": "space",
+"a": [
+"space",
+"spaces"
+],
+"b": [
+"spacing"
+],
+"a_docs": 122,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0910",
+"judge": "no"
+},
+{
+"stem": "span",
+"a": [
+"span",
+"spans"
+],
+"b": [
+"spanning"
+],
+"a_docs": 12,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0911",
+"judge": "no"
+},
+{
+"stem": "specifi",
+"a": [
+"specified"
+],
+"b": [
+"specify",
+"specifies"
+],
+"a_docs": 21,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0912",
+"judge": "yes"
+},
+{
+"stem": "systemat",
+"a": [
+"systematic"
+],
+"b": [
+"systematically"
+],
+"a_docs": 19,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0913",
+"judge": "yes"
+},
+{
+"stem": "think",
+"a": [
+"thinking",
+"thinkings"
+],
+"b": [
+"think"
+],
+"a_docs": 8,
+"b_docs": 10,
+"old_test": true,
+"label_set_stem": true,
+"paul": {
+"pair": "p061",
+"label": "both",
+"a_side": "b"
+},
+"id": "c0914",
+"judge": "yes"
+},
+{
+"stem": "uniform",
+"a": [
+"uniformly"
+],
+"b": [
+"uniform"
+],
+"a_docs": 7,
+"b_docs": 10,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0915",
+"judge": "yes"
+},
+{
+"stem": "unit",
+"a": [
+"unit",
+"units"
+],
+"b": [
+"united"
+],
+"a_docs": 24,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": true,
+"id": "c0916",
+"judge": "no"
+},
+{
+"stem": "util",
+"a": [
+"utilized"
+],
+"b": [
+"utilizing"
+],
+"a_docs": 12,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0917",
+"judge": "yes"
+},
+{
+"stem": "valid",
+"a": [
+"validation",
+"validations"
+],
+"b": [
+"validate",
+"validates"
+],
+"a_docs": 57,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0918",
+"judge": "yes"
+},
+{
+"stem": "valid",
+"a": [
+"validation",
+"validations"
+],
+"b": [
+"validity"
+],
+"a_docs": 57,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0919",
+"judge": "context"
+},
+{
+"stem": "valid",
+"a": [
+"validator",
+"validators"
+],
+"b": [
+"validate",
+"validates"
+],
+"a_docs": 43,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0920",
+"judge": "context"
+},
+{
+"stem": "valid",
+"a": [
+"validator",
+"validators"
+],
+"b": [
+"validity"
+],
+"a_docs": 43,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0921",
+"judge": "no"
+},
+{
+"stem": "valid",
+"a": [
+"validated"
+],
+"b": [
+"validate",
+"validates"
+],
+"a_docs": 23,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0922",
+"judge": "context"
+},
+{
+"stem": "valid",
+"a": [
+"validated"
+],
+"b": [
+"validity"
+],
+"a_docs": 23,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0923",
+"judge": "context"
+},
+{
+"stem": "valid",
+"a": [
+"valid"
+],
+"b": [
+"validate",
+"validates"
+],
+"a_docs": 11,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0924",
+"judge": "no"
+},
+{
+"stem": "valid",
+"a": [
+"valid"
+],
+"b": [
+"validity"
+],
+"a_docs": 11,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0925",
+"judge": "context"
+},
+{
+"stem": "valid",
+"a": [
+"validate",
+"validates"
+],
+"b": [
+"validity"
+],
+"a_docs": 10,
+"b_docs": 10,
+"old_test": true,
+"label_set_stem": false,
+"id": "c0926",
+"judge": "context"
+},
+{
+"stem": "visual",
+"a": [
+"visual"
+],
+"b": [
+"visualization",
+"visualizations"
+],
+"a_docs": 313,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0927",
+"judge": "no"
+},
+{
+"stem": "visual",
+"a": [
+"visually"
+],
+"b": [
+"visualization",
+"visualizations"
+],
+"a_docs": 34,
+"b_docs": 10,
+"old_test": false,
+"label_set_stem": false,
+"id": "c0928",
+"judge": "no"
+}
+]

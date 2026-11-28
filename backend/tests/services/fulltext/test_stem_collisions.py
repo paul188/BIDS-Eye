@@ -53,6 +53,17 @@ def test_question_words_are_plain_words_without_repeats() -> None:
         "quantitative", "mri", "datasets", "ageing"]
 
 
+def test_question_words_skip_tokens_that_are_not_plain_words_whole() -> None:
+    # No fragments: "Sjögren" is not "gren", "MP2RAGE" is not "rage".
+    assert stem_collisions.question_words("Sjögren syndrome with MP2RAGE and T1w scans") == [
+        "syndrome", "scans"]
+
+
+def test_question_words_leave_out_stopwords_before_the_cap() -> None:
+    filler = " ".join(["which", "about", "between", "through", "these"] * 10)
+    assert stem_collisions.question_words(f"{filler} ageing") == ["ageing"]
+
+
 def test_inflections_cover_plural_and_singular() -> None:
     assert {"weight", "weights"} <= stem_collisions.inflections("weight")
     assert {"study", "studies"} <= stem_collisions.inflections("studies")
