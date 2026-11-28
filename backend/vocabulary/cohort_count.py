@@ -10,7 +10,7 @@ A dataset's participants are known to have a diagnosis in two ways:
           dataset in six that has participant rows)
   label   a group column of participants.tsv kept in bids_participants.extra
           ("Group": "PD") holds one of the names the vocabulary lists for the
-          code (backend/vocabulary/value_mappings.yaml: label and synonyms)
+          code (group_labels.py, from value_mappings.yaml)
 
 The SQL model, or the plan compiler, writes a placeholder,
 
@@ -29,100 +29,29 @@ and the backend expands it (expand) into a count over both. The uncertain tier
 
 Only [a-z0-9_, ] appears inside the quotes of the placeholder, so it survives
 being copied by a language model.
+
+Whatever reads the query afterwards (the uncertain tier, the filter chips)
+finds the expanded count with find(), on the syntax tree.
 """
 
 from __future__ import annotations
 
-import logging
 import re
-from functools import lru_cache
-from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, List, NamedTuple, Optional, Sequence
 
+from group_labels import GROUP_KEYS, control_labels, labels_for
 from services.schema.tables import objects as _objects, participants as _participants  # backend/ is on the path wherever RAG runs
 
-log = logging.getLogger(__name__)
-
-_VOCABULARY = Path(__file__).resolve().parent / "value_mappings.yaml"
-
-# Columns of participants.tsv that say which group a participant is in.
-GROUP_KEYS: Tuple[str, ...] = (
-    "group", "groups", "diagnosis", "dx", "diag", "participant_group", "patient_group",
-    "subject_group", "clinical_group", "clinical_diagnosis", "disease", "cohort",
-    "pathology", "population",
-)
-
-# What group columns call participants without the condition, besides the
-# vocabulary's names for healthy_control.
-_CONTROL_LABELS: Tuple[str, ...] = (
-    "control", "controls", "ctl", "ctrl", "ctr", "con", "hc", "hcs", "cn", "nc", "td",
-    "healthy", "normal", "healthy control", "healthy controls", "healthy_control",
-    "control group", "neurotypical", "typically developing",
-)
-_CONTROL_CODE = "healthy_control"
+# The participant rows of the expanded count. find() knows the count by it:
+# the model's own count of coded rows has the same shape under another alias.
+ALIAS = "cohort_n"
 
 _CODE_RE = re.compile(r"^[a-z0-9_]+$")
-_LABEL_OK_RE = re.compile(r"^[a-z0-9][a-z0-9 '/+._-]*$")
 
 PLACEHOLDER_RE = re.compile(
     r"patients_with\(\s*'(?P<codes>[a-z0-9_, ]+)'\s*\)\s*(?P<op>>=|>)\s*(?P<n>\d+)",
     re.IGNORECASE,
 )
-# The expanded count, as written by confirmed_sql and as sqlglot prints it back.
-_EXPANDED_RE = re.compile(
-    r"cohort_n\.diagnosis\s+IN\s*\((?P<codes>[^)]*)\).*>=\s*(?P<n>\d+)\s*\)?\s*$",
-    re.IGNORECASE | re.DOTALL,
-)
-
-
-@lru_cache(maxsize=1)
-def _vocabulary() -> Dict[str, dict]:
-    """The diagnosis entries of value_mappings.yaml. Without them only coded
-    rows count, so a file that cannot be read is logged, not silent."""
-    import yaml
-    try:
-        data = yaml.safe_load(_VOCABULARY.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as exc:
-        log.warning("cohort count: %s not read (%s); only coded diagnoses are counted",
-                    _VOCABULARY, exc)
-        return {}
-    return (data or {}).get("diagnosis") or {}
-
-
-def _clean(label: str) -> str:
-    return " ".join(str(label).replace("’", "'").lower().split())
-
-
-@lru_cache(maxsize=256)
-def _labels_of(code: str) -> Tuple[str, ...]:
-    entry = _vocabulary().get(code) or {}
-    names = [code, code.replace("_", " "), entry.get("label") or ""]
-    for synonym in entry.get("synonyms") or []:
-        names.append(synonym.get("term") if isinstance(synonym, dict) else synonym)
-    cleaned = []
-    for name in names:
-        name = _clean(name or "")
-        if len(name) >= 2 and _LABEL_OK_RE.fullmatch(name) and name not in cleaned:
-            cleaned.append(name)
-    return tuple(cleaned)
-
-
-def labels_for(codes: Sequence[str]) -> List[str]:
-    """What a group column may call participants with one of these diagnoses."""
-    found: List[str] = []
-    for code in codes:
-        for label in _labels_of(code):
-            if label not in found:
-                found.append(label)
-    return found
-
-
-def control_labels() -> List[str]:
-    found = list(_CONTROL_LABELS)
-    for label in _labels_of(_CONTROL_CODE):
-        if label not in found:
-            found.append(label)
-    return found
 
 
 def valid_codes(codes: Sequence[str]) -> List[str]:
@@ -153,12 +82,12 @@ def _label_match(row: str, labels: Sequence[str]) -> str:
 def confirmed_sql(codes: Sequence[str], n: int, alias: str = "d") -> str:
     """At least *n* participants of the dataset are coded or labelled with the diagnosis."""
     codes = valid_codes(codes)
-    has_it = f"cohort_n.diagnosis IN ({_quoted(codes)})"
+    has_it = f"{ALIAS}.diagnosis IN ({_quoted(codes)})"
     labels = labels_for(codes)
     if labels:
-        has_it = f"({has_it} OR {_label_match('cohort_n', labels)})"
-    return (f"(SELECT COUNT(DISTINCT cohort_n.participant_id) FROM {_participants.name} AS cohort_n "
-            f"WHERE cohort_n.dataset_id = {alias}.id AND {has_it}) >= {int(n)}")
+        has_it = f"({has_it} OR {_label_match(ALIAS, labels)})"
+    return (f"(SELECT COUNT(DISTINCT {ALIAS}.participant_id) FROM {_participants.name} AS {ALIAS} "
+            f"WHERE {ALIAS}.dataset_id = {alias}.id AND {has_it}) >= {int(n)}")
 
 
 def unknown_sql(codes: Sequence[str], n: int, alias: str = "d",
@@ -193,12 +122,39 @@ def expand(sql: str, alias: str = "d") -> str:
     return PLACEHOLDER_RE.sub(replace, sql)
 
 
-def parse_expanded(sql: str) -> Optional[Tuple[List[str], int]]:
-    """(codes, n) of an expanded count condition, else None."""
-    if "cohort_n" not in sql:
+class PatientCount(NamedTuple):
+    codes: List[str]
+    minimum: int
+
+
+def find(node: Any) -> Optional[PatientCount]:
+    """The count confirmed_sql() wrote, read from the syntax tree *node*, else None.
+
+    Its shape: (SELECT COUNT(DISTINCT cohort_n.participant_id) FROM
+    bids_participants AS cohort_n WHERE … cohort_n.diagnosis IN (<codes>) …) >= n.
+    """
+    from sqlglot import exp  # a backend dependency, not one of this package
+
+    while isinstance(node, exp.Paren):
+        node = node.this
+    if not isinstance(node, exp.GTE):
         return None
-    match = _EXPANDED_RE.search(sql)
-    if not match:
+    count, minimum = node.this, node.expression
+    if not (isinstance(count, exp.Subquery) and isinstance(count.this, exp.Select)
+            and isinstance(minimum, exp.Literal) and not minimum.is_string
+            and str(minimum.this).isdigit()):
         return None
-    codes = valid_codes(re.findall(r"'([^']*)'", match.group("codes")))
-    return (codes, int(match.group("n"))) if codes else None
+    select = count.this
+    source = select.args.get("from") or select.args.get("from_")
+    table = source.this if source is not None else None
+    if not (isinstance(table, exp.Table) and table.name == _participants.name
+            and table.alias == ALIAS):
+        return None
+    where = select.args.get("where")
+    for found in where.find_all(exp.In) if where is not None else ():
+        column = found.this
+        if isinstance(column, exp.Column) and column.table == ALIAS and column.name == "diagnosis":
+            codes = valid_codes([e.name for e in found.expressions
+                                 if isinstance(e, exp.Literal) and e.is_string])
+            return PatientCount(codes, int(minimum.this)) if codes else None
+    return None

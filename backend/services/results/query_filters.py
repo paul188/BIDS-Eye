@@ -37,6 +37,7 @@ import dataclasses
 from dataclasses import asdict, dataclass
 from typing import FrozenSet, Iterable, List, Optional, Tuple, Union
 
+import cohort_count
 from sql_text import pattern_words
 from sqlglot import exp
 
@@ -336,22 +337,15 @@ def _species_label(node) -> Optional[str]:
         return " or ".join(names)
     return "any animal" if seen else None
 def _patients_label(node) -> Optional[str]:
-    """'≥ 25 with Frontotemporal dementia' for "at least N patients with X" (RAG/cohort_count.py).
+    """'≥ 25 with Frontotemporal dementia' for "at least N patients with X" (backend/vocabulary/cohort_count.py).
 
     That count is of the participants who have the diagnosis; the subject
     count chip called it "Subjects: ≥ 25" although the datasets had 88.
     """
-    sql = node.sql(dialect="postgres")
-    if "cohort_n" not in sql:
+    found = cohort_count.find(node)
+    if found is None:
         return None
-    try:
-        import cohort_count
-    except ImportError:  # the RAG package is not on the path
-        return None
-    parsed = cohort_count.parse_expanded(sql)
-    if parsed is None:
-        return None
-    codes, minimum = parsed
+    codes, minimum = found
     names = [_humanize_code(code) for code in codes]
     return f"≥ {minimum} with {names[0]}" + (f" +{len(names) - 1}" if len(names) > 1 else "")
 

@@ -16,6 +16,8 @@ for _p in ("backend/llm", "backend/vocabulary"):
         sys.path.insert(0, str(_ROOT / _p))
 
 import cohort_count  # noqa: E402
+import group_labels  # noqa: E402
+import sqlglot  # noqa: E402
 from preprocess import (  # noqa: E402
     ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement,
     _build_augmented_question,
@@ -38,6 +40,12 @@ def _plan(minimum=40, diagnosis=("Parkinson's disease",), scans=()):
     )
 
 
+def _where(condition: str):
+    """The WHERE condition of a query on the datasets, as the tier and the chips get it."""
+    return sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {condition}",
+                             read="postgres").args["where"].this
+
+
 # ── the count itself ────────────────────────────────────────────────────────────
 
 def test_the_placeholder_and_its_expansion():
@@ -47,8 +55,21 @@ def test_the_placeholder_and_its_expansion():
     assert "patients_with" not in sql
     assert "cohort_n.diagnosis IN ('parkinsons_disease', 'de_novo_parkinsons')" in sql
     assert sql.rstrip().endswith(">= 40")
-    assert cohort_count.parse_expanded(sql.split("WHERE ", 1)[1]) == (
+    assert cohort_count.find(_where(sql.split("WHERE ", 1)[1])) == (
         ["parkinsons_disease", "de_novo_parkinsons"], 40)
+
+
+def test_the_count_is_found_after_the_sql_was_printed_again():
+    printed = _where(cohort_count.confirmed_sql(["adhd"], 12)).sql(dialect="postgres")
+    assert cohort_count.find(_where(f"({printed})")) == (["adhd"], 12)
+
+
+def test_the_models_own_count_is_not_taken_for_the_expanded_one():
+    # Same shape, but it counts coded rows only: under its own alias it stays
+    # an ordinary condition, as before.
+    own = cohort_count.confirmed_sql(["adhd"], 12).replace(cohort_count.ALIAS, "p")
+    assert cohort_count.find(_where(own)) is None
+    assert cohort_count.find(_where("d.n_subjects >= 12")) is None
 
 
 def test_more_than_is_one_more():
@@ -57,7 +78,7 @@ def test_more_than_is_one_more():
 
 
 def test_group_columns_count_under_the_names_of_the_vocabulary():
-    labels = cohort_count.labels_for(["parkinsons_disease"])
+    labels = group_labels.labels_for(["parkinsons_disease"])
     assert {"pd", "parkinson", "parkinson's disease"} <= set(labels)
     sql = cohort_count.confirmed_sql(["parkinsons_disease"], 40)
     assert "LOWER(cohort_g.key) IN ('group'" in sql and "'pd'" in sql
@@ -150,16 +171,13 @@ def test_with_the_tier_an_unrecorded_count_is_uncertain_and_a_smaller_one_is_out
 
 
 def test_the_tier_recognises_the_count_after_the_sql_was_printed_again():
-    import sqlglot
-    expanded = cohort_count.confirmed_sql(["parkinsons_disease"], 40)
-    select = sqlglot.parse_one(f"SELECT 1 FROM bids_datasets AS d WHERE {expanded}", read="postgres")
-    soft = tier_classify.classify(Clause.read(select.args["where"].this), "d")
+    soft = tier_classify.classify(Clause.read(_where(cohort_count.confirmed_sql(["parkinsons_disease"], 40))), "d")
     assert soft is not None and soft.kind == "patient_count"
     assert soft.known is None and "cohort_k" in soft.probable
 
 
 def test_the_count_has_one_weaker_piece_so_its_score_needs_no_source_group():
-    soft = tier_classify._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
+    soft = tier_classify._patient_count(_where(cohort_count.confirmed_sql(["parkinsons_disease"], 40)), "d")
     (piece,) = soft.weaker
     assert soft.score_sql("u0", []) == (
         f"CASE WHEN u0 = 0 THEN 1 WHEN u0 = 1 THEN {piece.score():g} ELSE 0 END")
@@ -168,7 +186,7 @@ def test_the_count_has_one_weaker_piece_so_its_score_needs_no_source_group():
 def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
     from services.database_stats.database_stats import Summaries, database_stats
     monkeypatch.setattr(database_stats, "summaries", Summaries(subject_counts=True))
-    soft = tier_classify._patient_count(cohort_count.confirmed_sql(["parkinsons_disease"], 40), "d")
+    soft = tier_classify._patient_count(_where(cohort_count.confirmed_sql(["parkinsons_disease"], 40)), "d")
     assert "d.n_subjects" in soft.probable and "bids_objects" not in soft.probable
 
 
