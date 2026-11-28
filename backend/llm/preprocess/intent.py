@@ -14,6 +14,7 @@ from pydantic import BaseModel, ValidationError
 
 from llm_client import llm_generate
 
+from . import wording as _wording
 from .plan import QueryPlan
 from .prompt import _SYSTEM_PROMPT
 from .prompt_context import planner_input
@@ -82,7 +83,7 @@ def create_query_plan(
 
     if extra.asks_same_meaning:
         raw = _take_same_meaning(raw, same_meaning)
-    return QueryPlan.model_validate_json(raw)
+    return _wording.apply(QueryPlan.model_validate_json(raw), query)
 
 
 def _take_same_meaning(raw: str, same_meaning: Optional[List[Tuple[str, List[str]]]]) -> str:
