@@ -14,9 +14,10 @@ sqlglot = pytest.importorskip("sqlglot")
 
 import preprocess as pp  # noqa: E402
 import senses  # noqa: E402
-from services.results import query_filters  # noqa: E402
+from services.results.display.chips import describe  # noqa: E402
 from services.fulltext import text_search, tsquery, word_frequencies  # noqa: E402
 from services import sql_tree  # noqa: E402
+from services.fulltext.text_search import Clause  # noqa: E402
 from services.uncertain import text as tier_text  # noqa: E402
 from text_terms import parse_alternatives  # noqa: E402
 
@@ -187,14 +188,14 @@ NEAR = "(social <1> conflict | social <2> conflict | conflict <1> social | confl
 
 def test_near_relaxes_to_all_words_never_to_the_head_alone() -> None:
     assert tier_text.relax_tsquery(f"{NEAR} | aggression") == "(social & conflict) | aggression"
-    assert tier_text.query_words(NEAR) == ["social", "conflict"]
+    assert tsquery.query_words(NEAR) == ["social", "conflict"]
 
 
 def test_excluded_meaning_demotes_instead_of_removing() -> None:
     sql = ("(d.search_tsv @@ TO_TSQUERY('english', '" + NEAR + "') OR "
            "(d.search_tsv @@ TO_TSQUERY('english', 'aggression') AND NOT "
            "d.search_tsv @@ TO_TSQUERY('english', 'stroop')))")
-    weaker = tier_text.relax_text_condition(text_search.Clause.read(sql_tree.parse(sql)), "d")
+    weaker = tier_text.relax_text_condition(Clause.read(sql_tree.parse(sql)), "d")
     relaxed = weaker.sql()
     assert "'(social & conflict)'" in relaxed
     assert "'aggression'" in relaxed            # kept, without the NOT
@@ -206,7 +207,7 @@ def test_only_the_phrase_of_a_topic_is_loosened() -> None:
     sql = ("(d.search_tsv @@ TO_TSQUERY('english', '" + NEAR + "') OR "
            "d.search_tsv @@ TO_TSQUERY('english', '(interpersonal <1> conflict | "
            "conflict <1> interpersonal)'))")
-    relaxed = tier_text.relax_text_condition(text_search.Clause.read(sql_tree.parse(sql)), "d").sql()
+    relaxed = tier_text.relax_text_condition(Clause.read(sql_tree.parse(sql)), "d").sql()
     assert relaxed == "d.search_tsv @@ TO_TSQUERY('english', '(social & conflict)')"
 
 
@@ -217,17 +218,13 @@ def _expanded(condition: str) -> str:
     return text_search.expand_text_search(sql, papers=False).sql
 
 
-def test_topic_gives_a_topic_chip_and_a_removable_exclusion() -> None:
+def test_topic_gives_a_topic_chip_and_an_exclusion_chip() -> None:
     sql = _expanded(pp.resolve_topic(SOCIAL, None, _counts({})).condition)
-    chips = {c.id: c for c in query_filters.describe(sql)}
+    chips = {c.id: c for c in describe(sql)}
     assert chips["w0"].kind == "topic" and chips["w0"].label == "social conflict"
     assert "stroop" not in chips["w0"].text_words
     assert chips["w0n"].kind == "sense" and chips["w0n"].text_words == []
     assert chips["w0n"].label.startswith("cognitive conflict, stroop")
-
-    without = query_filters.remove(sql, ["w0n"])
-    assert "NOT" not in without and "aggression" in without and "CC0" in without
-    assert [c.id for c in query_filters.describe(without)] == ["w0", "w1"]
 
 
 # ── SQL rewriting ─────────────────────────────────────────────────────────────

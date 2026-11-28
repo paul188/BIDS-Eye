@@ -20,6 +20,7 @@ from __future__ import annotations
 import importlib
 import importlib.abc
 import importlib.util
+import os
 import sys
 
 # Kept in step with backend/services/__init__.py.
@@ -31,7 +32,7 @@ GROUPS = {
     "uncertain": ("tier", "classify", "conditions", "reason_texts", "scanner", "sex", "text"),
     "catalogue": ("catalogue", "schema_capabilities", "catalogue_values"),
     "schema": ("tables", "check"),
-    "results": ("query_filters", "rerank", "dataset_cards", "readme_snippets"),
+    "results": ("rerank",),
     "stores": ("interpretations", "translated_queries"),
     "indexing": ("readme_profile", "dataset_description"),
 }

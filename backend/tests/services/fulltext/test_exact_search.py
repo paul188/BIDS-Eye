@@ -16,8 +16,10 @@ import yaml
 
 import preprocess as pp
 import stem_collisions
-from services.results import query_filters as qf
-from services.database_stats.database_stats import ColumnCoverage, database_stats
+from services.results.display import highlights
+from services.results.display.chips import describe
+from services.database_stats.database_stats import database_stats
+from tests.helpers import full_coverage
 from services.fulltext import ranking, text_search as ts, tsquery, vectors, word_frequencies
 from services.uncertain import text as tier_text, tier as ut
 from services.fulltext import word_form_counts
@@ -52,7 +54,7 @@ def _database_with_full_text(tmp_path, monkeypatch):
     monkeypatch.setattr(stem_collisions, "_PATH", path)
     stem_collisions._reviewed.cache_clear()
     monkeypatch.delenv(vectors.EXACT_ENV, raising=False)
-    database_stats.coverage = ColumnCoverage.full(())
+    database_stats.coverage = full_coverage(())
     word_frequencies.set_frequency_lookup(None)
     word_form_counts.set_lookup(None)
     yield path
@@ -282,24 +284,22 @@ def _expanded(condition: str, **kwargs) -> str:
     return ts.expand_text_search(_where(condition), allowed_forms=FORMS, **kwargs).sql
 
 
-def test_a_guarded_search_is_one_chip_and_goes_as_one(exact) -> None:
+def test_a_guarded_search_is_one_chip(exact) -> None:
     sql = _expanded(f"{MODALITY} AND text_match('healthy ageing')")
-    chips = qf.describe(sql)
+    chips = describe(sql)
     assert [(c.id, c.kind) for c in chips] == [("w0", "modality"), ("w1", "text")]
     text = chips[1]
     assert text.label == "“healthy ageing”"
     assert text.text_words == ["healthy ageing", "ageing", "aging"]
     assert "Only these word forms count: ageing, aging." in text.detail
-    removed = qf.remove(sql, ["w1"])
-    assert "search_tsv" not in removed and "functional_mri" in removed
 
 
 def test_a_negated_guard_is_not_a_search_word(exact) -> None:
     sql = _expanded("text_match('memory') AND NOT text_match('weight')")
-    chips = {c.id: c for c in qf.describe(sql)}
+    chips = {c.id: c for c in describe(sql)}
     assert chips["w1"].negated and chips["w1"].text_words == ["weight", "weights"]
-    assert qf.highlight_exact_words(sql) == frozenset()
-    assert qf.highlight_terms(sql) == [("memory",)]
+    assert highlights.highlight_exact_words(sql) == frozenset()
+    assert highlights.highlight_terms(sql) == [("memory",)]
 
 
 # ── Uncertain tier ────────────────────────────────────────────────────────────
@@ -352,7 +352,7 @@ def test_paper_evidence_needs_the_word_forms_in_the_paper(exact) -> None:
 # ── README excerpts ───────────────────────────────────────────────────────────
 
 def test_marks_of_exact_words_must_be_the_word_as_written() -> None:
-    from services.results.readme_snippets import keep_justified_marks
+    from services.results.display.readme_snippets import keep_justified_marks
     headline = "⟦Age⟧ range 60-80; healthy ⟦ageing⟧ and ⟦Aging⟧'s effects, ⟦aged⟧ adults"
     marks = ["age", "age", "age", "age"]
     terms = [("ageing",), ("aging",)]
@@ -382,7 +382,7 @@ class _Session:
 
 
 def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
-    from services.results import readme_snippets
+    from services.results.display import readme_snippets
     from routers.schemas import DatasetSchema
 
     datasets = [DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
@@ -404,11 +404,11 @@ def test_the_excerpt_is_the_passage_with_the_exact_word(exact) -> None:
 
 def test_exact_words_come_from_the_filter_sql(exact) -> None:
     sql = _expanded(f"{MODALITY} AND text_match('healthy ageing')")
-    assert qf.highlight_exact_words(sql) == {"ageing", "aging"}
-    assert ("healthy", "ageing") in qf.highlight_terms(sql)
-    assert ("aging",) in qf.highlight_terms(sql)
-    assert qf.highlight_exact_words(_where(MODALITY)) == frozenset()
-    assert qf.highlight_exact_words(None) == frozenset()
+    assert highlights.highlight_exact_words(sql) == {"ageing", "aging"}
+    assert ("healthy", "ageing") in highlights.highlight_terms(sql)
+    assert ("aging",) in highlights.highlight_terms(sql)
+    assert highlights.highlight_exact_words(_where(MODALITY)) == frozenset()
+    assert highlights.highlight_exact_words(None) == frozenset()
 
 
 # ── Intent prompt and pipeline ────────────────────────────────────────────────

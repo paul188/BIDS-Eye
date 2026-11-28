@@ -11,14 +11,14 @@ has its own windows instead of one shared quota:
 
     LIGHT   120 per minute         /auth/me, /auth/logout
     LOGIN    10 per minute         /auth/github, /auth/github/callback (call GitHub)
-    PAGE     60 per minute         /query/page
+    PAGE     60 per minute         GET /query/{query_id} (and the old /query/page)
     SEARCH   10 per minute and DAILY_MESSAGE_LIMIT (20) per UTC day   POST /query
 
 Requests are counted per signed-in user, or per client address for the few
 public routes. ADMIN_GITHUB_LOGINS are exempt from the daily search cap only.
 
 Counts live in memory: one uvicorn process serves the API (backend/Dockerfile,
-like the query cache and the in-flight searches in services/search.py), so a
+like the query cache and the in-flight searches in services/search/search.py), so a
 dict sees every request (tests/test_single_process.py fails if the Dockerfile or
 a Compose file would start more). A restart starts all counts from zero.
 """

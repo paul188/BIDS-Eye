@@ -11,7 +11,8 @@ import pytest
 
 from llm_client import LLMAllFailedError
 from services.results import rerank
-from services.database_stats.database_stats import ColumnCoverage, database_stats
+from services.database_stats.database_stats import database_stats
+from tests.helpers import full_coverage
 from services.translate.sql_rewriter import SqlRewriteService, build_page_sql
 from services.fulltext.ranking import RankQuery
 
@@ -26,9 +27,9 @@ BASE = (
 def _env(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test")
     monkeypatch.setenv("RERANK_ENABLED", "true")
-    database_stats.coverage = ColumnCoverage.full({"readme_text", "dx_status"})
+    database_stats.coverage = full_coverage({"readme_text", "dx_status"})
     yield
-    database_stats.coverage = ColumnCoverage.full(())
+    database_stats.coverage = full_coverage(())
 
 
 def test_order_puts_good_matches_first_and_misses_last() -> None:

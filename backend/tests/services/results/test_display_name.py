@@ -1,4 +1,4 @@
-from services.results.dataset_cards import display_name
+from services.results.display.dataset_cards import display_name
 
 
 def test_real_name_is_kept_with_whitespace_collapsed() -> None:

@@ -28,7 +28,7 @@ from typing import List, Optional
 
 log = logging.getLogger(__name__)
 
-from routers.schemas import TextToSQLResult  # noqa: E402
+from routers.schemas import ScoredFilter, TextToSQLResult  # noqa: E402
 from llm_client import llm_generate, profile_available, LLMAllFailedError  # noqa: E402
 from services.translate.sql_rewriter import FALLBACK_SQL as _FALLBACK_SQL  # noqa: E402
 from services.translate.sql_rewriter import extract_sql as _extract_sql  # noqa: E402
@@ -185,7 +185,7 @@ def _run_local(question: str) -> TextToSQLResult:
             question, ((explanation or "").rstrip()
                        + " No search condition could be taken from the question.").strip())
     scored_filters = [
-        {"field": f.field, "code": f.code, "score": f.score}
+        ScoredFilter(field=f.field, code=f.code, score=f.score)
         for f in augmented_plan.scored_filters
     ]
 

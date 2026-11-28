@@ -7,10 +7,12 @@ from __future__ import annotations
 import asyncio
 
 import pytest
+from fastapi import Response
 
 import routers.search as query_router
-from services.results import dataset_cards, readme_snippets
-from services import query_guard, search_runner
+from services.results.display import dataset_cards, readme_snippets
+from services import query_guard
+from services.search import search_runner
 from services.stores.translated_queries import CachedQuery, query_cache
 from services.translate.sql_rewriter import FALLBACK_SQL
 
@@ -158,8 +160,7 @@ def test_busy_search_answers_503(monkeypatch) -> None:
             # The router lets it through; main.py's handler answers 503
             # (tests/test_domain_errors.py).
             with pytest.raises(query_guard.SearchBusyError) as caught:
-                await query_router.query_page(
-                    query_router.QueryPageRequest(query_id=query_id), _Session())
+                await query_router.query_page(query_id, _Session(), Response())
             assert caught.value.status_code == 503
 
     asyncio.run(scenario())

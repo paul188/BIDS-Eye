@@ -10,7 +10,7 @@ from services.translate.prompt import schema_ddl
 from sqlalchemy import Table
 
 from services.evidence import branches
-from services.results import query_filters
+from services.results.display.chips import _ABOUT_WORDS
 from services.schema import tables
 from services.schema import fields
 from services.schema.fields import CatalogueField
@@ -30,7 +30,7 @@ def test_every_search_vector_says_which_text_it_holds() -> None:
 
 
 def test_every_about_has_a_chip_word_and_a_source_or_is_no_source() -> None:
-    assert set(query_filters._ABOUT_WORDS) == set(About)
+    assert set(_ABOUT_WORDS) == set(About)
     # A new About must be given a source, or be added to the two that have none.
     assert set(branches._ABOUT_SOURCES) == set(About) - {About.DATASET, About.WORD_FORMS}
 

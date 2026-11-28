@@ -1,4 +1,4 @@
-"""Why a result matched: the venues of each chip (services/results/match_reasons.py)."""
+"""Why a result matched: the venues of each chip (services/results/display/match_reasons.py)."""
 
 from __future__ import annotations
 
@@ -16,7 +16,8 @@ from services.evidence.confirmed import (ConfirmedByDefaultEvidence, ConfirmedEv
                                          ConfirmedInFileTablesEvidence, age_span)
 from services.evidence.base import Source
 from services.evidence import branches
-from services.results import match_reasons as mr
+from services.fulltext.tsquery import short_fields_only
+from services.results.display import match_reasons as mr
 
 _HEAD = (
     "SELECT d.id, d.name, COUNT(DISTINCT o.subject) AS subject_count "
@@ -228,7 +229,7 @@ def test_paper_and_readme_venues():
     ("", False),
 ])
 def test_short_fields_only(tsquery, short):
-    assert branches.short_fields_only(tsquery) is short
+    assert short_fields_only(tsquery) is short
 
 
 def test_a_word_form_guard_does_not_decide_the_text_venue():

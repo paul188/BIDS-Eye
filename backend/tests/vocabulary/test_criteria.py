@@ -130,7 +130,7 @@ def test_human_condition_is_hard_in_the_tier_and_a_human_chip() -> None:
     pytest.importorskip("sqlglot")
     from services.fulltext import text_search
     from services.uncertain import tier as uncertain_tier
-    from services.results import query_filters
+    from services.results.display.chips import describe
 
     base = ("SELECT d.id, d.name FROM bids_datasets AS d WHERE "
             "EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id "
@@ -140,7 +140,7 @@ def test_human_condition_is_hard_in_the_tier_and_a_human_chip() -> None:
     # The animal words stay negated on the name and description.
     assert "AND NOT d.search_tsv @@ to_tsquery('english', 'mouse:AB | mice:AB" in expanded
     assert uncertain_tier.apply(expanded, papers=True) == expanded
-    assert ("Species", "human") in [(c.field, c.label) for c in query_filters.describe(expanded)]
+    assert ("Species", "human") in [(c.field, c.label) for c in describe(expanded)]
 
 
 # ── Diagnosis: not stated means not there ─────────────────────────────────────

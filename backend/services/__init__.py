@@ -1,9 +1,9 @@
 """The search pipeline, grouped by stage.
 
 The request flow stays at this level:
-  search.py         a question from translation to result page
-  search_runner.py  runs a translated search against the catalogue, one page at a time
-  query_guard.py    guards that keep one generated query from taking the server down
+  search/         a question from translation to result pages, and the run of
+                  each page against the catalogue
+  query_guard.py  guards that keep one generated query from taking the server down
 
 The stages it calls:
   translate/   question to SQL: model calls, the deterministic compiler, SQL rewrites
@@ -35,7 +35,7 @@ language model up to three times and several groups serve more than one step
                           value check (translate/value_check, against the
                           values database_stats/ loaded), full-text conditions and
                           (fulltext/) and the uncertain tier (uncertain/)
-  5. run                  search_runner + query_guard: one page; a relaxed
+  5. run                  search/search_runner + query_guard: one page; a relaxed
                           re-run when too few datasets match
   6. result page          results/: the RERANK MODEL orders the first
                           candidates, then filter chips, cards, snippets

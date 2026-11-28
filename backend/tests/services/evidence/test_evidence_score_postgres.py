@@ -80,12 +80,12 @@ def test_two_sources_for_one_clause_count_for_more_than_either(hoist) -> None:
     assert rows["every_word"][:2] == (0, 1.0)
     # One piece of evidence: its own score.
     assert rows["one_word"][0] == 1 and rows["one_word"][1] == pytest.approx(0.37, abs=1e-3)
-    assert rows["paper_only"][0] == 1 and rows["paper_only"][1] == pytest.approx(0.4, abs=1e-3)
+    assert rows["paper_only"][0] == 1 and rows["paper_only"][1] == pytest.approx(0.48, abs=1e-3)
     # The dataset's own text and a paper: the stronger in full, the other at half weight.
-    both = 1 - (1 - 0.4) * (1 - 0.37) ** 0.5
+    both = 1 - (1 - 0.48) * (1 - 0.37) ** 0.5
     assert rows["one_word_and_paper"][0] == 1
     assert rows["one_word_and_paper"][1] == pytest.approx(both, abs=1e-3)
-    assert 0.4 < both < 1 - (1 - 0.4) * (1 - 0.37)
+    assert 0.48 < both < 1 - (1 - 0.48) * (1 - 0.37)
     # The card names the first reason in the list, as before.
     assert rows["one_word_and_paper"][2] == "found only in a paper the dataset names"
     assert rows["one_word"][2] == "matches only part of the search; missing: young"

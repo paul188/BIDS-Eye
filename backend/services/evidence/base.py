@@ -18,7 +18,7 @@ from typing import Optional
 class SourceGroup(str, Enum):
     """Sources that repeat each other: what the title says the README says too."""
     RECORDS = "records"     # the participant list, the dataset's columns, its files
-    OWN_TEXT = "own_text"   # title, description and README, written by the dataset's authors
+    TEXT_FROM_DATASET = "text_from_dataset"   # title, description and README, written by the dataset's authors
     PAPER = "paper"         # a paper the dataset names
 
 
@@ -54,13 +54,13 @@ class Source(str, Enum):
 _GROUPS = {
     Source.PARTICIPANTS: SourceGroup.RECORDS,
     Source.FIELD: SourceGroup.RECORDS,
-    Source.LABEL: SourceGroup.OWN_TEXT,   # said once, with the text
+    Source.LABEL: SourceGroup.TEXT_FROM_DATASET,   # said once, with the text
     Source.FILES: SourceGroup.RECORDS,
     Source.DERIVATIVES: SourceGroup.RECORDS,
     Source.SITES: SourceGroup.RECORDS,
-    Source.SHORT_TEXT: SourceGroup.OWN_TEXT,
-    Source.TEXT: SourceGroup.OWN_TEXT,
-    Source.README: SourceGroup.OWN_TEXT,
+    Source.SHORT_TEXT: SourceGroup.TEXT_FROM_DATASET,
+    Source.TEXT: SourceGroup.TEXT_FROM_DATASET,
+    Source.README: SourceGroup.TEXT_FROM_DATASET,
     Source.PAPERS: SourceGroup.PAPER,
 }
 
@@ -81,7 +81,7 @@ class Strength(IntEnum):
 
 # The score of a piece of evidence whose kind has not been measured
 # (PieceOfEvidence.score). Hand-set, not measured: probable lies between the
-# two measured probable kinds (0.37 and 0.53), possible between the two
+# measured probable kinds (0.37, 0.48 and 0.53), possible between the two
 # measured unrecorded fields (0.04 and 0.33).
 DEFAULT_SCORES = {
     Strength.CONFIRMED: 1.0,

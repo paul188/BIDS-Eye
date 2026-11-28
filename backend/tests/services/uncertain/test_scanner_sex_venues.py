@@ -11,7 +11,9 @@ import sqlglot
 from sqlglot import exp
 
 from services.uncertain import classify as tier_classify, scanner as tier_scanner, tier as ut
-from services.results import query_filters as qf
+from services import asked
+from services.results.display import highlights
+from services.results.display.chips import describe
 from services.fulltext.text_search import Clause
 
 _HEAD = "SELECT d.id, d.name FROM bids_datasets AS d WHERE "
@@ -57,7 +59,7 @@ def _classify(condition: str):
 ])
 def test_asked_field_strengths(condition, expected):
     node = _node(f"EXISTS(SELECT 1 FROM bids_objects AS o2 WHERE o2.dataset_id = d.id AND {condition})")
-    assert tier_scanner.asked_field_strengths(node) == expected
+    assert asked.field_strengths(node) == expected
 
 
 @pytest.mark.parametrize(("text", "hit"), [
@@ -96,7 +98,7 @@ def _as_run(sql: str) -> str:
     return str(text(sql).compile(dialect=asyncpg.dialect()))
     assert tier_scanner.field_strength_regex([]) is None
     # Display and translation share one pattern.
-    assert qf.field_strength_pattern([7.0]).pattern == tier_scanner.field_strength_regex([7.0])
+    assert highlights.field_strength_pattern([7.0]).pattern == tier_scanner.field_strength_regex([7.0])
 
 
 # ── Sidecar conditions in the tier ────────────────────────────────────────────
@@ -247,31 +249,31 @@ def test_tier_query_carries_the_new_reasons():
 # ── Marking ───────────────────────────────────────────────────────────────────
 
 def test_chips_mark_the_words_of_their_text_venue():
-    female = qf.describe(_HEAD + FEMALE)[0]
+    female = describe(_HEAD + FEMALE)[0]
     assert female.kind == "sex" and {"women", "female"} <= set(female.text_words)
-    assert ("women",) in qf.highlight_terms(_HEAD + FEMALE)
-    vendor = qf.describe(_HEAD + GE_OR_PHILIPS)[0]
+    assert ("women",) in highlights.highlight_terms(_HEAD + FEMALE)
+    vendor = describe(_HEAD + GE_OR_PHILIPS)[0]
     assert {"philips", "ge healthcare", "general electric"} <= set(vendor.text_words)
-    terms = qf.highlight_terms(_HEAD + GE_OR_PHILIPS)
+    terms = highlights.highlight_terms(_HEAD + GE_OR_PHILIPS)
     assert ("philips",) in terms and ("ge", "healthcare") in terms and ("signa",) in terms
-    assert ("prisma", "fit") in qf.highlight_terms(_HEAD + PRISMA)
-    assert qf.highlight_field_strengths(_HEAD + STRENGTH_7T) == [7.0]
+    assert ("prisma", "fit") in highlights.highlight_terms(_HEAD + PRISMA)
+    assert highlights.highlight_field_strengths(_HEAD + STRENGTH_7T) == [7.0]
 
 
 def test_two_bounds_are_one_range():
     # "> 6.5 AND < 7.5" read as "> 6.5" and marked 9.4T and 14T as asked.
-    chip = qf.describe(_HEAD + STRENGTH_7T)[0]
-    assert chip.field == qf.FIELD_STRENGTH_FIELD and chip.label == "6.5–7.5"
+    chip = describe(_HEAD + STRENGTH_7T)[0]
+    assert chip.field == "Magnetic field strength" and chip.label == "6.5–7.5"
     one_sided = STRENGTH_7T.replace(f" AND {_CAST} < 7.5", "")
-    assert qf.describe(_HEAD + one_sided)[0].label == "> 6.5"
+    assert describe(_HEAD + one_sided)[0].label == "> 6.5"
 
 
 def test_field_strength_inside_a_modality_chip_is_still_marked():
     # "7T fMRI" as one condition is labelled by the modality; the strength
     # travels as the phrase "7T", which page and excerpt read as a strength.
-    chip = qf.describe(_HEAD + STRENGTH_7T_FMRI)[0]
+    chip = describe(_HEAD + STRENGTH_7T_FMRI)[0]
     assert chip.kind == "modality" and "7T" in chip.text_words
-    assert qf.highlight_field_strengths(_HEAD + STRENGTH_7T_FMRI) == [7.0]
+    assert highlights.highlight_field_strengths(_HEAD + STRENGTH_7T_FMRI) == [7.0]
 
 
 @pytest.mark.parametrize("value, soft", [

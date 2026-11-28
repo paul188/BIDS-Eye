@@ -49,7 +49,7 @@ def _fresh_rate_limits():
 def _empty_database_stats(monkeypatch):
     """Every test starts with empty database_stats, freshly loaded: no usable
     optional column, no summaries, no coded values, no names. A test may assign its
-    own parts (database_stats.coverage = ColumnCoverage.full([...])); they are
+    own parts (database_stats.coverage = full_coverage([...]), tests/helpers.py); they are
     put back afterwards. Preprocessing answers its DB back-check from
     database_stats.values, so values left by one test would change the next."""
     import time

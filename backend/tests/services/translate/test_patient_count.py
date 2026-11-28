@@ -191,11 +191,11 @@ def test_the_tier_reads_the_stored_subject_count_when_there_is_one(monkeypatch):
 
 
 def test_the_filter_chips_can_read_the_query(monkeypatch):
-    from services.results import query_filters
+    from services.results.display.chips import describe
     monkeypatch.setenv("UNCERTAIN_TIER", "false")
     augmented = _build_augmented_question(_plan(), [PD])
     rewritten = rewrite_generated_sql(MODEL_SQL, augmented)
-    chips = query_filters.describe(rewritten.filter_sql or rewritten.sql)
+    chips = describe(rewritten.filter_sql or rewritten.sql)
     assert chips, "no chips for a diagnosis with a patient count"
 
 

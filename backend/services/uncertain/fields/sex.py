@@ -4,9 +4,9 @@ services/uncertain/fields/sex.py
 Participant sex as a field a dataset may not record (FIELD, at the end).
 
 Its text form: the dataset's own text names participants of the asked sex
-("22 women", "all-female sample"). Also here, because they read the same
-conditions: which sex a condition asks for (asked_sex) and the repair of an
-"only female participants" condition split in two (keep_only_sex_pairs).
+("22 women", "all-female sample"). Also here, because it reads the same
+conditions: the repair of an "only female participants" condition split in
+two (keep_only_sex_pairs). Which sex a condition asks for: services/asked.py.
 """
 
 from __future__ import annotations
@@ -19,21 +19,16 @@ try:  # sqlglot is a backend dependency; keep the module importable without it
 except ImportError:  # pragma: no cover
     exp = None  # type: ignore[assignment]
 
+from services import asked
 from services.evidence.possible import PossibleNotRecordedEvidence
 from services.evidence.probable import ProbableNamedInTextEvidence
-from services.uncertain.conditions import own_text, sql_literal
+from services.uncertain.conditions import text_from_dataset, sql_literal
 from services.uncertain.fields.base import SoftField, participant_rows_record
 from services.schema.tables import participants as _participants
-from participant_codes import sex_code  # backend/vocabulary/ is on the path wherever the backend runs
 import text_evidence
 
 
 LABEL = "participant sex"   # how a result card names the field
-
-# The stored codes that name one sex; a condition on any other value has no
-# text form.
-ONE_SEX = ("female", "male")
-
 
 def text_words(sex: str) -> Tuple[str, ...]:
     """The words a dataset's text uses for participants of *sex*.
@@ -59,19 +54,6 @@ _PARTICIPANT_RE = (r"([0-9]+[ -]([a-z-]+ ){{0,3}}({w})|({w})[ :=(]+(n ?= ?)?[0-9
 # tsquery cannot say it; a regex over the dataset's own text does.
 _ONLY_SEX_RE = (r"(all[- ]?({w})|({w})[- ]only|only ({w})|exclusively ({w})"
                 r"|all (participants|subjects|volunteers) (were|are) ({w}))")
-
-
-def asked_sex(node) -> Optional[str]:
-    """'female' or 'male' when a sex condition asks for one sex, else None."""
-    values = set()
-    for comparison in node.find_all(exp.EQ, exp.In):
-        if not any(c.name.lower() == "sex" for c in comparison.find_all(exp.Column)):
-            continue
-        for literal in comparison.find_all(exp.Literal):
-            # Which literal stands for which sex: the vocabulary (backend/vocabulary/participant_codes.py).
-            if literal.is_string and sex_code(literal.this) in ONE_SEX:
-                values.add(sex_code(literal.this))
-    return next(iter(values)) if len(values) == 1 else None
 
 
 def _only_one_sex(node) -> bool:
@@ -109,7 +91,7 @@ def keep_only_sex_pairs(nodes: list) -> list:
     if "not" not in pairs:
         return nodes
     partner = next((n for n in rest if not isinstance(n, exp.Not) and _reads_participant_sex(n)
-                    and asked_sex(n)), None)
+                    and asked.sex(n)), None)
     if partner is None:
         return nodes
     joined = exp.Paren(this=exp.And(this=partner.copy(), expression=pairs["not"].copy()))
@@ -132,7 +114,7 @@ class ProbableSexNamedEvidence(ProbableNamedInTextEvidence):
             pattern = f"({_PARTICIPANT_RE.format(w=words, people=people)}|{only})"
         # The indexed words first: the regex then reads about 150 texts.
         return (f"({self.alias}.search_tsv @@ TO_TSQUERY('english', {sql_literal(_sex_tsquery(self.sex))}) "
-                f"AND {_in_own_text(self.alias, pattern)})")
+                f"AND {_in_text_from_dataset(self.alias, pattern)})")
 
     def reason(self) -> str:
         not_recorded = PossibleNotRecordedEvidence(LABEL).reason()
@@ -144,7 +126,7 @@ class ProbableSexNamedEvidence(ProbableNamedInTextEvidence):
 def sex_named(node, alias: str) -> Optional[ProbableSexNamedEvidence]:
     """The sex a condition asks for, as a text would name it; None if the
     condition does not ask for one sex."""
-    sex = asked_sex(node)
+    sex = asked.sex(node)
     if sex is None or not text_words(sex):
         return None
     return ProbableSexNamedEvidence(sex=sex, only=_only_one_sex(node), alias=alias)
@@ -163,10 +145,10 @@ def _sex_tsquery(sex: str) -> str:
 _WORD_END = "($|[^[:alnum:]_'’])"
 
 
-def _in_own_text(alias: str, pattern: str) -> str:
+def _in_text_from_dataset(alias: str, pattern: str) -> str:
     """The pattern as whole words in the dataset's own text, any case."""
     # No apostrophe after it: "a woman's voice" names an owner, not a participant.
-    return f"{own_text(alias)} ~* {sql_literal(r'(^|[^[:alnum:]_])' + pattern + _WORD_END)}"
+    return f"{text_from_dataset(alias)} ~* {sql_literal(r'(^|[^[:alnum:]_])' + pattern + _WORD_END)}"
 
 
 FIELD = SoftField(

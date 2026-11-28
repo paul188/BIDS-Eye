@@ -6,6 +6,7 @@ import pytest
 
 sqlglot = pytest.importorskip("sqlglot")
 
+from services import asked, sql_tree  # noqa: E402
 from services.fulltext import tsquery, word_frequencies  # noqa: E402
 from services.fulltext.text_search import read_clauses  # noqa: E402
 from services.uncertain import text as tier_text, tier as ut  # noqa: E402
@@ -40,7 +41,7 @@ def test_relax_keeps_the_rarer_half_and_drops_scope_labels() -> None:
 def test_age_range_and_group_words() -> None:
     sql = ("(EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
            "AND p2.age BETWEEN 10 AND 19) OR d.age_min >= 10)")
-    low, high = tier_age.asked_age_range(sql)
+    low, high = asked.age_range(sql_tree.parse(sql))
     assert (low, high) == (10, 19)
     words = tier_age.age_group_words(low, high)
     assert "adolescents" in words and "children" not in words and "adults" not in words

@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from routers.schemas import ScoredFilter
 from services.fulltext.ranking import RankQuery
 
 # Tunables
@@ -38,7 +39,7 @@ class CachedQuery:
     """Everything needed to re-run any page of a translated query."""
     base_sql: str
     params: Dict[str, Any]
-    scored_filters: List[Dict[str, Any]]
+    scored_filters: List[ScoredFilter]
     apply_relevance: bool
     rank_query: Optional[RankQuery] = None
     explanation: Optional[str] = None
@@ -48,17 +49,23 @@ class CachedQuery:
     rerank_demoted: List[str] = field(default_factory=list)
     self_corrected: bool = False
     total: Optional[int] = None
-    # The query before the uncertain tier (services/results/query_filters.py reads its
+    # The query before the uncertain tier (services/results/display/chips.py reads its
     # conditions as chips); None when chips cannot be offered.
     filter_sql: Optional[str] = None
     # The query without its free-text-only conditions; used once when the full
     # query finds nothing. *relaxed* says that it replaced base_sql.
     relaxed_sql: Optional[str] = None
     relaxed: bool = False
-    # True once the relevance-ranked page was too slow (services/search_runner.py):
+    # True once the relevance-ranked page was too slow (services/search/search_runner.py):
     # every page of this query is then served unranked, in one stable order.
     ranking_skipped: bool = False
     created_at: float = field(default_factory=time.monotonic)
+
+    @property
+    def explainable_sql(self) -> Optional[str]:
+        """The SQL that chips, highlights and match reasons are read from;
+        None once the query that runs no longer matches it."""
+        return None if self.self_corrected else self.filter_sql
 
 
 class _QueryCache:

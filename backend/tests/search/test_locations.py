@@ -18,7 +18,7 @@ sqlglot = pytest.importorskip("sqlglot")
 import place_index  # noqa: E402
 import preprocess as pp  # noqa: E402
 from services.translate import participant_query_compiler as pqc  # noqa: E402
-from services.results import query_filters  # noqa: E402
+from services.results.display.chips import describe  # noqa: E402
 from services.fulltext import text_search, word_frequencies  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "ingest" / "openneuro-crawler"))
@@ -94,7 +94,7 @@ def test_every_reading_joins_the_sites() -> None:
 def test_text_naming_another_place_does_not_count() -> None:
     # "mexico" found nine University of New Mexico datasets through their READMEs.
     from services.uncertain import tier as uncertain_tier
-    from services.results import match_reasons
+    from services.results.display import match_reasons
 
     place_index.set_places((), ROWS)
     plan = _plan(location_terms=["mexico"])
@@ -107,7 +107,7 @@ def test_text_naming_another_place_does_not_count() -> None:
     compiled = pqc.compile_plan(plan, [], augmented)
     assert compiled.sql, compiled.reason
     expanded = text_search.expand_text_search(compiled.sql, papers=True).sql
-    place, other = query_filters.describe(expanded)
+    place, other = describe(expanded)
     assert (place.field, place.label, place.negated) == ("Location", "Mexico", False)
     assert (other.field, other.label, other.negated) == ("Location", "New Mexico", True)
     assert "does not count as Mexico" in other.detail
@@ -137,7 +137,7 @@ def test_a_place_alone_compiles_and_reads_as_a_location_chip() -> None:
     assert compiled.sql and "sp.city = 'Bonn'" in compiled.sql, compiled.reason
 
     expanded = text_search.expand_text_search(compiled.sql, papers=False).sql
-    chip = query_filters.describe(expanded)[0]
+    chip = describe(expanded)[0]
     assert (chip.field, chip.label) == ("Location", "Bonn")
 
 
@@ -164,7 +164,7 @@ def test_an_institution_is_also_found_through_its_ror_name() -> None:
     assert "sp.institution = ANY(ARRAY['University of Bonn']::text[])" in line
     sql = ("SELECT d.id FROM bids_datasets AS d WHERE " + line.split(": ", 1)[1] + " GROUP BY d.id")
     expanded = text_search.expand_text_search(sql, papers=False).sql
-    chip = query_filters.describe(expanded)[0]
+    chip = describe(expanded)[0]
     assert (chip.field, chip.label) == ("Institution", "University of Bonn")
 
 

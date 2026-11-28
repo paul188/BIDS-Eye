@@ -3,15 +3,13 @@ services/uncertain/conditions.py
 ------------------------------------
 The pieces every part of the uncertain tier shares: one condition with its
 evidence in the order it counts (ClauseEvidence), the evidence of the whole
-query, which combines its conditions (QueryEvidence), the labels of a
-generated text search (LABEL_RE), and the switch for the 'possible' level. What the
-tier does: tier.py.
+query, which combines its conditions (QueryEvidence), and the switch for
+the 'possible' level. What the tier does: tier.py.
 """
 
 from __future__ import annotations
 
 import math
-import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -48,21 +46,18 @@ def possible_enabled() -> bool:
     return Switch.UNCERTAIN_POSSIBLE.is_on()
 
 
-LABEL_RE = re.compile(r":[AB]+\b")
-
-
 
 def sql_literal(text: str) -> str:
     return "'" + text.replace("'", "''") + "'"
 
 
-def own_text(alias: str) -> str:
+def text_from_dataset(alias: str) -> str:
     """The dataset's own name, description and README as one text."""
     return (f"(COALESCE({alias}.name, '') || ' ' || COALESCE({alias}.description_text, '') "
             f"|| ' ' || COALESCE({alias}.readme_text, ''))")
 
 
-def own_text_matches(alias: str, query: str) -> str:
+def text_from_dataset_matches(alias: str, query: str) -> str:
     """SQL: the dataset's own text matches the tsquery *query*.
 
     search_tsv also holds the recorded labels and the LLM-written profile, so
@@ -70,7 +65,7 @@ def own_text_matches(alias: str, query: str) -> str:
     """
     tsquery = f"TO_TSQUERY('english', {sql_literal(query)})"
     return (f"({alias}.search_tsv @@ {tsquery} "
-            f"AND TO_TSVECTOR('english', TRANSLATE({own_text(alias)}, '/', ' ')) @@ {tsquery})")
+            f"AND TO_TSVECTOR('english', TRANSLATE({text_from_dataset(alias)}, '/', ' ')) @@ {tsquery})")
 
 
 @dataclass

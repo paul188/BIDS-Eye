@@ -1,6 +1,6 @@
 """Match reasons and README marks against a real Postgres.
 
-The SQL of services/results/match_reasons.py is built from the generated
+The SQL of services/results/display/match_reasons.py is built from the generated
 query's own conditions; only a database shows that it runs and that each
 branch holds where it should. Skipped unless BIDSEYE_TEST_PG_DSN names a
 scratch database (tests/postgres.py says how to start one); works in a schema
@@ -15,7 +15,7 @@ import uuid
 from criteria import age_condition, species_condition
 from routers.schemas import DatasetSchema, ParticipantSummarySchema
 from services.fulltext import text_search
-from services.results import match_reasons, query_filters, readme_snippets
+from services.results.display import highlights, match_reasons, readme_snippets
 
 from tests.postgres import fresh_schema, needs_postgres, run_statements
 
@@ -159,8 +159,8 @@ def test_readme_excerpt_marks_the_age_group_words():
         sql, page = await _page(session, ids, age_condition(["infants"]))
         datasets = list(page.values())
         await readme_snippets.attach_snippets(
-            session, datasets, query_filters.highlight_terms(sql),
-            query_filters.highlight_exact_words(sql), query_filters.highlight_field_strengths(sql))
+            session, datasets, highlights.highlight_terms(sql),
+            highlights.highlight_exact_words(sql), highlights.highlight_field_strengths(sql))
         assert "⟦infant⟧" in page["words"].snippet
         # No age word in this README: its start, unmarked; the reason line explains it.
         assert "⟦" not in page["ages"].snippet
@@ -185,7 +185,7 @@ def test_uncertain_tier_query_still_runs_with_reasons():
     asyncio.run(_run(check))
 
 
-def test_a_paper_is_named_only_where_the_own_text_does_not_match():
+def test_a_paper_is_named_only_where_the_text_from_dataset_does_not_match():
     """search_tsv_papers holds the dataset's own text too."""
     from sqlalchemy import text
 

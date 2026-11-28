@@ -1,6 +1,6 @@
 """
-services/results/dataset_cards.py
----------------------------------
+services/results/display/dataset_cards.py
+-----------------------------------------
 The datasets of one result page as the cards show them: the catalogue fields
 of the generated query's rows, plus what is read with queries of their own
 (participants and their summary, deprecation notes, the generated summary

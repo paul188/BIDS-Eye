@@ -82,25 +82,17 @@ class ColumnCoverage:
           question is shown.
       services/results/rerank.py               the columns a dataset is
           described with.
-      main.py, services/search.py              the log of the usable columns
+      main.py, services/search/search.py       the log of the usable columns
           after a load.
     """
 
     total: int = 0
     filled: Mapping[str, int] = field(default_factory=dict)
 
-    @classmethod
-    def full(cls, columns: Collection[str]) -> ColumnCoverage:
-        """Coverage in which exactly *columns* are filled in every dataset (tests)."""
-        unknown = set(columns) - set(OPTIONAL_DATASET_COLUMNS)
-        if unknown:
-            raise ValueError(f"not optional dataset columns: {sorted(unknown)}")
-        return cls(total=1, filled=dict.fromkeys(columns, 1))
-
 
 @dataclass(frozen=True)
 class Summaries:
-    """Whether the per-dataset summaries can stand in for bids_objects.
+    """Whether queries can read the per-dataset summaries instead of bids_objects.
 
     Used by:
       services/translate/sql_rewriter.py       _use_summaries: executed SQL
@@ -140,17 +132,17 @@ class ValueCounts:
 
     counts: Mapping[str, Mapping[str, int]] = field(default_factory=dict)
 
-    def loaded(self, field: str) -> bool:
-        """True when the values of *field* were read."""
-        return field in self.counts
+    def loaded(self, field_name: str) -> bool:
+        """True when the values of *field_name* were read."""
+        return field_name in self.counts
 
-    def known_values(self, field: str) -> Collection[str]:
-        """The values of *field* that occur in some dataset; empty when not read."""
-        return self.counts.get(field, {}).keys()
+    def known_values(self, field_name: str) -> Collection[str]:
+        """The values of *field_name* that occur in some dataset; empty when not read."""
+        return self.counts.get(field_name, {}).keys()
 
-    def dataset_count(self, field: str, value: str) -> int:
-        """How many datasets have *value* in *field*; 0 when unknown or not read."""
-        return self.counts.get(field, {}).get(value, 0)
+    def dataset_count(self, field_name: str, value: str) -> int:
+        """How many datasets have *value* in *field_name*; 0 when unknown or not read."""
+        return self.counts.get(field_name, {}).get(value, 0)
 
 
 @dataclass(frozen=True)
@@ -336,6 +328,7 @@ class DatabaseStats:
                            columns: tuple[Column, ...]) -> dict[str, dict[str, int]] | None:
         """The values of *columns*, all of one table, and how many datasets have each."""
         table = columns[0].table
+        assert all(column.table is table for column in columns), "columns of more than one table"
         statement = union_all(*(
             select(literal(column.name, Text), column, func.count(distinct(table.c.dataset_id)))
             .where(column.is_not(None)).group_by(column)

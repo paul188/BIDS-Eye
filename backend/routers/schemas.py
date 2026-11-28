@@ -7,10 +7,11 @@ Pydantic response models for the BIDS-Eye API.
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 from typing_extensions import Annotated
 
 from services.fulltext.ranking import RankQuery
@@ -83,8 +84,16 @@ class DatasetSchema(BaseModel):
     linked_paper: Optional[LinkedPaperSchema] = None
     # Why the dataset matched: for each filter that can match in several
     # ways, the ways that hold ("Age: 12 of 40 participants aged 4–23
-    # months"). services/results/match_reasons.py.
+    # months"). services/results/display/match_reasons.py.
     match_reasons: List[str] = []
+
+
+class ScoredFilter(BaseModel):
+    """A code the question asks for and how well it matched (0..1); datasets
+    that have the code rank higher (sql_rewriter._inject_relevance_cte)."""
+    field: str
+    code: str
+    score: float
 
 
 class TextToSQLResult(BaseModel):
@@ -95,7 +104,7 @@ class TextToSQLResult(BaseModel):
     self_corrected: bool = False
     # Ranking inputs, applied in postprocessing (not baked into `sql`) so the
     # base SELECT can be cached and reused across pages.
-    scored_filters: List[Dict[str, Any]] = []
+    scored_filters: List[ScoredFilter] = []
     apply_relevance: bool = False
     # Full-text queries that rank the result (services/fulltext/ranking.py); None
     # when the question has no text terms.
@@ -103,7 +112,7 @@ class TextToSQLResult(BaseModel):
     # Number of first candidates an LLM judged and reordered; None = not re-ranked.
     reranked: Optional[int] = None
     # The query before the uncertain tier wraps it, read for the filter chips
-    # (services/results/query_filters.py). Server-side only.
+    # (services/results/display/chips.py). Server-side only.
     filter_sql: Optional[str] = Field(default=None, exclude=True)
     # The query without its free-text-only conditions (empty-result fallback).
     relaxed_sql: Optional[str] = Field(default=None, exclude=True)
@@ -115,17 +124,66 @@ class TextToSQLResult(BaseModel):
     sql_path: Optional[str] = Field(default=None, exclude=True)
 
 
+class ChipKind(str, Enum):
+    """What a chip describes (QueryFilterSchema.kind; frontend api/index.ts)."""
+    DIAGNOSIS = "diagnosis"
+    MODALITY = "modality"
+    TASK = "task"
+    AGE = "age"
+    SEX = "sex"
+    SUBJECTS = "subjects"   # the dataset's subject count
+    COUNT = "count"         # another count: sessions, runs, patients with a diagnosis
+    TEXT = "text"           # only words of the dataset text
+    TOPIC = "topic"         # a qualified subject searched as one unit
+    SENSE = "sense"         # the meanings a topic excludes
+    COLUMN = "column"       # another catalogue column: species, size, location, …
+    SORT = "sort"           # ORDER BY / LIMIT
+    OTHER = "other"         # a condition with no summary of its own
+
+    @classmethod
+    def _missing_(cls, value: object) -> Optional[ChipKind]:
+        # Searches saved before 2026-11-26 call COLUMN "field".
+        return cls.COLUMN if value == "field" else None
+
+    @property
+    def named(self) -> Optional[str]:
+        """The chip's field when its kind decides it ("Diagnosis"); None when
+        the chip names it (a count, a column, a sort)."""
+        return _KIND_NAMES.get(self)
+
+
+_KIND_NAMES = {
+    ChipKind.DIAGNOSIS: "Diagnosis", ChipKind.MODALITY: "Modality", ChipKind.TASK: "Task",
+    ChipKind.AGE: "Age", ChipKind.SEX: "Sex", ChipKind.SUBJECTS: "Subjects",
+    ChipKind.TEXT: "Text", ChipKind.TOPIC: "Topic", ChipKind.SENSE: "Not meant",
+}
+
+
 class QueryFilterSchema(BaseModel):
-    """One condition of the query, shown as a chip the user can remove."""
+    """One condition of the query, shown as a chip (services/results/display/chips.py)."""
+    # Position in the query: "w0" WHERE, "h0" HAVING, "o0" ORDER BY, "w0n" a
+    # topic's excluded meanings.
     id: str
-    kind: str
-    field: str
-    label: str
-    negated: bool = False
+    kind: ChipKind
+    field: str = ""     # what the chip is about: "Diagnosis"; ChipKind.named by default
+    label: str          # the asked value: "Parkinson's disease"
+    negated: bool = False   # the dataset must NOT match
+    # Words of the dataset text (README, description) the condition also
+    # searches; the page marks them. A "text" chip is only these.
     text_words: List[str] = []
-    detail: str = ""
-    # The full list behind a label shortened to "+N"; [] when nothing is hidden.
+    detail: str = ""    # longer description for a tooltip
+    # Of a label that lists values: all of them, and how many the label lists;
+    # the page shows "+N" for the rest. [] and 0 for any other label.
     values: List[str] = []
+    shown: int = 0
+
+    @model_validator(mode="after")
+    def _named_by_kind(self) -> QueryFilterSchema:
+        if not self.field:
+            if self.kind.named is None:
+                raise ValueError(f"a {self.kind.value} chip needs its field")
+            self.field = self.kind.named
+        return self
 
 
 class QueryRequest(BaseModel):

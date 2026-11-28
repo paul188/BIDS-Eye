@@ -134,15 +134,15 @@ def test_uncertain_tier_keeps_readme_mentions_as_probable() -> None:
 def test_filter_chips_say_age_and_species() -> None:
     pytest.importorskip("sqlglot")
     from criteria import species_condition
-    from services.results import query_filters
+    from services.results.display.chips import describe
 
-    chips = [(c.field, c.label) for c in query_filters.describe(_expanded(age_condition(["children"])))]
+    chips = [(c.field, c.label) for c in describe(_expanded(age_condition(["children"])))]
     assert ("Age", "under 18") in chips and ("Species", "human") in chips
-    chips = [(c.field, c.label) for c in query_filters.describe(_expanded(age_condition(["older_adults"])))]
+    chips = [(c.field, c.label) for c in describe(_expanded(age_condition(["older_adults"])))]
     assert ("Age", "60+") in chips
-    chips = [(c.field, c.label) for c in query_filters.describe(_expanded(species_condition(["mouse"])))]
+    chips = [(c.field, c.label) for c in describe(_expanded(species_condition(["mouse"])))]
     assert ("Species", "mouse") in chips
-    chips = [(c.field, c.label) for c in query_filters.describe(_expanded(species_condition(["any_animal"])))]
+    chips = [(c.field, c.label) for c in describe(_expanded(species_condition(["any_animal"])))]
     assert ("Species", "any animal") in chips
 
 

@@ -69,7 +69,10 @@ def main() -> None:
             replay_generate)
     # No model repairs SQL here either; the search runner holds its own reference.
     try:
-        from services import search_runner as runner
+        try:
+            from services.search import search_runner as runner
+        except ImportError:  # before services/search/ was a folder
+            from services import search_runner as runner
     except ImportError:
         # Search code before the router split: these lived in routers/query.py.
         import routers.query as runner

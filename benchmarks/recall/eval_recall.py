@@ -115,7 +115,10 @@ async def _run(questions: List[dict], out: Path, backend_dir: str, label: str) -
     except ImportError:
         institution_index = None
     try:
-        from services import search_runner as runner
+        try:
+            from services.search import search_runner as runner
+        except ImportError:  # before services/search/ was a folder
+            from services import search_runner as runner
         count_with_base_correction = runner.count_with_base_correction
         rerank_once = runner.rerank_once
     except ImportError:

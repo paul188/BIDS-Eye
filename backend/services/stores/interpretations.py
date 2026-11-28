@@ -12,7 +12,7 @@ offline, against the database (review_* columns).
 
 What is stored is the SQL, not the result: it is run again on every request, so
 new datasets show up. A translation is stored only when it ran as written and
-found a real result (services/search.py _worth_storing): an empty, relaxed or
+found a real result (worth_storing): an empty, relaxed or
 repaired search must not become permanent. A row belongs to one version of the
 translating code (pipeline_version, a hash of its source files), so a deploy
 that changes the pipeline starts with a fresh cache and keeps the old rows for
@@ -30,13 +30,19 @@ import os
 import re
 import unicodedata
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, ValidationError, field_validator
 from sqlalchemy import select, update, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from routers.schemas import ScoredFilter
+from services.fulltext.ranking import RankQuery, rank_from_json
+from services.search import search_runner
+from services.stores.translated_queries import CachedQuery
 from services.switches import Switch
+from services.translate.sql_rewriter import FALLBACK_SQL
 
 log = logging.getLogger(__name__)
 
@@ -78,6 +84,7 @@ _VERSION_FILES = (
     _BACKEND / "services" / "translate" / "text_to_sql.py",
     _BACKEND / "services" / "translate" / "value_check.py",
     _BACKEND / "services" / "sql_tree.py",
+    _BACKEND / "services" / "asked.py",
     _BACKEND / "services" / "switches.py",
     _BACKEND / "services" / "uncertain" / "tier.py",
     _BACKEND / "services" / "uncertain" / "classify.py",
@@ -153,7 +160,7 @@ def normalize(question: str) -> str:
     equality of text, not of meaning: no stopwords, stems or synonyms.
 
     Also the key under which identical running searches are merged
-    (services/search.py ask). A change here needs no new pipeline_version: a
+    (services/search/search.py ask). A change here needs no new pipeline_version: a
     stored row is the translation of its normalised text, whatever form the
     question came in.
     """
@@ -167,7 +174,34 @@ def _key(question: str) -> str:
     return hashlib.sha256(f"{pipeline_version()}\n{normalize(question)}".encode()).hexdigest()
 
 
-async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
+class StoredTranslation(BaseModel):
+    """A translation as the payload column holds it (models.QueryInterpretation,
+    models.QueryLog). The field names are the JSON keys of the rows already
+    written, so a rename here needs the old name kept as an alias."""
+    sql: str
+    params: Dict[str, Any] = {}
+    scored_filters: List[ScoredFilter] = []
+    apply_relevance: bool = False
+    rank_query: Optional[RankQuery] = None
+    explanation: Optional[str] = None
+    filter_sql: Optional[str] = None
+    relaxed_sql: Optional[str] = None
+    relaxed: bool = False
+    # Who wrote the SQL (schemas.TextToSQLResult.sql_path).
+    sql_path: Optional[str] = None
+
+    @field_validator("rank_query", mode="before")
+    @classmethod
+    def _safe_rank_query(cls, value: Any) -> Optional[RankQuery]:
+        # Stored JSON goes back into SQL: unsafe parts are dropped, not refused.
+        return value if isinstance(value, RankQuery) else rank_from_json(value)
+
+    def to_json(self) -> str:
+        """The text of the payload column. TypeError for a value json cannot encode."""
+        return json.dumps(self.model_dump(), ensure_ascii=False)
+
+
+async def get(session: AsyncSession, question: str) -> Optional[StoredTranslation]:
     """The stored translation of *question* for the running code version, or None.
 
     A database error reading it gives None (the question is translated anew);
@@ -175,7 +209,7 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
     returned, since translating anew is what the store exists to avoid."""
     if not enabled():
         return None
-    from database.app_tables import QueryInterpretation
+    from database.app_tables import QueryInterpretation, ReviewVerdict
     try:
         row = (await session.execute(
             select(QueryInterpretation).where(QueryInterpretation.key == _key(question))
@@ -184,13 +218,13 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
         log.warning("interpretation cache: lookup failed", exc_info=True)
         await session.rollback()
         return None
-    if row is None or row.review_verdict == "wrong":
+    if row is None or row.review_verdict == ReviewVerdict.WRONG:
         return None
     key = row.key
     try:
-        payload = json.loads(row.payload)
-    except ValueError:  # JSONDecodeError; written by put(), so never expected
-        log.error("interpretation cache: stored payload of %s is not JSON", key)
+        payload = StoredTranslation.model_validate_json(row.payload)
+    except ValidationError as exc:  # written by put(), so never expected
+        log.error("interpretation cache: stored payload of %s is not a translation: %s", key, exc)
         return None
     try:
         await session.execute(
@@ -204,7 +238,7 @@ async def get(session: AsyncSession, question: str) -> Optional[Dict[str, Any]]:
     return payload
 
 
-async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any], total: int,
+async def log_query(session: AsyncSession, question: str, payload: StoredTranslation, total: int,
                     *, from_cache: bool, relaxed: bool, self_corrected: bool, fallback: bool) -> None:
     """Write one row to query_log for a search that was run. Always on.
 
@@ -214,7 +248,7 @@ async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any
     from database.app_tables import QueryLog
     row = QueryLog(
         question=question, pipeline_version=pipeline_version(),
-        payload=json.dumps(payload, ensure_ascii=False), total=total,
+        payload=payload.to_json(), total=total,
         from_cache=from_cache, relaxed=relaxed, self_corrected=self_corrected, fallback=fallback,
     )
     try:
@@ -228,8 +262,25 @@ async def log_query(session: AsyncSession, question: str, payload: Dict[str, Any
         await session.rollback()  # a failed commit leaves the session unusable until then
 
 
-async def put(session: AsyncSession, question: str, payload: Dict[str, Any], total: int) -> None:
-    """Store a translation that found something.
+def worth_storing(cached: CachedQuery, total: int) -> bool:
+    """Whether a new translation becomes the stored answer to its question.
+
+    Only one that ran as written and found a real result. The stored SQL is
+    reused for good, so these get a fresh attempt next time instead:
+    - an emergency fallback or a model-repaired SQL (self_corrected);
+    - a relaxed re-run: it depends on how many datasets matched that day, and
+      stored it would never again try the full conditions;
+    - fewer than search_runner.MIN_RESULTS results, the case the relaxed re-run is for.
+    """
+    return (total >= search_runner.MIN_RESULTS
+            and cached.base_sql != FALLBACK_SQL
+            and not cached.self_corrected
+            and not cached.relaxed)
+
+
+async def put(session: AsyncSession, question: str, payload: StoredTranslation,
+              cached: CachedQuery, total: int) -> None:
+    """Store a translation that is worth storing (worth_storing).
 
     The first translation of a question stays: when two workers store the
     same question at once, the second insert does nothing (ON CONFLICT), where
@@ -237,7 +288,7 @@ async def put(session: AsyncSession, question: str, payload: Dict[str, Any], tot
     is logged and the search answers anyway; anything else is a bug and is
     raised.
     """
-    if not enabled() or total <= 0:
+    if not enabled() or not worth_storing(cached, total):
         return
     from sqlalchemy.dialects.postgresql import insert
 
@@ -245,7 +296,7 @@ async def put(session: AsyncSession, question: str, payload: Dict[str, Any], tot
     statement = insert(QueryInterpretation).values(
         key=_key(question), pipeline_version=pipeline_version(), question=question,
         question_normalized=normalize(question),
-        payload=json.dumps(payload, ensure_ascii=False), total_at_creation=total,
+        payload=payload.to_json(), total_at_creation=total,
     ).on_conflict_do_nothing(index_elements=[QueryInterpretation.key])
     try:
         await session.execute(statement)

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import type { QueryFilter } from '../api'
 
 // How the question was understood: one chip per condition of the query that
-// ran (backend services/results/query_filters.py). Display only; to change the
+// ran (backend services/results/display/chips.py). Display only; to change the
 // search, the user edits the question.
 const props = defineProps<{ filters: QueryFilter[] }>()
 
@@ -14,15 +14,26 @@ function isTextChip(f: QueryFilter): boolean {
 // What a chip searched for beyond its label: the values behind "+N" and,
 // for a structured chip, the words also matched in the dataset text. Either
 // opens the full list under the chips, so nothing searched for is hidden.
-const HIDDEN_RE = /\s(\+\d+)$/
 function hiddenCount(f: QueryFilter): string | null {
-  return f.values?.length ? f.label.match(HIDDEN_RE)?.[1] ?? null : null
-}
-function shortLabel(f: QueryFilter): string {
-  return hiddenCount(f) ? f.label.replace(HIDDEN_RE, '') : f.label
+  const hidden = (f.values?.length ?? 0) - (f.shown ?? f.values?.length ?? 0)
+  return hidden > 0 ? `+${hidden}` : null
 }
 function alsoText(f: QueryFilter): boolean {
   return !isTextChip(f) && f.text_words.length > 0
+}
+
+// The chip's `detail` explains it; the lists the chip carries are added here,
+// so the backend writes them only once.
+function listed(items: string[], max: number): string {
+  return items.slice(0, max).join(', ') + (items.length > max ? '…' : '')
+}
+function tooltip(f: QueryFilter): string | undefined {
+  const parts = [f.detail]
+  if (hiddenCount(f)) parts.push(`Any of these ${f.values!.length}: ${listed(f.values!, 8)}.`)
+  if (f.text_words.length) {
+    parts.push(`${isTextChip(f) ? 'Searched as' : 'Or the dataset text mentions'}: ${listed(f.text_words, 8)}.`)
+  }
+  return parts.filter(Boolean).join(' ') || undefined
 }
 
 const open = ref<Set<string>>(new Set())
@@ -46,11 +57,11 @@ const openLists = computed(() =>
           :key="f.id"
           class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-[13px] leading-none text-ink"
           :class="isTextChip(f) ? 'bg-chip-text-bg' : 'bg-chip-bg'"
-          :title="f.detail || undefined"
+          :title="tooltip(f)"
         >
           <span :class="isTextChip(f) ? 'text-chip-text-ink' : 'text-chip-ink'">{{ f.negated ? `No ${f.field.toLowerCase()}` : f.field }}</span>
           <span class="mx-1 opacity-50" :class="isTextChip(f) ? 'text-chip-text-ink' : 'text-chip-ink'" aria-hidden="true">·</span>
-          <span class="font-semibold">{{ shortLabel(f) }}</span>
+          <span class="font-semibold">{{ f.label }}</span>
           <button
             v-if="hiddenCount(f) || alsoText(f)"
             type="button"
@@ -71,7 +82,7 @@ const openLists = computed(() =>
       class="rounded-lg border border-border bg-panel px-3 py-2 text-[13px] max-w-4xl"
     >
       <div class="flex items-baseline justify-between gap-3">
-        <span class="font-medium text-ink">{{ f.negated ? `No ${f.field.toLowerCase()}` : f.field }}: {{ shortLabel(f) }}</span>
+        <span class="font-medium text-ink">{{ f.negated ? `No ${f.field.toLowerCase()}` : f.field }}: {{ f.label }}</span>
         <button type="button" class="text-muted hover:text-ink shrink-0" @click="toggle(f.id)">Hide</button>
       </div>
       <template v-if="hiddenCount(f)">

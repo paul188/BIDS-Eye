@@ -273,7 +273,7 @@ class _Session:
 
 
 def test_attach_descriptions_shows_the_paper_line_and_summary():
-    from services.results import dataset_cards
+    from services.results.display import dataset_cards
     from routers.schemas import DatasetSchema
 
     def dataset(n):

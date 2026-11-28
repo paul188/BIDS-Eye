@@ -16,7 +16,7 @@ DIAGNOSIS = ("(EXISTS(SELECT 1 FROM bids_participants AS p WHERE p.dataset_id = 
 def test_a_clause_two_groups_can_confirm_gets_the_column() -> None:
     tiered = tier.apply(HEAD + DIAGNOSIS, papers=False)
     assert f" AS {tier.CORROBORATION_COLUMN}" in tiered
-    assert "GREATEST(evidence.by_records_0::int + evidence.by_own_text_0::int - 1, 0)" in tiered
+    assert "GREATEST(evidence.by_records_0::int + evidence.by_text_from_dataset_0::int - 1, 0)" in tiered
 
 
 def test_a_clause_one_group_can_confirm_has_no_column() -> None:
@@ -51,8 +51,8 @@ def test_the_labels_counted_with_the_text_are_those_of_the_search_vector() -> No
     from remote import openneuro_metadata as meta
 
     columns = set(re.findall(r"coalesce\((\w+),", meta.SEARCH_VECTOR_EXPRESSION))
-    own_text = {"name", "description_text", "llm_conditions", "llm_profile", "readme_text"}
-    assert columns - own_text == LABELS_IN_TEXT
+    text_from_dataset = {"name", "description_text", "llm_conditions", "llm_profile", "readme_text"}
+    assert columns - text_from_dataset == LABELS_IN_TEXT
 
 
 def test_the_default_order_is_unchanged_without_a_second_witness() -> None:

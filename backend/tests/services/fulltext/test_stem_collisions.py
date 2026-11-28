@@ -269,6 +269,21 @@ def test_refresh_refuses_a_connection_without_a_transaction() -> None:
     assert not any("DELETE" in sql for sql in conn.statements)
 
 
+def test_word_forms_stem_like_the_search_vector() -> None:
+    from remote import openneuro_metadata as meta
+    from remote import paper_store
+    from services.fulltext.text_search import TS_CONFIG
+
+    def configs(sql: str) -> set:
+        return set(re.findall(r"to_ts(?:vector|query)\('(\w+)'", sql))
+
+    vectors = [meta.SEARCH_VECTOR_EXPRESSION, paper_store.PAPER_SEARCH_VECTOR_EXPRESSION]
+    for sql in vectors:
+        assert configs(sql) == {TS_CONFIG}
+    for sql in (store._STEM_SQL, store._REFRESH_SQL, store._LOOKUP_SQL):
+        assert configs(sql) == {TS_CONFIG}
+
+
 # ── Pairs ─────────────────────────────────────────────────────────────────────
 
 WEIGHT = StemCounts("weight", "weight", 1400, (

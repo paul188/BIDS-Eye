@@ -8,34 +8,15 @@ is evidence.probable.ProbableWeakerSearchEvidence, which writes the SQL and the 
 
 from __future__ import annotations
 
-import re
 from typing import List, Optional, Sequence
 
 from text_terms import MODIFIER_WORDS, NEVER_ALONE_WORDS
 
 from services.evidence.probable import TextSearch, WeakenedSearch, ProbableWeakerSearchEvidence, Weakening
 from services.fulltext.text_search import Clause
-from services.uncertain.conditions import LABEL_RE
-
-
-_WORD_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
-
-
-def _top_level_and(query: str) -> List[str]:
-    """Split a tsquery on the & signs outside parentheses."""
-    parts, depth, current = [], 0, ""
-    for char in query:
-        if char == "(":
-            depth += 1
-        elif char == ")":
-            depth -= 1
-        if char == "&" and depth == 0:
-            parts.append(current.strip())
-            current = ""
-        else:
-            current += char
-    parts.append(current.strip())
-    return [part for part in parts if part]
+from services.fulltext.tsquery import (
+    is_near, near_parts, query_words, split_top_level, without_labels,
+)
 
 
 # Words that qualify the thing searched for rather than name it, and nouns
@@ -84,9 +65,9 @@ def guard_for(query: str, guard: Optional[str]) -> Optional[str]:
         return None
     words = set(query_words(query))
     kept = []
-    for group in _top_level_and(LABEL_RE.sub("", guard)):
-        asked = _WORD_RE.search(group)
-        if asked and asked.group(0) in words:
+    for group in split_top_level(without_labels(guard), "&"):
+        asked = query_words(group)
+        if asked and asked[0] in words:
             kept.append(group)
     return " & ".join(kept) or None
 
@@ -115,41 +96,6 @@ def _rarest_parts(parts: List[str], guard: Optional[str] = None) -> List[str]:
     return [part for i, part in enumerate(parts) if i in chosen]
 
 
-# Exact word distances (`a <2> b`), written only by 'near' text searches;
-# `<->` inside a hyphenated word is not one of them.
-_DISTANCE_RE = re.compile(r"<\d+>")
-
-
-def _top_level_or(query: str) -> List[str]:
-    """Split a tsquery on the | signs outside parentheses."""
-    parts, depth, current = [], 0, ""
-    for char in query:
-        if char == "(":
-            depth += 1
-        elif char == ")":
-            depth -= 1
-        if char == "|" and depth == 0:
-            parts.append(current.strip())
-            current = ""
-        else:
-            current += char
-    parts.append(current.strip())
-    return [part for part in parts if part]
-
-
-def _strip_parentheses(query: str) -> str:
-    query = query.strip()
-    while query.startswith("(") and query.endswith(")"):
-        depth = 0
-        for index, char in enumerate(query):
-            depth += char == "("
-            depth -= char == ")"
-            if depth == 0 and index < len(query) - 1:
-                return query
-        query = query[1:-1].strip()
-    return query
-
-
 def relax_near(query: str) -> Optional[str]:
     """A 'near' search with its words anywhere instead of close together.
 
@@ -158,13 +104,12 @@ def relax_near(query: str) -> Optional[str]:
     is what makes "social conflict" more than "conflict". None when the
     query has no word distances.
     """
-    if not _DISTANCE_RE.search(query):
+    if not is_near(query):
         return None
     alternatives = []
-    for alternative in _top_level_or(query):
-        if _DISTANCE_RE.search(alternative):
-            first = _top_level_or(_strip_parentheses(alternative))[0]
-            alternative = "(" + re.sub(r"\s*<\d+>\s*", " & ", first) + ")"
+    for alternative in split_top_level(query, "|"):
+        if is_near(alternative):
+            alternative = "(" + " & ".join(near_parts(alternative)) + ")"
         alternatives.append(alternative)
     return " | ".join(dict.fromkeys(alternatives))
 
@@ -181,9 +126,8 @@ def relax_tsquery(query: str, guard: Optional[str] = None) -> Optional[str]:
     near = relax_near(query)
     if near is not None:
         return near
-    unscoped = LABEL_RE.sub("", query)
     parts = [f"({p})" if ("|" in p and not p.startswith("(")) else p
-             for p in _top_level_and(unscoped)]
+             for p in split_top_level(without_labels(query), "&")]
     kept = _rarest_parts(parts, guard)
     # A word that says nothing alone ("state" from "resting & state",
     # "syndrome", "healthy") is no evidence: no weaker form then.
@@ -198,11 +142,6 @@ def relax_tsquery(query: str, guard: Optional[str] = None) -> Optional[str]:
         kept = parts
     relaxed = " & ".join(kept)
     return relaxed if relaxed.replace(" ", "") != query.replace(" ", "") else None
-
-
-def query_words(query: str) -> List[str]:
-    words = _WORD_RE.findall(re.sub(r"<(?:-|\d+)>", " ", LABEL_RE.sub("", query)))
-    return list(dict.fromkeys(words))
 
 
 def relax_text_condition(clause: Clause, alias: str) -> Optional[ProbableWeakerSearchEvidence]:
@@ -227,7 +166,7 @@ def relax_text_condition(clause: Clause, alias: str) -> Optional[ProbableWeakerS
     # words. The alternatives that follow are what the phrase was widened
     # with; loosening them too ("interpersonal & conflict" anywhere) brought
     # back what the phrase was meant to exclude.
-    topic = bool(excluded_words) or any(_DISTANCE_RE.search(s.query) for s in searches)
+    topic = bool(excluded_words) or any(is_near(s.query) for s in searches)
     first = True
     for search in searches:
         if clause.negated(search) or search.column is None:   # None: never, for mypy
@@ -243,7 +182,7 @@ def relax_text_condition(clause: Clause, alias: str) -> Optional[ProbableWeakerS
             relaxed, weakening, words = query, Weakening.EXCLUDED_MEANING, excluded_words
         elif relax_near(query) is not None:
             weakening = Weakening.WORDS_APART
-            words = [w for part in _top_level_or(relaxed) if "&" in part for w in query_words(part)]
+            words = [w for part in split_top_level(relaxed, "|") if "&" in part for w in query_words(part)]
         else:
             dropped = set(query_words(query)) - set(query_words(relaxed))
             if dropped:

@@ -156,7 +156,7 @@ def test_manufacturer_and_model_from_sidecars_then_text():
     asyncio.run(_run(check))
 
 
-def test_age_group_from_own_text_not_the_profile():
+def test_age_group_from_text_from_dataset_not_the_profile():
     infants = ("EXISTS(SELECT 1 FROM bids_participants AS p2 WHERE p2.dataset_id = d.id "
                "AND p2.age BETWEEN 0 AND 2)")
 

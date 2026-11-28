@@ -8,7 +8,8 @@ import json
 import re
 from pathlib import Path
 
-from services.database_stats.database_stats import ColumnCoverage, database_stats
+from services.database_stats.database_stats import database_stats
+from tests.helpers import full_coverage
 from services.translate import text_to_sql
 from services.schema import tables
 from services.translate.prompt import examples, instructions, schema_ddl
@@ -70,7 +71,7 @@ def test_examples_using_unavailable_columns_are_never_selected() -> None:
     picked = examples.pick_examples(pool, ["description_search"], n=5, seed=seed)
     assert [ex["sql"] for ex in picked] == [pool["description_search"][1]["sql"]]
 
-    database_stats.coverage = ColumnCoverage.full({"readme_text"})
+    database_stats.coverage = full_coverage({"readme_text"})
     picked = examples.pick_examples(pool, ["description_search"], n=5, seed=seed)
     assert len(picked) == 2
     assert all("institutions" not in ex["sql"] for ex in picked)

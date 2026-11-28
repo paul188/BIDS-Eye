@@ -310,7 +310,7 @@ def full_text(monkeypatch):
 
 
 def _rewrite(monkeypatch, description: str, model_where: Optional[str] = None, tier: bool = True):
-    from services.results import query_filters
+    from services.results.display.chips import describe
     monkeypatch.setenv("UNCERTAIN_TIER", "true" if tier else "false")
     question = _question(description_search=description)
     line = next(ln for ln in question.splitlines() if "dataset text:" in ln)
@@ -318,7 +318,7 @@ def _rewrite(monkeypatch, description: str, model_where: Optional[str] = None, t
     model_sql = ("SELECT {{COLS}} FROM bids_datasets d LEFT JOIN bids_objects o ON o.dataset_id = d.id "
                  f"WHERE {where} GROUP BY d.id")
     result = sql_rewriter.rewrite_generated_sql(model_sql, question)
-    chips = query_filters.describe(result.filter_sql or result.sql)
+    chips = describe(result.filter_sql or result.sql)
     return " ".join(result.sql.split()), result, chips
 
 

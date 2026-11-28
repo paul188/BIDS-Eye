@@ -9,7 +9,8 @@ expected failure derives from ExpectedError directly). It is defined next to
 the code that raises it, without knowing about FastAPI:
 
     services/query_guard.py   SearchBusyError           503
-    services/search.py        SearchExpiredError        410
+    services/search/pagination.py
+                              SearchExpiredError        410
     security/sessions.py      NotSignedInError          401
     routers/auth.py           OAuthStateError           400
     services/github_oauth.py  GitHubTokenError          400

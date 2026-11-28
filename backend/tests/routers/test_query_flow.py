@@ -4,11 +4,12 @@ import asyncio
 from uuid import UUID
 
 from sqlalchemy.exc import ProgrammingError
+from fastapi import Response
 
 import routers.search as query_router
 from routers.schemas import DatasetSchema, TextToSQLResult
-from services.results import dataset_cards
-from services import search, search_runner
+from services.results.display import dataset_cards
+from services.search import search, search_runner
 from services.stores.translated_queries import query_cache
 
 
@@ -165,8 +166,7 @@ def test_query_and_page_flow_reuses_cached_base_sql(monkeypatch):
         assert "d.id" in cached.base_sql
 
         second = await query_router.query_page(
-            query_router.QueryPageRequest(query_id=first.query_id, page=2, page_size=1),
-            session,
+            first.query_id, session, Response(), page=2, page_size=1,
         )
 
         assert second.translation is None

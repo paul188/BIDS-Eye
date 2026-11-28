@@ -1,6 +1,6 @@
 """
-services/search_runner.py
--------------------------
+services/search/search_runner.py
+--------------------------------
 Runs a translated search against the catalogue, one page at a time.
 
 The first page COUNTs the cached base SQL behind the guards of
@@ -9,7 +9,7 @@ repaired once by the model (or replaced by FALLBACK_SQL), and a query that
 finds fewer than MIN_RESULTS datasets is re-run without its free-text-only
 conditions. The first page also asks the re-ranker once. Every page then
 applies ordering and LIMIT/OFFSET (services/translate/sql_rewriter.build_page_sql) and
-builds the result cards (services/results/dataset_cards.py, readme_snippets.py).
+builds the result cards (services/results/display/: dataset_cards.py, readme_snippets.py).
 Changes to the query are written back to the query cache, so later pages
 reuse them.
 """
@@ -25,7 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.expected import ExpectedError
 from routers.schemas import DatasetSchema
-from services.results import dataset_cards, match_reasons, query_filters, readme_snippets
+from services.results.display import dataset_cards, highlights, match_reasons, readme_snippets
 from services import query_guard
 from services.stores.translated_queries import CachedQuery, query_cache
 from services.results.rerank import rerank_candidates, settings as rerank_settings, should_rerank
@@ -176,26 +176,6 @@ async def rerank_once(
     query_cache.update(query_id, cached)
 
 
-def _highlight_for(cached: CachedQuery) -> list[tuple]:
-    if cached.self_corrected:
-        return []
-    return query_filters.highlight_terms(cached.filter_sql)
-
-
-def _strengths_for(cached: CachedQuery) -> list[float]:
-    """Field strengths (tesla) to mark in the README excerpts."""
-    if cached.self_corrected:
-        return []
-    return query_filters.highlight_field_strengths(cached.filter_sql)
-
-
-def _exact_words_for(cached: CachedQuery) -> frozenset:
-    """The highlight words that only count as written (exact word forms)."""
-    if cached.self_corrected:
-        return frozenset()
-    return query_filters.highlight_exact_words(cached.filter_sql)
-
-
 async def run_page(
     session: AsyncSession,
     query_id: str,
@@ -275,9 +255,10 @@ async def _run_page_unguarded(
         page_sql, params = page_query(ranked=False)
         rows = (await session.execute(text(page_sql), params)).mappings().all()
     datasets = await dataset_cards.rows_to_datasets(session, rows)
-    await readme_snippets.attach_snippets(session, datasets, _highlight_for(cached),
-                                          _exact_words_for(cached), _strengths_for(cached))
+    sql = cached.explainable_sql
+    await readme_snippets.attach_snippets(
+        session, datasets, highlights.highlight_terms(sql),
+        highlights.highlight_exact_words(sql), highlights.highlight_field_strengths(sql))
     await dataset_cards.attach_descriptions(session, datasets)
-    await match_reasons.attach_match_reasons(
-        session, datasets, None if cached.self_corrected else cached.filter_sql)
+    await match_reasons.attach_match_reasons(session, datasets, sql)
     return datasets, total

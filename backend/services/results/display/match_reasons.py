@@ -1,6 +1,6 @@
 """
-services/results/match_reasons.py
----------------------------------
+services/results/display/match_reasons.py
+-----------------------------------------
 Why each result matched: for every filter chip that can match in more than
 one way, the ways that hold for the dataset ("Age: 12 of 40 participants
 aged 4–23 months").
@@ -32,11 +32,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from routers.schemas import DatasetSchema
+from routers.schemas import ChipKind, DatasetSchema
 from services.evidence.base import Source
 from services.evidence.branches import confirming_evidence
 from services.evidence.confirmed import CardColumn, ConfirmedByDefaultEvidence, ConfirmedEvidence
-from services.results import query_filters
+from services.results.display import chips
 from services.schema import tables as _tables
 
 try:
@@ -51,7 +51,7 @@ log = logging.getLogger(__name__)
 class ChipPlan:
     """One chip and the evidence of its evaluable branches, in the condition's order."""
     field: str
-    kind: str
+    kind: ChipKind
     # dataclasses.field: the name 'field' is this class's own attribute.
     branches: List[ConfirmedEvidence] = dataclasses.field(default_factory=list)
 
@@ -79,7 +79,7 @@ def _assumed_absent(chip, alias: str) -> Optional[ChipPlan]:
     """The one thing worth saying about an excluded diagnosis: the dataset
     passes because it records no diagnosis at all, not because a record
     rules the diagnosis out. Other negated chips are not explained."""
-    if chip.kind != "diagnosis":
+    if chip.kind != ChipKind.DIAGNOSIS:
         return None
     try:
         from criteria import diagnosis_unknown
@@ -96,10 +96,10 @@ def plan(sql: Optional[str]) -> Tuple[Optional[str], List[ChipPlan]]:
     explained where it holds by default (_assumed_absent)."""
     if exp is None:
         return None, []
-    alias, conditions = query_filters.where_conditions(sql)
+    alias, conditions = chips.where_conditions(sql)
     if alias is None:
         return None, []
-    age_nodes = [clause.node for chip, clause in conditions if chip.field == "Age"]
+    age_nodes = [clause.node for chip, clause in conditions if chip.kind == ChipKind.AGE]
     plans = []
     for chip, clause in conditions:
         if chip.negated:

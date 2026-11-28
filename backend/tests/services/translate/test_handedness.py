@@ -84,9 +84,9 @@ def test_schema_names_the_stored_codes() -> None:
 
 def test_chip_names_the_handedness() -> None:
     """The chip of "left-handed people with alzheimers" showed raw SQL (2026-11-20)."""
-    from services.results import query_filters as qf
+    from services.results.display.chips import describe
 
     sql = ("SELECT d.id FROM bids_datasets AS d WHERE EXISTS(SELECT 1 FROM bids_participants AS p2 "
            "WHERE p2.dataset_id = d.id AND LOWER(p2.handedness) = 'left_handed') GROUP BY d.id")
-    chips = qf.describe(sql)
+    chips = describe(sql)
     assert [(c.field, c.label) for c in chips] == [("Handedness", "left-handed")]

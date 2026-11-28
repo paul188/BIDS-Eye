@@ -37,6 +37,7 @@ from sqlalchemy import text
 from database import worker as worker_db
 from services.schema.tables import datasets, word_forms
 from services.fulltext import vectors
+from services.fulltext.text_search import TS_CONFIG
 
 from stem_collisions import StemCounts
 
@@ -49,7 +50,8 @@ SOURCE_COLUMN = datasets.c.search_tsv_exact.name
 # Alphabetic words only: numbers and codes ("t1w", "7t") have no word forms,
 # and a form goes into tsquery literals as it is.
 _FORM_PATTERN = "^[a-z]{2,40}$"
-_STEM_SQL = "array_to_string(tsvector_to_array(to_tsvector('english', {})), ' ')"
+# Stemmed like search_tsv, or the stems of the table and of the search drift apart.
+_STEM_SQL = f"array_to_string(tsvector_to_array(to_tsvector('{TS_CONFIG}', {{}})), ' ')"
 
 _REFRESH_SQL = (
     f"INSERT INTO {TABLE} (form, stem, ndoc) "
@@ -67,7 +69,7 @@ LOOKUP_TIMEOUT_SECONDS = 3.0
 _LOOKUP_SQL = (
     "SELECT w.word, l.stem, "
     f"       (SELECT count(*) FROM {SOURCE_TABLE} d "
-    "         WHERE d.search_tsv @@ to_tsquery('english', w.word)) AS stem_docs, "
+    f"         WHERE d.search_tsv @@ to_tsquery('{TS_CONFIG}', w.word)) AS stem_docs, "
     f"       ARRAY(SELECT f.form || ':' || f.ndoc FROM {TABLE} f "
     "              WHERE f.stem = l.stem ORDER BY f.ndoc DESC, f.form LIMIT :limit) AS forms "
     "FROM unnest(CAST(:words AS text[])) AS w(word) "
