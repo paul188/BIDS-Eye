@@ -139,10 +139,10 @@ EXACT_SEARCH_VECTOR_EXPRESSION = SEARCH_VECTOR_EXPRESSION.replace(
 # Selection shared by every query in this module.
 METADATA_SELECTION = """
     publishDate onBrainlife
-    metadata { species studyDesign studyDomain studyLongitudinal seniorAuthor dxStatus ages }
+    metadata { datasetName species studyDesign studyDomain studyLongitudinal seniorAuthor dxStatus ages }
     latestSnapshot {
       tag hexsha created readme size summary { size } deprecated { reason }
-      description { EthicsApprovals } analytics { downloads views }
+      description { Name EthicsApprovals } analytics { downloads views }
     }
 """
 
@@ -330,6 +330,18 @@ def _clean_line(value: Any) -> Optional[str]:
     return line or None
 
 
+# Names OpenNeuro shows when the uploader set none; they are not titles.
+_PLACEHOLDER_NAMES = frozenset({"unnamed dataset", "untitled", "untitled dataset", "n/a"})
+
+
+def clean_dataset_name(value: Any) -> Optional[str]:
+    """A dataset title, or None when *value* is blank or a placeholder name."""
+    line = _clean_line(value)
+    if line is None or line.lower() in _PLACEHOLDER_NAMES:
+        return None
+    return line
+
+
 def _age_bounds(ages: Any) -> Tuple[Optional[float], Optional[float]]:
     low, high = _AGE_RANGE
     plausible = [
@@ -387,6 +399,9 @@ def extract_fields(record: Optional[dict]) -> Dict[str, Any]:
     analytics = snapshot.get("analytics") or {}
     description = snapshot.get("description")  # None (absent or null) = unknown
     return {
+        # The uploader's name first, then dataset_description.json's Name.
+        "name":         clean_dataset_name(metadata.get("datasetName"))
+                        or clean_dataset_name((description or {}).get("Name")),
         "readme_text":  readme_text,
         "dx_status":    _clean_line(metadata.get("dxStatus")),
         "study_domain": _clean_line(metadata.get("studyDomain")),
@@ -433,6 +448,16 @@ def deprecation_reason(record: Optional[dict], unavailable: Optional[str] = None
 _UPDATE_SQL = text(
     """
     UPDATE bids_datasets SET
+        -- A title only replaces a missing one: blank, a placeholder, or the
+        -- accession id the GraphQL fallback stores when there is no name.
+        name = CASE
+            WHEN :name IS NOT NULL
+                 AND (name IS NULL OR btrim(name) = ''
+                      OR lower(btrim(name)) IN ('unnamed dataset', 'untitled', 'untitled dataset', 'n/a')
+                      OR name = accession_id)
+            THEN :name
+            ELSE name
+        END,
         readme_text  = COALESCE(:readme_text,  readme_text),
         dx_status    = COALESCE(:dx_status,    dx_status),
         study_domain = COALESCE(:study_domain, study_domain),
@@ -455,7 +480,11 @@ _UPDATE_SQL = text(
         END
     WHERE accession_id = :accession_id
     """
-).bindparams(bindparam("readme_urls", type_=ARRAY(String)))
+).bindparams(
+    bindparam("readme_urls", type_=ARRAY(String)),
+    # Typed, or asyncpg cannot tell what ":name IS NOT NULL" compares.
+    bindparam("name", type_=String),
+)
 
 
 async def apply_fields(session: Any, accession_id: str, fields: Dict[str, Any]) -> int:
@@ -465,6 +494,8 @@ async def apply_fields(session: Any, accession_id: str, fields: Dict[str, Any]) 
     Returns the number of rows updated (0 when the accession is not indexed).
     """
     params: Dict[str, Any] = {name: fields.get(name) for name in METADATA_COLUMNS}
+    name = fields.get("name")
+    params["name"] = name[:300] if name else None
     params["readme_urls"] = list(fields.get("readme_urls") or []) or None
     params["accession_id"] = accession_id
     result = await session.execute(_UPDATE_SQL, params)

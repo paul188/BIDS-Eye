@@ -30,7 +30,7 @@ def test_the_prompt_carries_them_only_when_there_are_some(monkeypatch) -> None:
 
     def fake_call(prompt, **kwargs):
         prompts.append(prompt)
-        return json.dumps({"query_family": "concept_query", "natural_language_summary": "s"})
+        return json.dumps({"natural_language_summary": "s"})
 
     monkeypatch.setattr(intent, "llm_generate", fake_call)
     intent.create_query_plan("20 patients with TLE")

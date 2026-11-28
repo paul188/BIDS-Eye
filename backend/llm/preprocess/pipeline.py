@@ -9,7 +9,7 @@ import reference_vocabulary as _reference_vocabulary
 from services.schema.coded_fields import FILE_FIELDS
 
 from . import catalogue as _catalogue
-from .plan import AugmentedQueryPlan, ParticipantGroup, QueryFamily, QueryPlan, RAGField, ScanRequirement
+from .plan import AugmentedQueryPlan, ParticipantGroup, QueryPlan, RAGField, ScanRequirement
 from .intent import count_stem_forms, create_query_plan
 from .rag import build_rag_requests
 from .topics import _count_topic_matches, _detach_topic_terms, _keep_ambiguity_topics, check_description_alternatives, check_scan_term_alternatives, resolve_topics
@@ -109,9 +109,6 @@ def _names_that_are_conditions(plan: QueryPlan, question: str, retriever: Any) -
     if not moved:
         return
     plan.author_names = kept
-    if not kept and plan.query_family == QueryFamily.AUTHOR_QUERY:
-        plan.query_family = (QueryFamily.CONCEPT_QUERY if moved[0][1] == "diagnosis"
-                             else QueryFamily.SCAN_FILTER)
     readings = "; ".join(
         f"'{name}' is the {'diagnosis' if field == 'diagnosis' else 'task'} {label}, not an author"
         for name, field, label in moved

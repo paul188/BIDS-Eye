@@ -414,26 +414,5 @@ _SYSTEM_PROMPT = textwrap.dedent("""\
     ### 3.2 RAG fields (auto-derived)
     Leave rag_requests as an empty list [].  It is auto-derived from the plan.
 
-    ### 3.3 Query family classification
-      concept_query        — asks for datasets containing a concept (diagnosis/modality)
-      participant_filter   — filters by participant properties (sex, age, handedness, count)
-      comparison_query     — compares counts between groups (male vs female)
-      age_query            — filters by participant age range
-      scan_filter          — filters by scan type + task
-      multimodal_query     — requires presence/absence of multiple datatypes
-      absence_query        — "does NOT contain X"
-      subject_multimodal   — same subject must have multiple scan types
-      author_query         — filter by author name
-      description_search   — keyword search on dataset name, description or README
-      doi_query            — has / lacks a DOI
-      license_query        — filter by license
-      funding_query        — filter by funding source
-      json_numeric_query   — numeric filter on JSONB sidecar field
-      metadata_query       — existence check on JSONB sidecar field
-      session_query        — filter by session count
-      ranking_query        — order by some metric, top N
-      aggregate_query      — compute aggregate (average, count) across datasets
-      combined_filter      — combination of two or more of the above
-
     Return ONLY valid JSON matching the QueryPlan schema — no prose, no fences.
 """)

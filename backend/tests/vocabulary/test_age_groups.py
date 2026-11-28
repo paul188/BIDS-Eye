@@ -14,8 +14,7 @@ from criteria import AGE_GROUPS, age_condition, normalise_age_groups
 def _plan(**fields):
     from preprocess import QueryPlan
 
-    return QueryPlan(query_family="description_search",
-                     natural_language_summary="Find datasets.", **fields)
+    return QueryPlan(natural_language_summary="Find datasets.", **fields)
 
 
 def _augmented(available=("species",), **fields) -> str:
@@ -151,7 +150,7 @@ def test_compiler_takes_the_age_line() -> None:
     from preprocess import ParticipantGroup, RAGField, ResolvedTerms, QueryPlan
     from services.translate import participant_query_compiler as pqc
 
-    plan = QueryPlan(query_family="description_search", natural_language_summary="x",
+    plan = QueryPlan(natural_language_summary="x",
                      groups=[ParticipantGroup(group_name="g0", diagnosis_terms=["ADHD"])],
                      age_groups=["children"])
     resolved = [ResolvedTerms(field=RAGField.DIAGNOSIS, term_to_codes={"ADHD": ["adhd"]})]
