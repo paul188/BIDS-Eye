@@ -122,7 +122,6 @@ async def _fake_rows_to_datasets(session, raw):
             authors=row["authors"],
             description_text=row["description_text"],
             subject_count=row["subject_count"],
-            participants=[],
         )
         for row in raw
     ]

@@ -1,12 +1,3 @@
-export interface Participant {
-  participant_id: string
-  age: number | null
-  sex: string | null
-  handedness: string | null
-  diagnosis: string | null
-  extra: Record<string, unknown> | null
-}
-
 export interface Dataset {
   id: string
   name: string
@@ -26,8 +17,7 @@ export interface Dataset {
   /** Why, e.g. "ages not recorded". */
   uncertain_reasons?: string | null
   subject_count: number | null
-  participants: Participant[]
-  /** Counts over all participants; `participants` itself is capped at 50. */
+  /** Counts over all participants; null for a dataset without a participants.tsv. */
   participant_summary?: {
     total: number
     diagnoses: Record<string, number>

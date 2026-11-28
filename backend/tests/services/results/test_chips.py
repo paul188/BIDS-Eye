@@ -313,7 +313,7 @@ class _SnippetSession:
 def _dataset(n: int):
     from routers.schemas import DatasetSchema
     return DatasetSchema(id=UUID(int=n), name=f"ds{n}", dataset_type="raw",
-                         source_type="openneuro", participants=[])
+                         source_type="openneuro")
 
 
 def test_attach_snippets_marks_matches_and_falls_back_to_the_start():

@@ -17,20 +17,8 @@ from typing_extensions import Annotated
 from services.fulltext.ranking import RankQuery
 
 
-class ParticipantSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    participant_id: str
-    age: Optional[float] = None
-    sex: Optional[str] = None
-    handedness: Optional[str] = None
-    diagnosis: Optional[str] = None
-    extra: Optional[Dict[str, Any]] = None
-
-
 class ParticipantSummarySchema(BaseModel):
-    """Counts over all of a dataset's participants (the participants list
-    itself is capped)."""
+    """Counts over all of a dataset's participants."""
     total: int
     diagnoses: Dict[str, int] = {}   # raw diagnosis value → participants
     female: int = 0
@@ -73,7 +61,6 @@ class DatasetSchema(BaseModel):
     uncertain_reasons: Optional[str] = None
     # Computed fields (not direct ORM columns)
     subject_count: Optional[int] = None
-    participants: List[ParticipantSchema] = []
     participant_summary: Optional[ParticipantSummarySchema] = None
     # A passage of the README: the part that matches the search when it has
     # text terms, else the start. Matched words sit between "⟦" and "⟧".

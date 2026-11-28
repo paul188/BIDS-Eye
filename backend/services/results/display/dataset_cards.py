@@ -3,7 +3,7 @@ services/results/display/dataset_cards.py
 -----------------------------------------
 The datasets of one result page as the cards show them: the catalogue fields
 of the generated query's rows, plus what is read with queries of their own
-(participants and their summary, deprecation notes, the generated summary
+(the participant summary, deprecation notes, the generated summary
 and the linked paper). Those extra reads leave the generated SQL unchanged,
 and databases without the newer columns keep working.
 """
@@ -11,6 +11,7 @@ and databases without the newer columns keep working.
 from __future__ import annotations
 
 import logging
+from enum import Enum
 from typing import Optional, Sequence
 from uuid import UUID
 
@@ -18,15 +19,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from participant_codes import sex_code  # RAG/ is on the path wherever the backend runs
-
-from routers.schemas import DatasetSchema, LinkedPaperSchema, ParticipantSchema, ParticipantSummarySchema
+from routers.schemas import DatasetSchema, LinkedPaperSchema, ParticipantSummarySchema
 from services.indexing import dataset_description
-from services.schema.tables import datasets as _datasets, papers as _papers
+from services.schema.tables import datasets as _datasets, papers as _papers, participants as _participants
 
 log = logging.getLogger(__name__)
-
-MAX_PARTICIPANTS_PER_DATASET = 50
 
 # Names OpenNeuro shows when the uploader set none (the crawler's
 # remote.openneuro_metadata.clean_dataset_name skips the same ones).
@@ -42,50 +39,39 @@ def display_name(name: Optional[str], accession_id: Optional[str]) -> str:
     return accession_id or "Untitled dataset"
 
 
-async def participants_for(
+class StoredSex(str, Enum):
+    """The sex codes the summary counts (participant_codes.STORED_CODES)."""
+    FEMALE = "female"
+    MALE = "male"
+
+
+async def participant_summaries(
     session: AsyncSession, dataset_ids: list[UUID]
-) -> dict[UUID, list[ParticipantSchema]]:
-    """Fetch participants grouped by dataset_id."""
+) -> dict[UUID, ParticipantSummarySchema]:
+    """Group, sex and age counts over every participant of each dataset,
+    counted in the database. Blank diagnoses and ages of 0 or below are left
+    out; a dataset without participants has no entry."""
     if not dataset_ids:
         return {}
-
-    from db.models import BIDSParticipant
-    from sqlalchemy import select
-
-    rows = await session.execute(
-        select(BIDSParticipant).where(BIDSParticipant.dataset_id.in_(dataset_ids))
+    table = _participants.name
+    label = r"btrim(diagnosis, E' \t\r\n')"
+    sql = (
+        f"WITH groups AS (SELECT dataset_id, {label} AS label, count(*) AS n FROM {table} "
+        f"  WHERE dataset_id = ANY(:ids) AND {label} <> '' GROUP BY dataset_id, {label}) "
+        "SELECT p.dataset_id, count(*), "
+        "       count(*) FILTER (WHERE p.sex = :female), count(*) FILTER (WHERE p.sex = :male), "
+        "       min(p.age) FILTER (WHERE p.age > 0), max(p.age) FILTER (WHERE p.age > 0), "
+        "       (SELECT jsonb_object_agg(g.label, g.n) FROM groups g WHERE g.dataset_id = p.dataset_id) "
+        f"FROM {table} p WHERE p.dataset_id = ANY(:ids) GROUP BY p.dataset_id"
     )
-    result: dict[UUID, list[ParticipantSchema]] = {}
-    for p in rows.scalars():
-        result.setdefault(p.dataset_id, []).append(ParticipantSchema.model_validate(p))
-    return result
-
-
-def summarize_participants(participants: Sequence[ParticipantSchema]) -> Optional[ParticipantSummarySchema]:
-    """Group, sex and age counts over every participant, so a card can show
-    exact numbers for datasets larger than the participant cap."""
-    if not participants:
-        return None
-    diagnoses: dict[str, int] = {}
-    female = male = 0
-    ages: list[float] = []
-    for p in participants:
-        label = (p.diagnosis or "").strip()
-        if label:
-            diagnoses[label] = diagnoses.get(label, 0) + 1
-        # The column holds standard codes (the crawler's remote/participant_codes.py);
-        # a row crawled since the last rewrite is read through the vocabulary.
-        sex = sex_code(p.sex or "")
-        if sex == "female":
-            female += 1
-        elif sex == "male":
-            male += 1
-        if p.age is not None and p.age > 0:
-            ages.append(p.age)
-    return ParticipantSummarySchema(
-        total=len(participants), diagnoses=diagnoses, female=female, male=male,
-        age_min=min(ages) if ages else None, age_max=max(ages) if ages else None,
-    )
+    rows = await session.execute(text(sql), {
+        "ids": dataset_ids, "female": StoredSex.FEMALE.value, "male": StoredSex.MALE.value})
+    return {
+        row[0]: ParticipantSummarySchema(
+            total=row[1], female=row[2], male=row[3], age_min=row[4], age_max=row[5],
+            diagnoses=dict(row[6] or {}))
+        for row in rows
+    }
 
 
 async def deprecations_for(
@@ -109,9 +95,9 @@ async def deprecations_for(
 
 
 async def rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[DatasetSchema]:
-    """Build DatasetSchema objects (with capped participants) from result rows."""
+    """Build DatasetSchema objects (with the participant summary) from result rows."""
     dataset_ids = [UUID(str(r["id"])) for r in raw]
-    participants_map = await participants_for(session, dataset_ids)
+    summaries = await participant_summaries(session, dataset_ids)
     deprecations = await deprecations_for(session, dataset_ids)
     return [
         DatasetSchema(
@@ -130,10 +116,7 @@ async def rows_to_datasets(session: AsyncSession, raw: Sequence) -> list[Dataset
             uncertain_level=r.get("uncertain_level"),
             uncertain_reasons=r.get("uncertain_reasons"),
             subject_count=r.get("subject_count"),
-            participants=participants_map.get(UUID(str(r["id"])), [])[
-                :MAX_PARTICIPANTS_PER_DATASET
-            ],
-            participant_summary=summarize_participants(participants_map.get(UUID(str(r["id"])), [])),
+            participant_summary=summaries.get(UUID(str(r["id"]))),
         )
         for r in raw
     ]
