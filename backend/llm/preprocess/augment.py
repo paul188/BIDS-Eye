@@ -32,7 +32,7 @@ from criteria import normalise_age_groups as _normalise_age_groups, age_conditio
     age_group_label as _age_group_label
 
 from . import catalogue as _catalogue
-from .plan import AugmentedQueryPlan, QueryPlan, RAGField, ResolvedTerms, ResolvedTopic, ScoredFilter
+from .plan import AugmentedQueryPlan, ParticipantAttribute, QueryPlan, RAGField, ResolvedTerms, ResolvedTopic, ScoredFilter
 from .rag import _HEALTHY_WORDS, _build_scored_filters, _is_healthy_term, _participant_conditions
 
 log = logging.getLogger("preprocess")
@@ -470,7 +470,7 @@ def _diagnosis_lines(plan: QueryPlan,
         return everything
     by_key = {term.strip().casefold(): term for term in term_to_codes}
     per_group: List[Dict[str, List[str]]] = []
-    for group in plan.groups:
+    for group in plan.cohorts:
         terms = {by_key[t.strip().casefold()]: term_to_codes[by_key[t.strip().casefold()]]
                  for t in group.diagnosis_terms if t.strip().casefold() in by_key}
         if any(terms.values()):
@@ -511,7 +511,7 @@ def _excluded_diagnosis_keys(plan: QueryPlan) -> set:
     """The excluded diagnosis terms, as _term_key. A term a group also asks
     for stays asked: the planner contradicted itself, and a search that
     excludes what it looks for finds nothing."""
-    asked = {_term_key(t) for g in plan.groups for t in g.diagnosis_terms}
+    asked = {_term_key(t) for g in plan.cohorts for t in g.diagnosis_terms}
     return {_term_key(t) for t in plan.excluded_diagnosis_terms
             if t and t.strip() and not _is_healthy_term(t)} - asked
 
@@ -547,6 +547,31 @@ def _excluded_diagnosis_lines(plan: QueryPlan, resolved: List[ResolvedTerms],
     return [f'  not diagnosis "{term.replace(chr(34), chr(39))}" (complete, datasets that record '
             f'no diagnosis stay): {_without_diagnosis(stated)}'
             for term, stated in conditions.items()]
+
+
+def _excluded_group_lines(plan: QueryPlan) -> List[str]:
+    """One line per group with quantifier none that is more than a diagnosis
+    ("no left-handed participants", "no epilepsy patients over 60").
+
+    No fixed SQL exists for these yet: the line describes the participants in
+    words for the SQL model, and the compiler declines it (its label is no
+    complete condition).
+    """
+    lines = []
+    for group in plan.excluded_groups():
+        parts = []
+        for c in group.criteria:
+            if c.attribute == ParticipantAttribute.AGE:
+                bounds = ([f"age >= {c.min:g}"] if c.min is not None else []) + (
+                    [f"age <= {c.max:g}"] if c.max is not None else [])
+                parts.append(" AND ".join(bounds) or "age recorded")
+            else:
+                words = " or ".join(repr(t) for t in c.terms)
+                parts.append(f"{c.attribute.value} {words}")
+        if parts:
+            lines.append("  no participant (write this condition: no row of bids_participants "
+                         "of the dataset has all of these): " + "; ".join(parts))
+    return lines
 
 
 _SCAN_FIELD_NAMES = frozenset(f.value for f in (RAGField.DATATYPE, RAGField.SUFFIX, RAGField.TASK))
@@ -711,6 +736,7 @@ def _build_augmented_question(
             and not plan.institution_terms
             and not plan.excluded_institution_terms
             and not plan.excluded_diagnosis_terms
+            and not plan.excluded_groups()
             and not plan.location_terms
             and not unresolved_terms and not db_miss_terms
             and not any(t.condition for t in topics)):
@@ -989,6 +1015,7 @@ def _build_augmented_question(
     _unknown_diagnoses = unresolved_terms.pop(RAGField.DIAGNOSIS.value, [])
     context_lines.extend(_excluded_diagnosis_lines(
         plan, resolved, [t for t in _unknown_diagnoses if _term_key(t) in excluded_diagnoses]))
+    context_lines.extend(_excluded_group_lines(plan))
     _unknown_diagnoses = [t for t in _unknown_diagnoses if _term_key(t) not in excluded_diagnoses]
     if _unknown_diagnoses:
         unresolved_terms[RAGField.DIAGNOSIS.value] = _unknown_diagnoses
@@ -1014,8 +1041,7 @@ def _build_augmented_question(
     not_searched = [w for w in plan.request_wishes if w.strip()]
     # Who the participants are is decided by the participant lines, never by
     # a text search for "healthy", "adult" or "male".
-    said_healthy = any(_is_healthy_term(t) for t in plan.excluded_diagnosis_terms) or any(
-        _is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
+    said_healthy = any(_is_healthy_term(t) for g in plan.groups for t in g.diagnosis_terms)
 
     def searched_words(phrase: str) -> str:
         nonlocal said_healthy

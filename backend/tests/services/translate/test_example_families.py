@@ -74,3 +74,12 @@ def test_every_family_it_names_is_in_the_pool() -> None:
     import re
     named = set(re.findall(r'add\("([a-z_]+)"\)', source)) | {COMBINED}
     assert named <= set(pool), named - set(pool)
+
+
+def test_an_excluded_diagnosis_is_an_absence_not_a_cohort() -> None:
+    # "depression, excluding bipolar disorder": one cohort, one exclusion.
+    families = _families(groups=[
+        ParticipantGroup(group_name="patients", diagnosis_terms=["depression"]),
+        ParticipantGroup(group_name="excluded", quantifier="none", diagnosis_terms=["bipolar disorder"]),
+    ])
+    assert families == ["concept_query", "absence_query", COMBINED]

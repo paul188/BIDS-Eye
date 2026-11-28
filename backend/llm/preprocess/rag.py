@@ -40,9 +40,6 @@ def _is_healthy_term(term: str) -> bool:
 _ADULT_AGE = 18
 
 
-_ONLY_RE = re.compile(r"\b(?:only|exclusively|solely|all[- ](?:female|male|women|men))\b", re.IGNORECASE)
-
-
 def _participant_conditions(plan: QueryPlan) -> List[str]:
     """Fixed SQL for the sex and age the plan asks for.
 
@@ -70,11 +67,12 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
 
     participants = _catalogue.tables().participants.name
     rows = f"EXISTS (SELECT 1 FROM {participants} p2 WHERE p2.dataset_id = d.id AND "
-    all_sexes = {s for s in (sex_values(g) for g in plan.groups) if s}
+    cohorts = plan.cohorts
+    all_sexes = {s for s in (sex_values(g) for g in cohorts) if s}
     lines: List[str] = []
 
     # One person with a stated sex and age.
-    for group in plan.groups:
+    for group in cohorts:
         low, high = group.age_min, group.age_max
         values = sex_values(group)
         stated = (low is not None or high is not None) and not (low == _ADULT_AGE and high is None)
@@ -94,19 +92,26 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
     if len(all_sexes) == 1:
         values = next(iter(all_sexes))
         condition = f"{rows}p2.sex = {values})"
-        if _ONLY_RE.search(plan.natural_language_summary or ""):
+        if any(g.quantifier == "all" and sex_values(g) == values for g in cohorts):
             # "Only female participants": every participant row says so. A sex
             # recorded for part of the participants is no evidence.
             condition += (f" AND NOT EXISTS (SELECT 1 FROM {participants} p3 "
                           "WHERE p3.dataset_id = d.id AND (p3.sex IS NULL "
                           f"OR p3.sex <> {values}))")
         lines.append(f"  participant sex: {condition}")
-    lows = [g.age_min for g in plan.groups if g.age_min is not None]
-    highs = [g.age_max for g in plan.groups if g.age_max is not None]
+    every = [g for g in cohorts if g.quantifier == "all"
+             and (g.age_min is not None or g.age_max is not None)]
+    if every:
+        # "All participants over 60": no recorded age outside the range, and
+        # some recorded age inside it (a dataset without ages is no evidence).
+        lines.append("  participant age: " + _every_age_condition(rows, participants, every))
+        return lines
+    lows = [g.age_min for g in cohorts if g.age_min is not None]
+    highs = [g.age_max for g in cohorts if g.age_max is not None]
     low = min(lows) if lows else None
     high = max(highs) if highs else None
     said = " ".join([plan.description_search or ""]
-                    + [t for g in plan.groups for t in g.diagnosis_terms]).lower()
+                    + [t for g in cohorts for t in g.diagnosis_terms]).lower()
     adults = (low is None and high is None and re.search(r"\badults?\b", said)) or (
         low == _ADULT_AGE and high is None)
     if adults:
@@ -121,6 +126,26 @@ def _participant_conditions(plan: QueryPlan) -> List[str]:
     elif high is not None:
         lines.append(f"  participant age: ({rows}p2.age <= {number(high)}) OR d.age_min <= {number(high)})")
     return lines
+
+
+def _every_age_condition(rows: str, participants: str, groups: List[ParticipantGroup]) -> str:
+    """Every participant's recorded age lies in the range of the groups (the
+    narrowest one when several give one), and at least one age is recorded;
+    the dataset's age range (d.age_min, d.age_max) for datasets without ages
+    per participant."""
+    def number(x: float) -> str:
+        return str(int(x)) if float(x).is_integer() else str(x)
+
+    lows = [g.age_min for g in groups if g.age_min is not None]
+    highs = [g.age_max for g in groups if g.age_max is not None]
+    low, high = (max(lows) if lows else None), (min(highs) if highs else None)
+    outside = " OR ".join(([f"p3.age < {number(low)}"] if low is not None else [])
+                          + ([f"p3.age > {number(high)}"] if high is not None else []))
+    dataset = " AND ".join(([f"d.age_min >= {number(low)}"] if low is not None else [])
+                           + ([f"d.age_max <= {number(high)}"] if high is not None else []))
+    return (f"(({rows}p2.age IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM {participants} p3 "
+            f"WHERE p3.dataset_id = d.id AND ({outside}))) "
+            f"OR (NOT {rows}p2.age IS NOT NULL) AND {dataset}))")
 
 
 def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
@@ -161,17 +186,18 @@ def build_rag_requests(plan: QueryPlan) -> List[RAGRequest]:
         "adults", "adult", "children", "child",
         "healthy", "normal",
     }
-    for grp in plan.groups:
-        real_diagnoses = [t for t in grp.diagnosis_terms
-                          if t.lower().strip() not in generic_words
-                          and not _is_healthy_term(t)]
-        _merge(RAGField.DIAGNOSIS, real_diagnoses)
-        _merge(RAGField.TASK,      grp.task_terms)
+    def real_diagnoses(terms: List[str]) -> List[str]:
+        return [t for t in terms if t and t.strip() and t.lower().strip() not in generic_words
+                and not _is_healthy_term(t)]
+
+    for grp in plan.cohorts:
+        _merge(RAGField.DIAGNOSIS, real_diagnoses(grp.diagnosis_terms))
     # Excluded diagnoses resolve like asked ones: the exclusion is the
     # negation of the same condition (backend/vocabulary/criteria.py without_diagnosis).
-    _merge(RAGField.DIAGNOSIS, [t for t in plan.excluded_diagnosis_terms
-                                if t and t.strip() and t.lower().strip() not in generic_words
-                                and not _is_healthy_term(t)])
+    # A group with quantifier none and more than a diagnosis ("no epilepsy
+    # patients over 60") is not resolved: the SQL model writes it from words
+    # (augment._excluded_group_lines).
+    _merge(RAGField.DIAGNOSIS, real_diagnoses(plan.excluded_diagnosis_terms))
 
     # Dataset-level text fields
     _merge(RAGField.AUTHOR,  plan.author_names)

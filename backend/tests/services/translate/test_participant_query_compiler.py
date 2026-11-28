@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 import preprocess
-from preprocess import Ordering, ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement
+from preprocess import Ordering, ParticipantCriterion, ParticipantGroup, QueryPlan, RAGField, ResolvedTerms, ScanRequirement
 from services.translate import participant_query_compiler as pqc
 
 SCZ = ["schizophrenia", "schizophrenia_with_avh"]
@@ -107,10 +107,38 @@ def test_what_needs_interpretation_is_declined_with_a_reason(plan, augmented, re
     assert result.reason == reason
 
 
-def test_group_fields_without_a_filter_line_are_declined() -> None:
+def _group(quantifier="some", **criteria) -> ParticipantGroup:
+    """A group with one criterion per keyword: dx=[...], sex=[...], handedness=[...], age=(lo, hi)."""
+    items = []
+    for attribute, value in criteria.items():
+        attribute = {"dx": "diagnosis"}.get(attribute, attribute)
+        if attribute == "age":
+            items.append(ParticipantCriterion(attribute="age", min=value[0], max=value[1]))
+        else:
+            items.append(ParticipantCriterion(attribute=attribute, terms=list(value)))
+    return ParticipantGroup(group_name="g", quantifier=quantifier, criteria=items)
+
+
+@pytest.mark.parametrize("group, reason", [
+    (_group(dx=["schizophrenia"], handedness=["left"]), "group criterion handedness"),
+    (_group("none", sex=["male"]), "excluded group beyond a diagnosis"),
+    (_group("none", dx=["schizophrenia"], age=(60, None)), "excluded group beyond a diagnosis"),
+    (_group("all", dx=["schizophrenia"]), "every participant has a diagnosis"),
+])
+def test_groups_without_a_filter_line_are_declined(group, reason) -> None:
     plan = _plan(["schizophrenia"])
-    plan.groups[0].handedness = ["left"]
-    assert pqc.compile_plan(plan, RESOLVED).reason == "group field handedness"
+    plan.groups.append(group)
+    assert pqc.compile_plan(plan, RESOLVED).reason == reason
+
+
+def test_an_excluded_diagnosis_is_no_alternative_of_the_cohorts() -> None:
+    # "schizophrenia or ADHD, without healthy controls": the none group has
+    # its own line and does not count as an alternative without a condition.
+    plan = _plan(["schizophrenia"], ["ADHD"], operator="OR")
+    plan.groups.append(_group("none", dx=["epilepsy"]))
+    assert plan.excluded_diagnosis_terms == ["epilepsy"]
+    sql = pqc.compile_plan(plan, RESOLVED).sql
+    assert sql is not None and ") OR (" in sql
 
 
 def test_complete_filter_lines_are_anded_without_a_diagnosis_group() -> None:
