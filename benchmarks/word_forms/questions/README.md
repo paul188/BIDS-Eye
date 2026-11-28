@@ -28,7 +28,7 @@ noise to the prompt. A wrong decision in step 3 or 4 loses datasets or adds fals
   `../../demand/demand_queries.yaml`, `../../easy/easy_searches.yaml` and
   `../../recall/ambiguity_queries.yaml` (1,741 in all; held-out ids are left out). Shuffled with
   seed 20261127, then kept while a form of a labelled pair still had fewer than three questions
-  (207, tier `labelled`); plus 30 questions with a word of `word_forms.yaml` or
+  (207, tier `labelled`); plus 30 questions with a word of `stem_collisions.yaml` or
   `word_form_pairs.json` (`reviewed_list`), 30 with neither (`control`) and 10 written
   tokenization traps (`trap`).
 - **search_words / filler_words**: only the words that carry a decision were judged. A search
@@ -39,12 +39,12 @@ noise to the prompt. A wrong decision in step 3 or 4 loses datasets or adds fals
 - **truth**: Paul's blind labels of `../label_set.json` (p000–p189), read per direction. Pairs
   labelled `context` are not scored. Two question senses override a label (marked `overridden`,
   with a note): *structural* in "structural MRI" must not find *structure* (Brain Imaging Data
-  Structure; the blind label said both, `word_forms.yaml` says no), and *ageing* as growing old
+  Structure; the blind label said both, `stem_collisions.yaml` says no), and *ageing* as growing old
   must not find *age* (label: context). 382 scored rows in 188 questions.
 
 Pairs of origin `sample` are the blind test of the model step: `word_form_pairs.json` leaves
 their stems out on purpose, so only the model decides them. Pairs of origin `yaml_*` are covered
-by `word_forms.yaml` and test the lists.
+by `stem_collisions.yaml` and test the lists.
 
 ## Running
 
@@ -73,7 +73,7 @@ stopwords filled the 40-word cap before *ageing* and *localizer*.
 | method | right | wrong merge (false hits) | wrong split (lost recall) |
 |---|---|---|---|
 | stem | 166 | 216 | 0 |
-| lists (`word_forms.yaml` + `word_form_pairs.json`) | 284 | 96 | 2 |
+| lists (`stem_collisions.yaml` + `word_form_pairs.json`) | 284 | 96 | 2 |
 
 **80 of the 98 remaining errors are words the model is never asked about.** The collision test
 (`colliding_forms`) only flags a form that brings in at least twice the datasets of the asked
@@ -94,7 +94,7 @@ silently, and the lists were mined with the same test, so they lack these direct
 (*weighted* mostly stands inside "T1-weighted", which the search keeps together by adjacency, so
 its 20 rows overstate the harm.) The other 18 errors are words the model is asked about; the
 `lists` method leaves its answers out, so they need `--model`. The 2 wrong splits are
-*dependence* → *dependent*/*depending*: `word_forms.yaml` splits them, the blind label says both.
+*dependence* → *dependent*/*depending*: `stem_collisions.yaml` splits them, the blind label says both.
 
 **Prompt noise:** 133 words would go to the model across the 277 questions; 23 of them are
 search words. The rest are request language: *compare* (27), *listening*, *covering*, *scanned*,

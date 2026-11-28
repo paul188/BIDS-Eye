@@ -11,14 +11,14 @@ Two parts:
 
 2. Which forms a search finally accepts (needs --evidence, made by
    fetch_evidence.py). For each search word with a truth row, the forms the
-   search requires are computed as the search does: word_forms.decide() on
+   search requires are computed as the search does: stem_collisions.decide() on
    the question's evidence and the model's answers, then forms_for() and
    search_variants() (services/fulltext/tsquery.py _word_forms). A row says
    whether a search for the word should also find the other form; per row
    the method is right, a wrong split (lost recall) or a wrong merge (false
    hits). Methods:
      stem   every form of the stem matches (the search without exact forms)
-     lists  word_forms.yaml and word_form_pairs.json only; the model's
+     lists  stem_collisions.yaml and word_form_pairs.json only; the model's
             answers are left out
      model  lists plus the language model's answers (--model, or the cache
             of an earlier run with --model-cache)
@@ -45,7 +45,7 @@ _REPO = _HERE.parents[2]
 sys.path[:0] = [str(_REPO / "backend" / "vocabulary"), str(_REPO / "backend" / "llm"),
                 str(_REPO / "backend")]
 
-import word_forms as wf  # noqa: E402
+import stem_collisions as wf  # noqa: E402
 from text_terms import POSTGRES_STOPWORDS  # noqa: E402
 
 QUESTIONS = _HERE / "questions.yaml"
@@ -104,22 +104,22 @@ def score_lookup(items: Sequence[dict], tokenize: Callable[[str], List[str]]) ->
 
 # ── Part 2: which forms a search accepts ──────────────────────────────────────
 
-def load_evidence(path: Path) -> Tuple[Dict[str, wf.WordEvidence], dict]:
+def load_evidence(path: Path) -> Tuple[Dict[str, wf.StemCounts], dict]:
     data = json.loads(path.read_text())
-    evidence = {w: wf.WordEvidence(word=w, stem=e["stem"], stem_docs=int(e["stem_docs"]),
+    evidence = {w: wf.StemCounts(word=w, stem=e["stem"], stem_docs=int(e["stem_docs"]),
                                    forms=tuple((f, int(n)) for f, n in e["forms"]))
                 for w, e in data["words"].items()}
     return evidence, {k: v for k, v in data.items() if k != "words"}
 
 
-def question_evidence(question: str, evidence: Mapping[str, wf.WordEvidence],
-                      tokenize: Callable[[str], List[str]]) -> Dict[str, wf.WordEvidence]:
+def question_evidence(question: str, evidence: Mapping[str, wf.StemCounts],
+                      tokenize: Callable[[str], List[str]]) -> Dict[str, wf.StemCounts]:
     """intent.word_evidence() against the fixture: the lookup of question_words()."""
     return {w: evidence[w] for w in dict.fromkeys(tokenize(question)) if w in evidence}
 
 
 def required_forms(word: str, decided: Mapping[str, Sequence[str]],
-                   evidence: Mapping[str, wf.WordEvidence]) -> Optional[Tuple[str, ...]]:
+                   evidence: Mapping[str, wf.StemCounts]) -> Optional[Tuple[str, ...]]:
     """tsquery._word_forms for one plain word; None = matched by stem."""
     forms = wf.forms_for(word, decided, evidence.get)
     if not forms:
@@ -128,7 +128,7 @@ def required_forms(word: str, decided: Mapping[str, Sequence[str]],
 
 
 def score_rows(item: dict, decided: Mapping[str, Sequence[str]],
-               evidence: Mapping[str, wf.WordEvidence], stem_only: bool) -> List[dict]:
+               evidence: Mapping[str, wf.StemCounts], stem_only: bool) -> List[dict]:
     rows = []
     for word, truths in (item.get("truth") or {}).items():
         item_ev = evidence.get(word)
@@ -153,7 +153,7 @@ def score_rows(item: dict, decided: Mapping[str, Sequence[str]],
 SAMPLE_PAIRS: set = set()
 
 
-def model_choices(item: dict, q_evidence: Mapping[str, wf.WordEvidence],
+def model_choices(item: dict, q_evidence: Mapping[str, wf.StemCounts],
                   cache: Dict[str, dict], call: bool) -> Optional[List[Tuple[str, List[str]]]]:
     """The model's (word, keep) answers for one question; None when unknown."""
     if not wf.needs_decision(q_evidence):
@@ -172,7 +172,7 @@ def model_choices(item: dict, q_evidence: Mapping[str, wf.WordEvidence],
     return choices
 
 
-def score_forms(items: Sequence[dict], evidence: Mapping[str, wf.WordEvidence],
+def score_forms(items: Sequence[dict], evidence: Mapping[str, wf.StemCounts],
                 tokenize: Callable[[str], List[str]], cache: Dict[str, dict], call: bool) -> dict:
     results: Dict[str, List[dict]] = {"stem": [], "lists": [], "model": []}
     asked_search = asked_filler = asked_other = 0

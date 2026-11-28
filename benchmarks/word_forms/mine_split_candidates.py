@@ -4,12 +4,12 @@ benchmarks/word_forms/mine_split_candidates.py
 ----------------------------------------------
 Word-form directions nobody has judged, in both directions (2026-11-27).
 
-word_forms.colliding_forms() only flags a form with at least MIN_RATIO times
+stem_collisions.colliding_forms() only flags a form with at least MIN_RATIO times
 the datasets of the asked word, so a common word that shares its stem with a
 rarer, different word (functional / functioning) was never asked about, and
 word_form_pairs.json was mined with the same test. This lists every direction
 A -> B under one stem where B has at least MIN_EXTRA datasets and A at least
-MIN_ASKED, minus the pairs word_forms.yaml or word_form_pairs.json decide.
+MIN_ASKED, minus the pairs stem_collisions.yaml or word_form_pairs.json decide.
 
 Input: bids_word_forms as CSV (form,stem,ndoc), exported read-only:
     \copy (SELECT form, stem, ndoc FROM bids_word_forms) TO STDOUT WITH (FORMAT csv, HEADER)
@@ -31,7 +31,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE.parents[1] / "backend" / "vocabulary")]
 
-import word_forms as wf  # noqa: E402
+import stem_collisions as wf  # noqa: E402
 
 MIN_OTHER = wf.MIN_EXTRA
 MIN_ASKED = 5
