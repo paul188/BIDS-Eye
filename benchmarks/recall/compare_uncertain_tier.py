@@ -25,6 +25,7 @@ import asyncio
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -114,24 +115,32 @@ def _ssh_python(target: str, code: str, timeout: float = 1800) -> dict[str, Any]
 def _remote_capabilities(target: str) -> dict[str, Any]:
     code = r'''import asyncio, json, sys
 sys.path[:0] = ["/app/backend", "/app/BIDS-SQL", "/app/backend/vocabulary", "/app/RAG"]  # /app/RAG: images before 2026-11-27
+from sqlalchemy import text
 from db.db import engine
 try:
-    from services.catalogue import schema_capabilities
     from services.fulltext import vectors
 except ImportError:  # backend before text_search.py was split
     try:
-        from services.catalogue import schema_capabilities
         from services.fulltext import text_search as vectors
     except ImportError:  # backend before services/ was grouped
-        from services import schema_capabilities, text_search as vectors
+        from services import text_search as vectors
+# The columns are read from the database, as backend_capabilities.py does: the
+# backend's own schema_capabilities.py is gone since 79f18a2.
 async def main():
-    await schema_capabilities.refresh_available_columns(engine)
+    async with engine.connect() as connection:
+        columns = set((await connection.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = current_schema() AND table_name = 'bids_datasets'"))).scalars())
+        word_forms = bool((await connection.execute(text(
+            "SELECT to_regclass('bids_word_forms') IS NOT NULL"))).scalar())
+    exact_enabled = getattr(vectors, "exact_enabled", None)
     result = {
         "papers": vectors.papers_enabled(),
-        "paper_fts": schema_capabilities.has_paper_fts(),
-        "exact_fts": schema_capabilities.has_exact_fts(),
-        "exact_paper_fts": schema_capabilities.has_exact_paper_fts(),
-        "word_forms": schema_capabilities.has_word_forms(),
+        "exact": exact_enabled() if exact_enabled else None,
+        "paper_fts": "search_tsv_papers" in columns,
+        "exact_fts": "search_tsv_exact" in columns,
+        "exact_paper_fts": "search_tsv_exact_papers" in columns,
+        "word_forms": word_forms,
     }
     print(json.dumps(result))
     await engine.dispose()
@@ -332,10 +341,10 @@ async def _prepare_live_capabilities() -> bool:
         sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     import main  # noqa: F401
     from db.db import engine
-    from services.catalogue import schema_capabilities
+    from backend_capabilities import start
     from services.fulltext import vectors
 
-    await schema_capabilities.refresh_available_columns(engine)
+    await start(engine)
     papers = vectors.papers_enabled()
     # main_cli later starts a fresh asyncio loop for execution.
     await engine.dispose()
@@ -354,7 +363,7 @@ async def _run_live(cases: dict[str, dict[str, Any]], params: dict[str, Any], la
     from db.db import async_session_maker, engine
     from sqlalchemy import text
     from services import query_guard
-    from services.catalogue import schema_capabilities
+    from backend_capabilities import start
 
     try:
         async with async_session_maker() as session:
@@ -370,7 +379,7 @@ async def _run_live(cases: dict[str, dict[str, Any]], params: dict[str, Any], la
         print("live database unavailable; skipped SQL execution", flush=True)
         return
 
-    await schema_capabilities.refresh_available_columns(engine)
+    await start(engine)
 
     for qid, case in cases.items():
         for version in ("baseline", "working_tree"):
@@ -428,7 +437,6 @@ def main_cli() -> int:
     sys.path.insert(0, str(BACKEND))
     sys.path.insert(0, str(ROOT / "backend" / "vocabulary"))
     from services import query_guard
-    from services.catalogue import schema_capabilities
     from services.fulltext import word_frequencies
     from services.uncertain import tier as working_tier
 
@@ -440,19 +448,18 @@ def main_cli() -> int:
     if args.ssh_target:
         try:
             remote_capabilities = _remote_capabilities(args.ssh_target)
-            schema_capabilities.set_paper_fts(remote_capabilities["paper_fts"])
-            schema_capabilities.set_exact_fts(
-                remote_capabilities["exact_fts"],
-                papers=remote_capabilities["exact_paper_fts"],
-                word_forms=remote_capabilities["word_forms"],
-            )
+            # Exact word forms follow TEXT_SEARCH_EXACT (vectors.exact_enabled): build
+            # the SQL as the remote backend would. Paper text goes to apply() below.
+            exact = remote_capabilities.get("exact")
+            if exact is None:  # an image before exact_enabled(): the columns decided
+                exact = remote_capabilities["exact_fts"] and remote_capabilities["word_forms"]
+            os.environ["TEXT_SEARCH_EXACT"] = "true" if exact else "false"
         except Exception as exc:
             remote_capability_error = f"{type(exc).__name__}: {str(exc)[:1000]}"
     if args.papers != "auto" and args.ssh_target:
         papers = args.papers == "on" and bool(
             remote_capabilities and remote_capabilities.get("paper_fts"))
     elif args.papers != "auto":
-        schema_capabilities.set_paper_fts(args.papers == "on")
         papers = args.papers == "on"
     elif args.ssh_target:
         papers = bool(remote_capabilities and remote_capabilities.get("papers"))
