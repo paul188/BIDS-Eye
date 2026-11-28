@@ -544,8 +544,8 @@ def compile_plan(plan: Any, resolved_terms: Iterable[Any],
         # "patients or anyone": an alternative without a condition admits every dataset.
         return _decline("an alternative group has no condition")
     if cohort_conditions:
-        cohorts = f" {operator} ".join(cohort_conditions)  # operator validated above
-        where.append(f"({cohorts})" if len(cohort_conditions) > 1 else cohorts)
+        joined = f" {operator} ".join(cohort_conditions)  # operator validated above
+        where.append(f"({joined})" if len(cohort_conditions) > 1 else joined)
 
     where.extend(_fixed_conditions(plan))
     where = list(dict.fromkeys(where))
